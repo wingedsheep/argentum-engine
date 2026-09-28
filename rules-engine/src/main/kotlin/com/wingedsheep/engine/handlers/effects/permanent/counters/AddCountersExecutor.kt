@@ -53,6 +53,7 @@ class AddCountersExecutor(
         )
 
         val firstThisTurn = DamageUtils.isFirstCounterThisTurn(state, targetId)
+        val firstOfTypeThisTurn = DamageUtils.isFirstCounterOfTypeThisTurn(state, targetId, counterType)
 
         val newState = state.updateEntity(targetId) { container ->
             container.with(current.withAdded(counterType, modifiedCount))
@@ -62,7 +63,7 @@ class AddCountersExecutor(
 
         return EffectResult.success(
             newState,
-            listOf(CountersAddedEvent(targetId, effect.counterType, modifiedCount, entityName, firstThisTurn, placedBy = context.controllerId))
+            listOf(CountersAddedEvent(targetId, effect.counterType, modifiedCount, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = context.controllerId))
         )
     }
 }

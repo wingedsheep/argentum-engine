@@ -74,6 +74,8 @@ class DoubleCountersExecutor(
                 predicateEvaluator = predicateEvaluator
             )
             if (added <= 0) continue
+            // Per kind: each kind has its own first-this-turn window (Botanical Brawler).
+            val firstOfTypeThisTurn = DamageUtils.isFirstCounterOfTypeThisTurn(newState, targetId, counterType)
 
             val current = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
             newState = newState.updateEntity(targetId) { container ->
@@ -82,7 +84,7 @@ class DoubleCountersExecutor(
             events.add(
                 CountersAddedEvent(
                     targetId, counterType, added, entityName,
-                    firstThisTurn, placedBy = context.controllerId
+                    firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = context.controllerId
                 )
             )
             // Marked per kind, inside the loop, because the counter-history marker records which

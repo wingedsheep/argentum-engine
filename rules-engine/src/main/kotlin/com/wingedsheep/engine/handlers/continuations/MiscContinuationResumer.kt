@@ -793,14 +793,14 @@ class MiscContinuationResumer(
                 // recipient with the kind and placer for the scoped readings of
                 // ReceivedCounterThisTurn, and credit "you put a counter on a creature this turn"
                 // when the recipient is a creature.
-                val (afterMark, firstThisTurn) = com.wingedsheep.engine.handlers.effects.DamageUtils
+                val (afterMark, firstThisTurn, firstOfTypeThisTurn) = com.wingedsheep.engine.handlers.effects.DamageUtils
                     .recordCounterPlacement(newState, targetId, counterType, placerId = continuation.controllerId)
                 newState = com.wingedsheep.engine.handlers.effects.DamageUtils
                     .markCounterPlacedOnCreature(afterMark, continuation.controllerId, targetId, counterType)
 
                 val targetName = newState.getEntity(targetId)
                     ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name ?: ""
-                events.add(CountersAddedEvent(targetId, continuation.counterType, modifiedAmount, targetName, firstThisTurn, placedBy = continuation.controllerId))
+                events.add(CountersAddedEvent(targetId, continuation.counterType, modifiedAmount, targetName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = continuation.controllerId))
             }
         }
 
@@ -958,7 +958,7 @@ class MiscContinuationResumer(
                     newState = newState.updateEntity(continuation.destinationId) { container ->
                         container.with(destCounters.withAdded(counterType, modified))
                     }
-                    val (afterMark, firstThisTurn) = com.wingedsheep.engine.handlers.effects.DamageUtils
+                    val (afterMark, firstThisTurn, firstOfTypeThisTurn) = com.wingedsheep.engine.handlers.effects.DamageUtils
                         .recordCounterPlacement(
                             newState,
                             continuation.destinationId,
@@ -972,7 +972,7 @@ class MiscContinuationResumer(
                             continuation.currentCounterType,
                             modified,
                             continuation.destinationName,
-                            firstThisTurn,
+                            firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn,
                             // CR 122.5: moving a counter "puts" it onto the destination, so this is a
                             // placement by the moving effect's controller (drives "whenever you put
                             // counters" triggers).

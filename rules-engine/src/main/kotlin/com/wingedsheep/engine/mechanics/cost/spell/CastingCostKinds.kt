@@ -43,6 +43,8 @@ private fun blight(ledger: SpellCostLedger, targetId: EntityId, amount: Int) {
     val targetContainer = ledger.state.getEntity(targetId) ?: return
     val counters = targetContainer.get<CountersComponent>() ?: CountersComponent()
     val firstThisTurn = DamageUtils.isFirstCounterThisTurn(ledger.state, targetId)
+    val firstOfTypeThisTurn =
+        DamageUtils.isFirstCounterOfTypeThisTurn(ledger.state, targetId, CounterType.MINUS_ONE_MINUS_ONE)
     ledger.state = ledger.state.updateEntity(targetId) { c ->
         c.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, amount))
     }
@@ -55,6 +57,7 @@ private fun blight(ledger: SpellCostLedger, targetId: EntityId, amount: Int) {
         amount = amount,
         entityName = targetContainer.get<CardComponent>()?.name ?: "Creature",
         firstThisTurn = firstThisTurn,
+        firstOfTypeThisTurn = firstOfTypeThisTurn,
         placedBy = ledger.playerId
     ))
 }

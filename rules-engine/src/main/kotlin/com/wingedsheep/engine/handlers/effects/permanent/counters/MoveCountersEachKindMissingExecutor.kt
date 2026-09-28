@@ -86,11 +86,11 @@ class MoveCountersEachKindMissingExecutor(
             }
             // CR 122.5 — moving a counter *puts* it on the destination, so the moving effect's
             // controller is the placer; record both axes for the placer-/kind-scoped readings.
-            val (afterMark, firstThisTurn) = DamageUtils.recordCounterPlacement(
+            val (afterMark, firstThisTurn, firstOfTypeThisTurn) = DamageUtils.recordCounterPlacement(
                 newState, destinationId, counterType, placerId = context.controllerId
             )
             newState = afterMark
-            events.add(CountersAddedEvent(destinationId, counterType, modified, destName, firstThisTurn, placedBy = context.controllerId))
+            events.add(CountersAddedEvent(destinationId, counterType, modified, destName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = context.controllerId))
         }
 
         return EffectResult.success(newState, events)

@@ -138,6 +138,8 @@ class CountersPlacedBatchTriggerTest : FunSpec({
         amount = amount,
         entityName = "",
         firstThisTurn = firstThisTurn,
+        // A single-kind placement here, so the per-kind window tracks the any-kind one.
+        firstOfTypeThisTurn = firstThisTurn,
         placedBy = placedBy,
     )
 

@@ -7282,7 +7282,12 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
 - `Triggers.<subject>.getsCounters(type, by, firstTimeEachTurn, batch)`
   — fires when counters of any type (a `null` `counterType`) land on a matching permanent;
   `firstTimeEachTurn` gates it to the first counter placement on *that* permanent this turn
-  (engine-tracked via `ReceivedCountersThisTurnComponent`). `binding = SELF` restricts it to the
+  (engine-tracked via `ReceivedCountersThisTurnComponent`). The window is scoped like the trigger:
+  with no `type` it is "the first time counters" (any kind — Stalwart Successor, creatures only);
+  with a `type` it is "the first time **+1/+1** counters have been put on that permanent this
+  turn", so an earlier shield or -1/-1 counter doesn't close it, and it covers any permanent —
+  Botanical Brawler: `Triggers.another(GameObjectFilter.Permanent.youControl())
+  .getsCounters(type = CounterType.PLUS_ONE_PLUS_ONE, firstTimeEachTurn = true)`. `binding = SELF` restricts it to the
   source permanent (the `TriggerMatcher.CountersPlacedEvent` branch honors `SELF`/`OTHER`).
   `placedBy = Player.You` restricts to counters *you* put — the `filter` constrains the permanent
   *receiving* the counters, `placedBy` constrains the *placer* (CR 122.6a). Use it for

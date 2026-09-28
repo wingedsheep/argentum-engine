@@ -71,6 +71,7 @@ class MoveCountersExecutor(
         )
         val destCounters = afterRemoval.getEntity(destinationId)?.get<CountersComponent>() ?: CountersComponent()
         val firstThisTurn = DamageUtils.isFirstCounterThisTurn(afterRemoval, destinationId)
+        val firstOfTypeThisTurn = DamageUtils.isFirstCounterOfTypeThisTurn(afterRemoval, destinationId, counterType)
 
         val newState = afterRemoval.updateEntity(destinationId) { container ->
             container.with(destCounters.withAdded(counterType, placedCount))
@@ -80,7 +81,7 @@ class MoveCountersExecutor(
             newState,
             listOf(
                 CountersRemovedEvent(sourceId, effect.counterType, moveCount, sourceName),
-                CountersAddedEvent(destinationId, effect.counterType, placedCount, destName, firstThisTurn, placedBy = context.controllerId)
+                CountersAddedEvent(destinationId, effect.counterType, placedCount, destName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = context.controllerId)
             )
         )
     }

@@ -2403,8 +2403,13 @@ class TriggerMatcher(
         if (binding == TriggerBinding.OTHER && event.entityId == sourceId) return false
         // A null counterType is the wildcard "counters of any type".
         if (trigger.counterType != null && trigger.counterType != event.counterType) return false
-        // "First time counters this turn" intervening-if (Stalwart Successor).
-        if (trigger.firstTimeEachTurn && !event.firstThisTurn) return false
+        // "First time counters this turn" intervening-if. The window is scoped like the trigger:
+        // any kind for "counters" (Stalwart Successor), that kind for "+1/+1 counters" (Botanical
+        // Brawler) — an earlier counter of another kind doesn't close it.
+        if (trigger.firstTimeEachTurn) {
+            val first = if (trigger.counterType != null) event.firstOfTypeThisTurn else event.firstThisTurn
+            if (!first) return false
+        }
         // Placer restriction (CR 122.6 / 122.6a): "Whenever YOU put counters ...". A placement the
         // engine didn't attribute to a placer (null) never satisfies a non-null selector.
         trigger.placedBy?.let { placer ->

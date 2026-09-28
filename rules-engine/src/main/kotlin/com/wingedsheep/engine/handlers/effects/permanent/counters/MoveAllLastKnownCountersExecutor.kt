@@ -67,12 +67,14 @@ class MoveAllLastKnownCountersExecutor(
                 predicateEvaluator = predicateEvaluator
             )
             if (modifiedCount <= 0) continue
+            // Per kind: each kind has its own first-this-turn window (Botanical Brawler).
+            val firstOfTypeThisTurn = DamageUtils.isFirstCounterOfTypeThisTurn(newState, targetId, counterType)
 
             val current = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
             newState = newState.updateEntity(targetId) { container ->
                 container.with(current.withAdded(counterType, modifiedCount))
             }
-            events.add(CountersAddedEvent(targetId, counterType, modifiedCount, targetName, firstThisTurn, placedBy = context.controllerId))
+            events.add(CountersAddedEvent(targetId, counterType, modifiedCount, targetName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = context.controllerId))
             // Per kind, inside the loop — see DoubleCountersExecutor: the marker records which
             // kinds landed, so a kind-less mark would not satisfy a type-scoped counter-history
             // filter.

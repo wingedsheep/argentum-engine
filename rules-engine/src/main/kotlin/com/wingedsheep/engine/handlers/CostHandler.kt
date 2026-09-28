@@ -553,6 +553,8 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 val counters = targetContainer.get<CountersComponent>() ?: CountersComponent()
                 val firstThisTurn = DamageUtils
                     .isFirstCounterThisTurn(state, targetId)
+                val firstOfTypeThisTurn = DamageUtils
+                    .isFirstCounterOfTypeThisTurn(state, targetId, CounterType.MINUS_ONE_MINUS_ONE)
                 val withCounters = state.updateEntity(targetId) { c ->
                     c.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, cost.amount))
                 }
@@ -568,6 +570,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                         amount = cost.amount,
                         entityName = targetName,
                         firstThisTurn = firstThisTurn,
+        firstOfTypeThisTurn = firstOfTypeThisTurn,
                         placedBy = controllerId
                     )
                 )
@@ -967,6 +970,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                     predicateEvaluator = predicateEvaluator
                 )
                 val firstThisTurn = DamageUtils.isFirstCounterThisTurn(state, sourceId)
+                val firstOfTypeThisTurn = DamageUtils.isFirstCounterOfTypeThisTurn(state, sourceId, counterType)
                 val newState = state.updateEntity(sourceId) { c ->
                     c.with(current.withAdded(counterType, modifiedCount))
                 }.let {
@@ -981,7 +985,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                     events = listOf(
                         CountersAddedEvent(
                             sourceId, counterType, modifiedCount, entityName,
-                            firstThisTurn, placedBy = controllerId,
+                            firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = controllerId,
                         )
                     ),
                 )

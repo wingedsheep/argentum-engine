@@ -181,7 +181,7 @@ class ProliferateExecutor(
                     newState = newState.updateEntity(entityId) { container ->
                         container.with(before.withAdded(counterType, modifiedAmount))
                     }
-                    val (afterMark, firstThisTurn) = DamageUtils.recordCounterPlacement(
+                    val (afterMark, firstThisTurn, firstOfTypeThisTurn) = DamageUtils.recordCounterPlacement(
                         newState,
                         entityId,
                         counterType,
@@ -194,7 +194,7 @@ class ProliferateExecutor(
                             counterType,
                             modifiedAmount,
                             entityName,
-                            firstThisTurn,
+                            firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn,
                             placedBy = controllerId
                         )
                     )

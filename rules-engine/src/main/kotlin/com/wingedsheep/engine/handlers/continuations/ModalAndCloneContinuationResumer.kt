@@ -1187,7 +1187,7 @@ class ModalAndCloneContinuationResumer(
             // Devour counters go on the object *as it enters* the battlefield, so CR 122.6a makes
             // the entering permanent's controller the placer regardless of whose effect it was.
             // The spell entity has no projected controller yet, so the flag is passed directly.
-            val (afterMark, firstThisTurn) = com.wingedsheep.engine.handlers.effects.DamageUtils
+            val (afterMark, firstThisTurn, firstOfTypeThisTurn) = com.wingedsheep.engine.handlers.effects.DamageUtils
                 .recordCounterPlacement(
                     newState,
                     spellId,
@@ -1198,7 +1198,7 @@ class ModalAndCloneContinuationResumer(
             val spellName = newState.getEntity(spellId)?.get<CardComponent>()?.name ?: ""
             events.add(
                 com.wingedsheep.engine.core.CountersAddedEvent(
-                    spellId, continuation.counterType, counterCount, spellName, firstThisTurn,
+                    spellId, continuation.counterType, counterCount, spellName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn,
                     placedBy = controllerId
                 )
             )

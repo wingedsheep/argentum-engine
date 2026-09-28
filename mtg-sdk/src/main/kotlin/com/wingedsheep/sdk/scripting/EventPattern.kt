@@ -2191,7 +2191,10 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * permanent this turn (per CR intervening-if "if it's the first time counters have been
          * put on that creature this turn", e.g. Stalwart Successor). Matched against the engine
          * event's own "first counters this turn" flag, mirroring how Valiant uses
-         * `firstTimeEachTurn` on [BecomesTargetEvent].
+         * `firstTimeEachTurn` on [BecomesTargetEvent]. The window is scoped like the trigger: with
+         * a null [counterType] it is any kind; with one it is that kind only ("the first time
+         * **+1/+1** counters have been put on that permanent this turn" — Botanical Brawler), so a
+         * counter of another kind earlier in the turn doesn't close it.
          */
         val firstTimeEachTurn: Boolean = false,
         /**

@@ -53,13 +53,14 @@ class AddCountersToCollectionExecutor(
             )
 
             val firstThisTurn = DamageUtils.isFirstCounterThisTurn(currentState, entityId)
+            val firstOfTypeThisTurn = DamageUtils.isFirstCounterOfTypeThisTurn(currentState, entityId, counterType)
             currentState = currentState.updateEntity(entityId) { container ->
                 container.with(current.withAdded(counterType, modifiedCount))
             }
             currentState = DamageUtils.markCounterPlacedOnCreature(currentState, context.controllerId, entityId, counterType)
 
             val entityName = currentState.getEntity(entityId)?.get<CardComponent>()?.name ?: ""
-            events.add(CountersAddedEvent(entityId, effect.counterType, modifiedCount, entityName, firstThisTurn, placedBy = context.controllerId))
+            events.add(CountersAddedEvent(entityId, effect.counterType, modifiedCount, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = context.controllerId))
         }
 
         return EffectResult.success(currentState, events)

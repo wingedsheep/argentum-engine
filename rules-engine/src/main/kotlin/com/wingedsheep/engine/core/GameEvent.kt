@@ -1454,6 +1454,14 @@ data class CountersAddedEvent(
      */
     val firstThisTurn: Boolean = false,
     /**
+     * True when no [counterType] counter had been put on [entityId] yet this turn — the per-kind
+     * window behind a kind-scoped "if it's the first time **+1/+1** counters have been put on that
+     * permanent this turn" (Botanical Brawler), which an earlier counter of another kind does not
+     * close. Unlike [firstThisTurn] it is not creature-only. Read before the placement is marked;
+     * defaults to false for emitters that don't track it.
+     */
+    val firstOfTypeThisTurn: Boolean = false,
+    /**
      * The player who *put* these counters, per CR 122.6a — the controller of the effect that
      * placed them, that permanent's controller (for a permanent entering with counters), the mover's
      * controller (CR 122.5: moving a counter "puts" it on the destination), or the damage source's

@@ -485,6 +485,7 @@ class SacrificeAndPayContinuationResumer(
                 predicateEvaluator = services.predicateEvaluator
             )
             val firstThisTurn = DamageUtils.isFirstCounterThisTurn(newState, permanentId)
+            val firstOfTypeThisTurn = DamageUtils.isFirstCounterOfTypeThisTurn(newState, permanentId, counterType)
             newState = newState.updateEntity(permanentId) { c ->
                 c.with(counters.withAdded(counterType, modifiedCount))
             }.let {
@@ -496,7 +497,7 @@ class SacrificeAndPayContinuationResumer(
                     counterType,
                     modifiedCount,
                     container.get<CardComponent>()?.name ?: "Permanent",
-                    firstThisTurn,
+                    firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn,
                     placedBy = placerId,
                 )
             )

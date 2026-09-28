@@ -193,7 +193,7 @@ class ExploreEffectExecutor(
         // Record the kind and the placer, not just a bare marker: the exploring player is the one
         // putting the counter on, so "each creature you control that you've put one or more +1/+1
         // counters on this turn" (Kid Loki) covers a creature you made explore.
-        val (newState, firstThisTurn) =
+        val (newState, firstThisTurn, firstOfTypeThisTurn) =
             com.wingedsheep.engine.handlers.effects.DamageUtils.recordCounterPlacement(
                 updated,
                 creatureId,
@@ -207,7 +207,7 @@ class ExploreEffectExecutor(
                 CounterType.PLUS_ONE_PLUS_ONE,
                 count,
                 name,
-                firstThisTurn,
+                firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn,
                 placedBy = context.controllerId,
             )
         )

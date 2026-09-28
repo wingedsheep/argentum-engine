@@ -73,11 +73,11 @@ object EntersWithReplacements {
                 if (count <= 0) return state to events
                 val current = state.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
                 var newState = state.updateEntity(entityId) { c -> c.with(current.withAdded(counterType, count)) }
-                val (afterMark, firstThisTurn) = DamageUtils.recordCounterPlacement(
+                val (afterMark, firstThisTurn, firstOfTypeThisTurn) = DamageUtils.recordCounterPlacement(
                     newState, entityId, counterType, byController = true
                 )
                 newState = afterMark
-                events.add(CountersAddedEvent(entityId, CounterType.PLUS_ONE_PLUS_ONE, count, entityName, firstThisTurn, placedBy = controllerId))
+                events.add(CountersAddedEvent(entityId, CounterType.PLUS_ONE_PLUS_ONE, count, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = controllerId))
                 newState to events
             }
             com.wingedsheep.sdk.dsl.RIOT_MODE_HASTE -> {
@@ -257,13 +257,13 @@ object EntersWithReplacements {
         // CR 122.6a — the entering object's controller is the one putting these counters on, so the
         // marker records both axes and a "you've put +1/+1 counters on it this turn" filter (Kid
         // Loki) sees a creature that *entered* with them.
-        val (afterMark, firstThisTurn) = DamageUtils.recordCounterPlacement(
+        val (afterMark, firstThisTurn, firstOfTypeThisTurn) = DamageUtils.recordCounterPlacement(
             newState, entityId, counterType, byController = true
         )
         newState = afterMark
         return newState to listOf(
             CountersAddedEvent(
-                entityId, counterType, modifiedCount, entityName, firstThisTurn,
+                entityId, counterType, modifiedCount, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn,
                 placedBy = controllerId
             )
         )
@@ -361,11 +361,11 @@ object EntersWithReplacements {
                         newState = newState.updateEntity(enteringEntityId) { c ->
                             c.with(current.withAdded(counterType, modifiedCount))
                         }
-                        val (afterMark, firstThisTurn) = DamageUtils.recordCounterPlacement(
+                        val (afterMark, firstThisTurn, firstOfTypeThisTurn) = DamageUtils.recordCounterPlacement(
                             newState, enteringEntityId, counterType, byController = true
                         )
                         newState = afterMark
-                        events.add(CountersAddedEvent(enteringEntityId, counterType, modifiedCount, entityName, firstThisTurn, placedBy = enteringControllerId))
+                        events.add(CountersAddedEvent(enteringEntityId, counterType, modifiedCount, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = enteringControllerId))
                     }
                     is EntersWithDynamicCounters -> {
                         if (!effect.otherOnly) continue
@@ -394,11 +394,11 @@ object EntersWithReplacements {
                             newState = newState.updateEntity(enteringEntityId) { c ->
                                 c.with(current.withAdded(counterType, modifiedCount))
                             }
-                            val (afterMark, firstThisTurn) = DamageUtils.recordCounterPlacement(
+                            val (afterMark, firstThisTurn, firstOfTypeThisTurn) = DamageUtils.recordCounterPlacement(
                                 newState, enteringEntityId, counterType, byController = true
                             )
                             newState = afterMark
-                            events.add(CountersAddedEvent(enteringEntityId, counterType, modifiedCount, entityName, firstThisTurn, placedBy = enteringControllerId))
+                            events.add(CountersAddedEvent(enteringEntityId, counterType, modifiedCount, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = enteringControllerId))
                         }
                     }
                     is EntersWithKeywords -> {

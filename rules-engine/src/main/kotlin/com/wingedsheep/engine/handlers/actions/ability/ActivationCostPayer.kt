@@ -256,14 +256,14 @@ internal class ActivationCostPayer(
             // planeswalker" (Inspired Tethermage) and any-kind counter triggers see it. It is a
             // cost, not an effect, so counter-placement replacements (Doubling Season) don't
             // apply — CostHandler already added exactly `change` counters.
-            val (marked, firstThisTurn) = com.wingedsheep.engine.handlers.effects.DamageUtils.recordCounterPlacement(
+            val (marked, firstThisTurn, firstOfTypeThisTurn) = com.wingedsheep.engine.handlers.effects.DamageUtils.recordCounterPlacement(
                 currentState, action.sourceId, CounterType.LOYALTY, placerId = action.playerId
             )
             currentState = marked
             events.add(
                 com.wingedsheep.engine.core.CountersAddedEvent(
                     action.sourceId, CounterType.LOYALTY, abilityCost.change, activation.sourceName,
-                    firstThisTurn, placedBy = action.playerId
+                    firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = action.playerId
                 )
             )
         } else if (abilityCost is AbilityCost.Loyalty) {
