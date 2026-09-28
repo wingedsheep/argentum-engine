@@ -1,3 +1,70 @@
+// Abyssal Nightstalker
+{
+    "name": "Abyssal Nightstalker",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Nightstalker",
+    "oracleText": "Whenever this creature attacks and isn't blocked, defending player discards a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Abyssal Nightstalker:1",
+                "trigger": "BecomesUnblockedEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "DefendingPlayer"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "DefendingPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "DefendingPlayer"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Wood",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b688039-7441-490b-ad06-8a72086c4023.jpg?1783946481"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Alaborn Cavalier
 {
     "name": "Alaborn Cavalier",
@@ -168,6 +235,59 @@
         "rarity": "RARE",
         "artist": "Henry Van Der Linde",
         "imageUri": "https://cards.scryfall.io/normal/front/7/9/79d7992d-9acd-4eaa-b6e0-a47acb880548.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Alaborn Zealot
+{
+    "name": "Alaborn Zealot",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature blocks a creature, destroy both creatures.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Alaborn Zealot:1",
+                "trigger": {
+                    "type": "BlockEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": "TriggeringEntity",
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "UNCOMMON",
+        "artist": "David Horne",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5eba273-0b83-42a7-b8b0-9e0cd6a7aa6f.jpg?1783946495"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -526,6 +646,47 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Bloodcurdling Scream
+{
+    "name": "Bloodcurdling Scream",
+    "manaCost": "{X}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gets +X/+0 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": "XValue",
+            "toughnessModifier": {
+                "type": "Fixed",
+                "amount": 0
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Frazier",
+        "flavorText": "\"I have all the weapons my enemies have—and far deeper rage.\"\n—Tojira, swamp queen",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dcb0ec62-6d6f-4d10-bc2d-37f25495f884.jpg?1783946477"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -924,6 +1085,32 @@
     ]
 }
 
+// Deathcoil Wurm
+{
+    "name": "Deathcoil Wurm",
+    "manaCost": "{6}{G}{G}",
+    "typeLine": "Creature — Wurm",
+    "oracleText": "You may have this creature assign its combat damage as though it weren't blocked.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 6
+    },
+    "script": {
+        "staticAbilities": [
+            "AssignCombatDamageAsUnblocked"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "RARE",
+        "artist": "Rebecca Guay",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c17e3b5-d609-4289-9b74-5ac96ab4ccfa.jpg?1783946457"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Denizen of the Deep
 {
     "name": "Denizen of the Deep",
@@ -1259,6 +1446,72 @@
     ]
 }
 
+// Goblin Lore
+{
+    "name": "Goblin Lore",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw four cards, then discard three cards at random.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeSelected": "discarded"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "UNCOMMON",
+        "artist": "D. Alexander Gregory",
+        "flavorText": "\"I done forgot more than you'll ever know, pipsqueak.\"\n\"Yeah—that's your problem.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f26f34db-732c-43d4-a6ef-e170538c0235.jpg?1783946465"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Goblin Matron
 {
     "name": "Goblin Matron",
@@ -1433,6 +1686,61 @@
     ]
 }
 
+// Harmony of Nature
+{
+    "name": "Harmony of Nature",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Tap any number of untapped creatures you control. You gain 4 life for each creature tapped this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "filter": "creature untapped ctrl:you"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected1",
+                    "prompt": "Tap any number of untapped creatures you control",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "TapUntapCollection",
+                    "collectionName": "selected1"
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "VariableReference",
+                            "variableName": "selected1_count"
+                        },
+                        "multiplier": 4
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "Kaja Foglio",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3fa08d9-d41b-4696-b81a-42c8eebdeb49.jpg?1783946457"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ironhoof Ox
 {
     "name": "Ironhoof Ox",
@@ -1460,6 +1768,50 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Jagged Lightning
+{
+    "name": "Jagged Lightning",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Jagged Lightning deals 3 damage to each of two target creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "UNCOMMON",
+        "artist": "Michael Weaver",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/148e6704-9cf0-45cf-9bab-db318c016593.jpg?1783946462"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1556,6 +1908,32 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Lone Wolf
+{
+    "name": "Lone Wolf",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "You may have this creature assign its combat damage as though it weren't blocked.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            "AssignCombatDamageAsUnblocked"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "UNCOMMON",
+        "artist": "Michael Weaver",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7ff4d831-7388-4321-a636-79cf7bde25bb.jpg?1783946454"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2154,6 +2532,72 @@
     ]
 }
 
+// Rain of Daggers
+{
+    "name": "Rain of Daggers",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all creatures target opponent controls. You lose 2 life for each creature destroyed this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature ctrl:target-opponent"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy",
+                            "storeMovedAs": "stored0"
+                        }
+                    ]
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "VariableReference",
+                            "variableName": "stored0_count"
+                        },
+                        "multiplier": 2
+                    },
+                    "target": "Controller"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "RARE",
+        "artist": "Melissa A. Benson",
+        "flavorText": "Knives in the sky, cries in the air, and blood on the ground.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb09a5bb-9730-43cd-8dea-3842634c9983.jpg?1783946470"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Rally the Troops
 {
     "name": "Rally the Troops",
@@ -2364,6 +2808,56 @@
     ]
 }
 
+// Renewing Touch
+{
+    "name": "Renewing Touch",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Shuffle any number of target creature cards from your graveyard into your library.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Shuffled"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "UNCOMMON",
+        "artist": "Rebecca Guay",
+        "flavorText": "Death just encourages life the more.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b63ec869-f933-4b27-9f0b-b583e71a1110.jpg?1783946450"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Righteous Charge
 {
     "name": "Righteous Charge",
@@ -2404,6 +2898,64 @@
     ]
 }
 
+// Righteous Fury
+{
+    "name": "Righteous Fury",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all tapped creatures. You gain 2 life for each creature destroyed this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature tapped"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy",
+                            "storeMovedAs": "stored0"
+                        }
+                    ]
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "VariableReference",
+                            "variableName": "stored0_count"
+                        },
+                        "multiplier": 2
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "RARE",
+        "artist": "Edward P. Beard, Jr.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c408f43e-9092-440d-a15f-bef4ad58bcc6.jpg?1783946490"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // River Bear
 {
     "name": "River Bear",
@@ -2423,6 +2975,44 @@
         "artist": "Una Fricker",
         "flavorText": "The bears had been isolated on an island for hundreds of years, until the island sank and the bears didn't.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/8/b8508e3b-a934-4795-a2df-07e792f2685f.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Salvage
+{
+    "name": "Salvage",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put target card from your graveyard on top of your library.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Library",
+            "placement": "Top"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "artist": "Keith Parkinson",
+        "flavorText": "\"What was taken shall be restored.\"\n—Arathel, elvish queen",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f3012e10-566b-447c-bb0a-dfc38c8e0fdf.jpg?1783946448"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -3080,6 +3670,26 @@
     ]
 }
 
+// Temporal Manipulation
+{
+    "name": "Temporal Manipulation",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Take an extra turn after this one.",
+    "script": {
+        "spellEffect": "TakeExtraTurn"
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "RARE",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3964160-79d6-4cdd-8b43-7a8f5dde9da7.jpg?1783946483"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Town Sentry
 {
     "name": "Town Sentry",
@@ -3374,5 +3984,46 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Wind Sail
+{
+    "name": "Wind Sail",
+    "manaCost": "{1}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "One or two target creatures gain flying until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "GrantKeyword",
+                "keyword": "FLYING",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "Matt Stawicki",
+        "flavorText": "It pays to be at home both on the sea *and* in the sky.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17ef39fd-96d0-4a02-97d5-580d121b92a3.jpg?1783946480"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
