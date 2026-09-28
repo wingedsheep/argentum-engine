@@ -2515,6 +2515,61 @@
     ]
 }
 
+// Essence of Orthodoxy
+{
+    "name": "Essence of Orthodoxy",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Phyrexian",
+    "oracleText": "Flying\nWhenever this creature or another Phyrexian you control enters, incubate 2. (Create an Incubator token with two +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Essence of Orthodoxy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Phyrexian ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "323",
+        "rarity": "RARE",
+        "artist": "Oriana Menendez",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/604233dc-0520-47d0-8d3d-816f45c9f087.jpg?1783916907"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Furnace Host Charger
 {
     "name": "Furnace Host Charger",
@@ -2889,6 +2944,133 @@
     "colorIdentityOverride": [
         "WHITE",
         "RED"
+    ]
+}
+
+// Heliod, the Radiant Dawn
+{
+    "name": "Heliod, the Radiant Dawn",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Enchantment Creature — God",
+    "oracleText": "When Heliod enters, return target enchantment card that isn't a God from your graveyard to your hand.\n{3}{U/P}: Transform Heliod. Activate only as a sorcery. ({U/P} can be paid with either {U} or 2 life.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Heliod, the Radiant Dawn:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsEnchantment",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "God"
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Heliod, the Radiant Dawn:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{U/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform Heliod."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Heliod, the Warped Eclipse",
+        "manaCost": "",
+        "typeLine": "Legendary Enchantment Creature — Phyrexian God",
+        "oracleText": "You may cast spells as though they had flash.\nSpells you cast cost {1} less to cast for each card your opponents have drawn this turn.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 6
+        },
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "GrantFlashToSpellType",
+                    "filter": {},
+                    "controllerOnly": true
+                },
+                {
+                    "type": "ModifySpellCost",
+                    "target": {
+                        "type": "YouCast",
+                        "filter": {}
+                    },
+                    "modification": {
+                        "type": "ReduceGenericBy",
+                        "source": {
+                            "type": "Dynamic",
+                            "amount": {
+                                "type": "TurnTracking",
+                                "player": "EachOpponent",
+                                "tracker": "CARDS_DRAWN"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "17",
+            "rarity": "RARE",
+            "artist": "Victor Adame Minguez",
+            "flavorText": "\"*Compleat* the god, *compleat* the plane.\"\n—Ajani Goldmane",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/7/a7113c93-6c6d-410f-aeec-abc5ee121cdf.jpg?1783917074"
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"*Compleat* the faith, *compleat* the god.\"\n—Ajani Goldmane",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7113c93-6c6d-410f-aeec-abc5ee121cdf.jpg?1783917074"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -4171,6 +4353,208 @@
     "startingDefense": 4,
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Invasion of Gobakhan
+{
+    "name": "Invasion of Gobakhan",
+    "manaCost": "{1}{W}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, look at target opponent's hand. You may exile a nonland card from it. For as long as that card remains exiled, its owner may play it. A spell cast this way costs {2} more to cast.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Gobakhan:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LookAtTargetHand",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "player": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "filter": "nonland",
+                                    "storeSelected": "selected1",
+                                    "prompt": "You may exile a nonland card from target opponent's hand",
+                                    "showAllCards": true,
+                                    "alwaysPrompt": true
+                                },
+                                {
+                                    "type": "ConditionalOnCollection",
+                                    "collection": "selected1",
+                                    "ifNotEmpty": {
+                                        "type": "ExileAndGrantOwnerPlayPermission",
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "selected1"
+                                        },
+                                        "opponentCostIncrease": 2
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this Siege enters, look at target opponent's hand. You may exile a nonland card from it. For as long as that card remains exiled, its owner may play it. A spell cast this way costs {2} more to cast."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Lightshield Array",
+        "manaCost": "",
+        "typeLine": "Enchantment",
+        "oracleText": "At the beginning of your end step, put a +1/+1 counter on each creature that attacked this turn.\nSacrifice this enchantment: Creatures you control gain hexproof and indestructible until end of turn.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Lightshield Array:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "END"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "AttackedThisTurn"
+                                    ]
+                                }
+                            }
+                        },
+                        "body": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "descriptionOverride": "At the beginning of your end step, put a +1/+1 counter on each creature that attacked this turn."
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "Lightshield Array:2",
+                    "cost": "CostSacrificeSelf",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "HEXPROOF",
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "INDESTRUCTIBLE",
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Sacrifice this enchantment: Creatures you control gain hexproof and indestructible until end of turn."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "22",
+            "rarity": "RARE",
+            "artist": "Andreas Zafiratos",
+            "flavorText": "The weight of Phyrexia crashed down upon Gobakhan, but the will of its people endured.",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.jpg?1783917064",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "The set of creatures affected by Lightshield Array's last ability is determined as the ability resolves. Creatures you begin to control later in the turn and noncreature permanents that become creatures later in the turn won't gain hexproof and indestructible."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "RARE",
+        "artist": "Andreas Zafiratos",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.jpg?1783917064",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Playing the exiled card follows all normal timing restrictions."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If the exiled card is a modal double-faced card and its back face is a land, its owner may play it as a land. (Note that if the front face is also a land, you couldn't have exiled it to begin with.)"
+            }
+        ]
+    },
+    "startingDefense": 3,
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -5696,6 +6080,61 @@
     ]
 }
 
+// Phyrexian Awakening
+{
+    "name": "Phyrexian Awakening",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, incubate 4. (Create an Incubator token with four +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)\nPhyrexians you control have vigilance.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Phyrexian Awakening:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 4,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "permanent Phyrexian ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "UNCOMMON",
+        "artist": "Artur Nakhodkin",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b9ed068-b6bb-4c9e-a8c9-56aa9b62037a.jpg?1783917056"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Phyrexian Censor
 {
     "name": "Phyrexian Censor",
@@ -5969,6 +6408,83 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Progenitor Exarch
+{
+    "name": "Progenitor Exarch",
+    "manaCost": "{X}{X}{W}",
+    "typeLine": "Creature — Phyrexian Cat Cleric",
+    "oracleText": "When this creature enters, incubate 3 X times. (To incubate 3, create an Incubator token with three +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)\n{T}: Transform target Incubator token you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Progenitor Exarch:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "RepeatDynamicTimes",
+                    "amount": "CastX",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Incubator"
+                            },
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 3,
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "createdTokens"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When this creature enters, incubate 3 X times."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Progenitor Exarch:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Transform",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Incubator token ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "RARE",
+        "artist": "Marie Magny",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f86f7d03-ce71-498d-9dc5-2bd853ac0eae.jpg?1783917051"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6601,6 +7117,59 @@
     ]
 }
 
+// Realmbreaker's Grasp
+{
+    "name": "Realmbreaker's Grasp",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact or creature\nEnchanted permanent can't attack or block, and its activated abilities can't be activated unless they're mana abilities.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                },
+                "nonManaAbilitiesOnly": true
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "artist": "Artur Nakhodkin",
+        "flavorText": "The Invasion Tree wasn't merely a conduit through which to breach planes. It was a living, writhing extension of Phyrexia's will.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67a41675-47dd-40ca-a30c-0fd0faa32b76.jpg?1783917053"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Referee Squad
 {
     "name": "Referee Squad",
@@ -6718,6 +7287,143 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Scrollshift
+{
+    "name": "Scrollshift",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile up to one target artifact, creature, or enchantment you control, then return it to the battlefield under its owner's control.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "artifact|creature|enchantment ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Bram Sels",
+        "flavorText": "Bim lashed out with the only weapon she'd never run out of: lecture notes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6fc278d1-2ea4-4fbc-95cd-a9cd48c3c630.jpg?1783917051"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Seal from Existence
+{
+    "name": "Seal from Existence",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Ward {3} (Whenever this enchantment becomes the target of a spell or ability an opponent controls, counter it unless that player pays {3}.)\nWhen this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.",
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{3}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Seal from Existence:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Seal from Existence:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Anato Finnstark",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2ccc29cc-025d-402e-9fe3-75998eb290c9.jpg?1783917049"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6898,6 +7604,82 @@
     ]
 }
 
+// Sigiled Sentinel
+{
+    "name": "Sigiled Sentinel",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)\nVigilance",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sigiled Sentinel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"Alara has been broken before. I will not let it break again.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f65b178-51d6-4dcb-a1cc-4b4dcb2237cd.jpg?1783917048"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Sun-Blessed Guardian
 {
     "name": "Sun-Blessed Guardian",
@@ -6995,6 +7777,361 @@
         "WHITE",
         "RED"
     ]
+}
+
+// Sunder the Gateway
+{
+    "name": "Sunder the Gateway",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Destroy target nontoken artifact or enchantment an opponent controls. Incubate 2. (Create an Incubator token with two +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)\n• Incubate 2, then transform an Incubator token you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "CreatePredefinedToken",
+                                        "tokenType": "Incubator"
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 2,
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "createdTokens"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact|enchantment nontoken ctrl:opponent"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Destroy target nontoken artifact or enchantment an opponent controls. Incubate 2"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Incubator"
+                            },
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 2,
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "createdTokens"
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "BattlefieldMatching",
+                                            "filter": "permanent Incubator token",
+                                            "player": "You"
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected1",
+                                        "prompt": "Choose an Incubator token you control to transform",
+                                        "useTargetingUI": true
+                                    },
+                                    {
+                                        "type": "ConditionalOnCollection",
+                                        "collection": "selected1",
+                                        "ifNotEmpty": {
+                                            "type": "Transform",
+                                            "target": {
+                                                "type": "PipelineTarget",
+                                                "collectionName": "selected1"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "description": "Incubate 2, then transform an Incubator token you control"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/194ad785-21bb-4ce6-8776-31c67259fb99.jpg?1783917049",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "For the first mode, if the nontoken artifact or enchantment is an illegal target at the time Sunder the Gateway tries to resolve, it won't resolve and none of its effects will happen. You won't incubate."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "For the second mode, the Incubator token is chosen as Sunder the Gateway resolves. You can transform the Incubator token you just created or one you already controlled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Sunfall
+{
+    "name": "Sunfall",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile all creatures. Incubate X, where X is the number of creatures exiled this way. (Create an Incubator token with X +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Battlefield",
+                        "player": "Each",
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "moved1_count"
+                            },
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "RARE",
+        "artist": "Kasia 'Kafis' Zielińska",
+        "flavorText": "\"Let the light scour away your imperfect flesh.\"\n—Heliod",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32e29c7d-ed4b-4eff-b3c2-d99e5b63ef8d.jpg?1783917046",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "If Sunfall resolves but doesn't exile any creatures, you'll incubate 0, creating an Incubator token but putting no +1/+1 counters on it. It will still have the ability to transform, but you might need to figure out how it's going to survive first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Surge of Salvation
+{
+    "name": "Surge of Salvation",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "You and permanents you control gain hexproof until end of turn. Prevent all damage that black and/or red sources would deal to creatures you control this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantEvasionKeyword",
+                    "keyword": "HEXPROOF"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "HEXPROOF",
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "PreventDamageShield",
+                    "recipientGroup": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "sourceFilter": {
+                        "type": "PreventFromMatching",
+                        "filter": "black|red"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "UNCOMMON",
+        "artist": "Dominik Mayer",
+        "flavorText": "No Meletian had ever laid eyes on an angel, but when protective Halo flooded the Multiverse, they knew a divine blessing was at hand.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41d25ee5-0348-4206-bb6a-ccb0a599ac87.jpg?1783917047",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "The set of permanents that gain hexproof is determined as Surge of Salvation resolves. Permanents you begin to control later in the turn won't gain hexproof. However, the damage prevention effect will apply to all creatures you control throughout the turn, even if you didn't control them (or they weren't creatures) as Surge of Salvation resolved."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Swordsworn Cavalier
+{
+    "name": "Swordsworn Cavalier",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "This creature has first strike as long as another Knight entered the battlefield under your control this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Not",
+                                    "condition": {
+                                        "type": "EntityMatches",
+                                        "entity": "Self",
+                                        "filter": {
+                                            "statePredicates": [
+                                                "EnteredThisTurn"
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "SubtypeEnteredUnderControlThisTurn",
+                                        "player": "You",
+                                        "subtypes": [
+                                            "Knight"
+                                        ]
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "SubtypeEnteredUnderControlThisTurn",
+                                "player": "You",
+                                "subtypes": [
+                                    "Knight"
+                                ]
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "artist": "Stella Spente",
+        "flavorText": "The Royal Knights of Belenon are equally practiced in courtesy and combat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa0461fc-4298-45b9-90a0-939093cf2544.jpg?1783917046"
+    }
 }
 
 // Tarkir Duneshaper
@@ -7141,6 +8278,69 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Tiller of Flesh
+{
+    "name": "Tiller of Flesh",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Phyrexian Knight",
+    "oracleText": "Whenever you cast a spell that targets one or more permanents, incubate 2. (Create an Incubator token with two +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tiller of Flesh:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        {
+                            "type": "SpellTargetsMatching",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsPermanent"
+                                ],
+                                "statePredicates": [
+                                    "IsOnBattlefield"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "UNCOMMON",
+        "artist": "Nino Vecia",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49e206f2-1647-4456-8f2f-b67d053413e2.jpg?1783917044"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
