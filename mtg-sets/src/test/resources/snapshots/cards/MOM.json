@@ -2175,6 +2175,70 @@
     ]
 }
 
+// Burning Sun's Fury
+{
+    "name": "Burning Sun's Fury",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nUp to two target creatures each get +2/+0 and gain haste until end of turn.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "HASTE",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "minCount": 0,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "artist": "Slawomir Maniak",
+        "flavorText": "Ixalan greeted Phyrexia with a defiant roar.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/2731e181-f59c-446c-bb86-8f93bfbb10e9.jpg?1783916997"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Captive Weird
 {
     "name": "Captive Weird",
@@ -4403,6 +4467,83 @@
     ]
 }
 
+// Fearless Skald
+{
+    "name": "Fearless Skald",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Dwarf Berserker",
+    "oracleText": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)\nDouble strike",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fearless Skald:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "DOUBLE_STRIKE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"Hold nothing back, my friends. Tonight we feast in Starnheim!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e317d1d-3f20-4f0d-8b1e-31df351e8f83.jpg?1783916992"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Final Flourish
 {
     "name": "Final Flourish",
@@ -4480,6 +4621,176 @@
     ]
 }
 
+// Flitting Guerrilla
+{
+    "name": "Flitting Guerrilla",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Faerie Rogue",
+    "oracleText": "Flying\nWhen this creature dies, each player mills two cards. Then you may exile this card. When you do, put target creature or battle card from your graveyard on top of your library. (To mill two cards, a player puts the top two cards of their library into their graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flitting Guerrilla:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": "Each",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            }
+                        },
+                        {
+                            "type": "ReflexiveTrigger",
+                            "action": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Exile",
+                                "fromZone": "Graveyard"
+                            },
+                            "reflexiveEffect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Library",
+                                "placement": "Top"
+                            },
+                            "reflexiveTargetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature|battle own:you",
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "descriptionOverride": "You may exile this card. When you do, put target creature or battle card from your graveyard on top of your library."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Francisco Miyara",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/9184bc57-0a16-4abf-a13a-6a03a175c28a.jpg?1783917010"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Furnace Gremlin
+{
+    "name": "Furnace Gremlin",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Phyrexian Gremlin",
+    "oracleText": "{1}{R}: This creature gets +1/+0 until end of turn.\nWhen this creature dies, incubate X, where X is its power. (Create an Incubator token with X +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Furnace Gremlin:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            },
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Furnace Gremlin:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "UNCOMMON",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/445b3315-6587-4d57-ab7e-faab1eec0241.jpg?1783916992"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Furnace Host Charger
 {
     "name": "Furnace Host Charger",
@@ -4513,6 +4824,95 @@
         "artist": "Andreas Zafiratos",
         "flavorText": "With barely a moment's warning, a one-giant avalanche crashed into Kaldheim's defenders.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d142ded-a2df-41b0-9c02-056b5f34abab.jpg?1783916991"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Furnace Reins
+{
+    "name": "Furnace Reins",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap that creature. Until end of turn, it gains haste and \"Whenever this creature deals combat damage to a player or battle, create a Treasure token.\" (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Furnace Reins:1",
+                        "trigger": {
+                            "type": "DealsDamageEvent",
+                            "damageType": "DamageCombat",
+                            "recipient": {
+                                "type": "RecipientAnyOf",
+                                "options": [
+                                    {
+                                        "type": "RecipientPlayer",
+                                        "player": "Any"
+                                    },
+                                    {
+                                        "type": "RecipientObject",
+                                        "filter": "battle"
+                                    }
+                                ]
+                            }
+                        },
+                        "effect": {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Treasure"
+                        },
+                        "descriptionOverride": "Whenever this creature deals combat damage to a player or battle, create a Treasure token."
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Valeza",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e91bfea6-0e80-4239-bede-7cb971e64c1a.jpg?1783916991"
     },
     "colorIdentityOverride": [
         "RED"
@@ -5033,6 +5433,177 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Hangar Scrounger
+{
+    "name": "Hangar Scrounger",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Dwarf Pilot",
+    "oracleText": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)\nWhenever this creature becomes tapped, you may discard a card. If you do, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hangar Scrounger:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "Hangar Scrounger:1",
+                                    "trigger": "TapEvent",
+                                    "effect": {
+                                        "type": "Gated",
+                                        "gate": "Gate.MayDecide",
+                                        "then": {
+                                            "type": "Composite",
+                                            "effects": [
+                                                {
+                                                    "type": "GatherCards",
+                                                    "source": {
+                                                        "type": "FromZone",
+                                                        "zone": "Hand"
+                                                    },
+                                                    "storeAs": "hand"
+                                                },
+                                                {
+                                                    "type": "SelectFromCollection",
+                                                    "from": "hand",
+                                                    "selection": {
+                                                        "type": "ChooseExactly",
+                                                        "count": {
+                                                            "type": "Fixed",
+                                                            "amount": 1
+                                                        }
+                                                    },
+                                                    "storeSelected": "discarded",
+                                                    "prompt": "Choose 1 card to discard"
+                                                },
+                                                {
+                                                    "type": "MoveCollection",
+                                                    "from": "discarded",
+                                                    "destination": {
+                                                        "type": "ToZone",
+                                                        "zone": "Graveyard"
+                                                    },
+                                                    "moveType": "Discard"
+                                                },
+                                                {
+                                                    "type": "DrawCards",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)"
+            },
+            {
+                "id": "Hangar Scrounger:3",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose 1 card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "artist": "Borja Pindado",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2551b01-4d88-47f3-b54d-96ec03e093f8.jpg?1783916991"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5611,6 +6182,99 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Into the Fire
+{
+    "name": "Into the Fire",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Into the Fire deals 2 damage to each creature, planeswalker, and battle.\n• Put any number of cards from your hand on the bottom of your library, then draw that many cards plus one.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature|planeswalker|battle"
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Into the Fire deals 2 damage to each creature, planeswalker, and battle"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "selected1"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Bottom"
+                                },
+                                "order": "ControllerChooses"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Add",
+                                    "left": {
+                                        "type": "DistinctEntitiesInCollections",
+                                        "collections": [
+                                            "selected1"
+                                        ]
+                                    },
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Put any number of cards from your hand on the bottom of your library, then draw that many cards plus one"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "RARE",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "The rest of the Gatewatch retreated. Chandra and Wrenn went in blazing.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b36eeb4-9967-46aa-931c-fceed59fe49a.jpg?1783916711"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -7698,6 +8362,150 @@
     "colorIdentityOverride": []
 }
 
+// Invasion of Regatha
+{
+    "name": "Invasion of Regatha",
+    "manaCost": "{2}{R}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, it deals 4 damage to another target battle or opponent and 1 damage to up to one target creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Regatha:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOther",
+                    "baseRequirement": {
+                        "type": "TargetPermanentOrPlayer",
+                        "permanentFilter": {
+                            "baseFilter": "battle"
+                        },
+                        "opponentsOnly": true
+                    },
+                    "id": "t0"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "When this Siege enters, it deals 4 damage to another target battle or opponent and 1 damage to up to one target creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Disciples of the Inferno",
+        "manaCost": "",
+        "typeLine": "Creature — Human Monk",
+        "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nIf a noncreature source you control would deal damage to a creature, battle, or opponent, it deals that much damage plus 2 instead.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "PROWESS"
+        ],
+        "script": {
+            "replacementEffects": [
+                {
+                    "type": "ModifyDamageAmount",
+                    "modifier": 2,
+                    "appliesTo": {
+                        "type": "DamageEvent",
+                        "recipient": {
+                            "type": "RecipientAnyOf",
+                            "options": [
+                                {
+                                    "type": "RecipientObject",
+                                    "filter": "creature"
+                                },
+                                {
+                                    "type": "RecipientObject",
+                                    "filter": "battle"
+                                },
+                                {
+                                    "type": "RecipientPlayer",
+                                    "player": "EachOpponent"
+                                }
+                            ]
+                        },
+                        "source": {
+                            "cardPredicates": [
+                                "IsNoncreature"
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "148",
+            "rarity": "UNCOMMON",
+            "artist": "Daarken",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/d/ada79e04-bb69-4c92-a829-014f02b1e06a.jpg?1783916994",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "The additional 2 damage is dealt by the same source as the original source of damage. The damage isn't dealt by Disciples of the Inferno."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ada79e04-bb69-4c92-a829-014f02b1e06a.jpg?1783916994"
+    },
+    "startingDefense": 5,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Invasion of Segovia
 {
     "name": "Invasion of Segovia",
@@ -8000,6 +8808,167 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Khenra Spellspear
+{
+    "name": "Khenra Spellspear",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Jackal Warrior",
+    "oracleText": "Trample\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\n{3}{U/P}: Transform this creature. Activate only as a sorcery. ({U/P} can be paid with either {U} or 2 life.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE",
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Khenra Spellspear:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Khenra Spellspear:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{U/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Gitaxian Spellstalker",
+        "manaCost": "",
+        "typeLine": "Creature — Phyrexian Jackal",
+        "oracleText": "Trample, ward {2}, prowess, prowess (Each instance of prowess triggers separately.)",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "keywords": [
+            "TRAMPLE",
+            "PROWESS",
+            "WARD"
+        ],
+        "keywordAbilities": [
+            {
+                "type": "Ward",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{2}"
+                }
+            }
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Gitaxian Spellstalker:1",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                "IsNoncreature"
+                            ]
+                        }
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                },
+                {
+                    "id": "Gitaxian Spellstalker:2",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                "IsNoncreature"
+                            ]
+                        }
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "151",
+            "rarity": "UNCOMMON",
+            "artist": "Artur Nakhodkin",
+            "flavorText": "\"Bolas's methods were crude and inefficient, taking generations to refine the population into a reliable source of combat units. Still, it offers us something of a head start.\"\n—Jin-Gitaxias",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/c/dc1454ce-bb49-4b4f-bbca-d77387fa4966.jpg?1783916992"
+        },
+        "colorIdentityOverride": [
+            "RED",
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE",
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "UNCOMMON",
+        "artist": "Artur Nakhodkin",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc1454ce-bb49-4b4f-bbca-d77387fa4966.jpg?1783916992"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "BLUE"
     ]
 }
 
@@ -8379,6 +9348,101 @@
     ]
 }
 
+// Nahiri's Warcrafting
+{
+    "name": "Nahiri's Warcrafting",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Nahiri's Warcrafting deals 5 damage to target creature, planeswalker, or battle. Look at the top X cards of your library, where X is the excess damage dealt this way. You may exile one of those cards. Put the rest on the bottom of your library in a random order. You may play the exiled card this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "excessDamageVariable": "storedNumber0"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "VariableReference",
+                            "variableName": "storedNumber0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "storeRemainder": "remainder2",
+                    "prompt": "You may exile one of those cards",
+                    "selectedLabel": "Exile",
+                    "remainderLabel": "Put on bottom of library"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "selected2"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker|battle"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "RARE",
+        "artist": "Zara Alfonso",
+        "flavorText": "\"Zendikar must be broken before it can be saved.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0453fea-3c88-4eb1-818a-9efa01986852.jpg?1783916985"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Nezumi Informant
 {
     "name": "Nezumi Informant",
@@ -8743,6 +9807,59 @@
         "BLACK",
         "RED",
         "GREEN"
+    ]
+}
+
+// Onakke Javelineer
+{
+    "name": "Onakke Javelineer",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Ogre Spirit",
+    "oracleText": "Reach\n{T}: This creature deals 2 damage to target player or battle.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Onakke Javelineer:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPermanentOrPlayer",
+                        "id": "t0",
+                        "permanentFilter": {
+                            "baseFilter": "battle"
+                        }
+                    }
+                ],
+                "descriptionOverride": "{T}: This creature deals 2 damage to target player or battle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "artist": "Joseph Weston",
+        "flavorText": "With the ways between worlds thrown open, the Chain Veil's foul magic seeped from a vault deep within Ravnica all the way to Shandalar's dormant masters.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e5446057-7330-40b9-a5d9-bad4876337cd.jpg?1783916985"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -9239,6 +10356,97 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Pyretic Prankster
+{
+    "name": "Pyretic Prankster",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "{3}{B/P}: Transform this creature. Activate only as a sorcery. ({B/P} can be paid with either {B} or 2 life.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pyretic Prankster:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{B/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Glistening Goremonger",
+        "manaCost": "",
+        "typeLine": "Creature — Phyrexian Devil",
+        "oracleText": "When this creature dies, each opponent sacrifices an artifact or creature of their choice.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 2
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Glistening Goremonger:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "effect": {
+                        "type": "ForceSacrifice",
+                        "filter": "artifact|creature",
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    },
+                    "descriptionOverride": "When this creature dies, each opponent sacrifices an artifact or creature of their choice."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "157",
+            "artist": "Francis Tneh",
+            "flavorText": "When it realized the symbol's true, glorious meaning, it began marking every surface on Innistrad with oil-soaked claws.",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/e/0ee40c4b-2ca3-4cda-bc9e-451455c17adc.jpg?1783916990"
+        },
+        "colorIdentityOverride": [
+            "BLACK",
+            "RED"
+        ],
+        "colorIndicator": [
+            "BLACK",
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "artist": "Francis Tneh",
+        "flavorText": "It'd played the same prank a hundred times, never noticing the flame's slowly evolving pattern.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0ee40c4b-2ca3-4cda-bc9e-451455c17adc.jpg?1783916990",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "If an opponent controls only artifacts and no creatures, or vice versa, they must sacrifice one. They can’t choose to sacrifice an artifact and then fail to do so while they control a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -10538,6 +11746,76 @@
     ]
 }
 
+// Shatter the Source
+{
+    "name": "Shatter the Source",
+    "manaCost": "{5}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nChoose one —\n• Shatter the Source deals 6 damage to target creature, planeswalker, or battle.\n• Destroy target artifact.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 6
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature|planeswalker|battle"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Shatter the Source deals 6 damage to target creature, planeswalker, or battle"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Destroy target artifact"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "artist": "Artur Nakhodkin",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/032720a1-410b-4638-9294-35fd8e27375f.jpg?1783916981"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Shivan Branch-Burner
 {
     "name": "Shivan Branch-Burner",
@@ -11773,6 +13051,99 @@
         "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff5f302e-d884-4995-ba3c-8c22f9045318.jpg?1783916934"
     },
     "colorIdentityOverride": []
+}
+
+// Volcanic Spite
+{
+    "name": "Volcanic Spite",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Volcanic Spite deals 3 damage to target creature, planeswalker, or battle. You may put a card from your hand on the bottom of your library. If you do, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "You may put a card from your hand on the bottom of your library"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Bottom"
+                                    },
+                                    "order": "ControllerChooses"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker|battle"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "artist": "Kevin Sidharta",
+        "flavorText": "None may approach the Ashen Idol without an offering—an edict fortuitously absent from Phyrexian intelligence concerning the world of Azgol.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69490262-afc2-4692-8fac-b771a972c8f8.jpg?1783916979"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // War Historian
