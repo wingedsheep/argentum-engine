@@ -67,6 +67,107 @@
     ]
 }
 
+// Aetherblade Agent
+{
+    "name": "Aetherblade Agent",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Deathtouch\n{4}{U/P}: Transform this creature. Activate only as a sorcery. ({U/P} can be paid with either {U} or 2 life.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Aetherblade Agent:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{U/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Gitaxian Mindstinger",
+        "manaCost": "",
+        "typeLine": "Creature — Phyrexian Rogue",
+        "oracleText": "Deathtouch\nWhenever this creature deals combat damage to a player or battle, draw a card.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "keywords": [
+            "DEATHTOUCH"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Gitaxian Mindstinger:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientAnyOf",
+                            "options": [
+                                {
+                                    "type": "RecipientPlayer",
+                                    "player": "Any"
+                                },
+                                {
+                                    "type": "RecipientObject",
+                                    "filter": "battle"
+                                }
+                            ]
+                        }
+                    },
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "88",
+            "artist": "Alexander Mokhov",
+            "flavorText": ". . . but the Chrome Host's methods were far more efficient.",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/a/dad34ae5-56b4-4394-be02-e043dc1cc23d.jpg?1783917023"
+        },
+        "colorIdentityOverride": [
+            "BLUE",
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLUE",
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "artist": "Alexander Mokhov",
+        "flavorText": "The Consulate of Kaladesh had always valued his particular talent for extracting information . . .",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/dad34ae5-56b4-4394-be02-e043dc1cc23d.jpg?1783917023"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Akki Scrapchomper
 {
     "name": "Akki Scrapchomper",
@@ -488,6 +589,166 @@
     "startingLoyalty": 4,
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Archpriest of Shadows
+{
+    "name": "Archpriest of Shadows",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Human Warlock",
+    "oracleText": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following abilities until end of turn.)\nDeathtouch\nWhenever this creature deals combat damage to a player or battle, return target creature card from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Archpriest of Shadows:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "DEATHTOUCH",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantTriggeredAbility",
+                                        "ability": {
+                                            "id": "Archpriest of Shadows:1",
+                                            "trigger": {
+                                                "type": "DealsDamageEvent",
+                                                "damageType": "DamageCombat",
+                                                "recipient": {
+                                                    "type": "RecipientAnyOf",
+                                                    "options": [
+                                                        {
+                                                            "type": "RecipientPlayer",
+                                                            "player": "Any"
+                                                        },
+                                                        {
+                                                            "type": "RecipientObject",
+                                                            "filter": "battle"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "effect": {
+                                                "type": "MoveToZone",
+                                                "target": {
+                                                    "type": "BoundVariable",
+                                                    "name": "t1"
+                                                },
+                                                "destination": "Battlefield"
+                                            },
+                                            "targetRequirement": {
+                                                "type": "TargetObject",
+                                                "filter": {
+                                                    "baseFilter": "creature own:you",
+                                                    "zone": "Graveyard"
+                                                },
+                                                "id": "t1"
+                                            }
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following abilities until end of turn.)"
+            },
+            {
+                "id": "Archpriest of Shadows:3",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "battle"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    },
+                    "destination": "Battlefield"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t2"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "RARE",
+        "artist": "Fariba Khamseh",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5931746-a55c-4528-9e4a-ee15edab3489.jpg?1783917018"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1112,6 +1373,274 @@
     ]
 }
 
+// Bladed Battle-Fan
+{
+    "name": "Bladed Battle-Fan",
+    "manaCost": "{1}{B}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Flash\nWhen this Equipment enters, attach it to target creature you control. That creature gains indestructible until end of turn.\nEquipped creature gets +1/+0.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bladed Battle-Fan:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Bladed Battle-Fan:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "91",
+        "artist": "Colin Boyer",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a28f5de4-2af6-44ff-9bb8-d874f8ae7dd1.jpg?1783917017"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Blightreaper Thallid
+{
+    "name": "Blightreaper Thallid",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Fungus",
+    "oracleText": "{3}{G/P}: Transform this creature. Activate only as a sorcery. ({G/P} can be paid with either {G} or 2 life.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Blightreaper Thallid:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Blightsower Thallid",
+        "manaCost": "",
+        "typeLine": "Creature — Phyrexian Fungus",
+        "oracleText": "When this creature transforms into Blightsower Thallid or dies, create a 1/1 green Phyrexian Saproling creature token.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Blightsower Thallid:1",
+                    "trigger": {
+                        "type": "AnyOfEvents",
+                        "events": [
+                            {
+                                "type": "TransformEvent",
+                                "intoBackFace": true
+                            },
+                            {
+                                "type": "ZoneChangeEvent",
+                                "from": "Battlefield",
+                                "to": "Graveyard"
+                            }
+                        ]
+                    },
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Phyrexian",
+                            "Saproling"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a10358f5-d653-49a0-9d81-a5d4e6dafe25.jpg?1783916669"
+                    },
+                    "descriptionOverride": "When this creature transforms into Blightsower Thallid or dies, create a 1/1 green Phyrexian Saproling creature token."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "92",
+            "rarity": "UNCOMMON",
+            "artist": "Marta Nael",
+            "flavorText": "Then one day, Mudcreep started to feel funny itself.",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/1/f1150ea9-02b5-4767-a529-6149d758830e.jpg?1783917024"
+        },
+        "colorIdentityOverride": [
+            "BLACK",
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "UNCOMMON",
+        "artist": "Marta Nael",
+        "flavorText": "Mudcreep loved the taste of the funny oil that leaked from the wrecked machines in Urborg.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1150ea9-02b5-4767-a529-6149d758830e.jpg?1783917024"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Bloated Processor
+{
+    "name": "Bloated Processor",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Phyrexian",
+    "oracleText": "Sacrifice another Phyrexian: Put a +1/+1 counter on this creature.\nWhen this creature dies, incubate X, where X is its power. (Create an Incubator token with X +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bloated Processor:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            },
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Bloated Processor:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "permanent Phyrexian",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "RARE",
+        "artist": "Brock Grossman",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66ddcca8-5720-4341-acce-c6694ddc97f8.jpg?1783917016"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bloodfeather Phoenix
 {
     "name": "Bloodfeather Phoenix",
@@ -1526,6 +2055,123 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Breach the Multiverse
+{
+    "name": "Breach the Multiverse",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player mills ten cards. For each player, choose a creature or planeswalker card in that player's graveyard. Put those cards onto the battlefield under your control. Then each creature you control becomes a Phyrexian in addition to its other types.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 10
+                                    },
+                                    "isMill": true
+                                },
+                                "storeAs": "milled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "milled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard",
+                                    "filter": "creature|planeswalker"
+                                },
+                                "storeAs": "gathered2"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered2",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "SourceController",
+                                "storeSelected": "selected3",
+                                "prompt": "Choose a creature or planeswalker card in this graveyard"
+                            }
+                        ]
+                    },
+                    "collectCollections": {
+                        "selected3": "collected4"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "collected4",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCreatureType",
+                        "subtype": "Phyrexian",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "RARE",
+        "artist": "Liiga Smilshkalne",
+        "flavorText": "\"All worlds will know perfection.\"\n—Elesh Norn",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/daf51a76-7a57-4462-ae18-a19e817e49e5.jpg?1783917016"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2082,6 +2728,74 @@
     ]
 }
 
+// Compleated Huntmaster
+{
+    "name": "Compleated Huntmaster",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Phyrexian Elf Warrior",
+    "oracleText": "{1}, {T}, Sacrifice another creature or artifact: Incubate 3. (Create an Incubator token with three +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Compleated Huntmaster:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature|artifact",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 3,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Brock",
+        "flavorText": "The elves of Lorwyn sought perfection. The Etched Host supplied it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4fc23af5-18dd-45f9-8d82-76b48aaf6d4d.jpg?1783917015"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Complete the Circuit
 {
     "name": "Complete the Circuit",
@@ -2143,6 +2857,82 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Consuming Aetherborn
+{
+    "name": "Consuming Aetherborn",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Aetherborn Vampire",
+    "oracleText": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)\nLifelink",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Consuming Aetherborn:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "LIFELINK",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "artist": "Aldo Domínguez",
+        "flavorText": "Doji found the Phyrexian's essence foul, but every drop added an hour to their life.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/7311ade8-eb75-40f8-b018-668762aa3b77.jpg?1783917015"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2501,6 +3291,54 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Dreg Recycler
+{
+    "name": "Dreg Recycler",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Phyrexian Beast",
+    "oracleText": "{T}, Sacrifice an artifact or creature: Each opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dreg Recycler:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact|creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Campbell White",
+        "flavorText": "Bodies too damaged to survive phyresis are collected and broken down into useful raw materials.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4ef82b33-82ba-4521-846b-e651764ef46d.jpg?1783917016"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3151,6 +3989,186 @@
     ]
 }
 
+// Etched Familiar
+{
+    "name": "Etched Familiar",
+    "manaCost": "{2}{B}",
+    "typeLine": "Artifact Creature — Phyrexian Fox",
+    "oracleText": "When this creature dies, each opponent loses 2 life and you gain 2 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Etched Familiar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature dies, each opponent loses 2 life and you gain 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "artist": "Colin Boyer",
+        "flavorText": "\"No refunds.\"\n—Chammi, curio vendor",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/4616a548-269b-4530-97e8-c690ccc138f3.jpg?1783917013"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Etched Host Doombringer
+{
+    "name": "Etched Host Doombringer",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Phyrexian Demon",
+    "oracleText": "When this creature enters, choose one —\n• Target opponent loses 2 life and you gain 2 life.\n• Choose target battle. If an opponent protects it, remove three defense counters from it. Otherwise, put three defense counters on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Etched Host Doombringer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetOpponent",
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Target opponent loses 2 life and you gain 2 life."
+                        },
+                        {
+                            "effect": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "EntityMatches",
+                                        "entity": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        },
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsBattle"
+                                            ],
+                                            "statePredicates": [
+                                                {
+                                                    "type": "IsProtectedBy",
+                                                    "protector": "ControlledByOpponent"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "type": "RemoveCounters",
+                                    "counterType": "DEFENSE",
+                                    "count": 3,
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                },
+                                "otherwise": {
+                                    "type": "AddCounters",
+                                    "counterType": "DEFENSE",
+                                    "count": 3,
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "battle"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Choose target battle. If an opponent protects it, remove three defense counters from it. Otherwise, put three defense counters on it."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, choose one — Target opponent loses 2 life and you gain 2 life; or choose target battle. If an opponent protects it, remove three defense counters from it. Otherwise, put three defense counters on it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "artist": "Helge C. Balzer",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2f1afa2-ca71-49cf-953b-d5dfc60c178f.jpg?1783917012"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Expedition Lookout
 {
     "name": "Expedition Lookout",
@@ -3333,6 +4351,135 @@
     ]
 }
 
+// Failed Conversion
+{
+    "name": "Failed Conversion",
+    "manaCost": "{4}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets -4/-4.\nWhen enchanted creature dies, surveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Failed Conversion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Surveil",
+                    "count": 2
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -4,
+                "toughnessBonus": -4
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "artist": "Jodie Muir",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/358c18b7-5321-4793-b54a-e48e39548b9c.jpg?1783917011",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "When you surveil, you may put all the cards you look at back on top of your library, you may put all of those cards into your graveyard, or you may put some of those cards on top and the rest of them into your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Final Flourish
+{
+    "name": "Final Flourish",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Kicker—Sacrifice an artifact or creature. (You may sacrifice an artifact or creature in addition to any other costs as you cast this spell.)\nTarget creature gets -2/-2 until end of turn. If this spell was kicked, that creature gets -6/-6 until end of turn instead.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "artifact|creature"
+                }
+            }
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -6
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -6
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "artist": "Raluca Marinescu",
+        "flavorText": "Strixhaven braced for another Oriq assault, but something far worse arrived.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09a4dcdb-6939-4d9f-8921-549e0ddc9f63.jpg?1783917010"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Furnace Host Charger
 {
     "name": "Furnace Host Charger",
@@ -3460,6 +4607,161 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Gift of Compleation
+{
+    "name": "Gift of Compleation",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, incubate 3. (Create an Incubator token with three +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)\nWhenever a Phyrexian you control dies, surveil 1. (Look at the top card of your library. You may put that card into your graveyard.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gift of Compleation:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 3,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Gift of Compleation:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Phyrexian ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "UNCOMMON",
+        "artist": "Artur Nakhodkin",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97e08244-bbdb-402a-8dde-93e17d989467.jpg?1783917010"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Glistening Deluge
+{
+    "name": "Glistening Deluge",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "All creatures get -1/-1 until end of turn. Creatures that are green and/or white get an additional -2/-2 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsCreature",
+                                                    {
+                                                        "type": "HasColor",
+                                                        "color": "GREEN"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsCreature",
+                                                    {
+                                                        "type": "HasColor",
+                                                        "color": "WHITE"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "UNCOMMON",
+        "artist": "Anastasia Balakchina",
+        "flavorText": "As oil began to pour from Ikoria's crystals, some monsters developed strange mechanical mutations. Others were simply pulled under.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/83ca46ac-0698-4651-940d-3fd20c266b74.jpg?1783917009"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
