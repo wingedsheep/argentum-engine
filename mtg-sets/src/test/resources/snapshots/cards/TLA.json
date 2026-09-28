@@ -14483,7 +14483,10 @@
             }
         ],
         "staticAbilities": [
-            "ConvertEmptyingManaToRed",
+            {
+                "type": "ConvertEmptyingMana",
+                "color": "RED"
+            },
             {
                 "type": "ConditionalStaticAbility",
                 "ability": {

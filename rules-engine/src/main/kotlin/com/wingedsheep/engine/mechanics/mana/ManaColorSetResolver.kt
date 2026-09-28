@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CommanderRegistryComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.LandControllerScope
 import com.wingedsheep.sdk.scripting.values.ManaColorSet
 
@@ -34,6 +35,8 @@ object ManaColorSetResolver {
      *   [ManaColorSet.CommanderIdentity] (commander lookup),
      *   [ManaColorSet.AmongPermanents] (control filter), and
      *   [ManaColorSet.LandsCouldProduce] (scope resolution).
+     * @param resolveEntity Resolves the object a [ManaColorSet.ColorsOf] names. Effect executors
+     *   pass their `EffectContext`'s resolver; the default only knows `Self` (the source).
      */
     fun resolve(
         colorSet: ManaColorSet,
@@ -42,7 +45,8 @@ object ManaColorSetResolver {
         sourceId: EntityId?,
         controllerId: EntityId,
         cardRegistry: CardRegistry,
-        predicateEvaluator: PredicateEvaluator
+        predicateEvaluator: PredicateEvaluator,
+        resolveEntity: (EffectTarget) -> EntityId? = { if (it == EffectTarget.Self) sourceId else null }
     ): Set<Color> = when (colorSet) {
         is ManaColorSet.AnyColor -> Color.entries.toSet()
         is ManaColorSet.Specific -> colorSet.colors
@@ -52,8 +56,9 @@ object ManaColorSetResolver {
         is ManaColorSet.LandsCouldProduce -> landsCouldProduce(colorSet, state, projected, controllerId, cardRegistry)
         is ManaColorSet.SourceChosenColor -> sourceChosenColor(state, sourceId)
         is ManaColorSet.AmongLinkedExiledCards -> amongLinkedExiledCards(state, sourceId)
+        is ManaColorSet.ColorsOf -> colorsOf(state, projected, resolveEntity(colorSet.entity))
         is ManaColorSet.Union -> colorSet.members.flatMapTo(mutableSetOf()) { member ->
-            resolve(member, state, projected, sourceId, controllerId, cardRegistry, predicateEvaluator)
+            resolve(member, state, projected, sourceId, controllerId, cardRegistry, predicateEvaluator, resolveEntity)
         }
     }
 
@@ -137,6 +142,14 @@ object ManaColorSetResolver {
             card.typeLine.isLand && projected.getController(permId) in targetPlayers
         }
         return LandManaColorInspector.colorsLandsCouldProduce(state, projected, landIds, cardRegistry)
+    }
+
+    private fun colorsOf(state: GameState, projected: ProjectedState, entityId: EntityId?): Set<Color> {
+        if (entityId == null) return emptySet()
+        if (entityId in state.getBattlefield()) {
+            return projected.getColors(entityId).mapNotNullTo(mutableSetOf()) { name -> Color.entries.find { it.name == name } }
+        }
+        return state.getEntity(entityId)?.get<CardComponent>()?.colors.orEmpty()
     }
 
     private fun sourceChosenColor(state: GameState, sourceId: EntityId?): Set<Color> {

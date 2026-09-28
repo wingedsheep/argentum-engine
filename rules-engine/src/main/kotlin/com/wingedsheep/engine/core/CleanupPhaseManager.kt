@@ -471,8 +471,8 @@ class CleanupPhaseManager(
      * every step/phase transition ([com.wingedsheep.engine.core.TurnManager.advanceStep]) and again
      * as the cleanup step ends (end of turn). It applies the per-player mana-loss statics:
      *  - Upwelling ([PreventManaPoolEmptying]) — no one loses mana at all (whole action skipped).
-     *  - Ozai, the Phoenix King ([ConvertEmptyingManaToRed]) — the controller's would-be-lost mana
-     *    becomes that many red mana instead (CR 614).
+     *  - [com.wingedsheep.sdk.scripting.ConvertEmptyingMana] (Ozai, the Phoenix King; Omnath, Locus
+     *    of All) — the controller's would-be-lost mana becomes that colour instead (CR 614.1a).
      *  - The Last Agni Kai ([RetainUnspentManaComponent]) — the named colours are kept.
      * Firebending (END_OF_COMBAT) mana is preserved by [ManaPoolComponent.emptyAtBoundary] and
      * handled instead by `CombatManager.endCombat`, since it lasts until end of combat, not step end.
@@ -483,7 +483,7 @@ class CleanupPhaseManager(
         if (state.turnOrder.all { state.getEntity(it)?.get<ManaPoolComponent>()?.isEmpty != false }) return state
         if (isManaPoolEmptyingPrevented(state)) return state
         var newState = state
-        val convertToRedPlayers = playersConvertingEmptyingManaToRed(state, cardRegistry)
+        val conversions = emptyingManaConversions(state, cardRegistry)
         for (playerId in state.turnOrder) {
             newState = newState.updateEntity(playerId) { container ->
                 val manaPool = container.get<ManaPoolComponent>()
@@ -495,7 +495,7 @@ class CleanupPhaseManager(
                         retainedColorsFromStatics(state, cardRegistry, playerId)
                     container.with(
                         manaPool.emptyAtBoundary(
-                            convertToRed = playerId in convertToRedPlayers,
+                            convertTo = conversions[playerId],
                             retain = retained
                         )
                     )

@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting.values
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -100,6 +101,22 @@ sealed interface ManaColorSet {
     @Serializable
     data object AmongLinkedExiledCards : ManaColorSet {
         override val description: String = "any of the exiled cards' colors"
+    }
+
+    /**
+     * The colors of one object — [entity] resolved against the running effect: a pipeline-gathered
+     * card (`EffectTarget.PipelineTarget`), a target, the source (`EffectTarget.Self`). A battlefield
+     * permanent's colors are read from projected state; any other zone uses the card's own colors.
+     * A colorless object, or one that can't be resolved, produces no mana. Outside an effect (the mana
+     * solver asking what a mana ability could make) only `Self` resolves.
+     *
+     * "Add three mana in any combination of its colors" (Omnath, Locus of All) is
+     * `Effects.Repeat(3, AddManaOfChoice(ColorsOf(card)))` — each unit picks its own colour.
+     */
+    @SerialName("ManaColorSet.ColorsOf")
+    @Serializable
+    data class ColorsOf(val entity: EffectTarget) : ManaColorSet {
+        override val description: String = "any of ${entity.description}'s colors"
     }
 
     /**

@@ -168,16 +168,17 @@ class CombatManager(
 
         // Discard combat-duration mana (firebending, CR 702.189): "Any of this mana you still
         // have as combat ends will be lost." Ordinary (end-of-turn) mana is untouched. A player
-        // controlling a ConvertEmptyingManaToRed permanent (Ozai, the Phoenix King) instead has
-        // that would-be-lost mana become red (CR 614) — it survives combat as ordinary red mana,
-        // exactly as the end-of-turn cleanup path already handles the general pool.
-        val convertToRedPlayers = playersConvertingEmptyingManaToRed(newState, cardRegistry)
+        // controlling a ConvertEmptyingMana permanent (Ozai, the Phoenix King) instead has that
+        // would-be-lost mana become its colour (CR 614.1a) — it survives combat as ordinary mana,
+        // exactly as the step/phase-end emptying path already handles the general pool.
+        val conversions = emptyingManaConversions(newState, cardRegistry)
         for (playerId in newState.turnOrder) {
             val pool = newState.getEntity(playerId)?.get<ManaPoolComponent>() ?: continue
             if (pool.restrictedMana.any { it.expiry == ManaExpiry.END_OF_COMBAT }) {
                 newState = newState.updateEntity(playerId) { container ->
-                    if (playerId in convertToRedPlayers) {
-                        container.with(pool.convertExpiredToRed(ManaExpiry.END_OF_COMBAT))
+                    val convertTo = conversions[playerId]
+                    if (convertTo != null) {
+                        container.with(pool.convertExpired(ManaExpiry.END_OF_COMBAT, convertTo))
                     } else {
                         container.with(pool.clearExpired(ManaExpiry.END_OF_COMBAT))
                     }

@@ -5,29 +5,33 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.ConvertEmptyingManaToRed
+import com.wingedsheep.sdk.scripting.ConvertEmptyingMana
 import com.wingedsheep.sdk.scripting.RetainUnspentColoredMana
 
 /**
- * Players who control a permanent with the [ConvertEmptyingManaToRed] static ability
- * (Ozai, the Phoenix King: "If you would lose unspent mana, that mana becomes red instead").
+ * The colour each player's would-be-lost mana converts to, for every player who controls a
+ * permanent with a [ConvertEmptyingMana] static ability ("If you would lose unspent mana, that mana
+ * becomes [color] instead" — Ozai, the Phoenix King; Omnath, Locus of All).
  *
- * The static fires at *every* mana-loss point, not just one: both the end-of-turn cleanup emptying
- * ([CleanupPhaseManager.cleanupEndOfTurn]) and the end-of-combat firebending-mana discard
- * ([com.wingedsheep.engine.mechanics.combat.CombatManager.endCombat]) consult this set, so
- * firebending mana that would otherwise be lost as combat ends becomes red and survives the rest of
- * the turn. Controller is read from projected state so a control-changed Ozai converts for its new
- * controller.
+ * The static fires at *every* mana-loss point, not just one: both the step/phase-end emptying
+ * ([CleanupPhaseManager.emptyManaPools]) and the end-of-combat firebending-mana discard
+ * ([com.wingedsheep.engine.mechanics.combat.CombatManager.endCombat]) consult this map. Controller
+ * is read from projected state so a control-changed permanent converts for its new controller.
+ *
+ * A player who controls two such permanents naming different colours has two replacement effects
+ * for the same event; the affected player picks which applies (CR 616.1), and once one has, the mana
+ * is no longer lost so the other can't. The engine applies the one on the permanent that has been on
+ * the battlefield longest (battlefield order) rather than asking.
  */
-fun playersConvertingEmptyingManaToRed(state: GameState, cardRegistry: CardRegistry): Set<EntityId> {
+fun emptyingManaConversions(state: GameState, cardRegistry: CardRegistry): Map<EntityId, Color> {
     val projected = state.projectedState
-    val result = mutableSetOf<EntityId>()
+    val result = mutableMapOf<EntityId, Color>()
     for (entityId in state.getBattlefield()) {
         val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
         val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-        if (cardDef.script.staticAbilities.any { it is ConvertEmptyingManaToRed }) {
-            projected.getController(entityId)?.let { result.add(it) }
-        }
+        val conversion = cardDef.script.staticAbilities.firstNotNullOfOrNull { it as? ConvertEmptyingMana } ?: continue
+        val controller = projected.getController(entityId) ?: continue
+        result.putIfAbsent(controller, conversion.color)
     }
     return result
 }
@@ -39,7 +43,7 @@ fun playersConvertingEmptyingManaToRed(state: GameState, cardRegistry: CardRegis
  * into the per-player `retain` set alongside the turn-scoped [RetainUnspentManaComponent] marker.
  * Controller is read from projected state so a stolen Electro retains for its new controller.
  *
- * Sibling of [playersConvertingEmptyingManaToRed]; both scan printed static abilities. A permanent
+ * Sibling of [emptyingManaConversions]; both scan printed static abilities. A permanent
  * whose abilities are removed by a Layer-6 wipe would still be counted here — an accepted, shared
  * limitation, not modelled by either scan.
  */

@@ -2002,7 +2002,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 - `AddManaOfColorInCommanderColorIdentity()` — sugar for `AddManaOfChoice(ManaColorSet.CommanderIdentity)`. Arcane Signet / Command Tower shape.
 - `AddAnyColorManaSpendOnChosenType(typeName)` — mana that can only pay for a specific card type (kept separate because it derives a runtime [ManaRestriction] from the source's chosen subtype).
 - `AddDynamicMana(amount, allowedColors, restriction?)` — split X across a fixed color set, distinct from `AddManaOfChoice` because it distributes the full X total across multiple colors rather than producing X copies of one chosen color.
-- `AddManaInAnyCombination(amount, allowedColors?, restriction?)` — "Add N mana in any combination of colors" (Wizard's Rockets, Thornvault Forager, Interdimensional Web Watch). Sugar for `AddDynamicMana`; `allowedColors` defaults to all five. The controller colors **each** pip independently at resolution (3+ colors → pip-by-pip color choice; 2 colors → one "how much of the first" prompt; ≤0 → no mana, no prompt), so the result can mix colors — distinct from `AddAnyColorMana`, where all N share one color.
+- `AddManaInAnyCombination(amount, allowedColors?, restriction?)` — "Add N mana in any combination of colors" (Wizard's Rockets, Thornvault Forager, Interdimensional Web Watch). Sugar for `AddDynamicMana`; `allowedColors` defaults to all five. The controller colors **each** pip independently at resolution (3+ colors → pip-by-pip color choice; 2 colors → one "how much of the first" prompt; ≤0 → no mana, no prompt), so the result can mix colors — distinct from `AddAnyColorMana`, where all N share one color. For "any combination of **its** colors" (a looked-at card), repeat `AddManaOfChoice(ManaColorSet.ColorsOf(…))` N times.
 - `AddOneManaOfEachColorAmong(filter)` — one mana of *each* color found among matching permanents (Bloom Tender shape).
 - `AddOneManaOfEachCraftedMaterialColor()` — one mana of *each* printed color among the exiled cards used to craft the source (`AddOneManaOfEachColorAmongEffect(colorSource = ManaColorSource.CraftedMaterials)`; Sunbird Effigy).
 - `PayDynamicMana(amount, payer?, color?)` — pay a dynamically-computed amount of mana at resolution; the
@@ -8560,16 +8560,19 @@ staticAbility {
   creature card still shows its printed `{2}{G}` instead of a misleading `{3}`. (Vizier of the
   Menagerie — "You can spend mana of any type to cast creature spells" → `GameObjectFilter.Creature`.)
 - `PreventManaPoolEmptying` — mana pools don't empty between steps/phases. (Upwelling)
-- `ConvertEmptyingManaToRed` — "If you would lose unspent mana, that mana becomes red instead."
+- `ConvertEmptyingMana(color)` — "If you would lose unspent mana, that mana becomes [color] instead."
   The colour-converting cousin of `PreventManaPoolEmptying`: at every step/phase-end mana emptying
   (`CleanupPhaseManager.emptyManaPools`, and for firebending mana at `CombatManager.endCombat`) the
-  *controller's* would-be-lost mana becomes that many red mana instead of emptying (CR 500.5 / 703.4q
-  emptying replaced per CR 614). Scoped to the controller of the bearing permanent, unlike Upwelling's
-  all-players prevention. (Ozai, the Phoenix King)
+  *controller's* would-be-lost mana becomes that colour instead of emptying (CR 500.5 emptying replaced
+  per CR 614.1a). Plain and colorless mana become that many plain mana of the colour; a restricted unit
+  is recoloured but **keeps its spend restriction and riders** (Omnath's ruling); rider-less firebending
+  mana becomes plain mana. Scoped to the controller of the bearing permanent, unlike Upwelling's
+  all-players prevention. A player controlling two naming different colours gets the longest-standing
+  one's. Ozai, the Phoenix King (`Color.RED`), Omnath, Locus of All (`Color.BLACK`).
 - `RetainUnspentColoredMana(color)` — "You don't lose unspent [color] mana as steps and phases end."
   The durable, single-colour, controller-scoped mana-retention static (Electro, Assaulting Battery —
-  red). Where `PreventManaPoolEmptying` keeps *all* colours for *everyone* and `ConvertEmptyingManaToRed`
-  *replaces* other colours with red, this simply keeps that one colour and lets every other colour empty.
+  red). Where `PreventManaPoolEmptying` keeps *all* colours for *everyone* and `ConvertEmptyingMana`
+  *replaces* other colours with one colour, this simply keeps that one colour and lets every other colour empty.
   Merged into the `retain` set at `CleanupPhaseManager.emptyManaPools` (control-aware). The static twin of
   the turn-scoped one-shot `RetainUnspentMana(vararg colors)` effect (The Last Agni Kai).
 - `LegendRuleDoesNotApplyTo(filter)` — "The 'legend rule' doesn't apply to [filter] you control"
@@ -12593,6 +12596,7 @@ solver picks if there's only one), and that color is added to the pool.
 - `ManaColorSet.AmongPermanents(filter)` — colors of permanents matching `filter`, read via projected state so type/color-changing effects are honored. Mox Amber shape.
 - `ManaColorSet.LandsCouldProduce(scope)` — colors any land in `scope` could produce; tapped state and activation costs are ignored (CR 106.7). `scope` is `LandControllerScope.{YOU, OPPONENTS, ANY}`. Fellwar Stone / Exotic Orchard / Reflecting Pool shape.
 - `ManaColorSet.SourceChosenColor` — the single color stored on the source's `ChosenColorComponent` (set via `EntersWithChoice(ChoiceType.COLOR)`). Uncharted Haven / Ashling Rekindled shape.
+- `ManaColorSet.ColorsOf(entity)` — the colors of one object, `entity` an `EffectTarget` resolved against the running effect: a pipeline-gathered card (`handle.asTarget(0)`), a target, `Self`. Battlefield permanents read projected colors; any other zone reads the card's own. A colorless or unresolvable object produces no mana. Outside an effect (the mana solver) only `Self` resolves. "Add three mana in any combination of its colors" is `Effects.Repeat(DynamicAmount.Fixed(3), Effects.AddManaOfChoice(ManaColorSet.ColorsOf(revealed.asTarget(0))))` — each unit picks its own colour (Omnath, Locus of All).
 - `ManaColorSet.Union(members)` — the union of two or more pools; the player picks one color from any of them. A fixed color *or* a looked-up one: the Thriving lands' "Add {R} or one mana of the chosen color" is `Union(listOf(Specific(setOf(RED)), SourceChosenColor))`, which still taps for {R} if no color was ever chosen. The resolver, the mana solver and `LandManaColorInspector` all recurse into the members.
 - `ManaColorSet.AmongLinkedExiledCards` — union of the base colors of the cards currently exiled *with* the source permanent — the ids in its `LinkedExileComponent` (set by `MoveToZoneEffect(linkToSource = true)`) that are still in the exile zone. A card that has since left exile drops out of the pool; colorless-only or empty piles produce no mana. Pit of Offerings shape ("any of the exiled cards' colors").
 

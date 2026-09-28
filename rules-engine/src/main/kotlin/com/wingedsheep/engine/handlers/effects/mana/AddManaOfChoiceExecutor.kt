@@ -59,7 +59,8 @@ class AddManaOfChoiceExecutor(
             sourceId = context.sourceId,
             controllerId = context.controllerId,
             cardRegistry = cardRegistry,
-            predicateEvaluator = amountEvaluator.predicates
+            predicateEvaluator = amountEvaluator.predicates,
+            resolveEntity = { context.resolveTarget(it, state) }
         )
         if (availableColors.isEmpty()) return EffectResult.success(state)
 

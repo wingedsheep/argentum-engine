@@ -168,20 +168,29 @@ data class ManaPoolComponent(
         copy(restrictedMana = restrictedMana.filterNot { it.expiry == expiry })
 
     /**
-     * Convert every restricted-mana entry whose expiry matches [expiry] into an equal amount of
-     * plain red mana instead of discarding it (Ozai, the Phoenix King: firebending mana that would
-     * be lost as combat ends "becomes red instead", CR 614). The converted mana drops its combat
-     * expiry and spend restriction — it is ordinary red mana that persists until the next mana-loss
-     * point (end-of-turn cleanup, where Ozai's static converts it to red again). Ordinary mana and
-     * other-expiry restricted entries are untouched; a pool with no matching entries is unchanged.
+     * Convert every restricted-mana entry whose expiry matches [expiry] into mana of [color] instead
+     * of discarding it (Ozai, the Phoenix King: firebending mana that would be lost as combat ends
+     * "becomes red instead", CR 614.1a). Only the colour and the expiry change: the entry keeps its
+     * spend restriction and riders (Omnath, Locus of All ruling) and now lasts as ordinary mana until
+     * the next mana-loss point. Ordinary mana and other-expiry restricted entries are untouched; a
+     * pool with no matching entries is unchanged.
      */
-    fun convertExpiredToRed(expiry: ManaExpiry): ManaPoolComponent {
-        val expiring = restrictedMana.count { it.expiry == expiry }
-        if (expiring == 0) return this
-        return copy(
-            red = red + expiring,
-            restrictedMana = restrictedMana.filterNot { it.expiry == expiry }
-        )
+    fun convertExpired(expiry: ManaExpiry, color: Color): ManaPoolComponent {
+        if (restrictedMana.none { it.expiry == expiry }) return this
+        val (converting, kept) = restrictedMana.partition { it.expiry == expiry }
+        return copy(restrictedMana = kept).withConverted(converting, color)
+    }
+
+    /**
+     * Add [entries] back recoloured to [color] as ordinary (end-of-turn) mana. An entry that carries
+     * a real restriction or a rider stays a restricted entry — only its colour changes; one that was
+     * only stored restricted to carry an expiry (`AnySpend`, no riders — firebending) becomes plain
+     * mana of [color].
+     */
+    private fun withConverted(entries: List<RestrictedManaEntry>, color: Color): ManaPoolComponent {
+        val (plain, restricted) = entries.partition { it.restriction == ManaRestriction.AnySpend && it.riders.isEmpty() }
+        val recoloured = restricted.map { it.copy(color = color, expiry = ManaExpiry.END_OF_TURN) }
+        return copy(restrictedMana = restrictedMana + recoloured).let { if (plain.isNotEmpty()) it.add(color, plain.size) else it }
     }
 
     /**
@@ -193,12 +202,15 @@ data class ManaPoolComponent(
      * Empty the pool as a step or phase ends (CR 500.5 / 703.4q), the engine's turn-based
      * mana-loss action. This is the single emptying primitive for every mana-loss point, applying
      * the per-player mana-loss statics:
-     *  - [convertToRed] = true (Ozai, the Phoenix King, [ConvertEmptyingManaToRed]): the would-be-lost
-     *    mana becomes that many plain red mana instead of emptying (CR 614).
+     *  - [convertTo] non-null ([com.wingedsheep.sdk.scripting.ConvertEmptyingMana] — Ozai, the Phoenix
+     *    King to red; Omnath, Locus of All to black): the would-be-lost mana becomes that colour
+     *    instead of emptying (CR 614.1a). Plain and colorless mana becomes that many plain mana of
+     *    [convertTo]; a restricted entry is recoloured but keeps its restriction and riders (Omnath's
+     *    ruling), so conversion never frees mana from a spending restriction.
      *  - [retain] non-empty (The Last Agni Kai, [RetainUnspentManaComponent]): mana of those colours —
      *    plain counters and same-colour ordinary restricted entries — survives; everything else empties.
      *  - neither: the ordinary mana empties.
-     * [convertToRed] takes precedence over [retain] (Ozai fully replaces the loss).
+     * [convertTo] takes precedence over [retain] (the conversion fully replaces the loss).
      *
      * **Firebending mana is preserved.** Restricted entries with [ManaExpiry.END_OF_COMBAT] "last
      * until end of combat", not until the end of each step — so they survive every step/phase-end
@@ -206,15 +218,17 @@ data class ManaPoolComponent(
      * ([ManaExpiry.END_OF_TURN]) mana is subject to this action. (At end of turn no combat-duration
      * mana remains, so preservation is a no-op there.)
      */
-    fun emptyAtBoundary(convertToRed: Boolean, retain: Set<Color>): ManaPoolComponent {
+    fun emptyAtBoundary(convertTo: Color?, retain: Set<Color>): ManaPoolComponent {
         val preserved = restrictedMana.filter { it.expiry == ManaExpiry.END_OF_COMBAT }
         val lostRestricted = restrictedMana.filter { it.expiry != ManaExpiry.END_OF_COMBAT }
         return when {
-            convertToRed -> {
-                // Count the would-be-lost mana the way `total` does (provenance tags are markers on
-                // already-counted colour mana, not extra mana); the tags don't carry over.
-                val lostTotal = white + blue + black + red + green + colorless + lostRestricted.size
-                ManaPoolComponent(red = lostTotal, restrictedMana = preserved)
+            convertTo != null -> {
+                // Provenance tags are markers on already-counted colour mana, not extra mana; the
+                // pool-level tags don't carry over a mana-loss boundary.
+                val lostPlain = white + blue + black + red + green + colorless
+                ManaPoolComponent(restrictedMana = preserved)
+                    .withConverted(lostRestricted, convertTo)
+                    .let { if (lostPlain > 0) it.add(convertTo, lostPlain) else it }
             }
             retain.isNotEmpty() -> ManaPoolComponent(
                 white = if (Color.WHITE in retain) white else 0,

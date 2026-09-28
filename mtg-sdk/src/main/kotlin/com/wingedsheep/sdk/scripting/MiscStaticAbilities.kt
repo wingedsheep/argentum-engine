@@ -1025,23 +1025,27 @@ data object PreventManaPoolEmptying : StaticAbility {
 }
 
 /**
- * Converts the controller's would-be-lost unspent mana into red mana instead of emptying it.
- * Used for Ozai, the Phoenix King: "If you would lose unspent mana, that mana becomes red instead."
+ * Converts the controller's would-be-lost unspent mana into mana of [color] instead of emptying it:
+ * "If you would lose unspent mana, that mana becomes [color] instead." Ozai, the Phoenix King (red),
+ * Omnath, Locus of All (black).
  *
  * The colour cousin of [PreventManaPoolEmptying]: where Upwelling *keeps* the mana as-is, this
- * *replaces* the emptying event (CR 500.5 / 703.4q — any unspent mana left in a player's mana pool
- * empties as each step and phase ends) with an equal amount of red. Scoped to the controller of the
- * permanent bearing the ability, unlike Upwelling's all-players prevention.
+ * *replaces* the emptying event (CR 500.5 — unspent mana empties from each player's mana pool as
+ * each step and phase ends) with an equal amount of [color] mana. Scoped to the controller of
+ * the permanent bearing the ability, unlike Upwelling's all-players prevention.
  *
- * The engine checks for this static ability at every step/phase-end mana emptying (CR 500.5, in
- * `CleanupPhaseManager.emptyManaPools`, and again for firebending mana in `CombatManager.endCombat`);
- * for each controller of a permanent with this ability, the would-be-lost mana is replaced by that
- * many red mana rather than emptied.
+ * Only the colour changes. Per Omnath's ruling, mana carrying a spending restriction or a rider keeps
+ * it when it changes colour — a restricted unit stays restricted, just recoloured. Colorless mana
+ * becomes [color] too.
+ *
+ * The engine checks for this static ability at every step/phase-end mana emptying
+ * (`CleanupPhaseManager.emptyManaPools`, and again for firebending mana in `CombatManager.endCombat`).
  */
-@SerialName("ConvertEmptyingManaToRed")
+@SerialName("ConvertEmptyingMana")
 @Serializable
-data object ConvertEmptyingManaToRed : StaticAbility {
-    override val description: String = "If you would lose unspent mana, that mana becomes red instead"
+data class ConvertEmptyingMana(val color: Color) : StaticAbility {
+    override val description: String =
+        "If you would lose unspent mana, that mana becomes ${color.name.lowercase()} instead"
 }
 
 /**
@@ -1051,7 +1055,7 @@ data object ConvertEmptyingManaToRed : StaticAbility {
  * A single-colour, controller-scoped, *permanent* mana-retention static — the durable static twin of
  * the turn-scoped one-shot [com.wingedsheep.engine.state.components.player.RetainUnspentManaComponent]
  * (The Last Agni Kai). Unlike [PreventManaPoolEmptying] (all colours, all players) and
- * [ConvertEmptyingManaToRed] (converts other colours to red), this simply keeps that one colour for
+ * [ConvertEmptyingMana] (converts other colours to one colour), this simply keeps that one colour for
  * the controller and lets every other colour empty normally. The engine merges the colour into the
  * `retain` set at every step/phase-end mana emptying (`CleanupPhaseManager.emptyManaPools`), which is
  * the single path for ordinary mana loss — the combat phase ends through it too, so end-of-combat

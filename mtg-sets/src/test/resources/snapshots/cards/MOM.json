@@ -3566,6 +3566,150 @@
     ]
 }
 
+// Omnath, Locus of All
+{
+    "name": "Omnath, Locus of All",
+    "manaCost": "{W}{U}{B/P}{R}{G}",
+    "typeLine": "Legendary Creature — Phyrexian Elemental",
+    "oracleText": "If you would lose unspent mana, that mana becomes black instead.\nAt the beginning of your first main phase, look at the top card of your library. You may reveal that card if it has three or more colored mana symbols in its mana cost. If you do, add three mana in any combination of its colors and put it into your hand. If you don't reveal it, put it into your hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Omnath, Locus of All:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "PRECOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "ColoredManaSymbolsAtLeast",
+                                        "colors": [
+                                            "WHITE",
+                                            "BLUE",
+                                            "BLACK",
+                                            "RED",
+                                            "GREEN"
+                                        ],
+                                        "min": 3
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may reveal the top card of your library",
+                            "selectedLabel": "Reveal",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "selected1",
+                            "revealToSelf": false
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "selected1"
+                                }
+                            },
+                            "then": {
+                                "type": "RepeatDynamicTimes",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "body": {
+                                    "type": "AddManaOfChoice",
+                                    "colorSet": {
+                                        "type": "ManaColorSet.ColorsOf",
+                                        "entity": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "selected1"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your first main phase, look at the top card of your library. You may reveal that card if it has three or more colored mana symbols in its mana cost. If you do, add three mana in any combination of its colors and put it into your hand. If you don't reveal it, put it into your hand."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConvertEmptyingMana",
+                "color": "BLACK"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "rarity": "RARE",
+        "artist": "Bryan Sola",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33d94ecf-758b-4f68-a7be-6bf3ff1047f4.jpg?1783916940",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "As long as Omnath, Locus of All remains under your control, you'll retain unspent mana as steps and phases end, although that mana will become black. Once Omnath leaves your control, you'll have until the end of the current step or phase to spend the mana before it is lost."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If unspent mana you have has any restrictions or riders associated with it, those restrictions or riders remain associated with that mana when it becomes black."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Omnath's last ability isn't a mana ability even though it can cause you to add mana. It uses the stack and can be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Phyrexian Censor
 {
     "name": "Phyrexian Censor",

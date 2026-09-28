@@ -1,12 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.tla.cards
 
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.firebending
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
-import com.wingedsheep.sdk.scripting.ConvertEmptyingManaToRed
+import com.wingedsheep.sdk.scripting.ConvertEmptyingMana
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
@@ -23,7 +24,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * Modeling notes:
  *  - Trample and haste are plain keywords; `firebending(4)` is the set combat-mana helper
  *    (adds the keyword + the "whenever this attacks, add {R}{R}{R}{R} until end of combat" trigger).
- *  - "If you would lose unspent mana, that mana becomes red instead" is the [ConvertEmptyingManaToRed]
+ *  - "If you would lose unspent mana, that mana becomes red instead" is the [ConvertEmptyingMana] (red)
  *    static ability — the colour-converting cousin of Upwelling's `PreventManaPoolEmptying`. At the
  *    mana-empty point the controller's whole pool becomes that many red mana rather than emptying
  *    (honoured in CleanupPhaseManager).
@@ -45,7 +46,7 @@ val OzaiThePhoenixKing = card("Ozai, the Phoenix King") {
     firebending(4)
 
     staticAbility {
-        ability = ConvertEmptyingManaToRed
+        ability = ConvertEmptyingMana(Color.RED)
     }
 
     staticAbility {

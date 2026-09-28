@@ -21,7 +21,7 @@ import io.kotest.matchers.shouldBe
  * Two new pieces:
  *  - a mana-emptying COLOUR CONVERSION: at the single mana-empty point (end-of-turn cleanup) the
  *    controller's whole pool becomes that many *red* mana instead of emptying — only while Ozai
- *    (its ConvertEmptyingManaToRed static) is on the battlefield;
+ *    (its ConvertEmptyingMana(RED) static) is on the battlefield;
  *  - a conditional static granting flying + indestructible while the controller has six or more
  *    unspent mana, read from the real mana-pool total via projected keywords.
  */

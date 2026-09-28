@@ -158,7 +158,7 @@ import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.PreventCycling
 import com.wingedsheep.sdk.scripting.SuppressEntersTriggers
-import com.wingedsheep.sdk.scripting.ConvertEmptyingManaToRed
+import com.wingedsheep.sdk.scripting.ConvertEmptyingMana
 import com.wingedsheep.sdk.scripting.PreventManaPoolEmptying
 import com.wingedsheep.sdk.scripting.RetainUnspentColoredMana
 import com.wingedsheep.sdk.scripting.MultiplyManaOnSourceTap
@@ -1072,7 +1072,7 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.SkipDrawStep,
             is SetMaximumHandSize,
             is PreventManaPoolEmptying,
-            is ConvertEmptyingManaToRed,
+            is ConvertEmptyingMana,
             is RetainUnspentColoredMana,
             is com.wingedsheep.sdk.scripting.LegendRuleDoesNotApplyTo,
             is UntapDuringOtherUntapSteps,
