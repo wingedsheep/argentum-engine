@@ -13,7 +13,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * Whenever this creature becomes blocked by an artifact creature, destroy that creature.
  *
- * Modelled with the *filtered* SELF-binding `Triggers.<subject>.becomesBlocked()` shape (the same one
+ * Modelled with the `Triggers.self.becomesBlocked(by)` shape (the same one
  * flanking is built on): the filter constrains the **blocker**, and the detector fires the
  * ability once per matching blocker with `triggeringEntityId` set to that blocker. So a gang
  * block by three artifact creatures destroys all three, one trigger each, and
@@ -35,7 +35,7 @@ val OgreLeadfoot = card("Ogre Leadfoot") {
     oracleText = "Whenever this creature becomes blocked by an artifact creature, destroy that creature."
 
     triggeredAbility {
-        trigger = Triggers.self.matching(GameObjectFilter.ArtifactCreature).becomesBlocked()
+        trigger = Triggers.self.becomesBlocked(by = GameObjectFilter.ArtifactCreature)
         effect = Effects.Destroy(EffectTarget.TriggeringEntity)
         description = "Whenever this creature becomes blocked by an artifact creature, destroy that creature."
     }

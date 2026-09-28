@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * The banding half composes from existing primitives: a `Triggers.you.beginningOf(Step.BEGIN_COMBAT)` trigger granting
  * [Keyword.BANDING] to itself for [Duration.EndOfCombat]. The Wall half uses the blocker-filtered
- * `becomesBlocked(filter = Wall, binding = SELF)` trigger — for SELF binding the filter applies to
+ * `Triggers.self.becomesBlocked(by = Wall)` trigger — for SELF binding the filter applies to
  * the **blocker**, firing once per blocking Wall with the Wall as `TriggeringEntity` — then a
  * [CreateDelayedTriggerEffect] at [Step.END_COMBAT] destroys that Wall (same shape as Serpentine
  * Basilisk's "destroy that creature at end of combat").
@@ -44,7 +44,7 @@ val BatteringRam = card("Battering Ram") {
     }
 
     triggeredAbility {
-        trigger = Triggers.self.matching(GameObjectFilter.Creature.withSubtype(Subtype.WALL)).becomesBlocked()
+        trigger = Triggers.self.becomesBlocked(by = GameObjectFilter.Creature.withSubtype(Subtype.WALL))
         effect = Effects.CreateDelayedTrigger(
             step = Step.END_COMBAT,
             effect = Effects.Destroy(EffectTarget.TriggeringEntity),

@@ -18,8 +18,8 @@ import io.kotest.matchers.shouldBe
  * "At the beginning of combat on your turn, this creature gains banding until end of combat.
  *  Whenever this creature becomes blocked by a Wall, destroy that Wall at end of combat."
  *
- * Exercises the blocker-filtered becomes-blocked-by trigger: `becomesBlocked(filter = Wall,
- * binding = SELF)` fires (with the Wall as the triggering entity) only when a Wall blocks Battering
+ * Exercises the blocker-filtered becomes-blocked-by trigger: `Triggers.self.becomesBlocked(by = Wall)`
+ * fires (with the Wall as the triggering entity) only when a Wall blocks Battering
  * Ram, and not for a non-Wall blocker.
  */
 class BatteringRamScenarioTest : FunSpec({

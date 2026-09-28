@@ -34,7 +34,7 @@ val PhyrexianSlayer = card("Phyrexian Slayer") {
     keywords(Keyword.FLYING)
 
     triggeredAbility {
-        trigger = Triggers.self.matching(GameObjectFilter.Creature.withColor(Color.WHITE)).becomesBlocked()
+        trigger = Triggers.self.becomesBlocked(by = GameObjectFilter.Creature.withColor(Color.WHITE))
         effect = Effects.CantBeRegenerated(EffectTarget.TriggeringEntity) then
                 Effects.Move(EffectTarget.TriggeringEntity, Zone.GRAVEYARD, byDestruction = true)
     }

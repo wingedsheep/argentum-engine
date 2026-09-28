@@ -5882,7 +5882,7 @@ Copy the subject the Oracle text prints. `Triggers.self.matching(filter)` narrow
 
 **Object verbs** (`self` / `attached` / `a` / `another`): `enters(from?)`, `leaves(to?, excludeTo?,
 excludeSacrifice?, asCraftMaterial?)`, `dies()`, `changesZone(from?, to?, excludeTo?)` (non-battlefield
-moves), `attacks(requires)`, `blocks(attackerFilter?, minBlockedAttackers?)`, `becomesBlocked()`,
+moves), `attacks(requires)`, `blocks(attackerFilter?, minBlockedAttackers?)`, `becomesBlocked(by?)`,
 `blocksOrBecomesBlocked(by?, oncePerCombat?)`, `attacksAndIsntBlocked()`, `dealsDamage(to, damageType,
 requireExcess, batch, requires)`, `dealsCombatDamage(to, …)`, `isDealtDamage(by)`,
 `damagedCreatureDies(dying?)`, `becomesTapped(reason?, firstTimeEachTurn?)`, `becomesUntapped()`, `tappedForMana()` (SELF),
@@ -6243,6 +6243,10 @@ The shapes in this family, with their engine notes.
 
 - `Triggers.self.blocks()` — SELF, no filter.
 - `Triggers.self.becomesBlocked()` — SELF, no filter.
+- `Triggers.self.becomesBlocked(by = filter)` — "becomes blocked by a [filter] creature": SELF, the
+  filter constrains the **blocker** (Ogre Leadfoot, Sylvan Basilisk, Battering Ram). `by` is
+  SELF-only, and `Triggers.self.matching(…).becomesBlocked()` is rejected — under SELF the event's
+  one filter axis is the blocker, so a subject filter would silently be read as a blocker filter.
 - `Triggers.<subject>.blocks(attackerFilter, minBlockedAttackers)` — `filter`
   constrains the blocker (ANY binding). `attackerFilter` constrains the blocked attacker — requires
   SELF binding for "whenever this creature blocks a [filter]" (Skystinger);
@@ -6360,7 +6364,7 @@ Triggers.self.blocks(attackerFilter = GameObjectFilter.Creature.withKeyword(Keyw
 `Triggers.self.becomesBlocked()` (SELF, **unfiltered**) fires **once** when the creature becomes
 blocked, regardless of how many creatures block it, with `triggeringEntityId` = the source —
 so `DynamicAmounts.numberOfBlockers()` reads this creature's blocker count (Rampage). The
-**filtered** SELF form `Triggers.<subject>.becomesBlocked()` instead fires once per matching blocker,
+**filtered** SELF form `Triggers.self.becomesBlocked(by = filter)` instead fires once per matching blocker,
 with `triggeringEntityId` = that blocker (Flanking gives each blocker -1/-1).
 
 ### Damage

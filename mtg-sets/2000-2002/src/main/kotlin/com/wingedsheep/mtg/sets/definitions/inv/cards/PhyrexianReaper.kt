@@ -29,7 +29,7 @@ val PhyrexianReaper = card("Phyrexian Reaper") {
     oracleText = "Whenever this creature becomes blocked by a green creature, destroy that creature. It can't be regenerated."
 
     triggeredAbility {
-        trigger = Triggers.self.matching(Filters.GreenCreature).becomesBlocked()
+        trigger = Triggers.self.becomesBlocked(by = Filters.GreenCreature)
         effect = Effects.CantBeRegenerated(EffectTarget.TriggeringEntity) then
                 Effects.Move(EffectTarget.TriggeringEntity, Zone.GRAVEYARD, byDestruction = true)
     }

@@ -2697,6 +2697,45 @@
     ]
 }
 
+// Sylvan Basilisk
+{
+    "name": "Sylvan Basilisk",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Basilisk",
+    "oracleText": "Whenever this creature becomes blocked by a creature, destroy that creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sylvan Basilisk:1",
+                "trigger": {
+                    "type": "BecomesBlockedEvent",
+                    "filter": "creature"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "descriptionOverride": "Whenever this creature becomes blocked by a creature, destroy that creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "rarity": "RARE",
+        "artist": "Ron Spencer",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9c09886-a733-4797-a489-46150cecfc13.jpg?1783946448"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Sylvan Yeti
 {
     "name": "Sylvan Yeti",
