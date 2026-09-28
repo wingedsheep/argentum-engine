@@ -45,7 +45,7 @@ object TheRingAbilities {
      */
     val blockedSacrifice: TriggeredAbility = TriggeredAbility(
         id = AbilityId("the_ring_blocked_sacrifice"),
-        trigger = Triggers.self.matching(Filters.Creature).becomesBlocked().event,
+        trigger = Triggers.self.becomesBlocked(by = Filters.Creature).event,
         binding = TriggerBinding.SELF,
         effect = CreateDelayedTriggerEffect(
             step = Step.END_COMBAT,
