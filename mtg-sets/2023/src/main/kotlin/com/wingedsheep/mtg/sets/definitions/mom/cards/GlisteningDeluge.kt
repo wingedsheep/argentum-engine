@@ -25,14 +25,12 @@ val GlisteningDeluge = card("Glistening Deluge") {
         effect = Effects.ForEachInGroup(
             filter = GroupFilter.AllCreatures,
             effect = Effects.ModifyStats(-1, -1, EffectTarget.IterationEntity)
-        ).then(
-            Effects.ForEachInGroup(
-                filter = GroupFilter(
-                    GameObjectFilter.Creature.withColor(Color.GREEN) or
-                        GameObjectFilter.Creature.withColor(Color.WHITE)
-                ),
-                effect = Effects.ModifyStats(-2, -2, EffectTarget.IterationEntity)
-            )
+        ) then Effects.ForEachInGroup(
+            filter = GroupFilter(
+                GameObjectFilter.Creature.withColor(Color.GREEN) or
+                    GameObjectFilter.Creature.withColor(Color.WHITE)
+            ),
+            effect = Effects.ModifyStats(-2, -2, EffectTarget.IterationEntity)
         )
     }
 
