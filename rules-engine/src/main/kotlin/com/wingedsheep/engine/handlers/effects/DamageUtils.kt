@@ -1049,7 +1049,7 @@ object DamageUtils {
      * it directly. Recording is idempotent per kind, so a path that goes through both funnels is fine.
      *
      * The controller is the *projected* one for a permanent on the battlefield. With [entering] — a
-     * permanent entering with counters (CR 122.6a), not on the battlefield yet — it falls back to the
+     * permanent entering with counters (CR 122.6), not on the battlefield yet — it falls back to the
      * entering object's base controller. Anything else off the battlefield (a suspended card, a
      * spell) is not a permanent and records nothing.
      */

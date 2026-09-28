@@ -118,7 +118,7 @@ class CounterPutOnPermanentYouControlledThisTurnTest : FunSpec({
         state.holds(you, kind = null) shouldBe true
     }
 
-    test("a permanent entering with counters (CR 122.6a) counts for its base controller") {
+    test("a permanent entering with counters (CR 122.6) counts for its base controller") {
         val entering = EntityId.generate()
         val (state, _) = DamageUtils.recordCounterPlacement(
             base().withEntity(entering, container(you, setOf(CardType.CREATURE))),
