@@ -47,6 +47,9 @@ class QuintoriusLoremasterScenarioTest : ScenarioTestBase() {
             .withLandsOnBattlefield(1, "Plains", 1)
             .withCardInGraveyard(1, "Lightning Bolt")
             .withCardInGraveyard(1, "Grizzly Bears")
+            // A non-empty library, so "bottom" is distinguishable from "top".
+            .withCardInLibrary(1, "Mountain")
+            .withCardInLibrary(1, "Plains")
             .withActivePlayer(1)
             .inPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
             .extra()
@@ -98,6 +101,7 @@ class QuintoriusLoremasterScenarioTest : ScenarioTestBase() {
                 game.getLifeTotal(2) shouldBe 17
                 withClue("the resolved Bolt is on the bottom of the library, not in the graveyard or exile") {
                     game.state.getLibrary(game.player1Id).last() shouldBe bolt
+                    game.state.getLibrary(game.player1Id).first() shouldNotBe bolt
                     game.isInGraveyard(1, "Lightning Bolt") shouldBe false
                     (bolt in game.state.getExile(game.player1Id)) shouldBe false
                 }
@@ -119,6 +123,7 @@ class QuintoriusLoremasterScenarioTest : ScenarioTestBase() {
                 game.getLifeTotal(2) shouldBe 20
                 withClue("the countered Bolt is on the bottom of the library") {
                     game.state.getLibrary(game.player1Id).last() shouldBe bolt
+                    game.state.getLibrary(game.player1Id).first() shouldNotBe bolt
                     game.isInGraveyard(1, "Lightning Bolt") shouldBe false
                 }
             }
