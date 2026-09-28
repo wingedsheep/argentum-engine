@@ -540,8 +540,11 @@ object EntersWithReplacements {
                 val current = c.get<CountersComponent>() ?: CountersComponent()
                 c.with(current.withAdded(counter, 1))
             }
-            newState = DamageUtils.markCounterOnControlledPermanent(newState, entityId, counter, entering = true)
-            events.add(CountersAddedEvent(entityId, counter, 1, name))
+            val (afterMark, firstThisTurn, firstOfTypeThisTurn) = DamageUtils.recordCounterPlacement(
+                newState, entityId, counter, byController = true
+            )
+            newState = afterMark
+            events.add(CountersAddedEvent(entityId, counter, 1, name, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = controllerId))
         }
         // Gate on the entering permanent's *base* type — the projected state isn't recomputed yet at
         // this ETB point, so it wouldn't yet see the just-resolved permanent as a creature.

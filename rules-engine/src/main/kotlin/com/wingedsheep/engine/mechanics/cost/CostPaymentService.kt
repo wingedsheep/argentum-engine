@@ -390,7 +390,7 @@ class CostPaymentService(private val services: EngineServices) {
             // cost is paid through CostHandler.payAtom, which owns the counter-placement path.
             is CostAtom.PutCountersOnSelf -> CostPaymentExecution(state, emptyList(), success = false)
             is CostAtom.PutCountersOnPermanent ->
-                putCountersOnSelected(state, selected.keys.toList(), atom.counterType, atom.count)
+                putCountersOnSelected(state, payerId, selected.keys.toList(), atom.counterType, atom.count)
             is CostAtom.RemoveCounters -> performRemoveCounters(state, payerId, atom, sourceId, selected)
             // Likewise activated-ability-only — see the prompt branch above.
             is CostAtom.RevealNotedCreatureType -> CostPaymentExecution(state, emptyList(), success = false)
@@ -697,6 +697,7 @@ class CostPaymentService(private val services: EngineServices) {
      */
     private fun putCountersOnSelected(
         state: GameState,
+        payerId: EntityId,
         selected: List<EntityId>,
         counterType: CounterType,
         count: Int
@@ -712,13 +713,18 @@ class CostPaymentService(private val services: EngineServices) {
             newState = newState.updateEntity(permanentId) { c ->
                 c.with((c.get<CountersComponent>() ?: CountersComponent()).withAdded(counterType, count))
             }
-            newState = com.wingedsheep.engine.handlers.effects.DamageUtils.markCounterOnControlledPermanent(newState, permanentId, counterType)
+            val (marked, firstThisTurn, firstOfTypeThisTurn) = com.wingedsheep.engine.handlers.effects.DamageUtils
+                .recordCounterPlacement(newState, permanentId, counterType, placerId = payerId)
+            newState = marked
             events.add(
                 com.wingedsheep.engine.core.CountersAddedEvent(
                     permanentId,
                     counterType,
                     count,
-                    container.get<CardComponent>()?.name ?: "Permanent"
+                    container.get<CardComponent>()?.name ?: "Permanent",
+                    firstThisTurn,
+                    firstOfTypeThisTurn = firstOfTypeThisTurn,
+                    placedBy = payerId
                 )
             )
         }

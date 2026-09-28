@@ -495,9 +495,15 @@ object DamageUtils {
                 }
                 // CR 702.80 / 122.6a: the -1/-1 counters are put on the creature by the wither
                 // source's controller, so "whenever you put counters" triggers see them as yours.
+                val witherPlacer = newState.projectedState.getController(sourceId)
+                val (afterMark, firstThisTurn, firstOfTypeThisTurn) = recordCounterPlacement(
+                    newState, targetId, CounterType.MINUS_ONE_MINUS_ONE, placerId = witherPlacer
+                )
+                newState = afterMark
                 events.add(CountersAddedEvent(targetId, CounterType.MINUS_ONE_MINUS_ONE, effectiveAmount,
                     newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature",
-                    placedBy = newState.projectedState.getController(sourceId)))
+                    firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn,
+                    placedBy = witherPlacer))
                 // Wither only changes the FORM of the damage (CR 702.80a); the creature was still
                 // dealt damage by this source, so a deathtouch source still marks it for
                 // destruction as an SBA (CR 702.2b / 704.5h) even though nothing is marked as
@@ -2964,9 +2970,12 @@ object DamageUtils {
                 newState = newState.updateEntity(counterHolderId) { c ->
                     c.with(updatedCounters)
                 }
+                val (afterMark, firstThisTurn, firstOfTypeThisTurn) =
+                    recordCounterPlacement(newState, counterHolderId, counterType, placerId = sourceControllerId)
+                newState = afterMark
 
                 val entityName = counterHolder.get<CardComponent>()?.name ?: ""
-                events.add(CountersAddedEvent(counterHolderId, effect.counterType, amount, entityName, placedBy = sourceControllerId))
+                events.add(CountersAddedEvent(counterHolderId, effect.counterType, amount, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = sourceControllerId))
 
                 // Check sacrifice threshold (state-triggered ability approximation)
                 val totalCounters = updatedCounters.getCount(counterType)
