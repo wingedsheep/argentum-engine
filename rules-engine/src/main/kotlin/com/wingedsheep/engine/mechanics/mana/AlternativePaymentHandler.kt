@@ -81,8 +81,8 @@ class AlternativePaymentHandler(
         state = state,
         payment = payment,
         playerId = playerId,
-        allowsDelve = effectivelyHasKeyword(state, playerId, cardDef, Keyword.DELVE),
-        allowsConvoke = effectivelyHasKeyword(state, playerId, cardDef, Keyword.CONVOKE),
+        allowsDelve = effectivelyHasKeyword(state, playerId, cardDef, Keyword.DELVE, cardId),
+        allowsConvoke = effectivelyHasKeyword(state, playerId, cardDef, Keyword.CONVOKE, cardId),
         allowsHarmonize = hasHarmonize(state, cardId, cardDef),
         tapForGeneric = tapForGeneric,
     )
@@ -234,7 +234,7 @@ class AlternativePaymentHandler(
 
         // Handle Delve
         if (payment.delvedCards.isNotEmpty()) {
-            val hasDelve = effectivelyHasKeyword(state, playerId, cardDef, Keyword.DELVE)
+            val hasDelve = effectivelyHasKeyword(state, playerId, cardDef, Keyword.DELVE, cardId)
             if (hasDelve) {
                 val delveResult = applyDelve(currentState, reducedCost, payment.delvedCards, playerId)
                 currentState = delveResult.newState
@@ -245,7 +245,7 @@ class AlternativePaymentHandler(
 
         // Handle Convoke
         if (payment.convokedCreatures.isNotEmpty()) {
-            val hasConvoke = effectivelyHasKeyword(state, playerId, cardDef, Keyword.CONVOKE)
+            val hasConvoke = effectivelyHasKeyword(state, playerId, cardDef, Keyword.CONVOKE, cardId)
             if (hasConvoke) {
                 val convokeResult = applyConvoke(currentState, reducedCost, payment.convokedCreatures, playerId)
                 currentState = convokeResult.newState
@@ -470,12 +470,12 @@ class AlternativePaymentHandler(
     ): ManaCost {
         var reducedCost = cost
 
-        val hasDelve = effectivelyHasKeyword(state, playerId, cardDef, Keyword.DELVE)
+        val hasDelve = effectivelyHasKeyword(state, playerId, cardDef, Keyword.DELVE, cardId)
         if (payment.delvedCards.isNotEmpty() && hasDelve) {
             reducedCost = reduceGenericCost(reducedCost, payment.delvedCards.size)
         }
 
-        val hasConvoke = effectivelyHasKeyword(state, playerId, cardDef, Keyword.CONVOKE)
+        val hasConvoke = effectivelyHasKeyword(state, playerId, cardDef, Keyword.CONVOKE, cardId)
         if (payment.convokedCreatures.isNotEmpty() && hasConvoke) {
             for ((_, convokePayment) in payment.convokedCreatures) {
                 val paymentColor = convokePayment.color
@@ -499,17 +499,19 @@ class AlternativePaymentHandler(
     /**
      * True when [cardDef] effectively has [keyword] — either printed on the card or granted by
      * a battlefield permanent [playerId] controls. Returns the printed check when
-     * state/playerId/resolver aren't available.
+     * state/playerId/resolver aren't available. [cardId] is the card being cast — a grant scoped
+     * to the zone it's cast from ("spells you cast from exile have convoke") needs it.
      */
     private fun effectivelyHasKeyword(
         state: GameState?,
         playerId: EntityId?,
         cardDef: CardDefinition,
-        keyword: Keyword
+        keyword: Keyword,
+        cardId: EntityId?
     ): Boolean {
         if (cardDef.keywords.contains(keyword)) return true
         if (state == null || playerId == null || resolver == null) return false
-        return resolver.hasKeyword(state, playerId, cardDef, keyword)
+        return resolver.hasKeyword(state, playerId, cardDef, keyword, cardId)
     }
 
     /**
@@ -609,9 +611,10 @@ class AlternativePaymentHandler(
         cost: ManaCost,
         payment: AlternativePaymentChoice,
         playerId: EntityId,
-        cardDef: CardDefinition
+        cardDef: CardDefinition,
+        cardId: EntityId?
     ): AlternativePaymentResult {
-        if (!effectivelyHasKeyword(state, playerId, cardDef, Keyword.IMPROVISE)) {
+        if (!effectivelyHasKeyword(state, playerId, cardDef, Keyword.IMPROVISE, cardId)) {
             return AlternativePaymentResult(cost, state, emptyList())
         }
         return applyTapForGeneric(state, cost, payment, playerId, TapForGeneric.IMPROVISE)
@@ -652,9 +655,10 @@ class AlternativePaymentHandler(
         payment: AlternativePaymentChoice,
         cardDef: CardDefinition,
         state: GameState,
-        playerId: EntityId
+        playerId: EntityId,
+        cardId: EntityId?
     ): ManaCost {
-        if (!effectivelyHasKeyword(state, playerId, cardDef, Keyword.IMPROVISE)) return cost
+        if (!effectivelyHasKeyword(state, playerId, cardDef, Keyword.IMPROVISE, cardId)) return cost
         return calculateReducedCostForTapForGeneric(cost, payment, Int.MAX_VALUE)
     }
 

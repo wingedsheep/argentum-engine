@@ -672,7 +672,7 @@ internal class CastValidator(
                 castCostTotaller.fixedAltWaterbendAmount(state, action, playForFree)
             val tapForGeneric = when {
                 waterbendCap > 0 -> TapForGeneric.WATERBEND
-                grantedKeywordResolver.hasKeyword(state, action.playerId, cardDef, Keyword.IMPROVISE) -> TapForGeneric.IMPROVISE
+                grantedKeywordResolver.hasKeyword(state, action.playerId, cardDef, Keyword.IMPROVISE, action.cardId) -> TapForGeneric.IMPROVISE
                 else -> null
             }
             alternativePaymentHandler.validateForSpell(
@@ -805,7 +805,7 @@ internal class CastValidator(
         action: CastSpell,
         cardDef: com.wingedsheep.sdk.model.CardDefinition
     ): String? {
-        if (!grantedKeywordResolver.hasKeyword(state, action.playerId, cardDef, Keyword.CONSPIRE)) {
+        if (!grantedKeywordResolver.hasKeyword(state, action.playerId, cardDef, Keyword.CONSPIRE, action.cardId)) {
             return "This spell does not have conspire"
         }
         val chosen = action.conspiredCreatures
@@ -835,7 +835,7 @@ internal class CastValidator(
         action: CastSpell,
         cardDef: com.wingedsheep.sdk.model.CardDefinition
     ): String? {
-        val threshold = grantedKeywordResolver.casualtyThreshold(state, action.playerId, cardDef)
+        val threshold = grantedKeywordResolver.casualtyThreshold(state, action.playerId, cardDef, action.cardId)
             ?: return "This spell does not have casualty"
         val creatureId = action.casualtyCreature ?: return "Casualty requires a creature to sacrifice"
         val projected = state.projectedState

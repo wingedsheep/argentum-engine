@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
@@ -307,17 +308,28 @@ data class GrantMayCastFromLinkedExile(
  *   power threshold), or null for parameterless keywords like Convoke/Conspire. Read by the engine
  *   when the granted keyword needs a number (e.g. Silverquill: "instant and sorcery spell you cast
  *   has casualty 1" → `keyword = CASUALTY, keywordParameter = 1`).
+ * @property fromZone When set, only spells cast **from** this zone gain the keyword — "Spells you
+ *   cast from exile have convoke" (Hoarding Broodlord) → `fromZone = Zone.EXILE`. The zone is the
+ *   one the spell left when it was cast (CR 601.2a), not where it is now; null means any zone.
  */
 @SerialName("GrantKeywordToOwnSpells")
 @Serializable
 data class GrantKeywordToOwnSpells(
     val keyword: Keyword,
     val spellFilter: GameObjectFilter = GameObjectFilter.Creature,
-    val keywordParameter: Int? = null
+    val keywordParameter: Int? = null,
+    val fromZone: Zone? = null
 ) : StaticAbility {
-    override val description: String =
-        "${spellFilter.description.replaceFirstChar { it.uppercase() }} spells you cast have " +
-            "${keyword.displayName.lowercase()}${keywordParameter?.let { " $it" } ?: ""}"
+    override val description: String = buildString {
+        append(
+            if (spellFilter == GameObjectFilter.Any) "Spells"
+            else "${spellFilter.description.replaceFirstChar { it.uppercase() }} spells"
+        )
+        append(" you cast")
+        fromZone?.let { append(" from ${it.displayName.lowercase()}") }
+        append(" have ${keyword.displayName.lowercase()}")
+        keywordParameter?.let { append(" $it") }
+    }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = spellFilter.applyTextReplacement(replacer)
         return if (newFilter !== spellFilter) copy(spellFilter = newFilter) else this

@@ -238,7 +238,7 @@ internal class CastCostTotaller(
             action.alternativePayment != null && action.alternativePayment.tapForGenericPermanents.isNotEmpty()
         ) {
             alternativePaymentHandler.calculateReducedCostForImprovise(
-                costAfterWaterbend, action.alternativePayment, cardDef, state, action.playerId
+                costAfterWaterbend, action.alternativePayment, cardDef, state, action.playerId, action.cardId
             )
         } else {
             costAfterWaterbend

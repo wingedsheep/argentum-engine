@@ -145,7 +145,7 @@ internal class CastTriggers(
         }
         // Each matching permanent is a separate instance of storm (CR 702.40b), so count them all
         // rather than short-circuiting.
-        val staticGrants = grantedKeywordResolver.countGrants(state, action.playerId, cardDef, Keyword.STORM)
+        val staticGrants = grantedKeywordResolver.countGrants(state, action.playerId, cardDef, Keyword.STORM, action.cardId)
         val printed = if (cardDef.hasKeyword(Keyword.STORM)) 1 else 0
         return printed + componentGrants + staticGrants
     }

@@ -269,7 +269,7 @@ class CastSpellEnumerator(
             // Check mana affordability (including Convoke/Delve if available).
             // Convoke and Delve can be printed on the card or granted at runtime by a
             // battlefield permanent (e.g., Eirdu's "Creature spells you cast have convoke.").
-            val hasConvoke = context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.CONVOKE)
+            val hasConvoke = context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.CONVOKE, cardId)
             val convokeCreatures = if (hasConvoke) {
                 context.costUtils.findConvokeCreatures(state, playerId)
             } else null
@@ -283,12 +283,12 @@ class CastSpellEnumerator(
             // (Ironheart, Clever Champion: "Noncreature spells you cast have improvise"). Unlike
             // waterbend it is not an additional cost (CR 702.126b), so nothing is added to the
             // cost here; the taps just help pay the generic already in it, artifacts only.
-            val hasImprovise = context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.IMPROVISE)
+            val hasImprovise = context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.IMPROVISE, cardId)
             val improviseArtifacts = if (hasImprovise) {
                 context.costUtils.findTapForGenericPermanents(state, playerId, TapForGeneric.IMPROVISE)
             } else emptyList()
 
-            val hasDelve = context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.DELVE)
+            val hasDelve = context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.DELVE, cardId)
             val delveCards = if (hasDelve) {
                 context.costUtils.findDelveCards(state, playerId)
             } else null
@@ -1379,10 +1379,11 @@ class CastSpellEnumerator(
     ): List<LegalAction> {
         val state = context.state
         // Both lookups scan the battlefield, so memoize: the artifacts per caster, and the keyword
-        // answer per (caster, card definition) — a hand of modal/kicked variants otherwise re-asks
-        // the same question for every emitted action.
+        // answer per (caster, card) — a hand of modal/kicked variants otherwise re-asks the same
+        // question for every emitted action. Keyed by the card, not its definition: a zone-scoped
+        // grant ("spells you cast from exile …") can answer differently for two copies.
         val artifactsByPlayer = mutableMapOf<EntityId, List<TapForGenericPermanentData>>()
-        val hasImproviseByCard = mutableMapOf<Pair<EntityId, String>, Boolean>()
+        val hasImproviseByCard = mutableMapOf<Pair<EntityId, EntityId>, Boolean>()
         return actions.map { la ->
             val cs = la.action as? CastSpell
             if (cs == null || la.hasTapForGeneric) return@map la
@@ -1393,8 +1394,8 @@ class CastSpellEnumerator(
             if (artifacts.isEmpty()) return@map la
             val cardComponent = state.getEntity(cs.cardId)?.get<CardComponent>() ?: return@map la
             val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return@map la
-            val hasImprovise = hasImproviseByCard.getOrPut(cs.playerId to cardComponent.cardDefinitionId) {
-                context.grantedKeywordResolver.hasKeyword(state, cs.playerId, cardDef, Keyword.IMPROVISE)
+            val hasImprovise = hasImproviseByCard.getOrPut(cs.playerId to cs.cardId) {
+                context.grantedKeywordResolver.hasKeyword(state, cs.playerId, cardDef, Keyword.IMPROVISE, cs.cardId)
             }
             if (!hasImprovise) return@map la
             // Are the taps needed, or just offered? Improvise is optional (CR 702.126a "you may"),
@@ -1612,7 +1613,7 @@ class CastSpellEnumerator(
             if (cardComponent.typeLine.isLand) continue
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
-            if (!context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.CONSPIRE)) continue
+            if (!context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.CONSPIRE, cardId)) continue
             // A per-spell restriction (e.g. PlayersCantCastSpells with a filter) removes the
             // conspire variant for this card even though the blanket check above passed.
             if (context.cantCastSpell(cardId)) continue
@@ -1719,7 +1720,7 @@ class CastSpellEnumerator(
             if (cardComponent.typeLine.isLand) continue
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
-            val threshold = context.grantedKeywordResolver.casualtyThreshold(state, playerId, cardDef) ?: continue
+            val threshold = context.grantedKeywordResolver.casualtyThreshold(state, playerId, cardDef, cardId) ?: continue
             if (context.cantCastSpell(cardId)) continue
 
             // Timing (same rules as a normal cast).

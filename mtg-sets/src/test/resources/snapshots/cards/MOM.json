@@ -2188,6 +2188,93 @@
     ]
 }
 
+// Hoarding Broodlord
+{
+    "name": "Hoarding Broodlord",
+    "manaCost": "{5}{B}{B}{B}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Convoke\nFlying\nWhen this creature enters, search your library for a card, exile it face down, then shuffle. For as long as that card remains exiled, you may play it.\nSpells you cast from exile have convoke.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 6
+    },
+    "keywords": [
+        "CONVOKE",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hoarding Broodlord:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library"
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Search your library for a card"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "faceDown": "HIDDEN",
+                            "storeMovedAs": "moved2"
+                        },
+                        "ShuffleLibrary",
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "moved2",
+                            "expiry": "Permanent"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeywordToOwnSpells",
+                "keyword": "CONVOKE",
+                "spellFilter": {},
+                "fromZone": "Exile"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "RARE",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/386ce3c9-869d-461c-a3de-c8add3786f73.jpg?1783917006"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ichor Shade
 {
     "name": "Ichor Shade",

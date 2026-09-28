@@ -8,6 +8,7 @@ import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.AdditionalCostData
+import com.wingedsheep.engine.legalactions.ConvokeCreatureData
 import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.state.ZoneKey
@@ -410,6 +411,9 @@ class CastFromZoneEnumerator(
         val state = context.state
         val playerId = context.playerId
         val linkedExileCardIds = mutableSetOf<EntityId>()
+        // Cards whose from-exile/graveyard cast may convoke (printed, or granted — Hoarding
+        // Broodlord's "Spells you cast from exile have convoke"), with the creatures that can tap.
+        val convokeByCard = mutableMapOf<EntityId, List<ConvokeCreatureData>>()
 
         // Check all players' exile zones because cards like Villainous Wealth exile from
         // an opponent's library (cards stay in their owner's exile zone). Graveyards
@@ -536,11 +540,22 @@ class CastFromZoneEnumerator(
                         isFromExile = sourceZoneLabel == "EXILE",
                         isFromHand = false
                     )
+                    // Convoke (CR 702.51) — printed, or granted by a zone-scoped grant keyed to the
+                    // zone this card is cast from. A free cast has nothing for convoke to pay.
+                    val convokeCreatures = if (!playForFree && cardDef != null &&
+                        context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.CONVOKE, cardId)
+                    ) {
+                        context.costUtils.findConvokeCreatures(state, playerId).also { convokeByCard[cardId] = it }
+                    } else emptyList()
                     val canAfford = playForFree ||
                         context.manaSolver.canPay(
                             state, playerId, effectiveCost,
                             precomputedSources = context.availableManaSources, spellContext = spellContext
                         ) ||
+                        (convokeCreatures.isNotEmpty() && context.costUtils.canAffordWithConvoke(
+                            state, playerId, effectiveCost, convokeCreatures,
+                            precomputedSources = context.availableManaSources, spellContext = spellContext
+                        )) ||
                         (fixedAltWaterbend != null && context.costUtils.canAffordWithTapForGeneric(
                             state, playerId, effectiveCost,
                             context.costUtils.findTapForGenericPermanents(state, playerId, TapForGeneric.WATERBEND)
@@ -758,10 +773,17 @@ class CastFromZoneEnumerator(
             val la = result[i]
             val cs = la.action as? CastSpell ?: continue
             if (la.actionType != "CastSpell") continue
+            // Convoke metadata for the paid variants, so the client offers the creature-tap step
+            // (mirrors what CastSpellEnumerator attaches to a hand cast).
+            if (!cs.useWithoutPayingManaCost) {
+                convokeByCard[cs.cardId]?.let { creatures ->
+                    result[i] = la.copy(hasConvoke = true, convokeCreatures = creatures)
+                }
+            }
             val fixedAlt = state.getEntity(cs.cardId)
                 ?.get<PlayWithFixedAlternativeManaCostComponent>()
                 ?.takeIf { it.controllerId == playerId && it.waterbend } ?: continue
-            result[i] = la.copy(
+            result[i] = result[i].copy(
                 hasTapForGeneric = true,
                 tapForGenericPermanents =
                     context.costUtils.findTapForGenericPermanents(state, playerId, TapForGeneric.WATERBEND),

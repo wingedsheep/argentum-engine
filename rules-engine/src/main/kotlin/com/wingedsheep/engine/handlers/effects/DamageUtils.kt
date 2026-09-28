@@ -872,7 +872,7 @@ object DamageUtils {
         val controllerId = container.get<ControllerComponent>()?.playerId ?: spellOnStack.casterId
         val cardDef = container.get<CardComponent>()
             ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: return false
-        return GrantedKeywordResolver(cardRegistry).hasKeyword(state, controllerId, cardDef, keyword)
+        return GrantedKeywordResolver(cardRegistry).hasKeyword(state, controllerId, cardDef, keyword, sourceId)
     }
 
     /**

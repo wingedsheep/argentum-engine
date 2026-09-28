@@ -200,4 +200,72 @@ class GrantKeywordToOwnSpellsTest : FunSpec({
         // Convoke is not granted to noncreature spells, so the attempt to pay with convoke fails.
         result.outcome shouldNotBe Outcome.Done
     }
+
+    // --- Zone-scoped grant: "Spells you cast from exile have convoke" (Hoarding Broodlord) ---
+
+    val ExileConvokeGranter = CardDefinition.creature(
+        name = "Exile Convoke Granter",
+        manaCost = ManaCost.parse("{3}{B}"),
+        subtypes = setOf(Subtype("Dragon")),
+        power = 4,
+        toughness = 4,
+        oracleText = "Spells you cast from exile have convoke.",
+        script = CardScript(
+            staticAbilities = listOf(
+                GrantKeywordToOwnSpells(
+                    keyword = Keyword.CONVOKE,
+                    spellFilter = GameObjectFilter.Any,
+                    fromZone = com.wingedsheep.sdk.core.Zone.EXILE
+                )
+            )
+        )
+    )
+
+    fun createZoneDriver(): GameTestDriver {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all + listOf(ExileConvokeGranter, TestConvokeBeneficiary))
+        driver.initMirrorMatch(deck = Deck.of("Plains" to 20, "Forest" to 20), skipMulligans = true)
+        return driver
+    }
+
+    test("a zone-scoped grant reads the zone the spell is cast from") {
+        val driver = createZoneDriver()
+        val caster = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.putCreatureOnBattlefield(caster, "Exile Convoke Granter")
+
+        val resolver = GrantedKeywordResolver(driver.cardRegistry)
+        val beneficiary = driver.cardRegistry.requireCard("Convoke Beneficiary")
+        val inExile = driver.putCardInExile(caster, "Convoke Beneficiary")
+        val inHand = driver.putCardInHand(caster, "Convoke Beneficiary")
+        val inGraveyard = driver.putCardInGraveyard(caster, "Convoke Beneficiary")
+
+        resolver.hasKeyword(driver.state, caster, beneficiary, Keyword.CONVOKE, inExile) shouldBe true
+        resolver.hasKeyword(driver.state, caster, beneficiary, Keyword.CONVOKE, inHand) shouldBe false
+        resolver.hasKeyword(driver.state, caster, beneficiary, Keyword.CONVOKE, inGraveyard) shouldBe false
+        // Without the spell, the zone is unknown and the grant fails closed.
+        resolver.hasKeyword(driver.state, caster, beneficiary, Keyword.CONVOKE) shouldBe false
+    }
+
+    test("once on the stack, a spell answers by the zone it was cast from, not the stack") {
+        val driver = createZoneDriver()
+        val caster = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.putCreatureOnBattlefield(caster, "Exile Convoke Granter")
+
+        val resolver = GrantedKeywordResolver(driver.cardRegistry)
+        val beneficiary = driver.cardRegistry.requireCard("Convoke Beneficiary")
+        val card = driver.putCardInHand(caster, "Convoke Beneficiary")
+        fun onStackFrom(zone: com.wingedsheep.sdk.core.Zone) = driver.state.updateEntity(card) {
+            it.with(com.wingedsheep.engine.state.components.stack.SpellOnStackComponent(casterId = caster, castFromZone = zone))
+        }
+
+        resolver.hasKeyword(onStackFrom(com.wingedsheep.sdk.core.Zone.EXILE), caster, beneficiary, Keyword.CONVOKE, card) shouldBe true
+        resolver.hasKeyword(onStackFrom(com.wingedsheep.sdk.core.Zone.HAND), caster, beneficiary, Keyword.CONVOKE, card) shouldBe false
+    }
+
+    test("the zone-scoped grant renders its zone in the description") {
+        GrantKeywordToOwnSpells(Keyword.CONVOKE, GameObjectFilter.Any, fromZone = com.wingedsheep.sdk.core.Zone.EXILE)
+            .description shouldBe "Spells you cast from exile have convoke"
+    }
 })
