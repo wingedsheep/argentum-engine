@@ -105,23 +105,13 @@ class TriggerDetector(
         // with or without a sourceFilter, and only there: that path binds the
         // damage *source* as the triggering entity ("…exile it", Farsight Mask), and
         // routing it to the general observers as well would fire it twice.
-        val list = if (trigger.recipient == Recipient.You) {
-            damageToYou
-        } else if (trigger.damageType == DamageType.Combat &&
-            trigger.recipient == Recipient.AnyPlayer &&
-            trigger.sourceFilter != null &&
-            trigger.sourceFilter is GameObjectFilter &&
-            (trigger.sourceFilter as GameObjectFilter).cardPredicates.any {
-                it is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype
-            }
-        ) {
-            subtypeDmg
-        } else {
-            // General damage observer (e.g., Kazarov, Gossip's Talent level 3)
-            damageObs
+        val list = when (damageObserverBucket(trigger)) {
+            DamageObserverBucket.ToYou -> damageToYou
+            DamageObserverBucket.SubtypeToPlayer -> subtypeDmg
+            DamageObserverBucket.General -> damageObs
         }
-        // The consumers walk every ability on the entry, so an entity with two damage observers
-        // filed twice would fire each of them twice.
+        // An entity is filed once per bucket; each consumer walks every ability on the entry but
+        // only acts on the abilities [damageObserverBucket] assigns to its own bucket.
         if (list.none { it === entry }) list.add(entry)
     }
 

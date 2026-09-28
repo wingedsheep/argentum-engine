@@ -278,6 +278,7 @@ class DamageTriggerDetector(
     ) {
         for (entry in index.damageObservers) {
             for (ability in entry.abilities) {
+                if (!isGeneralDamageObserver(ability)) continue
                 matchDamageObserver(
                     state = state,
                     event = event,
@@ -391,6 +392,7 @@ class DamageTriggerDetector(
                 val trigger = ability.trigger
                 if (trigger !is EventPattern.DealsDamageEvent || !trigger.batch) continue
                 if (ability.binding != TriggerBinding.ANY) continue
+                if (!isGeneralDamageObserver(ability)) continue
 
                 val firstMatching = damageEvents.firstOrNull { event ->
                     matcher.matchesDealsDamageTrigger(trigger, event, state, entry.controllerId, entry.entityId)
@@ -458,4 +460,31 @@ class DamageTriggerDetector(
             }
         }
     }
+}
+
+/** Which detector owns an ANY-bound [EventPattern.DealsDamageEvent] observer. */
+internal enum class DamageObserverBucket { ToYou, SubtypeToPlayer, General }
+
+/**
+ * Every "… deals damage to you" observer goes to the damage-to-you bucket, with or without a
+ * sourceFilter, and only there: that path binds the damage *source* as the triggering entity
+ * ("…exile it", Farsight Mask), and routing it to the general observers as well would fire it twice.
+ */
+internal fun damageObserverBucket(trigger: EventPattern.DealsDamageEvent): DamageObserverBucket {
+    if (trigger.recipient == Recipient.You) return DamageObserverBucket.ToYou
+    val filter = trigger.sourceFilter
+    val subtypeCombatToPlayer = trigger.damageType == DamageType.Combat &&
+        trigger.recipient == Recipient.AnyPlayer &&
+        filter is GameObjectFilter &&
+        filter.cardPredicates.any { it is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype }
+    return if (subtypeCombatToPlayer) DamageObserverBucket.SubtypeToPlayer else DamageObserverBucket.General
+}
+
+/**
+ * A permanent is filed under each bucket it has an observer for, so the general walk must skip the
+ * abilities that belong to the You / subtype buckets or they would fire once per bucket.
+ */
+private fun isGeneralDamageObserver(ability: TriggeredAbility): Boolean {
+    val trigger = ability.trigger
+    return trigger is EventPattern.DealsDamageEvent && damageObserverBucket(trigger) == DamageObserverBucket.General
 }

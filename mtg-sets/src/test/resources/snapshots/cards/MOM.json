@@ -2264,6 +2264,303 @@
     ]
 }
 
+// Elesh Norn
+{
+    "name": "Elesh Norn",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Creature — Phyrexian Praetor",
+    "oracleText": "Vigilance\nWhenever a source an opponent controls deals damage to you or a permanent you control, that source's controller loses 2 life unless they pay {1}.\n{2}{W}, Sacrifice three other creatures: Exile Elesh Norn, then return it to the battlefield transformed under its owner's control. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elesh Norn:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    },
+                    "sourceFilter": "ctrl:opponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{1}"
+                        }
+                    },
+                    "suffer": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "ControllerOfTriggeringEntity"
+                        }
+                    },
+                    "player": {
+                        "type": "PlayerRef",
+                        "player": "ControllerOfTriggeringEntity"
+                    }
+                }
+            },
+            {
+                "id": "Elesh Norn:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "permanent ctrl:you"
+                    },
+                    "sourceFilter": "ctrl:opponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{1}"
+                        }
+                    },
+                    "suffer": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "ControllerOfTriggeringEntity"
+                        }
+                    },
+                    "player": {
+                        "type": "PlayerRef",
+                        "player": "ControllerOfTriggeringEntity"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Elesh Norn:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsSource"
+                                        }
+                                    ]
+                                },
+                                "count": 3
+                            }
+                        }
+                    ]
+                },
+                "effect": "ExileAndReturnTransformed",
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "The Argent Etchings",
+        "manaCost": "",
+        "typeLine": "Enchantment — Saga",
+        "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Incubate 2 five times, then transform all Incubator tokens you control.\nII — Creatures you control get +1/+1 and gain double strike until end of turn.\nIII — Destroy all other permanents except for artifacts, lands, and Phyrexians. Exile this Saga, then return it to the battlefield (front face up).",
+        "script": {
+            "sagaChapters": [
+                {
+                    "chapter": 1,
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RepeatDynamicTimes",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "body": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "CreatePredefinedToken",
+                                            "tokenType": "Incubator"
+                                        },
+                                        {
+                                            "type": "AddCounters",
+                                            "counterType": "PLUS_ONE_PLUS_ONE",
+                                            "count": 2,
+                                            "target": {
+                                                "type": "PipelineTarget",
+                                                "collectionName": "createdTokens"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "permanent Incubator token ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "Transform",
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "chapter": 2,
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "ModifyStats",
+                                    "powerModifier": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "toughnessModifier": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "target": "IterationEntity"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "DOUBLE_STRIKE",
+                                    "target": "IterationEntity"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "chapter": 3,
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsNonland",
+                                            "IsPermanent",
+                                            "IsNonartifact",
+                                            {
+                                                "type": "NotSubtype",
+                                                "subtype": "Phyrexian"
+                                            }
+                                        ],
+                                        "statePredicates": [
+                                            {
+                                                "type": "StateNot",
+                                                "predicate": "IsSource"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "destroyAll_gathered"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "destroyAll_gathered",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy"
+                            },
+                            {
+                                "type": "ExileAndReturnTransformed",
+                                "returnAs": "FRONT"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "12",
+            "rarity": "MYTHIC",
+            "artist": "Magali Villeneuve",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/8/d8999135-ddb1-4e4c-b885-e25f23dac3d3.jpg?1783917075"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8999135-ddb1-4e4c-b885-e25f23dac3d3.jpg?1783917075",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Elesh Norn's triggered ability will trigger separately for each permanent dealt damage by a source an opponent controls, plus once if you're dealt damage by that source."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Similarly, the triggered ability will trigger separately for each source an opponent controls that deals damage to you or a permanent you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Elspeth's Smite
 {
     "name": "Elspeth's Smite",
