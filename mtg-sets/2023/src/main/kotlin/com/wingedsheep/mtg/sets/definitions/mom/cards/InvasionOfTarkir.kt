@@ -54,11 +54,12 @@ private val InvasionOfTarkirFront = card("Invasion of Tarkir") {
                 reveal(chosen)
             },
             optional = false,
-            reflexiveEffect = Effects.DealDamage(revealedDragons.count + 2, EffectTarget.ContextTarget(0)),
-            reflexiveTargetRequirements = listOf(TargetOther(Targets.Any)),
             descriptionOverride = "Reveal any number of Dragon cards from your hand. When you do, this " +
                 "Siege deals X plus 2 damage to any other target, where X is the number of cards revealed this way.",
-        )
+        ) {
+            val victim = target(TargetOther(Targets.Any))
+            effect = Effects.DealDamage(revealedDragons.count + 2, victim)
+        }
         description = "When this Siege enters, reveal any number of Dragon cards from your hand. When you " +
             "do, this Siege deals X plus 2 damage to any other target, where X is the number of cards " +
             "revealed this way. (X can be 0.)"
