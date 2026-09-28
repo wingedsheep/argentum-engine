@@ -302,7 +302,14 @@ data class TriggeredAbilityOnStackComponent(
      * [com.wingedsheep.sdk.scripting.TriggeredAbility.triggerRestriction], which CR 603.2 checks
      * only when the trigger would fire.
      */
-    val interveningIf: com.wingedsheep.sdk.scripting.conditions.Condition? = null
+    val interveningIf: com.wingedsheep.sdk.scripting.conditions.Condition? = null,
+    /**
+     * This object is a backup ability (CR 702.165) — [com.wingedsheep.sdk.scripting.TriggeredAbility.isBackup],
+     * carried onto the stack because a "becomes the target of a backup ability" trigger reads the
+     * targeting object, and an ability on the stack has no card data to say what it is. A copy
+     * keeps it ([com.wingedsheep.engine.handlers.effects.stack.CopyTargetTriggeredAbilityExecutor.cloneAbility]).
+     */
+    val isBackup: Boolean = false
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }

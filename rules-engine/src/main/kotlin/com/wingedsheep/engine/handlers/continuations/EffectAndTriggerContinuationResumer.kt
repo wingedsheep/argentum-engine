@@ -152,7 +152,8 @@ class EffectAndTriggerContinuationResumer(
                 triggerContext = continuation.triggerContext,
                 xValue = continuation.triggerContext?.xValue,
                 carriedPipeline = continuation.carriedPipeline,
-                interveningIf = continuation.interveningIf
+                interveningIf = continuation.interveningIf,
+                isBackup = continuation.isBackup
             )
             val stackResult = services.stackResolver.putTriggeredAbility(state, elseComponent, emptyList())
             if (stackResult.outcome !is Outcome.Done) return stackResult
@@ -208,7 +209,8 @@ class EffectAndTriggerContinuationResumer(
             triggerContext = continuation.triggerContext,
             xValue = continuation.triggerContext?.xValue,
             carriedPipeline = continuation.carriedPipeline,
-            interveningIf = continuation.interveningIf
+            interveningIf = continuation.interveningIf,
+            isBackup = continuation.isBackup
         )
 
         val stackResult = services.stackResolver.putTriggeredAbility(
@@ -289,7 +291,8 @@ class EffectAndTriggerContinuationResumer(
             selectedTargets = selectedTargets,
             targetRequirements = alignedRequirements,
             totalDamage = total,
-            interveningIf = continuation.interveningIf
+            interveningIf = continuation.interveningIf,
+            isBackup = continuation.isBackup
         )
 
         return state.suspendForDecision(question, distributionContinuation, emptyList())
@@ -321,7 +324,8 @@ class EffectAndTriggerContinuationResumer(
             triggerContext = continuation.triggerContext,
             xValue = continuation.triggerContext?.xValue,
             damageDistribution = response.distribution,
-            interveningIf = continuation.interveningIf
+            interveningIf = continuation.interveningIf,
+            isBackup = continuation.isBackup
         )
 
         val stackResult = services.stackResolver.putTriggeredAbility(

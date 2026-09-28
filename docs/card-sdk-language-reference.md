@@ -2647,7 +2647,10 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 - `CopyTargetSpellEffect(target, keywordsForCopy, removeLegendary, addedTokenKeywords, sacrificeTokenAtStep, sacrificeTokenOnlyOnControllersTurn, copies = DynamicAmount.Fixed(1))` (facade `Effects.CopyTargetSpell(...)`) — copy a spell on the stack. `keywordsForCopy` grants keywords to the copy **while it remains a spell** (wither/lifelink). When the copied spell is a **permanent spell** it becomes a token as it resolves (CR 707.10f); the *token-side* riders bake onto that token for its life on the battlefield: `addedTokenKeywords` (e.g. `HASTE`) are unioned into the token's base keywords, and `sacrificeTokenAtStep: Step?` registers a delayed "sacrifice this token" trigger at the next matching step (`sacrificeTokenOnlyOnControllersTurn` gates it to "your next" step). The spell-copy mirror of `CreateTokenCopyOfTargetEffect.addedKeywords` / `sacrificeAtStep`. Used by **Choreographed Sparks** ("Copy target creature spell you control. The copy gains haste and 'At the beginning of the end step, sacrifice this token.'"). Pair with `TargetObject(filter = TargetFilter.CreatureSpellOnStack.youControl())`. `copies` (a `DynamicAmount`, default 1) makes *N independent copies*, each retargeted separately (CR 707.10c) — **Thousand-Year Storm** ("copy it for each other instant and sorcery spell you've cast before it this turn") pairs `Effects.CopyTargetSpell(TriggeringEntity, copies = DynamicAmounts.spellsCastThisTurn(filter = InstantOrSorcery, beforeTriggeringSpell = true))` with `Triggers.you.casts(InstantOrSorcery)`. A count of zero or less makes no copies at all; a spell with no targets, or one with no legal replacement target, gets its copies without a prompt (inheriting the original's targets).
 - `CopyEachTargetSpellEffect()` (facade `Effects.CopyEachTargetSpell(keywordsForCopy, removeLegendary)`) — copy **every** spell targeted by this effect (one copy per `ChosenTarget.Spell` in context), pausing per copy that has targets so the controller may choose new targets (CR 707.10). Pair with an unlimited spell target requirement — `TargetObject(filter = TargetFilter.InstantOrSorcerySpellOnStack, unlimited = true)`. Used by Display of Power ("Copy any number of target instant and/or sorcery spells."). Spells flagged `cantBeCopied` are skipped.
 - `CopySpellForEachOtherPossibleTargetEffect(spell = EffectTarget.TriggeringEntity, candidates)` (facade `Effects.CopySpellForEachOtherPossibleTarget(candidates, spell)`) — copy a spell once **for each other object it could target**, auto-assigning every copy a distinct one of those objects (CR 707.10d). The Zada family: **Mirrorwing Dragon**, Zada, Hedron Grinder. This is the 707.10d shape, **not** 707.10c — no decision is made, so contrast `CopyTargetSpellEffect(copies = …)`, which makes N copies and pauses to let the controller *choose* new targets for each. The candidate set is every object matching `candidates` that is a legal target for **every** instance of the word "target" on the spell (the per-requirement legal-target sets are intersected, so hexproof/shroud/protection and per-requirement filters are honored — "any creature that couldn't be targeted … is just ignored"), minus the objects the spell already targets (the "each **other** …" of the card text). Each copy fills *all* of the spell's target slots with its one object; a modal spell keeps its chosen modes with its per-mode targets rewritten the same way (700.2g — "a different mode cannot be chosen"). **`candidates` and control of the copies both resolve against the copied spell's controller, not this ability's controller** — which is what makes one effect express both wordings: Zada's "each other creature **you** control" (a trigger only its own controller's casts fire) and Mirrorwing's "each other creature **they** control … **that player** copies" (a trigger watching every seat), so `GameObjectFilter.Creature.youControl()` reads as "creature the caster controls". Cast Murder on an opponent's Mirrorwing Dragon and *your* creatures each get a Murder. The copies aren't cast, so cast triggers (including the Dragon's own) don't refire; a spell flagged `cantBeCopied` yields no copies. Pair with `Triggers.anyPlayer.casts(InstantOrSorcery, requires = setOf(SpellCastPredicate.TargetsOnlySource))`.
-- `CopyTargetTriggeredAbilityEffect(target)` — copy a triggered ability on the stack.
+- `CopyTargetTriggeredAbilityEffect(target)` — copy a triggered ability on the stack. `target` is
+  usually `ContextTarget(0)`; `EffectTarget.TargetingSource` copies the ability that just targeted
+  something (Mirror-Shield Hoplite). The copy keeps the original's source and flags (a copy of a backup
+  ability is a backup ability).
 - `CopyTargetSpellOrAbilityEffect(target, copies = DynamicAmount.Fixed(1))` (facade `Effects.CopyTargetSpellOrAbility(target, copies)`) — copy whichever kind of stack object the single target resolved to, dispatching at resolution by inspecting the stack entity's component: an instant/sorcery **spell** copies via the spell-copy path, a **triggered ability** via `CopyTargetTriggeredAbilityEffect`'s logic, an **activated ability** by cloning its `ActivatedAbilityOnStackComponent`. You may choose new targets for the copy (CR 707.10c). Pair with `TargetObject(filter = TargetFilter.InstantSorcerySpellOrAbilityOnStack)` (one requirement admitting all four kinds). Generalizes the two single-kind copy effects into the "copy target instant/sorcery spell, activated ability, or triggered ability" clause — **Return the Favor**. `copies` (a `DynamicAmount`, default 1) makes *N independent copies* of an **ability** — pass `DynamicAmount.XValue` for "copy target activated or triggered ability you control X times" (**Gogo, Master of Mimicry**); the executor pauses per copy that has targets so each is retargeted independently, and a no-target ability is copied all the same. `copies` > 1 is honored on both branches — the spell branch forwards it to `CopyTargetSpellEffect.copies`. An ability instance tagged "can't be copied" (`ActivatedAbility.cantBeCopied`, see §9/§11) yields no copies (CR 707.10e).
 - `CopyNextSpellCastEffect(copies = 1, spellFilter = InstantOrSorcery)` (facade `Effects.CopyNextSpellCast(copies, spellFilter)`) — when its controller next casts a spell matching `spellFilter` this turn, create `copies` copies of it. `spellFilter` is a `GameObjectFilter` matched against the spell as it's cast, so the default "instant or sorcery" (Howl of the Horde) can be widened — e.g. `GameObjectFilter.Creature` for "copy the next creature spell." The filter is evaluated with the rider's **own source** in the predicate context, so it may be source-relative — Loki Laufeyson's "with mana value less than or equal to Loki's power" is `InstantOrSorcery.manaValueAtMostDynamic(DynamicAmounts.sourcePower())`, resolved as the spell is cast (which is when the delayed trigger's condition is checked), not when the rider was created. Consumed after one matching cast. Non-matching casts leave the entry waiting. A source-relative filter keeps working after the source **leaves the battlefield** (CR 608.2h / 113.7a — the rider exists independently of its source): `ZoneTransitionService` stamps the departing permanent's `EntitySnapshot` onto the pending entry, and `PredicateEvaluator.evaluateDynamicCap` threads it into the reconstructed `EffectContext` so `DynamicAmountEvaluator`'s existing last-known-information branch resolves the cap. The stamp happens at **departure**, not at rider creation, so a source that grew after arming the rider caps on the larger value — Loki armed at 2/1, powered up to 4/3, then killed still copies a mana-value-4 spell.
 - `CopyEachSpellCastEffect(copies = 1, spellFilter = InstantOrSorcery)` (facade `Effects.CopyEachSpellCast(copies, spellFilter)`) — the persistent sibling: copies **every** spell matching `spellFilter` the controller casts for the rest of the turn (The Mirari Conjecture Ch. III). Same `spellFilter` parameterization as above.
@@ -4087,6 +4090,10 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   ability whose source already *is* the granter (Territory Forge / Sharkey-style gains), it resolves
   to the same entity as `Self`.
 - `EffectTarget.TriggeringEntity` — the entity that caused the trigger to fire.
+- `EffectTarget.TargetingSource` — "that spell or ability" in a becomes-the-target trigger: the stack
+  object that did the targeting (`TriggerContext.targetingSourceEntityId`), where `TriggeringEntity` is
+  the permanent it targeted. The object sibling of `Player.ControllerOfTargetingSource`. Mirror-Shield
+  Hoplite copies it with `CopyTargetTriggeredAbility(TargetingSource)`.
 - `EffectTarget.TargetController` — the controller of the spell/ability's first chosen target
   ("its controller creates two Map tokens", "its controller gains 4 life"). Control-change effects
   are honored (projected controller first), and a target that has already left the battlefield —
@@ -5837,7 +5844,7 @@ costs, and records the chosen face's name in turn history.
 
 ## 8. Triggered abilities (`Triggers.*`)
 
-`triggeredAbility { trigger; effect; target?; triggerZone?/triggerZones?; interveningIf?; triggerRestriction?; optional?; elseEffect?; checkOnNextState?; dealsDamageBeforeResolve?; controlledByTriggeringEntityController?; oncePerTurn?; effectOncePerTurn?; triggersOnce? }`.
+`triggeredAbility { trigger; effect; target?; triggerZone?/triggerZones?; interveningIf?; triggerRestriction?; optional?; elseEffect?; checkOnNextState?; dealsDamageBeforeResolve?; controlledByTriggeringEntityController?; oncePerTurn?; effectOncePerTurn?; triggersOnce?; isBackup? }`.
 
 ### Writing a trigger: subject, then verb
 
@@ -5877,7 +5884,7 @@ moves), `attacks(requires)`, `blocks(attackerFilter?, minBlockedAttackers?)`, `b
 requireExcess, batch, requires)`, `dealsCombatDamage(to, …)`, `isDealtDamage(by)`,
 `damagedCreatureDies(dying?)`, `becomesTapped(reason?, firstTimeEachTurn?)`, `becomesUntapped()`, `tappedForMana()` (SELF),
 `turnedFaceUp()`, `transforms(intoBackFace?)`, `phasesIn()`, `becomesTarget(of?, byYou, byOpponent,
-spellsOnly, abilitiesOnly, firstTimeEachTurn, includeSpellTargets, includePlayerTargets)`,
+spellsOnly, abilitiesOnly, firstTimeEachTurn, includeSpellTargets, includePlayerTargets, ofBackupAbility)`,
 `getsCounters(type?, by?, firstTimeEachTurn?, batch?)`, `losesCounters(type?, lastRemoved?,
 byDamagePrevention?)`, `trains()`, `champions()`, `crews()`, `saddles()`, `becomesSaddled()`,
 `becomesRenowned()`, `becomesPlotted()`, `explores(revealed?)`, `connives()`, `becomesAttached(to,
@@ -6003,6 +6010,15 @@ while that permanent stays on the battlefield — tracked by a `TriggeredAbility
 that is **not** cleared at end of turn (it lives on the entity, so re-entering the battlefield as a
 new object — a distinct game object — triggers afresh). Both caps share one detection-time filter and
 collapse simultaneous fires of the same `(source, ability)` to a single instance.
+
+**Backup (CR 702.165) — `isBackup = true`.** "Backup N" has no bespoke effect: it is an enters trigger
+the card composes — `val c = target(TargetFilter.Creature)`, `AddCounters(PLUS_ONE_PLUS_ONE, N, c) then
+If(Not(TargetIsSource(0)), GrantKeyword(…, c) then …)` (the grant is the abilities printed *below*
+backup, until end of turn; a triggered one is `GrantTriggeredAbility`). `isBackup = true` on the
+`triggeredAbility { }` is only the keyword marker, the triggered twin of `activatedAbility { isBoast }`:
+it rides onto the stack (`TriggeredAbilityOnStackComponent.isBackup`, kept by copies) so
+`becomesTarget(ofBackupAbility = true)` can tell a backup ability from any other targeting object
+(Boon-Bringer Valkyrie; Mirror-Shield Hoplite reads it).
 
 **`effectOncePerTurn` — "Do this only once each turn", and the one that is easy to get wrong.** Magic
 prints two different "only once each turn" riders and they need two different flags:
@@ -6881,6 +6897,13 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   `oncePerTurn = true` on the ability for "This ability triggers only once each turn". ANY-bound.
   The trigger fires at target announcement (CR 601.2c for spells, CR 602.2b / 603.3d for activated
   and triggered abilities), so it still fires when the ability is later countered or fizzles.
+- `Triggers.a(filter).becomesTarget(ofBackupAbility = true)` — something becomes the target of a
+  **backup ability** (`BecomesTargetEvent(backupAbilitiesOnly = true)`). An ability on the stack has no
+  card data for `of` to read, so the matcher reads the targeting object's
+  `TriggeredAbilityOnStackComponent.isBackup` instead — the marker `triggeredAbility { isBackup = true }`
+  sets. Pairs with `EffectTarget.TargetingSource` for "copy that ability": Mirror-Shield Hoplite is
+  `Triggers.a(Creature.youControl()).becomesTarget(ofBackupAbility = true)` +
+  `CopyTargetTriggeredAbility(EffectTarget.TargetingSource)` + `oncePerTurn = true`.
 - `Triggers.a(filter).phasesIn()` — a permanent matching `filter` phases in (Rule 702.26). Matches the engine's
   `PhasedInEvent`, which `BeginningPhaseManager.performUntapStep` emits when a phased-out permanent
   returns during its controller's untap step. ANY-bound (use the filter, e.g. "a Spirit you control",

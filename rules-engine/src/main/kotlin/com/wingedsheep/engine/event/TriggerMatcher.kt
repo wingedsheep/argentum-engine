@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.event
 
+import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.handlers.predicates.isModified
 
@@ -1531,6 +1532,15 @@ class TriggerMatcher(
         // same `sourceIsSpell` axis stamped by StackResolver.emitBecomesTarget.
         if (trigger.spellsOnly && !event.sourceIsSpell) return false
         if (trigger.abilitiesOnly && event.sourceIsSpell) return false
+
+        // "becomes the target of a **backup** ability" (Mirror-Shield Hoplite). An ability on the
+        // stack has no card data for `sourceFilter` to read; what kind of ability it is travels on
+        // its stack component instead (TriggeredAbility.isBackup).
+        if (trigger.backupAbilitiesOnly) {
+            if (event.sourceIsSpell) return false
+            val onStack = state.getEntity(event.sourceEntityId)?.get<TriggeredAbilityOnStackComponent>()
+            if (onStack?.isBackup != true) return false
+        }
 
         // "becomes the target of an **Aura** spell" (Brine Comber) — narrow by the targeting
         // object's own card data. The source is a spell on the stack (or the permanent whose

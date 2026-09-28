@@ -1775,6 +1775,11 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * the printed wording says "spell", since a permanent's *ability* would otherwise match the same
      * card types (an Aura already on the battlefield targeting with an activated ability).
      *
+     * [backupAbilitiesOnly] is the ability-side counterpart of [sourceFilter]: "becomes the target
+     * of a **backup** ability" (Mirror-Shield Hoplite). An ability on the stack has no card data
+     * for a filter to read, so the kind of ability is a marker it carries instead —
+     * [TriggeredAbility.isBackup]. It implies [abilitiesOnly].
+     *
      * Note that [spellsOnly] / [abilitiesOnly] / [sourceFilter] narrow *what did the targeting*,
      * while [includeSpellTargets] / [includePlayerTargets] widen *what got targeted*; the two axes
      * are independent.
@@ -1790,10 +1795,11 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val spellsOnly: Boolean = false,
         val includePlayerTargets: Boolean = false,
         val abilitiesOnly: Boolean = false,
-        val sourceFilter: GameObjectFilter? = null
+        val sourceFilter: GameObjectFilter? = null,
+        val backupAbilitiesOnly: Boolean = false
     ) : EventPattern {
         init {
-            require(!(spellsOnly && abilitiesOnly)) {
+            require(!(spellsOnly && (abilitiesOnly || backupAbilitiesOnly))) {
                 "BecomesTargetEvent cannot be both spellsOnly and abilitiesOnly — nothing would match"
             }
             require(!(byYou && byOpponent)) {
@@ -1839,6 +1845,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             }
             when {
                 sourceNoun != null -> append(" becomes the target of $sourceNoun")
+                backupAbilitiesOnly -> append(" becomes the target of a backup ability")
                 spellsOnly -> append(" becomes the target of a spell")
                 abilitiesOnly -> append(" becomes the target of an ability")
                 else -> append(" becomes the target of a spell or ability")

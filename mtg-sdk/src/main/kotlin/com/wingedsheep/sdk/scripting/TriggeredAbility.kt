@@ -154,6 +154,17 @@ data class TriggeredAbility(
      * Acrobatic Cheerleader: "This ability triggers only once." Tracked by a component that,
      * unlike the [oncePerTurn] tracker, is NOT cleared at end of turn. */
     val triggersOnce: Boolean = false,
+    /**
+     * True for a *backup* ability (March of the Machine; CR 702.165). "Backup N" is an enters
+     * trigger — put N +1/+1 counters on target creature; if that's another creature, it gains the
+     * printed abilities below backup until end of turn — and the card composes that effect like
+     * any other trigger. This flag is only the keyword marker, the triggered twin of
+     * [ActivatedAbility.isBoast]: it travels with the ability onto the stack so a trigger can ask
+     * whether *a backup ability* did the targeting (Mirror-Shield Hoplite's
+     * [EventPattern.BecomesTargetEvent.backupAbilitiesOnly]). A copy of a backup ability is a
+     * backup ability too (CR 707.2 — the copy copies the ability's text).
+     */
+    val isBackup: Boolean = false,
     /** Optional human-readable description that overrides the auto-generated one. */
     val descriptionOverride: String? = null
 ) : TextReplaceable<TriggeredAbility> {
@@ -247,6 +258,7 @@ data class TriggeredAbility(
             oncePerTurn: Boolean = false,
             effectOncePerTurn: Boolean = false,
             triggersOnce: Boolean = false,
+            isBackup: Boolean = false,
             descriptionOverride: String? = null,
             id: AbilityId = AbilityId.next(),
         ): TriggeredAbility =
@@ -265,6 +277,7 @@ data class TriggeredAbility(
                 oncePerTurn = oncePerTurn,
                 effectOncePerTurn = effectOncePerTurn,
                 triggersOnce = triggersOnce,
+                isBackup = isBackup,
                 descriptionOverride = descriptionOverride
             )
 
@@ -285,6 +298,7 @@ data class TriggeredAbility(
             oncePerTurn: Boolean = false,
             effectOncePerTurn: Boolean = false,
             triggersOnce: Boolean = false,
+            isBackup: Boolean = false,
             descriptionOverride: String? = null,
             id: AbilityId = AbilityId.next(),
         ): TriggeredAbility = create(
@@ -301,6 +315,7 @@ data class TriggeredAbility(
             oncePerTurn = oncePerTurn,
             effectOncePerTurn = effectOncePerTurn,
             triggersOnce = triggersOnce,
+            isBackup = isBackup,
             descriptionOverride = descriptionOverride,
             id = id,
         )

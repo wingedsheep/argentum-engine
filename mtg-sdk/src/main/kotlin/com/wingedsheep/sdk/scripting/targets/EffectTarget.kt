@@ -279,6 +279,21 @@ sealed interface EffectTarget {
     }
 
     /**
+     * TARGETING SOURCE: "that spell or ability" in a becomes-the-target trigger — the object on the
+     * stack that did the targeting, not the permanent it targeted (that one is [TriggeringEntity]).
+     * Only meaningful inside a [com.wingedsheep.sdk.scripting.EventPattern.BecomesTargetEvent]
+     * trigger; the object sibling of [com.wingedsheep.sdk.scripting.references.Player.ControllerOfTargetingSource].
+     *
+     * Mirror-Shield Hoplite: "…becomes the target of a backup ability, copy that ability" is
+     * `CopyTargetTriggeredAbility(TargetingSource)`.
+     */
+    @SerialName("TargetingSource")
+    @Serializable
+    data object TargetingSource : SingleEntity {
+        override val description: String = "that ability"
+    }
+
+    /**
      * CONTROLLER OF TRIGGERING ENTITY: Refers to the controller/owner of the
      * entity that caused the trigger to fire.
      * Used for effects like Tephraderm: "deals that much damage to that spell's controller"

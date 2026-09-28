@@ -63,6 +63,8 @@ fun lkiPolicyFor(reference: EffectTarget.SingleEntity): LkiPolicy = when (refere
     is EffectTarget.LibraryTop,
     is EffectTarget.LinkedExiledCard,
     is EffectTarget.DiscardedAsCost,
+    // The spell or ability that did the targeting is a stack object, never a permanent.
+    EffectTarget.TargetingSource,
     -> LkiPolicy.LIVE_ONLY
 }
 

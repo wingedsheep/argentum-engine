@@ -104,6 +104,7 @@ object TargetResolutionUtils {
         is EffectTarget.BoundVariable -> context.pipeline.namedTargets[target.name]?.toEntityId()
         is EffectTarget.SpecificEntity -> target.entityId
         EffectTarget.TriggeringEntity -> context.triggeringEntityId
+        EffectTarget.TargetingSource -> context.triggerContext?.targetingSourceEntityId
         is EffectTarget.DiscardedAsCost -> context.discardedAsCostCards.getOrNull(target.index)
         is EffectTarget.SacrificedAsCost -> context.sacrificedPermanents.getOrNull(target.index)?.entityId
         is EffectTarget.TappedAsCost -> context.tappedPermanents.getOrNull(target.index)

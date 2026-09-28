@@ -809,7 +809,8 @@ class TriggerProcessor(
                 targetRequirements = allRequirements,
                 sequentialTargets = if (sequential) emptyList() else null,
                 carriedPipeline = trigger.carriedPipeline,
-                interveningIf = ability.interveningIf
+                interveningIf = ability.interveningIf,
+                isBackup = ability.isBackup
             ),
         )
 
@@ -859,7 +860,8 @@ class TriggerProcessor(
             carriedPipeline = trigger.carriedPipeline,
             // CR 603.4 — the intervening-"if" travels with the object so the resolver can check it
             // the second time. A `triggerRestriction` deliberately does not.
-            interveningIf = ability.interveningIf
+            interveningIf = ability.interveningIf,
+            isBackup = ability.isBackup
         )
 
         val causedByAttack = isAttackCausedTrigger(trigger)

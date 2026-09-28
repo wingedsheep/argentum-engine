@@ -916,6 +916,106 @@
     ]
 }
 
+// Boon-Bringer Valkyrie
+{
+    "name": "Boon-Bringer Valkyrie",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Angel Warrior",
+    "oracleText": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following abilities until end of turn.)\nFlying, first strike, lifelink",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Boon-Bringer Valkyrie:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "FLYING",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "FIRST_STRIKE",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "LIFELINK",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following abilities until end of turn.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "RARE",
+        "artist": "Heonhwa",
+        "flavorText": "Her blades were twin beacons, calling the worthy to glory and the wretched to despair.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84e1cc7d-e645-4b0e-b117-63f93528ed12.jpg?1783917067"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Chandra, Hope's Beacon
 {
     "name": "Chandra, Hope's Beacon",
@@ -3357,6 +3457,50 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Mirror-Shield Hoplite
+{
+    "name": "Mirror-Shield Hoplite",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Vigilance\nWhenever a creature you control becomes the target of a backup ability, copy that ability. You may choose new targets for the copy. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mirror-Shield Hoplite:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "creature ctrl:you",
+                    "backupAbilitiesOnly": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CopyTargetTriggeredAbility",
+                    "target": "TargetingSource"
+                },
+                "oncePerTurn": true,
+                "descriptionOverride": "Whenever a creature you control becomes the target of a backup ability, copy that ability. You may choose new targets for the copy. This ability triggers only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Brock",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49a5e7de-43cc-488b-99a4-7d173b42d5dc.jpg?1783916941"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 

@@ -1589,6 +1589,10 @@ class TriggeredAbilityBuilder(private val declaredTargets: TargetList = TargetLi
     /** When true, this triggered ability triggers at most once over the source's lifetime on the
      * battlefield ("This ability triggers only once"). Unlike [oncePerTurn] it is never reset. */
     var triggersOnce: Boolean = false
+    /** Marks this as a *backup* ability (CR 702.165) — the author composes the counters-and-grant
+     * effect; the flag lets "becomes the target of a backup ability" see it. See
+     * [com.wingedsheep.sdk.scripting.TriggeredAbility.isBackup]. */
+    var isBackup: Boolean = false
     /** Optional human-readable description that overrides the auto-generated one. */
     var description: String? = null
 
@@ -1648,6 +1652,7 @@ class TriggeredAbilityBuilder(private val declaredTargets: TargetList = TargetLi
             oncePerTurn = oncePerTurn,
             effectOncePerTurn = effectOncePerTurn,
             triggersOnce = triggersOnce,
+            isBackup = isBackup,
             descriptionOverride = description
         )
     }
