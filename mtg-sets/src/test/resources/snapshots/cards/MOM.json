@@ -9437,14 +9437,15 @@
                             }
                         },
                         "target": {
-                            "type": "ContextTarget",
-                            "index": 0
+                            "type": "BoundVariable",
+                            "name": "t0"
                         }
                     },
                     "reflexiveTargetRequirements": [
                         {
                             "type": "TargetOther",
-                            "baseRequirement": "AnyTarget"
+                            "baseRequirement": "AnyTarget",
+                            "id": "t0"
                         }
                     ],
                     "descriptionOverride": "Reveal any number of Dragon cards from your hand. When you do, this Siege deals X plus 2 damage to any other target, where X is the number of cards revealed this way."
