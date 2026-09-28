@@ -86,7 +86,11 @@ export function MatchIntroAnimation() {
 
         {/* Opponent (right) */}
         <div className={opponentClass}>
-          <p className={styles.playerName}>{matchIntro.opponentName}</p>
+          {matchIntro.opponentNames.length > 1
+            ? matchIntro.opponentNames.map((name, i) => (
+                <p key={i} className={styles.playerName}>{name}</p>
+              ))
+            : <p className={styles.playerName}>{matchIntro.opponentName}</p>}
           {matchIntro.opponentRecord && (
             <p className={styles.playerRecord}>{matchIntro.opponentRecord}</p>
           )}

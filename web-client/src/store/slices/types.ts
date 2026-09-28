@@ -732,6 +732,8 @@ export interface SpectatingState {
 export interface MatchIntro {
   playerName: string
   opponentName: string
+  /** Every opponent's name in seat order (length > 1 in a multiplayer game). */
+  opponentNames: string[]
   round?: number
   playerRecord?: string
   opponentRecord?: string

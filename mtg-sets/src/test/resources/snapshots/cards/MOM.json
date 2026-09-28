@@ -594,6 +594,60 @@
     ]
 }
 
+// Assimilate Essence
+{
+    "name": "Assimilate Essence",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target creature or battle spell unless its controller pays {4}. If they do, you incubate 2. (Create an Incubator token with two +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysMana",
+                "cost": "{4}",
+                "onPaid": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|battle",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "artist": "Konstantin Porubov",
+        "flavorText": "\"You have no viable escape vector. Cease your resistance and accept perfection.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6ee12ba-0e6c-485a-a1ff-61726ed72fea.jpg?1783917045"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Astral Wingspan
 {
     "name": "Astral Wingspan",
@@ -1475,6 +1529,119 @@
     ]
 }
 
+// Captive Weird
+{
+    "name": "Captive Weird",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Weird",
+    "oracleText": "Defender\n{3}{R/P}: Transform this creature. Activate only as a sorcery. ({R/P} can be paid with either {R} or 2 life.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Captive Weird:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Compleated Conjurer",
+        "manaCost": "",
+        "typeLine": "Creature — Phyrexian Weird",
+        "oracleText": "When this creature transforms into Compleated Conjurer, exile the top card of your library. Until the end of your next turn, you may play that card.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Compleated Conjurer:1",
+                    "trigger": {
+                        "type": "TransformEvent",
+                        "intoBackFace": true
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeAs": "impulseExiled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "impulseExiled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "impulseExiled",
+                                "expiry": {
+                                    "type": "UntilControllerStep",
+                                    "step": "CLEANUP",
+                                    "includeCurrentTurn": false
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "49",
+            "rarity": "UNCOMMON",
+            "artist": "Manuel Castañón",
+            "flavorText": "The Furnace Host saw no need for such caution.",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/0/70668650-0fb1-4486-a4e6-ab9a12be5626.jpg?1783917056"
+        },
+        "colorIdentityOverride": [
+            "BLUE",
+            "RED"
+        ],
+        "colorIndicator": [
+            "BLUE",
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "UNCOMMON",
+        "artist": "Manuel Castañón",
+        "flavorText": "Izzet researchers agreed to keep the unusual weird contained until they understood the extent of its powers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/70668650-0fb1-4486-a4e6-ab9a12be5626.jpg?1783917056"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Chandra, Hope's Beacon
 {
     "name": "Chandra, Hope's Beacon",
@@ -1644,6 +1811,59 @@
     "startingLoyalty": 5,
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Change the Equation
+{
+    "name": "Change the Equation",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Counter target spell with mana value 2 or less.\n• Counter target red or green spell with mana value 6 or less.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": "Counter",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "mv<=2",
+                                "zone": "Stack"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Counter target spell with mana value 2 or less"
+                },
+                {
+                    "effect": "Counter",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "red|green mv<=6",
+                                "zone": "Stack"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Counter target red or green spell with mana value 6 or less"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "UNCOMMON",
+        "artist": "Alix Branwyn",
+        "flavorText": "\"It's not your fault. Strixhaven taught you an imperfect premise. Okay, the imperfect execution was your fault.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e98db9ed-b43f-4bc1-b7a9-ce03a534d992.jpg?1783917042"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1859,6 +2079,70 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Complete the Circuit
+{
+    "name": "Complete the Circuit",
+    "manaCost": "{5}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nYou may cast sorcery spells this turn as though they had flash.\nWhen you next cast an instant or sorcery spell this turn, copy that spell twice. You may choose new targets for the copies.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantFlashToSpells",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsSorcery"
+                        ]
+                    }
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "CopyTargetSpell",
+                        "target": "TriggeringEntity",
+                        "copies": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "binding": "ANY"
+                    },
+                    "fireOnce": true
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "RARE",
+        "artist": "Eelis Kyttanen",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdf5de96-9418-48f1-a18e-01a0108c4f97.jpg?1783917038"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2867,6 +3151,188 @@
     ]
 }
 
+// Expedition Lookout
+{
+    "name": "Expedition Lookout",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Merfolk Rogue",
+    "oracleText": "Defender\nAs long as an opponent has eight or more cards in their graveyard, this creature can attack as though it didn't have defender and it can't be blocked.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanAttackDespiteDefender",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBeBlocked",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "Johan Grenier",
+        "flavorText": "Skills honed on perilous treasure hunts helped Zendikar's adventurers stay a crucial step ahead of their Phyrexian foes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e14dfd2-5805-46ef-bd19-dab7ac23fbce.jpg?1783917037"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Eyes of Gitaxias
+{
+    "name": "Eyes of Gitaxias",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Incubate 3. (Create an Incubator token with three +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Incubator"
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 3,
+                    "target": {
+                        "type": "PipelineTarget",
+                        "collectionName": "createdTokens"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Cristi Balanescu",
+        "flavorText": "No longer bound by the myopic limitations of flesh, Ekken would truly see the realms.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4303347-3fbd-4bbd-ab3f-e7ddbe0e0a9d.jpg?1783917037"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Faerie Mastermind
+{
+    "name": "Faerie Mastermind",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Faerie Rogue",
+    "oracleText": "Flash\nFlying\nWhenever an opponent draws their second card each turn, you draw a card.\n{3}{U}: Each player draws a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Faerie Mastermind:1",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 2,
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Faerie Mastermind:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "RARE",
+        "artist": "Joshua Raphael",
+        "flavorText": "Yuta Takahashi, World Champion XXVII",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52d3005f-a1c7-4ef5-911f-ccc0752f4181.jpg?1783917037"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Furnace Host Charger
 {
     "name": "Furnace Host Charger",
@@ -3169,6 +3635,103 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Halo-Charged Skaab
+{
+    "name": "Halo-Charged Skaab",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "When this creature enters, each player mills two cards. Then you may put an instant, sorcery, or battle card from your graveyard on top of your library. (To mill two cards, a player puts the top two cards of their library into their graveyard.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Halo-Charged Skaab:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": "Each",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Graveyard",
+                                        "filter": "instant|sorcery|battle"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "Put an instant, sorcery, or battle card on top of your library"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Top"
+                                    },
+                                    "order": "ControllerChooses"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, each player mills two cards. Then you may put an instant, sorcery, or battle card from your graveyard on top of your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Innistrad's stitchers were practiced at incorporating magical substances into undead creations.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c6bdac3-6762-41a4-821f-ab7034a823d9.jpg?1783917036"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Harried Artisan
@@ -4163,6 +4726,135 @@
     ]
 }
 
+// Invasion of Arcavios
+{
+    "name": "Invasion of Arcavios",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, search your library, graveyard, and/or outside the game for an instant or sorcery card you own, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Arcavios:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Library",
+                                    "Graveyard",
+                                    "Sideboard"
+                                ],
+                                "filter": "instant|sorcery"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "descriptionOverride": "When this Siege enters, search your library, graveyard, and/or outside the game for an instant or sorcery card you own, reveal it, and put it into your hand. If you search your library this way, shuffle."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Invocation of the Founders",
+        "manaCost": "",
+        "typeLine": "Enchantment",
+        "oracleText": "Whenever you cast an instant or sorcery spell from your hand, you may copy that spell. You may choose new targets for the copy.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Invocation of the Founders:1",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsInstant",
+                                        "IsSorcery"
+                                    ]
+                                }
+                            ]
+                        },
+                        "requires": [
+                            {
+                                "type": "SpellCastFromZone",
+                                "zone": "Hand"
+                            }
+                        ]
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "CopyTargetSpell",
+                            "target": "TriggeringEntity"
+                        }
+                    },
+                    "descriptionOverride": "Whenever you cast an instant or sorcery spell from your hand, you may copy that spell. You may choose new targets for the copy."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "61",
+            "rarity": "RARE",
+            "artist": "Dmitry Burmak",
+            "flavorText": "No professors, no grades, no room for mistakes.",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/c/1c3f661d-b9f7-48e7-afe3-3eaea1022bc1.jpg?1783917042"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Dmitry Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c3f661d-b9f7-48e7-afe3-3eaea1022bc1.jpg?1783917042"
+    },
+    "startingDefense": 7,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Invasion of Azgol
 {
     "name": "Invasion of Azgol",
@@ -5037,6 +5729,123 @@
     ]
 }
 
+// Invasion of Kamigawa
+{
+    "name": "Invasion of Kamigawa",
+    "manaCost": "{3}{U}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, tap target artifact or creature an opponent controls and put a stun counter on it. (If a permanent with a stun counter would become untapped, remove one from it instead.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Kamigawa:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "STUN",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|artifact ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this Siege enters, tap target artifact or creature an opponent controls and put a stun counter on it."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Rooftop Saboteurs",
+        "manaCost": "",
+        "typeLine": "Creature — Moonfolk Ninja",
+        "oracleText": "Flying\nWhenever this creature deals combat damage to a player or battle, draw a card.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 3
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Rooftop Saboteurs:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientAnyOf",
+                            "options": [
+                                {
+                                    "type": "RecipientPlayer",
+                                    "player": "Any"
+                                },
+                                {
+                                    "type": "RecipientObject",
+                                    "filter": "battle"
+                                }
+                            ]
+                        }
+                    },
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "descriptionOverride": "Whenever this creature deals combat damage to a player or battle, draw a card."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "62",
+            "rarity": "UNCOMMON",
+            "artist": "Kekai Kotaki",
+            "flavorText": "The pace of Kamigawa's development meant that Jin-Gitaxias's intel was already outdated when the invaders arrived.",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/1/3140320d-b932-441f-bff3-9bdf4419b88a.jpg?1783917040"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "Kekai Kotaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/3140320d-b932-441f-bff3-9bdf4419b88a.jpg?1783917040"
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Invasion of Kylem
 {
     "name": "Invasion of Kylem",
@@ -5585,6 +6394,264 @@
     },
     "startingDefense": 4,
     "colorIdentityOverride": []
+}
+
+// Invasion of Segovia
+{
+    "name": "Invasion of Segovia",
+    "manaCost": "{2}{U}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, create two 1/1 blue Kraken creature tokens with trample.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Segovia:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Kraken"
+                    ],
+                    "keywords": [
+                        "TRAMPLE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb727dec-dd82-4072-b2ec-a4e31b58752f.jpg?1783916673"
+                },
+                "descriptionOverride": "When this Siege enters, create two 1/1 blue Kraken creature tokens with trample."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Caetus, Sea Tyrant of Segovia",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Serpent",
+        "oracleText": "Noncreature spells you cast have convoke. (Your creatures can help cast those spells. Each creature you tap while casting a noncreature spell pays for {1} or one mana of that creature's color.)\nAt the beginning of your end step, untap up to four target creatures.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Caetus, Sea Tyrant of Segovia:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "END"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "tap": false
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "count": 4,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    },
+                    "descriptionOverride": "At the beginning of your end step, untap up to four target creatures."
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "GrantKeywordToOwnSpells",
+                    "keyword": "CONVOKE",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "63",
+            "rarity": "RARE",
+            "artist": "Edgar Sánchez Hidalgo",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/d/9df3e743-7bb8-482a-afd1-4d51119d416c.jpg?1783917037",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "If you sacrifice Caetus while casting a noncreature spell (say, to activate a mana ability), the spell won't have convoke when you pay its costs unless it has convoke some other way."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "RARE",
+        "artist": "Edgar Sánchez Hidalgo",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9df3e743-7bb8-482a-afd1-4d51119d416c.jpg?1783917037"
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Invasion of Vryn
+{
+    "name": "Invasion of Vryn",
+    "manaCost": "{3}{U}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, draw three cards, then discard a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Vryn:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Siege enters, draw three cards, then discard a card."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Overloaded Mage-Ring",
+        "manaCost": "",
+        "typeLine": "Artifact",
+        "oracleText": "{1}, {T}, Sacrifice this artifact: Copy target spell you control. You may choose new targets for the copy. (A copy of a permanent spell becomes a token.)",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Overloaded Mage-Ring:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{1}"
+                                }
+                            },
+                            "CostTap",
+                            "CostSacrificeSelf"
+                        ]
+                    },
+                    "effect": {
+                        "type": "CopyTargetSpell",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "ctrl:you",
+                                "zone": "Stack"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "64",
+            "rarity": "UNCOMMON",
+            "artist": "Leon Tukker",
+            "flavorText": "\"On my signal, disable the safeguards. Let's blow these metal freaks right back to their own world!\"\n—Gav Beleren, mage-ring engineer",
+            "imageUri": "https://cards.scryfall.io/normal/back/c/0/c0ef6737-8e85-42ca-8ee6-6a34f9462de3.jpg?1783917038"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "UNCOMMON",
+        "artist": "Leon Tukker",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0ef6737-8e85-42ca-8ee6-6a34f9462de3.jpg?1783917038"
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Iridescent Blademaster
@@ -6374,6 +7441,94 @@
         "BLACK",
         "RED",
         "GREEN"
+    ]
+}
+
+// Order of the Mirror
+{
+    "name": "Order of the Mirror",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "{3}{W/P}: Transform this creature. Activate only as a sorcery. ({W/P} can be paid with either {W} or 2 life.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Order of the Mirror:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Order of the Alabaster Host",
+        "manaCost": "",
+        "typeLine": "Creature — Phyrexian Knight",
+        "oracleText": "Whenever this creature becomes blocked by a creature, the blocking creature gets -1/-1 until end of turn.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Order of the Alabaster Host:1",
+                    "trigger": {
+                        "type": "BecomesBlockedEvent",
+                        "filter": "creature"
+                    },
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": "TriggeringEntity"
+                    },
+                    "descriptionOverride": "Whenever this creature becomes blocked by a creature, the blocking creature gets -1/-1 until end of turn."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "72",
+            "artist": "Andrew Mar",
+            "flavorText": "Soon she understood that it was not the vision that had been twisted, but her own mind.",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/0/103295ed-5ddc-4528-8848-4fd2cfec4b88.jpg?1783917036"
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Andrew Mar",
+        "flavorText": "The Magic Mirror of Vantress showed Catrina a twisted vision of black oil and bloody machines.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/103295ed-5ddc-4528-8848-4fd2cfec4b88.jpg?1783917036"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -7541,6 +8696,219 @@
     ]
 }
 
+// Rona, Herald of Invasion
+{
+    "name": "Rona, Herald of Invasion",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Whenever you cast a legendary spell, untap Rona.\n{T}: Draw a card, then discard a card.\n{5}{B/P}: Transform Rona. Activate only as a sorcery. ({B/P} can be paid with either {B} or 2 life.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rona, Herald of Invasion:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsLegendary"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self",
+                    "tap": false
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Rona, Herald of Invasion:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Draw a card, then discard a card."
+            },
+            {
+                "id": "Rona, Herald of Invasion:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{B/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform Rona."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Rona, Tolarian Obliterator",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Phyrexian Wizard",
+        "oracleText": "Trample\nWhenever a source deals damage to Rona, that source's controller exiles a card from their hand at random. If it's a land card, you may put it onto the battlefield under your control. Otherwise, you may cast it without paying its mana cost.",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 5
+        },
+        "keywords": [
+            "TRAMPLE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Rona, Tolarian Obliterator:1",
+                    "trigger": "DamageReceivedEvent",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": "ControllerOfTriggeringEntity"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "Random",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "CollectionContainsMatch",
+                                        "collection": "selected1",
+                                        "filter": "land"
+                                    }
+                                },
+                                "then": {
+                                    "type": "Gated",
+                                    "gate": "Gate.MayDecide",
+                                    "then": {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "selected1",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Battlefield"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "otherwise": {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "selected1"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "75",
+            "rarity": "RARE",
+            "artist": "Victor Adame Minguez",
+            "flavorText": "\"At last, I am *compleat*.\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/4/f487b582-e73f-4325-939f-95fc5a9aba49.jpg?1783917031"
+        },
+        "colorIdentityOverride": [
+            "BLUE",
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLUE",
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f487b582-e73f-4325-939f-95fc5a9aba49.jpg?1783917031"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Ruins Recluse
 {
     "name": "Ruins Recluse",
@@ -7974,6 +9342,150 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Skyclave Aerialist
+{
+    "name": "Skyclave Aerialist",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Merfolk Scout",
+    "oracleText": "Flying\n{4}{G/P}: Transform this creature. Activate only as a sorcery. ({G/P} can be paid with either {G} or 2 life.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Skyclave Aerialist:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Skyclave Invader",
+        "manaCost": "",
+        "typeLine": "Creature — Phyrexian Merfolk Scout",
+        "oracleText": "Flying\nWhen this creature transforms into Skyclave Invader, look at the top card of your library. If it's a land card, you may put it onto the battlefield. If you don't put the card onto the battlefield, put it into your hand.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 4
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Skyclave Invader:1",
+                    "trigger": {
+                        "type": "TransformEvent",
+                        "intoBackFace": true
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered0",
+                                "filter": "land",
+                                "storeMatching": "matching1",
+                                "storeNonMatching": "rest1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "matching1",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected2",
+                                "storeRemainder": "remainder2",
+                                "selectedLabel": "Put onto the battlefield",
+                                "remainderLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "remainder2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "rest1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "When this creature transforms into Skyclave Invader, look at the top card of your library. If it's a land card, you may put it onto the battlefield. If you don't put the card onto the battlefield, put it into your hand."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "78",
+            "rarity": "UNCOMMON",
+            "artist": "Michal Ivan",
+            "flavorText": "With her guidance, the oil coursed freely across the world.",
+            "imageUri": "https://cards.scryfall.io/normal/back/c/d/cd1c8e1a-bd38-47a2-a55a-682ebaede960.jpg?1783917029"
+        },
+        "colorIdentityOverride": [
+            "BLUE",
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Michal Ivan",
+        "flavorText": "Together with her beloved falcon, she had explored every waterway on Zendikar, from the Tazeem highlands to the inland sea.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd1c8e1a-bd38-47a2-a55a-682ebaede960.jpg?1783917029"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

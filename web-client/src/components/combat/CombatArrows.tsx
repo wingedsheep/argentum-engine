@@ -171,6 +171,32 @@ function getPlayerLifeCenter(playerId: EntityId): Point | null {
 }
 
 /**
+ * Point on a rect's border facing `from`, pushed out by `pad`, so an arrowhead lands
+ * beside a player's life total instead of on top of it.
+ */
+function edgeToward(rect: DOMRect, from: Point, pad = 10): Point {
+  const cx = rect.left + rect.width / 2
+  const cy = rect.top + rect.height / 2
+  const dx = from.x - cx
+  const dy = from.y - cy
+  if (dx === 0 && dy === 0) return { x: cx, y: cy }
+  const hw = rect.width / 2 + pad
+  const hh = rect.height / 2 + pad
+  const t = Math.min(dx !== 0 ? hw / Math.abs(dx) : Infinity, dy !== 0 ? hh / Math.abs(dy) : Infinity)
+  return { x: cx + dx * t, y: cy + dy * t }
+}
+
+/**
+ * Where an attack arrow aimed at a player should end: the edge of their life display
+ * facing the attacker, not its center.
+ */
+function getPlayerLifeAnchor(playerId: EntityId, from: Point): Point | null {
+  const element = document.querySelector(`[data-life-id="${playerId}"]`)
+  if (!element) return null
+  return edgeToward(element.getBoundingClientRect(), from)
+}
+
+/**
  * Get the edge positions of a card element for attack indicators.
  */
 function getCardEdgeCenter(cardId: EntityId): { topCenter: Point; bottomCenter: Point; centerY: number } | null {
@@ -241,6 +267,13 @@ function getBoardPlateCenter(playerId: EntityId): Point | null {
   const rect = element.getBoundingClientRect()
   const p = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
   return isOnScreen(p) ? p : null
+}
+
+/** Like [getBoardPlateCenter], but the plate's edge facing `from`. */
+function getBoardPlateAnchor(playerId: EntityId, from: Point): Point | null {
+  const element = document.querySelector(`[data-board-plate="${playerId}"]`)
+  if (!element) return null
+  return edgeToward(element.getBoundingClientRect(), from)
 }
 
 /**
@@ -528,8 +561,8 @@ export function CombatArrows() {
         const targetPos = (cardPos && (!isMulti || isOnScreen(cardPos)) ? cardPos : null)
           // Player attacked on a visible shared-strip board: their cell's name plate is
           // the "face" of the board (and also carries their data-life-id anchors).
-          ?? platePos
-          ?? getPlayerLifeCenter(defenderId)
+          ?? (platePos ? getBoardPlateAnchor(defenderId, attackerPos) : null)
+          ?? getPlayerLifeAnchor(defenderId, attackerPos)
         if (!targetPos) return
         newAttackerArrows.push({
           start: attackerPos,

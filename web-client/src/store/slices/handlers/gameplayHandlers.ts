@@ -809,6 +809,7 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
         matchIntro: {
           playerName,
           opponentName,
+          opponentNames: msg.players.filter((p) => !p.isYou).map((p) => p.name),
           ...(round != null ? { round } : {}),
           ...(playerRecord != null ? { playerRecord } : {}),
           ...(opponentRecord != null ? { opponentRecord } : {}),
