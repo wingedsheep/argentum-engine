@@ -84,6 +84,26 @@ class MirrorShieldHopliteScenarioTest : ScenarioTestBase() {
                 withClue("only Giant Growth is on the stack") { game.state.stack.size shouldBe 1 }
             }
 
+            test("a non-backup triggered ability targeting a creature you control doesn't trigger it") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Timberland Guide")
+                    .withLandsOnBattlefield(1, "Forest", 2)
+                    .withCardOnBattlefield(1, "Mirror-Shield Hoplite")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val bears = game.findPermanent("Grizzly Bears")!!
+
+                game.castSpell(1, "Timberland Guide").error shouldBe null
+                game.resolveStack()
+                game.selectTargets(listOf(bears)).error shouldBe null
+                withClue("only the Guide's enters trigger is on the stack") { game.state.stack.size shouldBe 1 }
+                game.resolveStack()
+                plusOnes(game, bears) shouldBe 1
+            }
+
             test("an opponent's creature being targeted by backup doesn't trigger it") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
