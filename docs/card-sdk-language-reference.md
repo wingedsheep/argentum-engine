@@ -8889,7 +8889,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   more to activate unless they're mana abilities" →
   `IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmount.Fixed(2), excludeManaAbilities = true)`.
   Without it, every land's `{T}: Add …` would be taxed too.
-- `MayCastFromGraveyard(filter, lifeCost = 0, duringYourTurnOnly = false, entersWithCounter = null, addedSubtypeOnEntry = null, oncePerTurn = false, exileInsteadOfGraveyard = false)`
+- `MayCastFromGraveyard(filter, lifeCost = 0, duringYourTurnOnly = false, entersWithCounter = null, addedSubtypeOnEntry = null, oncePerTurn = false, exileInsteadOfGraveyard = false, fromAnyGraveyard = false)`
   — cast spells matching `filter` from your graveyard following normal timing, optionally paying
   `lifeCost` life. Free for Yawgmoth's Agenda (`MayCastFromGraveyard(Nonland)`); `lifeCost = 1,
   duringYourTurnOnly = true` for Festival of Embers. **`oncePerTurn`** limits the grant to one cast
@@ -8939,6 +8939,19 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   a spell cast under a different graveyard-cast permission that happens to be active at the same time.
   Bilbo = `GrantStaticAbility(MayCastFromGraveyard(Artifact or InstantOrSorcery, oncePerTurn = true,
   exileInsteadOfGraveyard = true), EffectTarget.Self, Duration.EndOfTurn)` off an attack trigger.
+  **Any graveyard + player-anchored grants:** `fromAnyGraveyard = true` widens the permission from
+  your own graveyard to every player's; narrow it to opponents' through `filter`'s ownership
+  predicate, not another flag. A card cast from another player's graveyard is still owned by them, so
+  it goes back to (or, with `exileInsteadOfGraveyard`, is exiled from) *its owner's* graveyard, and it
+  is recorded as cast from a graveyard (`castFromZone = GRAVEYARD`). A durational grant can be anchored
+  to the **player** (`EffectTarget.Controller`) rather than a permanent: it is the same player-wide
+  permission, with no permanent it has to outlive. The Great Work (Urabrask's back face), chapter III,
+  "Until end of turn, you may cast instant and sorcery spells from any graveyard. If a spell cast this
+  way would be put into a graveyard, exile it instead. Exile this Saga, then return it …" =
+  `Effects.GrantStaticAbility(MayCastFromGraveyard(InstantOrSorcery, exileInsteadOfGraveyard = true,
+  fromAnyGraveyard = true), EffectTarget.Controller, Duration.EndOfTurn) then
+  Effects.ExileAndReturnTransformed(Self, ReturnFace.FRONT)`. The client ghosts castable cards from
+  other players' graveyards next to your hand, the same as your own.
   **Choosing among grants (CR 601.2b):** when several `MayCastFromGraveyard` grants apply to the same
   card at once (a free `Nonland` grant *and* the Tomb's rider `Creature` grant), the graveyard-cast
   enumerator offers one legal action per distinct permission — distinguished by life cost and entry

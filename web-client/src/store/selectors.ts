@@ -988,6 +988,22 @@ export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] 
       }
     }
 
+    // 1b. Spells castable out of *another* player's graveyard (The Great Work's "cast instant and
+    // sorcery spells from any graveyard", Jetsam) — the server only offers these when a permission
+    // reaches that graveyard, so any such CastSpell action marks a ghost card.
+    for (const zone of gameState.zones) {
+      if (zone.zoneId.zoneType !== ZoneType.GRAVEYARD || zoneIdEquals(zone.zoneId, gyZoneId)) continue
+      if (!zone.cardIds || zone.cardIds.length === 0) continue
+      const otherGyCardIds = new Set(zone.cardIds)
+      for (const actionInfo of legalActions) {
+        const action = actionInfo.action
+        if (action.type !== 'CastSpell' || actionInfo.sourceZone !== 'GRAVEYARD') continue
+        if (!otherGyCardIds.has(action.cardId)) continue
+        if (actionInfo.isAffordable === false) continue
+        ghostCardIds.add(action.cardId)
+      }
+    }
+
     // 2. Top-of-library card revealed via Future Sight-like effects
     // Always show the revealed top card as a ghost card, even when it's not playable
     const libZoneId = library(playerId)

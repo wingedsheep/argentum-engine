@@ -225,7 +225,10 @@ class CastZoneResolver(
         cardId: EntityId,
         cardComponent: CardComponent
     ): List<MayCastFromGraveyard> {
-        if (cardId !in state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))) return emptyList()
+        // Any graveyard, not just the caster's: a `fromAnyGraveyard` grant (The Great Work) reaches
+        // other players' graveyards too. Grants without it are held to the caster's own graveyard
+        // by `mayCastFromGraveyardGrantApplies`.
+        if (state.turnOrder.none { cardId in state.getZone(ZoneKey(it, Zone.GRAVEYARD)) }) return emptyList()
         return mayCastFromGraveyardGrantsWithSources(state, playerId, cardId).map { it.second }
     }
 
@@ -251,14 +254,16 @@ class CastZoneResolver(
                 }
             }
         }
-        // Durational grants recorded in grantedStaticAbilities, in their two anchorings. Anchored
-        // to a permanent the player controls, the grant is a player-wide permission (Forgotten
+        // Durational grants recorded in grantedStaticAbilities, in three anchorings. Anchored to
+        // a permanent the player controls, the grant is a player-wide permission (Forgotten
         // Cellar's "cast spells from your graveyard this turn", The Tomb of Aclazotz's per-turn
-        // creature-cast grant). Anchored to the graveyard card itself, it is that one card's own
-        // permission — "creature cards in your graveyard gain 'You may cast this card from your
-        // graveyard'" (Case of the Uneaten Feast), whose affected set is fixed when the ability
-        // resolves (CR 611.2c), so a card that arrives later this turn is not covered. Kept in step
-        // with the same split in `CastFromZoneEnumerator.enumerateGraveyardCast`.
+        // creature-cast grant). Anchored to the player themselves, it is the same player-wide
+        // permission with no permanent to outlive — The Great Work's chapter III grant survives the
+        // Saga exiling itself on the same resolution. Anchored to the graveyard card itself, it is
+        // that one card's own permission — "creature cards in your graveyard gain 'You may cast
+        // this card from your graveyard'" (Case of the Uneaten Feast), whose affected set is fixed
+        // when the ability resolves (CR 611.2c), so a card that arrives later this turn is not
+        // covered. Kept in step with the same split in `CastFromZoneEnumerator.enumerateGraveyardCast`.
         for (grant in state.grantedStaticAbilities) {
             val sa = grant.ability
             if (sa !is MayCastFromGraveyard) continue
@@ -268,7 +273,7 @@ class CastZoneResolver(
             // the ControllerComponent it was minted with if it was milled or discarded rather than
             // dying, and a controller-only test would read its own per-card grant as covering every
             // creature card in the yard. Kept in step with `enumerateGraveyardCast`.
-            val playerWide = grant.entityId in battlefield && controller == playerId
+            val playerWide = grant.entityId == playerId || (grant.entityId in battlefield && controller == playerId)
             if (!playerWide && grant.entityId != cardId) continue
             if (mayCastFromGraveyardGrantApplies(state, playerId, cardId, sa, grant.entityId)) {
                 matches.add(grant.entityId to sa)
@@ -336,6 +341,7 @@ class CastZoneResolver(
     ): Boolean {
         if (sa !is MayCastFromGraveyard) return false
         if (sa.duringYourTurnOnly && !state.isActiveTurnFor(playerId)) return false
+        if (!sa.fromAnyGraveyard && cardId !in state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))) return false
         // A `oncePerTurn` grant (Gisa and Geralf) stops authorizing casts once this specific
         // granter has been used this turn; the marker is cleared at cleanup.
         if (sa.oncePerTurn &&

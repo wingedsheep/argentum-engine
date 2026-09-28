@@ -4286,6 +4286,219 @@
     ]
 }
 
+// Urabrask
+{
+    "name": "Urabrask",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Creature — Phyrexian Praetor",
+    "oracleText": "First strike\nWhenever you cast an instant or sorcery spell, Urabrask deals 1 damage to target opponent. Add {R}.\n{R}: Exile Urabrask, then return it to the battlefield transformed under its owner's control. Activate only as a sorcery and only if you've cast three or more instant and/or sorcery spells this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Urabrask:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "RED"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Urabrask:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": "ExileAndReturnTransformed",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "PlayerCastSpellsThisTurn",
+                            "filter": "instant|sorcery",
+                            "atLeast": 3
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "backFace": {
+        "name": "The Great Work",
+        "manaCost": "",
+        "typeLine": "Enchantment — Saga",
+        "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — This Saga deals 3 damage to target opponent and each creature they control.\nII — Create three Treasure tokens.\nIII — Until end of turn, you may cast instant and sorcery spells from any graveyard. If a spell cast this way would be put into a graveyard, exile it instead. Exile this Saga, then return it to the battlefield (front face up).",
+        "script": {
+            "sagaChapters": [
+                {
+                    "chapter": 1,
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                "IsCreature"
+                                            ],
+                                            "controllerPredicate": {
+                                                "type": "ControlledByReferencedPlayer",
+                                                "target": {
+                                                    "type": "BoundVariable",
+                                                    "name": "t0"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "body": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    },
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirement": {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                },
+                {
+                    "chapter": 2,
+                    "effect": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Treasure",
+                        "count": 3
+                    }
+                },
+                {
+                    "chapter": 3,
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantStaticAbility",
+                                "ability": {
+                                    "type": "MayCastFromGraveyard",
+                                    "filter": "instant|sorcery",
+                                    "exileInsteadOfGraveyard": true,
+                                    "fromAnyGraveyard": true
+                                },
+                                "target": "Controller"
+                            },
+                            {
+                                "type": "ExileAndReturnTransformed",
+                                "returnAs": "FRONT"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "169",
+            "rarity": "MYTHIC",
+            "artist": "Campbell White",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/1/712fb9e5-bd67-4173-a2d4-061aeb6253b5.jpg?1783916984"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "MYTHIC",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/712fb9e5-bd67-4173-a2d4-061aeb6253b5.jpg?1783916984",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Urabrask's second ability isn't a mana ability, even though it causes you to add mana. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Urabrask will count any instant or sorcery spells you've cast during the turn, whether those spells resolved, didn't resolve, were countered, or left the stack some other way. Urabrask won't count copies of instant and sorcery spells that were created on the stack and not cast."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "After chapter III of The Great Work resolves, casting spells from graveyards follows the normal rules for casting those cards. You must pay their costs, and you must follow all applicable timing rules. For example, to cast a sorcery spell from a graveyard, you can do so by paying its mana cost only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If multiple players are allowed to cast the same card, the player with priority at any given time determines who can cast it. The player whose turn it is has priority as each step and phase begins, and they receive priority after each spell and ability resolves. This means immediately after chapter III resolves you'll have priority to cast spells before any other player does."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Urn of Godfire
 {
     "name": "Urn of Godfire",

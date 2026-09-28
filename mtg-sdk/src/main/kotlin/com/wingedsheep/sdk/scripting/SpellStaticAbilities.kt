@@ -521,6 +521,13 @@ data class GrantMadnessToOwnedCards(
  * is a true replacement on the *would be put into your graveyard* event, so it also catches a spell
  * that is countered or fizzles — per Bilbo's Adventure ruling.
  *
+ * [fromAnyGraveyard] widens *which graveyards* the permission reaches: by default only the holder's
+ * own graveyard, and with it every player's (The Great Work, chapter III — "Until end of turn, you
+ * may cast instant and sorcery spells from any graveyard"). A card cast from another player's
+ * graveyard is still owned by that player, so it returns to (or, under [exileInsteadOfGraveyard], is
+ * exiled instead of going to) *its owner's* graveyard. Narrow it to opponents' graveyards through
+ * [filter]'s ownership predicate rather than with another flag.
+ *
  * @property filter The filter that spells must match (e.g., instant/sorcery, or any nonland card)
  * @property lifeCost The life cost to pay in addition to other costs (0 = free)
  * @property duringYourTurnOnly If true, only castable during your turn
@@ -529,6 +536,7 @@ data class GrantMadnessToOwnedCards(
  * @property oncePerTurn If true, this grant authorizes at most one graveyard cast per turn
  * @property exileInsteadOfGraveyard If true, an instant or sorcery cast this way is exiled rather
  *   than put into its owner's graveyard — whether it resolves, is countered, or fizzles
+ * @property fromAnyGraveyard If true, the permission covers every player's graveyard, not just yours
  */
 @SerialName("MayCastFromGraveyard")
 @Serializable
@@ -539,7 +547,8 @@ data class MayCastFromGraveyard(
     val entersWithCounter: com.wingedsheep.sdk.core.CounterType? = null,
     val addedSubtypeOnEntry: String? = null,
     val oncePerTurn: Boolean = false,
-    val exileInsteadOfGraveyard: Boolean = false
+    val exileInsteadOfGraveyard: Boolean = false,
+    val fromAnyGraveyard: Boolean = false
 ) : StaticAbility {
     /** True when this grant carries a cast-this-way entry rider (finality counter / added subtype). */
     val hasEntryRider: Boolean get() = entersWithCounter != null || addedSubtypeOnEntry != null
@@ -551,7 +560,8 @@ data class MayCastFromGraveyard(
             duringYourTurnOnly -> append("During your turn, y")
             else -> append("Y")
         }
-        append("ou may cast ${filter.description} spells from your graveyard")
+        append("ou may cast ${filter.description} spells from ")
+        append(if (fromAnyGraveyard) "any graveyard" else "your graveyard")
         if (lifeCost > 0) append(" by paying $lifeCost life in addition to their other costs")
         if (entersWithCounter != null || addedSubtypeOnEntry != null) {
             append(". If you do, it enters")
@@ -560,7 +570,9 @@ data class MayCastFromGraveyard(
             if (addedSubtypeOnEntry != null) append(" is a $addedSubtypeOnEntry in addition to its other types")
         }
         if (exileInsteadOfGraveyard) {
-            append(". If an instant or sorcery spell cast this way would be put into your graveyard, exile it instead")
+            append(". If an instant or sorcery spell cast this way would be put into ")
+            append(if (fromAnyGraveyard) "a graveyard" else "your graveyard")
+            append(", exile it instead")
         }
     }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {

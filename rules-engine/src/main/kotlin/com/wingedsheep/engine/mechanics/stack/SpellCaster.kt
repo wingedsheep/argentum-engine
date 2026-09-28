@@ -645,11 +645,16 @@ internal class SpellCaster(
                 return zone
             }
         }
-        // Check all players' exile zones (cards may be in another player's exile,
-        // e.g., Villainous Wealth exiles from opponent's library)
+        // Check all players' exile and graveyard zones — the caster isn't always the owner:
+        // Villainous Wealth exiles from an opponent's library, Jetsam and The Great Work cast out of
+        // another player's graveyard. It is still a graveyard cast (flashback-style exile riders,
+        // "cast from a graveyard" triggers) even though the graveyard isn't the caster's.
         for (pid in state.turnOrder) {
             if (cardId in state.getZone(ZoneKey(pid, Zone.EXILE))) {
                 return Zone.EXILE
+            }
+            if (cardId in state.getZone(ZoneKey(pid, Zone.GRAVEYARD))) {
+                return Zone.GRAVEYARD
             }
         }
         return null

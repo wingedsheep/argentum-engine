@@ -2260,6 +2260,9 @@ class CastFromZoneEnumerator(
             val anchor = state.getEntity(grant.entityId) ?: continue
             val controller = anchor.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
             when {
+                // Anchored to the player (The Great Work's chapter III): player-wide, and it outlives
+                // the permanent whose ability created it.
+                grant.entityId == playerId -> permissions.add(ability to null)
                 grant.entityId in battlefield && controller == playerId -> permissions.add(ability to null)
                 grant.entityId in graveyard -> permissions.add(ability to grant.entityId)
             }
@@ -2287,7 +2290,14 @@ class CastFromZoneEnumerator(
             )
             val riderSuffix = graveyardRiderSuffix(permission)
 
-            val graveyardCards = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))
+            // Your own graveyard, or every player's for a `fromAnyGraveyard` grant (The Great Work).
+            // The card keeps its owner, so it still returns to — or is exiled instead of going to —
+            // that owner's graveyard.
+            val graveyardCards = if (permission.fromAnyGraveyard) {
+                state.turnOrder.flatMap { state.getZone(ZoneKey(it, Zone.GRAVEYARD)) }
+            } else {
+                graveyard
+            }
             for (cardId in graveyardCards) {
                 if (scopedCardId != null && cardId != scopedCardId) continue
                 val container = state.getEntity(cardId) ?: continue
@@ -2318,7 +2328,7 @@ class CastFromZoneEnumerator(
                 }
 
                 // Collapse permissions indistinguishable to the player (same card, life cost, rider).
-                if (!emitted.add("$cardId|$lifeCost|${permission.entersWithCounter}|${permission.addedSubtypeOnEntry}")) continue
+                if (!emitted.add("$cardId|$lifeCost|${permission.entersWithCounter}|${permission.addedSubtypeOnEntry}|${permission.exileInsteadOfGraveyard}")) continue
 
                 val effectiveCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
                 val costString = effectiveCost.toString()
