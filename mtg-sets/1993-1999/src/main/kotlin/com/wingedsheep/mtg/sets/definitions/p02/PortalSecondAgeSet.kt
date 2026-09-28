@@ -20,7 +20,6 @@ object PortalSecondAgeSet : MtgSet {
     override val code = "P02"
     override val displayName = "Portal Second Age"
     override val releaseDate = "1998-06-24"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

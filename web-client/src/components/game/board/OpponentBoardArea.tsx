@@ -221,7 +221,7 @@ export function OpponentBoardArea({
   } = useCellHandMetrics()
   // A bottom-half cell's board is oriented like a player's own, so its hand hangs the same way
   // as yours (face toward the bottom edge) rather than inverted like an opponent's.
-  const cellHandInverted = !bottomHalf
+  const cellHandInverted = !bottomHalf && !(isAlly && hideHand)
   // A driven seat normally reclaims its full-size interactive fan inside the cell — unless the
   // hand has been lifted out of the cell entirely ([liftHand]), in which case the lifted copy is
   // the interactive one and the cell must not draw a second.
@@ -239,7 +239,12 @@ export function OpponentBoardArea({
       : effectiveCellHand === 'fan' ? cellHandBand
         : effectiveCellHand === 'count' ? CELL_HAND_COUNT_BAND
           : 0
-  const reservationBand = hideHand ? cellHandOwn + CELL_PLATE_BAND : handReservation
+  // A teammate (Two-Headed Giant, 2v2, ...) on either row keeps its open hand *below* its lands, hanging from the
+  // bottom edge like your own, so the plate stays alone at the top and the board sits under it.
+  const handBelowBoard = hideHand && isAlly && !drivesOwnHand && effectiveCellHand === 'fan'
+  const reservationBand = handBelowBoard
+    ? CELL_PLATE_BAND
+    : hideHand ? cellHandOwn + CELL_PLATE_BAND : handReservation
 
   /* Opponent hand — fixed at top of screen in grid layout; absolute inside the
      strip cell in strip layout (a strip cell starts at the viewport top, so the
@@ -404,7 +409,9 @@ export function OpponentBoardArea({
             // Only the inverted fan spills *upward*; pushing it down by the overhang is what
             // keeps its top row from drawing straight through the name plate. A normal fan
             // spills downward instead — that half is reserved in the band below.
-            top: CELL_PLATE_BAND + (cellHandInverted ? FAN_EDGE_OVERHANG : 0),
+            ...(handBelowBoard
+              ? { bottom: FAN_EDGE_OVERHANG }
+              : { top: CELL_PLATE_BAND + (cellHandInverted ? FAN_EDGE_OVERHANG : 0) }),
             left: 0,
             right: 0,
             height: cellHandHeight,
@@ -484,6 +491,7 @@ export function OpponentBoardArea({
       {!plateAtBottom && <div style={{ height: reservationBand, flexShrink: 0 }} aria-hidden />}
       {boardBlock}
       {plateAtBottom && <div style={{ height: reservationBand, flexShrink: 0 }} aria-hidden />}
+      {handBelowBoard && <div style={{ height: cellHandOwn, flexShrink: 0 }} aria-hidden />}
     </div>
   )
 }
