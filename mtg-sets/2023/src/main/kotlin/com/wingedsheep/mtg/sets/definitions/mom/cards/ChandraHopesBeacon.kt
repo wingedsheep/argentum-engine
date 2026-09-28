@@ -46,7 +46,7 @@ val ChandraHopesBeacon = card("Chandra, Hope's Beacon") {
     }
 
     loyaltyAbility(+2) {
-        effect = Effects.AddManaInAnyCombination(DynamicAmounts.fixed(2))
+        effect = Effects.AddManaInAnyCombination(2)
         description = "Add two mana in any combination of colors."
     }
 

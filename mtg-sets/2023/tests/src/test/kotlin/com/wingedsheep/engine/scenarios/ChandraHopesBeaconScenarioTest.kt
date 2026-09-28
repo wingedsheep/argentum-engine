@@ -3,13 +3,17 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PlayLand
+import com.wingedsheep.engine.core.ChooseColorDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -31,6 +35,7 @@ import io.kotest.matchers.shouldNotBe
 class ChandraHopesBeaconScenarioTest : ScenarioTestBase() {
     init {
         val abilities = cardRegistry.getCard("Chandra, Hope's Beacon")!!.script.activatedAbilities
+        val plusTwoId = abilities.single { (it.cost as? AbilityCost.Loyalty)?.change == 2 }.id
         val plusOneId = abilities.single { (it.cost as? AbilityCost.Loyalty)?.change == 1 }.id
         val minusXId = abilities.single { it.cost is AbilityCost.LoyaltyX }.id
 
@@ -117,6 +122,24 @@ class ChandraHopesBeaconScenarioTest : ScenarioTestBase() {
                 ).error shouldNotBe null
             }
             game.state.getEntity(chandra)!!.get<CountersComponent>()!!.getCount(CounterType.LOYALTY) shouldBe 6
+        }
+
+        test("+2 adds two mana in any combination of colors") {
+            val game = base().build()
+            val chandra = game.findPermanent("Chandra, Hope's Beacon")!!
+
+            game.execute(ActivateAbility(game.player1Id, chandra, plusTwoId)).error shouldBe null
+            game.resolveStack()
+            listOf(Color.RED, Color.BLUE).forEach { color ->
+                val decision = game.getPendingDecision()
+                withClue("Each pip asks for a color") { (decision is ChooseColorDecision) shouldBe true }
+                game.submitDecision(ColorChosenResponse(decision!!.id, color)).error shouldBe null
+            }
+
+            val pool = game.state.getEntity(game.player1Id)!!.get<ManaPoolComponent>()!!
+            pool.red shouldBe 1
+            pool.blue shouldBe 1
+            game.state.getEntity(chandra)!!.get<CountersComponent>()!!.getCount(CounterType.LOYALTY) shouldBe 7
         }
 
         test("−X deals X damage to each of two targets") {
