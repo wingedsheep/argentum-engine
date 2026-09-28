@@ -79,7 +79,8 @@ internal object ConditionalSelfGrants {
     fun byIds(cardDefinitionId: String, ids: List<AbilityId>, cardRegistry: CardRegistry): List<TriggeredAbility> {
         if (ids.isEmpty()) return emptyList()
         val cardDef = cardRegistry.getCard(cardDefinitionId) ?: return emptyList()
-        return cardDef.script.staticAbilities.mapNotNull { ability ->
+        // Every class level: the frozen ids were already filtered by the level the permanent had.
+        return cardDef.script.effectiveStaticAbilities(Int.MAX_VALUE).mapNotNull { ability ->
             val grant = (ability as? ConditionalStaticAbility)?.ability as? GrantTriggeredAbility
             grant?.ability?.takeIf { it.id in ids }
         }
