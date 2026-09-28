@@ -122,6 +122,92 @@
     ]
 }
 
+// Alabaster Host Intercessor
+{
+    "name": "Alabaster Host Intercessor",
+    "manaCost": "{5}{W}",
+    "typeLine": "Creature — Phyrexian Samurai",
+    "oracleText": "When this creature enters, exile target creature an opponent controls until this creature leaves the battlefield.\nPlainscycling {2} ({2}, Discard this card: Search your library for a Plains card, reveal it, put it into your hand, then shuffle.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}",
+            "searchFilter": {
+                "cardPredicates": [
+                    {
+                        "type": "HasSubtype",
+                        "subtype": "Plains"
+                    }
+                ]
+            },
+            "displayPrefix": "Plainscycling"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Alabaster Host Intercessor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Alabaster Host Intercessor:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "artist": "Konstantin Porubov",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/165357cc-ec74-490f-aec3-7048bb43c8f9.jpg?1783917072"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Alabaster Host Sanctifier
 {
     "name": "Alabaster Host Sanctifier",
@@ -260,6 +346,146 @@
         "flavorText": "Elspeth shone like a sixth sun, inspiring hope in the Mirrans and terror in New Phyrexia.",
         "imageUri": "https://cards.scryfall.io/normal/front/0/9/09fb5876-5b47-4a05-be57-7ad3890c8953.jpg?1783917071"
     },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Archangel Elspeth
+{
+    "name": "Archangel Elspeth",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Elspeth",
+    "oracleText": "+1: Create a 1/1 white Soldier creature token with lifelink.\n−2: Put two +1/+1 counters on target creature. It becomes an Angel in addition to its other types and gains flying.\n−6: Return all nonland permanent cards with mana value 3 or less from your graveyard to the battlefield.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Archangel Elspeth:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/7/1774c68a-3d76-4fe1-b741-e6acf6b9214c.jpg?1783916674"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Archangel Elspeth:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "AddCreatureType",
+                            "subtype": "Angel",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "Permanent"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Archangel Elspeth:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "nonland permanent mv<=3"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "MYTHIC",
+        "artist": "Cynthia Sheppard",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35ed6263-bdd7-4013-ac8c-9b652d71a0db.jpg?1783917071",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "The second ability doesn't have a duration. It lasts until the creature leaves the battlefield."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If the target of the second ability stops being a creature after the ability has resolved, it will also stop being an Angel until it becomes a creature again, if applicable."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "For the last ability, if a card in your graveyard has {X} in its mana cost, X is 0."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
     "colorIdentityOverride": [
         "WHITE"
     ]
@@ -494,6 +720,69 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Attentive Skywarden
+{
+    "name": "Attentive Skywarden",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Phyrexian Kor",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player or battle, transform up to one target Incubator token you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Attentive Skywarden:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "battle"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "Transform",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "permanent Incubator token ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "artist": "Jodie Muir",
+        "flavorText": "The same sturdy kitesail that once carried her safely through the Roil now allows her to monitor the pods' progress from above.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/83d89bd5-95cc-41fc-aea2-2dde52231919.jpg?1783917067"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -846,6 +1135,113 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Bola Slinger
+{
+    "name": "Bola Slinger",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Cat Soldier",
+    "oracleText": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)\nWhenever this creature attacks, tap target artifact or creature an opponent controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bola Slinger:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "Bola Slinger:1",
+                                    "trigger": "AttackEvent",
+                                    "effect": {
+                                        "type": "TapUntap",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    },
+                                    "targetRequirement": {
+                                        "type": "TargetObject",
+                                        "filter": {
+                                            "baseFilter": "creature|artifact ctrl:opponent"
+                                        },
+                                        "id": "t1"
+                                    }
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)"
+            },
+            {
+                "id": "Bola Slinger:3",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|artifact ctrl:opponent"
+                    },
+                    "id": "t2"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "artist": "Hendry Iwanaga",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/896043a7-c7a2-4542-8739-7b4f09c6e1f1.jpg?1783917069"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1824,6 +2220,50 @@
     ]
 }
 
+// Dusk Legion Duelist
+{
+    "name": "Dusk Legion Duelist",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Vampire Soldier",
+    "oracleText": "Vigilance\nWhenever one or more +1/+1 counters are put on this creature, draw a card. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dusk Legion Duelist:1",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Ryan Valle",
+        "flavorText": "\"We sailed to Ixalan guided by a promise—the Age of Everflowing Blood. No machine will take that from us.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/7305a8d3-5403-4483-92af-863dc91c6084.jpg?1783917064"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Elspeth's Smite
 {
     "name": "Elspeth's Smite",
@@ -1883,6 +2323,124 @@
         "artist": "Livia Prima",
         "flavorText": "Elesh Norn screamed as the light pierced her. Her nightmare had become flesh.",
         "imageUri": "https://cards.scryfall.io/normal/front/f/0/f03a480f-de67-4611-9db7-c0c3d020f597.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Enduring Bondwarden
+{
+    "name": "Enduring Bondwarden",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)\nWhen this creature dies, put its counters on target creature you control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Enduring Bondwarden:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "Enduring Bondwarden:1",
+                                    "trigger": {
+                                        "type": "ZoneChangeEvent",
+                                        "from": "Battlefield",
+                                        "to": "Graveyard"
+                                    },
+                                    "effect": {
+                                        "type": "MoveAllLastKnownCounters",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    },
+                                    "targetRequirement": {
+                                        "type": "TargetObject",
+                                        "filter": {
+                                            "baseFilter": "creature ctrl:you"
+                                        },
+                                        "id": "t1"
+                                    },
+                                    "descriptionOverride": "When this creature dies, put its counters on target creature you control."
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)"
+            },
+            {
+                "id": "Enduring Bondwarden:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveAllLastKnownCounters",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t2"
+                },
+                "descriptionOverride": "When this creature dies, put its counters on target creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "artist": "Kim Sokol",
+        "flavorText": "\"I will be with you. Always.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb0680eb-ceca-44d9-9654-78ea2ccfce17.jpg?1783917065"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -2084,6 +2642,152 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Golden-Scale Aeronaut
+{
+    "name": "Golden-Scale Aeronaut",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Dwarf Pilot",
+    "oracleText": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)\nFlying",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Golden-Scale Aeronaut:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "FLYING",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "artist": "Javier Charro",
+        "flavorText": "Johar had never heard of a pterodon. He just knew Saheeli's new invention let him fly circles around the invading monsters.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b2f3c52-8d6a-411a-aa62-cbb08a144351.jpg?1783917064"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Guardian of Ghirapur
+{
+    "name": "Guardian of Ghirapur",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhen this creature enters, exile up to one other target creature or artifact you control. Return it to the battlefield under its owner's control at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Guardian of Ghirapur:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature|artifact ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "RARE",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "She was hope incarnate, an incandescent bulwark against the tide of machines.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/9503a1e6-f0bf-44d0-a28b-56fbfcff1ff2.jpg?1783917062"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2332,6 +3036,57 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Infected Defector
+{
+    "name": "Infected Defector",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Phyrexian Knight",
+    "oracleText": "When this creature dies, incubate 3. (Create an Incubator token with three +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Infected Defector:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 3,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "artist": "Nino Vecia",
+        "flavorText": "The diamond storms of Gobakhan hampered Phyrexia's progress until they recruited some of the local shieldmages.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/2777f8b5-2f8e-4cb8-9206-8a4978488657.jpg?1783917062"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3052,6 +3807,171 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Invasion of Belenon
+{
+    "name": "Invasion of Belenon",
+    "manaCost": "{2}{W}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, create a 2/2 white and blue Knight creature token with vigilance.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Belenon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE",
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/8/88439bfc-8942-473b-9e4f-863017788476.jpg?1783916669"
+                },
+                "descriptionOverride": "When this Siege enters, create a 2/2 white and blue Knight creature token with vigilance."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Belenon War Anthem",
+        "manaCost": "",
+        "typeLine": "Enchantment",
+        "oracleText": "Creatures you control get +1/+1.",
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "20",
+            "rarity": "UNCOMMON",
+            "artist": "Antonio José Manzanedo",
+            "flavorText": "\"Just as a flute turns breath into music, we are the vessel through which the Sacred Winds produce glorious justice.\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/f/4fb0eb2d-9cb7-4e72-a970-5009b046df2a.jpg?1783917065"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "UNCOMMON",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4fb0eb2d-9cb7-4e72-a970-5009b046df2a.jpg?1783917065"
+    },
+    "startingDefense": 5,
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Invasion of Dominaria
+{
+    "name": "Invasion of Dominaria",
+    "manaCost": "{2}{W}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, you gain 4 life and draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Dominaria:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Siege enters, you gain 4 life and draw a card."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Serra Faithkeeper",
+        "manaCost": "",
+        "typeLine": "Creature — Angel",
+        "oracleText": "Flying, vigilance",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "FLYING",
+            "VIGILANCE"
+        ],
+        "metadata": {
+            "collectorNumber": "21",
+            "rarity": "UNCOMMON",
+            "artist": "Denys Tsiperko",
+            "flavorText": "\"I was there when Phyrexia doomed Serra's realm with a single touch. I was there when Yawgmoth tried and failed to conquer Dominaria. And I will still be here when Elesh Norn lies dead.\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/e/7e784d3d-0c6d-4ce5-beb5-edd2adb32385.jpg?1783917066"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "Denys Tsiperko",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e784d3d-0c6d-4ce5-beb5-edd2adb32385.jpg?1783917066",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Sieges each have an intrinsic triggered ability. That ability is \"When the last defense counter is removed from this permanent, exile it, then you may cast it transformed without paying its mana cost.\""
+            },
+            {
+                "date": "2023-04-14",
+                "text": "As a Siege enters the battlefield, its controller chooses an opponent to be its protector."
+            }
+        ]
+    },
+    "startingDefense": 5,
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4102,6 +5022,114 @@
         "artist": "Jake Murray",
         "flavorText": "Raised in a long tradition of heroes, every Benalish knight knows the day might come when they will be called to face Phyrexia.",
         "imageUri": "https://cards.scryfall.io/normal/front/5/6/56a3108b-c33d-47c5-984b-01fa257fbd79.jpg?1783917059"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Knight-Errant of Eos
+{
+    "name": "Knight-Errant of Eos",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nWhen this creature enters, look at the top six cards of your library. You may reveal up to two creature cards with mana value X or less from among them, where X is the number of creatures that convoked this creature. Put the revealed cards into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Knight-Errant of Eos:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "ManaValueAtMostDynamic",
+                                        "amount": {
+                                            "type": "CastChoice",
+                                            "slot": "CONVOKED_CREATURES"
+                                        }
+                                    }
+                                ]
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal up to two creature cards with mana value X or less and put them into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Shuffled"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, look at the top six cards of your library. You may reveal up to two creature cards with mana value X or less from among them, where X is the number of creatures that convoked this creature. Put the revealed cards into your hand, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Kevin Sidharta",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab2ad652-2406-491a-9f22-23e974f943d7.jpg?1783917058",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "You can't tap more creatures to convoke Knight-Errant of Eos than is necessary to pay for the spell. In most cases, this means five creatures. However, if there are any additional costs to cast Knight-Errant of Eos, you may use convoke to pay those additional costs as well."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "It doesn't matter if the creatures that convoked Knight-Errant of Eos are still on the battlefield or not as the enters-the-battlefield ability is resolving. You'll get credit for them when determining the value of X."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -5733,6 +6761,110 @@
     ]
 }
 
+// Seraph of New Capenna
+{
+    "name": "Seraph of New Capenna",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Angel Soldier",
+    "oracleText": "Flying\n{4}{B/P}: Transform this creature. Activate only as a sorcery. ({B/P} can be paid with either {B} or 2 life.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Seraph of New Capenna:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{B/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Seraph of New Phyrexia",
+        "manaCost": "",
+        "typeLine": "Creature — Phyrexian Angel",
+        "oracleText": "Flying\nWhenever this creature attacks, you may sacrifice another creature or artifact. If you do, this creature gets +2/+1 until end of turn.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Seraph of New Phyrexia:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayPay",
+                            "cost": {
+                                "type": "Sacrifice",
+                                "filter": "creature|artifact",
+                                "excludeSource": true
+                            }
+                        },
+                        "then": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "descriptionOverride": "Whenever this creature attacks, you may sacrifice another creature or artifact. If you do, this creature gets +2/+1 until end of turn."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "36",
+            "rarity": "UNCOMMON",
+            "artist": "Aaron J. Riley",
+            "flavorText": "With her Halo reserves exhausted, she began to change, and she made a new promise to bless New Capenna with glistening perfection.",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/b/fbd9ed1d-1972-4db8-bc43-b05b94956aa0.jpg?1783917057"
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron J. Riley",
+        "flavorText": "The angels had vowed to protect New Capenna. She was determined to uphold that vow, no matter the cost.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fbd9ed1d-1972-4db8-bc43-b05b94956aa0.jpg?1783917057"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Shivan Branch-Burner
 {
     "name": "Shivan Branch-Burner",
@@ -5763,6 +6895,172 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Sun-Blessed Guardian
+{
+    "name": "Sun-Blessed Guardian",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "{5}{R/P}: Transform this creature. Activate only as a sorcery. ({R/P} can be paid with either {R} or 2 life.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sun-Blessed Guardian:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{R/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Furnace-Blessed Conqueror",
+        "manaCost": "",
+        "typeLine": "Creature — Phyrexian Cleric",
+        "oracleText": "Whenever this creature attacks, create a tapped and attacking token that's a copy of it. Put a +1/+1 counter on that token for each +1/+1 counter on this creature. Sacrifice that token at the beginning of the next end step.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Furnace-Blessed Conqueror:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateTokenCopyOfTarget",
+                                "target": "Self",
+                                "tapped": true,
+                                "attacking": true,
+                                "sacrificeAtStep": "END"
+                            },
+                            {
+                                "type": "AddCountersToCollection",
+                                "collectionName": "createdTokens",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": {
+                                        "type": "CounterCount",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "38",
+            "rarity": "UNCOMMON",
+            "artist": "Brian Valeza",
+            "flavorText": ". . . but even the unbreakable can be reshaped.",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/3/630ce82b-0d09-4a12-8cba-0b0ed8415128.jpg?1783917056"
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "RED"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Valeza",
+        "flavorText": "Light glinted off the raised weapons of the Sun Empire, filling her with an unbreakable hope . . .",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/630ce82b-0d09-4a12-8cba-0b0ed8415128.jpg?1783917056"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "RED"
+    ]
+}
+
+// Tarkir Duneshaper
+{
+    "name": "Tarkir Duneshaper",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Dog Warrior",
+    "oracleText": "{4}{G/P}: Transform this creature. Activate only as a sorcery. ({G/P} can be paid with either {G} or 2 life.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tarkir Duneshaper:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Burnished Dunestomper",
+        "manaCost": "",
+        "typeLine": "Creature — Phyrexian Dog Warrior",
+        "oracleText": "Trample",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 3
+        },
+        "keywords": [
+            "TRAMPLE"
+        ],
+        "metadata": {
+            "collectorNumber": "43",
+            "artist": "Denys Tsiperko",
+            "flavorText": "\"Your precious dragonlords repressed your instincts, cur. You were born a hunter. Evolve, and hunt again.\"\n—Benzir, archdruid of Temple Might",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/d/fdc37acc-05ba-4457-8a03-d635497bfb1b.jpg?1783917051"
+        },
+        "colorIdentityOverride": [
+            "GREEN",
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "GREEN",
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Denys Tsiperko",
+        "flavorText": "\"Obey the teachings of the dragonlords, for they provide all. They grant us magic and safety, and in return we offer respect.\"\n—Baihir, Dromoka mage",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fdc37acc-05ba-4457-8a03-d635497bfb1b.jpg?1783917051"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
