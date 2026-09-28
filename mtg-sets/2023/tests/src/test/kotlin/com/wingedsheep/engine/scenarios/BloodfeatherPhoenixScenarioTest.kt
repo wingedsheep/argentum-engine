@@ -121,6 +121,25 @@ class BloodfeatherPhoenixScenarioTest : ScenarioTestBase() {
             game.isInGraveyard(1, "Bloodfeather Phoenix") shouldBe true
         }
 
+        test("on the battlefield it doesn't trigger") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Bloodfeather Phoenix")
+                .withCardInHand(1, "Shock")
+                .withLandsOnBattlefield(1, "Mountain", 2)
+                .withCardInLibrary(1, "Island")
+                .withCardInLibrary(2, "Island")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.castSpellTargetingPlayer(1, "Shock", 2).error shouldBe null
+            game.resolveStack()
+            withClue("the return trigger functions only from the graveyard") {
+                (game.getPendingDecision() is YesNoDecision) shouldBe false
+            }
+            game.getLifeTotal(2) shouldBe 18
+        }
+
         test("it can't block") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")
