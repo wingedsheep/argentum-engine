@@ -540,6 +540,7 @@ object EntersWithReplacements {
                 val current = c.get<CountersComponent>() ?: CountersComponent()
                 c.with(current.withAdded(counter, 1))
             }
+            newState = DamageUtils.markCounterOnControlledPermanent(newState, entityId, counter, entering = true)
             events.add(CountersAddedEvent(entityId, counter, 1, name))
         }
         // Gate on the entering permanent's *base* type — the projected state isn't recomputed yet at

@@ -425,6 +425,7 @@ class BeginningPhaseManager(
                 c.with(counters.withAdded(CounterType.LORE, 1))
                     .with(updatedSaga)
             }
+            newState = com.wingedsheep.engine.handlers.effects.DamageUtils.markCounterOnControlledPermanent(newState, entityId, CounterType.LORE)
             events.add(CountersAddedEvent(entityId, CounterType.LORE, 1, cardComponent.name))
         }
 

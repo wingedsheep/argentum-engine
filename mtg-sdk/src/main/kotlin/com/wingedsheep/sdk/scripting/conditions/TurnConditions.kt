@@ -389,6 +389,34 @@ data class PutCounterKindOnCreatureThisTurn(
 }
 
 /**
+ * Condition: "if a [counterType] counter was put on a permanent under [player]'s control this turn"
+ * — Fairgrounds Trumpeter's end-step gate.
+ *
+ * ### Why this is not `PutCounterKindOnCreatureThisTurn`
+ *
+ * That condition is keyed on the player who *put* the counter and only counts creatures ("you've
+ * put one or more +1/+1 counters on a creature"). This one is keyed on the *recipient's controller*
+ * and counts any permanent: an opponent's Wither creature putting -1/-1 counters on your land-creature,
+ * or your own Proliferate on your artifact, both count here, and a counter you put on an opponent's
+ * creature does not. The two axes are orthogonal, so neither can be spelled as a parameter of the
+ * other without one of them answering a question its name doesn't ask.
+ *
+ * Turn history, not a board scan: the permanent had to be under [player]'s control as the counter
+ * was placed, and it doesn't matter whether it still is or still has the counter (the card's
+ * ruling). `null` [counterType] is the kind-agnostic reading.
+ */
+@SerialName("CounterPutOnPermanentYouControlledThisTurn")
+@Serializable
+data class CounterPutOnPermanentYouControlledThisTurn(
+    val counterType: CounterType? = null,
+    val player: Player = Player.You
+) : Condition {
+    override val description: String =
+        "if ${counterType?.let { "a ${it.printed} counter" } ?: "a counter"} was put on a permanent " +
+            "${player.description} controlled this turn"
+}
+
+/**
  * Condition: "if this is the first spell you've cast this turn that mana from a Treasure
  * was spent to cast." Used by Rain of Riches.
  *

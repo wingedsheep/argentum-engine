@@ -712,6 +712,7 @@ class CostPaymentService(private val services: EngineServices) {
             newState = newState.updateEntity(permanentId) { c ->
                 c.with((c.get<CountersComponent>() ?: CountersComponent()).withAdded(counterType, count))
             }
+            newState = com.wingedsheep.engine.handlers.effects.DamageUtils.markCounterOnControlledPermanent(newState, permanentId, counterType)
             events.add(
                 com.wingedsheep.engine.core.CountersAddedEvent(
                     permanentId,

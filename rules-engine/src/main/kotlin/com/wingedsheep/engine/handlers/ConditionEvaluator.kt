@@ -60,6 +60,7 @@ import com.wingedsheep.sdk.scripting.conditions.PlayerDrewCardsThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PlayerPlayedLandThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PlayerTurnedPermanentFaceUpThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PutCounterKindOnCreatureThisTurn
+import com.wingedsheep.sdk.scripting.conditions.CounterPutOnPermanentYouControlledThisTurn
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadCardType
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadSubtype
 import com.wingedsheep.sdk.scripting.conditions.TriggeringSpellCastWithoutPayingMana
@@ -336,6 +337,7 @@ class ConditionEvaluator(
             is PlayerPlayedLandThisTurn,
             is PlayerTurnedPermanentFaceUpThisTurn,
             is PutCounterKindOnCreatureThisTurn,
+            is CounterPutOnPermanentYouControlledThisTurn,
             is RingHasTemptedPlayerAtLeast,
             is SacrificedPermanentHadSubtype,
             SacrificedPermanentWasLegendary,
@@ -630,6 +632,20 @@ class ConditionEvaluator(
                 val record = playerId?.let {
                     state.getEntity(it)
                         ?.get<com.wingedsheep.engine.state.components.player.PutCounterOnCreatureThisTurnComponent>()
+                }
+                when {
+                    record == null -> false
+                    condition.counterType == null -> true
+                    else -> condition.counterType in record.kinds
+                }
+            }
+            // "if a <kind> counter was put on a permanent under your control this turn" — turn
+            // history off the recipient's controller, recorded at placement; never a board scan.
+            is CounterPutOnPermanentYouControlledThisTurn -> {
+                val playerId = resolvePlayer(state, condition.player, ctx)
+                val record = playerId?.let {
+                    state.getEntity(it)
+                        ?.get<com.wingedsheep.engine.state.components.player.CountersPutOnYourPermanentsThisTurnComponent>()
                 }
                 when {
                     record == null -> false

@@ -11227,6 +11227,16 @@ answer it and would silently return `false`.
   still count (Sigardian Paladin's first ruling). For the per-*permanent* wording ("on **~** this
   turn" — Kid Loki, Beast, Erudite Aerialist) use `StatePredicate.ReceivedCounterThisTurn` on a
   filter instead; that one names a single permanent, this one means any creature.
+- `CounterPutOnPermanentYouControlledThisTurn(counterType, player = Player.You)` — "if a +1/+1
+  counter was put on a permanent under your control this turn" (Fairgrounds Trumpeter). The
+  **recipient-controller** sibling of `PutCounterKindOnCreatureThisTurn`: keyed on who controlled the
+  permanent *as the counter was placed* — whoever placed it — and over any permanent, not just
+  creatures. A counter you put on an opponent's creature doesn't count for you; an opponent's
+  counter on yours does. Turn history (`CountersPutOnYourPermanentsThisTurnComponent`, cleared at
+  cleanup): the permanent may since have left or lost the counter. `null` `counterType` is "a
+  counter" of any kind. Fed by both counter-placement funnels (`DamageUtils.markCounterPlacedOnCreature`
+  / `recordCounterPlacement`) plus the cost, saga-lore and entry-rider paths, via
+  `DamageUtils.markCounterOnControlledPermanent`; a new placement path should go through one of them.
 - `CardsPutIntoExileThisTurn(atLeast = 1)` — `atLeast` or more cards were put into exile this turn,
   game-wide (summed across every player via `Player.Each`, backed by the `CARDS_PUT_INTO_EXILE`
   turn tracker), not just yours. Used by Ennis, Debate Moderator's end-step "if one or more cards

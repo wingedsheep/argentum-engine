@@ -410,11 +410,17 @@ internal class PermanentSpellResolver(
         controllerId: EntityId
     ): ExecutionResult {
         // Normal permanent entry
-        val (enteredState, enterEvents) = permanentEntry.enterPermanentOnBattlefield(state, spellId, spellComponent, cardComponent, cardDef)
-        val sagaEvents = if (cardDef != null && !spellComponent.castFaceDown && cardDef.isSaga) {
-            listOf(CountersAddedEvent(spellId, CounterType.LORE, 1, cardDef.name))
+        val (afterEntry, enterEvents) = permanentEntry.enterPermanentOnBattlefield(state, spellId, spellComponent, cardComponent, cardDef)
+        val isSagaEntry = cardDef != null && !spellComponent.castFaceDown && cardDef.isSaga
+        val sagaEvents = if (isSagaEntry) {
+            listOf(CountersAddedEvent(spellId, CounterType.LORE, 1, cardDef!!.name))
         } else {
             emptyList()
+        }
+        val enteredState = if (isSagaEntry) {
+            com.wingedsheep.engine.handlers.effects.DamageUtils.markCounterOnControlledPermanent(afterEntry, spellId, CounterType.LORE, entering = true)
+        } else {
+            afterEntry
         }
 
         // The generic "as this permanent enters, …" replacement ([OnEnterRun]). The move path

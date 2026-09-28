@@ -2033,6 +2033,18 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.PutCounterKindOnCreatureThisTurn(counterType, player)
 
     /**
+     * "If a [counterType] counter was put on a permanent under your control this turn" (Fairgrounds
+     * Trumpeter) — keyed on the permanent's controller at placement, not on who put the counter, and
+     * over any permanent, not just creatures. Turn history: the permanent may since have left or lost
+     * the counter. Pass `null` for "a counter" of any kind.
+     */
+    fun CounterPutOnPermanentYouControlledThisTurn(
+        counterType: CounterType?,
+        player: Player = Player.You
+    ): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.CounterPutOnPermanentYouControlledThisTurn(counterType, player)
+
+    /**
      * Intervening-if: "if a creature died this turn" (global — any controller).
      * Used for cards like Scorpion, Seething Striker.
      */

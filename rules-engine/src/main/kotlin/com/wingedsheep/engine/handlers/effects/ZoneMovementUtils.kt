@@ -143,7 +143,7 @@ object ZoneMovementUtils {
         val newState = state.updateEntity(entityId) { c ->
             c.with(sagaComponent)
                 .with(current.withAdded(CounterType.LORE, 1))
-        }
+        }.let { DamageUtils.markCounterOnControlledPermanent(it, entityId, CounterType.LORE, entering = true) }
         return newState to listOf(CountersAddedEvent(entityId, CounterType.LORE, 1, cardComponent.name))
     }
 

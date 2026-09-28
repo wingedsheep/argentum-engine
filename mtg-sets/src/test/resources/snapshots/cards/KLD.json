@@ -1796,6 +1796,51 @@
     ]
 }
 
+// Fairgrounds Trumpeter
+{
+    "name": "Fairgrounds Trumpeter",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elephant",
+    "oracleText": "At the beginning of each end step, if a +1/+1 counter was put on a permanent under your control this turn, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fairgrounds Trumpeter:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "CounterPutOnPermanentYouControlledThisTurn",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "The louder the elephant trumpeted, the more the crowd cheered. And the more the crowd cheered . . .",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65983338-8806-4386-94a6-4670eb853848.jpg?1783937178"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Filigree Familiar
 {
     "name": "Filigree Familiar",

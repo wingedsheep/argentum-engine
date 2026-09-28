@@ -956,9 +956,10 @@ object DamageUtils {
         targetId: EntityId,
         counterType: CounterType
     ): GameState {
-        if (!state.projectedState.isCreature(targetId)) return state
-        val byController = state.projectedState.getController(targetId) == placerId
-        return state
+        val recorded = markCounterOnControlledPermanent(state, targetId, counterType)
+        if (!recorded.projectedState.isCreature(targetId)) return recorded
+        val byController = recorded.projectedState.getController(targetId) == placerId
+        return recorded
             .updateEntity(placerId) { container ->
                 val existing = container
                     .get<com.wingedsheep.engine.state.components.player.PutCounterOnCreatureThisTurnComponent>()
@@ -1026,13 +1027,50 @@ object DamageUtils {
             (placerId != null && state.projectedState.getController(targetId) == placerId)
         val first = state.getEntity(targetId)
             ?.has<com.wingedsheep.engine.state.components.battlefield.ReceivedCountersThisTurnComponent>() != true
-        val newState = state.updateEntity(targetId) { container ->
+        val newState = markCounterOnControlledPermanent(state, targetId, counterType, entering = byController)
+            .updateEntity(targetId) { container ->
             val existing = container
                 .get<com.wingedsheep.engine.state.components.battlefield.ReceivedCountersThisTurnComponent>()
                 ?: com.wingedsheep.engine.state.components.battlefield.ReceivedCountersThisTurnComponent()
             container.with(existing.with(counterType, placedByController))
         }
         return newState to first
+    }
+
+    /**
+     * Record [counterType] on the [com.wingedsheep.engine.state.components.player.CountersPutOnYourPermanentsThisTurnComponent]
+     * of whoever controls the permanent [targetId] as the counter is placed — "if a +1/+1 counter was
+     * put on a permanent under your control this turn" (Fairgrounds Trumpeter). Keyed on the
+     * recipient's controller, not the placer, and over any permanent type.
+     *
+     * Both placement funnels — [markCounterPlacedOnCreature] and [recordCounterPlacement] — call
+     * this, so every path that stamps a counter-history marker also feeds this record; the few
+     * emitters outside those funnels (cost payments, saga lore, the graveyard-cast entry rider) call
+     * it directly. Recording is idempotent per kind, so a path that goes through both funnels is fine.
+     *
+     * The controller is the *projected* one for a permanent on the battlefield. With [entering] — a
+     * permanent entering with counters (CR 122.6a), not on the battlefield yet — it falls back to the
+     * entering object's base controller. Anything else off the battlefield (a suspended card, a
+     * spell) is not a permanent and records nothing.
+     */
+    fun markCounterOnControlledPermanent(
+        state: GameState,
+        targetId: EntityId,
+        counterType: CounterType,
+        entering: Boolean = false
+    ): GameState {
+        val controllerId = when {
+            targetId in state.getBattlefield() -> state.projectedState.getController(targetId)
+            entering -> state.getEntity(targetId)
+                ?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
+            else -> null
+        } ?: return state
+        return state.updateEntity(controllerId) { container ->
+            val existing = container
+                .get<com.wingedsheep.engine.state.components.player.CountersPutOnYourPermanentsThisTurnComponent>()
+                ?: com.wingedsheep.engine.state.components.player.CountersPutOnYourPermanentsThisTurnComponent()
+            container.with(existing.with(counterType))
+        }
     }
 
     /**
