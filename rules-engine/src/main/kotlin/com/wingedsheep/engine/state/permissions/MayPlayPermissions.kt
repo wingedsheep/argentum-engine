@@ -55,6 +55,24 @@ fun GameState.removeMayPlayPermissionsForCard(cardId: EntityId): GameState =
     )
 
 /**
+ * Spend every [MayPlayPermission.singleUse] permission [playerId] holds over [cardId]: the card was
+ * just cast or played through it, so the rest of its group loses the grant too ("cast a spell from
+ * among those cards" — one spell, not one each). Call only at a play site, never when a card
+ * merely leaves exile.
+ *
+ * When an ordinary, unconditional stored grant also covers the card, the play is attributed to
+ * that one and the single-use grant is left for the rest of its group — the player chooses which
+ * permission they use, and spending the scarce one would never be their choice. A conditional
+ * grant doesn't shield it: its gate isn't re-evaluated here, so it may not have authorized the play.
+ */
+fun GameState.consumeSingleUseMayPlayFor(cardId: EntityId, playerId: EntityId): GameState {
+    fun covers(permission: MayPlayPermission) = permission.controllerId == playerId && cardId in permission.cardIds
+    if (mayPlayPermissions.none { it.singleUse && covers(it) }) return this
+    if (mayPlayPermissions.any { !it.singleUse && it.condition == null && covers(it) }) return this
+    return copy(mayPlayPermissions = mayPlayPermissions.filterNot { it.singleUse && covers(it) })
+}
+
+/**
  * Find every active permission that authorizes [playerId] to play [cardId], with the gate
  * condition currently open. Multiple permissions can stack (e.g., a conditional grant and
  * an unconditional one); each read site picks how to combine them.

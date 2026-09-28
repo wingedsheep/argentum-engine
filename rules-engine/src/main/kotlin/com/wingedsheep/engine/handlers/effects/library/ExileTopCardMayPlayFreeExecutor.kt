@@ -188,6 +188,7 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
                     nonLandOnly = effect.nonLandOnly,
                     castFaceIndex = effect.castFaceIndex,
                     castColorRestriction = effect.castColorRestriction,
+                    singleUse = effect.singleUse,
                     timestamp = state.timestamp,
                 )
             )

@@ -179,6 +179,15 @@ data class MayPlayPermission(
      * Ignored for a card with no back face, so it is safe on a permission covering a mixed pile.
      */
     val castTransformed: Boolean = false,
+    /**
+     * When true, playing any one card in [cardIds] through this permission revokes it for the
+     * whole group — "you may cast an instant or sorcery spell from among those cards" (Chandra,
+     * Hope's Beacon). Mirrors [com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
+     * .singleUse]. Consumed by [consumeSingleUseMayPlayFor] at the cast site (`SpellCaster`) and the
+     * land-play site (`PlayLandHandler`), regardless of [permanent]; a card leaving exile any other
+     * way only drops that card, as for an ordinary grant.
+     */
+    val singleUse: Boolean = false,
     val timestamp: Long
 ) {
     init {

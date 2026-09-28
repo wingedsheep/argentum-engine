@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.permissions.activeMayPlayFor
+import com.wingedsheep.engine.state.permissions.consumeSingleUseMayPlayFor
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.engine.state.permissions.removeMayPlayPermissionsForCard
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -338,6 +339,11 @@ class PlayLandHandler(
         // through the stack, so StackResolver's removeMayPlayPermissionsForCard never runs
         // for them; without this, a permanent permission would silently re-authorize the
         // card if it later returned to exile.
+        // A single-use grant ("play one of those cards") is spent for its whole group, from exile or
+        // a graveyard alike — before the per-card cleanup below drops this card from it.
+        if (fromZone == Zone.EXILE || fromZone == Zone.GRAVEYARD) {
+            newState = newState.consumeSingleUseMayPlayFor(action.cardId, action.playerId)
+        }
         if (fromZone == Zone.EXILE) {
             // Record once-per-turn linked-exile permission usage (Hauken's Insight — "Once during
             // each of your turns, you may play a land or cast a spell"). Resolved against the

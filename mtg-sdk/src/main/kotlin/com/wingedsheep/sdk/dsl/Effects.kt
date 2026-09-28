@@ -1404,7 +1404,8 @@ object Effects {
      * Set [ownerControls] for "its owner may cast/play that card" (each card's owner is the
      * grantee, and a turn-keyed [expiry] follows that owner's turns), and [castColorRestriction]
      * for "you may cast red spells from among them" — a cast-time check on the face being cast,
-     * not a filter over the exiled cards.
+     * not a filter over the exiled cards. Set [singleUse] for "you may cast **a** spell from among
+     * them" — one play spends the grant for the whole group (Chandra, Hope's Beacon).
      *
      * Set [landEntersTapped] for "each land played this way enters tapped" clauses
      * (Lightstall Inquisitor). Pair with [GrantPlayWithCostIncrease] to also tax
@@ -1426,7 +1427,8 @@ object Effects {
         nonLandOnly: Boolean = false,
         castFaceIndex: Int? = null,
         ownerControls: Boolean = false,
-        castColorRestriction: Color? = null
+        castColorRestriction: Color? = null,
+        singleUse: Boolean = false
     ): Effect = GrantMayPlayFromExileEffect(
         from = from,
         expiry = expiry,
@@ -1438,7 +1440,8 @@ object Effects {
         nonLandOnly = nonLandOnly,
         castFaceIndex = castFaceIndex,
         ownerControls = ownerControls,
-        castColorRestriction = castColorRestriction
+        castColorRestriction = castColorRestriction,
+        singleUse = singleUse
     )
 
     /**
@@ -4225,7 +4228,8 @@ object Effects {
         ownerControls: Boolean = false,
         castColorRestriction: Color? = null,
         recipient: EffectTarget = EffectTarget.Controller,
-        asThoughFlash: Boolean = false
+        asThoughFlash: Boolean = false,
+        singleUse: Boolean = false
     ): Effect = GrantMayPlayFromExileEffect(
         from = from.key,
         expiry = expiry,
@@ -4239,7 +4243,8 @@ object Effects {
         asThoughFlash = asThoughFlash,
         nonLandOnly = nonLandOnly,
         castFaceIndex = castFaceIndex,
-        castColorRestriction = castColorRestriction
+        castColorRestriction = castColorRestriction,
+        singleUse = singleUse
     )
 
     /** Waterbend-cast the cards in [from] from exile (see the String overload). */

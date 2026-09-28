@@ -313,6 +313,7 @@
             "castFaceIndex": null,
             "castColorRestriction": null,
             "castTransformed": false,
+            "singleUse": false,
             "timestamp": 0
         }
     ],
