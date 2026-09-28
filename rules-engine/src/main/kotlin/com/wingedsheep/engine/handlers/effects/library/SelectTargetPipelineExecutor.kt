@@ -87,7 +87,8 @@ class SelectTargetPipelineExecutor(
         }
         val requirementInfo = TargetRequirementInfo(
             index = 0,
-            description = effect.requirement.description,
+            // The client shows this line as the prompt; an authored prompt says what the choice is for.
+            description = effect.prompt ?: effect.requirement.description,
             minTargets = effect.requirement.effectiveMinCount,
             maxTargets = 1
         )

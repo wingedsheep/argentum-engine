@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.TargetsResponse
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -7,6 +8,7 @@ import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
 
 /**
  * Crush Underfoot (LRW #162) — "Choose a Giant creature you control. It deals damage equal to its
@@ -70,6 +72,11 @@ class CrushUnderfootScenarioTest : ScenarioTestBase() {
                 val choice = game.state.pendingDecision
                 withClue("Two Giants means a mid-resolution choice, not an auto-select") {
                     choice shouldNotBe null
+                }
+                withClue("The prompt says what the Giant is for, not a bare second \"target\"") {
+                    val targets = choice as ChooseTargetsDecision
+                    targets.prompt shouldContain "deals damage equal to its power to the targeted creature"
+                    targets.targetRequirements.single().description shouldBe targets.prompt
                 }
                 // Deliberately pick the *smaller* Giant: 3 damage is not lethal to a 6/6.
                 game.submitDecision(TargetsResponse(choice!!.id, mapOf(0 to listOf(smallGiant))))

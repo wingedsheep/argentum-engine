@@ -1456,6 +1456,7 @@ data class EachPlayerChoosesCreatureTypeEffect(
  *
  * @property requirement The target requirement (reuses all existing TargetRequirement types)
  * @property storeAs Name of the collection to store the selected target IDs in
+ * @property prompt Optional player-facing prompt overriding the derived "Choose <requirement>"
  */
 @SerialName("SelectTarget")
 @Serializable
@@ -1467,9 +1468,17 @@ data class SelectTargetEffect(
      * Searchlight): hexproof and shroud don't limit it, since only targeting is restricted by them
      * (CR 702.11b / 702.18a). The requirement's other filters still apply.
      */
-    val nonTargeting: Boolean = false
+    val nonTargeting: Boolean = false,
+    /**
+     * What the player is shown when the choice pauses for a decision, replacing the default
+     * "Choose <requirement>". Set it when the choice is only meaningful alongside the rest of the
+     * card — Crush Underfoot's Giant is picked on resolution, *after* its "target creature" was
+     * declared at cast, so the prompt has to say what the Giant is for rather than read like a
+     * second target. `null` keeps the derived prompt.
+     */
+    val prompt: String? = null
 ) : Effect {
-    override val description: String = "Choose ${requirement.description}"
+    override val description: String = prompt ?: "Choose ${requirement.description}"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newRequirement = requirement.applyTextReplacement(replacer)

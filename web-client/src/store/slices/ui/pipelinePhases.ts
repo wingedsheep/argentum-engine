@@ -1206,6 +1206,9 @@ export function enterPhase(
           selectedTargets: [],
           minTargets: Math.min(rawMin, maxTargets),
           maxTargets,
+          // "Select target creature (0/1)" rather than a bare "Select targets" — the server
+          // already derives the requirement's wording, the single-target path just dropped it.
+          ...(actionInfo.targetDescription ? { targetDescription: actionInfo.targetDescription } : {}),
           ...(actionInfo.requiresDamageDistribution ? { requiresDamageDistribution: true } : {}),
         })
       }

@@ -3717,10 +3717,11 @@
                         "type": "TargetObject",
                         "filter": {
                             "baseFilter": "creature Giant ctrl:you"
-                        },
-                        "id": "a Giant creature you control"
+                        }
                     },
-                    "storeAs": "target0"
+                    "storeAs": "target0",
+                    "nonTargeting": true,
+                    "prompt": "Choose a Giant you control — it deals damage equal to its power to the targeted creature"
                 },
                 {
                     "type": "DealDamage",

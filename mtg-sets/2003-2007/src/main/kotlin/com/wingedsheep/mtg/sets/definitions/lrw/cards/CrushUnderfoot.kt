@@ -22,7 +22,12 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  *  - **"Choose a Giant creature you control"** is *not* a target. It is picked mid-resolution by
  *    [SelectTargetEffect], after priority has passed — so an opponent can't respond to which
  *    Giant you picked, and the choice is made against the board as it stands when the spell
- *    resolves rather than as it stood when you cast it.
+ *    resolves rather than as it stood when you cast it. Because it's a choice and not a target,
+ *    it's `nonTargeting`: a Giant of yours with shroud can still be the one that swings.
+ *
+ * That order — target first, Giant second — is the rules' order, so the resolution prompt
+ * carries the context: it says what the Giant is for and that the creature was already
+ * targeted, rather than reading like a second target.
  *
  * The chosen Giant lands in the resolution pipeline's `crushGiant` collection, which the damage
  * step then reads twice: [EffectTarget.PipelineTarget] for "equal to its power" (the generic
@@ -36,11 +41,6 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * step stores an empty collection and [DealDamageEffect] skips the whole instruction rather than
  * falling back to Crush Underfoot itself as the source (CR 608.2b); a 0-power Giant deals no
  * damage because the amount is not positive.
- *
- * Known deviation: the Giant is found through the engine's `TargetFinder`, which filters out
- * permanents with shroud. Because the Giant is *chosen* and not targeted, the rules would let you
- * pick a Giant you control that has shroud. Hexproof is unaffected (you control it), so this only
- * bites the vanishingly rare "my own Giant has shroud" board.
  *
  * "Kindred Instant — Giant" is the 2024 errata of the printed "Tribal Instant — Giant": the card
  * has the Giant creature type in every zone, so it is itself fetched by Lorwyn's Giant-matters
@@ -56,7 +56,9 @@ val CrushUnderfoot = card("Crush Underfoot") {
         val victim = target(TargetFilter.Creature)
         effect = Effects.Pipeline {
             val crushGiant = selectTarget(
-                TargetObject(filter = TargetFilter.Creature.youControl().withSubtype(Subtype.GIANT), id = "a Giant creature you control")
+                TargetObject(filter = TargetFilter.Creature.youControl().withSubtype(Subtype.GIANT)),
+                nonTargeting = true,
+                prompt = "Choose a Giant you control — it deals damage equal to its power to the targeted creature"
             )
             run(Effects.DealDamage(
                 amount = DynamicAmounts.powerOf(crushGiant.asTarget),

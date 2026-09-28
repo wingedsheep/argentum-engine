@@ -859,15 +859,22 @@ class PipelineBuilder private constructor(private val shared: Shared) {
     /**
      * Select a target mid-resolution and store the chosen entity ids ([SelectTargetEffect]).
      * Only for non-targeting choices or choices that depend on earlier pipeline results —
-     * printed "target" wording must use cast-time targeting instead.
+     * printed "target" wording must use cast-time targeting instead. [prompt] replaces the
+     * derived "Choose <requirement>" the player sees when the choice needs context to make sense.
      */
     fun selectTarget(
         requirement: TargetRequirement,
         nonTargeting: Boolean = false,
-        name: String? = null
+        name: String? = null,
+        prompt: String? = null
     ): CollectionSlot {
         val slot = CollectionSlot(slotKey("target", nextIndex(), name))
-        steps += SelectTargetEffect(requirement = requirement, storeAs = slot.key, nonTargeting = nonTargeting)
+        steps += SelectTargetEffect(
+            requirement = requirement,
+            storeAs = slot.key,
+            nonTargeting = nonTargeting,
+            prompt = prompt
+        )
         return slot
     }
 
