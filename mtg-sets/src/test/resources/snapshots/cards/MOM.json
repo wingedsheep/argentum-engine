@@ -1101,6 +1101,45 @@
     ]
 }
 
+// Axgard Artisan
+{
+    "name": "Axgard Artisan",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Dwarf Artificer",
+    "oracleText": "Whenever one or more +1/+1 counters are put on this creature for the first time each turn, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Axgard Artisan:1",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "firstTimeEachTurn": true
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                },
+                "descriptionOverride": "Whenever one or more +1/+1 counters are put on this creature for the first time each turn, create a Treasure token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "332",
+        "rarity": "UNCOMMON",
+        "artist": "Quintin Gleim",
+        "flavorText": "Skodreg knew the Phyrexians wouldn't appreciate his craftsmanship, but they'd get an up-close look just the same.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af130b37-d3e0-4839-8193-5c62a91f0218.jpg?1783916901"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ayara, Widow of the Realm
 {
     "name": "Ayara, Widow of the Realm",
@@ -3152,6 +3191,96 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Cragsmasher Yeti
+{
+    "name": "Cragsmasher Yeti",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Yeti",
+    "oracleText": "Mountaincycling {2} ({2}, Discard this card: Search your library for a Mountain card, reveal it, put it into your hand, then shuffle.)\nBackup 2 (When this creature enters, put two +1/+1 counters on target creature. If that's another creature, it gains the following ability until end of turn.)\nTrample",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}",
+            "searchFilter": {
+                "cardPredicates": [
+                    {
+                        "type": "HasSubtype",
+                        "subtype": "Mountain"
+                    }
+                ]
+            },
+            "displayPrefix": "Mountaincycling"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cragsmasher Yeti:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 2 (When this creature enters, put two +1/+1 counters on target creature. If that's another creature, it gains the following ability until end of turn.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "333",
+        "artist": "Brent Hollowell",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee7a4ccb-c0c9-491f-9475-e78895fa9d03.jpg?1783916901"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -7828,6 +7957,178 @@
     ]
 }
 
+// Invasion of Kaldheim
+{
+    "name": "Invasion of Kaldheim",
+    "manaCost": "{3}{R}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, exile all cards from your hand, then draw that many cards. Until the end of your next turn, you may play cards exiled this way.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Kaldheim:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "gathered0_count"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Siege enters, exile all cards from your hand, then draw that many cards. Until the end of your next turn, you may play cards exiled this way."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Pyre of the World Tree",
+        "manaCost": "",
+        "typeLine": "Enchantment",
+        "oracleText": "Discard a land card: This enchantment deals 2 damage to any target.\nWhenever you discard a land card, exile the top card of your library. You may play that card this turn.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Pyre of the World Tree:2",
+                    "trigger": {
+                        "type": "DiscardEvent",
+                        "cardFilter": "land"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeAs": "impulseExiled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "impulseExiled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "impulseExiled"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "Pyre of the World Tree:1",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomDiscard",
+                            "filter": "land"
+                        }
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ]
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "145",
+            "rarity": "RARE",
+            "artist": "Bryan Sola",
+            "flavorText": "The warriors of Kaldheim burned the soul of their world to keep it out of Phyrexia's hands.",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/7/f7cedd62-efc8-464d-8387-220bb55e07e9.jpg?1783916996",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "The last ability of Pyre of the World Tree will trigger whenever you discard a land card for any reason, not just because you activated its other ability."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "RARE",
+        "artist": "Bryan Sola",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7cedd62-efc8-464d-8387-220bb55e07e9.jpg?1783916996",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Both Invasion of Kaldheim and Pyre of the World Tree have an ability that allow you to play cards from exile. You may play those cards during the specified duration even if the permanent with the ability leaves the battlefield or you lose control of it."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Any cards you don't play will remain exiled."
+            }
+        ]
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Invasion of Kamigawa
 {
     "name": "Invasion of Kamigawa",
@@ -7942,6 +8243,109 @@
     "startingDefense": 4,
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Invasion of Karsus
+{
+    "name": "Invasion of Karsus",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, it deals 3 damage to each creature and each planeswalker.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Karsus:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature|planeswalker"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "When this Siege enters, it deals 3 damage to each creature and each planeswalker."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Refraction Elemental",
+        "manaCost": "",
+        "typeLine": "Creature — Elemental",
+        "oracleText": "Ward—Pay 2 life.\nWhenever you cast a spell, this creature deals 2 damage to each opponent.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "WARD"
+        ],
+        "keywordAbilities": [
+            {
+                "type": "Ward",
+                "cost": {
+                    "type": "WardCost.Life",
+                    "amount": 2
+                }
+            }
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Refraction Elemental:1",
+                    "trigger": "SpellCastEvent",
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "146",
+            "rarity": "RARE",
+            "artist": "Zoltan Boros",
+            "flavorText": "The crystal landslide stirred over the shattered forms of the Machine Legion vanguard, and then it rose and rearranged itself into an avenging colossus.",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/7/776b8951-cf15-47ff-b36f-f47706eddb6f.jpg?1783916995"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/776b8951-cf15-47ff-b36f-f47706eddb6f.jpg?1783916995"
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -8186,6 +8590,195 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Invasion of Mercadia
+{
+    "name": "Invasion of Mercadia",
+    "manaCost": "{1}{R}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, you may discard a card. If you do, draw two cards.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Mercadia:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    }
+                },
+                "descriptionOverride": "When this Siege enters, you may discard a card. If you do, draw two cards."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Kyren Flamewright",
+        "manaCost": "",
+        "typeLine": "Creature — Goblin Spellshaper",
+        "oracleText": "{2}{R}, {T}, Discard a card: Create two 1/1 blue and red Elemental creature tokens. Creatures you control get +1/+0 and gain haste until end of turn.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Kyren Flamewright:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}{R}"
+                                }
+                            },
+                            "CostTap",
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": "AtomDiscard"
+                            }
+                        ]
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "BLUE",
+                                    "RED"
+                                ],
+                                "creatureTypes": [
+                                    "Elemental"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/2/8/28a7a9b0-d823-4b34-829f-ade81fc141e0.jpg?1783916668"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "ModifyStats",
+                                            "powerModifier": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            },
+                                            "toughnessModifier": {
+                                                "type": "Fixed",
+                                                "amount": 0
+                                            },
+                                            "target": "IterationEntity"
+                                        },
+                                        {
+                                            "type": "GrantKeyword",
+                                            "keyword": "HASTE",
+                                            "target": "IterationEntity"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "147",
+            "rarity": "UNCOMMON",
+            "artist": "Cristi Balanescu",
+            "flavorText": "Inspired by tales of the legendary hero Squee, many young Kyren goblins strove to emulate his magical skill and courage in the face of danger.",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/0/407d6723-bf58-403e-b2ac-ba52c51d356f.jpg?1783916993",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "The set of creatures affected by Kyren Flamewright's ability is determined as the ability resolves. The Elemental tokens will get the bonuses, but creatures you begin to control later in the turn and noncreature permanents that become creatures later in the turn will not."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "UNCOMMON",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/407d6723-bf58-403e-b2ac-ba52c51d356f.jpg?1783916993"
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -8788,6 +9381,156 @@
     ]
 }
 
+// Invasion of Tarkir
+{
+    "name": "Invasion of Tarkir",
+    "manaCost": "{1}{R}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, reveal any number of Dragon cards from your hand. When you do, this Siege deals X plus 2 damage to any other target, where X is the number of cards revealed this way. (X can be 0.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Tarkir:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "Dragon"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "revealedDragons",
+                                "prompt": "Reveal any number of Dragon cards from your hand"
+                            },
+                            {
+                                "type": "RevealCollection",
+                                "from": "revealedDragons"
+                            }
+                        ]
+                    },
+                    "optional": false,
+                    "reflexiveEffect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Add",
+                            "left": {
+                                "type": "VariableReference",
+                                "variableName": "revealedDragons_count"
+                            },
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetOther",
+                            "baseRequirement": "AnyTarget"
+                        }
+                    ],
+                    "descriptionOverride": "Reveal any number of Dragon cards from your hand. When you do, this Siege deals X plus 2 damage to any other target, where X is the number of cards revealed this way."
+                },
+                "descriptionOverride": "When this Siege enters, reveal any number of Dragon cards from your hand. When you do, this Siege deals X plus 2 damage to any other target, where X is the number of cards revealed this way. (X can be 0.)"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Defiant Thundermaw",
+        "manaCost": "",
+        "typeLine": "Creature — Dragon",
+        "oracleText": "Flying, trample\nWhenever a Dragon you control attacks, it deals 2 damage to any target.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "FLYING",
+            "TRAMPLE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Defiant Thundermaw:1",
+                    "trigger": {
+                        "type": "AttackEvent",
+                        "filter": "creature Dragon ctrl:you"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "damageSource": "TriggeringEntity"
+                    },
+                    "targetRequirement": {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "149",
+            "rarity": "MYTHIC",
+            "artist": "Darren Tan",
+            "flavorText": "\"The Phyrexians are fools if they believe they can weather such a storm.\"\n—Sarkhan Vol",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/9/a98f71a0-7c99-4cee-8f70-877e698cca84.jpg?1783916995"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "MYTHIC",
+        "artist": "Darren Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a98f71a0-7c99-4cee-8f70-877e698cca84.jpg?1783916995",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Invasion of Tarkir's enters-the-battlefield ability triggers and goes on the stack without a target. As it resolves, you'll reveal any number of Dragon cards from your hand. As the card reminds you, that number can be zero. Then the second \"reflexive\" triggered ability will trigger. You'll choose the target for that second ability at that time."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If you don't reveal any Dragon cards from your hand, the reflexive triggered ability will cause Invasion of Tarkir to deal 2 damage to the target of the ability."
+            }
+        ]
+    },
+    "startingDefense": 5,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Invasion of Vryn
 {
     "name": "Invasion of Vryn",
@@ -8967,6 +9710,56 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Karsus Depthguard
+{
+    "name": "Karsus Depthguard",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Lizard Warrior",
+    "oracleText": "Defender\nAs long as this creature's power is 5 or greater, it can attack as though it didn't have defender.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanAttackDespiteDefender",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Tyler Jacobson",
+        "flavorText": "He stood his ground in the Mirrored Depths, his roar of defiance echoed by a thousand crystalline reflections.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0ac76be5-3a2c-499e-830a-bd02eec517ce.jpg?1783916987",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Once Karsus Depthguard has legally attacked, causing its last ability to not apply by reducing its power to 4 or less won't cause it to stop attacking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -9375,6 +10168,139 @@
     ]
 }
 
+// Lithomantic Barrage
+{
+    "name": "Lithomantic Barrage",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell can't be countered.\nLithomantic Barrage deals 1 damage to target creature or planeswalker. It deals 5 damage instead if that target is white and/or blue.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": "white|blue"
+                }
+            },
+            "then": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 5
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "UNCOMMON",
+        "artist": "Viko Menezes",
+        "flavorText": "Nahiri's rage shattered hedrons into deadly, burning ruin.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c45a5f4a-2174-4885-aa5a-c4c24cc732f0.jpg?1783916986",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "\"This spell can't be countered\" means it can't be countered even by the ward keyword ability. If you cast Lithomantic Barrage targeting a creature or planeswalker with ward, you may still pay the ward cost if you want to, but Lithomantic Barrage won't be countered if you don't."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Spells and abilities that counter spells can still target Lithomantic Barrage. Such a spell or ability won't counter Lithomantic Barrage, but any additional effects of that spell or ability will still happen."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Marauding Dreadship
+{
+    "name": "Marauding Dreadship",
+    "manaCost": "{2}{R}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Haste\nWhen this Vehicle enters, incubate 2. (Create an Incubator token with two +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Marauding Dreadship:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "artist": "Tiffany Turrill",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15625d6a-3844-4d23-ab35-ee3c3508db8d.jpg?1783916986"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Meeting of Minds
 {
     "name": "Meeting of Minds",
@@ -9407,6 +10333,88 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Mirran Banesplitter
+{
+    "name": "Mirran Banesplitter",
+    "manaCost": "{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Flash\nWhen this Equipment enters, attach it to target creature you control.\nEquipped creature gets +2/+0.\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mirran Banesplitter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Mirran Banesplitter:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "154",
+        "artist": "Chris Seaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee4d00b8-1373-47b2-9be5-2199e0b12540.jpg?1783916986"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -11291,6 +12299,82 @@
     ]
 }
 
+// Redcap Heelslasher
+{
+    "name": "Redcap Heelslasher",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Goblin Rogue",
+    "oracleText": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)\nFirst strike",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Redcap Heelslasher:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "FIRST_STRIKE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "artist": "Alexey Kruglov",
+        "flavorText": "Biffle was delighted to have an excuse to use the nice cutlery he'd liberated from Edgewall.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c7ca435-aa84-4d35-80db-d1c74b878b12.jpg?1783916983"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Referee Squad
 {
     "name": "Referee Squad",
@@ -11624,6 +12708,85 @@
     ]
 }
 
+// Scrappy Bruiser
+{
+    "name": "Scrappy Bruiser",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Raccoon Warrior",
+    "oracleText": "Whenever this creature attacks, up to one target attacking creature gets +2/+0 and gains trample until end of turn. Return that creature to its owner's hand at end of combat. (Return it only if it's on the battlefield.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scrappy Bruiser:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END_COMBAT",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature attacking"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, up to one target attacking creature gets +2/+0 and gains trample until end of turn. Return that creature to its owner's hand at end of combat."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "UNCOMMON",
+        "artist": "David Auden Nash",
+        "flavorText": "\"My flesh is an affront to existence? Come say that to my fist, you bloated rust bucket.\"\n—Koko, Riveteers welder",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab6c877a-25f7-4ee7-8cf0-33728ef085fc.jpg?1783916982"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Scrollshift
 {
     "name": "Scrollshift",
@@ -11758,6 +12921,86 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Searing Barb
+{
+    "name": "Searing Barb",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Searing Barb deals 2 damage to any target. If it's a creature, it can't block this turn. Incubate 1. (Create an Incubator token with a +1/+1 counter on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "creature"
+                        }
+                    },
+                    "then": {
+                        "type": "CantBlockTargetCreatures",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "artist": "Tiffany Turrill",
+        "flavorText": "\"You always were such a sharp student. Shame it took you so long to get the point.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69f156b6-68c2-4787-b3f0-6d1079bb576f.jpg?1783916981"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -12932,6 +14175,56 @@
     ]
 }
 
+// Trailblazing Historian
+{
+    "name": "Trailblazing Historian",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Haste\n{T}: Another target creature gains haste until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Trailblazing Historian:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "artist": "Jason A. Engle",
+        "flavorText": "Spells once used to traverse Lorehold excavation sites were swiftly repurposed to keep the students one step ahead of the Invasion Tree's grasp.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a53088da-25b5-4c7e-9a11-456fbc814dfc.jpg?1783916980"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Urabrask
 {
     "name": "Urabrask",
@@ -13299,6 +14592,151 @@
         "artist": "Kevin Sidharta",
         "flavorText": "None may approach the Ashen Idol without an offering—an edict fortuitously absent from Phyrexian intelligence concerning the world of Azgol.",
         "imageUri": "https://cards.scryfall.io/normal/front/6/9/69490262-afc2-4692-8fac-b771a972c8f8.jpg?1783916979"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Voldaren Thrillseeker
+{
+    "name": "Voldaren Thrillseeker",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Vampire Warrior",
+    "oracleText": "Backup 2 (When this creature enters, put two +1/+1 counters on target creature. If that's another creature, it gains the following ability until end of turn.)\n{1}, Sacrifice this creature: It deals damage equal to its power to any target.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Voldaren Thrillseeker:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantActivatedAbility",
+                                "ability": {
+                                    "id": "Voldaren Thrillseeker:1",
+                                    "cost": {
+                                        "type": "CostComposite",
+                                        "costs": [
+                                            {
+                                                "type": "CostAtomWrapper",
+                                                "atom": {
+                                                    "type": "AtomMana",
+                                                    "cost": "{1}"
+                                                }
+                                            },
+                                            "CostSacrificeSelf"
+                                        ]
+                                    },
+                                    "effect": {
+                                        "type": "DealDamage",
+                                        "amount": {
+                                            "type": "EntityProperty",
+                                            "entity": "Self",
+                                            "numericProperty": "Power"
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        },
+                                        "damageSource": "Self"
+                                    },
+                                    "targetRequirements": [
+                                        {
+                                            "type": "AnyTarget",
+                                            "id": "t1"
+                                        }
+                                    ]
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 2 (When this creature enters, put two +1/+1 counters on target creature. If that's another creature, it gains the following ability until end of turn.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Voldaren Thrillseeker:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    },
+                    "damageSource": "Self"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t2"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "RARE",
+        "artist": "Viko Menezes",
+        "flavorText": "\"The end is always nigh. Let's have some fun!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1dbcd466-fb99-4388-a118-4534b85544f0.jpg?1783916978"
     },
     "colorIdentityOverride": [
         "RED"
