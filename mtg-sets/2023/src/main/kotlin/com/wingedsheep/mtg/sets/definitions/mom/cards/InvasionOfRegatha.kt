@@ -37,7 +37,7 @@ private val InvasionOfRegathaFront = card("Invasion of Regatha") {
     triggeredAbility {
         trigger = Triggers.self.enters()
         val main = target(TargetOther(Targets.OpponentOrBattle))
-        val small = target(TargetObject(filter = TargetFilter.Creature, optional = true))
+        val small = target(TargetFilter.Creature, optional = true)
         effect = Effects.DealDamage(4, main) then Effects.DealDamage(1, small)
         description = "When this Siege enters, it deals 4 damage to another target battle or " +
             "opponent and 1 damage to up to one target creature."
@@ -63,7 +63,7 @@ private val DisciplesOfTheInferno = card("Disciples of the Inferno") {
         "If a noncreature source you control would deal damage to a creature, battle, or " +
         "opponent, it deals that much damage plus 2 instead."
 
-    keywords(Keyword.PROWESS)
+    prowess()
 
     replacementEffect(
         ModifyDamageAmount(
