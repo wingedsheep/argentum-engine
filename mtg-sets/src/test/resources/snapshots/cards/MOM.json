@@ -984,6 +984,40 @@
     ]
 }
 
+// City on Fire
+{
+    "name": "City on Fire",
+    "manaCost": "{5}{R}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nIf a source you control would deal damage to a permanent or player, it deals triple that damage instead.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "DoubleDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "source": {
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "multiplier": 3
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "RARE",
+        "artist": "Jake Murray",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f455cc1-a822-44ef-ba7c-bfcff69bd45e.jpg?1783916996"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Collective Nightmare
 {
     "name": "Collective Nightmare",

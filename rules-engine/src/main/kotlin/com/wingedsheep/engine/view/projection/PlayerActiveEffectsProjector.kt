@@ -249,8 +249,8 @@ internal class PlayerActiveEffectsProjector(
             effects.add(
                 ClientPlayerEffect(
                     effectId = "damage_doubled_${doubler.sourceId.value}",
-                    name = "Damage Doubled",
-                    description = "$scope dealt to you is doubled by ${doubler.sourceName}",
+                    name = "Damage ${doubler.multiplierVerb.replaceFirstChar { it.uppercase() }}",
+                    description = "$scope dealt to you is ${doubler.multiplierVerb} by ${doubler.sourceName}",
                     icon = "double-damage"
                 )
             )

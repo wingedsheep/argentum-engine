@@ -117,7 +117,17 @@ data class ActiveDamageDoubler(
     val sourceName: String,
     /** Whether the doubling is scoped to combat or noncombat damage (CR 616 damage-type filter). */
     val damageType: DamageType,
-)
+    /** The factor damage is scaled by — 2 for "double", 3 for "triple" (City on Fire). */
+    val multiplier: Int = 2,
+) {
+    /** "doubled", "tripled", or "multiplied by N" — the badge wording. */
+    val multiplierVerb: String
+        get() = when (multiplier) {
+            2 -> "doubled"
+            3 -> "tripled"
+            else -> "multiplied by $multiplier"
+        }
+}
 
 /**
  * What [DamageUtils.applyDamagePreventionShields] did to one damage instance.
@@ -2033,6 +2043,7 @@ object DamageUtils {
                         sourceId = entityId,
                         sourceName = container.get<CardComponent>()?.name ?: "A permanent",
                         damageType = damageEvent.damageType,
+                        multiplier = effect.multiplier,
                     )
                 )
             }
@@ -2091,6 +2102,7 @@ object DamageUtils {
                         sourceId = entityId,
                         sourceName = container.get<CardComponent>()?.name ?: "A permanent",
                         damageType = damageEvent.damageType,
+                        multiplier = effect.multiplier,
                     )
                 )
             }
@@ -2278,8 +2290,9 @@ object DamageUtils {
                 if (!recipientMatches) continue
 
                 // Each DoubleDamage source is its own replacement effect and applies once
-                // (CR 616.1), so two Twinflame Tyrants quadruple rather than double.
-                amplifiedAmount *= 2
+                // (CR 616.1), so two Twinflame Tyrants quadruple rather than double. City on Fire
+                // scales by its own multiplier (3).
+                amplifiedAmount *= effect.multiplier
             }
         }
 

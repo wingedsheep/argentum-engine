@@ -908,13 +908,22 @@ data class RedirectDamage(
  * without a dedicated conditional-replacement wrapper, e.g. The Rollercrusher Ride
  * ("…while there are four or more card types among cards in your graveyard, it deals
  * double that damage instead").
+ *
+ * [multiplier] is the factor the damage is scaled by — 2 for "double" (the default), 3 for
+ * "triple" (City on Fire). The type keeps its name because doubling is the family's common case
+ * and every consumer (the amplification pass, the client badges) treats any factor alike.
  */
 @SerialName("DoubleDamage")
 @Serializable
 data class DoubleDamage(
     override val restrictions: List<Condition> = emptyList(),
-    override val appliesTo: EventPattern
+    override val appliesTo: EventPattern,
+    val multiplier: Int = 2,
 ) : ReplacementEffect {
+    init {
+        require(multiplier >= 2) { "DoubleDamage.multiplier must be at least 2, was $multiplier" }
+    }
+
     override val description: String = buildString {
         val restrictionDesc = restrictions.joinToString(" and ") { it.description.removePrefix("if ") }
         if (restrictionDesc.isNotEmpty()) {
@@ -924,7 +933,13 @@ data class DoubleDamage(
             append("If ")
         }
         append(appliesTo.description)
-        append(", it deals double that damage instead")
+        append(", it deals ${multiplierWord(multiplier)} that damage instead")
+    }
+
+    private fun multiplierWord(factor: Int): String = when (factor) {
+        2 -> "double"
+        3 -> "triple"
+        else -> "$factor times"
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {

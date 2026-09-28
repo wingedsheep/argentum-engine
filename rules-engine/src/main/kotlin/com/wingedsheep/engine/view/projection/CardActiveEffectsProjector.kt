@@ -147,8 +147,8 @@ internal class CardActiveEffectsProjector(
             }
             ClientCardEffect(
                 effectId = "damage_doubled_source_${doubler.sourceId.value}",
-                name = "Damage Doubled",
-                description = "$scope this creature deals is doubled by ${doubler.sourceName}",
+                name = "Damage ${doubler.multiplierVerb.replaceFirstChar { it.uppercase() }}",
+                description = "$scope this creature deals is ${doubler.multiplierVerb} by ${doubler.sourceName}",
                 icon = "double-damage"
             )
         }

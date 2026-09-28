@@ -13329,8 +13329,10 @@ The priority groups are (CR 616.1a–f):
   Axonil, Deepest Might: `SetMinimumDamage(dynamicMinimum = DynamicAmounts.sourcePower(), appliesTo =
   DamageEvent(recipient = Opponent, source = GameObjectFilter.Any.withColor(RED).youControl(),
   damageType = NonCombat))`.
-- `DoubleDamage(restrictions?, appliesTo)` — double matching damage (Gratuitous Violence, Furnace of
-  Rath). `restrictions: List<Condition>` (default empty) gates the doubling on extra conditions
+- `DoubleDamage(restrictions?, appliesTo, multiplier = 2)` — double matching damage (Gratuitous Violence, Furnace of
+  Rath). `multiplier` scales by another factor — City on Fire's "it deals triple that damage instead" is
+  `DoubleDamage(appliesTo = DamageEvent(source = GameObjectFilter.Any.youControl(), recipient =
+  Recipient.Any), multiplier = 3)`; the client badge reads "Damage Tripled". `restrictions: List<Condition>` (default empty) gates the doubling on extra conditions
   evaluated against the source's controller — the same pattern as `PreventDamage.restrictions`. The
   doubling also honours `appliesTo.damageType` (`Combat` / `NonCombat` / `Any`). The Rollercrusher
   Ride: `DoubleDamage(restrictions = listOf(Conditions.Delirium(4)), appliesTo = DamageEvent(source =
