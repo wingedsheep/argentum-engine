@@ -2,15 +2,15 @@ package com.wingedsheep.mtg.sets.definitions.mom.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Conditions
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CanAttackDespiteDefender
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
-import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Expedition Lookout
@@ -24,13 +24,13 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * "An opponent has eight or more" is per-opponent, so the gate is the greatest graveyard size
  * among opponents (each measured from their own point of view), not their summed total.
  */
-private val OpponentHasEightInGraveyard = Compare(
-    DynamicAmount.GreatestAmongPlayers(
-        Player.EachOpponent,
-        DynamicAmount.Count(Player.You, Zone.GRAVEYARD)
+private val OpponentHasEightInGraveyard = Conditions.CompareAmounts(
+    DynamicAmounts.greatestAmongPlayers(
+        DynamicAmounts.count(Player.You, Zone.GRAVEYARD),
+        Player.EachOpponent
     ),
     ComparisonOperator.GTE,
-    DynamicAmount.Fixed(8)
+    8
 )
 
 val ExpeditionLookout = card("Expedition Lookout") {

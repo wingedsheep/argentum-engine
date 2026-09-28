@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.mom.cards
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -9,7 +10,6 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Complete the Circuit
@@ -44,7 +44,7 @@ val CompleteTheCircuit = card("Complete the Circuit") {
             trigger = Triggers.you.casts(GameObjectFilter.InstantOrSorcery),
             effect = Effects.CopyTargetSpell(
                 target = EffectTarget.TriggeringEntity,
-                copies = DynamicAmount.Fixed(2),
+                copies = DynamicAmounts.fixed(2),
             ),
             fireOnce = true,
             expiry = DelayedTriggerExpiry.EndOfTurn,
