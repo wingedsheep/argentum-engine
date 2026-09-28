@@ -752,7 +752,7 @@ export interface LogEntry {
  */
 export interface DrawAnimation {
   id: string
-  cardId: EntityId
+  cardId: EntityId | null
   cardName: string | null
   imageUri: string | null
   /** The drawing player — picks *which* opponent's library and hand the card flies between. */

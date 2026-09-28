@@ -89,6 +89,12 @@ data class GameConfig(
      * value for reproducible runs (replays, MCTS, the cross-engine parity harness, tests).
      */
     val seed: Long? = null,
+    /**
+     * Hand each deck its entity ids in a seeded shuffled order rather than in decklist order, so an
+     * id never names its card. False reproduces games recorded before ids were shuffled, whose
+     * recorded actions name the old ids.
+     */
+    val shuffledDeckIds: Boolean = true,
 )
 
 /**
@@ -160,6 +166,7 @@ class GameInitializer(
         // sanctioned non-determinism boundary — once seeded, the engine is a pure function again.
         val resolvedSeed: Long = config.seed ?: System.nanoTime()
         var state = GameState(format = config.format, attackMode = config.attackMode, rng = GameRng.seeded(resolvedSeed))
+        var idRng = GameRng.seeded(resolvedSeed).split().first
         val playerIds = mutableListOf<EntityId>()
 
         // Validate Commander-format prerequisites up front. Each player must designate a
@@ -345,26 +352,33 @@ class GameInitializer(
             val libraryEntries: List<CardEntry> = playerConfig.deck.cardEntries.ifEmpty {
                 playerConfig.deck.cards.map { CardEntry(it) }
             }
-            for (entry in libraryEntries) {
-                val cardDef = cardRegistry.requireCard(entry.name)
-                val (cardId, stateWithId) = state.newEntity()
-                state = stateWithId
-                val cardContainer = createCardEntity(cardDef, playerId, entry.printing)
-                state = state.withEntity(cardId, cardContainer)
-                state = state.addToZone(ZoneKey(playerId, Zone.LIBRARY), cardId)
-            }
-
             // Sideboard: the cards this player owns *outside the game* (CR 100.4). They begin in
             // the private [Zone.SIDEBOARD] and are reachable only by "wish" effects. They are not
             // shuffled (the sideboard is unordered) and never drawn into the opening hand. Empty
             // for almost every deck.
-            for (entry in playerConfig.deck.sideboard) {
-                val cardDef = cardRegistry.requireCard(entry.name)
-                val (cardId, stateWithId) = state.newEntity()
-                state = stateWithId
-                val cardContainer = createCardEntity(cardDef, playerId, entry.printing)
+            val entries = libraryEntries.map { it to Zone.LIBRARY } +
+                playerConfig.deck.sideboard.map { it to Zone.SIDEBOARD }
+
+            // Hand the deck its ids in a shuffled order. Ids are minted one per card, so minting
+            // them in decklist order would let anyone who knows the list read a hidden card off
+            // its id — a face-down permanent's, say. The order comes from its own stream so the
+            // game's RNG, and with it every seeded game's library order, is unchanged.
+            val ids = entries.map {
+                val (id, next) = state.newEntity()
+                state = next
+                id
+            }
+            val idOrder = if (config.shuffledDeckIds) {
+                val (shuffled, nextIdRng) = idRng.shuffle(ids)
+                idRng = nextIdRng
+                shuffled
+            } else ids
+            for ((entry, cardId) in entries.zip(idOrder)) {
+                val (cardEntry, zone) = entry
+                val cardDef = cardRegistry.requireCard(cardEntry.name)
+                val cardContainer = createCardEntity(cardDef, playerId, cardEntry.printing)
                 state = state.withEntity(cardId, cardContainer)
-                state = state.addToZone(ZoneKey(playerId, Zone.SIDEBOARD), cardId)
+                state = state.addToZone(ZoneKey(playerId, zone), cardId)
             }
 
             if (commanderEntityIds.isNotEmpty()) {

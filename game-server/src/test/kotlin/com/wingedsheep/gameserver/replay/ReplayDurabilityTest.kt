@@ -1,6 +1,8 @@
 package com.wingedsheep.gameserver.replay
 
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.session.PlayerSession
@@ -243,6 +245,26 @@ class ReplayDurabilityTest : ScenarioTestBase() {
             // An archive row that isn't a JSON object would otherwise splice into corrupt JSON that
             // only fails in the client. Fail here, where the cause is visible.
             shouldThrow<IllegalArgumentException> { payload.copy(body = "not json").bodyFields() }
+        }
+
+        test("a record from before deck ids were shuffled rebuilds the ids its actions name") {
+            val recording = CardRegistry(parent = cardRegistry).apply { register(bear(2, 2)) }
+            val replay = recordGame(recording)
+            replay.version shouldBe CompactReplay.CURRENT_VERSION
+            val reconstructor = ReplayReconstructor(recording, null)
+            val seat = EntityId.of("pin-p1")
+            // Names of the seat's cards in the order their ids were minted.
+            fun mintedNames(version: Int): List<String> {
+                val state = reconstructor.initialState(replay.copy(version = version))
+                return state.entities.entries
+                    .filter { (_, c) -> c.get<OwnerComponent>()?.playerId == seat && c.get<CardComponent>() != null }
+                    .sortedBy { (id, _) -> id.value.removePrefix("e").toLong() }
+                    .map { (_, c) -> c.get<CardComponent>()!!.name }
+            }
+
+            mintedNames(2) shouldBe List(30) { "Forest" } + List(10) { CARD }
+            mintedNames(CompactReplay.CURRENT_VERSION) shouldNotBe mintedNames(2)
+            reconstructor.reconstruct(replay).fidelity shouldBe ReplayFidelity.EXACT
         }
 
         test("a v1 record (no checkpoints) still reconstructs, reported as unverified") {

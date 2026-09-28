@@ -430,15 +430,15 @@ function processStateUpdate(
   const cardDrawnEvents = msg.events.filter((e) => e.type === 'cardDrawn') as {
     type: 'cardDrawn'
     playerId: EntityId
-    cardId: EntityId
+    cardId: EntityId | null
     cardName: string | null
   }[]
 
   cardDrawnEvents.forEach((event, index) => {
     const isOpponent = event.playerId !== playerId
-    const card = resolvedState.cards[event.cardId]
+    const card = event.cardId ? resolvedState.cards[event.cardId] : undefined
     newDrawAnimations.push({
-      id: `draw-${event.cardId}-${Date.now()}-${index}`,
+      id: `draw-${event.cardId ?? event.playerId}-${Date.now()}-${index}`,
       cardId: event.cardId,
       cardName: event.cardName,
       imageUri: card?.imageUri ?? null,

@@ -118,7 +118,7 @@ export interface StatsModifiedEvent {
 export interface CardDrawnEvent {
   readonly type: 'cardDrawn'
   readonly playerId: EntityId
-  readonly cardId: EntityId
+  readonly cardId: EntityId | null // Null unless the viewer drew it
   readonly cardName: string | null // Null if hidden from viewing player
   readonly description: string
 }
@@ -143,7 +143,7 @@ export interface PermanentEnteredEvent {
 
 export interface PermanentLeftEvent {
   readonly type: 'permanentLeft'
-  readonly cardId: EntityId
+  readonly cardId: EntityId | null // Null for a move between hidden zones the viewer can't follow
   readonly cardName: string
   readonly destination: 'graveyard' | 'exile' | 'hand' | 'library'
   readonly description: string

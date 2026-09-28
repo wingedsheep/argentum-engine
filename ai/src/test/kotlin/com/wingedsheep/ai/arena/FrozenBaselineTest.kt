@@ -111,7 +111,13 @@ class FrozenBaselineTest : FunSpec({
          * with `", additionalManaForCounters=0"` stripped from the recorded action text, this branch
          * reproduces the previous golden `47e993c61a57ebbd` exactly. Seat 1 still wins on turn 20 at
          * life -8 / 16.
+         *
+         * Re-blessed 2026-09-28 for deck IDs minted in a seeded shuffled order. **`LEGACY_V0` did not
+         * move.** Recorded actions name cards by entity ID, and the same seed now hands each deck its
+         * IDs in a different order. With `shuffledDeckIds = false` in the runner's `GameConfig`, this
+         * branch reproduces the previous golden `c0db41664c50719f` exactly. Seat 1 still wins on turn
+         * 20 at life -8 / 16.
          */
-        private const val GOLDEN_HASH = "c0db41664c50719f"
+        private const val GOLDEN_HASH = "6193d6504283455a"
     }
 }

@@ -1030,7 +1030,7 @@ class GameSession(
         val legalActions = getLegalActions(playerId)
 
         // Transform raw engine events to client events
-        val clientEvents = ClientEventTransformer.transform(events, playerId)
+        val clientEvents = ClientEventTransformer.transform(events, playerId, state)
 
         // Accumulate into persistent game log (filter noisy events)
         val logEntries = clientEvents.filter { it !is ClientEvent.PermanentTapped && it !is ClientEvent.PermanentUntapped && it !is ClientEvent.ManaAdded }

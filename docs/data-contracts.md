@@ -39,14 +39,18 @@ Sent whenever the game state changes.
           {
             "id": "ent-2",
             "name": "Generous Gift"
-          },
-          // Visible to owner
-          {
-            "id": "ent-3",
-            "name": "???"
           }
-          // Masked to opponent
+          // Visible to owner. An opponent receives no entry at all, only the zone's size:
+          // a hidden card is never referenced by ID, since an ID is enough to follow the card.
         ]
+      },
+      {
+        "name": "LIBRARY",
+        "ownerId": "player-1",
+        "size": 53,
+        "cards": [],
+        "positions": []
+        // Only cards the viewer may identify are listed, each with its index from the top.
       }
     ]
   },

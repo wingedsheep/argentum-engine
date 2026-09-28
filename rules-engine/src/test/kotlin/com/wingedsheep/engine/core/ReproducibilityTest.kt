@@ -6,7 +6,6 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
@@ -61,9 +60,10 @@ class ReproducibilityTest : FunSpec({
         a.state shouldNotBe b.state
         libraryNames(a.state, 0) shouldNotBe libraryNames(b.state, 0)
 
-        // ... but entity ids are NOT a function of the seed — they're minted from a deterministic
-        // counter in creation order, so both runs assign the same ids regardless of seed.
-        a.state.entities.keys shouldContainExactly b.state.entities.keys
+        // ... but the ids themselves are NOT a function of the seed — they're minted from a
+        // deterministic counter, so both runs mint the same set. Only which card receives which
+        // id follows the seed, so that an id never names its card (HiddenCardReferenceTest).
+        a.state.entities.keys shouldBe b.state.entities.keys
         a.state.nextEntityId shouldBe b.state.nextEntityId
     }
 

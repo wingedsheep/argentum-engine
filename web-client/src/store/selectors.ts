@@ -174,6 +174,19 @@ export function useCard(cardId: EntityId | null): ClientCard | null {
 }
 
 /**
+ * A library top to bottom: the card at each position the viewer knows, `null` for a card back.
+ * The server names only the cards the viewer may identify and says where each one sits.
+ */
+export function librarySlots(zone: ClientZone | null | undefined): readonly (EntityId | null)[] {
+  if (!zone) return []
+  const slots: (EntityId | null)[] = new Array<EntityId | null>(zone.size).fill(null)
+  zone.cardIds.forEach((id, index) => {
+    slots[zone.positions?.[index] ?? index] = id
+  })
+  return slots
+}
+
+/**
  * Hook to get cards in a specific zone.
  */
 export function useZoneCards(zoneId: ZoneId): readonly ClientCard[] {
@@ -1008,11 +1021,9 @@ export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] 
     // Always show the revealed top card as a ghost card, even when it's not playable
     const libZoneId = library(playerId)
     const libZone = gameState.zones.find((z) => zoneIdEquals(z.zoneId, libZoneId))
-    if (libZone && libZone.cardIds && libZone.cardIds.length > 0) {
-      const topCardId = libZone.cardIds[0]!
-      if (gameState.cards[topCardId]) {
-        ghostCardIds.add(topCardId)
-      }
+    const topCardId = librarySlots(libZone)[0]
+    if (topCardId && gameState.cards[topCardId]) {
+      ghostCardIds.add(topCardId)
     }
 
     // 3. Exile cards playable via Mind's Desire-like effects
@@ -1050,10 +1061,7 @@ export function useRevealedLibraryTopCard(playerId: EntityId | null): ClientCard
 
     const libZoneId = library(playerId)
     const libZone = gameState.zones.find((z) => zoneIdEquals(z.zoneId, libZoneId))
-    if (!libZone || !libZone.cardIds || libZone.cardIds.length === 0) return null
-
-    // The first visible card in the library zone is the revealed top card
-    const topCardId = libZone.cardIds[0]!
-    return gameState.cards[topCardId] ?? null
+    const topCardId = librarySlots(libZone)[0]
+    return topCardId ? (gameState.cards[topCardId] ?? null) : null
   }, [gameState, playerId])
 }

@@ -637,7 +637,7 @@ export interface ClientPlaneswalkerAbility {
 export interface ClientZone {
   readonly zoneId: ZoneId
 
-  /** Card IDs in this zone, in order (may be empty for hidden zones) */
+  /** Card IDs in this zone, in order. A hidden zone lists only the cards the viewer knows. */
   readonly cardIds: readonly EntityId[]
 
   /** Number of cards in the zone (always available, even for hidden zones) */
@@ -645,6 +645,9 @@ export interface ClientZone {
 
   /** Whether the contents are visible to the viewing player */
   readonly isVisible: boolean
+
+  /** Libraries only: the index from the top of each entry of `cardIds` (0 = top card). */
+  readonly positions?: readonly number[] | null
 }
 
 /**

@@ -18,11 +18,12 @@ import io.kotest.matchers.shouldBe
  * The client-view contract behind rendering the top library card face up on the Deck pile.
  *
  * The web client has no rules knowledge: it shows the top card face up exactly when the server
- * sent details for the *first* entry of that library's `cardIds`. Two properties have to hold for
- * that to be both correct and leak-free, and this test pins them:
+ * names a card at position 0 of that library. Two properties have to hold for that to be both
+ * correct and leak-free, and this test pins them:
  *
- *  - **Position 0 is the top of the library.** The library zone is always sent in full (opaque ids
- *    for unknown cards), so the client identifies the top card purely by index.
+ *  - **Position 0 is the top of the library.** The library zone lists only the cards the viewer
+ *    knows, each with its index from the top in `positions`, so the client finds the top card by
+ *    position rather than by list index.
  *  - **[LookAtTopOfLibrary] is a private peek.** Unlike
  *    [com.wingedsheep.sdk.scripting.RevealTopOfLibrary] (Goblin Spy, covered by [GoblinSpyTest]),
  *    only the controller gets the card's details — an opponent's view must still be opaque.
@@ -66,7 +67,8 @@ class TopOfLibraryClientViewTest : FunSpec({
         val libraryZone = view.zones.first {
             it.zoneId.ownerId == player && it.zoneId.zoneType == Zone.LIBRARY
         }
-        libraryZone.cardIds.first() shouldBe topCard
+        libraryZone.cardIds shouldBe listOf(topCard)
+        libraryZone.positions shouldBe listOf(0)
     }
 
     test("the peek is private — an opponent's view of that library stays opaque") {
@@ -83,6 +85,8 @@ class TopOfLibraryClientViewTest : FunSpec({
         val view = transformer(driver).transform(driver.state, viewingPlayerId = opponent)
 
         view.cards.keys shouldNotContain topCard
+        view.zones.first { it.zoneId.ownerId == player && it.zoneId.zoneType == Zone.LIBRARY }
+            .cardIds shouldNotContain topCard
     }
 
     test("without the ability the controller's own top card is hidden") {

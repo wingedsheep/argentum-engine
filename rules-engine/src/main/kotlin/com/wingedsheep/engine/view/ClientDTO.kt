@@ -794,14 +794,24 @@ data class ClientDeliriumInfo(
 data class ClientZone(
     val zoneId: ZoneKey,
 
-    /** Card IDs in this zone, in order */
+    /**
+     * Card IDs in this zone, in order. A hidden zone lists only the cards whose identity the viewer
+     * knows; the rest are counted by [size] and never named, since an ID is enough to follow a card
+     * (and, with a known decklist, to read it).
+     */
     val cardIds: List<EntityId>,
 
     /** Number of cards in the zone (always available, even for hidden zones) */
     val size: Int,
 
     /** Whether the contents are visible to the viewing player */
-    val isVisible: Boolean
+    val isVisible: Boolean,
+
+    /**
+     * Libraries only: the index from the top (0 = top card) of each entry of [cardIds], in the same
+     * order. `null` for every other zone, whose [cardIds] carry their own order.
+     */
+    val positions: List<Int>? = null
 )
 
 /**

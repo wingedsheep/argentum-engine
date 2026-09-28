@@ -1,8 +1,11 @@
 package com.wingedsheep.engine.view
 
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.faceDownDisplayName
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -123,7 +126,8 @@ sealed interface ClientEvent {
     @SerialName("cardDrawn")
     data class CardDrawn(
         val playerId: EntityId,
-        val cardId: EntityId,
+        /** The drawn card, sent only to the player who drew it; `null` for everyone else. */
+        val cardId: EntityId?,
         val cardName: String?,
         val isYours: Boolean? = null,
         override val description: String = when (isYours) {
@@ -171,7 +175,8 @@ sealed interface ClientEvent {
     @Serializable
     @SerialName("permanentLeft")
     data class PermanentLeft(
-        val cardId: EntityId,
+        /** `null` when the card moved between hidden zones and the viewer can't know which it was. */
+        val cardId: EntityId?,
         val cardName: String,
         val destination: String,
         val ownerId: EntityId? = null,
@@ -827,23 +832,29 @@ sealed interface ClientEvent {
  */
 object ClientEventTransformer {
 
+    /** Zones whose cards no opponent sees: a move between two of them names no card. */
+    private val HIDDEN_ZONES = setOf(Zone.LIBRARY, Zone.HAND, Zone.SIDEBOARD)
+
     /**
      * Transform internal events to client events.
      *
      * @param events The internal events
      * @param viewingPlayerId The player viewing these events (for masking)
+     * @param state The state after the events, for masking cards that ended up face down
      * @return Client-friendly events
      */
     fun transform(
         events: List<GameEvent>,
-        viewingPlayerId: EntityId
+        viewingPlayerId: EntityId,
+        state: GameState? = null,
     ): List<ClientEvent> {
-        return events.flatMap { event -> transformEventToList(event, viewingPlayerId) }
+        return events.flatMap { event -> transformEventToList(event, viewingPlayerId, state) }
     }
 
     private fun transformEventToList(
         event: GameEvent,
-        viewingPlayerId: EntityId
+        viewingPlayerId: EntityId,
+        state: GameState?,
     ): List<ClientEvent> {
         // AttackersDeclaredEvent and BlockersDeclaredEvent produce multiple client events
         when (event) {
@@ -875,7 +886,7 @@ object ClientEventTransformer {
                 }
             }
             else -> {
-                val result = transformEvent(event, viewingPlayerId)
+                val result = transformEvent(event, viewingPlayerId, state)
                 return if (result != null) listOf(result) else emptyList()
             }
         }
@@ -883,7 +894,8 @@ object ClientEventTransformer {
 
     private fun transformEvent(
         event: GameEvent,
-        viewingPlayerId: EntityId
+        viewingPlayerId: EntityId,
+        state: GameState?,
     ): ClientEvent? {
         return when (event) {
             // The land-play signal drives triggers only; the client renders the land entering via
@@ -940,7 +952,7 @@ object ClientEventTransformer {
                         }
                         ClientEvent.CardDrawn(
                             playerId = event.playerId,
-                            cardId = event.cardIds.first(),
+                            cardId = if (isYours) event.cardIds.first() else null,
                             cardName = if (isYours) event.cardNames.firstOrNull() else null,
                             isYours = isYours,
                             description = desc
@@ -949,7 +961,7 @@ object ClientEventTransformer {
                         val firstName = event.cardNames.firstOrNull()
                         ClientEvent.CardDrawn(
                             playerId = event.playerId,
-                            cardId = event.cardIds.first(),
+                            cardId = if (isYours) event.cardIds.first() else null,
                             cardName = if (isYours) firstName else null,
                             isYours = isYours
                         )
@@ -989,10 +1001,26 @@ object ClientEventTransformer {
 
             is ZoneChangeEvent -> {
                 val isYours = event.ownerId == viewingPlayerId
+                // A move between hidden zones (a mulligan, a card put back from hand, a tuck
+                // within a library) is identified only to an owner who held the card in hand at
+                // one end. Anything else learns that a card moved, not which one: a reveal that
+                // makes it public arrives as its own event.
+                val hiddenMove = event.fromZone in HIDDEN_ZONES && event.toZone in HIDDEN_ZONES
+                val identified = !hiddenMove ||
+                    (isYours && (event.fromZone == Zone.HAND || event.toZone == Zone.HAND))
+                // A card that landed face down (manifested, foretold, exiled face down) keeps its
+                // face from everyone but its owner, who may look at it.
+                val faceDownName = if (isYours) null else state?.let { faceDownDisplayName(it, event.entityId) }
+                val movedCardId = if (identified) event.entityId else null
+                val movedCardName = when {
+                    !identified -> "card"
+                    faceDownName != null -> faceDownName
+                    else -> event.entityName
+                }
                 when (event.toZone) {
                     com.wingedsheep.sdk.core.Zone.BATTLEFIELD -> ClientEvent.PermanentEntered(
                         cardId = event.entityId,
-                        cardName = event.entityName,
+                        cardName = movedCardName,
                         controllerId = event.ownerId,
                         enteredTapped = false, // Would need to check state
                         isYours = isYours,
@@ -1000,28 +1028,28 @@ object ClientEventTransformer {
                     )
                     com.wingedsheep.sdk.core.Zone.GRAVEYARD -> ClientEvent.PermanentLeft(
                         cardId = event.entityId,
-                        cardName = event.entityName,
+                        cardName = movedCardName,
                         destination = "graveyard",
                         ownerId = event.ownerId,
                         isYours = isYours
                     )
                     com.wingedsheep.sdk.core.Zone.EXILE -> ClientEvent.PermanentLeft(
                         cardId = event.entityId,
-                        cardName = event.entityName,
+                        cardName = movedCardName,
                         destination = "exile",
                         ownerId = event.ownerId,
                         isYours = isYours
                     )
                     com.wingedsheep.sdk.core.Zone.HAND -> ClientEvent.PermanentLeft(
-                        cardId = event.entityId,
-                        cardName = event.entityName,
+                        cardId = movedCardId,
+                        cardName = movedCardName,
                         destination = "hand",
                         ownerId = event.ownerId,
                         isYours = isYours
                     )
                     com.wingedsheep.sdk.core.Zone.LIBRARY -> ClientEvent.PermanentLeft(
-                        cardId = event.entityId,
-                        cardName = event.entityName,
+                        cardId = movedCardId,
+                        cardName = movedCardName,
                         destination = "library",
                         ownerId = event.ownerId,
                         isYours = isYours

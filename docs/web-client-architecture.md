@@ -253,9 +253,11 @@ particular that `remaining` means "copies you haven't seen", which is not always
 ### Face-up top card
 
 The Deck pile itself renders its top card face up — with an amber ring, an 👁 badge and the normal
-hover preview — whenever the server sent details for entry **0** of that library's `cardIds`. The
-library zone is always transmitted in full (opaque ids for unknown cards), so position is all the
-client needs; the decision about *which* cards carry details is entirely the server's, and it makes
+hover preview — whenever the server names a card at position 0 of that library. A library zone
+lists only the cards the viewer may identify, each with its index from the top in `positions`;
+the rest are counted by `size` and never named, because an entity ID is enough to follow a card
+and, with a known decklist, to read it. `librarySlots` turns the zone into top-to-bottom slots
+(`null` for a card back). The decision about *which* cards are named is entirely the server's, and it makes
 it for a public reveal (Future Sight, Goblin Spy), a private peek ("you may look at the top card of
 your library any time"), and a scry/surveil the viewer just performed alike. `ZonePiles.tsx` never
 asks why. `TopOfLibraryClientViewTest` pins both halves of the contract: position 0 is the top, and

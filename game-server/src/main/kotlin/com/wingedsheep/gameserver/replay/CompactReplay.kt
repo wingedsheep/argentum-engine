@@ -91,11 +91,20 @@ data class CompactReplay(
          *
          * v1 → v2 added [engineVersion], [pinnedCards] and [checkpoints]. All three default to
          * empty, so v1 records decode and reconstruct unchanged — the version is a diagnostic
-         * marker, not a decode gate. Decoding stays deliberately tolerant (`ignoreUnknownKeys`,
+         * marker, not a decode gate.
+         *
+         * v2 → v3 hands each deck its entity ids in a shuffled order
+         * ([com.wingedsheep.engine.core.GameConfig.shuffledDeckIds]). Here the version *is* a
+         * reconstruction gate: a v1/v2 record's actions name ids minted in decklist order, and the
+         * checkpoint fingerprints only count zone sizes, so rebuilding it with shuffled ids could
+         * replay a different, still-legal game and call it exact. Decoding stays deliberately tolerant (`ignoreUnknownKeys`,
          * defaults for every added field) so a record written by a newer build never becomes
          * unreadable by an older one mid-deploy.
          */
-        const val CURRENT_VERSION = 2
+        const val CURRENT_VERSION = 3
+
+        /** The first version whose decks were given shuffled ids. */
+        const val SHUFFLED_DECK_IDS_VERSION = 3
 
         const val UNKNOWN_VERSION = "unknown"
     }

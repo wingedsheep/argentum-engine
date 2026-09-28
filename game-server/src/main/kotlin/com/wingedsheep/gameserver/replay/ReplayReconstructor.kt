@@ -154,6 +154,9 @@ class ReplayReconstructor(
         return state
     }
 
+    /** The state a replay starts from, as reconstruction builds it. */
+    internal fun initialState(replay: CompactReplay): GameState = engineFor(replay).initialState(replay)
+
     /**
      * Engine services bound to this replay's pinned card definitions. Built per reconstruction
      * because the pinned corpus differs per replay; the overlay is a thin child registry, so this
@@ -200,6 +203,7 @@ private class ReplayEngine(
             attackMode = setup.attackMode,
             teams = setup.teams,
             seed = setup.seed,
+            shuffledDeckIds = replay.version >= CompactReplay.SHUFFLED_DECK_IDS_VERSION,
         )
         return applyYields(gameInitializer.initializeGame(config).state, replay.yields, afterActionCount = 0)
     }

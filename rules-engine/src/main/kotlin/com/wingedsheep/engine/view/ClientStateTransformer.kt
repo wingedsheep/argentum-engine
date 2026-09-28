@@ -88,32 +88,34 @@ class ClientStateTransformer(
         for ((zoneKey, entityIds) in state.zones) {
             val isZoneVisible = visibility.isZoneVisibleTo(state, zoneKey, viewingPlayerId, isSpectator)
 
-            // For libraries we always send the full ordered list of entity IDs so the client can
-            // render a correctly sized stack. Individual card *details* are only populated for cards
-            // that have been revealed to the viewing player (Scry, Surveil, look-at-top-N, etc.).
-            // Unrevealed slots end up as opaque IDs the client renders as card backs.
+            // A hidden zone names only the cards the viewer may identify (Scry, Surveil,
+            // look-at-top-N, a revealed top card); the rest are only counted. An unknown card's ID
+            // would let a client follow it through the zone, and IDs are minted per card, so an ID
+            // can name the card outright. A library also says where each known card sits, since a
+            // partial list no longer carries positions.
             val isLibrary = zoneKey.zoneType == Zone.LIBRARY
-            val cardsWithDetails = if (isZoneVisible) {
-                entityIds
+            val knownIndices = if (isZoneVisible) {
+                entityIds.indices.toList()
             } else {
-                entityIds.filter { entityId ->
+                entityIds.indices.filter { index ->
                     visibility.isCardIdentityVisibleTo(
                         state,
                         zoneKey,
-                        entityId,
+                        entityIds[index],
                         viewingPlayerId,
                         isSpectator,
                     )
                 }
             }
-            val zoneCardIds = if (isLibrary) entityIds else cardsWithDetails
+            val cardsWithDetails = knownIndices.map { entityIds[it] }
 
             zones.add(
                 ClientZone(
                     zoneId = zoneKey,
-                    cardIds = zoneCardIds,
+                    cardIds = cardsWithDetails,
                     size = entityIds.size,
-                    isVisible = isZoneVisible || cardsWithDetails.isNotEmpty() || isLibrary
+                    isVisible = isZoneVisible || cardsWithDetails.isNotEmpty() || isLibrary,
+                    positions = if (isLibrary) knownIndices else null
                 )
             )
 

@@ -26,14 +26,14 @@ type Tab = 'deck' | 'order'
 
 export function DeckBrowser({
   ownerLabel,
-  entityIds,
+  slots,
   deck,
   onClose,
 }: {
   /** Title prefix, e.g. "Your" / "Alice's". */
   ownerLabel: string
-  /** Library contents in order, top first. Opaque ids for cards not revealed to the viewer. */
-  entityIds: readonly EntityId[]
+  /** The library top first: the card where the viewer knows it, `null` for a card back. */
+  slots: readonly (EntityId | null)[]
   /** The viewer's own decklist. Empty when this isn't their pile — hides the deck-list tab. */
   deck: readonly ClientDeckCard[]
   onClose: () => void
@@ -77,7 +77,7 @@ export function DeckBrowser({
                   Deck list
                 </TabButton>
                 <TabButton active={tab === 'order'} onClick={() => setTab('order')}>
-                  Library order ({entityIds.length})
+                  Library order ({slots.length})
                 </TabButton>
               </div>
             )}
@@ -88,9 +88,9 @@ export function DeckBrowser({
         </div>
 
         {tab === 'deck' ? (
-          <DeckListTab deck={deck} librarySize={entityIds.length} />
+          <DeckListTab deck={deck} librarySize={slots.length} />
         ) : (
-          <LibraryOrderTab entityIds={entityIds} />
+          <LibraryOrderTab slots={slots} />
         )}
 
         <div style={{ display: 'flex', gap: 16 }}>
@@ -141,14 +141,14 @@ function DeckListTab({ deck, librarySize }: { deck: readonly ClientDeckCard[]; l
  * The library top-to-bottom. Order matches the real library; a shuffle on the server clears every
  * reveal, so a freshly shuffled library shows entirely face-down.
  */
-function LibraryOrderTab({ entityIds }: { entityIds: readonly EntityId[] }) {
+function LibraryOrderTab({ slots }: { slots: readonly (EntityId | null)[] }) {
   const hoverCard = useGameStore((state) => state.hoverCard)
   const cardsMap = useGameStore((state) => selectGameState(state)?.cards)
   const responsive = useResponsiveContext()
 
   const cardWidth = responsive.isMobile ? 120 : 160
   const cardHeight = Math.round(cardWidth * 1.4)
-  const revealedCount = entityIds.reduce((acc, id) => acc + (cardsMap?.[id] ? 1 : 0), 0)
+  const revealedCount = slots.reduce((acc, id) => acc + (id && cardsMap?.[id] ? 1 : 0), 0)
 
   return (
     <>
@@ -157,14 +157,14 @@ function LibraryOrderTab({ entityIds }: { entityIds: readonly EntityId[] }) {
         {revealedCount > 0 ? ` · ${revealedCount} known` : ''}
       </span>
       <div style={styles.libraryCardGrid}>
-        {entityIds.map((id, index) => {
-          const card = cardsMap?.[id]
+        {slots.map((id, index) => {
+          const card = id ? cardsMap?.[id] : undefined
           const isTop = index === 0
-          const isBottom = index === entityIds.length - 1 && entityIds.length > 1
+          const isBottom = index === slots.length - 1 && slots.length > 1
           const accent = isTop ? '#fde68a' : isBottom ? '#fb923c' : null
           return (
             <div
-              key={id}
+              key={id ?? `back-${index}`}
               style={{
                 width: cardWidth,
                 height: cardHeight,
