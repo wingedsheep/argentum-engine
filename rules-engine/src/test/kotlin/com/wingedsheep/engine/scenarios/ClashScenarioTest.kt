@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.ClashedEvent
 import com.wingedsheep.engine.core.SelectCardsDecision
@@ -443,6 +444,30 @@ class ClashScenarioTest : FunSpec({
         clashed.single { it.playerId == active }.opponentId shouldBe opponent
         clashed.single { it.playerId == opponent }.won shouldBe false
         clashed.single { it.playerId == opponent }.opponentId shouldBe active
+    }
+
+    test("the reveal attributes the opponent's card to its owner, so multiplayer can name them") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
+        val active = driver.activePlayer!!
+        val opponent = driver.getOpponent(active)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        driver.putCardOnTopOfLibrary(active, "Clash Boulder")
+        driver.putCardOnTopOfLibrary(opponent, "Clash Pebble")
+
+        val before = driver.events.size
+        driver.castClash(active, "Clash For Life")
+        driver.answerClashKeepingAll()
+
+        // Both reveals are the clasher's (the pipeline's controller); only the per-card owner
+        // tells the client whose library the second card came from.
+        val reveals = driver.events.drop(before).filterIsInstance<CardsRevealedEvent>()
+        reveals.size shouldBe 2
+        reveals.single { driver.getCardName(it.cardIds.single()) == "Clash Boulder" }
+            .cardOwnerIds shouldBe emptyList()
+        reveals.single { driver.getCardName(it.cardIds.single()) == "Clash Pebble" }
+            .cardOwnerIds shouldBe listOf(opponent)
     }
 
     test("Whenever-you-clash fires for the clasher whether they win or lose") {

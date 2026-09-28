@@ -53,6 +53,13 @@ export interface AnimationSliceState {
      * single-player reveals, which use [isYourReveal] for the whole group.
      */
     cardOwnerIsYours?: readonly boolean[]
+    /**
+     * Owner of each revealed card (parallel to cardIds), present alongside [cardOwnerIsYours].
+     * Lets a multiplayer reveal name *which* opponent a card belongs to (clash).
+     */
+    cardOwnerIds?: readonly EntityId[]
+    /** Player who performed the reveal; absent for locally-triggered reveals. */
+    revealingPlayerId?: EntityId
     fromZone?: string | null
     toZone?: string | null
   } | null

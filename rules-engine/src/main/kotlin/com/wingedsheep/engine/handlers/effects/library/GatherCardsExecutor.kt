@@ -361,7 +361,9 @@ class GatherCardsExecutor(
                 state.getEntity(sourceId)?.get<CardComponent>()?.name
             }
             // Per-card owners, so a multi-player reveal (e.g. each player reveals their top card)
-            // can be attributed card-by-card in the UI. Only meaningful when owners differ.
+            // can be attributed card-by-card in the UI. Sent whenever some card isn't the
+            // revealer's own — a clash reveals the chosen opponent's top card under the clasher's
+            // id, and in multiplayer the client needs to know *which* player's card that is.
             val cardOwnerIds = cards.map { cardId ->
                 state.getEntity(cardId)?.get<CardComponent>()?.ownerId ?: context.controllerId
             }
@@ -372,7 +374,7 @@ class GatherCardsExecutor(
                     cardNames = cardNames,
                     imageUris = imageUris,
                     source = sourceName,
-                    cardOwnerIds = if (cardOwnerIds.distinct().size > 1) cardOwnerIds else emptyList()
+                    cardOwnerIds = if (cardOwnerIds.any { it != context.controllerId }) cardOwnerIds else emptyList()
                 )
             )
         } else {

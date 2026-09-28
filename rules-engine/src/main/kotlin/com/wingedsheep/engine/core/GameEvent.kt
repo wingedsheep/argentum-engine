@@ -1914,7 +1914,9 @@ data class CardsRevealedEvent(
     /**
      * Owner of each revealed card, parallel to [cardIds]. Populated when one reveal spans
      * cards from more than one player (e.g. Psychic Battle: each player reveals their top card)
-     * so the UI can attribute each card to its revealer. Empty for single-owner reveals.
+     * so the UI can attribute each card to its revealer, or when a player reveals cards they
+     * don't own (a clash reveals the chosen opponent's top card). Empty when every card is the
+     * revealer's own.
      */
     val cardOwnerIds: List<EntityId> = emptyList(),
     /** If false, the revealing player does not see the reveal overlay (e.g., behold from hand) */

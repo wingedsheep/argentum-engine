@@ -398,6 +398,9 @@ function processStateUpdate(
         ...(cardsRevealedEvent.cardOwnerIsYours
           ? { cardOwnerIsYours: revealOverlayIndices.map((i) => cardsRevealedEvent.cardOwnerIsYours![i]!) }
           : {}),
+        ...(cardsRevealedEvent.cardOwnerIds && cardsRevealedEvent.cardOwnerIds.length > 0
+          ? { cardOwnerIds: revealOverlayIndices.map((i) => cardsRevealedEvent.cardOwnerIds![i]!) }
+          : {}),
       }
     : null
 
@@ -688,7 +691,7 @@ function processStateUpdate(
            msg.pendingDecision.nonSelectableOptions ?? []
          )
           ? null
-          : { cardIds: filteredReveal.cardIds, cardNames: filteredReveal.cardNames, imageUris: filteredReveal.imageUris, source: filteredReveal.source, isYourReveal: filteredReveal.revealingPlayerId === playerId, fromZone: filteredReveal.fromZone ?? null, toZone: filteredReveal.toZone ?? null, ...(filteredReveal.cardOwnerIsYours ? { cardOwnerIsYours: filteredReveal.cardOwnerIsYours } : {}) })
+          : { cardIds: filteredReveal.cardIds, cardNames: filteredReveal.cardNames, imageUris: filteredReveal.imageUris, source: filteredReveal.source, isYourReveal: filteredReveal.revealingPlayerId === playerId, revealingPlayerId: filteredReveal.revealingPlayerId, fromZone: filteredReveal.fromZone ?? null, toZone: filteredReveal.toZone ?? null, ...(filteredReveal.cardOwnerIsYours ? { cardOwnerIsYours: filteredReveal.cardOwnerIsYours } : {}), ...(filteredReveal.cardOwnerIds ? { cardOwnerIds: filteredReveal.cardOwnerIds } : {}) })
       : cardsRevealedEvent ? null : state.revealedCardsInfo,
     // The opponent's streamed declaration previews expire with their own declaration step.
     opponentAttackerTargets: keepAttackerPreview(resolvedState.currentStep, resolvedState.combat != null)

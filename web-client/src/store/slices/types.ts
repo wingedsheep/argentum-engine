@@ -1152,6 +1152,13 @@ export type GameStore = {
      * `false` = an opponent. Absent for single-player reveals (use [isYourReveal]).
      */
     cardOwnerIsYours?: readonly boolean[]
+    /**
+     * Owner of each revealed card (parallel to cardIds), present alongside [cardOwnerIsYours].
+     * Lets a multiplayer reveal name *which* opponent a card belongs to (clash).
+     */
+    cardOwnerIds?: readonly EntityId[]
+    /** Player who performed the reveal; absent for locally-triggered reveals. */
+    revealingPlayerId?: EntityId
     /** Zone the card came from (e.g., 'Graveyard', 'Exile') when this reveal is a zone transition. */
     fromZone?: string | null
     /** Zone the card moved to (e.g., 'Hand', 'Library') when this reveal is a zone transition. */

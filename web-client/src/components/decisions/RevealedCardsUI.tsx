@@ -109,12 +109,20 @@ export function RevealedCardsUI() {
 
   const onDismiss = isHandReveal ? dismissRevealedHand : dismissRevealedCards
 
-  // Per-card revealer attribution — present when one effect revealed cards from both players
-  // at once (e.g. Psychic Battle). When the reveal mixes your card with an opponent's, the
-  // group title stays neutral and each card gets its own "You" / "Opponent" badge.
+  // Per-card revealer attribution — present when one effect revealed cards from more than one
+  // player at once (e.g. Psychic Battle, clash). When the reveal mixes owners, the group title
+  // stays neutral and each card gets its own badge. With more than one opponent, "Opponent" is
+  // ambiguous, so badges and the title name the player instead.
   const cardOwnerIsYours = isCardReveal ? revealedCardsInfo!.cardOwnerIsYours : undefined
-  const isMixedReveal =
-    !!cardOwnerIsYours && cardOwnerIsYours.some(Boolean) && cardOwnerIsYours.some((v) => !v)
+  const cardOwnerIds = isCardReveal ? revealedCardsInfo!.cardOwnerIds : undefined
+  const isMixedReveal = cardOwnerIds
+    ? new Set(cardOwnerIds).size > 1
+    : !!cardOwnerIsYours && cardOwnerIsYours.some(Boolean) && cardOwnerIsYours.some((v) => !v)
+  const isMultiplayer = gameState.players.length > 2
+  const opponentLabel = (ownerId: EntityId | undefined): string =>
+    (isMultiplayer && ownerId
+      ? gameState.players.find((p) => p.playerId === ownerId)?.name
+      : undefined) ?? 'Opponent'
 
   // Title and subtitle
   const isYourReveal = !isHandReveal && revealedCardsInfo!.isYourReveal
@@ -122,7 +130,9 @@ export function RevealedCardsUI() {
     ? null
     : zoneTransitionLabel(revealedCardsInfo!.fromZone ?? null, revealedCardsInfo!.toZone ?? null)
   const actionWord = transitionLabel ?? 'Revealed'
-  const whoPrefix = isMixedReveal || isYourReveal ? '' : 'Opponent '
+  const whoPrefix = isMixedReveal || isYourReveal
+    ? ''
+    : `${opponentLabel(revealedCardsInfo?.revealingPlayerId)} `
   const title = isHandReveal
     ? "Opponent's Hand"
     : `${whoPrefix}${actionWord}${revealedCardsInfo!.source ? ` — ${revealedCardsInfo!.source}` : ''}`
@@ -231,7 +241,7 @@ export function RevealedCardsUI() {
                       pointerEvents: 'none',
                     }}
                   >
-                    {ownerIsYours ? 'You' : 'Opponent'}
+                    {ownerIsYours ? 'You' : opponentLabel(cardOwnerIds?.[index])}
                   </span>
                 )}
                 <img
