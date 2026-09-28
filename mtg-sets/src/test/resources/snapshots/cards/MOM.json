@@ -4053,6 +4053,139 @@
     ]
 }
 
+// Etali, Primal Conqueror
+{
+    "name": "Etali, Primal Conqueror",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Legendary Creature — Elder Dinosaur",
+    "oracleText": "Trample\nWhen Etali enters, each player exiles cards from the top of their library until they exile a nonland card. You may cast any number of spells from among the nonland cards exiled this way without paying their mana costs.\n{9}{G/P}: Transform Etali. Activate only as a sorcery. ({G/P} can be paid with either {G} or 2 life.)",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Etali, Primal Conqueror:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "player": "Each",
+                            "filter": "nonland",
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                            "from": "matched0"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Etali enters, each player exiles cards from the top of their library until they exile a nonland card. You may cast any number of spells from among the nonland cards exiled this way without paying their mana costs."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Etali, Primal Conqueror:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{9}{G/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform Etali."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Etali, Primal Sickness",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Phyrexian Elder Dinosaur",
+        "oracleText": "Trample, indestructible\nWhenever Etali deals combat damage to a player, they get that many poison counters. (A player with ten or more poison counters loses the game.)",
+        "creatureStats": {
+            "power": 11,
+            "toughness": 11
+        },
+        "keywords": [
+            "TRAMPLE",
+            "INDESTRUCTIBLE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Etali, Primal Sickness:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        }
+                    },
+                    "effect": {
+                        "type": "AddDynamicCounters",
+                        "counterType": "POISON",
+                        "amount": {
+                            "type": "ContextProperty",
+                            "key": "TRIGGER_DAMAGE_AMOUNT"
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "TriggeringPlayer"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "137",
+            "rarity": "RARE",
+            "artist": "Ryan Pancoast",
+            "flavorText": "The contagion spreads and the Multiverse quakes.",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/5/95c14c4d-6c16-4826-8d93-d89ad04aee09.jpg?1783916997"
+        },
+        "colorIdentityOverride": [
+            "GREEN",
+            "RED"
+        ],
+        "colorIndicator": [
+            "GREEN",
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95c14c4d-6c16-4826-8d93-d89ad04aee09.jpg?1783916997"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "RED"
+    ]
+}
+
 // Etched Familiar
 {
     "name": "Etched Familiar",

@@ -1004,7 +1004,9 @@ data class GatherSubtypesEffect(
  *
  * Does **not** emit a reveal event — pair with [RevealCollectionEffect] for that.
  *
- * @property player Whose library to walk
+ * @property player Whose library to walk. A multi-player reference ([Player.Each],
+ *   [Player.EachOpponent], [Player.ActivePlayerFirst]) walks every such player's library in turn —
+ *   [count] matches *per library* — accumulating into the same two collections (Etali, Primal Conqueror)
  * @property filter The predicate that counts toward stopping when matched
  * @property storeMatch Collection name for the matching cards (empty if no matches found)
  * @property storeRevealed Collection name for ALL cards seen (including any matches)
