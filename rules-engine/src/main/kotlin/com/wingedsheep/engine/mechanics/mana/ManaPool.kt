@@ -719,10 +719,11 @@ data class ManaPool(
 
     /**
      * Consume mana provenance tags proportional to [unrestrictedSpent] — the count of unrestricted
-     * floating mana pulled from the pool by a payment. Each subtype / source counter is reduced by
+     * floating mana pulled from the pool by a payment. Each subtype / source / card-type counter is reduced by
      * `min(count, unrestrictedSpent)` (the same greedy, proportional rule the legacy Treasure
      * counter used), and the consumed amounts are returned as a [SpentManaProvenance] so the caller
-     * can stamp the spell/event. Restricted mana never carries provenance, so it never contributes.
+     * can stamp the spell/event. Restricted units carry their own tag on each entry instead — see
+     * [SpentManaProvenance.ofConsumedRestricted].
      */
     fun consumeProvenance(unrestrictedSpent: Int): Pair<ManaPool, SpentManaProvenance> {
         if (unrestrictedSpent <= 0 || (manaBySubtype.isEmpty() && manaBySource.isEmpty() && manaByCardType.isEmpty())) {
