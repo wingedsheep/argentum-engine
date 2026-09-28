@@ -8441,6 +8441,32 @@
             "PROWESS"
         ],
         "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Disciples of the Inferno:1",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                "IsNoncreature"
+                            ]
+                        }
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                }
+            ],
             "replacementEffects": [
                 {
                     "type": "ModifyDamageAmount",
