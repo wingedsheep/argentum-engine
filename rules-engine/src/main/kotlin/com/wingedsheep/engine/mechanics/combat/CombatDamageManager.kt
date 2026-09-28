@@ -1158,6 +1158,10 @@ internal class CombatDamageManager(
         }
         // Combat damage counts toward "sources you controlled dealt damage this turn" too.
         newState = DamageUtils.trackDamageSourceForController(newState, sourceId)
+        // "Since your last turn" (Marchesa, Resolute Monarch) outlives this turn's marker.
+        newState = newState.copy(
+            playersDealtCombatDamageSinceTheirLastTurn = newState.playersDealtCombatDamageSinceTheirLastTurn + targetId
+        )
         // Track that player was dealt combat damage this turn (boolean marker + running total).
         newState = newState.updateEntity(targetId) { container ->
             val priorCombat = container.get<CombatDamageReceivedThisTurnComponent>()?.amount ?: 0
@@ -1390,6 +1394,10 @@ internal class CombatDamageManager(
             }
             // Combat damage counts toward "sources you controlled dealt damage this turn" too.
             newState = DamageUtils.trackDamageSourceForController(newState, sourceId)
+            // "Since your last turn" (Marchesa, Resolute Monarch) outlives this turn's marker.
+            newState = newState.copy(
+                playersDealtCombatDamageSinceTheirLastTurn = newState.playersDealtCombatDamageSinceTheirLastTurn + targetId
+            )
             // Track that player was dealt combat damage this turn (boolean marker + running total).
             newState = newState.updateEntity(targetId) { container ->
                 val priorCombat = container.get<CombatDamageReceivedThisTurnComponent>()?.amount ?: 0

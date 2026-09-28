@@ -12859,6 +12859,13 @@ of `AddMana`. The engine empties pools at end of turn, so:
 - `DEALT_NONCOMBAT_DAMAGE_LAST_TURN` — the same record one turn back: the previous turn in the game,
   whoever's it was, rolled over by `TurnManager.startTurn`. Facade
   `Conditions.OpponentWasDealtNoncombatDamageLastTurn` (Command the Stage).
+- `DEALT_COMBAT_DAMAGE_SINCE_YOUR_LAST_TURN` — indicator (0/1) that the player has been dealt combat
+  damage since *their own* last turn ended: every other player's turn in between plus their current
+  turn so far. Recorded at the combat-damage-to-a-player sites in `CombatDamageManager` on
+  `GameState.playersDealtCombatDamageSinceTheirLastTurn`; a player leaves the set only when their own
+  turn ends (the whole team on a shared team turn). Facade
+  `Conditions.YouWereDealtCombatDamageSinceYourLastTurn`; negate it for "if you haven't been dealt
+  combat damage since your last turn" (Marchesa, Resolute Monarch).
 
 For a *combat-damage-amount threshold* that is existential over players — "a player was dealt N or
 more combat damage this turn" — use the dedicated condition

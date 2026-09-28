@@ -3055,6 +3055,205 @@
     ]
 }
 
+// Invasion of Fiora
+{
+    "name": "Invasion of Fiora",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, choose one or both —\n• Destroy all legendary creatures.\n• Destroy all nonlegendary creatures.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Fiora:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "BattlefieldMatching",
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    "IsCreature",
+                                                    "IsLegendary"
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "destroyAll_gathered"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "destroyAll_gathered",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Destroy"
+                                    }
+                                ]
+                            },
+                            "description": "Destroy all legendary creatures."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "BattlefieldMatching",
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    "IsCreature",
+                                                    "IsNonlegendary"
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "destroyAll_gathered"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "destroyAll_gathered",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Destroy"
+                                    }
+                                ]
+                            },
+                            "description": "Destroy all nonlegendary creatures."
+                        }
+                    ],
+                    "chooseCount": 2,
+                    "minChooseCount": 1
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Marchesa, Resolute Monarch",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Human Noble",
+        "oracleText": "Menace, deathtouch\nWhenever Marchesa attacks, remove all counters from up to one target permanent.\nAt the beginning of your upkeep, if you haven't been dealt combat damage since your last turn, you draw a card and you lose 1 life.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 6
+        },
+        "keywords": [
+            "MENACE",
+            "DEATHTOUCH"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Marchesa, Resolute Monarch:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "RemoveAllCounters",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "permanent"
+                        },
+                        "id": "t0"
+                    }
+                },
+                {
+                    "id": "Marchesa, Resolute Monarch:2",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "You"
+                                }
+                            }
+                        ]
+                    },
+                    "interveningIf": {
+                        "type": "Not",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "DEALT_COMBAT_DAMAGE_SINCE_YOUR_LAST_TURN"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "114",
+            "rarity": "RARE",
+            "artist": "Joshua Raphael",
+            "imageUri": "https://cards.scryfall.io/normal/back/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.jpg?1783917011"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "RARE",
+        "artist": "Joshua Raphael",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.jpg?1783917011",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "If you choose both modes for Invasion of Fiora's enters-the-battlefield ability, the modes happen in order. First all legendary creatures are destroyed, then all nonlegendary creatures."
+            }
+        ]
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Invasion of Innistrad
 {
     "name": "Invasion of Innistrad",

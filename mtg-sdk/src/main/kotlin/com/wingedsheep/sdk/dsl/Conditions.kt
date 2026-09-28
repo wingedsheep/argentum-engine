@@ -1700,6 +1700,14 @@ object Conditions {
         trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.DEALT_COMBAT_DAMAGE)
 
     /**
+     * If you've been dealt combat damage since your last turn — any combat damage from the end of
+     * your previous turn until now. Negate it for "if you haven't been dealt combat damage since
+     * your last turn" (Marchesa, Resolute Monarch).
+     */
+    val YouWereDealtCombatDamageSinceYourLastTurn: ConditionInterface =
+        trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.DEALT_COMBAT_DAMAGE_SINCE_YOUR_LAST_TURN)
+
+    /**
      * If you've played a land this turn.
      * Used for cards like Rock Jockey ("can't cast unless no land was played").
      */

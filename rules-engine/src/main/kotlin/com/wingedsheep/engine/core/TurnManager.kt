@@ -150,6 +150,10 @@ class TurnManager(
             playersWhoCommittedCrimeThisTurn = emptySet(),
             playersDealtNoncombatDamageLastTurn = state.playersDealtNoncombatDamageThisTurn,
             playersDealtNoncombatDamageThisTurn = emptySet(),
+            // "Since your last turn" ends with the outgoing active player's (or team's) own turn;
+            // everyone else keeps accumulating across this boundary.
+            playersDealtCombatDamageSinceTheirLastTurn = state.playersDealtCombatDamageSinceTheirLastTurn -
+                state.activePlayerId?.let(state::sharedTurnTeam).orEmpty(),
             lastCastSpellColors = null,
             lastCardDrawnThisTurnByPlayer = emptyMap(),
             drawStepStartDrawCountByPlayer = emptyMap(),

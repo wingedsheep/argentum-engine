@@ -79,6 +79,14 @@ enum class TurnTracker {
      * opponent was dealt noncombat damage last turn" (Command the Stage).
      */
     DEALT_NONCOMBAT_DAMAGE_LAST_TURN,
+    /**
+     * Indicator (0 or 1) that the player has been dealt combat damage since their own last turn
+     * ended — every other player's turn in between, plus their current turn so far. Cleared when
+     * the player's own turn ends, so it survives the turn boundaries a "this turn" tracker resets
+     * at. Powers "if you haven't been dealt combat damage since your last turn" (Marchesa,
+     * Resolute Monarch).
+     */
+    DEALT_COMBAT_DAMAGE_SINCE_YOUR_LAST_TURN,
     /** Indicator (0 or 1) that the player put one or more counters on a creature this turn. */
     COUNTERS_PUT_ON_CREATURE,
     /** Number of land cards the player played this turn (derived from `LandDropsComponent`). */
@@ -294,6 +302,8 @@ enum class TurnTracker {
             "whether ${player.description} were dealt combat damage by a legendary creature this turn"
         DEALT_NONCOMBAT_DAMAGE -> "whether ${player.description} were dealt noncombat damage this turn"
         DEALT_NONCOMBAT_DAMAGE_LAST_TURN -> "whether ${player.description} were dealt noncombat damage last turn"
+        DEALT_COMBAT_DAMAGE_SINCE_YOUR_LAST_TURN ->
+            "whether ${player.description} were dealt combat damage since their last turn"
         COUNTERS_PUT_ON_CREATURE -> "whether ${player.description} put a counter on a creature this turn"
         LANDS_PLAYED -> "the number of lands ${player.description} played this turn"
         LANDS_ENTERED_UNDER_CONTROL -> "the number of lands that entered the battlefield under ${player.possessive} control this turn"

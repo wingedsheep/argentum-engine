@@ -316,6 +316,14 @@ data class GameState(
      * last turn. Backs `TurnTracker.DEALT_NONCOMBAT_DAMAGE_LAST_TURN` (Command the Stage).
      */
     val playersDealtNoncombatDamageLastTurn: Set<EntityId> = emptySet(),
+    /**
+     * Players (by entity id) who have been dealt combat damage since their own last turn ended.
+     * Populated at the combat-damage-to-a-player sites in `CombatDamageManager`; a player leaves
+     * the set only when their own turn ends (`TurnManager.startTurn` drops the outgoing turn's
+     * active player, or the whole team on a shared team turn). Backs
+     * `TurnTracker.DEALT_COMBAT_DAMAGE_SINCE_YOUR_LAST_TURN` (Marchesa, Resolute Monarch).
+     */
+    val playersDealtCombatDamageSinceTheirLastTurn: Set<EntityId> = emptySet(),
 
     /**
      * Colors of the spell most recently cast this turn (by any player), or null if no spell has
