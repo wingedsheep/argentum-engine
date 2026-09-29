@@ -1389,6 +1389,181 @@
     ]
 }
 
+// Baral and Kari Zev
+{
+    "name": "Baral and Kari Zev",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Legendary Creature — Human",
+    "oracleText": "First strike, menace\nWhenever you cast your first instant or sorcery spell each turn, you may cast a spell with lesser mana value that shares a card type with it from your hand without paying its mana cost. If you don't, create First Mate Ragavan, a legendary 2/1 red Monkey Pirate creature token. It gains haste until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Baral and Kari Zev:1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered0",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "ManaValueAtMostDynamic",
+                                                "amount": {
+                                                    "type": "Subtract",
+                                                    "left": {
+                                                        "type": "ContextProperty",
+                                                        "key": "TRIGGERING_SPELL_MANA_VALUE"
+                                                    },
+                                                    "right": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "SharesCardTypeWith",
+                                                "entity": "TriggeringEntity"
+                                            }
+                                        ]
+                                    },
+                                    "storeMatching": "matching1"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "matching1",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected2",
+                                    "selectedLabel": "Cast without paying its mana cost"
+                                },
+                                {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "selected2",
+                                    "storeCastTo": "baralCast"
+                                }
+                            ]
+                        },
+                        "successCriterion": {
+                            "type": "SuccessCriterion.CollectionNonEmpty",
+                            "name": "baralCast"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": []
+                    },
+                    "otherwise": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "power": 2,
+                                "toughness": 1,
+                                "colors": [
+                                    "RED"
+                                ],
+                                "creatureTypes": [
+                                    "Monkey",
+                                    "Pirate"
+                                ],
+                                "name": "First Mate Ragavan",
+                                "imageUri": "https://cards.scryfall.io/normal/front/f/6/f69504a4-8caf-40c7-b998-1558a00444fc.jpg?1783916671",
+                                "legendary": true
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "createdTokens"
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "HASTE",
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "triggerRestriction": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": "TriggeringEntity",
+                            "filter": "instant|sorcery"
+                        },
+                        {
+                            "type": "Not",
+                            "condition": {
+                                "type": "PlayerCastSpellsThisTurn",
+                                "filter": "instant|sorcery",
+                                "atLeast": 2
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "RARE",
+        "artist": "Fariba Khamseh",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc43a788-ab06-4d28-b45a-aa47801d6ace.jpg?1783916956",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "If the spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Baral and Kari Zev will count any instant or sorcery spell you cast during a turn, even if it wasn't on the battlefield at the time. This means if you cast an instant or sorcery spell, then Baral and Kari Zev comes under your control, its triggered ability won't trigger that turn."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "The spell you cast from your hand without paying its mana cost is cast during the resolution of the triggered ability. Timing restrictions of that spell based on card type are ignored. It will resolve before the spell that caused the ability to trigger."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If you cast a spell without paying its mana cost, you can't choose to cast it for any alternative costs. You can, however, pay any additional costs. If the spell has any mandatory additional costs, you must pay those."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Beamtown Beatstick
 {
     "name": "Beamtown Beatstick",
@@ -2156,6 +2331,229 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Borborygmos and Fblthp
+{
+    "name": "Borborygmos and Fblthp",
+    "manaCost": "{2}{G}{U}{R}",
+    "typeLine": "Legendary Creature — Cyclops Homunculus",
+    "oracleText": "Whenever Borborygmos and Fblthp enters or attacks, draw a card, then you may discard any number of land cards. When you discard one or more cards this way, Borborygmos and Fblthp deals twice that much damage to target creature.\n{1}{U}: Put Borborygmos and Fblthp into its owner's library third from the top.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Borborygmos and Fblthp:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "land"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected2",
+                            "prompt": "Discard any number of land cards",
+                            "selectedLabel": "Discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected2",
+                            "ifNotEmpty": {
+                                "type": "ReflexiveTrigger",
+                                "action": {
+                                    "type": "Composite",
+                                    "effects": []
+                                },
+                                "optional": false,
+                                "reflexiveEffect": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Multiply",
+                                        "amount": {
+                                            "type": "VariableReference",
+                                            "variableName": "selected2_count"
+                                        },
+                                        "multiplier": 2
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "reflexiveTargetRequirements": [
+                                    {
+                                        "type": "TargetObject",
+                                        "filter": {
+                                            "baseFilter": "creature"
+                                        },
+                                        "id": "t0"
+                                    }
+                                ],
+                                "descriptionOverride": "When you discard one or more cards this way, Borborygmos and Fblthp deals twice that much damage to target creature."
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Borborygmos and Fblthp enters or attacks, draw a card, then you may discard any number of land cards. When you discard one or more cards this way, Borborygmos and Fblthp deals twice that much damage to target creature."
+            },
+            {
+                "id": "Borborygmos and Fblthp:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "land"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected2",
+                            "prompt": "Discard any number of land cards",
+                            "selectedLabel": "Discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected2",
+                            "ifNotEmpty": {
+                                "type": "ReflexiveTrigger",
+                                "action": {
+                                    "type": "Composite",
+                                    "effects": []
+                                },
+                                "optional": false,
+                                "reflexiveEffect": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Multiply",
+                                        "amount": {
+                                            "type": "VariableReference",
+                                            "variableName": "selected2_count"
+                                        },
+                                        "multiplier": 2
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                },
+                                "reflexiveTargetRequirements": [
+                                    {
+                                        "type": "TargetObject",
+                                        "filter": {
+                                            "baseFilter": "creature"
+                                        },
+                                        "id": "t1"
+                                    }
+                                ],
+                                "descriptionOverride": "When you discard one or more cards this way, Borborygmos and Fblthp deals twice that much damage to target creature."
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Borborygmos and Fblthp enters or attacks, draw a card, then you may discard any number of land cards. When you discard one or more cards this way, Borborygmos and Fblthp deals twice that much damage to target creature."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Borborygmos and Fblthp:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Library",
+                    "positionFromTop": 2
+                },
+                "descriptionOverride": "{1}{U}: Put Borborygmos and Fblthp into its owner's library third from the top."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "MYTHIC",
+        "artist": "Rudy Siswanto",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34bbf1c1-2868-4c9e-b5c4-1aae86faed6c.jpg?1783916956",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "The first ability of Borborygmos and Fblthp triggers and goes on the stack without a target. If you discard one or more land cards, the second \"reflexive\" triggered ability will trigger. You'll choose the target creature for that second ability at that time."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "You can't discard nonland cards, even if you want to."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If there are one or fewer cards in your library, Borborygmos and Fblthp is put on the bottom of your library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -3956,6 +4354,163 @@
     ]
 }
 
+// Djeru and Hazoret
+{
+    "name": "Djeru and Hazoret",
+    "manaCost": "{2}{R}{R}{W}",
+    "typeLine": "Legendary Creature — Human God",
+    "oracleText": "As long as you have one or fewer cards in hand, Djeru and Hazoret has vigilance and haste.\nWhenever Djeru and Hazoret attacks, look at the top six cards of your library. You may exile a legendary creature card from among them. Put the rest on the bottom of your library in a random order. Until end of turn, you may cast the exiled card without paying its mana cost.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Djeru and Hazoret:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsLegendary"
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "selectedLabel": "Exile",
+                            "remainderLabel": "Put on bottom"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "selected1"
+                        },
+                        {
+                            "type": "GrantPlayWithoutPayingCost",
+                            "from": "selected1"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1db1ae7b-ed48-409f-8d50-07c7e8c6c128.jpg?1783916956",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Once Djeru and Hazoret has legally attacked during the turn it came under your control, causing it to lose haste by adding cards to your hand won't cause it to stop attacking. Similarly, causing it to lose vigilance after it has attacked won't cause it to become tapped."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If you cast a spell without paying its mana cost, you can't choose to cast it for any alternative costs. You can, however, pay any additional costs. If the spell has any mandatory additional costs, you must pay those."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If the spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Doomskar Warrior
 {
     "name": "Doomskar Warrior",
@@ -4183,6 +4738,70 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Drana and Linvala
+{
+    "name": "Drana and Linvala",
+    "manaCost": "{1}{W}{W}{B}",
+    "typeLine": "Legendary Creature — Vampire Angel",
+    "oracleText": "Flying, vigilance\nActivated abilities of creatures your opponents control can't be activated.\nDrana and Linvala has all activated abilities of all creatures your opponents control. You may spend mana as though it were mana of any color to activate those abilities.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": "creature ctrl:opponent"
+            },
+            {
+                "type": "GainActivatedAbilitiesOfPermanents",
+                "grantedTo": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "sourceFilter": "creature ctrl:opponent",
+                "includeManaAbilities": true
+            },
+            {
+                "type": "SpendAnyManaTypeForActivatedAbilities",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Raluca Marinescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbda000f-3cf7-48b6-96ff-c23a3a64eab5.jpg?1783916955",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Drana and Linvala gains only activated abilities. It doesn't gain triggered abilities or static abilities. Activated abilities contain a colon. They're generally written \"[Cost]: [Effect].\" Some keywords are activated abilities; they have colons in their reminder texts."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If an activated ability references the creature that has it by name, treat Drana and Linvala's version of that ability as though it referenced Drana and Linvala by name instead. For example, if an opponent controls Onakke Javelineer, Drana and Linvala has the ability \"{T}: Drana and Linvala deals 2 damage to target player or battle.\""
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Once an ability has been activated, it doesn't matter if Drana and Linvala loses that ability because the opposing creature with that ability leaves the battlefield (or, more optimistically, you gain control of it)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -4640,6 +5259,115 @@
     ]
 }
 
+// Elvish Vatkeeper
+{
+    "name": "Elvish Vatkeeper",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Creature — Phyrexian Elf",
+    "oracleText": "When this creature enters, incubate 2. (Create an Incubator token with two +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)\n{5}: Transform target Incubator token you control. Double the number of +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elvish Vatkeeper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Elvish Vatkeeper:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Transform",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "PLUS_ONE_PLUS_ONE"
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Incubator token ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3227c07-9ef2-46a6-9b4f-bbd6ef12f4a5.jpg?1783916955",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "The target Incubator token transforms before its +1/+1 counters are doubled, so anything that cares about +1/+1 counters being placed on a creature will see them being placed on the Phyrexian artifact creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Enduring Bondwarden
 {
     "name": "Enduring Bondwarden",
@@ -4822,6 +5550,51 @@
         ]
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Errant and Giada
+{
+    "name": "Errant and Giada",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Legendary Creature — Human Angel",
+    "oracleText": "Flash\nFlying\nYou may look at the top card of your library any time.\nYou may cast spells with flash or flying from the top of your library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            "LookAtTopOfLibrary",
+            {
+                "type": "CastSpellTypesFromTopOfLibrary",
+                "filter": "kw:flash|kw:flying"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54aa2d03-7713-44d4-8fca-45c6f77b174b.jpg?1783916955",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Errant and Giada lets you look at the top card of your library whenever you want (with one restriction—see below), even if you don't have priority. This action doesn't use the stack. Knowing what that card is becomes part of the information you have access to, just like you can look at the cards in your hand."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If the top card of your library changes while you're casting a spell, playing a land, or activating an ability, you can't look at the new top card until you finish doing so. This means that if you cast the top card of your library, you can't look at the next one until you're done paying for that spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "BLUE"
     ]
 }
@@ -6175,6 +6948,128 @@
     ]
 }
 
+// Glissa, Herald of Predation
+{
+    "name": "Glissa, Herald of Predation",
+    "manaCost": "{3}{B}{G}",
+    "typeLine": "Legendary Creature — Phyrexian Zombie Elf",
+    "oracleText": "At the beginning of combat on your turn, choose one —\n• Incubate 2 twice. (To incubate 2, create an Incubator token with two +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)\n• Transform all Incubator tokens you control.\n• Phyrexians you control gain first strike and deathtouch until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Glissa, Herald of Predation:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "CreatePredefinedToken",
+                                        "tokenType": "Incubator"
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 2,
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "createdTokens"
+                                        }
+                                    },
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "CreatePredefinedToken",
+                                                "tokenType": "Incubator"
+                                            },
+                                            {
+                                                "type": "AddCounters",
+                                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                                "count": 2,
+                                                "target": {
+                                                    "type": "PipelineTarget",
+                                                    "collectionName": "createdTokens"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "description": "Incubate 2 twice."
+                        },
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "permanent Incubator token ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "Transform",
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            "description": "Transform all Incubator tokens you control."
+                        },
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "permanent Phyrexian ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GrantKeyword",
+                                            "keyword": "FIRST_STRIKE",
+                                            "target": "IterationEntity"
+                                        },
+                                        {
+                                            "type": "GrantKeyword",
+                                            "keyword": "DEATHTOUCH",
+                                            "target": "IterationEntity"
+                                        }
+                                    ]
+                                }
+                            },
+                            "description": "Phyrexians you control gain first strike and deathtouch until end of turn."
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, choose one — Incubate 2 twice; or transform all Incubator tokens you control; or Phyrexians you control gain first strike and deathtouch until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c299066-dfdd-47a3-85e6-225508ba95fe.jpg?1783916954"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Glistening Dawn
 {
     "name": "Glistening Dawn",
@@ -7378,6 +8273,179 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Hidetsugu and Kairi
+{
+    "name": "Hidetsugu and Kairi",
+    "manaCost": "{2}{U}{U}{B}",
+    "typeLine": "Legendary Creature — Ogre Demon Dragon",
+    "oracleText": "Flying\nWhen Hidetsugu and Kairi enters, draw three cards, then put two cards from your hand on top of your library in any order.\nWhen Hidetsugu and Kairi dies, exile the top card of your library. Target opponent loses life equal to its mana value. If it's an instant or sorcery card, you may cast it without paying its mana cost.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hidetsugu and Kairi:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "selected1"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Top"
+                                    },
+                                    "order": "ControllerChooses"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Hidetsugu and Kairi enters, draw three cards, then put two cards from your hand on top of your library in any order."
+            },
+            {
+                "id": "Hidetsugu and Kairi:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "ManaValueSumOfCollection",
+                                "collectionName": "gathered0"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "instant|sorcery",
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching3",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected4",
+                            "prompt": "You may cast it without paying its mana cost"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected4"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When Hidetsugu and Kairi dies, exile the top card of your library. Target opponent loses life equal to its mana value. If it's an instant or sorcery card, you may cast it without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81039daf-0d54-4474-a833-fa287ec10cf9.jpg?1783916948",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "The two cards you put on top of your library can be from the three you just drew or ones that were already in your hand."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "The last triggered ability targets the opponent. If that player is an illegal target as the ability tries to resolve, the ability won't resolve and none of its effects will happen. You won't exile a card."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "You choose whether or not to cast the instant or sorcery card as the last triggered ability resolves. If you do, you do so as part of the resolution of that ability. You can't wait to cast it later in the turn. Timing restrictions based on the card's type are ignored."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -8892,6 +9960,222 @@
     ]
 }
 
+// Invasion of Ergamon
+{
+    "name": "Invasion of Ergamon",
+    "manaCost": "{R}{G}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, create a Treasure token. Then you may discard a card. If you do, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Ergamon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Treasure"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.DoAction",
+                                    "action": {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Hand"
+                                                },
+                                                "storeAs": "hand"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "hand",
+                                                "selection": {
+                                                    "type": "ChooseExactly",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "discarded",
+                                                "prompt": "Choose 1 card to discard"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "discarded",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Graveyard"
+                                                },
+                                                "moveType": "Discard"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "then": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Siege enters, create a Treasure token. Then you may discard a card. If you do, draw a card."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Truga Cliffcharger",
+        "manaCost": "",
+        "typeLine": "Creature — Rhino",
+        "oracleText": "Trample\nWhen this creature enters, you may discard a card. If you do, search your library for a land or battle card, reveal it, put it into your hand, then shuffle.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 4
+        },
+        "keywords": [
+            "TRAMPLE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Truga Cliffcharger:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Battlefield"
+                    },
+                    "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.DoAction",
+                                "action": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Hand"
+                                            },
+                                            "storeAs": "hand"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "hand",
+                                            "selection": {
+                                                "type": "ChooseExactly",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "discarded",
+                                            "prompt": "Choose 1 card to discard"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "discarded",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Graveyard"
+                                            },
+                                            "moveType": "Discard"
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Library",
+                                            "filter": "land|battle"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        }
+                    },
+                    "descriptionOverride": "When this creature enters, you may discard a card. If you do, search your library for a land or battle card, reveal it, put it into your hand, then shuffle."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "233",
+            "rarity": "UNCOMMON",
+            "artist": "Manuel Castañón",
+            "flavorText": "Throughout Ergamon's wild Truga Jungle, predator-prey relationships stopped until every last invader was crushed to dust.",
+            "imageUri": "https://cards.scryfall.io/normal/back/b/3/b3e0fc49-f765-4bd1-a2b9-23e703388b50.jpg?1783916953"
+        },
+        "colorIdentityOverride": [
+            "RED",
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "RED",
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "UNCOMMON",
+        "artist": "Manuel Castañón",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3e0fc49-f765-4bd1-a2b9-23e703388b50.jpg?1783916953"
+    },
+    "startingDefense": 5,
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Invasion of Fiora
 {
     "name": "Invasion of Fiora",
@@ -9723,6 +11007,102 @@
     ]
 }
 
+// Invasion of Kaladesh
+{
+    "name": "Invasion of Kaladesh",
+    "manaCost": "{U}{R}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, create a 1/1 colorless Thopter artifact creature token with flying.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Kaladesh:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "name": "Thopter",
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/b/db0041d8-cacd-4057-8f99-37810edb4b7e.jpg?1783916667",
+                    "artifactToken": true
+                },
+                "descriptionOverride": "When this Siege enters, create a 1/1 colorless Thopter artifact creature token with flying."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Aetherwing, Golden-Scale Flagship",
+        "manaCost": "",
+        "typeLine": "Legendary Artifact — Vehicle",
+        "oracleText": "Flying\nAetherwing's power is equal to the number of artifacts you control.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+        "creatureStats": {
+            "power": {
+                "type": "Dynamic",
+                "source": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "artifact"
+                }
+            },
+            "toughness": 4
+        },
+        "keywords": [
+            "FLYING",
+            "CREW"
+        ],
+        "keywordAbilities": [
+            {
+                "type": "Numeric",
+                "keyword": "CREW",
+                "n": 1
+            }
+        ],
+        "metadata": {
+            "collectorNumber": "234",
+            "rarity": "UNCOMMON",
+            "artist": "Leon Tukker",
+            "flavorText": "Inspired by the grace of Ixalan's pterodons, Saheeli built one of her own.",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/f/4f7231f6-8adc-4a68-9984-e56b974c087b.jpg?1783916951",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "As long as Aetherwing is still an artifact, its ability will count Aetherwing itself."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "BLUE",
+            "RED"
+        ],
+        "colorIndicator": [
+            "BLUE",
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "UNCOMMON",
+        "artist": "Leon Tukker",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f7231f6-8adc-4a68-9984-e56b974c087b.jpg?1783916951"
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Invasion of Kaldheim
 {
     "name": "Invasion of Kaldheim",
@@ -10548,6 +11928,119 @@
     ]
 }
 
+// Invasion of Moag
+{
+    "name": "Invasion of Moag",
+    "manaCost": "{2}{G}{W}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, put a +1/+1 counter on each creature you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Moag:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "When this Siege enters, put a +1/+1 counter on each creature you control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Bloomwielder Dryads",
+        "manaCost": "",
+        "typeLine": "Creature — Dryad",
+        "oracleText": "Ward {2} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)\nAt the beginning of your end step, put a +1/+1 counter on target creature you control.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "keywords": [
+            "WARD"
+        ],
+        "keywordAbilities": [
+            {
+                "type": "Ward",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{2}"
+                }
+            }
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Bloomwielder Dryads:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "END"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    },
+                    "descriptionOverride": "At the beginning of your end step, put a +1/+1 counter on target creature you control."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "237",
+            "rarity": "UNCOMMON",
+            "artist": "Filip Burburan",
+            "flavorText": "Against the implacable will of Phyrexia, the dryads of Moag raised a shield of living summer.",
+            "imageUri": "https://cards.scryfall.io/normal/back/e/4/e454bf31-5aa0-4109-a3f5-c3f9cc838682.jpg?1783916950"
+        },
+        "colorIdentityOverride": [
+            "GREEN",
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "GREEN",
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e454bf31-5aa0-4109-a3f5-c3f9cc838682.jpg?1783916950"
+    },
+    "startingDefense": 5,
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Invasion of Muraganda
 {
     "name": "Invasion of Muraganda",
@@ -10707,6 +12200,172 @@
     "startingDefense": 6,
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Invasion of New Capenna
+{
+    "name": "Invasion of New Capenna",
+    "manaCost": "{W}{B}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, you may sacrifice an artifact or creature. When you do, exile target artifact or creature an opponent controls.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of New Capenna:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Sacrifice",
+                        "filter": "creature|artifact"
+                    },
+                    "reflexiveEffect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Exile"
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature|artifact ctrl:opponent"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Siege enters, you may sacrifice an artifact or creature. When you do, exile target artifact or creature an opponent controls."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Holy Frazzle-Cannon",
+        "manaCost": "",
+        "typeLine": "Artifact — Equipment",
+        "oracleText": "Whenever equipped creature attacks, put a +1/+1 counter on that creature and each other creature you control that shares a creature type with it.\nEquip {1}",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Holy Frazzle-Cannon:1",
+                    "trigger": "AttackEvent",
+                    "binding": "ATTACHED",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "TriggeringEntity"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                "IsCreature",
+                                                {
+                                                    "type": "SharesCreatureTypeWith",
+                                                    "entity": "TriggeringEntity"
+                                                }
+                                            ],
+                                            "controllerPredicate": "ControlledByYou"
+                                        },
+                                        "excludeTriggeringEntity": true
+                                    }
+                                },
+                                "body": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Whenever equipped creature attacks, put a +1/+1 counter on that creature and each other creature you control that shares a creature type with it."
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "Holy Frazzle-Cannon:2",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{1}"
+                        }
+                    },
+                    "effect": {
+                        "type": "AttachEquipment",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "creature you control"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "creature you control"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isEquipAbility": true
+                }
+            ]
+        },
+        "equipCost": "{1}",
+        "metadata": {
+            "collectorNumber": "238",
+            "rarity": "UNCOMMON",
+            "artist": "Diego Gisbert",
+            "flavorText": "\"They're using my Halo stockpile for what?\"\n—Jetmir",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/5/f5926c8e-8049-418e-9a84-f8558e5ba9d1.jpg?1783916949",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "A creature \"shares a creature type\" with the equipped creature if they have at least one creature type in common. Any one creature will get only one +1/+1 counter this way, even if it has multiple creature types in common with the equipped creature."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "238",
+        "rarity": "UNCOMMON",
+        "artist": "Diego Gisbert",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5926c8e-8049-418e-9a84-f8558e5ba9d1.jpg?1783916949",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Invasion of New Capenna's ability triggers and goes on the stack without a target. If you sacrifice an artifact or creature, the second \"reflexive\" triggered ability will trigger. You'll choose the target artifact or creature for that second ability at that time."
+            }
+        ]
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -11592,6 +13251,315 @@
     "startingDefense": 5,
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Invasion of Theros
+{
+    "name": "Invasion of Theros",
+    "manaCost": "{2}{W}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, search your library for an Aura, God, or Demigod card, reveal it, put it into your hand, then shuffle.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Theros:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "Aura|God|Demigod"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "descriptionOverride": "When this Siege enters, search your library for an Aura, God, or Demigod card, reveal it, put it into your hand, then shuffle."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Ephara, Ever-Sheltering",
+        "manaCost": "",
+        "typeLine": "Legendary Enchantment Creature — God",
+        "oracleText": "Ephara has lifelink and indestructible as long as you control at least three other enchantments.\nWhenever another enchantment you control enters, draw a card.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Ephara, Ever-Sheltering:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "filter": "enchantment ctrl:you",
+                        "to": "Battlefield"
+                    },
+                    "binding": "OTHER",
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "descriptionOverride": "Whenever another enchantment you control enters, draw a card."
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "ConditionalStaticAbility",
+                    "ability": {
+                        "type": "GrantKeyword",
+                        "keyword": "LIFELINK",
+                        "filter": {
+                            "baseFilter": "permanent",
+                            "scope": "Self"
+                        }
+                    },
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "enchantment",
+                            "excludeSelf": true
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    }
+                },
+                {
+                    "type": "ConditionalStaticAbility",
+                    "ability": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "filter": {
+                            "baseFilter": "permanent",
+                            "scope": "Self"
+                        }
+                    },
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "enchantment",
+                            "excludeSelf": true
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "23",
+            "rarity": "RARE",
+            "artist": "Johan Grenier",
+            "flavorText": "When the sun falters and the seas disperse, when the wilds wither and the forges go cold, when death itself succumbs, she endures.",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/3/433e9f1c-9d6c-4c7e-89d0-79595b4331f2.jpg?1783917071",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "Damage dealt to Ephara is tracked even if Ephara has indestructible. For example, if Ephara is dealt what would be lethal damage and later loses indestructible (perhaps because you lose control of some enchantments), it will be destroyed the next time state-based actions are performed. However, the check for whether a creature dealt damage by a source with deathtouch is destroyed happens only the first time that state-based actions are performed after that damage-dealing event."
+                },
+                {
+                    "date": "2023-04-14",
+                    "text": "If Ephara enters the battlefield under your control at the same time as other enchantments, its last ability will trigger for each of those other enchantments."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "RARE",
+        "artist": "Johan Grenier",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/433e9f1c-9d6c-4c7e-89d0-79595b4331f2.jpg?1783917071"
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
+// Invasion of Tolvada
+{
+    "name": "Invasion of Tolvada",
+    "manaCost": "{3}{W}{B}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, return target nonbattle permanent card from your graveyard to the battlefield.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Tolvada:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsPermanent",
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsBattle"
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this Siege enters, return target nonbattle permanent card from your graveyard to the battlefield."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "The Broken Sky",
+        "manaCost": "",
+        "typeLine": "Enchantment",
+        "oracleText": "Creature tokens you control get +1/+0 and have lifelink.\nAt the beginning of your end step, create a 1/1 white and black Spirit creature token with flying.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "The Broken Sky:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "END"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "WHITE",
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Spirit"
+                        ],
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d02a57e-6c76-491c-85f8-8f4d825be2c2.jpg?1783916669"
+                    },
+                    "descriptionOverride": "At the beginning of your end step, create a 1/1 white and black Spirit creature token with flying."
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "creature token ctrl:you"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "filter": {
+                        "baseFilter": "creature token ctrl:you"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "241",
+            "rarity": "RARE",
+            "artist": "Henry Peters",
+            "flavorText": "Angry ghosts poured through and pummeled the Invasion Tree, filling the heavens with the rhythms of war.",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/0/00255899-aaaf-46c6-8037-bd0e3c06250c.jpg?1783916950",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "The Broken Sky's first ability applies to all creature tokens you control, not only the ones created by its other ability."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "241",
+        "rarity": "RARE",
+        "artist": "Henry Peters",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00255899-aaaf-46c6-8037-bd0e3c06250c.jpg?1783916950"
+    },
+    "startingDefense": 5,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
