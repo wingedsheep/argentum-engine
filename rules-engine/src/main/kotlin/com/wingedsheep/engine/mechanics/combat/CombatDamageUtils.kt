@@ -232,8 +232,10 @@ internal object CombatDamageUtils {
         fun abilitiesOf(permanentId: EntityId): List<AssignCombatDamageAsUnblocked> {
             val container = state.getEntity(permanentId) ?: return emptyList()
             if (container.has<FaceDownComponent>()) return emptyList()
-            val printed = container.get<CardComponent>()?.cardDefinitionId
-                ?.let { cardRegistry.getCard(it)?.staticAbilities }.orEmpty()
+            // "Loses all abilities" (Lignify) strips the printed ability, not a later runtime grant.
+            val printed = if (projected.hasLostAllAbilities(permanentId)) emptyList() else
+                container.get<CardComponent>()?.cardDefinitionId
+                    ?.let { cardRegistry.getCard(it)?.staticAbilities }.orEmpty()
             val granted = grantsByEntity[permanentId]?.map { it.ability }.orEmpty()
             return (printed + granted).filterIsInstance<AssignCombatDamageAsUnblocked>()
         }

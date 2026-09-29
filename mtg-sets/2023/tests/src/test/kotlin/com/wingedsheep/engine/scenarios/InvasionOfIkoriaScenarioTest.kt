@@ -136,5 +136,33 @@ class InvasionOfIkoriaScenarioTest : ScenarioTestBase() {
             game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
             game.getLifeTotal(2) shouldBe 20
         }
+
+        test("back: a Zilortha that lost all abilities covers nothing") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Zilortha, Apex of Ikoria")
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardInHand(1, "Lignify")
+                .withLandsOnBattlefield(1, "Forest", 2)
+                .withCardOnBattlefield(2, "Wall of Granite")
+                .withCardInLibrary(1, "Forest")
+                .withCardInLibrary(2, "Island")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(1, "Lignify", game.findPermanent("Zilortha, Apex of Ikoria")!!).error shouldBe null
+            game.resolveStack()
+
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+            game.declareAttackers(mapOf("Grizzly Bears" to 2)).error shouldBe null
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+            game.declareBlockers(mapOf("Wall of Granite" to listOf("Grizzly Bears"))).error shouldBe null
+            game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
+
+            (game.getPendingDecision() is YesNoDecision) shouldBe false
+            game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+            game.getLifeTotal(2) shouldBe 20
+        }
     }
 }
