@@ -102,6 +102,123 @@
     ]
 }
 
+// Dakmor Ghoul
+{
+    "name": "Dakmor Ghoul",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "When this creature enters, target opponent loses 2 life and you gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dakmor Ghoul:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "UNCOMMON",
+        "artist": "Dana Knutson",
+        "flavorText": "\"Cursed be the sickly forms that err from honest Nature's rule!\"\n—Alfred, Lord Tennyson, \"Locksley Hall\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5caeb415-0e90-4f5b-ada4-a46241cf5dda.jpg?1783946037"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dakmor Lancer
+{
+    "name": "Dakmor Lancer",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "When this creature enters, destroy target nonblack creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dakmor Lancer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotColor",
+                                    "color": "BLACK"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Chippy",
+        "flavorText": "The darkness of his shield reflects the inky blackness of his soul.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d012ddf-abe1-4de9-89cb-78d82afb9e7b.jpg?1783946037"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Devout Monk
 {
     "name": "Devout Monk",
@@ -287,6 +404,77 @@
     ]
 }
 
+// Grim Tutor
+{
+    "name": "Grim Tutor",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a card, put that card into your hand, then shuffle. You lose 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library"
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Choose a card to put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "RARE",
+        "artist": "Mark Tedin",
+        "flavorText": "One who goes unpunished never learns.\n—Greek proverb",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff00e877-3588-4ba9-a1f2-86f726157017.jpg?1783946034",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "You don't reveal the card you search for."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Loyal Sentry
 {
     "name": "Loyal Sentry",
@@ -430,6 +618,76 @@
     ]
 }
 
+// Shrieking Specter
+{
+    "name": "Shrieking Specter",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Specter",
+    "oracleText": "Flying\nWhenever this creature attacks, defending player discards a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shrieking Specter:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "DefendingPlayer"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "DefendingPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "DefendingPlayer"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "UNCOMMON",
+        "artist": "rk post",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81d3b0fd-a81e-4665-bba6-b6d085693abf.jpg?1783946031"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Silverback Ape
 {
     "name": "Silverback Ape",
@@ -484,6 +742,62 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Stream of Acid
+{
+    "name": "Stream of Acid",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target land or nonblack creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsLand",
+                                    {
+                                        "type": "And",
+                                        "predicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "NotColor",
+                                                "color": "BLACK"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "UNCOMMON",
+        "artist": "DiTerlizzi",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/dbbf00b3-2a1b-4ad3-8a5b-deec9e08a231.jpg?1783946031"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
