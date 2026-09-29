@@ -3194,6 +3194,63 @@
     ]
 }
 
+// Cosmic Hunger
+{
+    "name": "Cosmic Hunger",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control deals damage equal to its power to another target creature, planeswalker, or battle.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t1"
+            },
+            "damageSource": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|planeswalker|battle"
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "artist": "Konstantin Porubov",
+        "flavorText": "The Copper Host sought only the strongest converts. In Koma, it found perfection.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b8eef541-6851-4312-ad2b-74f45c7ede6c.jpg?1783916972"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Cragsmasher Yeti
 {
     "name": "Cragsmasher Yeti",
@@ -3402,6 +3459,95 @@
     ]
 }
 
+// Deeproot Wayfinder
+{
+    "name": "Deeproot Wayfinder",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Merfolk Scout",
+    "oracleText": "Whenever this creature deals combat damage to a player or battle, surveil 1, then you may return a land card from your graveyard to the battlefield tapped. (To surveil 1, look at the top card of your library. You may put that card into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deeproot Wayfinder:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "battle"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Surveil",
+                            "count": 1
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "land"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "You may return a land card from your graveyard to the battlefield tapped",
+                            "selectedLabel": "Return to battlefield",
+                            "remainderLabel": "Leave in graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "rarity": "RARE",
+        "artist": "Anna Pavleeva",
+        "flavorText": "Her warning raced through the roots and rivers of Ixalan: prepare for war.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4066d41-0eb5-4dfd-93ec-2f242c3a27a4.jpg?1783916970"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Disturbing Conversion
 {
     "name": "Disturbing Conversion",
@@ -3484,6 +3630,236 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Doomskar Warrior
+{
+    "name": "Doomskar Warrior",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following abilities until end of turn.)\nTrample\nWhenever this creature deals combat damage to a player or battle, look at that many cards from the top of your library. You may reveal a creature or land card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Doomskar Warrior:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "TRAMPLE",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantTriggeredAbility",
+                                        "ability": {
+                                            "id": "Doomskar Warrior:1",
+                                            "trigger": {
+                                                "type": "DealsDamageEvent",
+                                                "damageType": "DamageCombat",
+                                                "recipient": {
+                                                    "type": "RecipientAnyOf",
+                                                    "options": [
+                                                        {
+                                                            "type": "RecipientPlayer",
+                                                            "player": "Any"
+                                                        },
+                                                        {
+                                                            "type": "RecipientObject",
+                                                            "filter": "battle"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "effect": {
+                                                "type": "Composite",
+                                                "effects": [
+                                                    {
+                                                        "type": "GatherCards",
+                                                        "source": {
+                                                            "type": "TopOfLibrary",
+                                                            "count": {
+                                                                "type": "ContextProperty",
+                                                                "key": "TRIGGER_DAMAGE_AMOUNT"
+                                                            }
+                                                        },
+                                                        "storeAs": "looked"
+                                                    },
+                                                    {
+                                                        "type": "SelectFromCollection",
+                                                        "from": "looked",
+                                                        "selection": {
+                                                            "type": "ChooseUpTo",
+                                                            "count": {
+                                                                "type": "Fixed",
+                                                                "amount": 1
+                                                            }
+                                                        },
+                                                        "filter": "creature|land",
+                                                        "storeSelected": "kept",
+                                                        "storeRemainder": "rest",
+                                                        "prompt": "You may reveal a creature or land card to put into your hand",
+                                                        "showAllCards": true
+                                                    },
+                                                    {
+                                                        "type": "MoveCollection",
+                                                        "from": "kept",
+                                                        "destination": {
+                                                            "type": "ToZone",
+                                                            "zone": "Hand"
+                                                        },
+                                                        "revealed": true
+                                                    },
+                                                    {
+                                                        "type": "MoveCollection",
+                                                        "from": "rest",
+                                                        "destination": {
+                                                            "type": "ToZone",
+                                                            "zone": "Library",
+                                                            "placement": "Bottom"
+                                                        },
+                                                        "order": "Random"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following abilities until end of turn.)"
+            },
+            {
+                "id": "Doomskar Warrior:3",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "battle"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "ContextProperty",
+                                    "key": "TRIGGER_DAMAGE_AMOUNT"
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature|land",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a creature or land card to put into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa1db4e3-e98c-49af-8682-3b7aa20bc31e.jpg?1783916970"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5427,6 +5803,105 @@
     ]
 }
 
+// Gnottvold Hermit
+{
+    "name": "Gnottvold Hermit",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Troll",
+    "oracleText": "{5}{U/P}: Transform this creature. Activate only as a sorcery. ({U/P} can be paid with either {U} or 2 life.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gnottvold Hermit:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{U/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Chrome Host Hulk",
+        "manaCost": "",
+        "typeLine": "Creature — Phyrexian Troll",
+        "oracleText": "Whenever this creature attacks, up to one other target creature has base power and toughness 5/5 until end of turn.",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 5
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Chrome Host Hulk:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "SetBaseStats",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "duration": "EndOfTurn"
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "188",
+            "rarity": "UNCOMMON",
+            "artist": "Artur Nakhodkin",
+            "flavorText": "Now they saw the truth. Divisions between Hagi and Torga were meaningless. There was only Phyrexia.",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/0/70b2cdc5-35b9-443d-b499-c8b75c0d0a64.jpg?1783916974"
+        },
+        "colorIdentityOverride": [
+            "GREEN",
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "GREEN",
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "UNCOMMON",
+        "artist": "Artur Nakhodkin",
+        "flavorText": "The Hagi trolls stood little chance against Phyrexia, having killed everyone who came to Gnottvold to warn them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/70b2cdc5-35b9-443d-b499-c8b75c0d0a64.jpg?1783916974"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Golden-Scale Aeronaut
 {
     "name": "Golden-Scale Aeronaut",
@@ -6066,6 +6541,126 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Herbology Instructor
+{
+    "name": "Herbology Instructor",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Treefolk Druid",
+    "oracleText": "When this creature enters, you gain 3 life.\n{6}{B/P}: Transform this creature. Activate only as a sorcery. ({B/P} can be paid with either {B} or 2 life.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Herbology Instructor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Herbology Instructor:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}{B/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Malady Invoker",
+        "manaCost": "",
+        "typeLine": "Creature — Phyrexian Treefolk",
+        "oracleText": "When this creature transforms into Malady Invoker, target creature an opponent controls gets -0/-X until end of turn, where X is this creature's power.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Malady Invoker:1",
+                    "trigger": {
+                        "type": "TransformEvent",
+                        "intoBackFace": true
+                    },
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "toughnessModifier": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            },
+                            "multiplier": -1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "t0"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "189",
+            "rarity": "UNCOMMON",
+            "artist": "Sergey Glushakov",
+            "flavorText": "\"How dare you leave before my lesson is done!\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/0/40ab763d-05ee-408d-aeba-eaf18c4f2e21.jpg?1783916974"
+        },
+        "colorIdentityOverride": [
+            "BLACK",
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "BLACK",
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "UNCOMMON",
+        "artist": "Sergey Glushakov",
+        "flavorText": "\"As you see, these flowers . . . can have either restorative or poisonous . . . what is that?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40ab763d-05ee-408d-aeba-eaf18c4f2e21.jpg?1783916974"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -11953,6 +12548,180 @@
     ]
 }
 
+// Polukranos Reborn
+{
+    "name": "Polukranos Reborn",
+    "manaCost": "{G}{G}{G}",
+    "typeLine": "Legendary Creature — Hydra",
+    "oracleText": "Reach\n{6}{W/P}: Transform Polukranos Reborn. Activate only as a sorcery. ({W/P} can be paid with either {W} or 2 life.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Polukranos Reborn:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}{W/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform Polukranos Reborn."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Polukranos, Engine of Ruin",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Phyrexian Hydra",
+        "oracleText": "Reach, lifelink\nWhenever Polukranos or another nontoken Hydra you control dies, create a 3/3 green and white Phyrexian Hydra creature token with reach and a 3/3 green and white Phyrexian Hydra creature token with lifelink.",
+        "creatureStats": {
+            "power": 6,
+            "toughness": 6
+        },
+        "keywords": [
+            "REACH",
+            "LIFELINK"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Polukranos, Engine of Ruin:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "power": 3,
+                                "toughness": 3,
+                                "colors": [
+                                    "GREEN",
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Phyrexian",
+                                    "Hydra"
+                                ],
+                                "keywords": [
+                                    "REACH"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bff78d9-7c4c-4b3b-a485-5328e985315b.jpg?1783916668"
+                            },
+                            {
+                                "type": "CreateToken",
+                                "power": 3,
+                                "toughness": 3,
+                                "colors": [
+                                    "GREEN",
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Phyrexian",
+                                    "Hydra"
+                                ],
+                                "keywords": [
+                                    "LIFELINK"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/a/1/a1bb0ec0-729e-4dcb-bab4-9f31c1056ab3.jpg?1783916668"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "When Polukranos dies, create a 3/3 green and white Phyrexian Hydra creature token with reach and a 3/3 green and white Phyrexian Hydra creature token with lifelink."
+                },
+                {
+                    "id": "Polukranos, Engine of Ruin:2",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "filter": "creature Hydra nontoken ctrl:you",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "binding": "OTHER",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "power": 3,
+                                "toughness": 3,
+                                "colors": [
+                                    "GREEN",
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Phyrexian",
+                                    "Hydra"
+                                ],
+                                "keywords": [
+                                    "REACH"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bff78d9-7c4c-4b3b-a485-5328e985315b.jpg?1783916668"
+                            },
+                            {
+                                "type": "CreateToken",
+                                "power": 3,
+                                "toughness": 3,
+                                "colors": [
+                                    "GREEN",
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Phyrexian",
+                                    "Hydra"
+                                ],
+                                "keywords": [
+                                    "LIFELINK"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/a/1/a1bb0ec0-729e-4dcb-bab4-9f31c1056ab3.jpg?1783916668"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Whenever another nontoken Hydra you control dies, create a 3/3 green and white Phyrexian Hydra creature token with reach and a 3/3 green and white Phyrexian Hydra creature token with lifelink."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "200",
+            "rarity": "RARE",
+            "artist": "David Auden Nash",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/7/47f7d313-8333-41fe-8bfa-c96774dac228.jpg?1783916971"
+        },
+        "colorIdentityOverride": [
+            "GREEN",
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "GREEN",
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "RARE",
+        "artist": "David Auden Nash",
+        "flavorText": "Freed from the Underworld, the World Eater resumed his endless feast with reckless enthusiasm.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47f7d313-8333-41fe-8bfa-c96774dac228.jpg?1783916971"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Portent Tracker
 {
     "name": "Portent Tracker",
@@ -14868,6 +15637,130 @@
         "flavorText": "The Royal Knights of Belenon are equally practiced in courtesy and combat.",
         "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa0461fc-4298-45b9-90a0-939093cf2544.jpg?1783917046"
     }
+}
+
+// Tandem Takedown
+{
+    "name": "Tandem Takedown",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Up to two target creatures you control each get +1/+0 until end of turn. They each deal damage equal to their power to another target creature, planeswalker, or battle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1[0]"
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1[1]"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t1[0]"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t1[0]"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t1[1]"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t1[1]"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker|battle"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "UNCOMMON",
+        "artist": "Yigit Koroglu",
+        "flavorText": "\"I take no pleasure in this, but Vadrok might.\"\n—Vivien Reid, to Lukka",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0eb51be0-6a2e-464a-86d1-aa36179c8c18.jpg?1783916961",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "If one of the two target creatures you control is an illegal target as Tandem Takedown resolves, the other will still get +1/+0 and then deal damage equal to its power."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If the last target is an illegal target as Tandem Takedown resolves, or if both of the first targets are illegal targets, nothing deals or is dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Tarkir Duneshaper
