@@ -35,7 +35,7 @@ import com.wingedsheep.engine.core.Outcome
  * Phase 3 of `backlog/storm-implementation-correctness.md`: per rule 707.10 the copy
  * inherits *all* decisions made for the original — modes, targets, and the broader
  * cast-time state (X, kicker, warp, evoke, sacrifices, divided damage, chosen creature
- * type, variable exile count, beheld cards, mana-spent colors, the zone cast from).
+ * type, variable exile count, beheld cards, the zone cast from).
  *
  * Rule 707.10 also requires that the act of copying is not the same as casting, so
  * payment-time events (ManaSpentEvent, SpellCastEvent) must not re-fire when a copy
@@ -94,7 +94,7 @@ class StormCopyInheritsAllDecisionsTest : FunSpec({
         return state.getEntity(copyId)!!.get<SpellOnStackComponent>()!!
     }
 
-    test("Storm copy inherits every cast-time decision from the source SpellOnStackComponent") {
+    test("Storm copy inherits cast-time decisions but not the actual mana payment") {
         val p1 = EntityId.generate()
         val spellEntity = EntityId.generate()
         val sacrificedCreature = EntityId.generate()
@@ -120,7 +120,10 @@ class StormCopyInheritsAllDecisionsTest : FunSpec({
             manaSpentBlack = 3,
             manaSpentRed = 4,
             manaSpentGreen = 5,
-            manaSpentColorless = 6
+            manaSpentColorless = 6,
+            manaSpentBySubtype = mapOf(com.wingedsheep.sdk.core.Subtype.CAVE to 1),
+            manaSpentByCardType = mapOf(com.wingedsheep.sdk.core.CardType.CREATURE to 1),
+            manaSpentOnXByColor = mapOf(com.wingedsheep.sdk.core.Color.GREEN to 2)
         )
 
         val result = runStorm(buildState(p1, spellEntity, source), spellEntity, p1)
@@ -140,12 +143,24 @@ class StormCopyInheritsAllDecisionsTest : FunSpec({
         copy.exiledCardCount shouldBe 2
         copy.castFromZone shouldBe Zone.HAND
         copy.beheldCards shouldBe listOf(beheldCard)
-        copy.manaSpentWhite shouldBe 1
-        copy.manaSpentBlue shouldBe 2
-        copy.manaSpentBlack shouldBe 3
-        copy.manaSpentRed shouldBe 4
-        copy.manaSpentGreen shouldBe 5
-        copy.manaSpentColorless shouldBe 6
+        copy.manaSpentWhite shouldBe 0
+        copy.manaSpentBlue shouldBe 0
+        copy.manaSpentBlack shouldBe 0
+        copy.manaSpentRed shouldBe 0
+        copy.manaSpentGreen shouldBe 0
+        copy.manaSpentColorless shouldBe 0
+        copy.manaSpentBySubtype shouldBe emptyMap()
+        copy.manaSpentByCardType shouldBe emptyMap()
+        copy.manaSpentOnXByColor shouldBe emptyMap()
+        val copyId = result.state.stack.first { it != spellEntity }
+        val evaluator = PredicateEvaluator(cardRegistry = null).conditions
+        for (requirement in listOf(
+            com.wingedsheep.sdk.dsl.Conditions.ManaSpentToCastIncludes(requiredColorless = 1),
+            com.wingedsheep.sdk.dsl.Conditions.ManaSpentToCastIncludes(requiredGreen = 1)
+        )) {
+            evaluator.evaluate(result.state, requirement, EffectContext(sourceId = copyId, controllerId = p1)) shouldBe false
+            evaluator.evaluate(result.state, requirement, EffectContext(sourceId = spellEntity, controllerId = p1)) shouldBe true
+        }
     }
 
     test("Storm copy is a distinct entity, not an alias for the source") {

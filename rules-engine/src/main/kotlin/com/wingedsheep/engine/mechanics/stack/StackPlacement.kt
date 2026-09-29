@@ -151,15 +151,24 @@ internal object StackPlacement {
         // the original. The data-class copy preserves: xValue, declaredCostSlot, wasBlightPaid,
         // wasWarped, wasEvoked, sacrificedPermanents (snapshots of P/T + subtypes), damageDistribution,
         // chosenCreatureType, exiledCardCount, castFromZone, beheldCards, convokedCreatures (CR 707.10: an
-        // effect of the copy that refers to objects used to pay its costs uses the original's), and the
-        // manaSpent{White,Blue,Black,Red,Green,Colorless} colors. Only the caster
-        // (copy controller) and modal fields (which the caller may retarget) are
-        // overridden explicitly. Payment events (ManaSpentEvent, SpellCastEvent) are
+        // effect of the copy that refers to objects used to pay its costs uses the original's).
+        // Actual mana payment is not a copied decision: no mana was spent to cast the copy.
+        // Clear every payment bucket and provenance map while retaining choices such as X.
+        // The caster and modal fields may also change. Payment events (ManaSpentEvent, SpellCastEvent) are
         // deliberately not re-emitted — a copy isn't cast (707.10). For the same reason no mana
         // was spent on the copy, so a mana rider's entry keyword grant stays with the original.
         val copiedSpellComp = sourceSpell.copy(
             casterId = copyController,
             entryKeywordGrants = emptyList(),
+            manaSpentWhite = 0,
+            manaSpentBlue = 0,
+            manaSpentBlack = 0,
+            manaSpentRed = 0,
+            manaSpentGreen = 0,
+            manaSpentColorless = 0,
+            manaSpentBySubtype = emptyMap(),
+            manaSpentByCardType = emptyMap(),
+            manaSpentOnXByColor = emptyMap(),
             chosenModes = effectiveModes,
             modeTargetsOrdered = effectiveModeTargets,
             modeTargetRequirements = effectiveModeRequirements

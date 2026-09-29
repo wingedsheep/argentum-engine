@@ -34,6 +34,28 @@ object ManaSpentReader {
         return IntArray(5)
     }
 
+    /** Colorless mana actually spent, including payment of generic costs. */
+    fun colorlessSpent(state: GameState, entityId: EntityId): Int {
+        val container = state.getEntity(entityId) ?: return 0
+        return container.get<SpellOnStackComponent>()?.manaSpentColorless
+            ?: container.get<CastRecordComponent>()?.colorlessSpent ?: 0
+    }
+
+    /** Freeze a cast's payment for abilities that outlive the spell object. */
+    fun snapshot(state: GameState, entityId: EntityId): CastRecordComponent {
+        val container = state.getEntity(entityId) ?: return CastRecordComponent()
+        container.get<SpellOnStackComponent>()?.let {
+            return CastRecordComponent(
+                whiteSpent = it.manaSpentWhite, blueSpent = it.manaSpentBlue,
+                blackSpent = it.manaSpentBlack, redSpent = it.manaSpentRed,
+                greenSpent = it.manaSpentGreen, colorlessSpent = it.manaSpentColorless,
+                manaSpentBySubtype = it.manaSpentBySubtype,
+                manaSpentByCardType = it.manaSpentByCardType
+            )
+        }
+        return container.get<CastRecordComponent>() ?: CastRecordComponent()
+    }
+
     /** Total mana (all colors plus colorless) spent to cast [entityId]; 0 if it wasn't cast. */
     fun totalSpent(state: GameState, entityId: EntityId): Int {
         val container = state.getEntity(entityId) ?: return 0

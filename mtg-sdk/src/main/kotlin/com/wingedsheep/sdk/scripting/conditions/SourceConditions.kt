@@ -365,8 +365,8 @@ data object WaterbendWasPaid : Condition {
  * Used for Lorwyn Incarnation cycle (Catharsis, Deceit, Emptiness, etc.)
  * where ETB triggers are gated on specific mana colors spent to cast.
  *
- * Checks the CastRecordComponent on the permanent for per-color mana spent.
- * Each pip in [requiredWhite], [requiredBlue], etc. must have been spent.
+ * Checks actual payment on the spell, resolved permanent, or self-cast trigger snapshot.
+ * Each required pip must have been spent; colorless mana is distinct from colored mana.
  */
 @SerialName("ManaSpentToCastIncludes")
 @Serializable
@@ -375,7 +375,8 @@ data class ManaSpentToCastIncludes(
     val requiredBlue: Int = 0,
     val requiredBlack: Int = 0,
     val requiredRed: Int = 0,
-    val requiredGreen: Int = 0
+    val requiredGreen: Int = 0,
+    val requiredColorless: Int = 0
 ) : Condition {
     override val description: String = buildString {
         append("if ")
@@ -385,6 +386,7 @@ data class ManaSpentToCastIncludes(
         repeat(requiredBlack) { parts.add("{B}") }
         repeat(requiredRed) { parts.add("{R}") }
         repeat(requiredGreen) { parts.add("{G}") }
+        repeat(requiredColorless) { parts.add("{C}") }
         append(parts.joinToString(""))
         append(" was spent to cast it")
     }

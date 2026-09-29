@@ -1929,6 +1929,7 @@ class TriggerDetector(
         val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state, statics)
         val controllerId = event.casterId
 
+        val castManaSpent by lazy { com.wingedsheep.engine.handlers.ManaSpentReader.snapshot(state, entityId) }
         val castCostChoices by lazy {
             val offered = cardRegistry.getCard(cardComponent.cardDefinitionId)?.keywordAbilities
                 ?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>()
@@ -1946,7 +1947,8 @@ class TriggerDetector(
                         sourceName = cardComponent.name,
                         controllerId = controllerId,
                         triggerContext = TriggerContext.fromEvent(event).copy(
-                            selfCastCostChoices = castCostChoices
+                            selfCastCostChoices = castCostChoices,
+                            selfCastManaSpent = castManaSpent
                         )
                     )
                 )

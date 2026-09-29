@@ -58,6 +58,8 @@ data class TriggerContext(
      * Remains authoritative if the spell leaves the stack or the same card is cast again.
      */
     val selfCastCostChoices: Map<com.wingedsheep.sdk.scripting.ChoiceSlot, Boolean>? = null,
+    /** Actual payment of this trigger's own source spell; zero payment is distinct from no snapshot. */
+    val selfCastManaSpent: com.wingedsheep.engine.state.components.battlefield.CastRecordComponent? = null,
     /** Last known +1/+1 counter count when the source left the battlefield */
     val counterCount: Int? = null,
     /** Last known total counter count (all types) when the source left the battlefield */

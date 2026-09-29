@@ -11402,14 +11402,20 @@ answer it and would silently return `false`.
   covers the whole oracle clause; compose `All(WasCast, NoManaSpentToCast)` for the narrower
   "cast, but for free" sense that excludes uncast permanents. Pairs naturally with the conditional
   `EntersWithCounters(..., condition = Conditions.NoManaSpentToCast)`. Resolution-only.
-- `ManaSpentToCastIncludes(requiredWhite, requiredBlue, requiredBlack, requiredRed, requiredGreen)` —
+- `ManaSpentToCastIncludes(requiredWhite, requiredBlue, requiredBlack, requiredRed, requiredGreen, requiredColorless)` —
   "if {U} was spent to cast this spell" / "if {R}{R} was spent to cast it": each pip named must have
   been among the mana actually paid. A *payment* question, not a colour requirement — casting a
   mono-black **Ribbons of Night** off a Dimir land turns its blue rider on. Reads through
   `ManaSpentReader`, so it answers for a **spell still on the stack** (the Ravnica "if {X} was spent"
   riders, where the spell's own resolution asks the question) as well as for a permanent that has
   already resolved (the Lorwyn Incarnation cycle's ETB `interveningIf`). A copy of a spell was never
-  cast and so had no mana spent for it — it always reads false, which is the printed ruling.
+  cast and so had no mana spent for it — it cannot satisfy a positive payment requirement.
+  Spell copies clear payment buckets and provenance while retaining copied decisions such as X.
+  `requiredColorless = 1` asks whether actual `{C}` was spent, including on a generic part of the
+  cost; paying generic costs with colored mana does not qualify. Compose `Conditions.Not(...)`
+  for “if {C} wasn't spent.” Self-cast triggers retain all six payment buckets in their trigger
+  context, so both positive and negative tests survive a countered spell or a later cast of the
+  same card. Other sources do not inherit that snapshot. No new player decision is introduced.
   Resolution-only.
 - `NoManaSpentToCastEntered` — the batch-enters variant of `NoManaSpentToCast`: "if none of them were
   cast or no mana was spent to cast them." Evaluated at resolution over the permanents a batch-enters

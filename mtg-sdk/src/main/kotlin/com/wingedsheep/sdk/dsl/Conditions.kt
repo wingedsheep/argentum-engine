@@ -1128,7 +1128,7 @@ object Conditions {
         CastTimeFlagSetCondition(flag)
 
     /**
-     * If specific colored mana was spent to cast this spell.
+     * If specific colored or colorless mana was spent to cast this spell.
      * Used for Lorwyn Incarnation cycle (Catharsis, Deceit, etc.)
      * Example: ManaSpentToCastIncludes(requiredWhite = 2) checks if {W}{W} was spent.
      */
@@ -1137,13 +1137,15 @@ object Conditions {
         requiredBlue: Int = 0,
         requiredBlack: Int = 0,
         requiredRed: Int = 0,
-        requiredGreen: Int = 0
+        requiredGreen: Int = 0,
+        requiredColorless: Int = 0
     ): ConditionInterface = com.wingedsheep.sdk.scripting.conditions.ManaSpentToCastIncludes(
         requiredWhite = requiredWhite,
         requiredBlue = requiredBlue,
         requiredBlack = requiredBlack,
         requiredRed = requiredRed,
-        requiredGreen = requiredGreen
+        requiredGreen = requiredGreen,
+        requiredColorless = requiredColorless
     )
 
     /**

@@ -1836,12 +1836,18 @@ class ConditionEvaluator(
         // the question ("If {U} was spent to cast this spell", the Ravnica hybrid-rider cycle) —
         // there the source is still a spell on the stack and its payment lives in
         // SpellOnStackComponent. The reader covers both zones.
-        val spent = ManaSpentReader.coloredBuckets(state, sourceId)
+        val snapshot = context.triggerContext
+            ?.takeIf { it.triggeringEntityId == sourceId }?.selfCastManaSpent
+        val spent = snapshot?.let {
+            intArrayOf(it.whiteSpent, it.blueSpent, it.blackSpent, it.redSpent, it.greenSpent)
+        } ?: ManaSpentReader.coloredBuckets(state, sourceId)
+        val colorless = snapshot?.colorlessSpent ?: ManaSpentReader.colorlessSpent(state, sourceId)
         return spent[0] >= condition.requiredWhite &&
             spent[1] >= condition.requiredBlue &&
             spent[2] >= condition.requiredBlack &&
             spent[3] >= condition.requiredRed &&
-            spent[4] >= condition.requiredGreen
+            spent[4] >= condition.requiredGreen &&
+            colorless >= condition.requiredColorless
     }
 
     private fun evaluateIsInPhase(state: GameState, condition: IsInPhase, context: EffectContext): Boolean {
