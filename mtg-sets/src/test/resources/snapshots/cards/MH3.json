@@ -1820,3 +1820,93 @@
         "WHITE"
     ]
 }
+
+// Wumpus Aberration
+{
+    "name": "Wumpus Aberration",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Eldrazi Beast",
+    "oracleText": "Devoid (This card has no color.)\nWhen you cast this spell, if {C} wasn't spent to cast it, target opponent may put a creature card from their hand onto the battlefield.\nTrample",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "DEVOID",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wumpus Aberration:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "TargetOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "creature"
+                                },
+                                "storeAs": "put_candidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "put_candidates",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "putting",
+                                "prompt": "You may put a creature card from your hand onto the battlefield"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "putting",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": "TargetOpponent",
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "ManaSpentToCastIncludes",
+                        "requiredColorless": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "flavorText": "All who behold its twisted form are consumed by a single-minded obsession: destroy it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23c19f67-834c-4709-9038-7916ac0921eb.jpg?1783911254",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Wumpus Aberration's triggered ability will resolve before Wumpus Aberration does. If Wumpus Aberration is countered or otherwise leaves the stack in response to that triggered ability, the triggered ability will still resolve as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}

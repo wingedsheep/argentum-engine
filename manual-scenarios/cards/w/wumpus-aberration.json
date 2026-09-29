@@ -1,0 +1,53 @@
+{
+  "player1Name": "Caster",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Wumpus Aberration",
+      "Wumpus Aberration"
+    ],
+    "battlefield": [
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Snow-Covered Wastes"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Grizzly Bears",
+      "Forest"
+    ],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}
