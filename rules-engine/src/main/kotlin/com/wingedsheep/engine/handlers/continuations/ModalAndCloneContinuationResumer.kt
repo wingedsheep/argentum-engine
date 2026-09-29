@@ -570,25 +570,23 @@ class ModalAndCloneContinuationResumer(
             originalCardComponent.name
         } else null
 
-        // Emit the entry event now that the final (copied) identity is in place — this is the
-        // single ZoneChangeEvent the client sees for this land play (PlayLandHandler deliberately
-        // does not carry one), so it carries the copied name and `copyOfOriginalName`. It also
-        // drives ETB triggers (landfall / "when ~ enters"), mirroring resumeCloneEnters.
         // The copied land's own "as this enters, choose …" (CR 614.12) — a Vesuva copying a land
         // that names a creature type makes that choice itself; the original's is not copiable.
-        // The choice resumer emits the entry event once the last choice is made.
+        // The choice resumer emits the entry event once the last choice is made. A choice that
+        // can't be presented is skipped for the next one.
         if (copyApplied) {
-            val firstChoice = services.cardRegistry.getCard(finalCardComponent.cardDefinitionId)
+            val choices = services.cardRegistry.getCard(finalCardComponent.cardDefinitionId)
                 ?.script?.replacementEffects
                 ?.filterIsInstance<com.wingedsheep.sdk.scripting.EntersWithChoice>()
-                ?.minByOrNull { it.choiceType.ordinal }
-            if (firstChoice != null) {
+                ?.sortedBy { it.choiceType.ordinal }
+                .orEmpty()
+            for (choice in choices) {
                 com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements.pauseForEntersWithChoice(
-                    newState, entityId, continuation.controllerId, finalCardComponent, firstChoice,
+                    newState, entityId, continuation.controllerId, finalCardComponent, choice,
                     continuation.fromZone,
                     carryEvents = outEvents,
-                    cardNameOptions = if (firstChoice.choiceType == com.wingedsheep.sdk.scripting.ChoiceType.CARD_NAME) {
-                        services.cardRegistry.cardNamesIn(firstChoice.cardNamePool).toList()
+                    cardNameOptions = if (choice.choiceType == com.wingedsheep.sdk.scripting.ChoiceType.CARD_NAME) {
+                        services.cardRegistry.cardNamesIn(choice.cardNamePool).toList()
                     } else emptyList(),
                     entryOldObject = continuation.entryOldObject, entryNewObject = continuation.entryNewObject,
                     copyOfOriginalName = copyOfOriginalName,
@@ -596,6 +594,10 @@ class ModalAndCloneContinuationResumer(
             }
         }
 
+        // Emit the entry event now that the final (copied) identity is in place — this is the
+        // single ZoneChangeEvent the client sees for this land play (PlayLandHandler deliberately
+        // does not carry one), so it carries the copied name and `copyOfOriginalName`. It also
+        // drives ETB triggers (landfall / "when ~ enters"), mirroring resumeCloneEnters.
         val zoneChangeEvent = ZoneChangeEvent(
             entityId,
             finalCardComponent.name,
@@ -843,7 +845,7 @@ class ModalAndCloneContinuationResumer(
                             syntheticRiot = true,
                             syntheticRiotRemaining = continuation.syntheticRiotRemaining - 1,
                             entryOldObject = continuation.entryOldObject, entryNewObject = continuation.entryNewObject,
-                copyOfOriginalName = continuation.copyOfOriginalName,
+                            copyOfOriginalName = continuation.copyOfOriginalName,
                         )
                     if (repause != null) return repause
                 }
@@ -855,19 +857,22 @@ class ModalAndCloneContinuationResumer(
         val cardComponent = entityContainer?.get<CardComponent>()
         val cardDef = cardComponent?.let { services.cardRegistry.getCard(it.cardDefinitionId) }
 
-        val nextChoice = cardDef?.script?.replacementEffects
+        val nextChoices = cardDef?.script?.replacementEffects
             ?.filterIsInstance<com.wingedsheep.sdk.scripting.EntersWithChoice>()
             ?.sortedBy { it.choiceType.ordinal }
-            ?.firstOrNull { it.choiceType.ordinal > continuation.choiceType.ordinal }
+            ?.filter { it.choiceType.ordinal > continuation.choiceType.ordinal }
+            .orEmpty()
 
-        if (nextChoice != null) {
-            val result = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements.pauseForEntersWithChoice(
-                newState, entityId, continuation.controllerId, cardComponent, nextChoice, continuation.fromZone,
+        // A chained choice that can't be presented (null) is skipped for the next one.
+        for (nextChoice in nextChoices) {
+            com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements.pauseForEntersWithChoice(
+                newState, entityId, continuation.controllerId, cardComponent!!, nextChoice, continuation.fromZone,
+                cardNameOptions = if (nextChoice.choiceType == com.wingedsheep.sdk.scripting.ChoiceType.CARD_NAME) {
+                    services.cardRegistry.cardNamesIn(nextChoice.cardNamePool).toList()
+                } else emptyList(),
                 entryOldObject = continuation.entryOldObject, entryNewObject = continuation.entryNewObject,
                 copyOfOriginalName = continuation.copyOfOriginalName,
-            )
-            if (result != null) return result
-            // null means the chained choice couldn't be presented — fall through to fire triggers.
+            )?.let { return it }
         }
 
         // Final choice resolved — emit the entry event, so the permanent's enters triggers (landfall,
