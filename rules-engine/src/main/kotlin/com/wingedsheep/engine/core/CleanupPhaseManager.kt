@@ -69,6 +69,8 @@ import com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComp
 import com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PutCounterOnCreatureThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CountersPutOnYourPermanentsThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CountersRemovedFromYourPermanentsThisTurnComponent
+import com.wingedsheep.engine.state.components.player.PermanentsWithCountersPutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.SacrificedArtifactThisTurnComponent
 import com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ScriedOrSurveiledThisTurnComponent
@@ -829,6 +831,12 @@ class CleanupPhaseManager(
                 }
                 if (result.has<CountersPutOnYourPermanentsThisTurnComponent>()) {
                     result = result.without<CountersPutOnYourPermanentsThisTurnComponent>()
+                }
+                if (result.has<CountersRemovedFromYourPermanentsThisTurnComponent>()) {
+                    result = result.without<CountersRemovedFromYourPermanentsThisTurnComponent>()
+                }
+                if (result.has<PermanentsWithCountersPutIntoGraveyardThisTurnComponent>()) {
+                    result = result.without<PermanentsWithCountersPutIntoGraveyardThisTurnComponent>()
                 }
                 if (result.has<WasDealtCombatDamageThisTurnComponent>()) {
                     result = result.without<WasDealtCombatDamageThisTurnComponent>()

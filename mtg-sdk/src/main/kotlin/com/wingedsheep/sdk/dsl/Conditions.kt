@@ -2097,6 +2097,26 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.CounterPutOnPermanentYouControlledThisTurn(counterType, player)
 
     /**
+     * "If a [counterType] counter was removed from a permanent you controlled this turn" (Churning
+     * Reservoir) — the removal-side mirror of [CounterPutOnPermanentYouControlledThisTurn], keyed on
+     * the permanent's controller as the counter left it. Turn history: the permanent may since have
+     * left. Pass `null` for "a counter" of any kind.
+     */
+    fun CounterRemovedFromPermanentYouControlledThisTurn(
+        counterType: CounterType?,
+        player: Player = Player.You
+    ): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.CounterRemovedFromPermanentYouControlledThisTurn(counterType, player)
+
+    /**
+     * "If a permanent with a [counterType] counter on it was put into a graveyard this turn"
+     * (Churning Reservoir) — game-wide, read off each permanent's last-known counters as it left the
+     * battlefield. Pass `null` for "with a counter on it" of any kind.
+     */
+    fun PermanentWithCounterPutIntoGraveyardThisTurn(counterType: CounterType?): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.PermanentWithCounterPutIntoGraveyardThisTurn(counterType)
+
+    /**
      * Intervening-if: "if a creature died this turn" (global — any controller).
      * Used for cards like Scorpion, Seething Striker.
      */

@@ -40,6 +40,10 @@ import com.wingedsheep.sdk.scripting.effects.Effect
  * exception is CR 603.3b's second part, abilities that trigger on an attack-caused ability
  * triggering (Firebender Ascension). That wave is scoped by `causedByAttack`, which is what makes
  * it terminate.
+ *
+ * Because every action's and every SBA's events pass through here, turn history that no single
+ * emitter owns is recorded alongside detection: [CounterHistory] credits counters removed from
+ * permanents, whatever path removed them.
  */
 class Settler(
     private val triggerDetector: TriggerDetector,
@@ -121,7 +125,7 @@ class Settler(
 
     /** Queue every trigger [events] caused, including those of a step they began. */
     private fun detect(state: GameState, events: List<GameEvent>): GameState {
-        var working = state
+        var working = CounterHistory.recordRemovals(state, events)
         val triggers = triggerDetector.detectTriggers(working, events).toMutableList()
 
         val stepChanged = events.filterIsInstance<StepChangedEvent>().lastOrNull()
@@ -150,6 +154,7 @@ class Settler(
             state = sba.state
             // SBA-caused triggers join the queue whether or not the SBA stopped for a choice (the
             // legend rule); the ones already waiting stay put until the choice is answered.
+            state = CounterHistory.recordRemovals(state, sba.events)
             state = state.enqueue(triggerDetector.detectTriggers(state, sba.events))
             if (sba.pendingDecision != null) return ExecutionResult.propagatePause(state, events)
             if (state.gameOver) return ExecutionResult.success(state.withoutPendingTriggers(), events)
