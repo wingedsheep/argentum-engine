@@ -20831,6 +20831,85 @@
     ]
 }
 
+// Seedpod Caretaker
+{
+    "name": "Seedpod Caretaker",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Phyrexian Cleric",
+    "oracleText": "When this creature enters, choose one —\n• Put a +1/+1 counter on target artifact or creature you control.\n• Transform target Incubator token you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Seedpod Caretaker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature|artifact ctrl:you"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Put a +1/+1 counter on target artifact or creature you control."
+                        },
+                        {
+                            "effect": {
+                                "type": "Transform",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "permanent Incubator token ctrl:you"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Transform target Incubator token you control."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, choose one — Put a +1/+1 counter on target artifact or creature you control; or transform target Incubator token you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "325",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "His body clicked and hummed—a lullaby meant only for machines.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/0861bda4-d014-4908-aed5-3f3bf78704cf.jpg?1783916906"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Seer of Stolen Sight
 {
     "name": "Seer of Stolen Sight",
