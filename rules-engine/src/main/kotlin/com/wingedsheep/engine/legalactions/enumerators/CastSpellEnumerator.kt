@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
@@ -522,8 +523,9 @@ class CastSpellEnumerator(
 
             // Calculate X cost info if the spell has X in its cost (printed, or the waterbend {X}
             // folded in above).
-            val hasXCost = effectiveCost.hasX
-            val maxAffordableX: Int? = if (hasXCost) {
+            val counterMaxX = PlayerCounterPayment.spellMaxX(state, playerId, additionalCosts)
+            val hasXCost = effectiveCost.hasX || counterMaxX != null
+            val manaMaxX: Int? = if (effectiveCost.hasX) {
                 // Pass the spell context so floating restricted mana this spell may spend
                 // (e.g. "only to cast instant and sorcery spells") raises the X ceiling.
                 val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = cachedSources, spellContext = spellContext)
@@ -568,6 +570,8 @@ class CastSpellEnumerator(
                 ((availableSources + delveAvailable + waterbendAvailable + convokeAvailable - fixedCost) / xSymbolCount)
                     .coerceAtLeast(0)
             } else null
+
+            val maxAffordableX = listOfNotNull(manaMaxX, counterMaxX).minOrNull()
 
             // Always include mana cost string for cast actions
             val manaCostString = effectiveCost.toString()

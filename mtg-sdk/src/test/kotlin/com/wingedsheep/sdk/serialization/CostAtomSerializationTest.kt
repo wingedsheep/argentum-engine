@@ -31,6 +31,9 @@ class CostAtomSerializationTest : FunSpec({
     val representatives: List<CostAtom> = listOf(
         CostAtom.Mana(ManaCost.parse("{2}{U}")),
         CostAtom.PayLife(3),
+        CostAtom.PayPlayerCounters(CounterType.ENERGY),
+        CostAtom.PayPlayerCounters(CounterType.ENERGY, com.wingedsheep.sdk.scripting.values.DynamicAmount.XValue),
+        CostAtom.PayPlayerCounters(CounterType.ENERGY, CostAtom.CollectEvidence.TARGET_SUM),
         CostAtom.Sacrifice(GameObjectFilter.Creature, count = 2),
         CostAtom.Discard(count = 1, filter = GameObjectFilter.Any, random = true),
         CostAtom.ExileFrom(Zone.GRAVEYARD, GameObjectFilter.Creature, count = 3),

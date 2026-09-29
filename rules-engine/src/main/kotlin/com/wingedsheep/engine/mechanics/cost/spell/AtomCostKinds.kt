@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.cost.spell
 
+import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.CountersRemovedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
@@ -959,4 +960,36 @@ internal object PayLifeCostKind : SpellCostKind<CostAtom.PayLife> {
  */
 internal object AbilityOnlyAtomCostKind : SpellCostKind<CostAtom> {
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom, costHandler: CostHandler) = false
+}
+
+/** Player-counter costs have no selection payload; their amount is announced with the spell. */
+internal object PlayerCountersCostKind : SpellCostKind<CostAtom.PayPlayerCounters> {
+    override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.PayPlayerCounters, costHandler: CostHandler): Boolean =
+        PlayerCounterPayment.available(state, payerId, cost.counterType) >=
+            CostAtomAmounts.evaluate(state, cost.amount)
+
+    override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.PayPlayerCounters, offer: SpellCostOffer): Boolean =
+        PlayerCounterPayment.available(env.state, env.playerId, cost.counterType) >=
+            CostAtomAmounts.evaluate(env.state, cost.amount)
+
+    override fun canPayFrom(env: SpellCostEnumeration, cost: CostAtom.PayPlayerCounters, candidates: List<EntityId>): Boolean =
+        enumerate(env, cost, SpellCostOffer())
+
+    override fun validate(check: SpellCostCheck, cost: CostAtom.PayPlayerCounters): String? {
+        val amount = CostAtomAmounts.evaluate(check.state, cost.amount, check.action.xValue, check.action.targets)
+        return if (amount < 0 || PlayerCounterPayment.available(
+                check.state, check.playerId, cost.counterType) < amount) "Not enough ${cost.counterType.printed} counters" else null
+    }
+
+    override fun paysUnprompted(cost: CostAtom.PayPlayerCounters): Boolean = true
+
+    override fun pay(ledger: SpellCostLedger, cost: CostAtom.PayPlayerCounters): String? {
+        val amount = CostAtomAmounts.evaluate(ledger.state, cost.amount, ledger.action.xValue, ledger.action.targets)
+        val (state, events) = PlayerCounterPayment.pay(
+            ledger.state, ledger.action.playerId, cost.counterType, amount
+        ) ?: return "Not enough ${cost.counterType.printed} counters"
+        ledger.state = state
+        ledger.events.addAll(events)
+        return null
+    }
 }

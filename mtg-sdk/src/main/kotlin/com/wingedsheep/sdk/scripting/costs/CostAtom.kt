@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.costs
 
+import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
@@ -385,6 +386,33 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
         override fun applyTextReplacement(replacer: TextReplacer): CostAtom {
             val newFilter = filter.applyTextReplacement(replacer)
             return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /** Pay counters from the paying player, before the spell or ability resolves.
+     * Amounts are fixed, announced X, or the announced targets' total mana value.
+     * A resolution-pipeline amount is not a cost and must not silently price as zero.
+     */
+    @SerialName("AtomPayPlayerCounters")
+    @Serializable
+    data class PayPlayerCounters(
+        val counterType: CounterType,
+        val amount: DynamicAmount = DynamicAmount.Fixed(1),
+    ) : CostAtom {
+        init {
+            require(amount is DynamicAmount.Fixed && amount.amount >= 0 ||
+                amount is DynamicAmount.XValue ||
+                amount == DynamicAmount.ContextProperty(
+                    ContextPropertyKey.TARGETS_TOTAL_MANA_VALUE
+                )) { "Player-counter costs require a nonnegative fixed amount, X, or target mana value" }
+        }
+        override val description: String get() {
+            val quantity = when (amount) {
+                is DynamicAmount.Fixed -> amount.amount.toString()
+                is DynamicAmount.XValue -> "X"
+                else -> "the targets' total mana value in"
+            }
+            return "pay $quantity ${counterType.printed} counters"
         }
     }
 

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.utils
 
+import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.legalactions.*
@@ -630,14 +631,13 @@ class CostEnumerationUtils(
     fun hasPlayerChosenNonManaX(abilityCost: AbilityCost): Boolean {
         fun isXCounterRemoval(cost: AbilityCost): Boolean =
             cost is AbilityCost.Atom &&
-                (cost.atom as? CostAtom.RemoveCounters)?.count is DynamicAmount.XValue
+                ((cost.atom as? CostAtom.RemoveCounters)?.count is DynamicAmount.XValue ||
+                    (cost.atom as? CostAtom.PayPlayerCounters)?.amount is DynamicAmount.XValue)
         return when (abilityCost) {
             AbilityCost.LoyaltyX -> true
             is AbilityCost.TapXPermanents -> true
             is AbilityCost.Atom -> isXCounterRemoval(abilityCost)
-            is AbilityCost.Composite -> abilityCost.costs.any {
-                it is AbilityCost.TapXPermanents || isXCounterRemoval(it)
-            }
+            is AbilityCost.Composite -> abilityCost.costs.any(::hasPlayerChosenNonManaX)
             else -> false
         }
     }
@@ -665,6 +665,15 @@ class CostEnumerationUtils(
             ((availableSources - fixedCost).coerceAtLeast(0)) / xSymbols
         } else {
             Int.MAX_VALUE
+        }
+
+        val playerCounterAtoms = PlayerCounterPayment.abilityAtoms(abilityCost)
+        for ((type, atoms) in playerCounterAtoms.groupBy { it.counterType }) {
+            val xCount = atoms.count { it.amount is DynamicAmount.XValue }
+            if (xCount == 0) continue
+            val fixed = atoms.sumOf { (it.amount as? DynamicAmount.Fixed)?.amount ?: 0 }
+            val available = PlayerCounterPayment.available(state, playerId, type)
+            maxX = minOf(maxX, ((available - fixed).coerceAtLeast(0)) / xCount)
         }
 
         if (abilityCost == AbilityCost.LoyaltyX) {

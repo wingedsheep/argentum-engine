@@ -33,6 +33,7 @@ object SpellCosts {
         put(CostAtom.ReturnToHand::class, ReturnToHandCostKind)
         put(CostAtom.VariablePermanents::class, VariablePermanentsCostKind)
         put(CostAtom.RevealFromHand::class, RevealFromHandCostKind)
+        put(CostAtom.PayPlayerCounters::class, PlayerCountersCostKind)
         put(CostAtom.RemoveCounters::class, RemoveCountersCostKind)
         put(CostAtom.PayLife::class, PayLifeCostKind)
         put(CostAtom.Mana::class, AbilityOnlyAtomCostKind)
@@ -92,7 +93,7 @@ object SpellCosts {
      * visited even after one fails, so the offer is complete either way.
      */
     fun enumerateAll(env: SpellCostEnumeration, costs: List<AdditionalCost>, offer: SpellCostOffer): Boolean {
-        var payable = true
+        var payable = com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment.canAffordSpell(env.state, env.playerId, costs)
         for (cost in costs.flatMap { if (it is AdditionalCost.Composite) it.steps else listOf(it) }) {
             if (!enumerate(env, cost, offer)) payable = false
         }

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
@@ -148,8 +149,9 @@ class CastFromZoneEnumerator(
             }
 
             val manaCostString = effectiveCost.toString()
-            val hasXCost = effectiveCost.hasX
-            val maxAffordableX: Int? = if (hasXCost) {
+            val counterMaxX = PlayerCounterPayment.spellMaxX(state, playerId, cardDef.script.additionalCosts)
+            val hasXCost = (effectiveCost.hasX) || counterMaxX != null
+            val manaMaxX: Int? = if (effectiveCost.hasX) {
                 val availableSources = context.manaSolver.getAvailableManaCount(
                     state, playerId, precomputedSources = cachedSources,
                 )
@@ -157,6 +159,7 @@ class CastFromZoneEnumerator(
                 val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
                 ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
             } else null
+            val maxAffordableX = listOfNotNull(manaMaxX, counterMaxX).minOrNull()
             val autoTapPreview = if (context.skipAutoTapPreview) null else {
                 context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = cachedSources)
                     ?.sources?.map { it.entityId }
@@ -309,13 +312,15 @@ class CastFromZoneEnumerator(
                         }
 
                         val manaCostString = if (freeCastFromTop) "0" else topEffectiveCost.toString()
-                        val hasXCost = topEffectiveCost.hasX
-                        val maxAffordableX: Int? = if (hasXCost) {
+                        val counterMaxX = PlayerCounterPayment.spellMaxX(state, playerId, topCardDef?.script?.additionalCosts.orEmpty())
+                        val hasXCost = (topEffectiveCost.hasX) || counterMaxX != null
+                        val manaMaxX: Int? = if (topEffectiveCost.hasX) {
                             val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = cachedSources)
                             val fixedCost = topEffectiveCost.cmc
                             val xSymbolCount = topEffectiveCost.xCount.coerceAtLeast(1)
                             ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
                         } else null
+                        val maxAffordableX = listOfNotNull(manaMaxX, counterMaxX).minOrNull()
                         val autoTapPreview = if (context.skipAutoTapPreview) null else {
                             context.manaSolver.solve(state, playerId, topPayableCost, precomputedSources = cachedSources)
                                 ?.sources?.map { it.entityId }
@@ -565,13 +570,15 @@ class CastFromZoneEnumerator(
                         ))
 
                     // Calculate X cost info if the spell has X in its cost (cost still paid even with may-play)
-                    val hasXCost = !playForFree && effectiveCost.hasX
-                    val maxAffordableX: Int? = if (hasXCost) {
+                    val counterMaxX = PlayerCounterPayment.spellMaxX(state, playerId, cardDef?.script?.additionalCosts.orEmpty())
+                    val hasXCost = (!playForFree && effectiveCost.hasX) || counterMaxX != null
+                    val manaMaxX: Int? = if (!playForFree && effectiveCost.hasX) {
                         val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = context.availableManaSources)
                         val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
                         val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
                         ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
                     } else null
+                    val maxAffordableX = listOfNotNull(manaMaxX, counterMaxX).minOrNull()
 
                     // Build additional cost info from runtime component
                     val exileAdditionalCostInfo = runtimeAdditionalCost?.let { comp ->

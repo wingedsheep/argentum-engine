@@ -1,5 +1,8 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
@@ -85,6 +88,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
          */
         granterId: EntityId? = null,
     ): Boolean {
+        if (!PlayerCounterPayment.canAffordAbility(state, controllerId, cost)) return false
         return when (cost) {
             is AbilityCost.Free -> true
             // Lowered to a plain mana atom by CastPermissionUtils.lowerAttachedManaCost before it
@@ -730,6 +734,9 @@ class CostHandler(private val zones: ZoneTransitionService) {
         // Selected-permanent counter placement is a PayCost only (Tourach's Chant); no printed
         // activated ability pays it, so it is reported unpayable on this rail.
         is CostAtom.PutCountersOnPermanent -> false
+        is CostAtom.PayPlayerCounters ->
+            PlayerCounterPayment.available(state, controllerId, atom.counterType) >=
+                CostAtomAmounts.evaluate(state, atom.amount)
         is CostAtom.RemoveCounters -> {
             if (atom.self) {
                 val counters = state.getEntity(sourceId)?.get<CountersComponent>() ?: return false
@@ -990,6 +997,15 @@ class CostHandler(private val zones: ZoneTransitionService) {
                     ),
                 )
             }
+        }
+        is CostAtom.PayPlayerCounters -> {
+            val amount = CostAtomAmounts.evaluate(
+                state, atom.amount, choices.xValue, choices.targets
+            )
+            val (paid, events) = PlayerCounterPayment.pay(
+                state, controllerId, atom.counterType, amount
+            ) ?: return CostPaymentResult.failure("Not enough ${atom.counterType.printed} counters")
+            CostPaymentResult.success(paid, manaPool, events)
         }
         is CostAtom.RemoveCounters -> {
             val counterType = atom.counterType
@@ -1773,6 +1789,7 @@ data class CostPaymentResult(
  * Player choices for paying costs.
  */
 data class CostPaymentChoices(
+    val targets: List<ChosenTarget> = emptyList(),
     val sacrificeChoices: List<EntityId> = emptyList(),
     val discardChoices: List<EntityId> = emptyList(),
     /** Hand cards chosen for a [CostAtom.PutFromHandOnTopOfLibrary] cost, in placement order. */

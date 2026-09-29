@@ -254,7 +254,7 @@ internal class CastCostTotaller(
      * waterbend taps), so it must NOT also be charged as {X} mana. The effect's X is untouched.
      */
     fun paymentXValue(state: GameState, action: CastSpell, cardDef: CardDefinition?, totalCost: ManaCost): Int =
-        if (cardDef?.script?.spellWaterbend?.isX == true) 0
+        if (!totalCost.hasX || cardDef?.script?.spellWaterbend?.isX == true) 0
         else alternativePaymentXValue(state, action, cardDef, totalCost)
 
     // ---------------------------------------------------------------------------------------------

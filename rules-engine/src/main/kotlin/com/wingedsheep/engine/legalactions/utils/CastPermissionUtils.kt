@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.utils
 
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -701,7 +702,17 @@ class CastPermissionUtils(
         controllerId: EntityId
     ): AbilityCost {
         val x = definedXValue(state, ability, sourceId, controllerId) ?: return cost
-        return mapFirstManaComponent(cost) { it.withXAs(x) } ?: cost
+        fun priceCounters(c: AbilityCost): AbilityCost = when (c) {
+            is AbilityCost.Atom -> {
+                val atom = c.atom as? CostAtom.PayPlayerCounters
+                if (atom?.amount is DynamicAmount.XValue)
+                    AbilityCost.Atom(atom.copy(amount = DynamicAmount.Fixed(x.coerceAtLeast(0))))
+                else c
+            }
+            is AbilityCost.Composite -> c.copy(costs = c.costs.map(::priceCounters))
+            else -> c
+        }
+        return priceCounters(mapFirstManaComponent(cost) { it.withXAs(x) } ?: cost)
     }
 
     /**

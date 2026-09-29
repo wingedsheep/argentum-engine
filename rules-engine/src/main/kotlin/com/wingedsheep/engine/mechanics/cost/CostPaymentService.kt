@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.cost
 
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.CardsRevealedEvent
@@ -182,6 +183,8 @@ class CostPaymentService(private val services: EngineServices) {
                 // takes the counter, on the battlefield rather than in an overlay.
                 is CostAtom.PutCountersOnPermanent ->
                     selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, candidates, 1, useTargetingUI = true)
+                is CostAtom.PayPlayerCounters ->
+                    yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "${atom.description}?", atom.description)
                 is CostAtom.RemoveCounters -> {
                     val count = when (val c = atom.count) {
                         is com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed -> c.amount
@@ -391,6 +394,12 @@ class CostPaymentService(private val services: EngineServices) {
             is CostAtom.PutCountersOnSelf -> CostPaymentExecution(state, emptyList(), success = false)
             is CostAtom.PutCountersOnPermanent ->
                 putCountersOnSelected(state, payerId, selected.keys.toList(), atom.counterType, atom.count)
+            is CostAtom.PayPlayerCounters -> {
+                val amount = (atom.amount as? DynamicAmount.Fixed)?.amount
+                val result = amount?.let { PlayerCounterPayment.pay(state, payerId, atom.counterType, it) }
+                if (result == null) CostPaymentExecution(state, emptyList(), false)
+                else CostPaymentExecution(result.first, result.second, true)
+            }
             is CostAtom.RemoveCounters -> performRemoveCounters(state, payerId, atom, sourceId, selected)
             // Likewise activated-ability-only — see the prompt branch above.
             is CostAtom.RevealNotedCreatureType -> CostPaymentExecution(state, emptyList(), success = false)
@@ -825,6 +834,10 @@ class CostPaymentService(private val services: EngineServices) {
                     is CostAtom.RevealNotedCreatureType -> false
                     // Activated-ability cost only (it reads the source's own attachment).
                     is CostAtom.Unattach -> false
+                    is CostAtom.PayPlayerCounters ->
+                        (atom.amount as? DynamicAmount.Fixed)?.let {
+                            PlayerCounterPayment.available(state, payerId, atom.counterType) >= it.amount
+                        } ?: false
                     is CostAtom.RemoveCounters -> {
                         val needed = when (val c = atom.count) {
                             is com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed -> c.amount
@@ -913,7 +926,7 @@ class CostPaymentService(private val services: EngineServices) {
                 // unaffordable as a PayCost, so it has no domain on this path.
                 is CostAtom.PutCountersOnPermanent ->
                     controlledMatching(state, payerId, atom.filter, predicateEvaluator = predicateEvaluator)
-                is CostAtom.Mana, is CostAtom.PayLife, is CostAtom.Mill,
+                is CostAtom.PayPlayerCounters, is CostAtom.Mana, is CostAtom.PayLife, is CostAtom.Mill,
                 is CostAtom.ExileTopOfLibrary,
                 is CostAtom.PutCountersOnSelf, is CostAtom.VariablePermanents, is CostAtom.SacrificeAll,
                 is CostAtom.RevealNotedCreatureType, is CostAtom.Unattach,

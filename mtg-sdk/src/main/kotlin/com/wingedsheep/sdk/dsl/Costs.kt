@@ -557,6 +557,13 @@ object Costs {
     fun PutCounterOnSelf(counterType: CounterType, count: Int = 1): AbilityCost =
         AbilityCost.Atom(CostAtom.PutCountersOnSelf(counterType, count))
 
+    /** Pay counters from the player paying this cost. */
+    fun PayPlayerCounters(counterType: CounterType, amount: Int = 1): AbilityCost =
+        PayPlayerCounters(counterType, DynamicAmount.Fixed(amount))
+
+    fun PayPlayerCounters(counterType: CounterType, amount: DynamicAmount): AbilityCost =
+        AbilityCost.Atom(CostAtom.PayPlayerCounters(counterType, amount))
+
     /**
      * Remove [count] counters of the specified [counterType] (or any type when null)
      * from among permanents matching [filter] you control. When [counterType] is null
@@ -905,6 +912,13 @@ object Costs {
         /** Group multiple additional costs into one logical cost (steps run in order). */
         fun Composite(steps: List<AdditionalCost>): AdditionalCost = AdditionalCost.Composite(steps)
 
+        /** Pay counters from the player paying this cost. */
+        fun PayPlayerCounters(counterType: CounterType, amount: Int = 1): AdditionalCost =
+            PayPlayerCounters(counterType, DynamicAmount.Fixed(amount))
+
+        fun PayPlayerCounters(counterType: CounterType, amount: DynamicAmount): AdditionalCost =
+            AdditionalCost.Atom(CostAtom.PayPlayerCounters(counterType, amount))
+
         /**
          * Remove [count] counters of the specified [counterType] (or any type when null)
          * from among permanents matching [filter] you control, as an additional cost to
@@ -1037,6 +1051,10 @@ object Costs {
         /** Tap [count] untapped permanents matching [filter] **other than the source** ("another"). */
         fun TapAnother(filter: GameObjectFilter = GameObjectFilter.Any, count: Int = 1): PayCost =
             PayCost.Atom(CostAtom.TapPermanents(count, filter, excludeSelf = true))
+
+        /** A fixed counter payment from the player being asked to pay. */
+        fun PayPlayerCounters(counterType: CounterType, amount: Int = 1): PayCost =
+            PayCost.Atom(CostAtom.PayPlayerCounters(counterType, DynamicAmount.Fixed(amount)))
 
         /**
          * Remove [count] counters of the specified [counterType] (or any type when null)

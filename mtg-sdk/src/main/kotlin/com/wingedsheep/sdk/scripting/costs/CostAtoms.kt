@@ -41,6 +41,11 @@ fun CostAtom.repeated(times: Int): CostAtom {
         is CostAtom.TapPermanents -> copy(count = count * times)
         is CostAtom.ReturnToHand -> copy(count = count * times)
         is CostAtom.PutCountersOnPermanent -> copy(count = count * times)
+        is CostAtom.PayPlayerCounters -> {
+            val fixed = amount as? DynamicAmount.Fixed
+                ?: throw IllegalArgumentException("Cannot repeat a variable player-counter cost")
+            copy(amount = DynamicAmount.Fixed(fixed.amount * times))
+        }
         is CostAtom.RemoveCounters -> {
             val fixed = count as? DynamicAmount.Fixed
                 ?: throw IllegalArgumentException(

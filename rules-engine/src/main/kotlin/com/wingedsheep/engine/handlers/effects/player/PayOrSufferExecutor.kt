@@ -144,7 +144,7 @@ class PayOrSufferExecutor(
                 is CostAtom.ExileFromGraveyardForTotal ->
                     EffectResult.error(state, "ExileFromGraveyardForTotal is not a PayOrSuffer cost")
                 is CostAtom.VariablePermanents -> EffectResult.error(state, "VariablePermanents payment for PayOrSuffer not supported")
-                is CostAtom.RemoveCounters -> handleRemoveCountersCost(state, effect, context, atom, sourceId, sourceCard.name, payingPlayerId)
+                is CostAtom.PayPlayerCounters, is CostAtom.RemoveCounters -> handleSharedCounterCost(state, effect, context, atom, sourceId, sourceCard.name, payingPlayerId)
             }
         }
     }
@@ -931,11 +931,11 @@ class PayOrSufferExecutor(
     /**
      * Handles a remove counters cost - player must remove the specified number of counters from the specified entities.
      */
-    private fun handleRemoveCountersCost(
+    private fun handleSharedCounterCost(
         state: GameState,
         effect: PayOrSufferEffect,
         context: EffectContext,
-        cost: CostAtom.RemoveCounters,
+        cost: CostAtom,
         sourceId: EntityId,
         sourceName: String,
         controllerId: EntityId
@@ -1026,10 +1026,11 @@ class PayOrSufferExecutor(
                 // See the execute branch: unpayable rather than prompting into an error.
                 is CostAtom.CollectEvidence -> false
                 is CostAtom.ExileFromGraveyardForTotal -> false
+                is CostAtom.PayPlayerCounters -> costPaymentService().canAfford(state, playerId, cost, sourceId)
                 is CostAtom.RemoveCounters -> {
                     // Can pay if there are permanents matching the filter with enough counters.
                     // Don't exclude the source — removing counters from the source itself is a
-                    // legitimate payment, matching the logic in handleRemoveCountersCost.
+                    // legitimate payment, matching the logic in handleSharedCounterCost.
                     val candidates = if (atom.self) listOf(sourceId)
                     else BattlefieldFilterUtils.findMatchingOnBattlefield(
                         state, atom.filter.youControl(),

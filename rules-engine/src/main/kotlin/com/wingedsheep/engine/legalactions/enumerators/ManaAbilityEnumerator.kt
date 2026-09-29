@@ -1,7 +1,9 @@
 package com.wingedsheep.engine.legalactions.enumerators
+
+import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
-
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.AdditionalCostData
@@ -166,6 +168,8 @@ class ManaAbilityEnumerator(
                 var sacrificeCost: CostAtom.Sacrifice? = null
                 var affordable = true
 
+                if (!com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment.canAffordAbility(state, playerId, effectiveCost)) continue
+
                 when (effectiveCost) {
                     is AbilityCost.Tap -> {
                         if (!context.costUtils.canPayTapCost(state, entityId)) affordable = false
@@ -203,6 +207,11 @@ class ManaAbilityEnumerator(
                         // "Remove a charge counter from this land: Add one mana of any color" (the
                         // vivid lands) — unpayable once the counters are gone, and the same gate the
                         // non-mana enumerator applies.
+                        is CostAtom.PayPlayerCounters -> {
+                            val needed = CostAtomAmounts.evaluate(state, atom.amount)
+                            if (PlayerCounterPayment.available(
+                                    state, playerId, atom.counterType) < needed) affordable = false
+                        }
                         is CostAtom.RemoveCounters -> {
                             if (!canPayRemoveCounters(state, playerId, container.get<CountersComponent>(), atom, context)) affordable = false
                         }
@@ -279,6 +288,13 @@ class ManaAbilityEnumerator(
                                         }
                                     }
                                     // "{T}, Remove a charge counter from this land: …" — see above.
+                                    is CostAtom.PayPlayerCounters -> {
+                                        val needed = CostAtomAmounts.evaluate(state, atom.amount)
+                                        if (PlayerCounterPayment.available(
+                                                state, playerId, atom.counterType) < needed) {
+                                            affordable = false; break
+                                        }
+                                    }
                                     is CostAtom.RemoveCounters -> {
                                         if (!canPayRemoveCounters(state, playerId, container.get<CountersComponent>(), atom, context)) {
                                             affordable = false; break

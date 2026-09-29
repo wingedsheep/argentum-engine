@@ -178,6 +178,7 @@ internal class ActivationCostPayer(
 
         // Build cost payment choices from the action
         val costChoices = CostPaymentChoices(
+            targets = action.targets,
             sacrificeChoices = action.costPayment?.sacrificedPermanents ?: emptyList(),
             discardChoices = action.costPayment?.discardedCards ?: emptyList(),
             putOnLibraryChoices = action.costPayment?.cardsPutOnLibrary ?: emptyList(),

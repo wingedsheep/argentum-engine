@@ -109,6 +109,8 @@ class ZoneActivatedAbilityEnumerator(private val zone: Zone, private val predica
                     cardComponent, context.projected, entityId, ability
                 )
 
+                if (!com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment.canAffordAbility(state, playerId, effectiveCost)) continue
+
                 when (effectiveCost) {
                     is AbilityCost.Atom -> when (val atom = effectiveCost.atom) {
                         is CostAtom.Mana -> {
@@ -213,11 +215,10 @@ class ZoneActivatedAbilityEnumerator(private val zone: Zone, private val predica
                     else -> null
                 }
                 val zoneManaCostString = abilityManaCost?.toString()
-                val abilityHasXCost = abilityManaCost?.hasX == true
+                val abilityHasXCost = abilityManaCost?.hasX == true || context.costUtils.hasPlayerChosenNonManaX(effectiveCost)
                 val abilityMaxAffordableX: Int? = if (abilityHasXCost) {
-                    val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = context.availableManaSources)
-                    val fixedCost = abilityManaCost.cmc
-                    (availableSources - fixedCost).coerceAtLeast(0)
+                    context.costUtils.calculateMaxAffordableX(state, playerId, effectiveCost, abilityManaCost,
+                        precomputedSources = context.availableManaSources, sourceId = entityId)
                 } else null
 
                 // Compute auto-tap preview for UI highlighting (skipped in ACTIONS_ONLY mode)

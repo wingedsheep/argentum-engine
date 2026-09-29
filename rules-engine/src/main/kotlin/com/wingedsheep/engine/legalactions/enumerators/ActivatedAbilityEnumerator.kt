@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.handlers.effects.composite.asConditional
@@ -224,6 +226,8 @@ class ActivatedAbilityEnumerator(
                 var prebuiltCostInfo: AdditionalCostData? = null
                 var costAffordable = true
 
+                if (!com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment.canAffordAbility(state, playerId, effectiveCost)) continue
+
                 when (effectiveCost) {
                     is AbilityCost.Tap -> {
                         if (container.has<TappedComponent>()) continue
@@ -395,6 +399,11 @@ class ActivatedAbilityEnumerator(
                         // makes the ability unactivatable, it does not exile what's left.
                         is CostAtom.ExileTopOfLibrary -> {
                             if (state.getZone(ZoneKey(playerId, Zone.LIBRARY)).size < atom.count) continue
+                        }
+                        is CostAtom.PayPlayerCounters -> {
+                            val needed = CostAtomAmounts.evaluate(state, atom.amount)
+                            if (PlayerCounterPayment.available(
+                                    state, playerId, atom.counterType) < needed) continue
                         }
                         is CostAtom.RemoveCounters -> {
                             val needed = when (val count = atom.count) {
@@ -648,6 +657,14 @@ class ActivatedAbilityEnumerator(
                                             break
                                         }
                                     }
+                                    is CostAtom.PayPlayerCounters -> {
+                                        val needed = CostAtomAmounts.evaluate(state, atom.amount)
+                                        if (PlayerCounterPayment.available(
+                                                state, playerId, atom.counterType) < needed) {
+                                            costCanBePaid = false
+                                            break
+                                        }
+                                    }
                                     is CostAtom.RemoveCounters -> {
                                         val needed = when (val count = atom.count) {
                                             is com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed -> count.amount
@@ -837,7 +854,7 @@ class ActivatedAbilityEnumerator(
                 // The predicate is shared with ManaAbilityEnumerator — a mana ability can carry the
                 // same "remove any number of counters" X (the storage lands), and the two answers
                 // must agree or the client's X picker appears for one and not the other.
-                val hasNonManaXCost = context.costUtils.hasPlayerChosenNonManaX(ability.cost)
+                val hasNonManaXCost = context.costUtils.hasPlayerChosenNonManaX(effectiveCost)
 
                 val hasTapXPermanentsCost = when (ability.cost) {
                     is AbilityCost.TapXPermanents -> true

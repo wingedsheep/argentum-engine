@@ -744,6 +744,16 @@ counted as affordable.
   still resolves. Pair with `DynamicAmounts.countersRemovedAsCost()` for "the number … removed this
   way" — the counters are gone by resolution.
 - `Costs.Composite(c1, c2, ...)` — multiple costs paid together.
+- `Costs.PayPlayerCounters(counterType, amount = 1)` — pay counters from the **activating player**,
+  never from the source permanent. `amount` accepts a nonnegative integer, `DynamicAmount.XValue`,
+  or `DynamicAmount.ContextProperty(TARGETS_TOTAL_MANA_VALUE)` (priced from announced targets).
+  Payment is exact, occurs during announcement, and fails without partial payment when unaffordable.
+  Chosen X uses the existing X picker, capped by the player's counters; zero is legal.
+  `Costs.additional.PayPlayerCounters` carries the same atom as a spell cost;
+  `Costs.pay.PayPlayerCounters(counterType, amount: Int)` provides a fixed resolution-time payment.
+  Resolution-only amounts are rejected rather than priced as zero. Energy is `CounterType.ENERGY`;
+  the vocabulary also works for other player counters. Mana abilities with this non-mana cost use
+  manual activation (the auto-tapper does not spend player counters).
 - `Costs.RemoveCounters(count = 1, counterType = null, filter = Any)` — remove `count` counters
   from among permanents matching `filter` you control. When `counterType` is set (e.g. `"+1/+1"`),
   only counters of that type are removed; when `null`, counters of any type may be removed in any
