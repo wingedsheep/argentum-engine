@@ -217,7 +217,7 @@ check:
     ./gradlew check
 
 # Waits out subscription usage limits; stop with `touch .claude/loop-runs/<code>.stop`.
-# Implement a set: set-loop ecl sonnet|opus|astra|pick; no args shows help
+# Implement a set: set-loop ecl sonnet|opus|astra|codex:<model-id>|pick; no args shows help
 [group: 'ai']
 set-loop CODE="" MODEL="":
     scripts/set-loop "{{CODE}}" "{{MODEL}}"

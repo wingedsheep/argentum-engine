@@ -2520,6 +2520,95 @@
     ]
 }
 
+// Tekuthal, Inquiry Dominus
+{
+    "name": "Tekuthal, Inquiry Dominus",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Creature — Phyrexian Horror",
+    "oracleText": "Flying\nIf you would proliferate, proliferate twice instead.\n{1}{U/P}{U/P}, Remove three counters from among other artifacts, creatures, and planeswalkers you control: Put an indestructible counter on Tekuthal. ({U/P} can be paid with either {U} or 2 life.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tekuthal, Inquiry Dominus:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U/P}{U/P}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                "IsArtifact",
+                                                {
+                                                    "type": "Or",
+                                                    "predicates": [
+                                                        "IsCreature",
+                                                        "IsPlaneswalker"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsSource"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "INDESTRUCTIBLE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{1}{U/P}{U/P}, Remove three counters from among other artifacts, creatures, and planeswalkers you control: Put an indestructible counter on Tekuthal."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RepeatKeywordAction",
+                "appliesTo": "ProliferatedEvent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "MYTHIC",
+        "artist": "Martin de Diego Sádaba",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1d4b157-2c77-4355-8c65-78dec9d44c85.jpg?1783918056"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Testament Bearer
 {
     "name": "Testament Bearer",

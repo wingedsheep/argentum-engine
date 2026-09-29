@@ -293,12 +293,17 @@ data class MoveChosenCountersToTargetContinuation(
  *                            selections and to defend against the response naming
  *                            an entity that had no counters at decision time.
  * @property sourceName Display name carried onto the [ProliferatedEvent] emitted on resume
+ * @property sourceId The proliferating source, for the next decision's context
+ * @property proliferatesRemaining Proliferates still owed after this one — non-zero only under a
+ *   "proliferate twice instead" replacement (Tekuthal, Inquiry Dominus)
  */
 @Serializable
 data class ProliferateContinuation(
     val controllerId: EntityId,
     val eligibleEntities: List<EntityId>,
-    val sourceName: String = "Proliferate"
+    val sourceName: String = "Proliferate",
+    val sourceId: EntityId? = null,
+    val proliferatesRemaining: Int = 0
 ) : AnswerContinuation
 
 /**

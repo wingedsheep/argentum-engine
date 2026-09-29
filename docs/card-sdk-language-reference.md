@@ -769,7 +769,8 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
 - `Costs.RemoveCounters(count = 1, counterType = null, filter = Any)` — remove `count` counters
   from among permanents matching `filter` you control. When `counterType` is set (e.g. `"+1/+1"`),
   only counters of that type are removed; when `null`, counters of any type may be removed in any
-  combination (Tayam, Luminous Enigma).
+  combination (Tayam, Luminous Enigma). The ability's source is in the filter context, so
+  "from among **other** …" is `filter.notSourceItself()` (Tekuthal, Inquiry Dominus).
 - `Costs.RemoveXCounters(counterType = CounterType.PLUS_ONE_PLUS_ONE, filter = Permanent, self = false)` — remove X
   counters, where X is the activated ability's chosen variable-cost value. Use
   `Costs.RemoveXCounters()` (the default) to remove X counters of any type. By default the removal
@@ -14018,8 +14019,17 @@ The priority groups are (CR 616.1a–f):
   then `ZoneTransitionService` installs the chosen identity only for actual battlefield entries.
   `filterByTotalManaSpent` uses zero on these non-cast entries. Existing entry-pipeline limits such
   as collection `OnEnterRun` choices remain separate; this does not expand those replacement types.
-  Copying an Aura still lacks the subsequent attachment choice on these card entry paths;
-  enchantment copiers that can select Auras require that additional entry support.
+  A copied Aura's attachment choice is covered in the entry above.
+  **The copy is settled first, then the copied identity's own entry replacements run (CR 614.12).**
+  On the cast path the spell takes on the copied identity and then walks the rest of the as-enters
+  pipeline *as the copy*: the copied card's `EntersWithChoice` questions (chained in choice-type
+  order, including granted riot), amplify, exile-for-counters, devour, "pay life or enter tapped",
+  its own enters-tapped / enters-with-counters, Saga lore, and `OnEnterRun` — so Clone copying
+  Adaptive Automaton chooses a creature type of its own. The original's choices are not copiable
+  values and are never inherited; declining the copy walks the printed card's pipeline instead. A
+  copied Aura picks its host before those questions. The land/token direct-entry path and the
+  effect-driven `MoveToZone` / `MoveCollection` paths do not yet ask a copied `EntersWithChoice`
+  (those paths do not ask a printed one on non-land cards either).
 - `ModifyDrawAmount(modifier, multiplier, restrictions, appliesTo)` — modify the number of cards a draw
   instruction announces to `(count * multiplier) + modifier`, clamped to ≥ 0, optionally gated by extra
   `restrictions: List<Condition>`
@@ -14093,6 +14103,19 @@ The priority groups are (CR 616.1a–f):
     ("If a creature you control would connive, instead you draw a card, then that creature
     connives") — the extra card is in hand *before* the discard is chosen, which a
     "whenever … connives, draw a card" trigger could not do.
+- `RepeatKeywordAction(times = 2, appliesTo)` — perform a keyword action `times` times instead of
+  once (CR 614.1a); the sibling of `ModifyKeywordAction`, which prefixes the action rather than
+  repeating it. Supported pattern: `EventPattern.ProliferatedEvent(player)` (CR 701.34), whose
+  `player` is matched with the **source's controller** as "you" (`You` / `Each` / `EachOpponent`;
+  anything else never matches). `ProliferateExecutor` asks `KeywordActionReplacements.repetitions`
+  before the first choice and runs that many complete proliferates in a row: each gathers its own
+  eligible set *after* the previous one's counters have landed, offers its own "any number" choice,
+  and emits its own `ProliferatedEvent`, so "whenever you proliferate" triggers once per
+  repetition. Applicable instances multiply (two sources → four proliferates). Only the untargeted
+  form is proliferating — `Effects.Proliferate(target)` (Powerful Broker) is never repeated.
+  - Tekuthal, Inquiry Dominus:
+    `RepeatKeywordAction(times = 2, appliesTo = EventPattern.ProliferatedEvent())`
+    ("If you would proliferate, proliferate twice instead").
 - `ModifyLifeGain(multiplier, modifier, appliesTo, restrictions)` — modify life gain by a multiplicative *and/or*
   additive factor: `gained = (original * multiplier) + modifier`, clamped to ≥ 0. `appliesTo` is a `LifeGainEvent`
   whose `player` filter (default `Player.Each`) gates which players the replacement applies to. `restrictions`

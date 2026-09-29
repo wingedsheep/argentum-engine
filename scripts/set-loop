@@ -13,6 +13,7 @@ opus        Claude Code   Claude's opus alias
 astra       Codex         gpt-6-astra
 
 Full claude-* and gpt-* model IDs also work.
+Use codex:<model-id> to pass any model ID to Codex unchanged.
 Omitting the model uses MODEL, or claude-opus-5-5 when MODEL is unset.
 EOF
 }
@@ -25,6 +26,7 @@ Examples:
   just set-loop ecl sonnet
   just set-loop ecl opus
   just set-loop ecl astra
+  just set-loop ecl codex:gpt-6-sol
   just set-loop "March of the Machine" sonnet
   just set-loop ecl pick           # Choose from a menu
   just set-loop --models          # Show model shortcuts
@@ -49,13 +51,29 @@ if [ "$MODEL" = pick ]; then
     exit 2
   fi
   PS3="Choose a model (Ctrl-C to cancel): "
-  select choice in sonnet opus astra; do
-    if [ -n "$choice" ]; then MODEL=$choice; break; fi
-    echo "Choose 1, 2, or 3." >&2
+  select choice in sonnet opus astra "Custom Codex model"; do
+    case "$choice" in
+      "Custom Codex model")
+        read -r -p "Codex model ID: " custom_model || exit 2
+        if [ -z "$custom_model" ]; then
+          echo "Enter a model ID." >&2
+          continue
+        fi
+        MODEL="codex:$custom_model"
+        break
+        ;;
+      "") echo "Choose 1, 2, 3, or 4." >&2 ;;
+      *) MODEL=$choice; break ;;
+    esac
   done
   [ "$MODEL" != pick ] || exit 2
 fi
 case "$MODEL" in
+  codex:)
+    echo "set-loop: codex: requires a model ID" >&2
+    exit 2
+    ;;
+  codex:*) MODEL=${MODEL#codex:}; HARNESS=codex ;;
   astra) MODEL=gpt-6-astra; HARNESS=codex ;;
   gpt-*) HARNESS=codex ;;
   *) HARNESS=claude ;;
@@ -120,6 +138,10 @@ If a step fails twice for the same PR, comment on it, mark it needs-human in the
 was one), and move on. Cards blocked on a \`[!]\` gap are skipped. When the only cards left are blocked on \`[!]\`
 gaps, answer STUCK naming those gaps; when \`card-status\` shows the set complete, answer SET_COMPLETE.
 Follow AGENTS.md. Never revert or stash work that isn't yours.
+An unrelated failure on origin/main (a test in a module your change doesn't touch) is NOT a reason to answer
+STUCK: run the gates for the modules you changed, note the unrelated failure in the ledger and the PR body,
+and carry on. Only answer STUCK when the failure is inside code your unit changed or depends on. If the
+failure is a trivial stale test, you may fix it in a separate one-commit PR.
 
 A human watches your text live, one line at a time, so keep them posted in short lines (under 150 chars each):
 - once you know which step you're taking: 'Working on: <step and unit, e.g. step 5, G3 splice onto Arcane>'

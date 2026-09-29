@@ -748,7 +748,8 @@ class CostHandler(private val zones: ZoneTransitionService) {
             } else {
                 val counterType = atom.counterType
                 val projected = state.projectedState
-                val ctx = PredicateContext(controllerId = controllerId)
+                // sourceId, so "from among other …" (`notSourceItself()`) leaves the source out.
+                val ctx = PredicateContext(controllerId = controllerId, sourceId = sourceId)
                 val needed = getAtomCount(atom.count)
                 if (needed <= 0) return true
                 val total = projected.getBattlefieldControlledBy(controllerId).sumOf { entityId ->
@@ -1051,7 +1052,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                     )
                 }
                 val execution = CostPaymentService.applyDistributedCounterRemovals(
-                    newState, controllerId, atom, removals,
+                    newState, controllerId, atom, removals, sourceId,
                     predicateEvaluator = predicateEvaluator
                 )
                 if (!execution.success) return CostPaymentResult.failure("Counter removal validation failed")

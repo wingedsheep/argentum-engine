@@ -418,7 +418,7 @@ class ActivatedAbilityEnumerator(
                                 if (needed > 0 && available < needed) continue
                             } else if (needed > 0) {
                                 val available = context.costUtils.buildRemoveCountersPermanents(
-                                    state, playerId, atom.filter, atom.counterType
+                                    state, playerId, atom.filter, atom.counterType, entityId
                                 ).sumOf { it.availableCounters }
                                 if (available < needed) continue
                             }
@@ -677,7 +677,7 @@ class ActivatedAbilityEnumerator(
                                             else counters?.counters?.values?.sum() ?: 0
                                         } else {
                                             context.costUtils.buildRemoveCountersPermanents(
-                                                state, playerId, atom.filter, atom.counterType
+                                                state, playerId, atom.filter, atom.counterType, entityId
                                             ).sumOf { it.availableCounters }
                                         }
                                         if (needed > 0 && available < needed) {
@@ -872,7 +872,7 @@ class ActivatedAbilityEnumerator(
                 }
                 val counterRemovalCreatures = when {
                     removeCountersAtom != null && !removeCountersAtom.self -> context.costUtils.buildRemoveCountersPermanents(
-                        state, playerId, removeCountersAtom.filter, removeCountersAtom.counterType
+                        state, playerId, removeCountersAtom.filter, removeCountersAtom.counterType, entityId
                     )
                     else -> emptyList()
                 }

@@ -11,6 +11,7 @@ just set-loop ecl pick           # Interactive model menu
 just set-loop --models           # List shortcuts without starting a loop
 just set-loop ecl                # Claude Code (default)
 just set-loop ecl gpt-6-astra     # Explicit model ID also works
+just set-loop ecl codex:gpt-6-sol # Any Codex model ID (passed through unchanged)
 MODEL=astra just set-loop ecl    # Environment alternative
 ```
 

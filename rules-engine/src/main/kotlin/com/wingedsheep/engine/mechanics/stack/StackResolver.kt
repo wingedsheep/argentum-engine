@@ -53,13 +53,14 @@ class StackResolver(
     private val entersWithChoicePrompt = EntersWithChoicePrompt(cardRegistry)
     private val permanentEntry = PermanentEntry(cardRegistry, staticAbilityHandler, conditionEvaluator = predicateEvaluator.conditions)
     private val nonPermanentSpellResolver = NonPermanentSpellResolver(zones, cardRegistry, effects, predicateEvaluator, spliceTargetValidator)
+    private val permanentSpellResolver = PermanentSpellResolver(
+        cardRegistry, effects, predicateEvaluator, permanentEntry, entersWithChoicePrompt
+    )
     private val spellResolver = SpellResolver(
         cardRegistry = cardRegistry,
         predicateEvaluator = predicateEvaluator,
         targetValidator = targetValidator,
-        permanentSpellResolver = PermanentSpellResolver(
-            cardRegistry, effects, predicateEvaluator, permanentEntry, entersWithChoicePrompt
-        ),
+        permanentSpellResolver = permanentSpellResolver,
         nonPermanentSpellResolver = nonPermanentSpellResolver
     )
     private val abilityResolver = AbilityResolver(effects, targetValidator, conditionEvaluator = predicateEvaluator.conditions)
@@ -283,6 +284,14 @@ class StackResolver(
         cardDef: com.wingedsheep.sdk.model.CardDefinition?
     ): Pair<GameState, List<GameEvent>> =
         permanentEntry.enterPermanentOnBattlefield(state, spellId, spellComponent, cardComponent, cardDef)
+
+    /**
+     * Finish resolving a permanent spell whose "enters as a copy" choice has been applied: the
+     * copied identity's own as-enters choices and entry replacements run before it enters. See
+     * [PermanentSpellResolver.resolveAfterEntryCopy].
+     */
+    internal fun resolvePermanentSpellAfterEntryCopy(state: GameState, spellId: EntityId): ExecutionResult =
+        permanentSpellResolver.resolveAfterEntryCopy(state, spellId)
 
     /**
      * Apply the resolving permanent's "enters with …" replacement effects (CR 614.1c). See

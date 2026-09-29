@@ -213,7 +213,7 @@ class ManaAbilityEnumerator(
                                     state, playerId, atom.counterType) < needed) affordable = false
                         }
                         is CostAtom.RemoveCounters -> {
-                            if (!canPayRemoveCounters(state, playerId, container.get<CountersComponent>(), atom, context)) affordable = false
+                            if (!canPayRemoveCounters(state, playerId, entityId, container.get<CountersComponent>(), atom, context)) affordable = false
                         }
                         // A bare mana cost (Three Tree Mascot's "{1}: Add one mana of any color") —
                         // the same solver question ActivateAbilityHandler.validate asks, or the
@@ -296,7 +296,7 @@ class ManaAbilityEnumerator(
                                         }
                                     }
                                     is CostAtom.RemoveCounters -> {
-                                        if (!canPayRemoveCounters(state, playerId, container.get<CountersComponent>(), atom, context)) {
+                                        if (!canPayRemoveCounters(state, playerId, entityId, container.get<CountersComponent>(), atom, context)) {
                                             affordable = false; break
                                         }
                                     }
@@ -564,6 +564,7 @@ class ManaAbilityEnumerator(
     private fun canPayRemoveCounters(
         state: GameState,
         playerId: EntityId,
+        sourceId: EntityId,
         counters: CountersComponent?,
         atom: CostAtom.RemoveCounters,
         context: EnumerationContext,
@@ -574,7 +575,7 @@ class ManaAbilityEnumerator(
             val type = atom.counterType?.let { it }
             if (type != null) counters?.getCount(type) ?: 0 else counters?.counters?.values?.sum() ?: 0
         } else {
-            context.costUtils.buildRemoveCountersPermanents(state, playerId, atom.filter, atom.counterType)
+            context.costUtils.buildRemoveCountersPermanents(state, playerId, atom.filter, atom.counterType, sourceId)
                 .sumOf { it.availableCounters }
         }
         return available >= needed

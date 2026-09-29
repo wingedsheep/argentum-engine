@@ -1,12 +1,19 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
+import com.wingedsheep.engine.state.components.battlefield.withCastChoice
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.mh3.cards.Copycrook
 import com.wingedsheep.mtg.sets.definitions.lea.cards.Clone
+import com.wingedsheep.mtg.sets.definitions.m12.cards.AdaptiveAutomaton
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.dsl.*
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -19,7 +26,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 
 class CopycrookScenarioTest : FunSpec({
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(Copycrook, Clone, com.wingedsheep.mtg.sets.definitions.ody.cards.Zombify))
+        it.registerCards(TestCards.all + listOf(Copycrook, Clone, AdaptiveAutomaton, com.wingedsheep.mtg.sets.definitions.ody.cards.Zombify))
         it.initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -51,6 +58,28 @@ class CopycrookScenarioTest : FunSpec({
         d.submitCardSelection(d.player1, listOf(discard)).error shouldBe null
         d.state.getEntity(copy)!!.get<CountersComponent>()!!.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
         d.state.getHand(d.player1).size shouldBe before
+    }
+    test("copying a creature with an as-enters choice makes Copycrook's own choice") {
+        val d = driver()
+        val automaton = d.putPermanentOnBattlefield(d.player2, "Adaptive Automaton")
+        d.replaceState(d.state.updateEntity(automaton) {
+            it.withCastChoice(ChoiceSlot.CREATURE_TYPE, ChoiceValue.TextChoice("Goblin"))
+        })
+        val myBear = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")
+        val theirBear = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
+        val copy = d.copy(automaton)
+
+        // The copy asks its own creature-type question before it enters (CR 614.12).
+        (copy in d.state.getBattlefield()) shouldBe false
+        val choice = d.state.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        d.submitDecision(d.player1, OptionChosenResponse(choice.id, choice.options.indexOf("Bear"))).error shouldBe null
+
+        (copy in d.state.getBattlefield()) shouldBe true
+        d.state.getEntity(copy)!!.chosenCreatureType() shouldBe "Bear"
+        d.state.projectedState.hasSubtype(copy, "Bear") shouldBe true
+        d.state.projectedState.hasSubtype(copy, "Goblin") shouldBe false
+        d.state.projectedState.getPower(myBear) shouldBe 3
+        d.state.projectedState.getPower(theirBear) shouldBe 2
     }
     test("Clone inherits the connive trigger as a copiable value") {
         val d = driver()

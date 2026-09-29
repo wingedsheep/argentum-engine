@@ -583,9 +583,11 @@ class CostEnumerationUtils(
         state: GameState,
         playerId: EntityId,
         filter: GameObjectFilter,
-        counterType: CounterType?
+        counterType: CounterType?,
+        sourceId: EntityId? = null
     ): List<CounterRemovalCreatureData> {
-        val context = PredicateContext(controllerId = playerId)
+        // The ability's source, so a "from among other …" filter (`notSourceItself()`) excludes it.
+        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
         val projected = state.projectedState
         return projected.getBattlefieldControlledBy(playerId).mapNotNull { eid ->
             if (!predicateEvaluator.matches(state, projected, eid, filter, context)) return@mapNotNull null

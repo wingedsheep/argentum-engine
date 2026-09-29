@@ -103,6 +103,26 @@ echo '{"type":"result","result":"SET_COMPLETE","num_turns":1,"duration_ms":1000}
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertIn("harness claude", result.stdout)
 
+    def test_arbitrary_codex_model_ids(self):
+        for model in ("gpt-6-sol", "o3", "custom-model"):
+            with self.subTest(model=model):
+                result = self.run_loop(f"codex:{model}")
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                args = (self.root / "args").read_text().splitlines()
+                self.assertEqual(args[:3], ["exec", "--model", model])
+                self.assertIn(f"[agent-loop: {model}]", "\n".join(args))
+
+    def test_codex_model_from_environment(self):
+        result = self.run_loop(model="codex:custom-model")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("harness codex, model custom-model", result.stdout)
+
+    def test_empty_codex_model_does_not_launch(self):
+        result = self.run_loop("codex:")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("requires a model ID", result.stderr)
+        self.assertFalse((self.root / "args").exists())
+
     def test_default_still_uses_claude(self):
         result = self.run_loop()
         self.assertEqual(result.returncode, 0, result.stdout)

@@ -270,7 +270,7 @@ class TriggersTest : StringSpec({
         fragment("Whenever one or more cards leave your graveyard during your turn, draw a card.")
             .script.triggeredAbilities.single().triggerRestriction shouldBe Conditions.IsYourTurn
         fragment("Whenever you gain life during an opponent's turn, draw a card.")
-            .script.triggeredAbilities.single().triggerRestriction shouldBe Conditions.IsNotYourTurn
+            .script.triggeredAbilities.single().triggerRestriction shouldBe Conditions.IsOpponentsTurn
 
         roundTrips("Whenever one or more cards leave your graveyard during your turn, draw a card.")
         roundTrips("Whenever you gain life during an opponent's turn, draw a card.")
