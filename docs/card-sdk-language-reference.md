@@ -1871,7 +1871,9 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
     — how many counters of `counterType` a player currently has; the player-scoped sibling of
     `EntityProperty(entity, CounterCount(filter))` (which has no case for "a player" — `EffectTarget.SingleEntity` only
     resolves permanents/objects). `DynamicAmounts.energyCount(player)` is sugar for the energy case — "where X is
-    the number of energy counters you have" (Longtusk Cub, Electrostatic Pummeler).
+    the number of energy counters you have" (Longtusk Cub, Electrostatic Pummeler). A multi-player scope
+    (`Player.EachOpponent`) **sums** across those players; "an opponent has N or more" is a per-player test —
+    `GreatestAmongPlayers(EachOpponent, PlayerCounterCount(type, You))`, or `Conditions.Corrupted` for poison.
 - `ConvertCountersToTokensEffect(counterType = +1/+1, tokenFactory)` — "remove any number of `counterType`
   counters from this permanent; for each removed, create one token." Prompts for `0..(count on source)`,
   removes that many, then mints exactly that many tokens from `tokenFactory` (its own `count` is ignored).
@@ -11317,6 +11319,14 @@ answer it and would silently return `false`.
 - `AnOpponentLifeAtMost(n)` — at least one opponent of the ability's controller has ≤N life. Unlike
   `APlayerLifeAtMost`, the controller's own life total never satisfies it; this is the conditional
   static-ability gate for Bloodghast's haste.
+- `PoisonCountersAtLeast(n, player = Player.You)` — a single player has ≥N poison counters. Under a
+  `ForEachPlayer` / `countPlayersWith` rebind `Player.You` is the player being tested ("each opponent who has
+  three or more poison counters loses 3 life" — Feed the Infection); `Player.ControllerOf("target")` is "if its
+  controller has three or more poison counters" (Bring the Ending, Anoint with Affliction).
+- `AnOpponentHasPoisonCountersAtLeast(n)` — at least one opponent has ≥N poison counters (existential, so a
+  multiplayer game needs only one opponent at the threshold).
+- `Corrupted` — the ONE ability word: `AnOpponentHasPoisonCountersAtLeast(3)`. Fits any condition slot — a
+  `ConditionalStaticAbility` (Bonepicker Skirge), an activation restriction, an intervening-if, `Effects.If`.
 - `YouLostLife` — you lost life this turn.
 - `OpponentLostLife` — an opponent lost life this turn.
 - `PlayerLostLifeThisTurn(player)` — a specific player lost life this turn. Use when the wording

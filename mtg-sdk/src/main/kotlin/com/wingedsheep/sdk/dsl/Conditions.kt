@@ -736,6 +736,47 @@ object Conditions {
     fun LifeAtLeast(threshold: Int): ConditionInterface =
         Compare(DynamicAmount.LifeTotal(Player.You), ComparisonOperator.GTE, DynamicAmount.Fixed(threshold))
 
+    // =========================================================================
+    // Poison counter conditions (via Compare)
+    // =========================================================================
+
+    /**
+     * If [player] has [count] or more poison counters. [player] must name a single player:
+     * `Player.You` (which a `ForEachPlayer` / `countPlayersWith` rebinds to the player being
+     * tested — "each opponent who has three or more poison counters") or
+     * `Player.ControllerOf("target")` ("if its controller has three or more poison counters").
+     * For "an opponent has …" use [Corrupted] / [AnOpponentHasPoisonCountersAtLeast].
+     */
+    fun PoisonCountersAtLeast(count: Int, player: Player = Player.You): ConditionInterface =
+        Compare(
+            DynamicAmount.PlayerCounterCount(CounterType.POISON, player),
+            ComparisonOperator.GTE,
+            DynamicAmount.Fixed(count)
+        )
+
+    /**
+     * If at least one opponent has [count] or more poison counters — existential over every
+     * opponent, so it holds in multiplayer when any one of them crosses the threshold.
+     */
+    fun AnOpponentHasPoisonCountersAtLeast(count: Int): ConditionInterface =
+        Compare(
+            DynamicAmount.GreatestAmongPlayers(
+                Player.EachOpponent,
+                DynamicAmount.PlayerCounterCount(CounterType.POISON, Player.You)
+            ),
+            ComparisonOperator.GTE,
+            DynamicAmount.Fixed(count)
+        )
+
+    /**
+     * Corrupted (Phyrexia: All Will Be One ability word) — "if an opponent has three or more
+     * poison counters". Use it in any slot that takes a condition: a static's
+     * `ConditionalStaticAbility`, an activation restriction, an intervening-if trigger, or
+     * [Effects.If]. For the "its controller" and "each opponent who" variants use
+     * [PoisonCountersAtLeast].
+     */
+    val Corrupted: ConditionInterface = AnOpponentHasPoisonCountersAtLeast(3)
+
     /**
      * If the controller has taken at most [threshold] turns so far — i.e. it's
      * one of their first [threshold] turns of the game. The counter increments at

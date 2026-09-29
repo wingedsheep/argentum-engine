@@ -597,6 +597,8 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * among those). Counters placed directly on a player rather than a
      * permanent (CR 122.1) — poison ([com.wingedsheep.sdk.core.CounterType.POISON]), energy
      * ([com.wingedsheep.sdk.core.CounterType.ENERGY], CR 107.14), and rad counters all live here.
+     * A multi-player [player] scope sums across those players; for "an opponent has N or more" test
+     * each player separately with [GreatestAmongPlayers] (`Conditions.Corrupted`).
      *
      * Examples:
      * ```kotlin

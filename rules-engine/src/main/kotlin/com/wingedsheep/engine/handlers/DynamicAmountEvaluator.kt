@@ -341,11 +341,12 @@ class DynamicAmountEvaluator(
             // How many counters of a given kind a player has (poison, energy — CR 122.1, 107.14).
             // Reads the same CountersComponent as any battlefield permanent, just keyed to the
             // player entity, so this shares counterCountOf with EntityNumericProperty.CounterCount.
-            is DynamicAmount.PlayerCounterCount -> {
-                val playerIds = resolveUnifiedPlayerIds(state, amount.player, context, projectedState)
-                val playerId = playerIds.firstOrNull() ?: return 0
-                counterCountOf(state, playerId, amount.counterType)
-            }
+            // A multi-player scope (EachOpponent) sums, like every other player-keyed count; it
+            // used to read only the first opponent, silently ignoring the rest in multiplayer.
+            // "An opponent has N or more" is a per-player test: GreatestAmongPlayers over You.
+            is DynamicAmount.PlayerCounterCount ->
+                resolveUnifiedPlayerIds(state, amount.player, context, projectedState)
+                    .sumOf { counterCountOf(state, it, amount.counterType) }
 
             // Unlocked doors among Rooms the player controls (CR 709.5). Reads per-face door
             // state off each Room's RoomComponent — a single Room entity can contribute two
