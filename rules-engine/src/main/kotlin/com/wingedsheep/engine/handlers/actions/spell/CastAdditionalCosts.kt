@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.EscalateCosts
 import com.wingedsheep.engine.mechanics.WarpGrants
+import com.wingedsheep.engine.mechanics.EscapeCasts
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -88,7 +89,7 @@ class CastAdditionalCosts(
             if (action.altAllows(AlternativeCostType.ESCAPE) &&
                 zoneResolver.hasEscapePermission(state, action.playerId, action.cardId)
             ) {
-                com.wingedsheep.engine.mechanics.EscapeCasts.printedEscape(cardDef)
+                EscapeCasts.printedEscape(cardDef)
                     ?.additionalCost
                     ?.let { add(it) }
             }

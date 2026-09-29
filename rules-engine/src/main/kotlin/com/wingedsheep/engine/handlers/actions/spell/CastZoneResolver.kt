@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.mechanics.DisturbCasts
 import com.wingedsheep.engine.mechanics.FlashTypeGrants
 import com.wingedsheep.engine.mechanics.FlashbackGrants
+import com.wingedsheep.engine.mechanics.EscapeCasts
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.mechanics.ModalDfcCasts
 import com.wingedsheep.engine.mechanics.WarpGrants
@@ -503,7 +504,7 @@ class CastZoneResolver(
     ): Boolean {
         if (cardId !in state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))) return false
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return false
-        return com.wingedsheep.engine.mechanics.EscapeCasts.printedEscape(
+        return EscapeCasts.printedEscape(
             cardRegistry.getCard(cardComponent.cardDefinitionId)
         ) != null
     }

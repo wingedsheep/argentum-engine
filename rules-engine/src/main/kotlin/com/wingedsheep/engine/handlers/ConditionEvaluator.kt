@@ -22,6 +22,8 @@ import com.wingedsheep.engine.state.components.battlefield.CastRecordComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
+import com.wingedsheep.engine.core.AlternativeCostType
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.engine.state.components.battlefield.chosenLandType
@@ -815,8 +817,8 @@ class ConditionEvaluator(
                 val source = ctx.sourceId?.let { state.getEntity(it) }
                 source != null && (
                     source.get<CastChoicesComponent>()?.chosen?.containsKey(ChoiceSlot.ESCAPED) == true ||
-                        source.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
-                            ?.alternativeCost == com.wingedsheep.engine.core.AlternativeCostType.ESCAPE
+                        source.get<SpellOnStackComponent>()
+                            ?.alternativeCost == AlternativeCostType.ESCAPE
                     )
             }
             is SourceChosenModeIs -> {
