@@ -1511,7 +1511,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 - `PutOnBottomOfLibrary(target)` — place target on the bottom of its owner's library (forced, no choice).
 - `PutOnTopOrBottomOfLibrary(target)` — player chooses top or bottom.
 - `PutSecondFromTopOrBottomOfLibrary(target)` — second-from-top or bottom.
-- `ShuffleIntoLibrary(target)` — shuffle target into owner's library.
+- `ShuffleIntoLibrary(target, fromZone?)` — shuffle target into owner's library. `fromZone` skips the move if the card has left that zone by resolution ("shuffle this card into your library from your graveyard" — Kogla and Yidaro).
 - `PutIntoLibraryNthFromTop(target, positionFromTop)` — place N from the top.
 - `PutOntoBattlefield(target, tapped?)` — put target on the battlefield.
 - `PutOntoBattlefieldUnderYourControl(target)` — under controller's control.

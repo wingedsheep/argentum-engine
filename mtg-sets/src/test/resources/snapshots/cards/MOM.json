@@ -6888,6 +6888,123 @@
     ]
 }
 
+// Ghalta and Mavren
+{
+    "name": "Ghalta and Mavren",
+    "manaCost": "{3}{G}{G}{W}{W}",
+    "typeLine": "Legendary Creature — Dinosaur Vampire",
+    "oracleText": "Trample\nWhenever you attack, choose one —\n• Create a tapped and attacking X/X green Dinosaur creature token with trample, where X is the greatest power among other attacking creatures.\n• Create X 1/1 white Vampire creature tokens with lifelink, where X is the number of other attacking creatures.",
+    "creatureStats": {
+        "power": 12,
+        "toughness": 12
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ghalta and Mavren:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 0,
+                                "toughness": 0,
+                                "colors": [
+                                    "GREEN"
+                                ],
+                                "creatureTypes": [
+                                    "Dinosaur"
+                                ],
+                                "keywords": [
+                                    "TRAMPLE"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/5/0/50b6ea55-c976-40e7-aa09-5ba77688bfe9.jpg?1783916671",
+                                "dynamicPower": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "Each",
+                                    "filter": "creature attacking",
+                                    "aggregation": "MAX",
+                                    "property": "POWER",
+                                    "excludeSelf": true
+                                },
+                                "dynamicToughness": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "Each",
+                                    "filter": "creature attacking",
+                                    "aggregation": "MAX",
+                                    "property": "POWER",
+                                    "excludeSelf": true
+                                },
+                                "tapped": true,
+                                "attacking": true
+                            },
+                            "description": "Create a tapped and attacking X/X green Dinosaur creature token with trample, where X is the greatest power among other attacking creatures"
+                        },
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "count": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "Each",
+                                    "filter": "creature attacking",
+                                    "excludeSelf": true
+                                },
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Vampire"
+                                ],
+                                "keywords": [
+                                    "LIFELINK"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/0/3/03a2f3c3-fbcb-4b21-8f86-232c0db80c1f.jpg?1783916673"
+                            },
+                            "description": "Create X 1/1 white Vampire creature tokens with lifelink, where X is the number of other attacking creatures"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "RARE",
+        "artist": "Zezhou Chen",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9ec900f-1e31-4440-a75a-20b256734d5b.jpg?1783916955",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "For both modes, the value of X is determined as the ability resolves."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If you choose the first mode and there are no other attacking creatures, you'll create a 0/0 Dinosaur token. Unless something else is immediately raising its toughness, the token will die."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Although the Dinosaur token enters the battlefield attacking, it was never declared as an attacking creature."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If you choose the second mode and there are no other attacking creatures, you won't create any Vampire tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Gift of Compleation
 {
     "name": "Gift of Compleation",
@@ -7657,6 +7774,112 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Halo Forager
+{
+    "name": "Halo Forager",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Creature — Faerie Rogue",
+    "oracleText": "Flying\nWhen this creature enters, you may pay {X}. When you do, you may cast target instant or sorcery card with mana value X from a graveyard without paying its mana cost. If that spell would be put into a graveyard, exile it instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Halo Forager:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayPayX",
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "optional": false,
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": "ChosenTargets",
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "Gated",
+                                    "gate": "Gate.MayDecide",
+                                    "then": {
+                                        "type": "CastFromCollectionWithoutPayingCost",
+                                        "from": "gathered0",
+                                        "insteadOfGraveyard": "EXILE"
+                                    }
+                                }
+                            ]
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    "IsInstant",
+                                                    "IsSorcery"
+                                                ]
+                                            },
+                                            "ManaValueEqualsX"
+                                        ]
+                                    },
+                                    "zone": "Graveyard"
+                                }
+                            }
+                        ],
+                        "descriptionOverride": "you may cast target instant or sorcery card with mana value X from a graveyard without paying its mana cost. If that spell would be put into a graveyard, exile it instead."
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "UNCOMMON",
+        "artist": "Kevin Sidharta",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/edb5f0cc-c826-4e7b-882c-63f6e51fa932.jpg?1783916950",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Halo Forager's enters-the-battlefield ability triggers and goes on the stack without a target. If you pay {X}, the second \"reflexive\" triggered ability will trigger. You'll choose the target instant or sorcery card for that second ability at that time, based on the value you chose for X. X can be 0."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "You choose whether or not to cast the target instant or sorcery card as the reflexive triggered ability resolves. If you do, you do so as part of the resolution of the triggered ability. You can't wait to cast it later in the turn. Timing restrictions based on the card's type are ignored."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't pay any alternative costs. You can, however, pay additional costs. If the card has any mandatory additional costs, those must be paid to cast the card."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -8787,6 +9010,71 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Injector Crocodile
+{
+    "name": "Injector Crocodile",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Phyrexian Crocodile",
+    "oracleText": "When this creature dies, incubate 3. (Create an Incubator token with three +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)\nSwampcycling {2} ({2}, Discard this card: Search your library for a Swamp card, reveal it, put it into your hand, then shuffle.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}",
+            "searchFilter": {
+                "cardPredicates": [
+                    {
+                        "type": "HasSubtype",
+                        "subtype": "Swamp"
+                    }
+                ]
+            },
+            "displayPrefix": "Swampcycling"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Injector Crocodile:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 3,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "329",
+        "artist": "Mark Zug",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/974ddcab-bbe0-4bae-9c99-1fd5a5554d2e.jpg?1783916903"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -13822,6 +14110,96 @@
     ]
 }
 
+// Invasion of Xerex
+{
+    "name": "Invasion of Xerex",
+    "manaCost": "{2}{W}{U}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, return up to one target creature to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Xerex:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this Siege enters, return up to one target creature to its owner's hand."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Vertex Paladin",
+        "manaCost": "",
+        "typeLine": "Creature — Angel Knight",
+        "oracleText": "Flying\nVertex Paladin's power and toughness are each equal to the number of creatures you control.",
+        "creatureStats": {
+            "power": {
+                "type": "Dynamic",
+                "source": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature"
+                }
+            },
+            "toughness": {
+                "type": "Dynamic",
+                "source": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature"
+                }
+            }
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "metadata": {
+            "collectorNumber": "242",
+            "rarity": "UNCOMMON",
+            "artist": "Fajareka Setiawan",
+            "flavorText": "The literal-minded Phyrexians made the greatest mistake possible on Xerex: they tried to understand what they were seeing.",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/c/6c8c9c33-569c-4b67-a18d-4cd0f18d01f4.jpg?1783916949"
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "UNCOMMON",
+        "artist": "Fajareka Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c8c9c33-569c-4b67-a18d-4cd0f18d01f4.jpg?1783916949"
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Invasion of Zendikar
 {
     "name": "Invasion of Zendikar",
@@ -14220,6 +14598,120 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Joyful Stormsculptor
+{
+    "name": "Joyful Stormsculptor",
+    "manaCost": "{3}{U}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "When this creature enters, create two 1/1 blue and red Elemental creature tokens.\nWhenever you cast a spell that has convoke, this creature deals 1 damage to each opponent and each battle they protect.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Joyful Stormsculptor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE",
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/8/28a7a9b0-d823-4b34-829f-ade81fc141e0.jpg?1783916668"
+                }
+            },
+            {
+                "id": "Joyful Stormsculptor:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasKeyword",
+                                "keyword": "CONVOKE"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": {
+                                        "cardPredicates": [
+                                            "IsBattle"
+                                        ],
+                                        "statePredicates": [
+                                            {
+                                                "type": "IsProtectedBy",
+                                                "protector": "ControlledByOpponent"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "rarity": "UNCOMMON",
+        "artist": "Christina Kraus",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4dabe69-a88f-4e61-a5fb-c4b9ef1c7569.jpg?1783916942",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Joyful Stormsculptor's last ability will trigger whether you tapped any creatures to pay for the spell or not, as long as it has convoke."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -14670,6 +15162,141 @@
     ]
 }
 
+// Kogla and Yidaro
+{
+    "name": "Kogla and Yidaro",
+    "manaCost": "{2}{R}{R}{G}{G}",
+    "typeLine": "Legendary Creature — Ape Dinosaur Turtle",
+    "oracleText": "When Kogla and Yidaro enters, choose one —\n• It gains trample and haste until end of turn.\n• It fights target creature you don't control.\n{2}{R}{G}, Discard this card: Destroy up to one target artifact or enchantment. Shuffle this card into your library from your graveyard, then draw a card.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kogla and Yidaro:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "TRAMPLE",
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": "Self"
+                                    }
+                                ]
+                            },
+                            "description": "It gains trample and haste until end of turn."
+                        },
+                        {
+                            "effect": {
+                                "type": "Fight",
+                                "target1": "Self",
+                                "target2": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:opponent"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "It fights target creature you don't control."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Kogla and Yidaro enters, choose one — it gains trample and haste until end of turn; or it fights target creature you don't control."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Kogla and Yidaro:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Library",
+                            "placement": "Shuffled",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "artifact|enchantment"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "{2}{R}{G}, Discard this card: Destroy up to one target artifact or enchantment. Shuffle this card into your library from your graveyard, then draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "244",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b760ebdf-bea6-4c43-a187-4a02ebf95ebf.jpg?1783916942"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Kor Halberd
 {
     "name": "Kor Halberd",
@@ -14728,6 +15355,210 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Kroxa and Kunoros
+{
+    "name": "Kroxa and Kunoros",
+    "manaCost": "{3}{R}{W}{B}",
+    "typeLine": "Legendary Creature — Elder Giant Dog",
+    "oracleText": "Vigilance, menace, lifelink\nWhenever Kroxa and Kunoros enters or attacks, you may exile five cards from your graveyard. When you do, return target creature card from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "VIGILANCE",
+        "MENACE",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kroxa and Kunoros:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 5
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "Exile five cards from your graveyard",
+                                    "selectedLabel": "Exile"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    }
+                                }
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Battlefield"
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature own:you",
+                                    "zone": "Graveyard"
+                                },
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "You may exile five cards from your graveyard. When you do, return target creature card from your graveyard to the battlefield."
+                    },
+                    "descriptionOverride": "You may exile five cards from your graveyard. When you do, return target creature card from your graveyard to the battlefield."
+                }
+            },
+            {
+                "id": "Kroxa and Kunoros:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 5
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "Exile five cards from your graveyard",
+                                    "selectedLabel": "Exile"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    }
+                                }
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Battlefield"
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature own:you",
+                                    "zone": "Graveyard"
+                                },
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "You may exile five cards from your graveyard. When you do, return target creature card from your graveyard to the battlefield."
+                    },
+                    "descriptionOverride": "You may exile five cards from your graveyard. When you do, return target creature card from your graveyard to the battlefield."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "245",
+        "rarity": "MYTHIC",
+        "artist": "Ignatius Budi",
+        "flavorText": "When the Invasion Tree reached the Underworld, it found only teeth and fury.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13e4a233-e40b-4e6a-9863-4d0fc052484c.jpg?1783916942",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "The last ability of Kroxa and Kunoros triggers and goes on the stack without a target. If you exile five cards from your graveyard, the second \"reflexive\" triggered ability will trigger. You'll choose the target creature card for that second ability at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -14861,6 +15692,78 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Marshal of Zhalfir
+{
+    "name": "Marshal of Zhalfir",
+    "manaCost": "{W}{U}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Other Knights you control get +1/+1.\n{W}{U}, {T}: Tap another target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Marshal of Zhalfir:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Tap another target creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "permanent Knight ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "246",
+        "rarity": "UNCOMMON",
+        "artist": "Darren Tan",
+        "flavorText": "\"How kind of our foes to move in such perfect, predictable unison. Split into squadrons and execute the Lion's Claw!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2418f5c-a85f-4249-8a53-c94b011b9714.jpg?1783916943"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -16299,6 +17202,135 @@
     ]
 }
 
+// Orthion, Hero of Lavabrink
+{
+    "name": "Orthion, Hero of Lavabrink",
+    "manaCost": "{3}{R}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "{1}{R}, {T}: Create a token that's a copy of another target creature you control. It gains haste. Sacrifice it at the beginning of the next end step. Activate only as a sorcery.\n{6}{R}{R}{R}, {T}: Create five tokens that are copies of another target creature you control. They gain haste. Sacrifice them at the beginning of the next end step. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Orthion, Hero of Lavabrink:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "addedKeywords": [
+                        "HASTE"
+                    ],
+                    "sacrificeAtStep": "END"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{1}{R}, {T}: Create a token that's a copy of another target creature you control. It gains haste. Sacrifice it at the beginning of the next end step. Activate only as a sorcery."
+            },
+            {
+                "id": "Orthion, Hero of Lavabrink:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{6}{R}{R}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "addedKeywords": [
+                        "HASTE"
+                    ],
+                    "sacrificeAtStep": "END"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{6}{R}{R}{R}, {T}: Create five tokens that are copies of another target creature you control. They gain haste. Sacrifice them at the beginning of the next end step. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "334",
+        "rarity": "RARE",
+        "artist": "Aaron Miller",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71dadbb3-7b8a-4656-973f-65a3284afe07.jpg?1783916901",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "The tokens each copy exactly what was printed on the original creature and nothing else (unless that creature is copying something else or is a token). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, and so on."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If the copied creature has {X} in its mana cost, X is 0."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If the copied creature is copying something else, then the token enters the battlefield as whatever that creature copied."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If the copied creature is a token, the token that's created copies the original characteristics of that token as stated by the effect that created that token."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Any enters-the-battlefield abilities of the copied creature will trigger when the token enters the battlefield. Any \"as [this creature] enters the battlefield\" or \"[this creature] enters the battlefield with\" abilities of the copied creature will also work."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Overgrown Pest
 {
     "name": "Overgrown Pest",
@@ -16667,6 +17699,66 @@
                 "text": "If a player casts a non-Phyrexian spell that was countered, they can't cast another non-Phyrexian spell during the same turn."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Phyrexian Pegasus
+{
+    "name": "Phyrexian Pegasus",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Phyrexian Pegasus",
+    "oracleText": "Flying\nWhenever this creature attacks, another target attacking creature without flying gains flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Phyrexian Pegasus:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotKeyword",
+                                    "keyword": "FLYING"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        },
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, another target attacking creature without flying gains flying until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "324",
+        "artist": "Carlos Palma Cruchaga",
+        "flavorText": "\"It is glory, exalted and *compleat*.\"\n—Cymede, regent of the Alabaster Host",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa1200a1-8671-464f-ab3b-bfc1fb0d6ed8.jpg?1783916907"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -19101,6 +20193,63 @@
     ]
 }
 
+// Sculpted Perfection
+{
+    "name": "Sculpted Perfection",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, incubate 2. (Create an Incubator token with two +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)\nPhyrexians you control get +1/+1.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sculpted Perfection:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "permanent Phyrexian ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "253",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Seaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/594aefa2-7a5b-4ec1-841b-a6ef4f5aa2b1.jpg?1783916937"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Seal from Existence
 {
     "name": "Seal from Existence",
@@ -20345,6 +21494,76 @@
     ]
 }
 
+// Stormclaw Rager
+{
+    "name": "Stormclaw Rager",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "{1}, Sacrifice another creature or artifact: Put a +1/+1 counter on this creature and draw a card. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Stormclaw Rager:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature|artifact",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{1}, Sacrifice another creature or artifact: Put a +1/+1 counter on this creature and draw a card. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "254",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Elias",
+        "flavorText": "No amount of spilled oil and crushed metal could slake her bloodlust.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b00c6e1-dfda-4c47-b1d8-4c114a921477.jpg?1783916938"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Streetwise Negotiator
 {
     "name": "Streetwise Negotiator",
@@ -21531,6 +22750,97 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Thalia and The Gitrog Monster
+{
+    "name": "Thalia and The Gitrog Monster",
+    "manaCost": "{1}{W}{B}{G}",
+    "typeLine": "Legendary Creature — Human Frog Horror",
+    "oracleText": "First strike, deathtouch\nYou may play an additional land on each of your turns.\nCreatures and nonbasic lands your opponents control enter tapped.\nWhenever Thalia and The Gitrog Monster attacks, sacrifice a creature or land, then draw a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thalia and The Gitrog Monster:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Sacrifice",
+                            "filter": "creature|land"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "GrantAdditionalLandDrop"
+        ],
+        "replacementEffects": [
+            {
+                "type": "PermanentsEnterTapped",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "to": "Battlefield"
+                }
+            },
+            {
+                "type": "PermanentsEnterTapped",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsLand",
+                            {
+                                "type": "Not",
+                                "predicate": "IsBasicLand"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByOpponent"
+                    },
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "255",
+        "rarity": "MYTHIC",
+        "artist": "Howard Lyon",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d7ff937-de92-445f-976c-726fef5c91cc.jpg?1783916938",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "The effect of Thalia and The Gitrog Monster's ability that allows you to play an additional land is cumulative with similar effects. For example, if you control Thalia and The Gitrog Monster and another permanent with that ability, you'll be able to play three lands during each of your turns."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "As the last ability resolves, sacrificing a creature or land isn't optional. If you control a creature or land (and if you control Thalia and The Gitrog Monster, you probably do), you must sacrifice one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -23792,6 +25102,200 @@
         "imageUri": "https://cards.scryfall.io/normal/front/e/4/e446a380-0316-46f7-8ac9-22bce773b35f.jpg?1783917019"
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Zimone and Dina
+{
+    "name": "Zimone and Dina",
+    "manaCost": "{B}{G}{U}",
+    "typeLine": "Legendary Creature — Human Dryad",
+    "oracleText": "Whenever you draw your second card each turn, target opponent loses 2 life and you gain 2 life.\n{T}, Sacrifice another creature: Draw a card. You may put a land card from your hand onto the battlefield tapped. If you control eight or more lands, repeat this process once.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zimone and Dina:1",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "from": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you draw your second card each turn, target opponent loses 2 life and you gain 2 life."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Zimone and Dina:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "filter": "land"
+                                    },
+                                    "storeAs": "put_candidates"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "put_candidates",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "putting"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "putting",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield",
+                                        "placement": "Tapped"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "land"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 8
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Hand",
+                                                    "filter": "land"
+                                                },
+                                                "storeAs": "put_candidates"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "put_candidates",
+                                                "selection": {
+                                                    "type": "ChooseUpTo",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "putting"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "putting",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Battlefield",
+                                                    "placement": "Tapped"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}, Sacrifice another creature: Draw a card. You may put a land card from your hand onto the battlefield tapped. If you control eight or more lands, repeat this process once."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "257",
+        "rarity": "MYTHIC",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf2af874-1052-4cad-90ed-d80e49d4c68c.jpg?1783916936",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Zimone and Dina doesn't need to have been under your control when the first card is drawn for its ability to trigger. As long as you control it when you draw your second card in a turn, that ability will trigger."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "For the activated ability, repeating the process means the entire effect, but not the cost. You don't have to (and, in fact, can't) sacrifice another creature. You'll draw another card, then you may put another land card from your hand onto the battlefield tapped. As this is your second time through the process, the ability will finish resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN",
         "BLUE"
     ]
 }
