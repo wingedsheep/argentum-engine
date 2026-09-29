@@ -314,4 +314,19 @@ class CopyExceptionsTest : FunSpec({
         result.typeLine.isLegendary shouldBe false
         result.typeLine.cardTypes shouldBe setOf(CardType.ARTIFACT, CardType.CREATURE)
     }
+    test("copy-added trigger instances have separate identities and survive a subsequent plain copy") {
+        val ability = com.wingedsheep.sdk.scripting.TriggeredAbility(
+            id = com.wingedsheep.sdk.scripting.AbilityId("limited-trigger"),
+            trigger = com.wingedsheep.sdk.dsl.Triggers.self.attacks().event,
+            effect = com.wingedsheep.sdk.dsl.Effects.GainLife(1),
+        )
+        val result = CopyExceptionApplier.apply(legendaryArtifactBear(),
+            CopyExceptions(addedTriggeredAbilities = listOf(ability, ability)))
+        result.copyTriggeredAbilities.size shouldBe 2
+        result.copyTriggeredAbilities.map { it.id }.toSet().size shouldBe 2
+        CopyExceptionApplier.apply(result, CopyExceptions.None).copyTriggeredAbilities shouldBe result.copyTriggeredAbilities
+        val next = CopyExceptionApplier.apply(result, CopyExceptions(addedTriggeredAbilities = listOf(ability)))
+        next.copyTriggeredAbilities.map { it.id }.toSet().size shouldBe 3
+    }
+
 })

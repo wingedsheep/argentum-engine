@@ -105,6 +105,8 @@ data class CardComponent(
      * which is the one place the modal/nonmodal split is decided.
      */
     val manaValueOverride: Int? = null,
+    /** Rules text added by copy effects; copied and restored with the identity, not a layer-six grant. */
+    val copyTriggeredAbilities: List<com.wingedsheep.sdk.scripting.TriggeredAbility> = emptyList(),
 ) : Component {
     // Convenience accessors
     val isCreature: Boolean get() = typeLine.isCreature

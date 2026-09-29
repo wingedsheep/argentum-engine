@@ -576,7 +576,7 @@ object CardLinter {
                         withinActivatedAbility || key == "activatedAbilities",
                         findings,
                         withinTriggeredAbility ||
-                            key == "triggeredAbilities" ||
+                            key == "triggeredAbilities" || key == "addedTriggeredAbilities" ||
                             key == "stateTriggeredAbilities"
                     )
                 }

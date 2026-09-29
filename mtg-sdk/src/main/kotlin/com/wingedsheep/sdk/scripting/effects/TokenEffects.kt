@@ -333,6 +333,12 @@ data class CreateTokenCopyOfSourceEffect(
             append(". Exile ${if (count == 1) "it" else "them"} at the beginning of the next ${exileAtStep.displayName}")
         }
     }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newExceptions = exceptions.applyTextReplacement(replacer)
+        return if (newExceptions !== exceptions) copy(exceptions = newExceptions) else this
+    }
+
 }
 
 /**
@@ -618,6 +624,12 @@ data class CreateTokenCopyOfTargetEffect(
             if (exileUnlessSourceIsRingBearer) append(" unless this creature is your Ring-bearer")
         }
     }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newExceptions = exceptions.applyTextReplacement(replacer)
+        return if (newExceptions !== exceptions) copy(exceptions = newExceptions) else this
+    }
+
 }
 
 /**

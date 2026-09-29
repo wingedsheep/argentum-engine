@@ -310,6 +310,7 @@ object PermanentEntryReplacements {
             additionalSubtypes = effect.additionalSubtypes,
             additionalColors = effect.additionalColors,
             additionalKeywords = effect.additionalKeywords,
+            exceptions = effect.exceptions,
             nameOverride = effect.nameOverride,
             powerOverride = effect.powerOverride,
             toughnessOverride = effect.toughnessOverride,

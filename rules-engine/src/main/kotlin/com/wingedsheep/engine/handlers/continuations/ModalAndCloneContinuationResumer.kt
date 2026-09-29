@@ -241,20 +241,21 @@ class ModalAndCloneContinuationResumer(
         additionalSubtypes: List<String>,
         additionalColors: Set<com.wingedsheep.sdk.core.Color>,
         additionalKeywords: List<com.wingedsheep.sdk.core.Keyword>,
+        copyExceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions,
         nameOverride: String?,
         powerOverride: Int?,
         toughnessOverride: Int?,
     ): GameState {
         // The riders are the same "except …" clause every other copy path carries (CR 707.9b), so
         // they go through the one engine-side implementation rather than a fourth hand-rolled copy.
-        val exceptions = com.wingedsheep.sdk.scripting.effects.CopyExceptions(
+        val exceptions = copyExceptions.over(com.wingedsheep.sdk.scripting.effects.CopyExceptions(
             nameOverride = nameOverride,
             addedKeywords = additionalKeywords.toSet(),
             addedSubtypes = additionalSubtypes.map { com.wingedsheep.sdk.core.Subtype(it) }.toSet(),
             addedColors = additionalColors,
             powerOverride = powerOverride,
             toughnessOverride = toughnessOverride,
-        )
+        ))
         val copiedCardComponent = CopyExceptionApplier.apply(
             targetCardComponent.copy(
                 ownerId = newOwnerId,
@@ -356,6 +357,7 @@ class ModalAndCloneContinuationResumer(
                     additionalSubtypes = continuation.additionalSubtypes,
                     additionalColors = continuation.additionalColors,
                     additionalKeywords = continuation.additionalKeywords,
+                    copyExceptions = continuation.exceptions,
                     nameOverride = continuation.nameOverride,
                     powerOverride = continuation.powerOverride,
                     toughnessOverride = continuation.toughnessOverride,
@@ -460,6 +462,7 @@ class ModalAndCloneContinuationResumer(
                     additionalSubtypes = continuation.additionalSubtypes,
                     additionalColors = continuation.additionalColors,
                     additionalKeywords = continuation.additionalKeywords,
+                    copyExceptions = continuation.exceptions,
                     nameOverride = continuation.nameOverride,
                     powerOverride = continuation.powerOverride,
                     toughnessOverride = continuation.toughnessOverride,

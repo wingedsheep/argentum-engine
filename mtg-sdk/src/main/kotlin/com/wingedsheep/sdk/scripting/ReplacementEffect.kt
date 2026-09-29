@@ -1763,6 +1763,8 @@ data class EntersAsCopy(
     val exileCopiedCard: Boolean = false,
     val tappedIfCopied: Boolean = false,
     val additionalCounters: DynamicAmount? = null,
+    val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions =
+        com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
@@ -1802,14 +1804,17 @@ data class EntersAsCopy(
                     add("it enters with ${additionalCounters.description} additional +1/+1 counters on it")
                 }
             }
-            if (exceptions.isNotEmpty()) append(", except ${exceptions.joinToString(" and ")}")
+            val allExceptions = exceptions + this@EntersAsCopy.exceptions.clauses()
+            if (allExceptions.isNotEmpty()) append(", except ${allExceptions.joinToString(" and ")}")
             if (exileCopiedCard) append(". When you do, exile that card")
         }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
-        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+        val newExceptions = exceptions.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo || newExceptions !== exceptions)
+            copy(appliesTo = newAppliesTo, exceptions = newExceptions) else this
     }
 }
 

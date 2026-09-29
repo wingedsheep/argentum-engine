@@ -45,7 +45,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 // captures. Compare the saved fields after checking that the new return
                 // bookkeeping starts empty.
                 val encoded = encodeState(state)
-                JsonObject(encoded - "continuationStack" - POST_CAPTURE_FIELDS) shouldBe
+                withoutCopyTriggerDefaults(JsonObject(encoded - "continuationStack" - POST_CAPTURE_FIELDS)) shouldBe
                     JsonObject(original - "continuationStack" - "pendingDecision")
                 assertCurrentRoundTrip(state)
 
@@ -285,6 +285,21 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
             }
         })
         is JsonArray -> JsonArray(value.map { normalizeRouting(it) })
+        else -> value
+    }
+
+    /** Copy-added rules text postdates the capture; loading an old identity must default it empty. */
+    private fun withoutCopyTriggerDefaults(value: JsonElement): JsonElement = when (value) {
+        is JsonObject -> {
+            val fields = if (value["type"] == JsonPrimitive(
+                    "com.wingedsheep.engine.state.components.identity.CardComponent"
+                )) {
+                value.getValue("copyTriggeredAbilities") shouldBe JsonArray(emptyList())
+                value - "copyTriggeredAbilities"
+            } else value
+            JsonObject(fields.mapValues { withoutCopyTriggerDefaults(it.value) })
+        }
+        is JsonArray -> JsonArray(value.map(::withoutCopyTriggerDefaults))
         else -> value
     }
 

@@ -154,7 +154,10 @@ class TriggerAbilityResolver(
             addAll(renownAbilities)
             addAll(bushidoAbilities)
         }
-        val combined = if (allGranted.isNotEmpty()) base + allGranted else base
+        val copyAbilities = if (state.projectedState.hasLostAllAbilities(entityId)) emptyList()
+            else state.getEntity(entityId)?.get<CardComponent>()?.copyTriggeredAbilities.orEmpty()
+        val intrinsic = if (copyAbilities.isEmpty()) base else base + copyAbilities
+        val combined = if (allGranted.isNotEmpty()) intrinsic + allGranted else intrinsic
 
         // Apply text replacement if the entity has one
         val textReplacement = TextChanges.of(state, entityId)
@@ -382,7 +385,10 @@ class TriggerAbilityResolver(
             addAll(renownAbilities)
             addAll(bushidoAbilities)
         }
-        val combined = if (allGranted.isNotEmpty()) base + allGranted else base
+        val copyAbilities = if (state.projectedState.hasLostAllAbilities(entityId)) emptyList()
+            else state.getEntity(entityId)?.get<CardComponent>()?.copyTriggeredAbilities.orEmpty()
+        val intrinsic = if (copyAbilities.isEmpty()) base else base + copyAbilities
+        val combined = if (allGranted.isNotEmpty()) intrinsic + allGranted else intrinsic
 
         val textReplacement = TextChanges.of(state, entityId)
         return if (textReplacement != null) {
@@ -615,7 +621,9 @@ class TriggerAbilityResolver(
         state: GameState,
         statics: BattlefieldStaticsIndex,
     ): List<TriggeredAbility> {
+        val currentCopyAbilities = state.getEntity(event.entityId)?.get<CardComponent>()?.copyTriggeredAbilities.orEmpty()
         val live = getTriggeredAbilities(event.entityId, cardDefinitionId, state, statics)
+            .filterNot { it in currentCopyAbilities } + event.lastKnown?.copyTriggeredAbilities.orEmpty()
         val frozenIds = event.lastKnown?.conditionalSelfGrantIds ?: return live
         val liveIds = live.mapTo(HashSet()) { it.id }
         return live + ConditionalSelfGrants.byIds(cardDefinitionId, frozenIds, cardRegistry)

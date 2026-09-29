@@ -1,0 +1,69 @@
+{
+  "player1Name": "Copycrook",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Copycrook",
+      "Clone"
+    ],
+    "battlefield": [
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Raging Goblin"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Island",
+      "Grizzly Bears",
+      "Island",
+      "Grizzly Bears"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Island",
+      "Island",
+      "Island"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "DECLARE_ATTACKERS"
+  ],
+  "player2StopAtSteps": []
+}

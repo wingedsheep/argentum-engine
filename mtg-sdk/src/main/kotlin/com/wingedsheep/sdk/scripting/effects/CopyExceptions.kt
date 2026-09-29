@@ -83,6 +83,8 @@ data class CopyExceptions(
     val powerOverride: Int? = null,
     val toughnessOverride: Int? = null,
     val noManaCost: Boolean = false,
+    /** Abilities added as copiable rules text, including multiple identical instances. */
+    val addedTriggeredAbilities: List<com.wingedsheep.sdk.scripting.TriggeredAbility> = emptyList(),
 ) {
     /** True when nothing is modified — a plain copy with no "except" clause. */
     val isEmpty: Boolean get() = this == None
@@ -117,7 +119,15 @@ data class CopyExceptions(
             powerOverride = powerOverride ?: base.powerOverride,
             toughnessOverride = toughnessOverride ?: base.toughnessOverride,
             noManaCost = noManaCost || base.noManaCost,
+            addedTriggeredAbilities = base.addedTriggeredAbilities + addedTriggeredAbilities,
         )
+    }
+
+    /** Text changes affect the added rules text before the copy is made. */
+    fun applyTextReplacement(replacer: com.wingedsheep.sdk.scripting.text.TextReplacer): CopyExceptions {
+        if (addedTriggeredAbilities.isEmpty()) return this
+        val changed = addedTriggeredAbilities.map { it.applyTextReplacement(replacer) }
+        return if (changed == addedTriggeredAbilities) this else copy(addedTriggeredAbilities = changed)
     }
 
     /**
@@ -161,6 +171,7 @@ data class CopyExceptions(
             add("it has ${addedKeywords.joinToString(", ") { it.name.lowercase().replace('_', ' ') }}")
         }
         if (noManaCost) add("it has no mana cost")
+        for (ability in addedTriggeredAbilities) add("it has \"${ability.description}\"")
     }
 
     /**

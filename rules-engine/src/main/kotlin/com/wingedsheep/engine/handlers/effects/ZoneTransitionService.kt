@@ -466,6 +466,7 @@ class ZoneTransitionService(
                 damageDealtByPlayers = lastKnownDamageDealtByPlayers,
                 damageSources = lastKnownDamageSources,
                 wasFaceDown = lastKnownWasFaceDown,
+                copyTriggeredAbilities = cardComponent.copyTriggeredAbilities,
                 conditionalSelfGrantIds = options.conditionalSelfGrantIds
                     ?: ConditionalSelfGrants.activeIds(state, entityId, cardRegistry, conditionEvaluator),
             )

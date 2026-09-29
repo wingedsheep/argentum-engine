@@ -267,6 +267,8 @@ data class CloneEntersContinuation(
     val additionalSubtypes: List<String> = emptyList(),
     val additionalColors: Set<Color> = emptySet(),
     val additionalKeywords: List<Keyword> = emptyList(),
+    val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions =
+        com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
     val nameOverride: String? = null,
     val powerOverride: Int? = null,
     val toughnessOverride: Int? = null,
@@ -303,6 +305,8 @@ data class CloneEntersOnBattlefieldContinuation(
     val additionalSubtypes: List<String> = emptyList(),
     val additionalColors: Set<Color> = emptySet(),
     val additionalKeywords: List<Keyword> = emptyList(),
+    val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions =
+        com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
     val nameOverride: String? = null,
     val powerOverride: Int? = null,
     val toughnessOverride: Int? = null,

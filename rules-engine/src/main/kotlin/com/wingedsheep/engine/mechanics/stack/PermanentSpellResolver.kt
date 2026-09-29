@@ -126,6 +126,7 @@ internal class PermanentSpellResolver(
                     additionalSubtypes = entersAsCopy.additionalSubtypes,
                     additionalColors = entersAsCopy.additionalColors,
                     additionalKeywords = entersAsCopy.additionalKeywords,
+                    exceptions = entersAsCopy.exceptions,
                     nameOverride = entersAsCopy.nameOverride,
                     powerOverride = entersAsCopy.powerOverride,
                     toughnessOverride = entersAsCopy.toughnessOverride,

@@ -789,6 +789,14 @@ internal class CardActiveEffectsProjector(
                 )
             )
         }
+        val copyContainer = state.getEntity(entityId)
+        if (copyContainer?.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() != true &&
+            !state.projectedState.hasLostAllAbilities(entityId)
+        ) {
+            for (ability in copyContainer?.get<CardComponent>()?.copyTriggeredAbilities.orEmpty()) {
+                grant("copy_trig_${ability.id.value}", ability.description)
+            }
+        }
         for (granted in state.grantedTriggeredAbilities) {
             if (granted.entityId != entityId) continue
             grant("granted_trig_${granted.ability.id.value}", granted.ability.description)

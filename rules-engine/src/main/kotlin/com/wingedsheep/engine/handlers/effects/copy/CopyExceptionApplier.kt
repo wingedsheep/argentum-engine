@@ -73,6 +73,13 @@ object CopyExceptionApplier {
         if (exceptions.isEmpty) return base
         return base.copy(
             name = exceptions.nameOverride ?: base.name,
+            // Each instance gets its own identity, including two copies of a once-per-turn
+            // trigger. Plain subsequent copies retain these ids rather than adding instances.
+            copyTriggeredAbilities = base.copyTriggeredAbilities + exceptions.addedTriggeredAbilities.mapIndexed { index, ability ->
+                ability.copy(id = com.wingedsheep.sdk.scripting.AbilityId(
+                    "copy:${base.copyTriggeredAbilities.size + index}:${ability.id.value}"
+                ))
+            },
             typeLine = typeLine(base.typeLine, exceptions),
             baseStats = baseStats(base.baseStats, exceptions),
             baseKeywords = base.baseKeywords + exceptions.addedKeywords,

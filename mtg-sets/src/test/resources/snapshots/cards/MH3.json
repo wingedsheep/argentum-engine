@@ -303,6 +303,103 @@
     }
 }
 
+// Copycrook
+{
+    "name": "Copycrook",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Shapeshifter Rogue",
+    "oracleText": "You may have this creature enter as a copy of any creature on the battlefield, except it has \"Whenever this creature attacks, it connives.\" (Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "exceptions": {
+                    "addedTriggeredAbilities": [
+                        {
+                            "id": "Copycrook:1",
+                            "trigger": "AttackEvent",
+                            "effect": {
+                                "type": "Connive",
+                                "body": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Hand"
+                                            },
+                                            "storeAs": "connive_hand"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "connive_hand",
+                                            "selection": {
+                                                "type": "ChooseExactly",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "connive_discarded",
+                                            "prompt": "Choose a card to discard"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "connive_discarded",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Graveyard"
+                                            },
+                                            "moveType": "Discard"
+                                        },
+                                        {
+                                            "type": "ConditionalOnCollection",
+                                            "collection": "connive_discarded",
+                                            "ifNotEmpty": {
+                                                "type": "AddCounters",
+                                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                                "count": 1,
+                                                "target": "Self"
+                                            },
+                                            "filter": "nonland"
+                                        }
+                                    ],
+                                    "descriptionOverride": "Connive"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "UNCOMMON",
+        "artist": "Peter Polach",
+        "flavorText": "The best hiding places are other people.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52ea5e71-d0a3-4065-918b-9b2af98589ba.jpg?1783911293",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "You can choose not to copy anything. In that case, Copycrook simply enters the battlefield as a 0/0 creature and is probably put into your graveyard immediately, unless something else is increasing its toughness to keep it alive. It won't have \"Whenever this creature attacks, it connives.\""
+            }
+        ]
+    }
+}
+
 // Depth Defiler
 {
     "name": "Depth Defiler",

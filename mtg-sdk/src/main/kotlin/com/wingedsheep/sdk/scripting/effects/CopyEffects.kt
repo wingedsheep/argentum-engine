@@ -91,7 +91,9 @@ data class EachPermanentBecomesCopyOfTargetEffect(
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
+        val newExceptions = exceptions.applyTextReplacement(replacer)
+        return if (newFilter !== filter || newExceptions !== exceptions)
+            copy(filter = newFilter, exceptions = newExceptions) else this
     }
 }
 

@@ -206,6 +206,8 @@ data class EntitySnapshot(
      * way [wasSuspected] does for the suspected designation.
      */
     val wasFaceDown: Boolean = false,
+    /** Copy-added rules text, frozen before the original identity is restored on departure. */
+    val copyTriggeredAbilities: List<com.wingedsheep.sdk.scripting.TriggeredAbility> = emptyList(),
     /**
      * The "as long as …" self-granted triggered abilities ([com.wingedsheep.sdk.scripting.ConditionalStaticAbility]
      * around a `Scope.Self` [com.wingedsheep.sdk.scripting.GrantTriggeredAbility]) whose condition held
@@ -305,6 +307,7 @@ fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot {
         typeLine = projectedTypeLine(state, entityId),
         keywords = state.projectedState.getKeywords(entityId),
         cardDefinitionId = container?.get<CardComponent>()?.cardDefinitionId,
+        copyTriggeredAbilities = container?.get<CardComponent>()?.copyTriggeredAbilities.orEmpty(),
         wasAttacking = container?.has<AttackingComponent>() ?: false,
         wasBlocking = container?.has<BlockingComponent>() ?: false,
         attachmentIds = attachmentIdsOf(state, entityId),
