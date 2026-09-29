@@ -297,7 +297,7 @@ class CostPaymentContinuationResumer(
     }
 
     private fun effectContext(state: GameState, continuation: CostPaymentContinuation): EffectContext =
-        EffectContext(
+        continuation.effectContext ?: EffectContext(
             sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences,
             controllerId = continuation.payerId,
@@ -315,6 +315,7 @@ class CostPaymentContinuationResumer(
             onDeclined = continuation.onDeclined,
             targets = continuation.targets,
             namedTargets = continuation.namedTargets,
-            storedCollections = continuation.storedCollections
+            storedCollections = continuation.storedCollections,
+            effectContext = continuation.effectContext,
         )
 }

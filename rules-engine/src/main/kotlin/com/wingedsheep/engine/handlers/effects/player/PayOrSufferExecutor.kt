@@ -946,6 +946,7 @@ class PayOrSufferExecutor(
             cost = PayCost.Atom(cost),
             sourceId = sourceId,
             ctx = CostPaymentContext(
+                effectContext = context,
                 objectReferences = context.objectReferences,
                 onDeclined = effect.suffer,
                 targets = context.targets,

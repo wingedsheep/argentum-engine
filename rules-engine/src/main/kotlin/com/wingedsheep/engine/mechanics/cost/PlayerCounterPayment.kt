@@ -41,8 +41,13 @@ object PlayerCounterPayment {
         }
 
     /** Additional-cost X is independent of whether the mana cost contains an X symbol. */
-    fun spellMaxX(state: GameState, payer: EntityId, costs: List<AdditionalCost>): Int? {
-        val atoms = spellAtoms(costs)
+    fun spellMaxX(state: GameState, payer: EntityId, costs: List<AdditionalCost>): Int? =
+        maxX(state, payer, spellAtoms(costs))
+
+    fun abilityMaxX(state: GameState, payer: EntityId, cost: AbilityCost): Int? =
+        maxX(state, payer, abilityAtoms(cost))
+
+    private fun maxX(state: GameState, payer: EntityId, atoms: List<CostAtom.PayPlayerCounters>): Int? {
         val caps = atoms.groupBy { it.counterType }.mapNotNull { (type, payments) ->
             val xs = payments.count { it.amount is DynamicAmount.XValue }
             if (xs == 0) null else {

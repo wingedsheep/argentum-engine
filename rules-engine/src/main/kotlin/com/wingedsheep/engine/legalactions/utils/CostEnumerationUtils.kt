@@ -667,13 +667,8 @@ class CostEnumerationUtils(
             Int.MAX_VALUE
         }
 
-        val playerCounterAtoms = PlayerCounterPayment.abilityAtoms(abilityCost)
-        for ((type, atoms) in playerCounterAtoms.groupBy { it.counterType }) {
-            val xCount = atoms.count { it.amount is DynamicAmount.XValue }
-            if (xCount == 0) continue
-            val fixed = atoms.sumOf { (it.amount as? DynamicAmount.Fixed)?.amount ?: 0 }
-            val available = PlayerCounterPayment.available(state, playerId, type)
-            maxX = minOf(maxX, ((available - fixed).coerceAtLeast(0)) / xCount)
+        PlayerCounterPayment.abilityMaxX(state, playerId, abilityCost)?.let {
+            maxX = minOf(maxX, it)
         }
 
         if (abilityCost == AbilityCost.LoyaltyX) {

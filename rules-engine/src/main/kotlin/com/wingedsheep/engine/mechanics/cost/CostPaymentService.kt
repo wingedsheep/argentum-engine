@@ -331,7 +331,8 @@ class CostPaymentService(private val services: EngineServices) {
         onDeclined = ctx.onDeclined,
         targets = ctx.targets,
         namedTargets = ctx.namedTargets,
-        storedCollections = ctx.storedCollections
+        storedCollections = ctx.storedCollections,
+        effectContext = ctx.effectContext,
     )
 
     // ---------------------------------------------------------------------------------------------

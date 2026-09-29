@@ -22,6 +22,7 @@ import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.TargetFinder
+import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.mechanics.cost.VariablePermanentsCost
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
@@ -144,13 +145,19 @@ internal class ActivationChoicePauses(
         val effectiveCost = activation.effectiveCost
         val tapXCost = effectiveCost.extractTapXPermanentsCost()
         val manaXCost = effectiveCost.extractManaCost()
-        if (!((manaXCost?.hasX == true || effectiveCost == AbilityCost.LoyaltyX) && action.xValue == null && tapXCost == null)) {
+        val counterMaxX = PlayerCounterPayment.abilityMaxX(state, action.playerId, effectiveCost)
+        if (!((manaXCost?.hasX == true || effectiveCost == AbilityCost.LoyaltyX || counterMaxX != null) && action.xValue == null && tapXCost == null)) {
             return null
         }
         val fixedMana = manaXCost?.cmc ?: 0 // the non-X portion ({X} alone is 0; {1}{X} is 1)
-        val maxX = if (effectiveCost == AbilityCost.LoyaltyX) {
+        val manaMaxX = if (manaXCost?.hasX == true) {
+            (manaSolver.getAvailableManaCount(state, action.playerId) - fixedMana).coerceAtLeast(0) /
+                manaXCost.xCount.coerceAtLeast(1)
+        } else null
+        val loyaltyMaxX = if (effectiveCost == AbilityCost.LoyaltyX) {
             activation.container.get<CountersComponent>()?.getCount(CounterType.LOYALTY) ?: 0
-        } else (manaSolver.getAvailableManaCount(state, action.playerId) - fixedMana).coerceAtLeast(0)
+        } else null
+        val maxX = listOfNotNull(manaMaxX, loyaltyMaxX, counterMaxX).minOrNull() ?: 0
         // "X can't be 0" abilities (Gogo, Master of Mimicry) set a minimum; clamp it to what the
         // player can actually pay so the decision bounds stay valid.
         val minX = activation.ability.minimumXValue.coerceAtMost(maxX)

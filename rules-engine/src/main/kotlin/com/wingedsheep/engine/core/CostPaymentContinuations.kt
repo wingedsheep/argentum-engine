@@ -44,6 +44,7 @@ data class CostPaymentContinuation(
     val namedTargets: Map<String, ChosenTarget> = emptyMap(),
     val storedCollections: Map<String, List<EntityId>> = emptyMap(),
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+    val effectContext: com.wingedsheep.engine.handlers.EffectContext? = null,
 ) : AnswerContinuation
 
 /**

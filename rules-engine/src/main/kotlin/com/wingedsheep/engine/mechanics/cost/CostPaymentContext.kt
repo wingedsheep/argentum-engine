@@ -29,5 +29,7 @@ data class CostPaymentContext(
     val onDeclined: Effect? = null,
     val targets: List<ChosenTarget> = emptyList(),
     val namedTargets: Map<String, ChosenTarget> = emptyMap(),
-    val storedCollections: Map<String, List<EntityId>> = emptyMap()
+    val storedCollections: Map<String, List<EntityId>> = emptyMap(),
+    /** Preserve the resolving effect's perspective when its payer is a different player. */
+    val effectContext: com.wingedsheep.engine.handlers.EffectContext? = null,
 )
