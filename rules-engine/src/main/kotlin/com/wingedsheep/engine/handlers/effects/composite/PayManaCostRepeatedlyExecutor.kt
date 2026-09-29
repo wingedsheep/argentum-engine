@@ -33,7 +33,7 @@ import kotlin.reflect.KClass
  * true)`, `Gate.MayPay`), not to this effect, so the two questions stay one "do you want to?" and
  * one "how many?" instead of a redundant pair of decline paths. Consistently, a payer who cannot
  * afford even one repetition gets a *failure*, which is what stops a CR 603.12 reflexive trigger
- * from firing on a payment that never happened — the same contract `PayFixedCountersEffect` has,
+ * from firing on a payment that never happened — the same contract `PayExactCountersEffect` has,
  * and `ReflexiveTriggerEffectExecutor.isActionFeasible` scores it up front so the may-question is
  * never raised in that case.
  *

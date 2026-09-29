@@ -17,7 +17,7 @@ import kotlinx.serialization.Serializable
  *
  * Designed as the `action` half of a [ReflexiveTriggerEffect] ("you may collect evidence 3. **When
  * you do**, put a +1/+1 counter on target creature you control" — Sample Collector), mirroring how
- * [com.wingedsheep.sdk.scripting.effects.PayFixedCountersEffect] serves the energy shape: the outer
+ * [com.wingedsheep.sdk.scripting.effects.PayExactCountersEffect] serves the energy shape: the outer
  * "may" *is* the decision to collect, so this effect performs no yes/no of its own — it prompts only
  * for *which* cards. `ReflexiveTriggerEffectExecutor.isActionFeasible` checks reachability before
  * offering the prompt, which is what makes CR 701.59b hold: a player who cannot reach [amount] is
@@ -62,7 +62,7 @@ data class CollectEvidenceEffect(
  * is why an enclosing "may" is always offered.
  *
  * X is republished under [storeAmountAs] and read downstream via
- * `DynamicAmount.VariableReference(storeAmountAs)` — the same convention [PayFixedCountersEffect]'s
+ * `DynamicAmount.VariableReference(storeAmountAs)` — the same convention [PayExactCountersEffect]'s
  * "pay any amount" sibling and `DrawUpToEffect.storeAs` use. Stored numbers survive the reflexive
  * trigger's stack round-trip (CR 603.12), so the "when you do" half can spend X.
  *

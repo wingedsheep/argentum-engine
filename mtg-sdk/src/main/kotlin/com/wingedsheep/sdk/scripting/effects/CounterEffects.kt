@@ -236,37 +236,19 @@ data class PayCountersEffect(
 }
 
 /**
- * Pay an exact, fixed number of player-scoped counters — the all-or-nothing counterpart to
- * [PayCountersEffect]'s "pay any amount". CR 107.14 energy example: "Whenever you attack, you
- * may pay {E}{E}{E}. When you do, [...]" (Guide of Souls) — there's no amount to choose, only
- * whether to pay the named total, and per the 2024-06-07 ruling you can't pay a partial amount
- * to get a partial effect.
- *
- * Designed as the `action` half of a [ReflexiveTriggerEffect] ("When you do" — CR 603.12 — a
- * fresh triggered ability with its own targets, distinct from a same-ability "If you do"
- * continuation): the outer yes/no is the payment decision itself, so this effect performs no
- * decision of its own — it deducts [amount] atomically and fails outright (no partial removal)
- * if the paying player has fewer than [amount]. `ReflexiveTriggerEffectExecutor.isActionFeasible`
- * checks affordability *before* offering the "may pay" prompt, so in practice this effect only
- * ever runs when the payment is guaranteed to succeed; the failure path is defense in depth.
- *
- * Composes as:
- * `ReflexiveTriggerEffect(action = Effects.PayFixedCounters(CounterType.ENERGY, 3), reflexiveEffect
- * = ..., reflexiveTargetRequirements = [...])`.
- *
- * @property counterType Which player-scoped counter kind to pay (e.g. [CounterType.ENERGY]).
- * @property amount The exact number of counters paid — not a cap, not a choice.
- * @property player Whose counters are paid. Defaults to the effect's controller.
+ * Pay an exact number of player counters, evaluated from the resolving effect's context.
+ * This action has no decision: compose with MayPay for "if you do" or ReflexiveTrigger for
+ * "when you do". Payment is all-or-nothing; a nonpositive computed amount costs zero.
  */
-@SerialName("PayFixedCounters")
+@SerialName("PayExactCounters")
 @Serializable
-data class PayFixedCountersEffect(
+data class PayExactCountersEffect(
     val counterType: CounterType,
-    val amount: Int,
+    val amount: DynamicAmount,
     val player: Player = Player.You
 ) : Effect {
     override val description: String =
-        "${player.possessive} pay $amount ${counterType.printed} counter${if (amount != 1) "s" else ""}"
+        "Pay ${amount.description} ${counterType.printed} counters"
 }
 
 /**

@@ -36,6 +36,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.PayDynamicLifeEffect
 import com.wingedsheep.sdk.scripting.effects.PayDynamicManaCostEffect
+import com.wingedsheep.sdk.scripting.effects.PayExactCountersEffect
 import com.wingedsheep.sdk.scripting.effects.PayLifeEffect
 import com.wingedsheep.sdk.scripting.effects.PayManaCostEffect
 import com.wingedsheep.sdk.scripting.effects.PayManaCostRepeatedlyEffect
@@ -546,6 +547,10 @@ class GatedEffectExecutor(
                 val amount = dynamicAmountEvaluator.evaluate(state, cost.amount, context).coerceAtLeast(0)
                 "Pay ${PayDynamicManaCostExecutor.dynamicManaCost(amount, cost.color)}"
             }
+            is PayExactCountersEffect -> {
+                val amount = dynamicAmountEvaluator.evaluate(state, cost.amount, context).coerceAtLeast(0)
+                "Pay $amount ${cost.counterType.printed} counters"
+            }
             is PayLifeEffect -> "Pay ${cost.amount} life"
             is PayDynamicLifeEffect -> {
                 val amount = dynamicAmountEvaluator.evaluate(state, cost.amount, context).coerceAtLeast(0)
@@ -578,6 +583,13 @@ class GatedEffectExecutor(
                 amount <= 0 || manaSolver.canPay(
                     state, payerId, PayDynamicManaCostExecutor.dynamicManaCost(amount, cost.color)
                 )
+            }
+            is PayExactCountersEffect -> {
+                val payer = TargetResolutionUtils.resolvePlayerRef(cost.player, context, state)
+                val amount = dynamicAmountEvaluator.evaluate(state, cost.amount, context).coerceAtLeast(0)
+                payer != null && com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment.available(
+                    state, payer, cost.counterType
+                ) >= amount
             }
             is PayLifeEffect -> {
                 val life = state.lifeTotal(playerId) // CR 810.9a — team's shared total

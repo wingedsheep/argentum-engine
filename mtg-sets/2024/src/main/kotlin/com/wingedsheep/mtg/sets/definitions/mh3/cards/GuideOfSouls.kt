@@ -23,7 +23,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * is made, and *that* ability chooses the attacking creature, so opponents get a response window
  * between the payment and the target lock. Modeled with [ReflexiveTriggerEffect] rather than a
  * [com.wingedsheep.sdk.scripting.effects.GatedEffect]/`Gate.MayPay` ("If you do") gate, which
- * would target at trigger time instead. [Effects.PayFixedCounters] is the all-or-nothing action
+ * would target at trigger time instead. [Effects.PayExactCounters] is the all-or-nothing action
  * half — paying a partial amount for a partial effect isn't legal (ruling), so it fails outright
  * rather than clamping, and [com.wingedsheep.engine.handlers.effects.composite.ReflexiveTriggerEffectExecutor.isActionFeasible]
  * checks the energy total before ever offering the "may pay" prompt. The Angel type change uses
@@ -49,7 +49,7 @@ val GuideOfSouls = card("Guide of Souls") {
     triggeredAbility {
         trigger = Triggers.you.attacks()
         effect = Effects.ReflexiveTrigger(
-            action = Effects.PayFixedCounters(CounterType.ENERGY, 3),
+            action = Effects.PayExactCounters(CounterType.ENERGY, 3),
             optional = true,
             descriptionOverride = "You may pay {E}{E}{E}. When you do, put two +1/+1 counters " +
                 "and a flying counter on target attacking creature. It becomes an Angel in " +

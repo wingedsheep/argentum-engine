@@ -192,15 +192,15 @@ class ReflexiveTriggerEffectExecutor(
         // "You may pay {E}{E}{E}" (Guide of Souls) — an all-or-nothing player-counter payment
         // is only feasible if the payer already has at least that many. Mirrors the SacrificeEffect
         // case: without this, the "may pay" prompt would be offered even at 0 energy, and
-        // PayFixedCountersExecutor would then fail every time instead of the option never appearing.
-        is com.wingedsheep.sdk.scripting.effects.PayFixedCountersEffect -> {
+        // PayExactCountersExecutor would then fail every time instead of the option never appearing.
+        is com.wingedsheep.sdk.scripting.effects.PayExactCountersEffect -> {
             val playerId = com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
                 .resolvePlayerRef(action.player, context, state)
             val current = playerId
                 ?.let { state.getEntity(it)?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>() }
                 ?.getCount(action.counterType)
                 ?: 0
-            current >= action.amount
+            playerId != null && current >= amountEvaluator.evaluate(state, action.amount, context).coerceAtLeast(0)
         }
         // "You may remove a counter from ~" (Leatherhead, Swamp Stalker) — with no counters left
         // there is nothing to remove, so the may-clause must be absent. Both removal executors

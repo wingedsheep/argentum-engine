@@ -2185,8 +2185,12 @@ object Effects {
      * is the payment decision, and per the 2024-06-07 ruling on {E} you can't pay a partial amount
      * for a partial effect, so this fails outright rather than clamping when unaffordable.
      */
-    fun PayFixedCounters(counterType: CounterType, amount: Int, player: Player = Player.You): Effect =
-        com.wingedsheep.sdk.scripting.effects.PayFixedCountersEffect(counterType, amount, player)
+    fun PayExactCounters(counterType: CounterType, amount: Int, player: Player = Player.You): Effect =
+        PayExactCounters(counterType, DynamicAmount.Fixed(amount), player)
+
+    /** Pay an exact resolution-computed amount; compose with MayPay or ReflexiveTrigger. */
+    fun PayExactCounters(counterType: CounterType, amount: DynamicAmount, player: Player = Player.You): Effect =
+        com.wingedsheep.sdk.scripting.effects.PayExactCountersEffect(counterType, amount, player)
 
     /**
      * [player] collects evidence [amount] (CR 701.59a) — exiles any number of cards from their
@@ -2196,7 +2200,7 @@ object Effects {
      * `action` half of a [ReflexiveTrigger] for "you may collect evidence 3. When you do, …"
      * (Sample Collector), or under an "if you do" gate for Izoni, Center of the Web. Per CR 701.59b
      * a player who cannot reach [amount] is never offered the choice at all, so — like
-     * [PayFixedCounters] — the outer "may" is only shown when the payment can actually be made.
+     * [PayExactCounters] — the outer "may" is only shown when the payment can actually be made.
      *
      * For collect evidence as a *cost*, use `Costs.CollectEvidence(n)` (activated abilities),
      * `Costs.additional.CollectEvidence(n)` (mandatory cast cost), or the `collectEvidence()` DSL

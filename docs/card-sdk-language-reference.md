@@ -1849,17 +1849,22 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
     storeAmountAs = "paid"), DealDamage(VariableReference("paid"), target))`. Paying 0 is legal and does nothing
     (2024-06-07 ruling: "You may pay zero {E}... won't deal any damage"); if the spell's target becomes illegal
     before resolution the whole spell fizzles per the normal CR 608.2b check, so no energy is gained either.
-  - `PayFixedCounters(counterType, amount, player = Player.You)` — the all-or-nothing counterpart to
-    `PayCounters`: pays an exact `amount`, not a chosen one. No decision of its own — designed as the `action`
-    half of a `ReflexiveTriggerEffect` ("you may pay {E}{E}{E}. **When** you do, ...", CR 603.12 — a fresh
+  - `PayExactCounters(counterType, amount, player = Player.You)` — the all-or-nothing counterpart to
+    `PayCounters`: pays an exact `amount` (`Int` or `DynamicAmount`), not a chosen one.
+    Dynamic amounts use the full resolution context (targets, variables, X, projected characteristics);
+    nonpositive values cost zero and produce no removal event. `MayPay` offers a concrete payment label
+    only when affordable, then continues in the same resolution (Jolted Awake). Use `otherwise` for
+    an unless-payment consequence. Both gate forms honor the payment effect’s own `player`.
+    This replaces `PayFixedCounters`; the same primitive handles fixed and dynamic exact amounts.
+    It has no decision of its own and also serves as the `action` half of a `ReflexiveTriggerEffect` ("you may pay {E}{E}{E}. **When** you do, ...", CR 603.12 — a fresh
     triggered ability with its own targets, distinct from a same-ability "**If** you do" continuation), where
     the reflexive's own yes/no *is* the payment decision. Fails outright (no partial removal) if the payer has
     fewer than `amount` — per the 2024-06-07 {E} ruling, "you can't pay that amount multiple times to multiply
     the effect... you simply choose whether or not to pay". `ReflexiveTriggerEffectExecutor.isActionFeasible`
-    recognizes `PayFixedCountersEffect` and checks the payer's current total before ever offering the "may pay"
+    recognizes `PayExactCountersEffect` and checks the payer's current total before ever offering the "may pay"
     prompt, mirroring how it already gates `SacrificeEffect` — so the prompt never appears when unaffordable,
     it doesn't appear-then-fail. Guide of Souls (MH3): `ReflexiveTriggerEffect(action =
-    PayFixedCounters(CounterType.ENERGY, 3), reflexiveEffect = AddCounters(PLUS_ONE_PLUS_ONE, 2, ContextTarget(0))
+    PayExactCounters(CounterType.ENERGY, 3), reflexiveEffect = AddCounters(PLUS_ONE_PLUS_ONE, 2, ContextTarget(0))
     then AddCounters(FLYING, 1, ContextTarget(0)) then AddCreatureType("Angel", ContextTarget(0)),
     reflexiveTargetRequirements = [TargetObject(filter = TargetFilter.AttackingCreature)])`.
   - `DynamicAmount.PlayerCounterCount(counterType, player = Player.You)` / `DynamicAmounts.playerCounterCount(...)`
@@ -3330,7 +3335,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   CR 603.12's "when you do" never triggers — for `optional = true` that means the "may [action]?"
   question isn't worth asking (answering yes would no-op the action while still firing the payoff),
   and for `optional = false` it means a vacuous action must not pay out either. Alongside
-  `SelectTargetEffect` / `SacrificeEffect` / `ChooseActionEffect` / `PayFixedCountersEffect`, it scores
+  `SelectTargetEffect` / `SacrificeEffect` / `ChooseActionEffect` / `PayExactCountersEffect`, it scores
   the **Gather → Select → Move pipeline** that `Effects.Discard` and the counted `Patterns.Hand`
   discards compile to — a `SelectFromCollection` whose `SelectionMode` carries a minimum
   (`ChooseExactly`, `Random`) drawing from a collection the preceding `GatherCards` will leave empty.

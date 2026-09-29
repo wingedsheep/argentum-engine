@@ -674,9 +674,12 @@
                 "effect": {
                     "type": "ReflexiveTrigger",
                     "action": {
-                        "type": "PayFixedCounters",
+                        "type": "PayExactCounters",
                         "counterType": "ENERGY",
-                        "amount": 3
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
                     },
                     "reflexiveEffect": {
                         "type": "Composite",
@@ -746,6 +749,96 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Jolted Awake
+{
+    "name": "Jolted Awake",
+    "manaCost": "{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose up to one target artifact or creature card in your graveyard. You get {E}{E} (two energy counters). Then you may pay an amount of {E} equal to that card's mana value. If you do, return it from your graveyard to the battlefield.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "artifact|creature"
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayPay",
+                            "cost": {
+                                "type": "PayExactCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "numericProperty": "ManaValue"
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "artifact|creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "artist": "Steven Russell Black",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f773a79f-ad0f-45c9-bcf5-44ba5e992729.jpg?1783911298",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If a card in your graveyard has {X} in its mana cost, X is 0 when determining its mana value."
+            }
+        ]
+    }
 }
 
 // Lethal Throwdown
