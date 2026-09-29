@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.TargetsResponse
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Keyword
@@ -126,6 +127,29 @@ class KoglaAndYidaroScenarioTest : ScenarioTestBase() {
             game.isOnBattlefield("Ornithopter") shouldBe true
             game.isInGraveyard(1, "Kogla and Yidaro") shouldBe false
             game.librarySize(1) shouldBe 2
+            game.handSize(1) shouldBe 1
+        }
+
+        test("a card exiled from the graveyard in response is not shuffled back from exile") {
+            val game = channelBoard()
+            val handCard = game.findCardsInHand(1, "Kogla and Yidaro").first()
+
+            val result = game.execute(
+                ActivateAbility(
+                    playerId = game.player1Id,
+                    sourceId = handCard,
+                    abilityId = discardAbilityId(),
+                    targets = emptyList()
+                )
+            )
+            withClue("activation should succeed: ${result.error}") { result.error shouldBe null }
+            game.state = game.state
+                .removeFromZone(ZoneKey(game.player1Id, Zone.GRAVEYARD), handCard)
+                .addToZone(ZoneKey(game.player1Id, Zone.EXILE), handCard)
+            game.resolveStack()
+
+            withClue("Kogla stays in exile") { game.isInExile(1, "Kogla and Yidaro") shouldBe true }
+            withClue("library: 2 Forests − 1 drawn") { game.librarySize(1) shouldBe 1 }
             game.handSize(1) shouldBe 1
         }
     }

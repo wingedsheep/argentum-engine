@@ -18,8 +18,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * The discard ability is activated from hand (channel shape, [Costs.DiscardSelf] +
  * `activateFromZone = HAND`). By resolution the card sits in the graveyard, so
- * `ShuffleIntoLibrary(Self)` reads it there; if it has left the graveyard the move is a no-op
- * and the draw still happens. "Up to one" target means the shuffle + draw run with no target.
+ * `ShuffleIntoLibrary(Self, fromZone = GRAVEYARD)` reads it there; if it has left the graveyard
+ * (exiled in response) the move is skipped and the draw still happens. "Up to one" target means the shuffle + draw run with no target.
  */
 val KoglaAndYidaro = card("Kogla and Yidaro") {
     manaCost = "{2}{R}{R}{G}{G}"
@@ -54,7 +54,7 @@ val KoglaAndYidaro = card("Kogla and Yidaro") {
         activateFromZone = Zone.HAND
         val t = target(TargetFilter.ArtifactOrEnchantment, optional = true)
         effect = Effects.Destroy(t) then
-            Effects.ShuffleIntoLibrary(EffectTarget.Self) then
+            Effects.ShuffleIntoLibrary(EffectTarget.Self, fromZone = Zone.GRAVEYARD) then
             Effects.DrawCards(1)
         description = "{2}{R}{G}, Discard this card: Destroy up to one target artifact or enchantment. " +
             "Shuffle this card into your library from your graveyard, then draw a card."

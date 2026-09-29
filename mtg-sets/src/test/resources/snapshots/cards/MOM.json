@@ -15258,7 +15258,8 @@
                             "type": "MoveToZone",
                             "target": "Self",
                             "destination": "Library",
-                            "placement": "Shuffled"
+                            "placement": "Shuffled",
+                            "fromZone": "Graveyard"
                         },
                         {
                             "type": "DrawCards",

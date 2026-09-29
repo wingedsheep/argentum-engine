@@ -1386,9 +1386,13 @@ object Effects {
 
     /**
      * Shuffle into library.
+     *
+     * [fromZone] guards a self-reference that names its origin — "shuffle this card into your
+     * library from your graveyard" (Kogla and Yidaro): the move is skipped if the card has left that
+     * zone by resolution, so a card exiled in response stays in exile. See [ReturnToHandFromGraveyard].
      */
-    fun ShuffleIntoLibrary(target: EffectTarget): Effect =
-        MoveToZoneEffect(target, Zone.LIBRARY, ZonePlacement.Shuffled)
+    fun ShuffleIntoLibrary(target: EffectTarget, fromZone: Zone? = null): Effect =
+        MoveToZoneEffect(target, Zone.LIBRARY, ZonePlacement.Shuffled, fromZone = fromZone)
 
     /**
      * Put into owner's library at a specific position from the top.
