@@ -52,7 +52,7 @@ val HidetsuguAndKairi = card("Hidetsugu and Kairi") {
         effect = Effects.Pipeline {
             val top = gather(CardSource.TopOfLibrary(DynamicAmounts.fixed(1)))
             exile(top)
-            run(Effects.LoseLife(DynamicAmounts.manaValueSumOf(top.key), opponent))
+            run(Effects.LoseLife(DynamicAmounts.manaValueSumOf(top), opponent))
             val spells = filter(top, GameObjectFilter.InstantOrSorcery)
             val toCast = chooseUpTo(
                 1,

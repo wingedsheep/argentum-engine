@@ -11,8 +11,7 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.targets.TargetObject
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.times
 
 private const val BORBORYGMOS_TRIGGER_TEXT =
     "Whenever Borborygmos and Fblthp enters or attacks, draw a card, then you may discard any " +
@@ -38,14 +37,12 @@ private fun borborygmosTriggerEffect(): Effect = Effects.Pipeline {
             Effects.ReflexiveTrigger(
                 action = Effects.Nothing,
                 optional = false,
-                reflexiveEffect = Effects.DealDamage(
-                    DynamicAmount.Multiply(discarded.count, 2),
-                    EffectTarget.ContextTarget(0)
-                ),
-                reflexiveTargetRequirements = listOf(TargetObject(filter = TargetFilter.Creature)),
                 descriptionOverride = "When you discard one or more cards this way, Borborygmos " +
                     "and Fblthp deals twice that much damage to target creature."
-            )
+            ) {
+                val creature = target(TargetFilter.Creature)
+                effect = Effects.DealDamage(discarded.count * 2, creature)
+            }
         )
     }
 }

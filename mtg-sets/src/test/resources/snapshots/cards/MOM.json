@@ -2409,8 +2409,8 @@
                                         "multiplier": 2
                                     },
                                     "target": {
-                                        "type": "ContextTarget",
-                                        "index": 0
+                                        "type": "BoundVariable",
+                                        "name": "t0"
                                     }
                                 },
                                 "reflexiveTargetRequirements": [
@@ -2418,7 +2418,8 @@
                                         "type": "TargetObject",
                                         "filter": {
                                             "baseFilter": "creature"
-                                        }
+                                        },
+                                        "id": "t0"
                                     }
                                 ],
                                 "descriptionOverride": "When you discard one or more cards this way, Borborygmos and Fblthp deals twice that much damage to target creature."
@@ -2488,8 +2489,8 @@
                                         "multiplier": 2
                                     },
                                     "target": {
-                                        "type": "ContextTarget",
-                                        "index": 0
+                                        "type": "BoundVariable",
+                                        "name": "t1"
                                     }
                                 },
                                 "reflexiveTargetRequirements": [
@@ -2497,7 +2498,8 @@
                                         "type": "TargetObject",
                                         "filter": {
                                             "baseFilter": "creature"
-                                        }
+                                        },
+                                        "id": "t1"
                                     }
                                 ],
                                 "descriptionOverride": "When you discard one or more cards this way, Borborygmos and Fblthp deals twice that much damage to target creature."
