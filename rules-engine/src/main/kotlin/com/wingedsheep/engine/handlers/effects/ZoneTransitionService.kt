@@ -43,6 +43,7 @@ import com.wingedsheep.engine.state.components.player.CardsPutIntoExileThisTurnC
 import com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ArtifactsDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent
+import com.wingedsheep.engine.state.components.player.PermanentsWithCountersPutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.OpponentCreaturesExiledThisTurnComponent
@@ -992,6 +993,17 @@ class ZoneTransitionService(
                 val existing = playerContainer.get<PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent>()
                     ?: PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent()
                 playerContainer.with(PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent(existing.count + 1))
+            }
+        }
+
+        // 8b1b. Track the kinds of counter on permanents put into a graveyard from the battlefield
+        // ("a permanent with an oil counter on it was put into a graveyard this turn" — Churning
+        // Reservoir). Read off the last-known counters, credited to the same last-known controller.
+        if (leavingBattlefield && actualDestZone == Zone.GRAVEYARD && lastKnownCounters.isNotEmpty()) {
+            newState = newState.updateEntity(controllerId) { playerContainer ->
+                val existing = playerContainer.get<PermanentsWithCountersPutIntoGraveyardThisTurnComponent>()
+                    ?: PermanentsWithCountersPutIntoGraveyardThisTurnComponent()
+                playerContainer.with(existing.with(lastKnownCounters.keys))
             }
         }
 

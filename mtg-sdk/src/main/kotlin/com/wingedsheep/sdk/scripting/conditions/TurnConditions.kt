@@ -429,6 +429,46 @@ data class CounterPutOnPermanentYouControlledThisTurn(
 }
 
 /**
+ * Condition: "if a [counterType] counter was removed from a permanent [player] controlled this turn"
+ * — the first half of Churning Reservoir's activation gate.
+ *
+ * The removal-side mirror of [CounterPutOnPermanentYouControlledThisTurn]: keyed on who controlled
+ * the permanent *as the counter left it*, whoever removed it and however (a cost, an effect, a -1/-1
+ * and +1/+1 annihilation). Turn history, not a board scan: the permanent may since have left the
+ * battlefield or changed control. Counters leaving a player, or a card that isn't a permanent (a
+ * suspended card's time counters), don't count. `null` [counterType] is "a counter" of any kind.
+ */
+@SerialName("CounterRemovedFromPermanentYouControlledThisTurn")
+@Serializable
+data class CounterRemovedFromPermanentYouControlledThisTurn(
+    val counterType: CounterType? = null,
+    val player: Player = Player.You
+) : Condition {
+    override val description: String =
+        "if ${counterType?.let { "a ${it.printed} counter" } ?: "a counter"} was removed from a " +
+            "permanent ${player.description} controlled this turn"
+}
+
+/**
+ * Condition: "if a permanent with a [counterType] counter on it was put into a graveyard this turn"
+ * — the second half of Churning Reservoir's activation gate.
+ *
+ * Game-wide: any permanent, any controller, from the battlefield to a graveyard. The counter is read
+ * off the permanent's last-known information as it left, so a permanent that died with the counter
+ * counts even though the card in the graveyard has none. `null` [counterType] is "with a counter on
+ * it" of any kind.
+ */
+@SerialName("PermanentWithCounterPutIntoGraveyardThisTurn")
+@Serializable
+data class PermanentWithCounterPutIntoGraveyardThisTurn(
+    val counterType: CounterType? = null
+) : Condition {
+    override val description: String =
+        "if a permanent with ${counterType?.let { "a ${it.printed} counter" } ?: "a counter"} on it " +
+            "was put into a graveyard this turn"
+}
+
+/**
  * Condition: "if this is the first spell you've cast this turn that mana from a Treasure
  * was spent to cast." Used by Rain of Riches.
  *
