@@ -191,17 +191,25 @@ data class DivideCombatDamageFreely(
 }
 
 /**
- * This creature may assign its combat damage as though it weren't blocked.
- * When blocked, the controller chooses whether to assign damage to blockers
- * or to the defending player/planeswalker. Used for Thorn Elemental.
+ * A creature may assign its combat damage as though it weren't blocked. When it is
+ * blocked, its controller chooses, at each combat damage step it deals damage in, whether to
+ * assign to its blockers or to the player, planeswalker or battle it is attacking.
+ *
+ * [filter] picks which creatures: the default [GroupFilter.source] is "this creature" (Thorn
+ * Elemental); a battlefield-scoped group covers every creature it matches, evaluated against the
+ * source's controller (Zilortha, Apex of Ikoria — "for each non-Human creature you control, you may
+ * have that creature assign its combat damage as though it weren't blocked").
  */
 @SerialName("AssignCombatDamageAsUnblocked")
 @Serializable
 data class AssignCombatDamageAsUnblocked(
     val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
-    override val description: String =
-        "You may have this creature assign its combat damage as though it weren't blocked"
+    override val description: String = when (filter.scope) {
+        is Scope.Battlefield ->
+            "For each ${filter.baseFilter.description}, you may have that creature assign its combat damage as though it weren't blocked"
+        else -> "You may have ${filter.description} assign its combat damage as though it weren't blocked"
+    }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this

@@ -114,8 +114,12 @@ class CombatContinuationResumer(
 
         val newState = if (response.choice) {
             // Player chose to assign damage to the defending player — store a manual assignment
-            val projected = state.projectedState
-            val power = projected.getPower(continuation.attackerId) ?: 0
+            // The amount it assigns, not its raw power: Doran-style "assigns equal to toughness"
+            // and "assigns no combat damage" riders still apply to the redirected assignment.
+            val power = com.wingedsheep.engine.mechanics.combat.CombatDamageUtils.getAssignedCombatDamage(
+                state, state.projectedState, continuation.attackerId, services.cardRegistry,
+                predicateEvaluator = services.predicateEvaluator
+            )
             state.updateEntity(continuation.attackerId) { container ->
                 container.with(
                     com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent(
