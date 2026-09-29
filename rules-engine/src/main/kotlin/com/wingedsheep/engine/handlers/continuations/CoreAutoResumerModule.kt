@@ -180,6 +180,7 @@ class CoreAutoResumerModule(
                 sourceName = continuation.sourceName,
                 xValue = continuation.xValue,
                 triggeringEntityId = continuation.triggeringEntityId,
+                triggerContext = continuation.triggerContext,
                 pipeline = continuation.pipeline,
                 objectReferences = continuation.objectReferences
             )

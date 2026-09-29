@@ -130,6 +130,7 @@ data class ModalPreChosenContinuation(
     val sourceName: String?,
     val xValue: Int? = null,
     val triggeringEntityId: EntityId? = null,
+    val triggerContext: com.wingedsheep.engine.event.TriggerContext? = null,
     /**
      * The enclosing resolution's pipeline, so the modes still queued behind a paused one read the
      * same stored collections/numbers the modes before them did. Without it a choose-two modal

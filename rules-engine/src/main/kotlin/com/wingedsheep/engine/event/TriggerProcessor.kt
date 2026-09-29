@@ -903,8 +903,8 @@ class TriggerProcessor(
      *
      * A [ModalEffect.dynamicChooseCount] ("choose up to X") is evaluated here, once, against the
      * state the ability is going onto the stack in — CR 601.2c (reached via 603.3d) fixes the count
-     * at that moment, so it can't drift as the picks are made. The floor drops to 0 because "up to"
-     * always permits picking none; that mirrors the resolution-time evaluation in
+     * at that moment, so it can't drift as the picks are made. An explicit dynamic minimum is
+     * evaluated in the same context; otherwise the floor drops to 0 for "up to". This mirrors
      * [com.wingedsheep.engine.handlers.effects.composite.ModalEffectExecutor], which still serves
      * modal *activated* abilities and nested modals.
      */
@@ -913,14 +913,18 @@ class TriggerProcessor(
         ability: TriggeredAbilityOnStackComponent,
         modal: ModalEffect
     ): Pair<Int, Int> {
-        val dynamic = modal.dynamicChooseCount
-            ?: return modal.chooseCount to modal.minChooseCount
-        val evaluated = amountEvaluator.evaluate(
-            state,
-            dynamic,
-            EffectContext.forTriggeredAbility(ability)
-        )
-        return evaluated.coerceIn(0, modal.modes.size) to 0
+        if (modal.dynamicChooseCount == null && modal.dynamicMinChooseCount == null) {
+            return modal.chooseCount to modal.minChooseCount
+        }
+        val context = EffectContext.forTriggeredAbility(ability)
+        val floor = modal.dynamicMinChooseCount?.let {
+            amountEvaluator.evaluate(state, it, context)
+        } ?: if (modal.dynamicChooseCount != null) 0 else modal.minChooseCount
+        val minimum = floor.coerceIn(0, modal.modes.size)
+        val maximum = modal.dynamicChooseCount?.let {
+            amountEvaluator.evaluate(state, it, context)
+        } ?: modal.chooseCount
+        return maximum.coerceIn(minimum, modal.modes.size) to minimum
     }
 
     /**

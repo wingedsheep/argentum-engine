@@ -798,7 +798,11 @@ class ConditionEvaluator(
                 // spell exists both read true — the bag only exists once it resolves.
                 val sourceId = ctx.sourceId
                 val declaredThisCast = (ctx as? Resolution)?.effectContext?.declaredCostSlot
-                if (declaredThisCast == condition.slot) {
+                val selfCastChoice = (ctx as? Resolution)?.effectContext
+                    ?.let(::selfCastCostChoices)?.get(condition.slot)
+                if (selfCastChoice != null) {
+                    selfCastChoice
+                } else if (declaredThisCast == condition.slot) {
                     true
                 } else {
                     sourceId != null &&
@@ -1736,7 +1740,11 @@ class ConditionEvaluator(
         return total >= amount
     }
 
+    private fun selfCastCostChoices(context: EffectContext): Map<ChoiceSlot, Boolean>? =
+        context.triggerContext?.takeIf { it.triggeringEntityId == context.sourceId }?.selfCastCostChoices
+
     private fun evaluateWasKicked(state: GameState, context: EffectContext): Boolean {
+        selfCastCostChoices(context)?.let { return it[ChoiceSlot.KICKED] == true }
         // Kicker specifically (ChoiceSlot.KICKED) — a spell that declared a *different*
         // optional additional cost on the same rail (bargain) is not kicked.
         val kicked = context.declaredCostSlot == ChoiceSlot.KICKED

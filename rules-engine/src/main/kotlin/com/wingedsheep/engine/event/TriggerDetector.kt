@@ -1929,6 +1929,13 @@ class TriggerDetector(
         val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state, statics)
         val controllerId = event.casterId
 
+        val castCostChoices by lazy {
+            val offered = cardRegistry.getCard(cardComponent.cardDefinitionId)?.keywordAbilities
+                ?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>()
+                ?.associate { it.declaredSlot to (it.declaredSlot == event.declaredCostSlot) }
+                ?: emptyMap()
+            offered + listOfNotNull(event.declaredCostSlot?.let { it to true }).toMap()
+        }
         for (ability in abilities) {
             if (ability.trigger !is EventPattern.CastThisSpellEvent) continue
             if (matcher.matchesTrigger(ability.trigger, ability.binding, event, entityId, controllerId, state)) {
@@ -1938,7 +1945,9 @@ class TriggerDetector(
                         sourceId = entityId,
                         sourceName = cardComponent.name,
                         controllerId = controllerId,
-                        triggerContext = TriggerContext.fromEvent(event)
+                        triggerContext = TriggerContext.fromEvent(event).copy(
+                            selfCastCostChoices = castCostChoices
+                        )
                     )
                 )
             }

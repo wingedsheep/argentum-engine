@@ -303,6 +303,172 @@
     }
 }
 
+// Depth Defiler
+{
+    "name": "Depth Defiler",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nKicker {C} (You may pay an additional {C} as you cast this spell.)\nWhen you cast this spell, choose one. If it was kicked, choose both instead.\n• Return target creature to its owner's hand.\n• Target player draws two cards, then discards a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{C}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Depth Defiler:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Hand"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Return target creature to its owner's hand"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    },
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Hand",
+                                                    "player": {
+                                                        "type": "BoundVariable",
+                                                        "name": "t1"
+                                                    }
+                                                },
+                                                "storeAs": "hand"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "hand",
+                                                "selection": {
+                                                    "type": "ChooseExactly",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "chooser": "TargetPlayer",
+                                                "storeSelected": "discarded",
+                                                "prompt": "Choose 1 card to discard"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "discarded",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Graveyard",
+                                                    "player": {
+                                                        "type": "BoundVariable",
+                                                        "name": "t1"
+                                                    }
+                                                },
+                                                "moveType": "Discard"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetPlayer",
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Target player draws two cards, then discards a card"
+                        }
+                    ],
+                    "dynamicChooseCount": {
+                        "type": "Conditional",
+                        "condition": "WasKicked",
+                        "ifTrue": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "ifFalse": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "dynamicMinChooseCount": {
+                        "type": "Conditional",
+                        "condition": "WasKicked",
+                        "ifTrue": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "ifFalse": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "UNCOMMON",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37684797-7503-460d-9f74-047b1ab2fac3.jpg?1783911292",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "The triggered ability will resolve before Depth Defiler does. If Depth Defiler is countered or otherwise leaves the stack in response to its triggered ability, the triggered ability will still resolve as normal. If Depth Defiler was kicked, you'll still follow the instructions of both modes."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Each chosen mode is performed in the order specified. Abilities that trigger while one mode is being performed won't be put onto the stack until Depth Defiler's triggered ability has finished resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Faithful Watchdog
 {
     "name": "Faithful Watchdog",
@@ -1059,6 +1225,107 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Sowing Mycospawn
+{
+    "name": "Sowing Mycospawn",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Eldrazi Fungus",
+    "oracleText": "Devoid (This card has no color.)\nKicker {1}{C} (You may pay an additional {1}{C} as you cast this spell.)\nWhen you cast this spell, search your library for a land card, put it onto the battlefield, then shuffle.\nWhen you cast this spell, if it was kicked, exile target land.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{1}{C}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sowing Mycospawn:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "land"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            },
+            {
+                "id": "Sowing Mycospawn:2",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": "WasKicked"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdfadb17-76ad-4d4d-9fa7-33c4b88b4c0a.jpg?1783911255",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Sowing Mycospawn's triggered abilities will resolve before Sowing Mycospawn does. If Sowing Mycospawn is countered or otherwise leaves the stack in response to those triggered abilities, the triggered abilities will still resolve as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
