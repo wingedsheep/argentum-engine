@@ -319,6 +319,65 @@
     ]
 }
 
+// Bring the Ending
+{
+    "name": "Bring the Ending",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {2}.\nCorrupted — Counter that spell instead if its controller has three or more poison counters.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "PlayerCounterCount",
+                        "counterType": "POISON",
+                        "player": {
+                            "type": "ControllerOf",
+                            "targetDescription": "target spell"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            },
+            "then": "Counter",
+            "otherwise": {
+                "type": "Counter",
+                "condition": {
+                    "type": "CounterCondition.UnlessPaysMana",
+                    "cost": "{2}"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "artist": "L.A. Draws",
+        "flavorText": "Kaya watched in horror as the illusion vanished from her hands. Jace held the real Sylex—and had activated it before phyresis claimed his mind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba9d9d26-0c76-4a09-aa25-b32854e70c0b.jpg?1783918068"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Cephalopod Sentry
 {
     "name": "Cephalopod Sentry",
@@ -568,6 +627,82 @@
         "artist": "Kev Walker",
         "imageUri": "https://cards.scryfall.io/normal/front/2/9/29d2c689-af37-433a-a012-e8d384702811.jpg?1783917993"
     }
+}
+
+// Feed the Infection
+{
+    "name": "Feed the Infection",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "You draw three cards and you lose 3 life.\nCorrupted — Each opponent who has three or more poison counters loses 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": "Controller"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "PlayerCounterCount",
+                                    "counterType": "POISON"
+                                },
+                                "operator": "GTE",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "You"
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "UNCOMMON",
+        "artist": "Jason A. Engle",
+        "flavorText": "They wished to become vital parts of the Dross Pits. Azax-Azog granted their request.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f013a1a-d4b9-4380-9802-c299ee6c4492.jpg?1783918046"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Glistener Seer
