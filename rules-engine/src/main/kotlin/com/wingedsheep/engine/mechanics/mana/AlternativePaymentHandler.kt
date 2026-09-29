@@ -497,6 +497,61 @@ class AlternativePaymentHandler(
     }
 
     /**
+     * The total *generic* mana [payment] would pay for a spell cast, counted with the same validity
+     * gates [apply] uses (so a choice [apply] would skip counts for nothing): each delved card still
+     * in the graveyard, each untapped creature you control convoked for {1} (a coloured convoke
+     * choice pays a coloured pip, not generic), and the harmonize creature's projected power.
+     *
+     * This is not capped by the generic in any cost — the caller subtracts the generic already in
+     * the total cost, and whatever is left pays the announced {X} (CR 601.2f puts X into the total
+     * cost as generic mana before convoke, delve or harmonize pay it). [harmonizeAllowed] lets the
+     * caller add a gate on harmonize (the cast-from-graveyard permission) that [apply] doesn't check.
+     */
+    fun genericReductionForSpell(
+        state: GameState,
+        payment: AlternativePaymentChoice,
+        playerId: EntityId,
+        cardDef: CardDefinition,
+        cardId: EntityId?,
+        harmonizeAllowed: Boolean = true,
+    ): Int {
+        if (payment.isEmpty) return 0
+        val projected = state.projectedState
+        val battlefield = state.getZone(ZoneKey(playerId, Zone.BATTLEFIELD))
+        fun tappableCreature(entityId: EntityId): Boolean {
+            if (entityId !in battlefield) return false
+            val container = state.getEntity(entityId) ?: return false
+            return projected.isCreature(entityId) && !container.has<TappedComponent>() &&
+                projected.getController(entityId) == playerId
+        }
+        var total = 0
+
+        if (payment.delvedCards.isNotEmpty() &&
+            effectivelyHasKeyword(state, playerId, cardDef, Keyword.DELVE, cardId)
+        ) {
+            val graveyard = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))
+            total += payment.delvedCards.distinct().count { it in graveyard && state.getEntity(it)?.get<CardComponent>() != null }
+        }
+
+        if (payment.convokedCreatures.isNotEmpty() &&
+            effectivelyHasKeyword(state, playerId, cardDef, Keyword.CONVOKE, cardId)
+        ) {
+            total += payment.convokedCreatures.count { (creatureId, choice) ->
+                choice.color == null && tappableCreature(creatureId)
+            }
+        }
+
+        val harmonizeCreature = payment.harmonizeCreature
+        if (harmonizeAllowed && harmonizeCreature != null && hasHarmonize(state, cardId, cardDef) &&
+            harmonizeCreature !in payment.convokedCreatures && tappableCreature(harmonizeCreature)
+        ) {
+            total += (projected.getPower(harmonizeCreature) ?: 0).coerceAtLeast(0)
+        }
+
+        return total
+    }
+
+    /**
      * True when [cardDef] effectively has [keyword] — either printed on the card or granted by
      * a battlefield permanent [playerId] controls. Returns the printed check when
      * state/playerId/resolver aren't available. [cardId] is the card being cast — a grant scoped

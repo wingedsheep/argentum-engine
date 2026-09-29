@@ -15258,6 +15258,33 @@
     ]
 }
 
+// Transcendent Message
+{
+    "name": "Transcendent Message",
+    "manaCost": "{X}{U}{U}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nDraw X cards.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": "XValue"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "RARE",
+        "artist": "Liiga Smilshkalne",
+        "flavorText": "Wrenn reached out to Teferi through the Blind Eternities, and an impossible connection flared across the vast emptiness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/3261c7e6-45be-44d1-8855-026359ba0ae7.jpg?1783917021"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Urabrask
 {
     "name": "Urabrask",

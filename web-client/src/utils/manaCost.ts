@@ -98,7 +98,7 @@ export function getRemainingCostSymbols(originalSymbols: string[], delveCount: n
  * Apply a Harmonize creature-tap to a mana cost. The tap reduces the *generic*
  * mana the player must still pay by the chosen creature's power — printed {N}
  * first, then the generic {X} (the {X} is generic per the TDM release notes,
- * mirrored server-side by `CastSpellHandler.harmonizePaymentXValue`). Colored
+ * mirrored server-side by `CastCostTotaller.paymentXValue`). Colored
  * pips are untouched, and the effect's chosen X (sent as `action.xValue`) is
  * unchanged — only the mana *paid* shrinks.
  *
@@ -113,6 +113,17 @@ export function reduceCostByHarmonizeTap(
 ): string[] {
   const expanded = parseManaCost(manaCost).map((s) => (s === 'X' ? String(xValue) : s))
   return getRemainingCostSymbols(expanded, reduction)
+}
+
+/**
+ * Materialize each {X} as the announced X (CR 601.2f: the total cost includes X as generic mana),
+ * so a payment that pays generic — convoke, delve — visibly pays it down. An X of 0 drops the
+ * symbol rather than leaving a {0} pip. [xValue] null/undefined means X hasn't been chosen (an ability,
+ * or no X at all): the symbols come back unchanged.
+ */
+export function materializeX(symbols: readonly string[], xValue: number | null | undefined): string[] {
+  if (xValue == null) return [...symbols]
+  return symbols.flatMap((s) => (s === 'X' ? (xValue > 0 ? [String(xValue)] : []) : [s]))
 }
 
 /**

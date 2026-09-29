@@ -533,6 +533,19 @@ class CastSpellEnumerator(
                 // For waterbend {X}, each tappable artifact/creature pays {1} of the X generic, so
                 // it raises the X ceiling like an extra mana source.
                 val waterbendAvailable = if (spellWaterbend?.isX == true) waterbendPermanents.size else 0
+                // Convoke (CR 702.51a) pays generic mana of the *total* cost, which includes the
+                // announced X (CR 601.2f), so each convoke creature raises the ceiling by one — the
+                // payer charges the leftover against the X mana (`CastCostTotaller.paymentXValue`).
+                // Kept an upper bound that never over-offers: a creature that is itself a counted
+                // mana source (a mana dork) is already in `availableSources` and is skipped —
+                // it taps once, for mana or for convoke, not both — and each Springleaf Drum-style
+                // source, counted there as +1 by tapping *some* creature, costs one convoke
+                // creature back.
+                val convokeAvailable = if (hasConvoke && convokeCreatures != null) {
+                    val manaSourceIds = cachedSources.mapTo(HashSet()) { it.entityId }
+                    val drumSources = cachedSources.count { it.tapPermanentsSubCost != null }
+                    (convokeCreatures.count { it.entityId !in manaSourceIds } - drumSources).coerceAtLeast(0)
+                } else 0
                 // TODO(improvise+{X}): improvise is deliberately NOT counted here, and that is a
                 // known *gap*, not correct behaviour. CR 601.2b announces X before CR 601.2f
                 // determines the total cost, and CR 702.126a bounds the taps at the generic in that
@@ -548,11 +561,11 @@ class CastSpellEnumerator(
                 // the *printed* generic runs out, so a raised ceiling would offer an X the handler
                 // then refuses to pay. Closing it means folding X into the cost the way
                 // `waterbend {X}` does and charging the leftover against the X mana the way
-                // `CastSpellHandler.harmonizePaymentXValue` already does — plus lifting the client
+                // `CastCostTotaller.paymentXValue` already does for convoke/delve/harmonize — plus lifting the client
                 // cap in `pipelinePhases.ts`. Do it with the first improvise-{X} card.
                 val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
                 val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
-                ((availableSources + delveAvailable + waterbendAvailable - fixedCost) / xSymbolCount)
+                ((availableSources + delveAvailable + waterbendAvailable + convokeAvailable - fixedCost) / xSymbolCount)
                     .coerceAtLeast(0)
             } else null
 

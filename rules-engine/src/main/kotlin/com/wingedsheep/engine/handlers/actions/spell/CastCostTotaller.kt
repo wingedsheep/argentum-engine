@@ -20,9 +20,7 @@ import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.MiracleWindowComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent
@@ -248,15 +246,16 @@ internal class CastCostTotaller(
     }
 
     /**
-     * The X to charge as mana (≤ [CastSpell.xValue]). For an X-cost Harmonize cast where a creature
-     * is tapped, the creature's power reduces generic mana — and {X} is generic (TDM release notes)
-     * — so the leftover reduction beyond any printed generic comes off the X mana paid. For a
+     * The X to charge as mana (≤ [CastSpell.xValue]). Convoke taps for {1}, delved cards and a
+     * harmonize creature's power all pay generic mana, and the announced X is generic mana in the
+     * total cost (CR 601.2f) — so the reduction left over beyond the printed generic comes off the
+     * X mana paid (see [alternativePaymentXValue]). For a
      * "waterbend {X}" spell the X is already materialized as generic in the cost (and reduced by the
      * waterbend taps), so it must NOT also be charged as {X} mana. The effect's X is untouched.
      */
     fun paymentXValue(state: GameState, action: CastSpell, cardDef: CardDefinition?, totalCost: ManaCost): Int =
         if (cardDef?.script?.spellWaterbend?.isX == true) 0
-        else harmonizePaymentXValue(state, action, cardDef, totalCost)
+        else alternativePaymentXValue(state, action, cardDef, totalCost)
 
     // ---------------------------------------------------------------------------------------------
     // The base
@@ -463,34 +462,39 @@ internal class CastCostTotaller(
         return comp.fixedCost.genericAmount
     }
 
-    private fun harmonizePaymentXValue(
+    /**
+     * The X still owed as mana once the tap/exile payments have paid their share of it.
+     *
+     * CR 601.2f: the total cost includes the announced X as generic mana, so a payment that pays
+     * generic mana — a convoke tap for {1} (CR 702.51a), a delved card, harmonize's power — pays
+     * the X-derived generic as well as the printed generic. The payer charges X separately from
+     * [totalCost]'s symbols, and `ManaCost.reduceGeneric` only eats the generic symbols, so the
+     * reduction left over after the printed generic comes off the X mana here.
+     *
+     * With several {X} symbols (no current convoke/delve/harmonize card) the per-symbol X rounds
+     * *up*, so payment never charges less than the total cost; the rounding can only strand a tap.
+     */
+    private fun alternativePaymentXValue(
         state: GameState,
         action: CastSpell,
         cardDef: CardDefinition?,
-        harmonizeCost: ManaCost,
+        totalCost: ManaCost,
     ): Int {
         val xValue = action.xValue ?: 0
-        if (xValue <= 0) return xValue
-        val creatureId = action.alternativePayment?.harmonizeCreature ?: return xValue
-        // Harmonize may be printed or granted at runtime (Songcrafter Mage).
-        if (HarmonizeGrants.effectiveHarmonize(state, action.cardId, cardDef) == null) return xValue
-        if (!zoneResolver.hasHarmonizePermission(state, action.playerId, action.cardId)) return xValue
-        // Mirror applyHarmonize's validity gate: a creature that wouldn't actually be tapped
-        // grants no reduction, so payment must not assume one.
-        if (creatureId !in state.getZone(ZoneKey(action.playerId, Zone.BATTLEFIELD))) return xValue
-        val container = state.getEntity(creatureId) ?: return xValue
-        val projected = state.projectedState
-        if (!projected.isCreature(creatureId)) return xValue
-        if (container.has<TappedComponent>()) return xValue
-        if (container.get<ControllerComponent>()?.playerId != action.playerId) return xValue
-        val power = (projected.getPower(creatureId) ?: 0).coerceAtLeast(0)
-        if (power <= 0) return xValue
-        // reduceGeneric eats the printed generic first; whatever power is left reduces the
-        // X mana. xCount > 1 (no current card) floors conservatively so payment never
-        // under-charges.
-        val leftover = (power - harmonizeCost.genericAmount).coerceAtLeast(0)
-        val xCount = harmonizeCost.xCount.coerceAtLeast(1)
-        return ((xValue * xCount - leftover).coerceAtLeast(0)) / xCount
+        if (xValue <= 0 || cardDef == null) return xValue
+        val payment = action.alternativePayment ?: return xValue
+        val reduction = alternativePaymentHandler.genericReductionForSpell(
+            state, payment, action.playerId, cardDef, action.cardId,
+            // Harmonize (printed or granted — the handler checks both) also needs the cast's
+            // graveyard permission.
+            harmonizeAllowed = payment.harmonizeCreature != null &&
+                zoneResolver.hasHarmonizePermission(state, action.playerId, action.cardId),
+        )
+        val leftover = (reduction - totalCost.genericAmount).coerceAtLeast(0)
+        if (leftover == 0) return xValue
+        val xCount = totalCost.xCount.coerceAtLeast(1)
+        val xMana = (xValue * xCount - leftover).coerceAtLeast(0)
+        return (xMana + xCount - 1) / xCount
     }
 
     /**

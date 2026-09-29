@@ -616,7 +616,6 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
       alternativePayment?: { harmonizeCreature?: EntityId | null }
       additionalCostPayment?: { sacrificedPermanents?: readonly EntityId[] }
     }
-    const xValue = action.xValue ?? 0
     // Emerge (CR 702.119): the creature chosen in the prior costPayment phase reduces the emerge
     // cost by its mana value, so the printed `manaCostString` overstates what's owed. The server
     // sent the resulting cost for every candidate, so price this step off the chosen entry rather
@@ -636,6 +635,11 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
     const targetTax =
       perExtraTarget && extraTargets > 0 ? perExtraTarget.repeat(extraTargets) : ''
     const manaCost = (emergeCost ?? actionInfo.manaCostString ?? '') + targetTax
+    // A preceding delve or convoke phase materializes {X} as generic in the cost it hands on, so
+    // its exiles/taps can pay the X down (CR 601.2f). Once that has happened the X is already in
+    // [manaCost] and must not be added on top of it again.
+    const xMaterialized = actionInfo.hasXCost === true && !/\{X\}/.test(manaCost)
+    const xValue = xMaterialized ? 0 : action.xValue ?? 0
     const xSymbolCount = Math.max(1, (manaCost.match(/\{X\}/g)?.length ?? 0))
 
     // Harmonize creature-tap (chosen in the prior `harmonize` phase) reduces the

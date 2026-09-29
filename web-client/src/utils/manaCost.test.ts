@@ -9,6 +9,9 @@ import {
   type TrimmableManaSource,
   estimatedShortfall,
   pickConvokeColor,
+  getRemainingCostAfterConvoke,
+  materializeX,
+  parseManaCost,
 } from './manaCost'
 
 const set = (...cs: string[]) => new Set(cs)
@@ -182,5 +185,22 @@ describe('estimatedShortfall', () => {
 
   it('never goes negative', () => {
     expect(estimatedShortfall([], undefined, undefined, sources)).toBe(0)
+  })
+})
+
+describe('convoke toward X', () => {
+  it('materializes X as generic so generic convoke taps pay it down', () => {
+    // Transcendent Message, X=3: {X}{U}{U}{U}{U} -> 3UUUU
+    const symbols = materializeX(parseManaCost('{X}{U}{U}{U}{U}'), 3)
+    expect(symbols).toEqual(['3', 'U', 'U', 'U', 'U'])
+    const remaining = getRemainingCostAfterConvoke(symbols, {
+      a: { color: null }, b: { color: null }, c: { color: 'BLUE' },
+    })
+    expect(remaining).toEqual(['1', 'U', 'U', 'U'])
+  })
+
+  it('drops X=0 and leaves an unchosen X alone', () => {
+    expect(materializeX(['X', 'G'], 0)).toEqual(['G'])
+    expect(materializeX(['X', 'G'], undefined)).toEqual(['X', 'G'])
   })
 })

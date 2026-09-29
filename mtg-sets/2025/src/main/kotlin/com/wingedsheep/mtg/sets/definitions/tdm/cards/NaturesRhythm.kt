@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.effects.SearchDestination
  * single-creature tap reduction) so the client prompts for X, and tapping a creature
  * reduces the *generic* mana paid — including the {X} (which is generic, per the TDM
  * release notes) — while the chosen X that drives the "mana value X or less" search is
- * unchanged. See `CastSpellHandler.harmonizePaymentXValue`.
+ * unchanged. See `CastCostTotaller.paymentXValue`.
  */
 val NaturesRhythm = card("Nature's Rhythm") {
     manaCost = "{X}{G}{G}"

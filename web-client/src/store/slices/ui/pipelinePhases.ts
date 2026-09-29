@@ -7,6 +7,7 @@
  */
 import type { ChosenTarget, EntityId, LegalActionInfo, GameAction, ClientGameState } from '@/types'
 import { TAP_FOR_GENERIC_LABEL_IMPROVISE, TAP_FOR_GENERIC_LABEL_WATERBEND } from '@/types'
+import { materializeX, parseManaCost } from '@/utils/manaCost'
 import type {
   PipelinePhase,
   PhaseResult,
@@ -742,10 +743,16 @@ export function enterPhase(
     }
 
     case 'convoke': {
+      // xSelection runs first, so the chosen X is materialized as generic here: each creature
+      // tapped for {1} pays down X as well as the printed generic (CR 601.2f / 702.51a).
+      const manaCost = materializeX(
+        parseManaCost(actionInfo.manaCostString ?? ''),
+        action.type === 'CastSpell' ? action.xValue : undefined,
+      ).map((s) => `{${s}}`).join('')
       store.startConvokeSelection({
         actionInfo,
         cardName: actionInfo.description.replace('Cast ', ''),
-        manaCost: actionInfo.manaCostString ?? '',
+        manaCost,
         selectedCreatures: [],
         validCreatures: actionInfo.validConvokeCreatures!,
       })

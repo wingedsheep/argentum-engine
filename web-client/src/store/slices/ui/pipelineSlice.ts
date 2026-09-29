@@ -14,6 +14,7 @@ import {
   parseManaCost as parseManaCostUtil,
   getRemainingCostSymbols,
   getRemainingCostAfterConvoke,
+  materializeX,
   trimAutoTapPreview,
 } from '@/utils/manaCost'
 
@@ -188,7 +189,12 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
     // Trim the preview similarly so the manaSource phase pre-selection reflects the
     // reduced cost rather than over-selecting based on the original full cost.
     if (result.type === 'convoke') {
-      const originalSymbols = parseManaCostUtil(actionInfo.manaCostString ?? '')
+      // Convoke pays generic mana of the total cost, which includes the announced X (CR 601.2f /
+      // 702.51a), so fold X in first — the server credits the leftover taps against the X mana.
+      const originalSymbols = materializeX(
+        parseManaCostUtil(actionInfo.manaCostString ?? ''),
+        mergedAction.type === 'CastSpell' ? mergedAction.xValue : undefined,
+      )
       const remainingSymbols = getRemainingCostAfterConvoke(originalSymbols, result.convokedCreatures)
       const modifiedManaCost = remainingSymbols.map((s) => `{${s}}`).join('')
       const trimmedPreview: readonly EntityId[] | undefined =
