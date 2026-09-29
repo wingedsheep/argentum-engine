@@ -526,6 +526,38 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Escape
+    // =========================================================================
+
+    /**
+     * Escape (CR 702.138, Theros Beyond Death). "Escape—[cost]" means "You may cast this card from
+     * your graveyard by paying [cost] rather than paying its mana cost" (CR 702.138a) — an
+     * alternative cost, so the spell's own additional costs are still owed on top.
+     *
+     * [cost] is the mana half; [additionalCost] is the non-mana half every printed escape card
+     * carries — "Exile N other cards from your graveyard", spelled
+     * `Costs.additional.ExileOtherCards(N)`. The card being cast is never part of its own exile
+     * pool: it is on the stack by the time costs are paid (CR 601.2a before 601.2h).
+     *
+     * Grants no timing permission (a creature still escapes at sorcery speed) and, unlike
+     * [Flashback], does NOT exile the card on resolution: an escaped permanent stays on the
+     * battlefield and is durably marked as having escaped (CR 702.138b), readable through
+     * `Conditions.Escaped` — which is how "sacrifice it unless it escaped" (Phlage) and
+     * "escapes with a +1/+1 counter" (CR 702.138c, an `EntersWithCounters` gated on it) are written.
+     */
+    @SerialName("Escape")
+    @Serializable
+    data class Escape(
+        val cost: ManaCost,
+        val additionalCost: AdditionalCost? = null
+    ) : KeywordAbility {
+        override val keyword: Keyword = Keyword.ESCAPE
+        override val description: String =
+            if (additionalCost == null) "Escape—$cost"
+            else "Escape—$cost, ${additionalCost.description}"
+    }
+
+    // =========================================================================
     // Disturb
     // =========================================================================
 
@@ -1239,6 +1271,14 @@ sealed interface KeywordAbility {
          * 702.187c "Mayhem" (no cost) land form (Oscorp Industries).
          */
         fun mayhem(cost: String): KeywordAbility = Mayhem(ManaCost.parse(cost))
+
+        /**
+         * Create Escape with a mana cost and its non-mana half (CR 702.138) — e.g.
+         * `escape("{R}{R}{W}{W}", Costs.additional.ExileOtherCards(5))` for "Escape—{R}{R}{W}{W},
+         * Exile five other cards from your graveyard."
+         */
+        fun escape(cost: String, additionalCost: AdditionalCost? = null): KeywordAbility =
+            Escape(ManaCost.parse(cost), additionalCost)
 
         /**
          * Create Madness with mana cost from string (e.g., "Madness {R}").

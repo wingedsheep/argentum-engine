@@ -146,6 +146,7 @@ import com.wingedsheep.sdk.scripting.conditions.BlightWasPaid
 import com.wingedsheep.sdk.scripting.conditions.SneakCostWasPaid
 import com.wingedsheep.sdk.scripting.conditions.WebSlungCostWasPaid
 import com.wingedsheep.sdk.scripting.conditions.MayhemCostWasPaid
+import com.wingedsheep.sdk.scripting.conditions.Escaped
 import com.wingedsheep.sdk.scripting.conditions.WaterbendWasPaid
 import com.wingedsheep.sdk.scripting.conditions.SourceIsRingBearer
 import com.wingedsheep.sdk.scripting.conditions.YouChoseOtherCreatureAsRingBearer
@@ -320,6 +321,7 @@ class ConditionEvaluator(
             IsYourTurn,
             is ManaSpentToCastIncludes,
             MayhemCostWasPaid,
+            Escaped,
             NoManaSpentToCast,
             NoManaSpentToCastEntered,
             is NotCondition,
@@ -781,6 +783,18 @@ class ConditionEvaluator(
             is NoManaSpentToCast -> ifResolution { evaluateNoManaSpentToCast(state, it) }
             is NoManaSpentToCastEntered -> ifResolution { evaluateNoManaSpentToCastEntered(state, it) }
             is AnyEnteredOrWasCastFromExile -> ifResolution { evaluateAnyEnteredOrWasCastFromExile(state, it) }
+            // Escape (CR 702.138b): dual-mode so an "escapes with [ability]" static (CR 702.138d)
+            // reads it in projection as well as an enters trigger at resolution. A resolved
+            // permanent carries the durable flag; a spell still on the stack answers from the
+            // alternative cost it was cast for.
+            Escaped -> {
+                val source = ctx.sourceId?.let { state.getEntity(it) }
+                source != null && (
+                    source.get<CastChoicesComponent>()?.chosen?.containsKey(ChoiceSlot.ESCAPED) == true ||
+                        source.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
+                            ?.alternativeCost == com.wingedsheep.engine.core.AlternativeCostType.ESCAPE
+                    )
+            }
             is SourceChosenModeIs -> {
                 // Dual-mode: the chosen mode is stored in the durable cast-choices bag on the
                 // source permanent, readable both at resolution (gating triggered abilities) and

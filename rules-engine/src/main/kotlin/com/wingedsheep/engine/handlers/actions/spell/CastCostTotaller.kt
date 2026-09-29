@@ -9,6 +9,7 @@ import com.wingedsheep.engine.mechanics.EmergeCasts
 import com.wingedsheep.engine.mechanics.FlashbackGrants
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.mechanics.MayhemGrants
+import com.wingedsheep.engine.mechanics.EscapeCasts
 import com.wingedsheep.engine.mechanics.MiracleGrants
 import com.wingedsheep.engine.mechanics.SneakWindow
 import com.wingedsheep.engine.mechanics.SpliceCasts
@@ -347,6 +348,13 @@ internal class CastCostTotaller(
         AlternativeCostType.MAYHEM to {
             MayhemGrants.effectiveMayhem(state, cardId, cardDef, playerId, cardRegistry, predicateEvaluator)
                 ?.takeIf { zoneResolver.hasMayhemPermission(state, playerId, cardId) }
+                ?.let { priced(it.cost) }
+        },
+        // Escape (CR 702.138a) — cast from graveyard for its escape mana; the non-mana half is
+        // owed as an additional cost (CastAdditionalCosts).
+        AlternativeCostType.ESCAPE to {
+            EscapeCasts.printedEscape(cardDef)
+                ?.takeIf { zoneResolver.hasEscapePermission(state, playerId, cardId) }
                 ?.let { priced(it.cost) }
         },
         // Disturb (CR 702.146a) — printed on the front face, which is also the face the cost-modifier

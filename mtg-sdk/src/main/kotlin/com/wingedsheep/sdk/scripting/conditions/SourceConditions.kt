@@ -328,6 +328,24 @@ data object MayhemCostWasPaid : Condition {
 }
 
 /**
+ * Condition: "if it escaped" (CR 702.138b — a spell or permanent "escaped" if that spell, or the
+ * spell that became that permanent as it resolved, was cast from a graveyard with an escape
+ * ability).
+ *
+ * True for a permanent carrying the durable [com.wingedsheep.sdk.scripting.ChoiceSlot.ESCAPED]
+ * flag the engine stamps when an escape-cast permanent spell resolves, and for a spell still on the
+ * stack that was cast for its [Escape][com.wingedsheep.sdk.scripting.KeywordAbility.Escape] cost.
+ * Reads identically at resolution and during projection, so it gates an enters trigger ("sacrifice
+ * it unless it escaped" — Phlage), an enters-with-counters replacement ("escapes with a +1/+1
+ * counter", CR 702.138c) and a conditional static ("escapes with [ability]", CR 702.138d) alike.
+ */
+@SerialName("Escaped")
+@Serializable
+data object Escaped : Condition {
+    override val description: String = "it escaped"
+}
+
+/**
  * Condition: "If this spell's blight additional cost was paid"
  * Used for Lorwyn Eclipsed cards (e.g., Cinder Strike) where the effect changes
  * based on whether the optional Blight additional cost was actually paid.

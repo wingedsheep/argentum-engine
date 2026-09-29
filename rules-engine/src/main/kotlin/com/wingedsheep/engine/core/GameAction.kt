@@ -238,6 +238,14 @@ enum class AlternativeCostType {
      */
     MAYHEM,
     /**
+     * Escape ([com.wingedsheep.sdk.scripting.KeywordAbility.Escape], CR 702.138) — graveyard, at the
+     * spell's normal timing. Pays the escape mana instead of the mana cost plus its bundled
+     * non-mana half (usually "exile N other cards from your graveyard"). Like [MAYHEM] and unlike
+     * [FLASHBACK]/[HARMONIZE] the spell is NOT exiled on resolution; a resolving permanent is
+     * marked as having escaped (CR 702.138b).
+     */
+    ESCAPE,
+    /**
      * Disturb ([com.wingedsheep.sdk.scripting.KeywordAbility.Disturb], CR 702.146) — graveyard, at
      * the *back* face's normal timing. Pays the disturb mana instead of the mana cost and puts the
      * card on the stack transformed (back face up, CR 712.8c), so the spell's type line, targets and

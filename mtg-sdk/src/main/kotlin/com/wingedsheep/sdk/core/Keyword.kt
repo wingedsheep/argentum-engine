@@ -217,6 +217,15 @@ enum class Keyword(val displayName: String) {
     MAYHEM("Mayhem"),
 
     /**
+     * Escape [cost] (CR 702.138, Theros Beyond Death). "You may cast this card from your graveyard
+     * by paying [cost] rather than paying its mana cost." The cost is usually mana plus "exile N
+     * other cards from your graveyard". Like [MAYHEM] and unlike [FLASHBACK]/[HARMONIZE] the spell
+     * is NOT exiled on resolution — an escaped permanent stays, and "escapes with …" riders read
+     * `Conditions.Escaped`. See [com.wingedsheep.sdk.scripting.KeywordAbility.Escape].
+     */
+    ESCAPE("Escape"),
+
+    /**
      * Madness [cost] (CR 702.35). "If you discard this card, discard it into exile. When you do,
      * cast it for its madness cost or put it into your graveyard."
      *

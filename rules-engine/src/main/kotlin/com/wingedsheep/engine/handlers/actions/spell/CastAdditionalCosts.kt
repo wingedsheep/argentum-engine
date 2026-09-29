@@ -84,6 +84,14 @@ class CastAdditionalCosts(
                     ?.additionalCost
                     ?.let { add(it) }
             }
+            // Escape's non-mana half (CR 702.138a — "Exile five other cards from your graveyard").
+            if (action.altAllows(AlternativeCostType.ESCAPE) &&
+                zoneResolver.hasEscapePermission(state, action.playerId, action.cardId)
+            ) {
+                com.wingedsheep.engine.mechanics.EscapeCasts.printedEscape(cardDef)
+                    ?.additionalCost
+                    ?.let { add(it) }
+            }
             // Warp's bundled additional cost (e.g., "Pay 2 life" on Timeline Culler). Use
             // [WarpGrants] so granted warps ([GrantWarpToCardsInHand]) participate too — currently
             // they carry no additional cost, but routing through the same helper keeps the seam.

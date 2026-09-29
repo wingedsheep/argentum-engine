@@ -115,6 +115,7 @@ object CastProvenance {
         AlternativeCostType.FLASHBACK -> "flashback"
         AlternativeCostType.HARMONIZE -> "harmonize"
         AlternativeCostType.MAYHEM -> "mayhem"
+        AlternativeCostType.ESCAPE -> "escape"
         AlternativeCostType.DISTURB -> "disturb"
         AlternativeCostType.WARP -> "warp"
         AlternativeCostType.DASH -> "dash"

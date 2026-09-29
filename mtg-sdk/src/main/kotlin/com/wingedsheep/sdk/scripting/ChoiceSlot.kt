@@ -142,6 +142,15 @@ enum class ChoiceSlot {
      */
     MAYHEM_CAST,
 
+    /**
+     * Whether the object escaped (CR 702.138b) — it was cast from a graveyard through its
+     * [Escape][com.wingedsheep.sdk.scripting.KeywordAbility.Escape] ability. A present value means
+     * "escaped". Stamped on the resolving permanent by the engine and read back through
+     * [com.wingedsheep.sdk.scripting.conditions.Escaped] for "sacrifice it unless it escaped"
+     * (Phlage) and "escapes with …" riders (CR 702.138c–d).
+     */
+    ESCAPED,
+
     /** The X declared for a `blight X` additional cost when cast (e.g. Soul Immolation). */
     BLIGHT_AMOUNT,
 

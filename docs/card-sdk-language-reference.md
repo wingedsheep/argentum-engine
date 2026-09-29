@@ -819,6 +819,12 @@ definitions construct these through the facade, e.g. `Costs.additional.Sacrifice
   surfaces the returnable permanents (a `costType = "ReturnToHand"` cost) and the client picks them
   on the battlefield. The bounce goes through `ZoneTransitionService.moveToZone(…, Zone.HAND)`, so
   attached Auras fall off and tokens cease to exist. Mirrors the sacrifice/tap additional-cost path.
+- `Costs.additional.ExileOtherCards(count, filter = GameObjectFilter.Any)` — "exile N **other** cards from
+  your graveyard", the non-mana half of an escape cost (`KeywordAbility.escape`). A `CostAtom.ExileFrom` with
+  `excludeSelf = true` (the atom's description reads "exile five other cards from your graveyard"). Note that
+  *every* spell exile-from-zone cost already leaves the card being cast out of its pool — it is on the stack
+  by the time costs are paid (CR 601.2a before 601.2h) — and the payment validator rejects a submission that
+  names the spell itself or repeats a card.
 - `Costs.additional.SacrificeAll(filter = GameObjectFilter.Creature)` — "as an additional cost to
   cast this spell, sacrifice all creatures you control" (Soulblast). A `CostAtom.SacrificeAll`: nothing
   is selected (every matching permanent you control goes), so the enumerator offers no picker, the
@@ -10083,7 +10089,7 @@ Flying, Menace, Intimidate, Fear, Shadow, Horsemanship, all basic landwalks (Pla
 `LandwalkRule` checks `typeLine.isLand && !isBasicLand`; Trailblazer's Boots), First Strike, Double
 Strike, Trample, Deathtouch, Lifelink, Vigilance, Reach, Provoke, Defender, Indestructible, Hexproof, Shroud, Haste,
 Flash, Prowess, Flurry, Changeling, Devoid (**not** display-only — see the note above: the engine
-derives `CardDefinition.colors` from it), Convoke, Delve, Improvise, Affinity, Emerge, Storm, Flashback, Harmonize, Mayhem, Disturb, Evoke, Sneak, Ninjutsu, Web-slinging, Impending, Conspire, Casualty, Miracle, Hideaway, Cascade, Plot,
+derives `CardDefinition.colors` from it), Convoke, Delve, Improvise, Affinity, Emerge, Storm, Flashback, Harmonize, Mayhem, Escape, Disturb, Evoke, Sneak, Ninjutsu, Web-slinging, Impending, Conspire, Casualty, Miracle, Hideaway, Cascade, Plot,
 Offspring, Persist, Undying, Enduring, Ascend, Storied, Start your engines!, Max speed, Wither, Toxic, Eerie, Vivid, Fateful Bite, Exploit, Champion, Evolve, Ravenous, Soulbond, Daybound, Nightbound, … (display-only — engine effect lives in handlers or
 composite abilities).
 
@@ -10784,6 +10790,21 @@ composite abilities).
   A resolving spell carries the durable "mayhem cost was paid" fact — `ChoiceSlot.MAYHEM_CAST` on a permanent, the resolution
   context otherwise — read via `Conditions.MayhemCostWasPaid` (e.g. *Sandman's Quicksand*'s opponents-only rider). Pass `""`
   for the CR 702.187c no-cost land form. Printed or granted per-entity, resolved through `MayhemGrants.effectiveMayhem`.
+- `Escape(cost, additionalCost?)` — `keywordAbility(KeywordAbility.escape("{R}{R}{W}{W}",
+  Costs.additional.ExileOtherCards(5)))` (CR 702.138, Theros Beyond Death / Modern Horizons 3). A **graveyard**
+  alternative cost: *"You may cast this card from your graveyard by paying [cost] rather than paying its mana
+  cost."* `additionalCost` is the bundled non-mana half, owed on top of any additional costs the card prints.
+  Grants **no timing permission** (sorcery speed unless the card is an instant or has flash) and, like Mayhem and
+  unlike Flashback, the card is **not exiled on resolution** — an escaped permanent stays; an instant/sorcery goes
+  back to the graveyard and can escape again. Engine: `CastFromZoneEnumerator.enumerateEscape` surfaces a
+  `CastWithEscape` (`AlternativeCostType.ESCAPE`); `CastZoneResolver.hasEscapePermission`, `CastCostTotaller` and
+  `CastAdditionalCosts` all read the keyword through `EscapeCasts.printedEscape` (printed only — the seam for a
+  future grant such as Underworld Breach). A resolving escaped permanent is stamped `ChoiceSlot.ESCAPED`
+  (CR 702.138b), read by `Conditions.Escaped`: "sacrifice it unless it escaped" is
+  `Effects.If(Conditions.Not(Conditions.Escaped), SacrificeSelfEffect)` (*Phlage, Titan of Fire's Fury*), and
+  "escapes with a +1/+1 counter" (CR 702.138c) is `EntersWithCounters(count = 1, selfOnly = true, condition =
+  Conditions.Escaped)` (*Ox of Agonas*). "Escapes with [ability]" (CR 702.138d) is a conditional static on the
+  same condition, which reads in projection too.
 - `Disturb(cost)` — `card { disturb("{cost}") }` builder helper (CR 702.146, Innistrad: Midnight Hunt / Crimson Vow).
   A **graveyard** alternative cost printed on the **front** face of a transforming double-faced card:
   *"You may cast this card transformed from your graveyard by paying [cost] rather than its mana cost."* The resulting
@@ -11466,6 +11487,10 @@ answer it and would silently return `false`.
 - `TeamworkWasPaid` — the spell was cast **using teamwork** (CR 702.194b, Marvel Super Heroes): its optional "tap any number of creatures you control with total power N or more" additional cost was declared as it was cast. A facade over `CastChoiceMade(ChoiceSlot.TEAMWORK)`, so teamwork needs no condition type of its own. Reads the declaration carried on a still-on-the-stack spell (an "if this spell was cast using teamwork" rider) *and* the durable flag on a resolved permanent, and is the condition `teamworkModal { }` gates both ends of the mode count on for "choose one; if cast using teamwork, choose both instead". Never true for a merely kicked or bargained spell.
 - `SneakCostWasPaid` — the source was cast for its `Sneak` cost (CR 702.190 — mana + returning an unblocked attacker). Reads the durable `ChoiceSlot.SNEAK` flag on a resolved permanent, falling back to the resolution context for a non-permanent spell's own effect. Backs riders like Leonardo, Leader in Blue and The Last Ronin's Technique.
 - `WebSlungCostWasPaid` — the source was cast using web-slinging (CR 702.188 — mana + returning a tapped creature you control). Reads the durable `ChoiceSlot.WEB_SLUNG` flag on a resolved permanent, falling back to the resolution context for a non-permanent spell's own effect. Backs riders like *Spiders-Man, Heroic Horde* and *Scarlet Spider, Ben Reilly*; the latter also reads the returned creature's mana value via `DynamicAmount.CastChoice(ChoiceSlot.WEB_SLUNG_RETURNED_MV)`.
+- `Escaped` (`Conditions.Escaped`) — the source escaped (CR 702.138b): a permanent carrying the durable
+  `ChoiceSlot.ESCAPED` flag stamped when its escape-cast spell resolved, or a spell on the stack cast with
+  `AlternativeCostType.ESCAPE`. Dual-mode (resolution and projection), so it gates enters triggers, enters-with
+  replacements and conditional statics alike. A hard-cast copy of the same card did not escape.
 - `MayhemCostWasPaid` — the source was cast from the graveyard for its Mayhem cost (CR 702.187). Reads the durable `ChoiceSlot.MAYHEM_CAST` flag on a resolved permanent, falling back to the resolution context (`wasMayhem`) for a non-permanent spell's own effect. Backs riders like *Sandman's Quicksand* ("if this spell's mayhem cost was paid, creatures your opponents control get -2/-2 instead").
 - `YouDiscardedThisCardThisTurn` — the source card in a graveyard was discarded by its owner this turn (CR 702.187b). Reads the per-player `CardsDiscardedThisTurnComponent` id list (entity ids are stable across the hand→graveyard move). Engine-internal — the Mayhem enumerator and cast-permission check wire it up; cards don't reference it directly.
 - `GiftWasPromised` — the spell's **gift** additional cost was paid, i.e. "if the gift was promised"

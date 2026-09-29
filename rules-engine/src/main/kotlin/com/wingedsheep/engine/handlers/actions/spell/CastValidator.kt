@@ -148,6 +148,7 @@ internal enum class CastSourceRoute {
     FLASHBACK,
     HARMONIZE,
     MAYHEM,
+    ESCAPE,
     GRAVEYARD_PERMISSION,
     FORAGE_FROM_GRAVEYARD,
     WARP_FROM_GRAVEYARD,
@@ -252,6 +253,11 @@ internal class CastValidator(
             CastSourceRoute.MAYHEM to {
                 action.useAlternativeCost && action.altAllows(AlternativeCostType.MAYHEM) &&
                     zoneResolver.hasMayhemPermission(state, playerId, cardId)
+            },
+            // Escape (CR 702.138a) — cast from graveyard for its escape cost.
+            CastSourceRoute.ESCAPE to {
+                action.useAlternativeCost && action.altAllows(AlternativeCostType.ESCAPE) &&
+                    zoneResolver.hasEscapePermission(state, playerId, cardId)
             },
             CastSourceRoute.GRAVEYARD_PERMISSION to {
                 zoneResolver.hasMayCastFromGraveyardPermission(state, playerId, cardId, cardComponent)

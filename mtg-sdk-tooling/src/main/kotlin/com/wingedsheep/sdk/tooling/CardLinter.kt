@@ -831,6 +831,8 @@ object CardLinter {
         // Mayhem (CR 702.187): the engine stamps the "mayhem cost was paid" flag on a resolved
         // permanent / into the resolution context when the Mayhem cost is paid (see StackResolver).
         "Mayhem" to listOf("MAYHEM_CAST"),
+        // Escape (CR 702.138b): an escape-cast permanent is stamped "escaped" (see PermanentEntry).
+        "Escape" to listOf("ESCAPED"),
         "BlightVariable" to listOf("BLIGHT_AMOUNT"),
         "BlightOrPay" to listOf("BLIGHT_AMOUNT"),
         // Resolution-time color choices: ChooseColorThen sets EffectContext.chosenColor for its
@@ -869,6 +871,7 @@ object CardLinter {
         "GrantLandwalkOfChosenType" to "LAND_TYPE",
         "NotOfSourceChosenType" to "CREATURE_TYPE",
         "SneakCostWasPaid" to "SNEAK",
+        "Escaped" to "ESCAPED",
         "SourceChosenModeIs" to "MODE",
         "CardTypeEqualsChosenComponent" to "CARD_TYPE",
         "ConvokedSource" to "CONVOKED_CREATURES",

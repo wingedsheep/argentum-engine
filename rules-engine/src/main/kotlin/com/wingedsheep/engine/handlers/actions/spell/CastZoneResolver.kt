@@ -493,6 +493,22 @@ class CastZoneResolver(
     }
 
     /**
+     * Check if a card in [playerId]'s graveyard has an escape ability (CR 702.138a), allowing it to
+     * be cast from there for its escape cost. Not exiled on resolution.
+     */
+    fun hasEscapePermission(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean {
+        if (cardId !in state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))) return false
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return false
+        return com.wingedsheep.engine.mechanics.EscapeCasts.printedEscape(
+            cardRegistry.getCard(cardComponent.cardDefinitionId)
+        ) != null
+    }
+
+    /**
      * Get the mayhem cost for a card, or null if it doesn't have mayhem.
      */
     fun getMayhemCost(cardId: EntityId, state: GameState): com.wingedsheep.sdk.core.ManaCost? {

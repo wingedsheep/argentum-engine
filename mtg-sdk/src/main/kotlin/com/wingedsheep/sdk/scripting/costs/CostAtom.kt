@@ -317,8 +317,12 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
     ) : CostAtom {
         override val selectionCount: Int get() = count
         override val description: String get() {
-            val what = if (excludeSelf && count == 1) "another ${filter.description}"
-            else quantify(count, filter.description)
+            val what = when {
+                excludeSelf && count == 1 -> "another ${filter.description}"
+                // "Exile five other cards from your graveyard" (escape, CR 702.138).
+                excludeSelf -> quantify(count, "other ${filter.description}")
+                else -> quantify(count, filter.description)
+            }
             return when {
                 anyPlayersZone && singleZone -> "exile $what from a single ${zone.name.lowercase()}"
                 anyPlayersZone -> "exile $what from a ${zone.name.lowercase()}"

@@ -103,6 +103,8 @@ object MeaningfulActionFilter {
         "CastSpellModal",
         "CastWithAlternativeCost",
         "CastWithFlashback",
+        // Escape (CR 702.138) — an instant or flash card escapes at instant speed.
+        "CastWithEscape",
         "CastWithHarmonize",
         "CastWithWarp",
         "CastWithKicker",

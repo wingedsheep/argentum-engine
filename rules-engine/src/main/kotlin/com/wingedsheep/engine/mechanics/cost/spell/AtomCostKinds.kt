@@ -253,7 +253,9 @@ internal object DiscardHandCostKind : SpellCostKind<CostAtom.DiscardHand> {
 
 /** "Exile a creature card from your graveyard" — exile [CostAtom.ExileFrom.count] cards from a zone. */
 internal object ExileFromCostKind : SpellCostKind<CostAtom.ExileFrom> {
-    // A spell's additional cost has no source permanent, so `excludeSelf` has nothing to exclude here.
+    // The card being cast is on the stack by the time its costs are paid (CR 601.2a before 601.2h),
+    // so it is never part of its own exile pool — which is exactly what escape's "exile five
+    // *other* cards from your graveyard" says. `canPay` has no cast in hand and can't exclude it.
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.ExileFrom, costHandler: CostHandler): Boolean {
         val perZone = costHandler.exileCandidatesByOwner(state, cost, payerId, sourceId = null).values.map { it.size }
         return if (cost.singleZone) perZone.any { it >= cost.count } else perZone.sum() >= cost.count
@@ -263,6 +265,7 @@ internal object ExileFromCostKind : SpellCostKind<CostAtom.ExileFrom> {
         val validExileTargets = env.costUtils.findExileTargets(
             env.state, env.playerId, cost.filter, cost.zone,
             cost.anyPlayersZone, cost.singleZone, cost.count,
+            excludeSelfId = env.castCardId,
         )
         offer.exileTargets = validExileTargets
         offer.exileMinCount = cost.count
@@ -299,12 +302,15 @@ internal object ExileFromCostKind : SpellCostKind<CostAtom.ExileFrom> {
         val state = check.state
         val exiled = check.payment?.exiledCards ?: emptyList()
         val zoneDesc = cost.zone.name.lowercase()
-        if (exiled.size < cost.count) {
+        if (exiled.distinct().size < cost.count) {
             return "You must exile ${cost.count} ${cost.filter.description}(s) from your $zoneDesc"
         }
         val zoneCards = state.getZone(ZoneKey(check.playerId, cost.zone))
         val context = PredicateContext(controllerId = check.playerId)
         for (cardId in exiled) {
+            if (cardId == check.action.cardId) {
+                return "A spell can't exile itself to pay its own cost"
+            }
             if (cardId !in zoneCards) {
                 return "Card to exile is not in your $zoneDesc"
             }

@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.scripting.conditions.WaterbendWasPaid as WaterbendWas
 import com.wingedsheep.sdk.scripting.conditions.SneakCostWasPaid as SneakCostWasPaidCondition
 import com.wingedsheep.sdk.scripting.conditions.WebSlungCostWasPaid as WebSlungCostWasPaidCondition
 import com.wingedsheep.sdk.scripting.conditions.MayhemCostWasPaid as MayhemCostWasPaidCondition
+import com.wingedsheep.sdk.scripting.conditions.Escaped as EscapedCondition
 import com.wingedsheep.sdk.scripting.conditions.CastChoiceMade as CastChoiceMadeCondition
 import com.wingedsheep.sdk.scripting.conditions.CastChoiceIs as CastChoiceIsCondition
 import com.wingedsheep.sdk.scripting.conditions.CastTimeFlagSet as CastTimeFlagSetCondition
@@ -1106,6 +1107,16 @@ object Conditions {
      */
     val MayhemCostWasPaid: ConditionInterface =
         MayhemCostWasPaidCondition
+
+    /**
+     * If this spell or permanent escaped (CR 702.138b — cast from a graveyard through its
+     * [com.wingedsheep.sdk.scripting.KeywordAbility.Escape] ability). "When Phlage enters,
+     * sacrifice it unless it escaped"; gate an `EntersWithCounters` on it for "escapes with a
+     * +1/+1 counter" (CR 702.138c). Works in projection too, so a conditional static can say
+     * "escapes with [ability]" (CR 702.138d).
+     */
+    val Escaped: ConditionInterface =
+        EscapedCondition
 
     /**
      * If this spell's blight additional cost was paid (`AdditionalCost.BlightOrPay`).

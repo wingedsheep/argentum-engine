@@ -739,6 +739,16 @@ object Costs {
             fromZone: CostZone = CostZone.GRAVEYARD
         ): AdditionalCost = AdditionalCost.Atom(CostAtom.ExileFrom(fromZone.toZone(), filter, count))
 
+        /**
+         * "Exile [count] **other** cards matching [filter] from your graveyard" — the non-mana half
+         * of an escape cost (CR 702.138, `KeywordAbility.escape`). The card being cast is never
+         * part of the pool.
+         */
+        fun ExileOtherCards(
+            count: Int,
+            filter: GameObjectFilter = GameObjectFilter.Any,
+        ): AdditionalCost = AdditionalCost.Atom(CostAtom.ExileFrom(Zone.GRAVEYARD, filter, count, excludeSelf = true))
+
         /** Exile a variable number (at least [minCount]) of cards matching [filter] from [fromZone] (Chill Haunting). */
         fun ExileVariableCards(
             minCount: Int = 1,

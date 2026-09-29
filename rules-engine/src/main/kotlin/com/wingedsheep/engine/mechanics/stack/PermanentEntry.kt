@@ -358,6 +358,15 @@ internal class PermanentEntry(
                 com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
             )
         }
+        // Escape (CR 702.138b): a permanent whose spell was cast from the graveyard with escape
+        // "escaped" — durably mark it so Conditions.Escaped reads true for its whole life
+        // (Phlage's "sacrifice it unless it escaped", "escapes with a +1/+1 counter").
+        if (spellComponent.alternativeCost == com.wingedsheep.engine.core.AlternativeCostType.ESCAPE) {
+            bag = bag.withChoice(
+                com.wingedsheep.sdk.scripting.ChoiceSlot.ESCAPED,
+                com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
+            )
+        }
         // Waterbend (Avatar): durably mark a permanent cast with its (optional) waterbend
         // cost paid so Conditions.WaterbendWasPaid reads it for the permanent's whole life.
         if (spellComponent.wasWaterbendPaid) {
