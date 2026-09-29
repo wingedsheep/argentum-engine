@@ -1,3 +1,96 @@
+// Barbed Batterfist
+{
+    "name": "Barbed Batterfist",
+    "manaCost": "{1}{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)\nEquipped creature gets +1/-1.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "keywords": [
+        "FOR_MIRRODIN"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Barbed Batterfist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Rebel"
+                            ]
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Barbed Batterfist:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": -1
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "121",
+        "artist": "Randy Gallegos",
+        "flavorText": "\"Finally, a safe way to punch the rotters in the face.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de1d02d1-91dc-47d6-bdbe-87602428abfb.jpg?1783918036"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Basilica Skullbomb
 {
     "name": "Basilica Skullbomb",
@@ -2762,5 +2855,98 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Vulshok Splitter
+{
+    "name": "Vulshok Splitter",
+    "manaCost": "{3}{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)\nEquipped creature gets +2/+0.\nEquip {2}{R} ({2}{R}: Attach to target creature you control. Equip only as a sorcery.)",
+    "keywords": [
+        "FOR_MIRRODIN"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vulshok Splitter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Rebel"
+                            ]
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Vulshok Splitter:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{2}{R}",
+    "metadata": {
+        "collectorNumber": "156",
+        "artist": "Kai Carpenter",
+        "flavorText": "\"Not my style, but it'll get the job done.\"\n—Nahiri",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f05078dd-b928-4b3f-9636-f299ebac180b.jpg?1783918021"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }

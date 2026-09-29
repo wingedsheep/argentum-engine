@@ -9713,7 +9713,7 @@ copy of it (CR 707.10e). The activated-ability analogue of the spell-level `cant
 > mechanics — `mayBeginGameOnBattlefield()`, `flurry { }`, `mobilize(…)`, `firebending(n)`, `sneak(cost)`, `webSlinging(cost)`, `mayhem(cost)`, `madness(cost)`, `decayed()`,
 > `vividEtb { }` / `vividCostReduction()`, `convergeEntersWithCounters(counterType?)`,
 > `impending(time, cost)`, `renew(cost) { }`, `embalm(cost)`, `enduring()`,
-> `craft(filter, cost)`, `station()`, `jobSelect()`, `gift(kind)` — are `CardBuilder` **extension functions** in
+> `craft(filter, cost)`, `station()`, `jobSelect()`, `forMirrodin()`, `gift(kind)` — are `CardBuilder` **extension functions** in
 > `mtg-sdk/.../dsl/mechanics/` (one file per mechanic), not methods on the core `CardBuilder`. They
 > stay in package `com.wingedsheep.sdk.dsl`, so the call syntax is unchanged, but a card file that
 > uses one needs the matching import (e.g. `import com.wingedsheep.sdk.dsl.station`). Evergreen /
@@ -10619,6 +10619,12 @@ composite abilities).
   freshly-made token. No new effect/executor — it reuses the same create-then-attach-on-ETB chain as Auxiliary
   Boosters. Author the per-card equip cost and equipped-creature bonus alongside the `jobSelect()` call (e.g. Monk's
   Fist: `jobSelect()` + `ModifyStats(1, 0)` + `GrantSubtype("Monk", Filters.EquippedCreature)` + `equipAbility("{2}")`).
+- `For Mirrodin!` — "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach
+  this to it.)" (Phyrexia: All Will Be One). Equipment keyword; display-only. Wire it with `card { forMirrodin() }` —
+  the same create-then-attach shell as `jobSelect()` (both call the internal `equipmentMakesItsOwnBearer`), making
+  `Effects.CreateToken(2, 2, colors = setOf(Color.RED), creatureTypes = setOf("Rebel"))`. The token sets no
+  `imageUri`; its art resolves from the printing set's token sheet. Author the equip cost and equipped-creature bonus
+  alongside (Barbed Batterfist: `forMirrodin()` + `ModifyStats(1, -1, Filters.EquippedCreature)` + `equipAbility("{1}")`).
 - `Toxic(n)` — adds poison counters on combat damage.
 - `Cycling(cost)` — pay cost, discard, draw a card. The cost may contain `{X}`
   (`KeywordAbility.cycling("{X}{G}{G}")`, Webstrike Elite): cycling is an activated ability (CR 702.29a), so X is

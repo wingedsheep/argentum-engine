@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.dsl
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS
+import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -31,21 +32,36 @@ private const val JOB_SELECT_HERO_TOKEN_IMAGE =
  * This is the shared shell for the whole Job-select Equipment cycle; the per-card equip cost
  * and equipped-creature bonus are authored on the card alongside this call.
  */
-fun CardBuilder.jobSelect() {
-    keywordSet.add(Keyword.JOB_SELECT)
+fun CardBuilder.jobSelect() = equipmentMakesItsOwnBearer(
+    keyword = Keyword.JOB_SELECT,
+    token = Effects.CreateToken(
+        power = 1,
+        toughness = 1,
+        colors = emptySet(),
+        creatureTypes = setOf("Hero"),
+        imageUri = JOB_SELECT_HERO_TOKEN_IMAGE
+    ),
+    reminderText = "Job select (When this Equipment enters, create a 1/1 " +
+        "colorless Hero creature token, then attach this to it.)"
+)
+
+/**
+ * The shell shared by [jobSelect] and [forMirrodin]: add [keyword] (display-only) plus an
+ * enters-the-battlefield trigger that runs [token] — which publishes the new token's id to the
+ * [CREATED_TOKENS] pipeline slot — then attaches this Equipment to that token.
+ */
+internal fun CardBuilder.equipmentMakesItsOwnBearer(
+    keyword: Keyword,
+    token: CreateTokenEffect,
+    reminderText: String,
+) {
+    keywordSet.add(keyword)
     triggeredAbilities.add(
         TriggeredAbility.create(
             trigger = Triggers.self.enters(),
-            effect = Effects.CreateToken(
-                power = 1,
-                toughness = 1,
-                colors = emptySet(),
-                creatureTypes = setOf("Hero"),
-                imageUri = JOB_SELECT_HERO_TOKEN_IMAGE
-            ) then
+            effect = token then
                 Effects.AttachEquipment(EffectTarget.PipelineTarget(CREATED_TOKENS, 0)),
-            descriptionOverride = "Job select (When this Equipment enters, create a 1/1 " +
-                "colorless Hero creature token, then attach this to it.)"
+            descriptionOverride = reminderText
         )
     )
 }
