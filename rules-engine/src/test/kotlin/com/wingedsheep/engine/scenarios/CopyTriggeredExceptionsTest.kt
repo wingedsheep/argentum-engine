@@ -158,4 +158,119 @@ class CopyTriggeredExceptionsTest : FunSpec({
         d.getLifeTotal(d.player1) shouldBe 24
     }
 
+    for (changeText in listOf(false, true)) {
+        test("copy-added observer sees simultaneous death with text change $changeText") {
+            val d = driver()
+            val id = d.copy()
+            d.bothPass()
+            val observer = com.wingedsheep.sdk.scripting.TriggeredAbility(
+                id = com.wingedsheep.sdk.scripting.AbilityId("copy-observer"),
+                trigger = com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent(
+                    filter = Filters.Creature.withSubtype(if (changeText) "Elf" else "Bear"),
+                    from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD
+                ),
+                binding = com.wingedsheep.sdk.scripting.TriggerBinding.OTHER,
+                effect = Effects.GainLife(5)
+            )
+            d.replaceState(d.state.updateEntity(id) { container ->
+                var updated = container.with(container.get<CardComponent>()!!.copy(copyTriggeredAbilities = listOf(observer)))
+                if (changeText) updated = updated.with(
+                    com.wingedsheep.engine.state.components.identity.TextReplacementComponent(listOf(
+                        com.wingedsheep.engine.state.components.identity.TextReplacement(
+                            "Elf", "Bear", com.wingedsheep.engine.state.components.identity.TextReplacementCategory.CREATURE_TYPE
+                        )
+                    ))
+                )
+                updated
+            })
+            val wipe = card("Test Copy Wipe") {
+                manaCost = "{B}"; typeLine = "Sorcery"
+                spell { effect = Effects.DestroyAll(Filters.Creature) }
+            }
+            d.registerCards(listOf(wipe))
+            val spell = d.putCardInHand(d.player1, wipe.name)
+            d.giveMana(d.player1, Color.BLACK, 1)
+            d.castSpell(d.player1, spell).error shouldBe null
+            d.bothPass()
+            d.state.stack.size shouldBe 1
+            d.bothPass()
+            d.getLifeTotal(d.player1) shouldBe 27
+        }
+    }
+    for (faceDown in listOf(false, true)) {
+        test("departure suppresses copy trigger after ${if (faceDown) "turning face down" else "losing abilities"}") {
+            val d = driver()
+            val id = d.copy()
+            d.bothPass()
+            if (faceDown) {
+                d.replaceState(d.state.updateEntity(id) {
+                    it.with(com.wingedsheep.engine.state.components.identity.FaceDownComponent)
+                })
+            } else {
+                val suppress = card("Test Copy Silence") {
+                    manaCost = "{U}"; typeLine = "Sorcery"
+                    spell {
+                        val t = target(com.wingedsheep.sdk.scripting.filters.unified.TargetFilter.Creature)
+                        effect = Effects.RemoveAllAbilities(t, com.wingedsheep.sdk.scripting.Duration.Permanent)
+                    }
+                }
+                d.registerCards(listOf(suppress))
+                val spell = d.putCardInHand(d.player1, suppress.name)
+                d.giveMana(d.player1, Color.BLUE, 1)
+                d.castSpellWithTargets(d.player1, spell, listOf(com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent(id))).error shouldBe null
+                d.bothPass()
+            }
+            val wipe = card("Test Silent Copy Wipe") {
+                manaCost = "{B}"; typeLine = "Sorcery"
+                spell { effect = Effects.DestroyAll(Filters.Creature) }
+            }
+            d.registerCards(listOf(wipe))
+            val spell = d.putCardInHand(d.player1, wipe.name)
+            d.giveMana(d.player1, Color.BLACK, 1)
+            d.castSpell(d.player1, spell).error shouldBe null
+            d.bothPass()
+            d.state.stack.size shouldBe 0
+            d.getLifeTotal(d.player1) shouldBe 22
+        }
+    }
+
+    test("departed aura reads its copy-added attached trigger from the exit snapshot") {
+        val d = driver()
+        val host = d.putCardInGraveyard(d.player1, "Grizzly Bears")
+        val aura = d.putCardInGraveyard(d.player1, copier.name)
+        val ability = com.wingedsheep.sdk.scripting.TriggeredAbility(
+            id = com.wingedsheep.sdk.scripting.AbilityId("copy-attached"),
+            trigger = com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent(
+                from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD
+            ),
+            binding = com.wingedsheep.sdk.scripting.TriggerBinding.ATTACHED,
+            effect = Effects.GainLife(6)
+        )
+        val event = com.wingedsheep.engine.core.ZoneChangeEvent(
+            entityId = aura, entityName = "Copied Aura", fromZone = Zone.BATTLEFIELD,
+            toZone = Zone.GRAVEYARD, ownerId = d.player1,
+            lastKnown = com.wingedsheep.engine.state.components.stack.EntitySnapshot(
+                entityId = aura, cardDefinitionId = copier.name, attachedTo = host,
+                copyTriggeredAbilities = listOf(ability)
+            )
+        )
+        val evaluator = com.wingedsheep.engine.handlers.PredicateEvaluator(cardRegistry = d.cardRegistry)
+        val resolver = com.wingedsheep.engine.event.TriggerAbilityResolver(
+            d.cardRegistry, com.wingedsheep.engine.event.AbilityRegistry(), evaluator
+        )
+        val detector = com.wingedsheep.engine.event.DeathAndLeaveTriggerDetector(
+            resolver, com.wingedsheep.engine.event.TriggerMatcher(evaluator, evaluator.conditions)
+        )
+        val triggers = mutableListOf<com.wingedsheep.engine.event.PendingTrigger>()
+        detector.detectDeadAuraAttachmentTriggers(
+            d.state,
+            com.wingedsheep.engine.event.BattlefieldStaticsIndex.build(d.state, d.cardRegistry, predicateEvaluator = evaluator),
+            event, triggers
+        )
+        triggers.size shouldBe 1
+        triggers.single().ability shouldBe ability
+        triggers.single().sourceName shouldBe "Copied Aura"
+        triggers.single().triggerContext.triggeringEntityId shouldBe host
+    }
+
 })

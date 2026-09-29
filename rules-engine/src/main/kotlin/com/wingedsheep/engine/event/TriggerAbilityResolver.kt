@@ -621,9 +621,11 @@ class TriggerAbilityResolver(
         state: GameState,
         statics: BattlefieldStaticsIndex,
     ): List<TriggeredAbility> {
-        val currentCopyAbilities = state.getEntity(event.entityId)?.get<CardComponent>()?.copyTriggeredAbilities.orEmpty()
+        if (event.lastKnown?.lostAllAbilities == true || event.lastKnown?.wasFaceDown == true) return emptyList()
+        val currentCopyAbilityIds = state.getEntity(event.entityId)?.get<CardComponent>()
+            ?.copyTriggeredAbilities.orEmpty().mapTo(HashSet()) { it.id }
         val live = getTriggeredAbilities(event.entityId, cardDefinitionId, state, statics)
-            .filterNot { it in currentCopyAbilities } + event.lastKnown?.copyTriggeredAbilities.orEmpty()
+            .filterNot { it.id in currentCopyAbilityIds } + event.lastKnown?.copyTriggeredAbilities.orEmpty()
         val frozenIds = event.lastKnown?.conditionalSelfGrantIds ?: return live
         val liveIds = live.mapTo(HashSet()) { it.id }
         return live + ConditionalSelfGrants.byIds(cardDefinitionId, frozenIds, cardRegistry)

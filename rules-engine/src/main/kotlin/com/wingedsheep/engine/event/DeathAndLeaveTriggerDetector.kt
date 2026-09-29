@@ -169,7 +169,7 @@ class DeathAndLeaveTriggerDetector(
 
             val info = resolveDyingEntity(state, deadEvent) ?: continue
 
-            val abilities = abilityResolver.getTriggeredAbilities(deadEntityId, info.cardDefinitionId, state, statics)
+            val abilities = abilityResolver.getDepartedTriggeredAbilities(deadEvent, info.cardDefinitionId, state, statics)
             val controllerId = deadEvent.ownerId
 
             for (ability in abilities) {
@@ -214,10 +214,8 @@ class DeathAndLeaveTriggerDetector(
         val attachedEntityId = event.lastKnown?.attachedTo ?: return
 
         val auraEntityId = event.entityId
-        val container = state.getEntity(auraEntityId) ?: return
-        val cardComponent = container.get<CardComponent>() ?: return
-
-        val abilities = abilityResolver.getTriggeredAbilities(auraEntityId, cardComponent.cardDefinitionId, state, statics)
+        val info = resolveDyingEntity(state, event) ?: return
+        val abilities = abilityResolver.getDepartedTriggeredAbilities(event, info.cardDefinitionId, state, statics)
         val controllerId = event.ownerId
 
         for (ability in abilities) {
@@ -234,7 +232,7 @@ class DeathAndLeaveTriggerDetector(
                 PendingTrigger(
                     ability = ability,
                     sourceId = auraEntityId,
-                    sourceName = cardComponent.name,
+                    sourceName = info.name,
                     controllerId = controllerId,
                     triggerContext = TriggerContext(triggeringEntityId = attachedEntityId)
                 )

@@ -307,7 +307,7 @@ fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot {
         typeLine = projectedTypeLine(state, entityId),
         keywords = state.projectedState.getKeywords(entityId),
         cardDefinitionId = container?.get<CardComponent>()?.cardDefinitionId,
-        copyTriggeredAbilities = container?.get<CardComponent>()?.copyTriggeredAbilities.orEmpty(),
+        copyTriggeredAbilities = captureCopyTriggeredAbilities(state, entityId),
         wasAttacking = container?.has<AttackingComponent>() ?: false,
         wasBlocking = container?.has<BlockingComponent>() ?: false,
         attachmentIds = attachmentIdsOf(state, entityId),
@@ -357,3 +357,16 @@ fun List<EntitySnapshot>.snapshotFor(id: EntityId): EntitySnapshot? =
 
 val List<EntitySnapshot>.entityIds: List<EntityId>
     get() = map { it.entityId }
+
+/** Freeze copy-added rules text while its battlefield text-changing effects still apply. */
+fun captureCopyTriggeredAbilities(state: GameState, entityId: EntityId): List<com.wingedsheep.sdk.scripting.TriggeredAbility> {
+    val container = state.getEntity(entityId) ?: return emptyList()
+    val abilities = container.get<CardComponent>()?.copyTriggeredAbilities.orEmpty()
+    if (abilities.isEmpty()) return abilities
+    if (container.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() ||
+        state.projectedState.hasLostAllAbilities(entityId)
+    ) return emptyList()
+    val replacement = com.wingedsheep.engine.state.components.identity.TextChanges.of(state, entityId)
+        ?: return abilities
+    return abilities.map { it.applyTextReplacement(replacement) }
+}
