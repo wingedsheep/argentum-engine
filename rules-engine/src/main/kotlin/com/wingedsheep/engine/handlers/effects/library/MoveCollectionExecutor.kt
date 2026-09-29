@@ -115,6 +115,9 @@ class MoveCollectionExecutor(
                 prepared.pause?.let { return it }
                 context = prepared.context
             }
+            com.wingedsheep.engine.handlers.effects.EffectEntryChoices.prepare(
+                state, effect, context, entrants, cardRegistry
+            )?.let { return it }
         }
 
         val attachTo = effect.attachTo
@@ -919,6 +922,7 @@ class MoveCollectionExecutor(
             val entryOptions = com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(
                 controllerId = actualDestPlayerId,
                 entryCopy = context.entryCopies[cardId],
+                entryChoices = context.entryChoices[cardId]?.values.orEmpty(),
                 auraHostId = context.entryAuraHosts[cardId],
                 libraryPlacement = libraryPlacement,
                 tapped = destination.placement == ZonePlacement.Tapped || destination.placement == ZonePlacement.TappedAndAttacking,

@@ -424,7 +424,9 @@ data class EntersWithChoiceOnBattlefieldContinuation(
     val syntheticRiotRemaining: Int = 0,
     /** Actual entry refs, retained across every as-enters decision. */
     val entryOldObject: com.wingedsheep.engine.state.ObjectRef? = null,
-    val entryNewObject: com.wingedsheep.engine.state.ObjectRef? = null
+    val entryNewObject: com.wingedsheep.engine.state.ObjectRef? = null,
+    /** The printed name of a permanent that entered as a copy, for the entry event. */
+    val copyOfOriginalName: String? = null
 ) : AnswerContinuation
 
 /**

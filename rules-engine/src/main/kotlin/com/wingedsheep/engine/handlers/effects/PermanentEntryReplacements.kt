@@ -4,6 +4,13 @@ import com.wingedsheep.engine.mechanics.stack.colorChoicePrompt
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.AnswerContinuation
 import com.wingedsheep.engine.core.ChooseColorDecision
+import com.wingedsheep.engine.core.CardsSelectedResponse
+import com.wingedsheep.engine.core.ColorChosenResponse
+import com.wingedsheep.engine.core.DecisionResponse
+import com.wingedsheep.engine.core.NumberChosenResponse
+import com.wingedsheep.engine.core.OptionChosenResponse
+import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.core.ChooseNumberDecision
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.DecisionContext
@@ -56,7 +63,9 @@ import com.wingedsheep.sdk.scripting.references.Player
  *    [pauseForEntersWithChoice] and [devourSacrificeCandidates].
  *  - [com.wingedsheep.engine.handlers.effects.zones.MoveToZoneEffectExecutor] — a card put onto
  *    the battlefield by an effect (reanimation, a blink or earthbend return from exile).
- *    [runOnEnterRunEffect] only.
+ *    [runOnEnterRunEffect], and [EntersWithChoice] through [EffectEntryChoices], which asks
+ *    *before* the move (so it shares only [entersChoicePrompt] / [decodeEntersChoice]).
+ *    [com.wingedsheep.engine.handlers.effects.library.MoveCollectionExecutor] asks the same way.
  *  - [com.wingedsheep.engine.mechanics.stack.StackResolver] — a permanent *cast as a spell*, run
  *    just after `enterPermanentOnBattlefield`. [runOnEnterRunEffect] only. Added for Nameless
  *    Race; until then [OnEnterRun] was silently inert on every cast permanent, which went
@@ -69,10 +78,8 @@ import com.wingedsheep.sdk.scripting.references.Player
  *    it. `enterPermanentOnBattlefield` can't own the call — it returns a `(GameState, events)`
  *    pair, and this replacement may pause.
  *
- * Those omissions are real gaps, not deliberate exclusions. The next one worth closing is
- * [EntersWithChoice] on the move path: a reanimated Shapeshifter or Sorcerous Spyglass currently
- * enters with its as-enters choice never made — the same shape of bug [runOnEnterRunEffect] was
- * added to fix, one replacement over.
+ * Those omissions are real gaps, not deliberate exclusions — e.g. `MoveCollectionExecutor` still
+ * doesn't run [OnEnterRun].
  *
  * The spell-resolution path keeps its own pre-battlefield variant
  * ([com.wingedsheep.engine.mechanics.stack.StackResolver.pauseForEntersWithChoice]) because there
@@ -351,7 +358,83 @@ object PermanentEntryReplacements {
         syntheticRiotRemaining: Int = 0,
         entryOldObject: com.wingedsheep.engine.state.ObjectRef? = null,
         entryNewObject: com.wingedsheep.engine.state.ObjectRef? = state.objectRef(entityId),
+        copyOfOriginalName: String? = null,
     ): ExecutionResult? {
+        val prompt = entersChoicePrompt(
+            state, entityId, controllerId, cardComponent, choice, fromZone,
+            cardNameOptions, syntheticRiot, syntheticRiotRemaining
+        ) ?: return null
+        // The entry's object identities are captured on the answer, not read when it resumes:
+        // by then the permanent has finished entering and the old object is gone.
+        return prompt.state.suspendForDecision(
+            prompt.question,
+            prompt.answer.copy(
+                entryOldObject = entryOldObject, entryNewObject = entryNewObject,
+                copyOfOriginalName = copyOfOriginalName,
+            ),
+            carryEvents + prompt.events,
+        )
+    }
+
+    /**
+     * Read the player's answer to an [entersChoicePrompt] question into the [ChoiceSlot] it fills
+     * and the value to record there, or `null` when the response doesn't fit the question.
+     */
+    fun decodeEntersChoice(
+        question: EntersWithChoiceOnBattlefieldContinuation,
+        response: DecisionResponse,
+    ): Pair<ChoiceSlot, ChoiceValue>? {
+        fun <T> option(options: List<T>): T? = (response as? OptionChosenResponse)?.let { options.getOrNull(it.optionIndex) }
+        return when (question.choiceType) {
+            ChoiceType.COLOR -> (response as? ColorChosenResponse)
+                ?.let { ChoiceSlot.COLOR to ChoiceValue.ColorChoice(it.color) }
+            ChoiceType.CREATURE_TYPE -> option(question.creatureTypes)
+                ?.let { ChoiceSlot.CREATURE_TYPE to ChoiceValue.TextChoice(it) }
+            ChoiceType.CREATURE_ON_BATTLEFIELD -> (response as? CardsSelectedResponse)?.selectedCards?.firstOrNull()
+                ?.let { ChoiceSlot.CREATURE to ChoiceValue.EntityChoice(it) }
+            ChoiceType.MODE -> option(question.modeOptionIds)
+                ?.let { ChoiceSlot.MODE to ChoiceValue.TextChoice(it) }
+            ChoiceType.BASIC_LAND_TYPE -> option(question.landTypes)
+                ?.let { ChoiceSlot.LAND_TYPE to ChoiceValue.TextChoice(it) }
+            ChoiceType.OPPONENT -> option(question.opponentIds)
+                ?.let { ChoiceSlot.OPPONENT to ChoiceValue.EntityChoice(it) }
+            ChoiceType.CARD_NAME -> option(question.cardNames)
+                ?.let { ChoiceSlot.CARD_NAME to ChoiceValue.TextChoice(it) }
+            ChoiceType.NUMBER -> (response as? NumberChosenResponse)
+                ?.let { ChoiceSlot.CHOSEN_NUMBER to ChoiceValue.NumberChoice(it.number) }
+        }
+    }
+
+    /**
+     * An [EntersWithChoice] question, not yet asked: the decision to present, and the answer frame
+     * that knows how to read the response ([decodeEntersChoice]). [state] and [events] carry the
+     * reveal a [EntersWithChoice.lookAtOpponentHand] choice makes before it is asked.
+     */
+    class EntersChoicePrompt(
+        val question: (String) -> PendingDecision,
+        val answer: EntersWithChoiceOnBattlefieldContinuation,
+        val state: GameState,
+        val events: List<GameEvent> = emptyList(),
+    )
+
+    /**
+     * Build the question for one [EntersWithChoice] of [entityId] — shared by the post-entry pause
+     * above and the pre-entry preparation of an effect-driven entry
+     * ([com.wingedsheep.engine.handlers.effects.EffectEntryChoices]).
+     *
+     * @return `null` if the choice cannot be presented (see [pauseForEntersWithChoice]).
+     */
+    fun entersChoicePrompt(
+        state: GameState,
+        entityId: EntityId,
+        controllerId: EntityId,
+        cardComponent: CardComponent,
+        choice: EntersWithChoice,
+        fromZone: Zone?,
+        cardNameOptions: List<String> = emptyList(),
+        syntheticRiot: Boolean = false,
+        syntheticRiotRemaining: Int = 0,
+    ): EntersChoicePrompt? {
         val chooserId = when (choice.chooser) {
             Player.AnOpponent -> state.getOpponents(controllerId).firstOrNull() ?: controllerId
             else -> controllerId
@@ -364,16 +447,10 @@ object PermanentEntryReplacements {
             phase = DecisionPhase.RESOLUTION
         )
 
-        // The entry's object identities are captured on the answer, not read when it resumes:
-        // by then the permanent has finished entering and the old object is gone.
         fun pause(
             question: (String) -> PendingDecision,
             continuation: EntersWithChoiceOnBattlefieldContinuation,
-        ): ExecutionResult = state.suspendForDecision(
-            question,
-            continuation.copy(entryOldObject = entryOldObject, entryNewObject = entryNewObject),
-            carryEvents,
-        )
+        ) = EntersChoicePrompt(question, continuation, state)
 
         return when (choice.choiceType) {
             ChoiceType.COLOR -> {
@@ -541,11 +618,7 @@ object PermanentEntryReplacements {
                     cardNames = options,
                     fromZone = fromZone
                 )
-                baseState.suspendForDecision(
-                    question,
-                    continuation.copy(entryOldObject = entryOldObject, entryNewObject = entryNewObject),
-                    carryEvents + lookEvents,
-                )
+                EntersChoicePrompt(question, continuation, baseState, lookEvents)
             }
 
             ChoiceType.NUMBER -> {

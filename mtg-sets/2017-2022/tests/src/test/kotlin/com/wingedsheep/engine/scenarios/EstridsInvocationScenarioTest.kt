@@ -102,6 +102,29 @@ class EstridsInvocationScenarioTest : FunSpec({
         d.state.projectedState.getController(id) shouldBe d.player1
         d.state.getEntity(id)!!.get<CardComponent>()!!.copyTriggeredAbilities.size shouldBe 1
     }
+    test("upkeep blink copying an enchantment with an as-enters choice asks that choice again") {
+        val d = driver()
+        val resolve = d.putPermanentOnBattlefield(d.player1, "Steely Resolve")
+        val bear = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
+        val id = d.castInvocation()
+        d.submitCardSelection(d.player1, listOf(resolve)).error shouldBe null
+        val first = d.state.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        d.submitDecision(d.player1, OptionChosenResponse(first.id, first.options.indexOf("Goblin"))).error shouldBe null
+        d.state.getEntity(id)!!.chosenCreatureType() shouldBe "Goblin"
+
+        d.nextOwnUpkeep()
+        d.bothPass()
+        d.submitYesNo(d.player1, true).error shouldBe null
+        d.submitCardSelection(d.player1, listOf(resolve)).error shouldBe null
+        (id in d.state.getBattlefield()) shouldBe false
+        val again = d.state.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        d.submitDecision(d.player1, OptionChosenResponse(again.id, again.options.indexOf("Bear"))).error shouldBe null
+
+        (id in d.state.getBattlefield()) shouldBe true
+        d.state.getEntity(id)!!.get<CardComponent>()!!.name shouldBe "Steely Resolve"
+        d.state.getEntity(id)!!.chosenCreatureType() shouldBe "Bear"
+        d.state.projectedState.hasKeyword(bear, Keyword.SHROUD) shouldBe true
+    }
     test("declining upkeep exile keeps the copied Aura attached") {
         val d = driver()
         val host = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")

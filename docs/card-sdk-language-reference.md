@@ -13425,6 +13425,14 @@ EntersWithChoice(
 - Writes `ChosenModeComponent(modeId)` on the permanent.
 - Downstream triggers/conditions gate via `SourceChosenModeIs("khans")`.
 - Icons live in `web-client/src/assets/icons/options/`.
+- **Asked on every way onto the battlefield** — cast, played, minted as a token, and put there by an
+  effect (reanimation, a blink's return, a library search: `MoveToZone` / `MoveCollection`). On the
+  effect path every entrant's questions are asked *before* the move against the pre-entry battlefield
+  (CR 614.12a), in APNAP order across entrants and choice-type order within one, then the move
+  replays and stamps the answers as the permanent arrives — so its enters triggers see them. An
+  entrant that enters as a copy answers the copied card's questions. A choice with nothing to offer
+  (`CREATURE_ON_BATTLEFIELD` with no other creature you control) is skipped. Face-down entries ask
+  nothing (CR 708.2).
 
 **Other `ChoiceType`s** — `ChoiceType.COLOR` writes `ChosenColorComponent` (read by
 `GrantChosenColor`), and takes `excludedColors` for "choose a color other than red" (the Thriving lands — the
@@ -14027,9 +14035,9 @@ The priority groups are (CR 616.1a–f):
   its own enters-tapped / enters-with-counters, Saga lore, and `OnEnterRun` — so Clone copying
   Adaptive Automaton chooses a creature type of its own. The original's choices are not copiable
   values and are never inherited; declining the copy walks the printed card's pipeline instead. A
-  copied Aura picks its host before those questions. The land/token direct-entry path and the
-  effect-driven `MoveToZone` / `MoveCollection` paths do not yet ask a copied `EntersWithChoice`
-  (those paths do not ask a printed one on non-land cards either).
+  copied Aura picks its host before those questions. A land played as a copy (Vesuva-style) asks
+  the copied land's `EntersWithChoice` after the copy, and an effect-driven entry asks the copied
+  card's — see `EntersWithChoice` under "Permanent enters-with-choice".
 - `ModifyDrawAmount(modifier, multiplier, restrictions, appliesTo)` — modify the number of cards a draw
   instruction announces to `(count * multiplier) + modifier`, clamped to ≥ 0, optionally gated by extra
   `restrictions: List<Condition>`

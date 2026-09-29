@@ -63,6 +63,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.engine.event.ConditionalSelfGrants
+import com.wingedsheep.engine.state.components.battlefield.withCastChoice
 
 
 /**
@@ -71,6 +72,8 @@ import com.wingedsheep.engine.event.ConditionalSelfGrants
 data class ZoneEntryOptions(
     val auraHostId: EntityId? = null,
     val entryCopy: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice? = null,
+    /** "As this enters, choose …" answers made before the move ([EffectEntryChoices]). */
+    val entryChoices: Map<com.wingedsheep.sdk.scripting.ChoiceSlot, com.wingedsheep.engine.state.components.battlefield.ChoiceValue> = emptyMap(),
     val controllerId: EntityId? = null,
     val libraryPlacement: LibraryPlacement = LibraryPlacement.Top,
     val tapped: Boolean = false,
@@ -729,6 +732,11 @@ class ZoneTransitionService(
                     options.copy(tapped = options.tapped ||
                         (options.entryCopy?.copiedCard != null && options.entryCopy.replacement.tappedIfCopied)), fromZone
                 )
+                if (!options.faceDown && options.entryChoices.isNotEmpty()) {
+                    newState = newState.updateEntity(entityId) { c ->
+                        options.entryChoices.entries.fold(c) { acc, (slot, value) -> acc.withCastChoice(slot, value) }
+                    }
+                }
                 options.auraHostId?.let { host ->
                     val (attached, attachmentEvents) =
                         com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachmentMover.attach(

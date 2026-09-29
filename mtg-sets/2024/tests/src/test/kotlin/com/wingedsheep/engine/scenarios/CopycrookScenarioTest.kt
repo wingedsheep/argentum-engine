@@ -153,6 +153,29 @@ class CopycrookScenarioTest : FunSpec({
         d.submitCardSelection(d.player1, listOf(discard)).error shouldBe null
         d.state.getEntity(id)!!.get<CountersComponent>()!!.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
     }
+    test("reanimated Copycrook copying a creature with an as-enters choice makes that choice before entering") {
+        val d = driver()
+        val automaton = d.putPermanentOnBattlefield(d.player2, "Adaptive Automaton")
+        d.replaceState(d.state.updateEntity(automaton) {
+            it.withCastChoice(ChoiceSlot.CREATURE_TYPE, ChoiceValue.TextChoice("Goblin"))
+        })
+        val myBear = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")
+        val id = d.putCardInGraveyard(d.player1, "Copycrook")
+        val spell = d.putCardInHand(d.player1, "Zombify")
+        d.giveMana(d.player1, Color.BLACK, 4)
+        d.castSpellWithTargets(d.player1, spell, listOf(ChosenTarget.Card(id, d.player1, Zone.GRAVEYARD))).error shouldBe null
+        d.bothPass()
+        d.submitCardSelection(d.player1, listOf(automaton)).error shouldBe null
+
+        (id in d.state.getBattlefield()) shouldBe false
+        val choice = d.state.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        d.submitDecision(d.player1, OptionChosenResponse(choice.id, choice.options.indexOf("Bear"))).error shouldBe null
+
+        (id in d.state.getBattlefield()) shouldBe true
+        d.state.getEntity(id)!!.chosenCreatureType() shouldBe "Bear"
+        d.state.projectedState.getPower(myBear) shouldBe 3
+        d.state.getEntity(id)!!.get<CardComponent>()!!.copyTriggeredAbilities.size shouldBe 1
+    }
     test("blink restores Copycrook then offers a fresh copy without accumulating exceptions") {
         val d = driver()
         val bear = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")

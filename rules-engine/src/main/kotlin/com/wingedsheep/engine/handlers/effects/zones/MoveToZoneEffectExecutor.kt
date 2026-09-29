@@ -139,9 +139,18 @@ class MoveToZoneEffectExecutor(
             return attachAuraOnEnter(state, targetId, cardComponent, controllerId, context)
         }
 
+        // "As this enters, choose …" (CR 614.12a) — asked before the move, of the copied card when
+        // the entrant enters as a copy; the transition stamps the answers on arrival.
+        if (effect.destination == Zone.BATTLEFIELD && effect.faceDown == null) {
+            com.wingedsheep.engine.handlers.effects.EffectEntryChoices.prepare(
+                state, effect, context, mapOf(targetId to controllerId), cardRegistry
+            )?.let { return it }
+        }
+
         // Build ZoneEntryOptions based on placement and effect properties
         val entryOptions = buildEntryOptions(effect, cardComponent, controllerId, context.controllerId)
-            .copy(conditionalSelfGrantIds = context.lookBackSelfGrants[targetId], entryCopy = context.entryCopies[targetId], auraHostId = context.entryAuraHosts[targetId])
+            .copy(conditionalSelfGrantIds = context.lookBackSelfGrants[targetId], entryCopy = context.entryCopies[targetId], auraHostId = context.entryAuraHosts[targetId],
+                entryChoices = context.entryChoices[targetId]?.values.orEmpty())
 
         val transitionResult = zones.moveToZone(
             state, targetId, effect.destination, entryOptions, currentZone
