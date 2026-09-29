@@ -1911,6 +1911,8 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   `CounterType.DEVOTION` (Bloodthirsty Ogre — one tap ability adds it, the other shrinks a creature by the count),
   `CounterType.THEFT` (Night Dealings — damage your sources deal to other players adds them, `Costs.RemoveXCounters(THEFT, self = true)` spends them),
   `CounterType.TRAINING` (Sensei Golden-Tail — a marker only; removing it undoes nothing),
+  `CounterType.OIL` (Phyrexia: All Will Be One — "enters with N oil counters" via `EntersWithCounters(OIL, n, selfOnly = true)`, spent by
+  `Costs.RemoveCounterFromSelf(OIL, …)`, counted over `GameObjectFilter.Permanent.withCounter(OIL)`),
   `CounterType.JUDGMENT` (Faithbound Judge // Sinner's Judgment — both faces count to three, the
   creature face to shed defender and the Aura face to make the enchanted player lose the game),
   `CounterType.NET`, `CounterType.FIRE`, `CounterType.CONQUEROR`, `CounterType.POINT` (Contested Game Ball — its

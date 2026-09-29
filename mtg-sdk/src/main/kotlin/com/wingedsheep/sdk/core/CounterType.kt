@@ -549,6 +549,15 @@ value class CounterType(val name: String) {
         val SLIME = CounterType("SLIME")
 
         /**
+         * Oil counter (ONE — Phyrexia: All Will Be One; also MOM, the Mirrodin block). A passive
+         * counter with no inherent rule of its own, like [STORAGE] and [SLIME]: every card that cares
+         * places, spends or reads it itself — "enters with N oil counters", "{T}, Remove an oil counter
+         * from this creature: …", "for each permanent you control with an oil counter on it" (a
+         * battlefield count over `GameObjectFilter.Permanent.withCounter(OIL)`). Proliferate adds oil like any other kind.
+         */
+        val OIL = CounterType("OIL")
+
+        /**
          * Javelin counter (FEM — Icatian Javelineers). A plain resource counter: the creature enters
          * with one and removing it is part of the cost of its ping. The counter does nothing of its
          * own — the card spends it.
@@ -723,6 +732,7 @@ value class CounterType(val name: String) {
             STORAGE,
             HUNGER,
             SLIME,
+            OIL,
             JAVELIN,
             CREDIT,
             CUBE,

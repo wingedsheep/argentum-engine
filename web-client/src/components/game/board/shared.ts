@@ -806,6 +806,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   // battle's own defense badge over the printed shield, not in this marker-badge allowlist.
   CounterType.STORAGE,
   CounterType.HUNGER,
+  // Phyrexia: All Will Be One's oil — spent, counted and proliferated by the cards that care.
+  CounterType.OIL,
   CounterType.DOOM,
   CounterType.FIRE,
   CounterType.CONQUEROR,

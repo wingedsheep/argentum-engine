@@ -136,7 +136,7 @@ class CounterTypeTest : DescribeSpec({
             CounterType.FELLOWSHIP to "fellowship", CounterType.BORE to "bore", CounterType.POINT to "point",
             CounterType.WISH to "wish", CounterType.REVIVAL to "revival", CounterType.INGENUITY to "ingenuity",
             CounterType.FILM to "film", CounterType.HARNESS to "harness", CounterType.HONE to "hone",
-            CounterType.STORAGE to "storage", CounterType.HUNGER to "hunger", CounterType.SLIME to "slime",
+            CounterType.STORAGE to "storage", CounterType.HUNGER to "hunger", CounterType.SLIME to "slime", CounterType.OIL to "oil",
             CounterType.JAVELIN to "javelin", CounterType.CREDIT to "credit", CounterType.CUBE to "cube",
             CounterType.TIDE to "tide", CounterType.SKEWER to "skewer", CounterType.ENERGY to "energy",
             CounterType.ICE to "ice", CounterType.PLAN to "plan", CounterType.INVASION to "invasion",

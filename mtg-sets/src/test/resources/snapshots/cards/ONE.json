@@ -570,6 +570,61 @@
     }
 }
 
+// Glistener Seer
+{
+    "name": "Glistener Seer",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Phyrexian Advisor",
+    "oracleText": "This creature enters with three oil counters on it.\n{T}, Remove an oil counter from this creature: Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Glistener Seer:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                },
+                "descriptionOverride": "{T}, Remove an oil counter from this creature: Scry 1."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 3,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "artist": "Alix Branwyn",
+        "flavorText": "\"The oil is all-knowing. The trick is to ask the right questions.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c22aaaec-bad5-43e9-8e92-9c4bde95fcfd.jpg?1783918064"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ichorspit Basilisk
 {
     "name": "Ichorspit Basilisk",
@@ -995,6 +1050,80 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Oil-Gorger Troll
+{
+    "name": "Oil-Gorger Troll",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Phyrexian Troll Warrior",
+    "oracleText": "When this creature enters, you gain 3 life. Then if you control a permanent with an oil counter on it, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oil-Gorger Troll:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsPermanent"
+                                        ],
+                                        "statePredicates": [
+                                            {
+                                                "type": "HasCounter",
+                                                "counterType": "OIL"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, you gain 3 life. Then if you control a permanent with an oil counter on it, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "artist": "Dave Kendall",
+        "flavorText": "Metal or flesh, it didn't matter—seasoned with ichor, it all tasted so good.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78493579-1fad-4664-96d7-195bf59ceef2.jpg?1783918012"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
