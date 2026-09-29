@@ -172,10 +172,25 @@ object CardEntityFactory {
             result = result.with(HexproofFromComponent(hexproofColors, hexproofCardTypes))
         }
 
+        return applyNumericKeywords(result, cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Numeric>())
+    }
+
+    /**
+     * Attach the components printed numeric keywords live on. Split out of
+     * [applyDefinitionDecorations] for the inline token path, whose numeric keywords come from
+     * `CreateTokenEffect.numericKeywords` rather than a [CardDefinition] ("a 3/3 Beast token with
+     * toxic 1").
+     */
+    fun applyNumericKeywords(
+        container: ComponentContainer,
+        numericKeywords: List<KeywordAbility.Numeric>
+    ): ComponentContainer {
+        if (numericKeywords.isEmpty()) return container
+        var result = container
+
         // Toxic N (702.164). Multiple instances stack per Rule 702.164b — sum across
         // any printed Toxic abilities so the projector can emit a single TOXIC_<n>.
-        val toxicAmount = cardDef.keywordAbilities
-            .filterIsInstance<KeywordAbility.Numeric>()
+        val toxicAmount = numericKeywords
             .filter { it.keyword == Keyword.TOXIC }
             .sumOf { it.n }
         if (toxicAmount > 0) {
@@ -184,8 +199,7 @@ object CardEntityFactory {
 
         // Every other numeric keyword's printed N (bushido N), summed per keyword the same way,
         // for EntityNumericProperty.KeywordValue — see [NumericKeywordValuesComponent].
-        val numericValues = cardDef.keywordAbilities
-            .filterIsInstance<KeywordAbility.Numeric>()
+        val numericValues = numericKeywords
             .filter { it.keyword != Keyword.TOXIC }
             .groupBy({ it.keyword }, { it.n })
             .mapValues { (_, ns) -> ns.sum() }

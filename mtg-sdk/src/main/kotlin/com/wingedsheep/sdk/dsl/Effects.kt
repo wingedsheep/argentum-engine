@@ -2852,11 +2852,12 @@ object Effects {
         dynamicToughness: DynamicAmount? = null,
         initialCounters: Map<CounterType, Int> = emptyMap(),
         stampCreator: Boolean = false,
+        numericKeywords: List<KeywordAbility.Numeric> = emptyList(),
     ): CreateTokenEffect = CreateToken(
         DynamicAmount.Fixed(count), power, toughness, colors, creatureTypes, keywords, controller, imageUri,
         name, legendary, tapped, artifactToken, enchantmentToken, staticAbilities, exileAtStep,
         sacrificeAtStep, attacking, triggeredAbilities, activatedAbilities, dynamicPower, dynamicToughness,
-        initialCounters, stampCreator,
+        initialCounters, stampCreator, numericKeywords,
     )
 
     /**
@@ -2897,6 +2898,7 @@ object Effects {
         dynamicToughness: DynamicAmount? = null,
         initialCounters: Map<CounterType, Int> = emptyMap(),
         stampCreator: Boolean = false,
+        numericKeywords: List<KeywordAbility.Numeric> = emptyList(),
     ): CreateTokenEffect = CreateTokenEffect(
         count = count, power = power, toughness = toughness, colors = colors,
         creatureTypes = creatureTypes, keywords = keywords, name = name, imageUri = imageUri,
@@ -2906,6 +2908,7 @@ object Effects {
         staticAbilities = staticAbilities, triggeredAbilities = triggeredAbilities,
         activatedAbilities = activatedAbilities, exileAtStep = exileAtStep,
         sacrificeAtStep = sacrificeAtStep, initialCounters = initialCounters, stampCreator = stampCreator,
+        numericKeywords = numericKeywords,
     )
 
     /**
@@ -3187,6 +3190,17 @@ object Effects {
      */
     fun CreatePest(count: Int = 1, controller: EffectTarget? = null): Effect =
         CreatePredefinedTokenEffect("Pest", count, controller)
+
+    /**
+     * Create N 1/1 colorless Phyrexian Mite artifact creature tokens with toxic 1 and "This token
+     * can't block." — Phyrexia: All Will Be One's Mite (`PredefinedTokens.PhyrexianMite`).
+     */
+    fun CreatePhyrexianMite(count: Int = 1, controller: EffectTarget? = null): Effect =
+        CreatePredefinedTokenEffect("Phyrexian Mite", count, controller)
+
+    /** [CreatePhyrexianMite] with a count evaluated at resolution — White Sun's Twilight's X. */
+    fun CreatePhyrexianMite(count: DynamicAmount, controller: EffectTarget? = null): Effect =
+        CreatePredefinedTokenEffect("Phyrexian Mite", controller = controller, dynamicCount = count)
 
     /**
      * Create a dynamic number of 0/1 colorless Eldrazi Spawn creature tokens.

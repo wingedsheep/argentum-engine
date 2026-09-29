@@ -1397,7 +1397,7 @@ sealed interface KeywordAbility {
         /**
          * Create Toxic with a numeric value.
          */
-        fun toxic(count: Int): KeywordAbility = Numeric(Keyword.TOXIC, count)
+        fun toxic(count: Int): Numeric = Numeric(Keyword.TOXIC, count)
 
         // Numeric-keyword shorthands. Each `Keyword.<X>` numeric ability is just
         // `Numeric(Keyword.<X>, n)`; these helpers exist purely for readability.

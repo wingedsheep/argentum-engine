@@ -458,6 +458,122 @@
     ]
 }
 
+// Compleat Devotion
+{
+    "name": "Compleat Devotion",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gets +2/+2 until end of turn. If that creature has toxic, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "creature kw:toxic"
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "artist": "Filipe Pagliuso",
+        "flavorText": "\"Elspeth, my friend, the Multiverse has answered my prayers to bring you here so that I may gather you into my pride and forever protect you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bb29a69-3e42-4268-8026-f01072d7b56c.jpg?1783918085"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Crawling Chorus
+{
+    "name": "Crawling Chorus",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Phyrexian Horror",
+    "oracleText": "Toxic 1 (Players dealt combat damage by this creature also get a poison counter.)\nWhen this creature dies, create a 1/1 colorless Phyrexian Mite artifact creature token with toxic 1 and \"This token can't block.\"",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crawling Chorus:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Phyrexian Mite"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "artist": "Michael Walsh",
+        "flavorText": "\"We need not be swift. We are inexorable.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aace4c44-7250-414b-aac4-df042a1e2e1d.jpg?1783918086"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Dross Skullbomb
 {
     "name": "Dross Skullbomb",

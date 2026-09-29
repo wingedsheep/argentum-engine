@@ -104,7 +104,15 @@ data class CreateTokenEffect(
      * Tetravus, which converts its +1/+1 counters into Tetravite tokens and reabsorbs *those same*
      * tokens. Off by default (most token-makers don't need provenance).
      */
-    val stampCreator: Boolean = false
+    val stampCreator: Boolean = false,
+    /**
+     * Numeric keyword abilities the token is printed with — "a 3/3 green Phyrexian Beast creature
+     * token with toxic 1" (Goliath Hatchery) is `listOf(KeywordAbility.toxic(1))`. The sibling of
+     * [keywords] for keywords that carry an N, which a bare [Keyword] can't hold; the engine
+     * attaches them exactly as it does a card's printed ones, so the token's toxic reaches combat
+     * damage and "creatures with toxic".
+     */
+    val numericKeywords: List<com.wingedsheep.sdk.scripting.KeywordAbility.Numeric> = emptyList(),
 ) : Effect {
     constructor(
         count: Int,
@@ -141,14 +149,16 @@ data class CreateTokenEffect(
                 append("${c.description} $pt $colorWord $typeWord $cardTypeWord tokens")
             }
         }
-        if (keywords.isNotEmpty()) {
+        val keywordWords = keywords.map { it.name.lowercase() } +
+            numericKeywords.map { "${it.keyword.displayName.lowercase()} ${it.n}" }
+        if (keywordWords.isNotEmpty()) {
             append(" with ")
-            append(keywords.joinToString(", ") { it.name.lowercase() })
+            append(keywordWords.joinToString(", "))
         }
         // Render granted activated abilities as quoted reminder text, e.g.
         // `with "{T}: Target creature you control gets +1/+0 until end of turn."`.
         for (ability in activatedAbilities) {
-            append(if (keywords.isEmpty()) " with " else " and ")
+            append(if (keywordWords.isEmpty()) " with " else " and ")
             append("\"${ability.description}\"")
         }
     }

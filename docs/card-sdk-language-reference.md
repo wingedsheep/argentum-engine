@@ -2088,6 +2088,11 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 - `CreateToken(p, t, colors?, creatureTypes, keywords?, count?, controller?, imageUri?, name?, legendary?, tapped?, artifactToken?, enchantmentToken?, staticAbilities?, exileAtStep?, sacrificeAtStep?)` — make N creature tokens.
   `exileAtStep: Step?` arms the exile counterpart of the delayed trigger described below. Both the fixed
   and dynamic-count overloads expose both delayed zone-change options.
+  `numericKeywords: List<KeywordAbility.Numeric>` gives the token keywords that carry an N, which a bare
+  `Keyword` in `keywords` can't — "two 3/3 green Phyrexian Beast creature tokens with toxic 1" (Goliath
+  Hatchery) is `numericKeywords = listOf(KeywordAbility.toxic(1))`. They land on the same components a card's
+  printed numeric keywords do, so the token's toxic reaches combat damage, `withKeyword(TOXIC)` and
+  `KeywordValue(TOXIC)`.
   `sacrificeAtStep: Step?` arms a delayed trigger that sacrifices each created token at the beginning of the next
   step of that kind — the "create …, sacrifice it at the beginning of the next end step" rider (Harried Dronesmith
   passes `Step.END`; because its ability triggers at the beginning of combat on the controller's own turn, "your
@@ -2250,6 +2255,11 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   the token is *named* and carries its own triggered ability, which the inline `CreateToken` facade
   cannot express; its two colors come from a color indicator (CR 204) via `colorIdentity` on the
   token definition, since a token has no mana cost for `colors` to derive from.
+- `CreatePhyrexianMite(count?, controller?)` — 1/1 colorless Phyrexian Mite artifact creature tokens with
+  toxic 1 and "This token can't block." (`PredefinedTokens.PhyrexianMite`) — Phyrexia: All Will Be One's
+  Mite (Crawling Chorus, Basilica Shepherd, Mirrex, …). `count` accepts an `Int` or a `DynamicAmount`
+  (White Sun's Twilight's X). A predefined token gets its definition's printed keyword components the way
+  a card does, so the Mite's toxic 1 is real toxic, not a label.
 - `CreateBlood(count?, controller?)` — Blood tokens (artifact with "{1}, {T}, Discard a card, Sacrifice this artifact: Draw a card."). `count` accepts an `Int` or a `DynamicAmount` (the latter evaluated at resolution, e.g. `CreateBlood(DynamicAmount.EntityProperty(EffectTarget.ContextTarget(0), EntityNumericProperty.ExcessMarkedDamage))` for Lacerate Flesh's "create a number of Blood tokens equal to the amount of excess damage dealt").
 - `CreateClue(count?, controller?)` / `Investigate(count?, controller?)` — Clue tokens (artifact with
   "{2}, Sacrifice this token: Draw a card."). `Investigate` is the keyword-action spelling (CR 701.36) so
@@ -4920,7 +4930,10 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   combinator recursion via the `evaluateWith` fold next to `ControllerPredicate`. Note that
   `GameObjectFilter.and` **rejects** two sides carrying *different* controller predicates (it used
   to silently keep only one) — state the intent with a composed predicate instead.
-- `.withSubtype(s)` / `.withKeyword(k)` — type/ability predicate.
+- `.withSubtype(s)` / `.withKeyword(k)` — type/ability predicate. For a numeric keyword, `withKeyword(k)` asks
+  whether the object has *any* instance of it: toxic projects only as `TOXIC_<n>` (printed toxic 2 is `TOXIC_2`,
+  each "gains toxic 1" adds a `TOXIC_1`), and "a creature with toxic" (Compleat Devotion, Slaughter Singer)
+  matches all of them. `.withoutKeyword(k)` is the exact negation.
 - `.ofColor(c)` / `.ofColors(set)` — color predicate.
 - `.withColor(c)` / `.withAnyColor(c…)` / `.notColor(c)` — fixed-color predicates (`CardPredicate.HasColor`/`NotColor`).
 - `.nonartifact()` — appends `CardPredicate.IsNonartifact` ("nonartifact creature", the Terror template);

@@ -149,7 +149,7 @@ class ProjectedState(
         getKeywords(entityId).contains(keyword)
 
     fun hasKeyword(entityId: EntityId, keyword: Keyword): Boolean =
-        hasKeyword(entityId, keyword.name)
+        getKeywords(entityId).containsKeyword(keyword)
 
     fun hasKeyword(entityId: EntityId, flag: com.wingedsheep.sdk.core.AbilityFlag): Boolean =
         hasKeyword(entityId, flag.name)
@@ -287,4 +287,19 @@ internal fun buildIntermediateProjectedState(
         )
     }
     return ProjectedState(state, frozen)
+}
+
+/**
+ * Whether a projected keyword-string set gives its object [keyword] — either the bare name or the
+ * numeric `<KEYWORD>_<n>` form printed and granted numeric keywords project as (printed toxic 2 is
+ * `TOXIC_2`, "gains toxic 1" adds `TOXIC_1`). "A creature with toxic" asks about the keyword, not
+ * any particular N, so both forms answer it; `PROTECTION_FROM_RED` and friends don't, because only
+ * a digit suffix is a numeric instance.
+ */
+fun Set<String>.containsKeyword(keyword: Keyword): Boolean {
+    val name = keyword.name
+    if (name in this) return true
+    if (isEmpty()) return false
+    val prefix = "${name}_"
+    return any { it.length > prefix.length && it.startsWith(prefix) && it.substring(prefix.length).all(Char::isDigit) }
 }

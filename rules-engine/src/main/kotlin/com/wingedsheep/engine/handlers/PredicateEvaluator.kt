@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.mechanics.layers.containsKeyword
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.state.components.battlefield.entitiesChoice
@@ -327,7 +328,7 @@ class PredicateEvaluator(
             is CardPredicate.HasSubtype ->
                 typeLine?.hasSubtype(predicate.subtype)
                     ?: snapshot.subtypes.any { it.equals(predicate.subtype.value, ignoreCase = true) }
-            is CardPredicate.HasKeyword -> predicate.keyword.name in snapshot.keywords
+            is CardPredicate.HasKeyword -> snapshot.keywords.containsKeyword(predicate.keyword)
             is CardPredicate.Not -> matchesSnapshotPredicate(snapshot, predicate.predicate)?.not()
             is CardPredicate.And -> {
                 val results = predicate.predicates.map { matchesSnapshotPredicate(snapshot, it) }
@@ -823,8 +824,8 @@ class PredicateEvaluator(
             }
 
             // Keyword predicates - use projected keywords
-            is CardPredicate.HasKeyword -> predicate.keyword.name in keywords
-            is CardPredicate.NotKeyword -> predicate.keyword.name !in keywords
+            is CardPredicate.HasKeyword -> keywords.containsKeyword(predicate.keyword)
+            is CardPredicate.NotKeyword -> !keywords.containsKeyword(predicate.keyword)
 
             // Mana value predicates - face-down has CMC 0 (Rule 708.2)
             is CardPredicate.ManaValueEquals -> {

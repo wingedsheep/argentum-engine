@@ -943,8 +943,8 @@ internal class AffectsFilterResolver(
         CardPredicate.IsMulticolored -> colors.size > 1
         CardPredicate.IsMonocolored -> colors.size == 1
         is CardPredicate.HasExactlyColors -> colors.size == predicate.count
-        is CardPredicate.HasKeyword -> predicate.keyword.name in keywords
-        is CardPredicate.NotKeyword -> predicate.keyword.name !in keywords
+        is CardPredicate.HasKeyword -> keywords.containsKeyword(predicate.keyword)
+        is CardPredicate.NotKeyword -> !keywords.containsKeyword(predicate.keyword)
         is CardPredicate.PowerAtMost -> (projected?.power ?: card.baseStats?.basePower ?: 0) <= predicate.max
         is CardPredicate.PowerAtLeast -> (projected?.power ?: card.baseStats?.basePower ?: 0) >= predicate.min
         is CardPredicate.PowerEquals -> (projected?.power ?: card.baseStats?.basePower) == predicate.value

@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.model.CardDefinition.Companion.doubleFacedPermanent
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
+import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
@@ -932,6 +933,34 @@ object PredefinedTokens {
     }
 
     /**
+     * Phyrexian Mite token — the 1/1 colorless Phyrexian Mite artifact creature with toxic 1 and
+     * "This token can't block." that Phyrexia: All Will Be One hands out (Basilica Shepherd, Charge
+     * of the Mites, Mirrex, White Sun's Twilight, …).
+     *
+     * Predefined rather than inline because the body carries a numeric keyword (toxic 1) and a
+     * static ability, and a dozen-odd cards mint the identical token. Its toxic is printed, so the
+     * token gets the same `ToxicComponent` a card with printed toxic does — "creatures you control
+     * with toxic" sees it and its combat damage gives poison counters.
+     */
+    val PhyrexianMite = card("Phyrexian Mite") {
+        typeLine = "Artifact Creature — Phyrexian Mite"
+        power = 1
+        toughness = 1
+        oracleText = "Toxic 1\nThis creature can't block."
+
+        keywordAbility(KeywordAbility.toxic(1))
+
+        staticAbility {
+            ability = CantBlock()
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/9/6/96ec91a9-659a-455f-98e0-cd30b6c6c2a4.jpg?1783918166"
+            artist = "Oriana Menendez"
+        }
+    }
+
+    /**
      * Jace — the blue Jace planeswalker token created by empower Jace (CR 701.71a, Reality
      * Fracture). Not legendary, and it enters with 0 loyalty: CR 701.71a creates it "with 0
      * loyalty" and the same keyword action then puts N loyalty counters on it, so the recipe
@@ -1060,6 +1089,7 @@ object PredefinedTokens {
         Mutagen,
         Frog,
         Pest,
+        PhyrexianMite,
         Vehicle,
         TheVoid,
         Redwing,

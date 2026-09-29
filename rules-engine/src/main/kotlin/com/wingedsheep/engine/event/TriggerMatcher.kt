@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.event
 
+import com.wingedsheep.engine.mechanics.layers.containsKeyword
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.handlers.predicates.isModified
@@ -1127,7 +1128,7 @@ class TriggerMatcher(
                         // have its keywords (e.g., Jackdaw Savior: "whenever a creature you control
                         // with flying dies").
                         if (event.fromZone == Zone.BATTLEFIELD && event.lastKnown?.keywords?.isNotEmpty() == true) {
-                            predicate.keyword.name in event.lastKnown.keywords
+                            event.lastKnown.keywords.containsKeyword(predicate.keyword)
                         } else {
                             projected.hasKeyword(event.entityId, predicate.keyword)
                         }

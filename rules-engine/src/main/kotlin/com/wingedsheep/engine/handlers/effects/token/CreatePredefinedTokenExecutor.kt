@@ -153,6 +153,12 @@ class CreatePredefinedTokenExecutor(
                 container = container.with(TappedComponent)
             }
 
+            // Printed keyword abilities that live on their own component rather than in
+            // `baseKeywords` — toxic N above all (the Phyrexian Mite's toxic 1) — are attached the
+            // same way a card's are, so a predefined token never silently loses one.
+            container = com.wingedsheep.engine.core.CardEntityFactory
+                .applyDefinitionDecorations(container, cardDef)
+
             // Transforming double-faced tokens (CR 701.51b — Incubator). The token
             // enters with its front face up; the back face's CardDefinition is
             // already auto-registered in the CardRegistry by registry.register(...).
