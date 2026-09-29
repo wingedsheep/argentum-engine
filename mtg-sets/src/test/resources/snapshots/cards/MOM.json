@@ -452,6 +452,70 @@
     ]
 }
 
+// Arachnoid Adaptation
+{
+    "name": "Arachnoid Adaptation",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 and gains reach until end of turn. Untap it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "REACH",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "artist": "Isis",
+        "flavorText": "\"Deploy the blightwidows. Rankle's pests should make for a delicious meal.\"\n—Ayara, Furnace Queen",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/8278069a-bd92-40ee-b7d5-e740dddb00fa.jpg?1783916977"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Archangel Elspeth
 {
     "name": "Archangel Elspeth",
@@ -1504,6 +1568,67 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Blighted Burgeoning
+{
+    "name": "Blighted Burgeoning",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nWhen this Aura enters, incubate 2. (Create an Incubator token with two +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)\nWhenever enchanted land is tapped for mana, its controller adds an additional one mana of any color.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blighted Burgeoning:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "AdditionalManaOnTap",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "anyColor": true
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "artist": "Piotr Foksowicz",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/007324b3-b8a9-4a32-a5a1-ad78f3a07bc3.jpg?1783916976"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2616,6 +2741,109 @@
     ]
 }
 
+// Chomping Kavu
+{
+    "name": "Chomping Kavu",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Kavu",
+    "oracleText": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)\nThis creature can't be blocked by creatures with power 2 or less.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chomping Kavu:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantStaticAbility",
+                                "ability": {
+                                    "type": "CantBeBlockedBy",
+                                    "blockerFilter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "PowerAtMost",
+                                                "max": 2
+                                            }
+                                        ]
+                                    }
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "PowerAtMost",
+                            "max": 2
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "artist": "John Tedrick",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31c249d9-37c0-451d-866b-e834c4c57214.jpg?1783916974",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Once Chomping Kavu has been legally blocked by a creature, changing that creature's power to 2 or less won't undo that block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Chrome Host Seedshark
 {
     "name": "Chrome Host Seedshark",
@@ -3039,6 +3267,56 @@
     ]
 }
 
+// Converter Beast
+{
+    "name": "Converter Beast",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Phyrexian Beast",
+    "oracleText": "When this creature enters, incubate 5. (Create an Incubator token with five +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Converter Beast:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 5,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "artist": "Uriah Voth",
+        "flavorText": "Slowly, the distinct screams of the trapped faded into muffled gurgles of glistening oil.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1bdd3ecb-8c11-4a4c-a503-bc29f79a9dcb.jpg?1783916972"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Copper Host Crusher
 {
     "name": "Copper Host Crusher",
@@ -3338,6 +3616,51 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Crystal Carapace
+{
+    "name": "Crystal Carapace",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +3/+3 and has ward {2}.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{2}"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "artist": "Sam Burley",
+        "flavorText": "\"Why won't you die, wretched flesh-beast?\"\n—Lukka",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1888c61-dc2d-4a33-9ba4-439d97f490be.jpg?1783916972"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5182,6 +5505,101 @@
     ]
 }
 
+// Fertilid's Favor
+{
+    "name": "Fertilid's Favor",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target player searches their library for a basic land card, puts it onto the battlefield tapped, then shuffles. Put two +1/+1 counters on up to one target artifact or creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "placement": "Tapped"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature|artifact"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "artist": "Kevin Sidharta",
+        "flavorText": "The denizens of Lorwyn were accustomed to resisting darkness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0bbfb58-8b22-4e8d-991c-855c29964d94.jpg?1783916969"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Final Flourish
 {
     "name": "Final Flourish",
@@ -5705,6 +6123,76 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Glistening Dawn
+{
+    "name": "Glistening Dawn",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Incubate X twice, where X is the number of lands you control. (To incubate X, create an Incubator token with X +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Incubator"
+                },
+                {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "target": {
+                        "type": "PipelineTarget",
+                        "collectionName": "createdTokens"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land"
+                            },
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "RARE",
+        "artist": "Chris Ostrowski",
+        "flavorText": "Unleashed on new worlds, the Phyrexians were driven by a simple imperative: spread and conquer.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/5443f4f6-a549-4912-a919-69e3570a9933.jpg?1783916968",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Use the number of lands you control as Glistening Dawn resolves to determine the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -8938,6 +9426,128 @@
     ]
 }
 
+// Invasion of Ixalan
+{
+    "name": "Invasion of Ixalan",
+    "manaCost": "{1}{G}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, look at the top five cards of your library. You may reveal a permanent card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Ixalan:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "permanent",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a permanent card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Siege enters, look at the top five cards of your library. You may reveal a permanent card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Belligerent Regisaur",
+        "manaCost": "",
+        "typeLine": "Creature — Dinosaur",
+        "oracleText": "Trample\nWhenever you cast a spell, this creature gains indestructible until end of turn.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 3
+        },
+        "keywords": [
+            "TRAMPLE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Belligerent Regisaur:1",
+                    "trigger": "SpellCastEvent",
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "Self"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "191",
+            "rarity": "RARE",
+            "artist": "Viktor Titov",
+            "flavorText": "\"Careful. Its vision is based on fear, and it can smell movement . . . or something like that.\"\n—Gregor, amateur zoologist",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/a/fa20fc16-e106-4953-ace4-5ac9c7fec97b.jpg?1783916974"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "RARE",
+        "artist": "Viktor Titov",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa20fc16-e106-4953-ace4-5ac9c7fec97b.jpg?1783916974"
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Invasion of Kaldheim
 {
     "name": "Invasion of Kaldheim",
@@ -9763,6 +10373,168 @@
     ]
 }
 
+// Invasion of Muraganda
+{
+    "name": "Invasion of Muraganda",
+    "manaCost": "{4}{G}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, put a +1/+1 counter on target creature you control. Then that creature fights up to one target creature you don't control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Muraganda:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Fight",
+                            "target1": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "target2": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Primordial Plasm",
+        "manaCost": "",
+        "typeLine": "Creature — Ooze",
+        "oracleText": "At the beginning of combat on your turn, another target creature gets +2/+2 and loses all abilities until end of turn.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Primordial Plasm:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "BEGIN_COMBAT"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "RemoveAllAbilities",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "192",
+            "rarity": "UNCOMMON",
+            "artist": "Adam Paquette",
+            "flavorText": "Before the tree of life branched into predators and prey, there was only shapeless hunger.",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/3/93345804-dda4-42a2-84d4-8fcd376dd2d4.jpg?1783916973",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "A creature that loses all abilities because of Primordial Plasm's ability may later gain abilities."
+                },
+                {
+                    "date": "2023-04-14",
+                    "text": "If the creature affected by Primordial Plasm's ability had an ability defining its power and/or toughness, that base value will become 0. In many situations, having a base toughness of 0 would be a problem, but Primordial Plasm's ability helpfully provides +2/+2, so the creature should survive."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93345804-dda4-42a2-84d4-8fcd376dd2d4.jpg?1783916973",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "You can choose only a creature you control as a target for Invasion of Muraganda's enters-the-battlefield ability."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If the creature you control is an illegal target as the ability tries to resolve, you won't put a +1/+1 counter on it. If that creature is a legal target but the other creature isn't, you'll still put the +1/+1 counter on the creature you control, but neither creature will deal or be dealt damage."
+            }
+        ]
+    },
+    "startingDefense": 6,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Invasion of Pyrulea
 {
     "name": "Invasion of Pyrulea",
@@ -10362,6 +11134,141 @@
     ]
 }
 
+// Invasion of Shandalar
+{
+    "name": "Invasion of Shandalar",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, return up to three target permanent cards from your graveyard to your hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Shandalar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 3,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "permanent own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this Siege enters, return up to three target permanent cards from your graveyard to your hand."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Leyline Surge",
+        "manaCost": "",
+        "typeLine": "Enchantment",
+        "oracleText": "At the beginning of your upkeep, you may put a permanent card from your hand onto the battlefield.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Leyline Surge:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "permanent"
+                                },
+                                "storeAs": "put_candidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "put_candidates",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "putting"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "putting",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "At the beginning of your upkeep, you may put a permanent card from your hand onto the battlefield."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "193",
+            "rarity": "MYTHIC",
+            "artist": "Adam Paquette",
+            "flavorText": "Shandalar's wild magic stripped away the unnatural Phyrexian carapaces, reclaiming the true forms hidden underneath.",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/f/5f80764e-8fa2-44e2-84c6-3b55f1c40ee7.jpg?1783916974"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "MYTHIC",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f80764e-8fa2-44e2-84c6-3b55f1c40ee7.jpg?1783916974",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Sieges each have an intrinsic triggered ability. That ability is \"When the last defense counter is removed from this permanent, exile it, then you may cast it transformed without paying its mana cost.\""
+            },
+            {
+                "date": "2023-04-14",
+                "text": "As a Siege enters the battlefield, its controller chooses an opponent to be its protector."
+            }
+        ]
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Invasion of Tarkir
 {
     "name": "Invasion of Tarkir",
@@ -10772,6 +11679,128 @@
     ]
 }
 
+// Invasion of Zendikar
+{
+    "name": "Invasion of Zendikar",
+    "manaCost": "{3}{G}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, search your library for up to two basic land cards, put them onto the battlefield tapped, then shuffle.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Zendikar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Awakened Skyclave",
+        "manaCost": "",
+        "typeLine": "Creature — Elemental",
+        "oracleText": "Vigilance, haste\nAs long as this creature is on the battlefield, it's a land in addition to its other types.\n{T}: Add one mana of any color.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "VIGILANCE",
+            "HASTE"
+        ],
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Awakened Skyclave:1",
+                    "cost": "CostTap",
+                    "effect": "AddManaOfChoice",
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "GrantCardType",
+                    "cardType": "LAND"
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "194",
+            "rarity": "UNCOMMON",
+            "artist": "Diego Gisbert",
+            "flavorText": "Nahiri tried to bend Zendikar to Phyrexia's will. In response, the world rose against her.",
+            "imageUri": "https://cards.scryfall.io/normal/back/8/f/8fed056f-a8f5-41ec-a7d2-a80a238872d1.jpg?1783916973",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "Awakened Skyclave is cast as a creature spell. It can be countered and otherwise responded to. It won't be a land in addition to its other types until it enters the battlefield."
+                },
+                {
+                    "date": "2023-04-14",
+                    "text": "If Awakened Skyclave enters the battlefield, any ability that triggers whenever a land enters the battlefield will trigger."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "UNCOMMON",
+        "artist": "Diego Gisbert",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8fed056f-a8f5-41ec-a7d2-a80a238872d1.jpg?1783916973"
+    },
+    "startingDefense": 3,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Iridescent Blademaster
 {
     "name": "Iridescent Blademaster",
@@ -11048,6 +12077,59 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Kami of Whispered Hopes
+{
+    "name": "Kami of Whispered Hopes",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "If one or more +1/+1 counters would be put on a permanent you control, that many plus one +1/+1 counters are put on that permanent instead.\n{T}: Add X mana of any one color, where X is this creature's power.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kami of Whispered Hopes:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ModifyCounterPlacement",
+                "appliesTo": {
+                    "type": "CounterPlacementEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "permanent ctrl:you"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "UNCOMMON",
+        "artist": "Filipe Pagliuso",
+        "flavorText": "Nashi knelt reverently before the kami and envisioned his family reunited.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c644650-3861-4a78-9e39-a413b073ddac.jpg?1783916966"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -13074,6 +14156,99 @@
     ]
 }
 
+// Overgrown Pest
+{
+    "name": "Overgrown Pest",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Pest",
+    "oracleText": "When this creature enters, look at the top five cards of your library. You may reveal a land or double-faced card from among them and put that card into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Overgrown Pest:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsLand",
+                                            "IsDoubleFaced"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a land or double-faced card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "artist": "Eelis Kyttanen",
+        "flavorText": "If only the biofluctuations students could have seen what became of their prize specimen after its escape.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a1e04eed-9a6c-491b-8f1f-1c76ac40452d.jpg?1783916966"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Phyrexian Archivist
 {
     "name": "Phyrexian Archivist",
@@ -13314,6 +14489,70 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Placid Rottentail
+{
+    "name": "Placid Rottentail",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Fungus Rabbit",
+    "oracleText": "Vigilance\n{2}{G}, Exile this card from your graveyard: Put two +1/+1 counters on target creature. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Placid Rottentail:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "artist": "Filip Burburan",
+        "flavorText": "It had always loved munching on daisies and crystalweed, but lately its favorite snacks were the strange, round roots popping up everywhere.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a87c5d2-3ebc-442b-8618-963cfc63855f.jpg?1783916964"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
