@@ -65,6 +65,43 @@
     ]
 }
 
+// Cinder Storm
+{
+    "name": "Cinder Storm",
+    "manaCost": "{6}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Cinder Storm deals 7 damage to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 7
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Tedin",
+        "flavorText": "When the sky's rain has turned to fire, what will put it out?",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e2d16c1-6226-438f-be1e-eaab3df687e1.jpg?1783946031"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Devout Monk
 {
     "name": "Devout Monk",
@@ -194,6 +231,56 @@
         "artist": "Todd Lockwood",
         "flavorText": "With a commando around, somebody's gonna get hurt.",
         "imageUri": "https://cards.scryfall.io/normal/front/d/a/da90043b-0e67-4a68-b6fb-0ca53ca7defc.jpg?1783946030"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Goblin Settler
+{
+    "name": "Goblin Settler",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "When this creature enters, destroy target land.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goblin Settler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, destroy target land."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "UNCOMMON",
+        "artist": "Carl Critchlow",
+        "flavorText": "Be it ever so crumbled, there's no place like home.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/7525100d-32f9-464b-b0c8-0767c3b730b7.jpg?1783946028"
     },
     "colorIdentityOverride": [
         "RED"
