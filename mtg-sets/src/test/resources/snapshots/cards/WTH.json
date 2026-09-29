@@ -313,6 +313,38 @@
     ]
 }
 
+// Gerrard's Wisdom
+{
+    "name": "Gerrard's Wisdom",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "You gain 2 life for each card in your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "GainLife",
+            "amount": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Hand"
+                },
+                "multiplier": 2
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "UNCOMMON",
+        "artist": "Heather Hudson",
+        "flavorText": "\"Fighting without an army is called a duel, and you'll lose a duel if your enemy comes expecting a war.\"\n—Gerrard of the *Weatherlight*",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f81defa5-edb4-4f1f-b13c-7cfb34511138.jpg?1783946748"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Guided Strike
 {
     "name": "Guided Strike",
