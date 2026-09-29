@@ -400,13 +400,15 @@ class ObjectTriggerSubject internal constructor(
      * "one or more [type] counters are put on" it ([type] null = any kind). [by] is "you put"
      * ([Player.You]); [firstTimeEachTurn] is "for the first time this turn" (Stalwart Successor);
      * [batch] is the "on one or more <permanents>" template (CR 603.2c) — see
-     * [CountersPlacedEvent.batch].
+     * [CountersPlacedEvent.batch]; [orPlayer] widens the recipient to "a permanent **or player**"
+     * (All Will Be One) — see [CountersPlacedEvent.includePlayers].
      */
     fun getsCounters(
         type: CounterType? = null,
         by: Player? = null,
         firstTimeEachTurn: Boolean = false,
         batch: Boolean = false,
+        orPlayer: Boolean = false,
     ): TriggerSpec = spec(
         CountersPlacedEvent(
             counterType = type,
@@ -414,6 +416,7 @@ class ObjectTriggerSubject internal constructor(
             firstTimeEachTurn = firstTimeEachTurn,
             placedBy = by,
             batch = batch,
+            includePlayers = orPlayer,
         )
     )
 

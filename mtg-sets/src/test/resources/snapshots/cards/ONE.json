@@ -1,3 +1,56 @@
+// All Will Be One
+{
+    "name": "All Will Be One",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you put one or more counters on a permanent or player, this enchantment deals that much damage to target opponent, creature an opponent controls, or planeswalker an opponent controls.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "All Will Be One:1",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": null,
+                    "filter": "permanent",
+                    "placedBy": "You",
+                    "includePlayers": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_COUNTERS_PLACED_AMOUNT"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPermanentOrPlayer",
+                    "id": "t0",
+                    "permanentFilter": {
+                        "baseFilter": "creature|planeswalker ctrl:opponent"
+                    },
+                    "descriptionOverride": "target opponent, creature an opponent controls, or planeswalker an opponent controls",
+                    "opponentsOnly": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "flavorText": "The Invasion Tree broke through the Blind Eternities and sent Phyrexian perfection coursing across the Multiverse.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d75e1f4-bd63-428e-8e6e-131594b3ba44.jpg?1783918036"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Barbed Batterfist
 {
     "name": "Barbed Batterfist",

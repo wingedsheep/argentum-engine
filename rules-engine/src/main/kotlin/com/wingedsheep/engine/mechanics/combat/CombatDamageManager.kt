@@ -1257,7 +1257,10 @@ internal class CombatDamageManager(
             newState = newState.updateEntity(targetId) { container ->
                 container.with(counters.withAdded(CounterType.POISON, toxicAmount))
             }
-            events.add(CountersAddedEvent(targetId, CounterType.POISON, toxicAmount, "Player"))
+            // Toxic (CR 702.164c): the creature's controller gives the player the poison counters,
+            // so that controller is the placer a "whenever you put counters" trigger reads.
+            events.add(CountersAddedEvent(targetId, CounterType.POISON, toxicAmount, "Player",
+                placedBy = newState.projectedState.getController(sourceId)))
         }
 
         // Reflection (Harsh Justice)
@@ -1492,7 +1495,9 @@ internal class CombatDamageManager(
                 newState = newState.updateEntity(targetId) { container ->
                     container.with(counters.withAdded(CounterType.POISON, toxicAmount))
                 }
-                events.add(CountersAddedEvent(targetId, CounterType.POISON, toxicAmount, "Player"))
+                // Toxic (CR 702.164c): the source's controller is the placer.
+                events.add(CountersAddedEvent(targetId, CounterType.POISON, toxicAmount, "Player",
+                    placedBy = projected.getController(sourceId)))
             }
         } else if (isPlaneswalker || isBattle) {
             if (targetId !in newState.getBattlefield()) return newState

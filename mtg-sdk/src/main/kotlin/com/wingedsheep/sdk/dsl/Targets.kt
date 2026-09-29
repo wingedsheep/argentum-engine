@@ -85,6 +85,16 @@ object Targets {
     val OpponentOrBattle: TargetRequirement =
         TargetPermanentOrPlayer(permanentFilter = TargetFilter.Battle, opponentsOnly = true)
 
+    /**
+     * "Target opponent, creature an opponent controls, or planeswalker an opponent controls" — the
+     * opponent-only burn wording (All Will Be One).
+     */
+    val OpponentOrTheirCreatureOrPlaneswalker: TargetRequirement = TargetPermanentOrPlayer(
+        permanentFilter = TargetFilter(GameObjectFilter.CreatureOrPlaneswalker.opponentControls()),
+        opponentsOnly = true,
+        descriptionOverride = "target opponent, creature an opponent controls, or planeswalker an opponent controls"
+    )
+
     /** Target creature or planeswalker. */
     val CreatureOrPlaneswalker: TargetRequirement = TargetCreatureOrPlaneswalker()
 

@@ -4558,7 +4558,8 @@ spell {
   `Targets.CreatureOrPlaneswalker`, `Targets.PlayerOrPlaneswalker`, `Targets.OpponentOrPlaneswalker`,
   `Targets.PlayerOrBattle` (`TargetPermanentOrPlayer(permanentFilter = TargetFilter.Battle)` — Onakke
   Javelineer), `Targets.OpponentOrBattle` (the same with `opponentsOnly = true` — Ayara, Widow of the
-  Realm).
+  Realm), `Targets.OpponentOrTheirCreatureOrPlaneswalker` ("target opponent, creature an opponent
+  controls, or planeswalker an opponent controls" — All Will Be One).
   `target(requirement, optional = true)` makes any of them "up to one"; a requirement with its own
   parameters (`TargetPlayer(unlimited = true)`, `TargetOther(…)`, `TargetSpellOrPermanent(…)`) passes
   through `target(requirement)` / `targets(requirement)` as-is.
@@ -5960,7 +5961,7 @@ requireExcess, batch, requires)`, `dealsCombatDamage(to, …)`, `isDealtDamage(b
 `damagedCreatureDies(dying?)`, `becomesTapped(reason?, firstTimeEachTurn?)`, `becomesUntapped()`, `tappedForMana()` (SELF),
 `turnedFaceUp()`, `transforms(intoBackFace?)`, `phasesIn()`, `becomesTarget(of?, byYou, byOpponent,
 spellsOnly, abilitiesOnly, firstTimeEachTurn, includeSpellTargets, includePlayerTargets, ofBackupAbility)`,
-`getsCounters(type?, by?, firstTimeEachTurn?, batch?)`, `losesCounters(type?, lastRemoved?,
+`getsCounters(type?, by?, firstTimeEachTurn?, batch?, orPlayer?)`, `losesCounters(type?, lastRemoved?,
 byDamagePrevention?)`, `trains()`, `champions()`, `crews()`, `saddles()`, `becomesSaddled()`,
 `becomesRenowned()`, `becomesPlotted()`, `explores(revealed?)`, `connives()`, `becomesAttached(to,
 controller)`, `becomesUnattached(from, controller)`, `controlChanges(direction, toOpponent?)`,
@@ -7380,8 +7381,8 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   The placer is the controller of the placing effect, the entering permanent's controller (for a
   permanent entering with counters, CR 122.6a), the mover's controller (CR 122.5 — *moving* a counter
   "puts" it on the destination), or the damage source's controller (wither, CR 702.80). A few
-  low-value paths carry no placer (saga lore counters, poison counters on players) and never match a
-  non-null `placedBy`. Default `null` matches any placer. A planeswalker's **[+N] loyalty cost** is
+  low-value paths carry no placer (saga lore counters) and never match a non-null `placedBy`; combat
+  poison from toxic is placed by the toxic creature's controller (CR 702.164c). Default `null` matches any placer. A planeswalker's **[+N] loyalty cost** is
   a placement too (CR 606.4): paying it emits `CountersAddedEvent(loyalty, N, placedBy = activator)`
   (a cost, so counter-placement replacements such as Doubling Season don't apply), while [−N]/[0]
   costs still emit `LoyaltyChangedEvent`. Inspired Tethermage's "Whenever you put one or more
@@ -7414,6 +7415,18 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   `DistributeCountersAmongTargetsExecutor` — the multi-recipient paths — do not, and would put a
   no-op placement in the batch. That gap is per-executor and pre-dates the batch pass (those
   executors also add the counters to the component), so don't rely on the batch to filter it.
+  **Per-recipient folding.** The per-permanent (non-batch) template fires once per *recipient* per
+  detection pass, with the trigger's counter count summed over that recipient's placements: the
+  engine emits one `CountersAddedEvent` per counter kind (proliferate) and per toxic source, but one
+  simultaneous placement is one event for its recipient (CR 603.2c) — proliferating a creature with
+  a +1/+1 and an oil counter fires once for "that many" = 2, and two toxic creatures connecting at
+  once fire once. `TriggerDetector.mergePerRecipientCounterTriggers` does the fold.
+  **Players.** `orPlayer = true` (`CountersPlacedEvent.includePlayers`) is the "on a permanent **or
+  player**" template: a player receiving counters (toxic poison, a proliferated player, "that player
+  gets a poison counter") then also matches, and the subject filter constrains only the permanent
+  half. Without it a player is never a recipient, even for an unfiltered subject. All Will Be One:
+  `Triggers.a(GameObjectFilter.Permanent).getsCounters(by = Player.You, orPlayer = true)` +
+  `Effects.DealDamage(DynamicAmounts.triggerCountersPlaced(), target)`.
 - `Triggers.self.getsCounters()` — "whenever you put one or more counters on ~" (any kind, SELF-bound).
   Aragorn, Company Leader.
 - `Triggers.<subject>.losesCounters(type, lastRemoved, byDamagePrevention)`
