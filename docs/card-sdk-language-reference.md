@@ -769,7 +769,8 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
 - `Costs.RemoveCounters(count = 1, counterType = null, filter = Any)` — remove `count` counters
   from among permanents matching `filter` you control. When `counterType` is set (e.g. `"+1/+1"`),
   only counters of that type are removed; when `null`, counters of any type may be removed in any
-  combination (Tayam, Luminous Enigma).
+  combination (Tayam, Luminous Enigma). The ability's source is in the filter context, so
+  "from among **other** …" is `filter.notSourceItself()` (Tekuthal, Inquiry Dominus).
 - `Costs.RemoveXCounters(counterType = CounterType.PLUS_ONE_PLUS_ONE, filter = Permanent, self = false)` — remove X
   counters, where X is the activated ability's chosen variable-cost value. Use
   `Costs.RemoveXCounters()` (the default) to remove X counters of any type. By default the removal
@@ -14093,6 +14094,19 @@ The priority groups are (CR 616.1a–f):
     ("If a creature you control would connive, instead you draw a card, then that creature
     connives") — the extra card is in hand *before* the discard is chosen, which a
     "whenever … connives, draw a card" trigger could not do.
+- `RepeatKeywordAction(times = 2, appliesTo)` — perform a keyword action `times` times instead of
+  once (CR 614.1a); the sibling of `ModifyKeywordAction`, which prefixes the action rather than
+  repeating it. Supported pattern: `EventPattern.ProliferatedEvent(player)` (CR 701.34), whose
+  `player` is matched with the **source's controller** as "you" (`You` / `Each` / `EachOpponent`;
+  anything else never matches). `ProliferateExecutor` asks `KeywordActionReplacements.repetitions`
+  before the first choice and runs that many complete proliferates in a row: each gathers its own
+  eligible set *after* the previous one's counters have landed, offers its own "any number" choice,
+  and emits its own `ProliferatedEvent`, so "whenever you proliferate" triggers once per
+  repetition. Applicable instances multiply (two sources → four proliferates). Only the untargeted
+  form is proliferating — `Effects.Proliferate(target)` (Powerful Broker) is never repeated.
+  - Tekuthal, Inquiry Dominus:
+    `RepeatKeywordAction(times = 2, appliesTo = EventPattern.ProliferatedEvent())`
+    ("If you would proliferate, proliferate twice instead").
 - `ModifyLifeGain(multiplier, modifier, appliesTo, restrictions)` — modify life gain by a multiplicative *and/or*
   additive factor: `gained = (original * multiplier) + modifier`, clamped to ≥ 0. `appliesTo` is a `LifeGainEvent`
   whose `player` filter (default `Player.Each`) gates which players the replacement applies to. `restrictions`

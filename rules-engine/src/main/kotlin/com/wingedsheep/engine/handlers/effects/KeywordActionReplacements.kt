@@ -9,6 +9,8 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifyKeywordAction
+import com.wingedsheep.sdk.scripting.RepeatKeywordAction
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.effects.Effect
 
 /**
@@ -21,6 +23,9 @@ enum class ReplaceableKeywordAction {
 
     /** CR 701.50 — `ConniveEffect` / Leader, Super-Genius. */
     CONNIVE,
+
+    /** CR 701.34 — untargeted `ProliferateEffect` / Tekuthal, Inquiry Dominus. Player-performed. */
+    PROLIFERATE,
 }
 
 /**
@@ -71,6 +76,52 @@ object KeywordActionReplacements {
             }
         }
         return prefixes
+    }
+
+    /**
+     * How many times [playerId] performs [action] once every [RepeatKeywordAction] on the
+     * battlefield has applied — `1` when none does. Applicable instances multiply (each one applies
+     * to every action the previous ones produced), so two "proliferate twice" sources give four.
+     * The pattern's `player` is matched with the *replacement source's* controller as "you".
+     */
+    fun repetitions(
+        state: GameState,
+        playerId: EntityId,
+        action: ReplaceableKeywordAction
+    ): Int {
+        var times = 1
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
+            val sourceControllerId = state.projectedState.getController(permanentId)
+                ?: container.get<ControllerComponent>()?.playerId
+                ?: continue
+            for (replacement in replacementComponent.replacementEffects) {
+                if (replacement !is RepeatKeywordAction) continue
+                if (!repeats(state, replacement.appliesTo, action, playerId, sourceControllerId)) continue
+                times *= replacement.times
+            }
+        }
+        return times
+    }
+
+    private fun repeats(
+        state: GameState,
+        pattern: EventPattern,
+        action: ReplaceableKeywordAction,
+        playerId: EntityId,
+        sourceControllerId: EntityId
+    ): Boolean = when {
+        action == ReplaceableKeywordAction.PROLIFERATE && pattern is EventPattern.ProliferatedEvent ->
+            when (pattern.player) {
+                Player.You -> playerId == sourceControllerId
+                Player.Each -> true
+                Player.EachOpponent -> state.isOpponentOf(playerId, sourceControllerId)
+                // Fail closed: no other player reference has a meaning for "would proliferate".
+                else -> false
+            }
+
+        else -> false
     }
 
     /**

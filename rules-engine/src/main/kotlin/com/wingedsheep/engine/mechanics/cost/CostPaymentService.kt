@@ -490,12 +490,12 @@ class CostPaymentService(private val services: EngineServices) {
             val removals = selected.map { (entityId, count) ->
                 DistributedCounterRemoval(entityId, counterType.printed, count)
             }
-            return applyDistributedCounterRemovals(newState, payerId, atom, removals, predicateEvaluator = predicateEvaluator)
+            return applyDistributedCounterRemovals(newState, payerId, atom, removals, sourceId, predicateEvaluator = predicateEvaluator)
         } else {
             // Auto-resolve: remove from permanents with the most counters first
             val projected = newState.projectedState
             val candidates = projected.getBattlefieldControlledBy(payerId).filter {
-                predicateEvaluator.matches(newState, projected, it, atom.filter, PredicateContext(controllerId = payerId))
+                predicateEvaluator.matches(newState, projected, it, atom.filter, PredicateContext(controllerId = payerId, sourceId = sourceId))
             }.sortedByDescending { entityId ->
                 val counters = newState.getEntity(entityId)
                     ?.get<CountersComponent>()
@@ -918,10 +918,10 @@ class CostPaymentService(private val services: EngineServices) {
                     else anyMatching(state, payerId, atom.filter, sourceId, predicateEvaluator = predicateEvaluator)
                 is CostAtom.TapPermanents ->
                     controlledUntapped(state, payerId, atom.filter, if (atom.excludeSelf) sourceId else null, predicateEvaluator = predicateEvaluator)
-                // "Remove a counter from among permanents you control" never says "another", so the
-                // source is in the pool. Self-removal picks nothing at all.
+                // The source is in the pool unless the filter says "other" (`notSourceItself()`,
+                // Tekuthal), which the source id lets the evaluator see. Self-removal picks nothing.
                 is CostAtom.RemoveCounters ->
-                    if (atom.self) null else controlledMatching(state, payerId, atom.filter, predicateEvaluator = predicateEvaluator)
+                    if (atom.self) null else controlledMatching(state, payerId, atom.filter, sourceId = sourceId, predicateEvaluator = predicateEvaluator)
                 // ExileFromGraveyardForTotal does pick objects, but only ever as an activated-ability
                 // cost — CostHandler owns its selection, and [canAfford] already reports it
                 // unaffordable as a PayCost, so it has no domain on this path.
@@ -986,10 +986,11 @@ class CostPaymentService(private val services: EngineServices) {
             playerId: EntityId,
             filter: GameObjectFilter,
             excludeSelfId: EntityId? = null,
+            sourceId: EntityId? = null,
             predicateEvaluator: PredicateEvaluator
         ): List<EntityId> =
             BattlefieldFilterUtils.findMatchingOnBattlefield(
-                state, filter.youControl(), PredicateContext(controllerId = playerId), excludeSelfId = excludeSelfId,
+                state, filter.youControl(), PredicateContext(controllerId = playerId, sourceId = sourceId), excludeSelfId = excludeSelfId,
                 predicateEvaluator = predicateEvaluator
             )
 
@@ -1042,11 +1043,12 @@ class CostPaymentService(private val services: EngineServices) {
             playerId: EntityId,
             atom: CostAtom.RemoveCounters,
             removals: List<DistributedCounterRemoval>,
+            sourceId: EntityId?,
             predicateEvaluator: PredicateEvaluator
         ): CostPaymentExecution {
             if (removals.isEmpty()) return CostPaymentExecution(state, emptyList(), success = true)
             val projected = state.projectedState
-            val ctx = PredicateContext(controllerId = playerId)
+            val ctx = PredicateContext(controllerId = playerId, sourceId = sourceId)
             val atomCounterType = atom.counterType
             var newState = state
             val events = mutableListOf<GameEvent>()

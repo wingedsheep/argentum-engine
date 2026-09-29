@@ -1220,8 +1220,9 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.RedirectZoneChangeWith,
             is com.wingedsheep.sdk.scripting.PreventExtraTurns,
             // Keyword-action modification, consulted from the battlefield when the action happens:
-            // explore (Twists and Turns) and connive (Leader, Super-Genius).
+            // explore (Twists and Turns), connive (Leader, Super-Genius), proliferate (Tekuthal).
             is com.wingedsheep.sdk.scripting.ModifyKeywordAction,
+            is com.wingedsheep.sdk.scripting.RepeatKeywordAction,
             // Token creation:
             is com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithAttachedCopy,
             is com.wingedsheep.sdk.scripting.MultiplyTokenCreation,

@@ -1394,6 +1394,55 @@ data class ModifyKeywordAction(
 }
 
 /**
+ * Perform a keyword action (CR 701) [times] times instead of once (CR 614.1a) — "If you would
+ * proliferate, proliferate twice instead." The sibling of [ModifyKeywordAction]: that one puts an
+ * extra effect in front of the action, this one repeats the action itself.
+ *
+ *  - Tekuthal, Inquiry Dominus — `RepeatKeywordAction(appliesTo = EventPattern.ProliferatedEvent())`
+ *
+ * Supported [appliesTo] patterns: [EventPattern.ProliferatedEvent] (CR 701.34), whose `player` is
+ * matched against the replacement source's controller as "you". Any other pattern never matches.
+ * Only the untargeted form of proliferate is proliferating — the targeted "another counter of each
+ * kind on target …" form (Powerful Broker) is not, and is never repeated.
+ *
+ * Each repetition is a complete proliferate of its own: the recipients are chosen again, after the
+ * previous one has placed its counters (so a permanent that just got its first counter is now
+ * eligible), and each emits its own "you proliferated" event, so "whenever you proliferate"
+ * triggers once per repetition. Several applicable instances multiply — two Tekuthals make one
+ * proliferate into four, the second replacement applying to each of the two proliferates the
+ * first one produced.
+ */
+@SerialName("RepeatKeywordAction")
+@Serializable
+data class RepeatKeywordAction(
+    val times: Int = 2,
+    override val appliesTo: EventPattern
+) : ReplacementEffect {
+    init {
+        require(times >= 2) { "RepeatKeywordAction.times must be at least 2, was $times" }
+    }
+
+    override val description: String
+        get() {
+            val count = when (times) {
+                2 -> "twice"
+                3 -> "three times"
+                else -> "$times times"
+            }
+            return when (val pattern = appliesTo) {
+                is EventPattern.ProliferatedEvent ->
+                    "If ${pattern.player.description} would proliferate, proliferate $count instead"
+                else -> "If ${appliesTo.description}, it happens $count instead"
+            }
+        }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+    }
+}
+
+/**
  * Prevent drawing (with optional replacement).
  * Example: Spirit of the Labyrinth (second draw), Narset Parter of Veils
  */
