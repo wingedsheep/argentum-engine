@@ -549,7 +549,7 @@ value class CounterType(val name: String) {
         val SLIME = CounterType("SLIME")
 
         /**
-         * Oil counter (ONE — Phyrexia: All Will Be One; also MOM, the Mirrodin block). A passive
+         * Oil counter (ONE — Phyrexia: All Will Be One, and later Phyrexian sets). A passive
          * counter with no inherent rule of its own, like [STORAGE] and [SLIME]: every card that cares
          * places, spends or reads it itself — "enters with N oil counters", "{T}, Remove an oil counter
          * from this creature: …", "for each permanent you control with an oil counter on it" (a
