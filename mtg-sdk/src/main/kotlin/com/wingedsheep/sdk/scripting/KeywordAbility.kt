@@ -1325,11 +1325,12 @@ sealed interface KeywordAbility {
         fun dash(cost: String): KeywordAbility = Dash(ManaCost.parse(cost))
 
         /**
-         * Create Evoke with mana cost from string.
+         * Create Bestow with mana cost from string and an optional nonmana payment.
          */
         fun bestow(cost: String, additionalCost: AdditionalCost? = null): KeywordAbility =
             Bestow(ManaCost.parse(cost), additionalCost)
 
+        /** Create Evoke with mana cost from string. */
         fun evoke(cost: String): KeywordAbility = Evoke(ManaCost.parse(cost))
 
         /**

@@ -424,6 +424,11 @@ object ZoneMovementUtils {
             newState = newState.updateEntity(attachmentId) { c ->
                 c.with(AttachmentHostLeftComponent(lastKnownHostId = leavingHostId))
             }
+            // Bestow ends as the host leaves, before the next instruction can inspect creature
+            // characteristics. Keep the attachment link for leave-trigger detection until the SBA.
+            if (!attachment.has<com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent>()) {
+                newState = com.wingedsheep.engine.mechanics.BestowCasts.end(newState, attachmentId)
+            }
         }
         return newState
     }

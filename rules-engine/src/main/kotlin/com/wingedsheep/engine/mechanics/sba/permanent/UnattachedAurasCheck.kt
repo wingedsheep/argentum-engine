@@ -68,11 +68,16 @@ class UnattachedAurasCheck(
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
+            val remainsAttachment =
+                (projected.hasType(entityId, "ENCHANTMENT") && projected.hasSubtype(entityId, "Aura")) ||
+                (projected.hasType(entityId, "ARTIFACT") &&
+                    (projected.hasSubtype(entityId, "Equipment") || projected.hasSubtype(entityId, "Fortification")))
+
             // Bestow ends instead of sending an unattached/illegal Aura to the graveyard.
             if (container.has<com.wingedsheep.engine.mechanics.BestowedComponent>()) {
                 val host = container.get<AttachedToComponent>()?.targetId
                 val hostLeft = container.get<AttachmentHostLeftComponent>()
-                val illegal = host == null || host == entityId || host !in state.getBattlefield() ||
+                val illegal = !remainsAttachment || host == null || host == entityId || host !in state.getBattlefield() ||
                     !projected.hasKeyword(entityId, com.wingedsheep.engine.mechanics.BestowCasts.ENCHANT_CREATURE) ||
                     hostLeft?.lastKnownHostId == host || !projected.isCreature(host) ||
                     projected.hasKeyword(host, com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_ENCHANTED) ||
@@ -87,13 +92,13 @@ class UnattachedAurasCheck(
                 continue
             }
 
-            // CR 310.10 / 704.5p: a battle can't be attached to anything, even if it is also an Aura
-            // or Equipment. It becomes unattached and stays on the battlefield, and the Aura rules
-            // below never apply to it (an unattached Aura-battle is not put into the graveyard).
-            if (projected.isBattle(entityId)) {
+            // CR 704.5p: creatures, battles, and permanents without an attachment type come off.
+            // This also clears the leave-trigger link retained when a host leaving ended bestow.
+            if (projected.isBattle(entityId) || !remainsAttachment ||
+                (projected.isCreature(entityId) && !projected.hasKeyword(entityId, "RECONFIGURE"))) {
                 if (container.has<AttachedToComponent>()) {
                     val (detached, unattachEvents) = unattachEmittingEvent(newState, entityId)
-                    newState = detached
+                    newState = detached.updateEntity(entityId) { it.without<AttachmentHostLeftComponent>() }
                     events.addAll(unattachEvents)
                 }
                 continue

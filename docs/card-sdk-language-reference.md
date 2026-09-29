@@ -10112,12 +10112,17 @@ composite abilities).
   `additionalCost` carries a nonmana part of the **bestow price**, e.g.
   `KeywordAbility.bestow("{G}", Costs.additional.PayLife(2))`; it is not charged for the ordinary
   creature cast. The engine chooses this mode with `AlternativeCostType.BESTOW` and applies the
-  usual cost increases, reductions, and additional spell costs.
+  usual cost increases, reductions, and additional spell costs. Granted convoke, delve, and
+  improvise use the announced Aura characteristics and appear in the payment choices.
   Bestowing makes the spell an Aura with enchant creature and supplies its creature target only
   for that casting mode; the ordinary creature cast has no Aura target. Do not add an unconditional
   `auraTarget` to the card script merely to enable bestow. If that target is illegal at resolution,
   the spell resolves as a creature instead. If the bestowed permanent becomes unattached, it
-  becomes a creature without leaving and reentering the battlefield.
+  ends the bestow type effect without leaving and reentering the battlefield; other type-changing
+  effects still apply. A permanent that is no longer an Aura, Equipment, or Fortification
+  cannot remain attached. Host departure ends bestow during resolution, before later instructions.
+  Spell copies retain bestow and their copy exceptions; copies of the permanent copy its underlying
+  creature characteristics without the bestow status.
   Author the enchanted creature's bonuses and abilities with the existing attachment primitives.
   Bestow does **not** automatically condition the card's other abilities: when Oracle says
   “As long as this permanent is a creature”, condition that self branch

@@ -158,7 +158,7 @@ class CopyTargetSpellExecutor(
         // CR 707.10f token tagging happens at resolution in StackResolver.
         return promptForCopyTargets(
             state, context, spellEntityId, spellEffect, targetRequirements, spellName,
-            effect.keywordsForCopy.toSet(), effect.removeLegendary, copyCount
+            effect.keywordsForCopy.toSet(), effect.removeLegendary, copyCount, tokenRiders
         )
     }
 
@@ -230,6 +230,7 @@ class CopyTargetSpellExecutor(
         keywordsForCopy: Set<String> = emptySet(),
         removeLegendary: Boolean = false,
         copyCount: Int = 1,
+        tokenRiders: com.wingedsheep.engine.state.components.stack.SpellCopyTokenRidersComponent? = null,
     ): EffectResult {
 
         val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
@@ -248,7 +249,7 @@ class CopyTargetSpellExecutor(
             return EffectResult.from(
                 putInheritedCopies(
                     state, spellEntityId, context.controllerId, copyCount,
-                    keywordsForCopy, removeLegendary, tokenRiders = null
+                    keywordsForCopy, removeLegendary, tokenRiders
                 )
             )
         }
@@ -268,7 +269,8 @@ class CopyTargetSpellExecutor(
             sourceId = spellEntityId,
             totalCopies = copyCount,
             keywordsForCopy = keywordsForCopy,
-            removeLegendary = removeLegendary
+            removeLegendary = removeLegendary,
+            tokenRiders = tokenRiders
         )
         val targetReqInfos = targetRequirements.mapIndexed { index, req ->
             TargetRequirementInfo(

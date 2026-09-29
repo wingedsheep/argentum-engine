@@ -62,10 +62,26 @@ object BestowCasts {
         }
     }
 
+    fun restoreBaseCharacteristics(state: GameState, id: EntityId): GameState {
+        val container = state.getEntity(id) ?: return state
+        val bestowed = container.get<BestowedComponent>() ?: return state
+        val current = container.get<CardComponent>() ?: return state
+        // Bestow only changed card types, subtypes, and P/T. Spell-copy exceptions such as
+        // nonlegendary and added token keywords must survive restoring those characteristics.
+        return state.updateEntity(id) {
+            it.with(current.copy(
+                typeLine = current.typeLine.copy(
+                    cardTypes = bestowed.original.typeLine.cardTypes,
+                    subtypes = bestowed.original.typeLine.subtypes
+                ),
+                baseStats = bestowed.original.baseStats
+            ))
+        }
+    }
+
     fun end(state: GameState, id: EntityId): GameState {
         val bestowed = state.getEntity(id)?.get<BestowedComponent>() ?: return state
-        return state.updateEntity(id) {
-            (if (bestowed.entered) it else it.with(bestowed.original)).without<BestowedComponent>()
-        }
+        val restored = if (bestowed.entered) state else restoreBaseCharacteristics(state, id)
+        return restored.updateEntity(id) { it.without<BestowedComponent>() }
     }
 }

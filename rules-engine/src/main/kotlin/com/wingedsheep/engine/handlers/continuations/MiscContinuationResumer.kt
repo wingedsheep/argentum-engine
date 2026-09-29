@@ -605,7 +605,7 @@ class MiscContinuationResumer(
         currentState = com.wingedsheep.engine.handlers.effects.stack.StormCopyEffectExecutor
             .applyCopyMutations(
                 stackResult.newState, stackResult.events,
-                continuation.keywordsForCopy, continuation.removeLegendary
+                continuation.keywordsForCopy, continuation.removeLegendary, continuation.tokenRiders
             )
         allEvents.addAll(stackResult.events)
 
@@ -645,7 +645,7 @@ class MiscContinuationResumer(
                 loopState = com.wingedsheep.engine.handlers.effects.stack.StormCopyEffectExecutor
                     .applyCopyMutations(
                         res.newState, res.events,
-                        continuation.keywordsForCopy, continuation.removeLegendary
+                        continuation.keywordsForCopy, continuation.removeLegendary, continuation.tokenRiders
                     )
                 loopEvents.addAll(res.events)
                 copiesLeft--
@@ -663,7 +663,8 @@ class MiscContinuationResumer(
             objectReferences = continuation.objectReferences,
             totalCopies = continuation.totalCopies,
             keywordsForCopy = continuation.keywordsForCopy,
-            removeLegendary = continuation.removeLegendary
+            removeLegendary = continuation.removeLegendary,
+            tokenRiders = continuation.tokenRiders
         )
         val targetReqInfos = continuation.spellTargetRequirements.mapIndexed { index, req ->
             TargetRequirementInfo(

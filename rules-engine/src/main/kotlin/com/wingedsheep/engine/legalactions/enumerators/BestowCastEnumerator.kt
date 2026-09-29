@@ -12,6 +12,8 @@ import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.mechanics.BestowCasts
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCostEnumeration
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCosts
+import com.wingedsheep.engine.mechanics.mana.TapForGeneric
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -69,7 +71,38 @@ class BestowCastEnumerator : ActionEnumerator {
                     isFromHand = inHand,
                     isFromExile = state.turnOrder.any { id in state.getZone(ZoneKey(it, Zone.EXILE)) }
                 )
-                if (!context.manaSolver.canPay(state, player, cost, spellContext = paymentContext, precomputedSources = sources)) continue
+                fun hasKeyword(keyword: Keyword) =
+                    context.grantedKeywordResolver.hasKeyword(state, player, def, keyword, id)
+                val hasConvoke = hasKeyword(Keyword.CONVOKE)
+                val convokeCreatures = if (hasConvoke) context.costUtils.findConvokeCreatures(state, player) else emptyList()
+                val hasDelve = hasKeyword(Keyword.DELVE)
+                val delveCards = if (hasDelve) context.costUtils.findDelveCards(state, player).filter { it.entityId != id } else emptyList()
+                val hasImprovise = hasKeyword(Keyword.IMPROVISE)
+                val improviseArtifacts = if (hasImprovise) {
+                    context.costUtils.findTapForGenericPermanents(state, player, TapForGeneric.IMPROVISE)
+                } else emptyList()
+                fun manaAffordable(priced: ManaCost) = context.manaSolver.canPay(
+                    state, player, priced, spellContext = paymentContext, precomputedSources = sources)
+                fun affordable(priced: ManaCost): Boolean {
+                    val payable = context.castPermissionUtils.relaxSpellCostColorsIfAny(state, player, id, priced)
+                    if (manaAffordable(payable)) return true
+                    if (convokeCreatures.isNotEmpty() && (
+                        context.costUtils.canAffordWithConvoke(state, player, payable, convokeCreatures,
+                            precomputedSources = sources, spellContext = paymentContext) ||
+                        context.costUtils.canAffordWithConvoke(state, player, payable, convokeCreatures,
+                            precomputedSources = sources, spellContext = paymentContext,
+                            tapForGenericPermanents = improviseArtifacts))) return true
+                    if (delveCards.isNotEmpty() && (
+                        context.costUtils.canAffordWithDelve(state, player, payable, delveCards,
+                            precomputedSources = sources, spellContext = paymentContext) ||
+                        context.costUtils.canAffordWithDelve(state, player, payable, delveCards,
+                            precomputedSources = sources, spellContext = paymentContext,
+                            tapForGenericPermanents = improviseArtifacts))) return true
+                    return improviseArtifacts.isNotEmpty() && context.costUtils.canAffordWithTapForGeneric(
+                        state, player, payable, improviseArtifacts,
+                        precomputedSources = sources, spellContext = paymentContext)
+                }
+                if (!affordable(cost)) continue
                 val costs = CastAdditionalCosts(context.cardRegistry, context.costCalculator, zones, context.predicateEvaluator)
                     .owedAdditionalCosts(state, action, def)
                 val env = SpellCostEnumeration(state, player, id, context.costUtils, context.predicateEvaluator)
@@ -85,17 +118,17 @@ class BestowCastEnumerator : ActionEnumerator {
                 if (!context.targetUtils.allRequirementsSatisfied(targets)) continue
                 val maxX = if (cost.hasX) {
                     // Reprice announced X before reductions: an enchantment discount can pay X.
-                    fun affordable(x: Int): Boolean {
+                    fun affordableX(x: Int): Boolean {
                         val priced = totals.totalCost(state, action.copy(xValue = x), def, card, false,
                             zones.hasCommanderCastPermission(state, player, id)) ?: return false
-                        return context.manaSolver.canPay(state, player, priced, spellContext = paymentContext, precomputedSources = sources)
+                        return affordable(priced)
                     }
                     var low = 0
                     var high = 1
-                    while (high < Int.MAX_VALUE / 2 && affordable(high)) { low = high; high *= 2 }
+                    while (high < Int.MAX_VALUE / 2 && affordableX(high)) { low = high; high *= 2 }
                     while (high - low > 1) {
                         val mid = low + (high - low) / 2
-                        if (affordable(mid)) low = mid else high = mid
+                        if (affordableX(mid)) low = mid else high = mid
                     }
                     low
                 } else null
@@ -105,6 +138,13 @@ class BestowCastEnumerator : ActionEnumerator {
                     targetCount = 1, minTargets = 1, targetDescription = BestowCasts.enchantCreature.description,
                     manaCostString = cost.toString(), hasXCost = cost.hasX, maxAffordableX = maxX,
                     additionalCostInfo = costInfo,
+                    hasConvoke = hasConvoke, convokeCreatures = convokeCreatures.takeIf { hasConvoke },
+                    hasDelve = hasDelve, delveCards = delveCards.takeIf { hasDelve },
+                    minDelveNeeded = if (hasDelve) context.costUtils.calculateMinDelveNeeded(
+                        state, player, cost, delveCards, precomputedSources = sources, spellContext = paymentContext) else null,
+                    hasTapForGeneric = hasImprovise, tapForGenericPermanents = improviseArtifacts.takeIf { hasImprovise },
+                    tapForGenericLabel = TapForGeneric.IMPROVISE.label.takeIf { hasImprovise },
+                    tapForGenericRequired = if (hasImprovise) !manaAffordable(cost) else null,
                     sourceZone = if (inHand) null else state.zones.entries.firstOrNull { id in it.value }?.key?.zoneType?.name,
                     autoTapPreview = if (context.skipAutoTapPreview) null else context.manaSolver.solve(state, player, cost, spellContext = paymentContext, precomputedSources = sources)?.sources?.map { it.entityId }
                 ))
