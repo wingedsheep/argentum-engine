@@ -9244,6 +9244,132 @@
     ]
 }
 
+// Invasion of Ikoria
+{
+    "name": "Invasion of Ikoria",
+    "manaCost": "{X}{G}{G}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, search your library and/or graveyard for a non-Human creature card with mana value X or less and put it onto the battlefield. If you search your library this way, shuffle.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Ikoria:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Library",
+                                    "Graveyard"
+                                ],
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "NotSubtype",
+                                            "subtype": "Human"
+                                        },
+                                        {
+                                            "type": "ManaValueAtMostDynamic",
+                                            "amount": "CastX"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Search your library and/or graveyard for a non-Human creature card with mana value X or less."
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Zilortha, Apex of Ikoria",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Dinosaur",
+        "oracleText": "Reach\nFor each non-Human creature you control, you may have that creature assign its combat damage as though it weren't blocked.",
+        "creatureStats": {
+            "power": 8,
+            "toughness": 8
+        },
+        "keywords": [
+            "REACH"
+        ],
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "AssignCombatDamageAsUnblocked",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Human"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "190",
+            "rarity": "RARE",
+            "artist": "Antonio José Manzanedo",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "RARE",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974"
+    },
+    "startingDefense": 6,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Invasion of Innistrad
 {
     "name": "Invasion of Innistrad",

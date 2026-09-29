@@ -10,9 +10,11 @@ import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AssignCombatDamageAsUnblocked
 import com.wingedsheep.sdk.scripting.AssignDamageEqualToToughness
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.StaticAbility
@@ -204,6 +206,50 @@ internal object CombatDamageUtils {
             if (matchesBattlefield(state, projected, permanentId, creatureId, abilities, power, toughness, predicateEvaluator = predicateEvaluator)) return true
         }
 
+        return false
+    }
+
+    /**
+     * Whether [creatureId]'s controller may have it assign its combat damage as though it weren't
+     * blocked ([AssignCombatDamageAsUnblocked]).
+     *
+     * Two shapes carry it: the creature's own ability (Thorn Elemental, `filter = source()`), and a
+     * battlefield-scoped one on any permanent that covers the creature (Zilortha, Apex of Ikoria:
+     * "for each non-Human creature you control, you may have that creature assign its combat
+     * damage as though it weren't blocked"). Both read printed abilities and ones granted at
+     * runtime ([GameState.grantedStaticAbilities]). A face-down permanent has no abilities
+     * (CR 708.2a), so it never *carries* the ability — but it can still be *covered* by a face-up
+     * source's battlefield-scoped one.
+     */
+    fun assignsAsThoughUnblocked(
+        state: GameState,
+        projected: ProjectedState,
+        creatureId: EntityId,
+        cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator
+    ): Boolean {
+        val grantsByEntity = state.grantedStaticAbilities.groupBy { it.entityId }
+        fun abilitiesOf(permanentId: EntityId): List<AssignCombatDamageAsUnblocked> {
+            val container = state.getEntity(permanentId) ?: return emptyList()
+            if (container.has<FaceDownComponent>()) return emptyList()
+            val printed = container.get<CardComponent>()?.cardDefinitionId
+                ?.let { cardRegistry.getCard(it)?.staticAbilities }.orEmpty()
+            val granted = grantsByEntity[permanentId]?.map { it.ability }.orEmpty()
+            return (printed + granted).filterIsInstance<AssignCombatDamageAsUnblocked>()
+        }
+
+        if (abilitiesOf(creatureId).any { it.filter.scope == Scope.Self }) return true
+
+        for (sourceId in state.getBattlefield()) {
+            val abilities = abilitiesOf(sourceId).filter { it.filter.scope is Scope.Battlefield }
+            if (abilities.isEmpty()) continue
+            val sourceController = projected.getController(sourceId) ?: continue
+            val context = PredicateContext(controllerId = sourceController, sourceId = sourceId)
+            for (ability in abilities) {
+                if (ability.filter.excludeSelf && sourceId == creatureId) continue
+                if (predicateEvaluator.matches(state, projected, creatureId, ability.filter.baseFilter, context)) return true
+            }
+        }
         return false
     }
 

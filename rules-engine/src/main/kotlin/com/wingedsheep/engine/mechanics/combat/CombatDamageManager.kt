@@ -36,7 +36,6 @@ import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.AssignCombatDamageAsUnblocked
 import com.wingedsheep.sdk.scripting.AssignUnblockedCombatDamageToDefendingCreature
 import com.wingedsheep.sdk.scripting.DivideCombatDamageFreely
 import com.wingedsheep.sdk.scripting.effects.RedirectScope
@@ -84,17 +83,13 @@ internal class CombatDamageManager(
         val projected = state.projectedState
         val attackers = state.findEntitiesWith<AttackingComponent>()
 
-        // Pre-check: if any blocked attacker has AssignCombatDamageAsUnblocked, ask the
-        // controller whether to assign damage to the defending player instead of blockers.
+        // Pre-check: if any blocked attacker may assign its combat damage as though it weren't
+        // blocked (its own AssignCombatDamageAsUnblocked, or a battlefield-scoped one covering it),
+        // ask the controller whether to assign damage to the defending player instead of blockers.
         for ((attackerId, attackingComponent) in attackers) {
             if (attackerId !in state.getBattlefield()) continue
             val attackerContainer = state.getEntity(attackerId) ?: continue
             val attackerCard = attackerContainer.get<CardComponent>() ?: continue
-
-            // A face-down permanent has no abilities (CR 708.2a), so this ability-gated pre-check
-            // must not read the face-up card's abilities off cardDef below — doing so would both
-            // mis-apply the ability and leak the hidden card's name into the decision prompt.
-            if (attackerContainer.has<FaceDownComponent>()) continue
 
             // Only relevant when blocked
             val blockedBy = attackerContainer.get<BlockedComponent>() ?: continue
@@ -105,9 +100,9 @@ internal class CombatDamageManager(
             // Already has a manual assignment (decision already made)
             if (attackerContainer.get<DamageAssignmentComponent>() != null) continue
 
-            val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId) ?: continue
-            val hasAssignAsUnblocked = cardDef.staticAbilities.any { it is AssignCombatDamageAsUnblocked }
-            if (!hasAssignAsUnblocked) continue
+            // A face-down attacker has no abilities of its own (CR 708.2a) but can still be covered
+            // by a face-up source's battlefield-scoped grant; the helper handles both.
+            if (!CombatDamageUtils.assignsAsThoughUnblocked(state, projected, attackerId, cardRegistry, predicateEvaluator)) continue
 
             if (!dealsDamageThisStep(projected, attackerId, firstStrike)) continue
 
@@ -116,6 +111,8 @@ internal class CombatDamageManager(
 
             val attackingPlayer = projected.getController(attackerId) ?: continue
 
+            // Never leak a face-down creature's name into the prompt.
+            val attackerName = if (attackerContainer.has<FaceDownComponent>()) "face-down creature" else attackerCard.name
             val continuation = AssignAsUnblockedContinuation(
                 attackerId = attackerId,
                 defendingPlayerId = attackingComponent.defenderId,
@@ -126,10 +123,10 @@ internal class CombatDamageManager(
                     YesNoDecision(
                         id = decisionId,
                         playerId = attackingPlayer,
-                        prompt = "Assign ${attackerCard.name}'s combat damage as though it weren't blocked?",
+                        prompt = "Assign $attackerName's combat damage as though it weren't blocked?",
                         context = DecisionContext(
                             sourceId = attackerId,
-                            sourceName = attackerCard.name,
+                            sourceName = attackerName,
                             phase = DecisionPhase.COMBAT
                         ),
                         yesText = "Assign to player",
