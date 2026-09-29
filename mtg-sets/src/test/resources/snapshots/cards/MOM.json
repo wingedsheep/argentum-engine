@@ -5768,6 +5768,55 @@
     ]
 }
 
+// Flywheel Racer
+{
+    "name": "Flywheel Racer",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Vigilance\n{T}: Add one mana of any color. Activate only if this permanent is a creature.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 1
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Flywheel Racer:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "creature"
+                        }
+                    }
+                ],
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "259",
+        "artist": "Joshua Cairos",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c694485d-a753-4e55-929c-d8e4a53c7d08.jpg?1783916936"
+    }
+}
+
 // Furnace Gremlin
 {
     "name": "Furnace Gremlin",
@@ -14375,6 +14424,100 @@
     ]
 }
 
+// Ozolith, the Shattered Spire
+{
+    "name": "Ozolith, the Shattered Spire",
+    "manaCost": "{1}{G}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "If one or more +1/+1 counters would be put on an artifact or creature you control, that many plus one +1/+1 counters are put on it instead.\n{1}{G}, {T}: Put a +1/+1 counter on target artifact or creature you control. Activate only as a sorcery.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ozolith, the Shattered Spire:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature|artifact ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Put a +1/+1 counter on target artifact or creature you control. Activate only as a sorcery."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ModifyCounterPlacement",
+                "appliesTo": {
+                    "type": "CounterPlacementEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "artifact|creature ctrl:you"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9eee658-29e8-4ab5-8a0e-31f2f28a9a92.jpg?1783916964",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "If another artifact or creature you control would enter the battlefield with a number of +1/+1 counters on it, it enters with that many plus one instead."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "However, if Ozolith, the Shattered Spire somehow enters the battlefield with +1/+1 counters on it, its first ability won't apply to itself."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If two or more effects attempt to modify how many counters would be put onto a permanent you control, you choose the order to apply those effects, no matter who controls the sources of those effects."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If you somehow control two copies of Ozolith, the Shattered Spire, the number of +1/+1 counters put on an artifact or creature you control is two plus the original number. Three Ozoliths add three, and so on."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Phyrexian Archivist
 {
     "name": "Phyrexian Archivist",
@@ -15929,6 +16072,172 @@
     ]
 }
 
+// Realmbreaker, the Invasion Tree
+{
+    "name": "Realmbreaker, the Invasion Tree",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "{2}, {T}: Target opponent mills three cards. Put a land card from their graveyard onto the battlefield tapped under your control. It gains \"If this land would leave the battlefield, exile it instead of putting it anywhere else.\"\n{10}, {T}, Sacrifice Realmbreaker: Search your library for any number of Praetor cards, put them onto the battlefield, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Realmbreaker, the Invasion Tree:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "TargetOpponent",
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TargetOpponent"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "TargetOpponent",
+                                "filter": "land"
+                            },
+                            "storeAs": "gathered2"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered2",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "prompt": "Put a land card from their graveyard onto the battlefield under your control"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            },
+                            "storeMovedAs": "moved4"
+                        },
+                        {
+                            "type": "GrantExileOnLeave",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "moved4"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}: Target opponent mills three cards. Put a land card from their graveyard onto the battlefield tapped under your control."
+            },
+            {
+                "id": "Realmbreaker, the Invasion Tree:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{10}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "Praetor"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Search your library for any number of Praetor cards"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary"
+                    ]
+                },
+                "descriptionOverride": "{10}, {T}, Sacrifice Realmbreaker: Search your library for any number of Praetor cards, put them onto the battlefield, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "263",
+        "rarity": "RARE",
+        "artist": "Kekai Kotaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b608134-cfc3-48bf-92d8-35d732fcde54.jpg?1783916934",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "The land card you put onto the battlefield can be one that was just milled, or it can be one that was already in their graveyard."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "In a multiplayer game, if a player leaves the game, all cards that player owns leave as well. If you leave the game, any lands you control from Realmbreaker's ability are exiled."
+            }
+        ]
+    }
+}
+
 // Redcap Heelslasher
 {
     "name": "Redcap Heelslasher",
@@ -16467,6 +16776,106 @@
     ]
 }
 
+// Sandstalker Moloch
+{
+    "name": "Sandstalker Moloch",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "Flash\nWhen this creature enters, if an opponent cast a blue and/or black spell this turn, look at the top four cards of your library. You may reveal a permanent card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sandstalker Moloch:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "permanent",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a permanent card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "SpellsCastThisTurn",
+                        "player": "EachOpponent",
+                        "filter": "blue|black"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "When this creature enters, if an opponent cast a blue and/or black spell this turn, look at the top four cards of your library. You may reveal a permanent card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "UNCOMMON",
+        "artist": "Donato Giancola",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb17b083-413b-4a09-a935-ac27594e3bd6.jpg?1783916962"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Scorn-Blade Berserker
 {
     "name": "Scorn-Blade Berserker",
@@ -16988,6 +17397,81 @@
     ]
 }
 
+// Seed of Hope
+{
+    "name": "Seed of Hope",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Mill two cards. You may put a permanent card from among the milled cards into your hand. You gain 2 life. (To mill two cards, put the top two cards of your library into your graveyard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "permanent",
+                    "storeSelected": "selected2",
+                    "prompt": "You may put a permanent card into your hand",
+                    "selectedLabel": "Put in hand",
+                    "remainderLabel": "Leave in graveyard",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "artist": "Gaboleps",
+        "flavorText": "Wrenn had given everything and asked for nothing. She deserved a monument, but rest in a quiet meadow is all she would've wanted.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/084a8b94-0c5d-41e0-88e4-fe91ab92c09d.jpg?1783916962"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Seer of Stolen Sight
 {
     "name": "Seer of Stolen Sight",
@@ -17129,6 +17613,82 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Serpent-Blade Assailant
+{
+    "name": "Serpent-Blade Assailant",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Warrior",
+    "oracleText": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)\nDeathtouch",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Serpent-Blade Assailant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "DEATHTOUCH",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "artist": "Durion",
+        "flavorText": "Kaldheim's cosmos was never yours to corrupt.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6fabc49f-b665-4c56-b06e-03220f7918bb.jpg?1783916961"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -17736,6 +18296,171 @@
     ]
 }
 
+// Storm the Seedcore
+{
+    "name": "Storm the Seedcore",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Distribute four +1/+1 counters among up to four target creatures you control. Creatures you control gain vigilance and trample until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DistributeCountersAmongTargets",
+                    "totalCounters": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 4,
+                "minCount": 0,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "flavorText": "In that moment, the fate of countless worlds rested with one dryad and a handful of the bravest Mirrodin had to offer.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf989a4d-3209-4071-b6e9-d2b99372ec10.jpg?1783916962",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "You choose how many targets Storm the Seedcore has and how the counters will be distributed as you cast the spell. Each target must receive at least one counter."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If some of the creatures are illegal targets as Storm the Seedcore tries to resolve, the original distribution of counters still applies and the counters that would have been put on the illegal targets are lost. They won't be put instead on a legal target."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If all of Storm the Seedcore's targets are illegal at the time the spell tries to resolve, it won't resolve and none of its effects will happen. Creatures you control won't gain vigilance and trample."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Streetwise Negotiator
+{
+    "name": "Streetwise Negotiator",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Cat Citizen",
+    "oracleText": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)\nThis creature assigns combat damage equal to its toughness rather than its power.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Streetwise Negotiator:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "AssignDamageEqualToToughness",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "onlyWhenToughnessGreaterThanPower": false
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Brent Hollowell",
+        "flavorText": "Like the laws, the rules of engagement always seem to bend in the Brokers' favor.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e83f9565-4c04-449d-b337-0eff3fd0c295.jpg?1783916962"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Sun-Blessed Guardian
 {
     "name": "Sun-Blessed Guardian",
@@ -18105,6 +18830,207 @@
     ]
 }
 
+// Surrak and Goreclaw
+{
+    "name": "Surrak and Goreclaw",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Legendary Creature — Human Bear",
+    "oracleText": "Trample\nOther creatures you control have trample.\nWhenever another nontoken creature you control enters, put a +1/+1 counter on it. It gains haste until end of turn.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Surrak and Goreclaw:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "TriggeringEntity"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": "TriggeringEntity"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever another nontoken creature you control enters, put a +1/+1 counter on it. It gains haste until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "337",
+        "rarity": "RARE",
+        "artist": "Lucas Graciano",
+        "flavorText": "Two titans of Tarkir carved a swath through Phyrexia's elite.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c10934d-9016-43c4-a7ab-56cc7d8f671f.jpg?1783916899"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Sword of Once and Future
+{
+    "name": "Sword of Once and Future",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+2 and has protection from blue and from black.\nWhenever equipped creature deals combat damage to a player, surveil 2. Then you may cast an instant or sorcery spell with mana value 2 or less from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sword of Once and Future:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Surveil",
+                            "count": 2
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Graveyard",
+                                        "filter": "instant|sorcery mv<=2"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "You may cast an instant or sorcery with mana value 2 or less from your graveyard without paying its mana cost"
+                                },
+                                {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "selected1",
+                                    "insteadOfGraveyard": "EXILE"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sword of Once and Future:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantProtection",
+                "color": "BLUE"
+            },
+            {
+                "type": "GrantProtection",
+                "color": "BLACK"
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "265",
+        "rarity": "MYTHIC",
+        "artist": "Joshua Cairos",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/1670393d-86f0-46fb-b577-f73a1da2a3ed.jpg?1783916934",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "You choose whether or not to cast the instant or sorcery card as the triggered ability resolves. If you do, you do so as part of the resolution of that ability. You can't wait to cast it later in the turn. Timing restrictions based on the card's type are ignored."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "The card you cast may be one you just put into the graveyard with surveil or one already in the graveyard."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't pay any alternative costs. You can, however, pay additional costs. If the card has any mandatory additional costs, those must be paid to cast the card."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Swordsworn Cavalier
 {
     "name": "Swordsworn Cavalier",
@@ -18308,6 +19234,73 @@
                 "text": "If the last target is an illegal target as Tandem Takedown resolves, or if both of the first targets are illegal targets, nothing deals or is dealt damage."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Tangled Skyline
+{
+    "name": "Tangled Skyline",
+    "manaCost": "{4}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, you gain 5 life and incubate 5. (Create an Incubator token with five +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)\nPhyrexians you control have reach.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tangled Skyline:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "CreatePredefinedToken",
+                                    "tokenType": "Incubator"
+                                },
+                                {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 5,
+                                    "target": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "createdTokens"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "REACH",
+                "filter": {
+                    "baseFilter": "permanent Phyrexian ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "UNCOMMON",
+        "artist": "Martin de Diego Sádaba",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e08e0ef1-a8e0-4c0a-a996-3eee89e37fee.jpg?1783916961"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -19032,6 +20025,69 @@
     ]
 }
 
+// Tribute to the World Tree
+{
+    "name": "Tribute to the World Tree",
+    "manaCost": "{G}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control enters, draw a card if its power is 3 or greater. Otherwise, put two +1/+1 counters on it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tribute to the World Tree:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "otherwise": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": "TriggeringEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "RARE",
+        "artist": "Kristina Carroll",
+        "flavorText": "\"The Tree was the heart of our world. It made me what I am and pulled me back from the brink of death. I won't allow it to be forgotten.\"\n—Esika, god of the Tree",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0cdeaba-fc21-44e6-bf99-aa1ff379401b.jpg?1783916960"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Unseal the Necropolis
 {
     "name": "Unseal the Necropolis",
@@ -19391,6 +20447,84 @@
     "colorIdentityOverride": []
 }
 
+// Vengeant Earth
+{
+    "name": "Vengeant Earth",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature or land you control becomes a 4/4 Elemental creature with haste in addition to its other types until end of turn. It must be blocked this turn if able.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "keywords": [
+                        "HASTE"
+                    ]
+                },
+                {
+                    "type": "AddSubtype",
+                    "subtype": "Elemental",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MustBeBlocked",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "allCreatures": false
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|land ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "artist": "Jonas De Ro",
+        "flavorText": "When Zendikar's defenders faltered, the Roil rose up to shake the invaders from its back.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16e20076-5d24-4c59-b707-6d20e121032f.jpg?1783916959",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "If Vengeant Earth targets a creature you control, Vengeant Earth will overwrite any previous effects that set the creature's power and toughness to specific values. Effects that otherwise modify the target creature's power and toughness will still apply no matter when they took effect. The same is true for +1/+1 counters."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "The target creature or land will keep any abilities it previously had."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "You may target a land that's already a creature. For example, if you target a land that's also a 0/0 creature and has three +1/+1 counters on it, the resulting land creature will be 7/7."
+            }
+        ]
+    }
+}
+
 // Volcanic Spite
 {
     "name": "Volcanic Spite",
@@ -19629,6 +20763,252 @@
     ]
 }
 
+// Vorinclex
+{
+    "name": "Vorinclex",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Creature — Phyrexian Praetor",
+    "oracleText": "Reach, trample\nWhen Vorinclex enters, search your library for up to two Forest cards, reveal them, put them into your hand, then shuffle.\n{6}{G}{G}: Exile Vorinclex, then return it to the battlefield transformed under its owner's control. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "REACH",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vorinclex:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "land Forest"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Vorinclex:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}{G}{G}"
+                    }
+                },
+                "effect": "ExileAndReturnTransformed",
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "The Grand Evolution",
+        "manaCost": "",
+        "typeLine": "Enchantment — Saga",
+        "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Mill ten cards. Put up to two creature cards from among the milled cards onto the battlefield.\nII — Distribute seven +1/+1 counters among any number of target creatures you control.\nIII — Until end of turn, creatures you control gain \"{1}: This creature fights target creature you don't control.\" Exile this Saga, then return it to the battlefield (front face up).",
+        "script": {
+            "sagaChapters": [
+                {
+                    "chapter": 1,
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 10
+                                    },
+                                    "isMill": true
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "filter": "creature",
+                                "storeSelected": "selected2",
+                                "prompt": "Put up to two creature cards from among the milled cards onto the battlefield",
+                                "selectedLabel": "Put onto the battlefield",
+                                "remainderLabel": "Leave in graveyard",
+                                "showAllCards": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "chapter": 2,
+                    "effect": {
+                        "type": "DistributeCountersAmongTargets",
+                        "totalCounters": {
+                            "type": "Fixed",
+                            "amount": 7
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "count": 7,
+                        "minCount": 0,
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                },
+                {
+                    "chapter": 3,
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantActivatedAbilityToGroup",
+                                "ability": {
+                                    "id": "The Grand Evolution:1",
+                                    "cost": {
+                                        "type": "CostAtomWrapper",
+                                        "atom": {
+                                            "type": "AtomMana",
+                                            "cost": "{1}"
+                                        }
+                                    },
+                                    "effect": {
+                                        "type": "Fight",
+                                        "target1": "Self",
+                                        "target2": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    },
+                                    "targetRequirements": [
+                                        {
+                                            "type": "TargetObject",
+                                            "filter": {
+                                                "baseFilter": "creature ctrl:opponent"
+                                            },
+                                            "id": "t1"
+                                        }
+                                    ],
+                                    "descriptionOverride": "This creature fights target creature you don't control."
+                                }
+                            },
+                            {
+                                "type": "ExileAndReturnTransformed",
+                                "returnAs": "FRONT"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "213",
+            "rarity": "MYTHIC",
+            "artist": "Daarken",
+            "imageUri": "https://cards.scryfall.io/normal/back/e/2/e24b5289-d3b5-4b4d-bb37-69bf2c3b48bc.jpg?1783916965",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "You choose how many targets the chapter II ability of The Grand Evolution has and how the counters are distributed as you put the ability onto the stack. Each target must receive at least one counter."
+                },
+                {
+                    "date": "2023-04-14",
+                    "text": "If some of the creatures are illegal targets as the chapter II ability tries to resolve, the original distribution of counters still applies and the counters that would have been put on the illegal targets are lost. They won't be put instead on a legal target."
+                },
+                {
+                    "date": "2023-04-14",
+                    "text": "The set of creatures that gain the activated fight ability is determined as the chapter III ability resolves. Creatures you begin to control later in the turn and noncreature permanents that become creatures later in the turn won't gain that ability. Notably, Vorinclex won't be back on the battlefield yet, so it won't gain the ability either."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e24b5289-d3b5-4b4d-bb37-69bf2c3b48bc.jpg?1783916965",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "The Forest cards you find can be any land cards with the Forest land type, not just ones named Forest."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // War Historian
 {
     "name": "War Historian",
@@ -19850,6 +21230,66 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Wildwood Escort
+{
+    "name": "Wildwood Escort",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Elf Warrior",
+    "oracleText": "When this creature enters, return target creature or battle card from your graveyard to your hand.\nIf this creature would die, exile it instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wildwood Escort:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|battle own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "artist": "Taras Susak",
+        "flavorText": "With Eldraine's human knights called away to defend the courts, lost travelers were surprised to find themselves whisked to safety by the secretive folk of the wilds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8c6fc26-df6e-44de-96e6-a6e34086edc2.jpg?1783916956"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
