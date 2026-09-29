@@ -1444,6 +1444,9 @@ is PermanentsSacrificedEvent -> {
             is RingTemptedEvent,
             is ScriedEvent,
             is SurveiledEvent,
+            // Internal signal for "whenever you proliferate" triggers; the counters themselves are
+            // surfaced by their own CountersAddedEvents.
+            is ProliferatedEvent,
             // Internal signal that fires "whenever you clash" watcher triggers (Sylvan Echoes,
             // Entangling Trap). The public reveal of both top cards and any bottom-of-library
             // move are already surfaced by their own reveal / zone-change events, so no separate

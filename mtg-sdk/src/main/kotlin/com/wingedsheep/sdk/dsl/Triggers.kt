@@ -937,6 +937,9 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     /** "scries" — `TRIGGER_SCRY_COUNT` is the number of cards looked at. */
     fun scries(): TriggerSpec = spec(ScriedEvent(player))
 
+    /** "proliferates" (CR 701.34) — fires even when nothing was chosen. */
+    fun proliferates(): TriggerSpec = spec(ProliferatedEvent(player))
+
     /** "surveils" (CR 701.25). */
     fun surveils(): TriggerSpec = spec(SurveiledEvent(player))
 

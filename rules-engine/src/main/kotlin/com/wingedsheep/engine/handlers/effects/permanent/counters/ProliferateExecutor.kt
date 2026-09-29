@@ -8,6 +8,7 @@ import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ProliferateContinuation
+import com.wingedsheep.engine.core.ProliferatedEvent
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.DamageUtils
@@ -30,11 +31,13 @@ import kotlin.reflect.KClass
  *   at resolution:
  *   1. Build the eligible set: every permanent on the battlefield and every player that has at
  *      least one counter of any kind on it.
- *   2. If empty, the effect is a no-op.
+ *   2. If empty, no counters move — but the player still proliferated (choosing zero), so a
+ *      [ProliferatedEvent] is emitted all the same.
  *   3. Otherwise pause with a [SelectCardsDecision] (min=0, max=eligibleEntities.size,
  *      `useTargetingUI=true`) so the controller picks directly on the board.
  *   4. The continuation handler ([ProliferateContinuation]) reads the chosen entities and calls
- *      [addOneOfEachKind].
+ *      [addOneOfEachKind], then emits the [ProliferatedEvent] that "whenever you proliferate"
+ *      triggers watch — also when the controller chose nothing (the ONE rulings).
  *
  * - **Targeted (`effect.target != null`).** The recipient was chosen on announcement
  *   (CR 601.2c) and its legality already re-checked on resolution (CR 608.2b), so there is no
@@ -81,13 +84,13 @@ class ProliferateExecutor(
 
         val eligible = findEntitiesWithCounters(state)
 
-        if (eligible.isEmpty()) {
-            return EffectResult.success(state, emptyList())
-        }
-
         val sourceName = context.sourceId
             ?.let { state.getEntity(it)?.get<CardComponent>()?.name }
             ?: "Proliferate"
+
+        if (eligible.isEmpty()) {
+            return EffectResult.success(state, listOf(ProliferatedEvent(context.controllerId, sourceName)))
+        }
 
         val decision = { decisionId: String -> SelectCardsDecision(
             id = decisionId,
@@ -106,7 +109,8 @@ class ProliferateExecutor(
 
         val continuation = ProliferateContinuation(
             controllerId = context.controllerId,
-            eligibleEntities = eligible
+            eligibleEntities = eligible,
+            sourceName = sourceName
         )
 
         return EffectResult.from(state.suspendForDecision(decision, continuation, eventType = "PROLIFERATE"))

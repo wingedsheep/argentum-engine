@@ -1075,8 +1075,10 @@ class MiscContinuationResumer(
         }
 
         val chosen = response.selectedCards.filter { it in continuation.eligibleEntities }
+        // Choosing nothing is still proliferating: "whenever you proliferate" fires either way.
+        val proliferated = ProliferatedEvent(continuation.controllerId, continuation.sourceName)
         if (chosen.isEmpty()) {
-            return checkForMore(state, emptyList())
+            return checkForMore(state, listOf(proliferated))
         }
 
         // Same placement rule as the targeted form of the effect (Powerful Broker) — only the
@@ -1084,7 +1086,7 @@ class MiscContinuationResumer(
         val (newState, events) =
             ProliferateExecutor.addOneOfEachKind(state, chosen, continuation.controllerId, predicateEvaluator = services.predicateEvaluator)
 
-        return checkForMore(newState, events)
+        return checkForMore(newState, events + proliferated)
     }
 
     private fun resumeAddDynamicMana(

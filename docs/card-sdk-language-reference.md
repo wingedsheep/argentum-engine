@@ -5966,7 +5966,7 @@ minLoyaltyRemoved, exhaust, includeManaAbilities, excludeManaAbilities, withoutT
 `permanentTurnedFaceUp(filter)`, `searchesLibrary()`, `shufflesLibrary()`, `gainsLife(firstTimeEachTurn?)`,
 `losesLife()`, `losesGame()`, `sacrifices(filter, batch?)`,
 `sacrificesAnother(filter)`, `taps(filter, batch?)`, `tapsLandForMana(land?)`, `createsToken(token?)`,
-`exploits(nontoken?)`, `commitsCrime()`, `givesAGift()`, `scries()`, `surveils()`, `scriesOrSurveils()`,
+`exploits(nontoken?)`, `commitsCrime()`, `givesAGift()`, `scries()`, `surveils()`, `scriesOrSurveils()`, `proliferates()`,
 `discovers()`, `collectsEvidence()`, `forages()`, `solvesACase()`, `clashes(andWins?)`,
 `isTemptedByTheRing(bearerChosen?)`, `bends(types)`, `manifestsDread()`, `expends(n)`,
 `fullyUnlocksARoom()`, `sagaChapterResolves(finalOnly?)`.
@@ -7127,6 +7127,12 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   ("cards looked at"). Used by Golbez.
 - `Triggers.you.scriesOrSurveils()` — the combined look-at-top trigger; fires once per scry **and**
   once per surveil (Matoya, Archon Elder).
+- `Triggers.you.proliferates()` — fires once per proliferate (CR 701.34), after the counters are
+  placed — and also when the player chose nothing or nothing had a counter (the ONE rulings: it
+  triggers "even if you chose no permanents or players"). Emitted automatically by the untargeted
+  `Effects.Proliferate()`; the targeted `Effects.Proliferate(target)` ("give it another counter of
+  each kind", Powerful Broker) is not the keyword action and never fires it. Pair with
+  `triggerZone = Zone.GRAVEYARD` for a graveyard return (Voidwing Hybrid). Scheming Aspirant.
 - `Triggers.you.discovers()` — fires once per discover (CR 701.57), after the whole discover process —
   including the "cast for free or put into hand" decision — resolves (CR 701.57b). Pair with
   `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_DISCOVER_VALUE)` to reuse the discover

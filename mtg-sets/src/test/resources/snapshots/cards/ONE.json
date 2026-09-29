@@ -1973,6 +1973,60 @@
     }
 }
 
+// Scheming Aspirant
+{
+    "name": "Scheming Aspirant",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Phyrexian Advisor",
+    "oracleText": "Whenever you proliferate, each opponent loses 2 life and you gain 2 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scheming Aspirant:1",
+                "trigger": "ProliferatedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "UNCOMMON",
+        "artist": "Lauren K. Cannon",
+        "flavorText": "\"I have raised many of my own contenders for the Coliseum. This one will be fearsome one day, mark my words.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8de80f71-82b5-499c-afc0-6bbae6b896ad.jpg?1783918041"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Sheoldred's Headcleaver
 {
     "name": "Sheoldred's Headcleaver",
@@ -2855,6 +2909,57 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Voidwing Hybrid
+{
+    "name": "Voidwing Hybrid",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Phyrexian Bat",
+    "oracleText": "Flying\nToxic 1 (Players dealt combat damage by this creature also get a poison counter.)\nWhen you proliferate, return this card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Voidwing Hybrid:1",
+                "trigger": "ProliferatedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "UNCOMMON",
+        "artist": "Abz J Harding",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a48705f-bd8a-43f1-b1fe-14a5c9a83ccd.jpg?1783917995"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 

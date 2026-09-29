@@ -626,6 +626,10 @@ class TriggerMatcher(
                 event is com.wingedsheep.engine.core.SurveiledEvent &&
                     matchesPlayer(state, trigger.player, event.playerId, controllerId)
             }
+            is EventPattern.ProliferatedEvent -> {
+                event is com.wingedsheep.engine.core.ProliferatedEvent &&
+                    matchesPlayer(state, trigger.player, event.playerId, controllerId)
+            }
             is EventPattern.ScriedOrSurveiledEvent -> when (event) {
                 is com.wingedsheep.engine.core.ScriedEvent ->
                     matchesPlayer(state, trigger.player, event.playerId, controllerId)

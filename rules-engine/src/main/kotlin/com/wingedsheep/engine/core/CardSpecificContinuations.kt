@@ -292,11 +292,13 @@ data class MoveChosenCountersToTargetContinuation(
  *                            when the decision was offered. Used to discard stale
  *                            selections and to defend against the response naming
  *                            an entity that had no counters at decision time.
+ * @property sourceName Display name carried onto the [ProliferatedEvent] emitted on resume
  */
 @Serializable
 data class ProliferateContinuation(
     val controllerId: EntityId,
-    val eligibleEntities: List<EntityId>
+    val eligibleEntities: List<EntityId>,
+    val sourceName: String = "Proliferate"
 ) : AnswerContinuation
 
 /**

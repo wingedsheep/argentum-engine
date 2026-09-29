@@ -343,6 +343,9 @@ data class TriggerContext(
                 )
                 // Surveil reuses the "cards looked at" count slot (TRIGGER_SCRY_COUNT) — the
                 // field is the number of cards looked at, common to scry and surveil.
+                is com.wingedsheep.engine.core.ProliferatedEvent -> TriggerContext(
+                    triggeringPlayerId = event.playerId
+                )
                 is com.wingedsheep.engine.core.SurveiledEvent -> TriggerContext(
                     triggeringPlayerId = event.playerId,
                     scryCount = event.count

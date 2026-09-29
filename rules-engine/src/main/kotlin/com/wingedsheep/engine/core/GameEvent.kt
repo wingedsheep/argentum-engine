@@ -392,6 +392,22 @@ data class ScriedEvent(
 ) : GameEvent
 
 /**
+ * A player just proliferated (CR 701.34). Emitted once per untargeted proliferate, after the
+ * counters were placed — including when the player chose nothing or nothing had a counter, since
+ * "whenever you proliferate" triggers regardless. Drives
+ * [com.wingedsheep.sdk.scripting.EventPattern.ProliferatedEvent].
+ *
+ * @property playerId The player who proliferated.
+ * @property sourceName The card/ability that caused the proliferate (for display).
+ */
+@Serializable
+@SerialName("ProliferatedEvent")
+data class ProliferatedEvent(
+    val playerId: EntityId,
+    val sourceName: String
+) : GameEvent
+
+/**
  * A player just finished clashing (CR 701.30), after both cards were revealed, both top-or-bottom
  * decisions were made and both moves resolved. Drives "Whenever you clash" and "Whenever you clash
  * and win" triggers; see [com.wingedsheep.sdk.scripting.EventPattern.ClashedEvent].

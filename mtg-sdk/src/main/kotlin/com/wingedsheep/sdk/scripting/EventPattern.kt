@@ -466,6 +466,22 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * Whenever a player proliferates (CR 701.34) — "Whenever you proliferate, …" (Scheming
+     * Aspirant, Ezuri, Stalker of Spheres, Voidwing Hybrid from the graveyard). Fires once per
+     * proliferate, after the chosen permanents and players got their counters — and also when the
+     * player chose nothing or nothing had a counter: per the ONE rulings the trigger fires "even if
+     * you chose no permanents or players". The targeted "put another counter of each kind on
+     * target …" form of `ProliferateEffect` (Powerful Broker) is not proliferating and never fires it.
+     */
+    @SerialName("ProliferatedEvent")
+    @Serializable
+    data class ProliferatedEvent(
+        val player: Player = Player.You
+    ) : EventPattern {
+        override val description: String = "${player.description} proliferates"
+    }
+
+    /**
      * Whenever a player surveils (CR 701.25). Fires once per surveil, after the kept/graveyard
      * moves have all resolved. Carries the number of cards actually looked at (equals the surveil
      * N parameter unless the library had fewer cards). Read this count via
