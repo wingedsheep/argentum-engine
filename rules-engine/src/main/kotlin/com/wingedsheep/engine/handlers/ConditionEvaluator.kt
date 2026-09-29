@@ -342,6 +342,8 @@ class ConditionEvaluator(
             is PlayerTurnedPermanentFaceUpThisTurn,
             is PutCounterKindOnCreatureThisTurn,
             is CounterPutOnPermanentYouControlledThisTurn,
+            is com.wingedsheep.sdk.scripting.conditions.CounterRemovedFromPermanentYouControlledThisTurn,
+            is com.wingedsheep.sdk.scripting.conditions.PermanentWithCounterPutIntoGraveyardThisTurn,
             is RingHasTemptedPlayerAtLeast,
             is SacrificedPermanentHadSubtype,
             SacrificedPermanentWasLegendary,
@@ -661,6 +663,28 @@ class ConditionEvaluator(
                     else -> condition.counterType in record.kinds
                 }
             }
+            // "if a <kind> counter was removed from a permanent you controlled this turn" — the
+            // removal mirror of the branch above, recorded at the settle boundary (CounterHistory).
+            is com.wingedsheep.sdk.scripting.conditions.CounterRemovedFromPermanentYouControlledThisTurn -> {
+                val playerId = resolvePlayer(state, condition.player, ctx)
+                val record = playerId?.let {
+                    state.getEntity(it)
+                        ?.get<com.wingedsheep.engine.state.components.player.CountersRemovedFromYourPermanentsThisTurnComponent>()
+                }
+                when {
+                    record == null -> false
+                    condition.counterType == null -> true
+                    else -> condition.counterType in record.kinds
+                }
+            }
+            // "if a permanent with a <kind> counter on it was put into a graveyard this turn" —
+            // game-wide, so every player's last-known-controller record is read.
+            is com.wingedsheep.sdk.scripting.conditions.PermanentWithCounterPutIntoGraveyardThisTurn ->
+                state.turnOrder.any { playerId ->
+                    val record = state.getEntity(playerId)
+                        ?.get<com.wingedsheep.engine.state.components.player.PermanentsWithCountersPutIntoGraveyardThisTurnComponent>()
+                    record != null && (condition.counterType == null || condition.counterType in record.kinds)
+                }
             is com.wingedsheep.sdk.scripting.conditions.PermanentEnteredFaceDownThisTurn -> {
                 val playerId = resolvePlayer(state, condition.player, ctx)
                 val count = playerId?.let {

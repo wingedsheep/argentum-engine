@@ -1650,6 +1650,39 @@ data class CountersPutOnYourPermanentsThisTurnComponent(
 }
 
 /**
+ * The kinds of counter removed this turn from permanents this player controlled at the moment each
+ * counter left — whoever removed them, however. Cleared at end of turn by CleanupPhaseManager.
+ *
+ * The removal-side mirror of [CountersPutOnYourPermanentsThisTurnComponent], read through
+ * `CounterRemovedFromPermanentYouControlledThisTurn` (Churning Reservoir). Recorded by
+ * `CounterHistory.recordRemovals` at the settle boundary, from every `CountersRemovedEvent`, so no
+ * removal path has to remember to call it.
+ */
+@Serializable
+data class CountersRemovedFromYourPermanentsThisTurnComponent(
+    val kinds: Set<CounterType> = emptySet()
+) : Component {
+    fun with(kind: CounterType): CountersRemovedFromYourPermanentsThisTurnComponent =
+        if (kind in kinds) this else copy(kinds = kinds + kind)
+}
+
+/**
+ * The kinds of counter that were on permanents this player controlled as they were put into a
+ * graveyard from the battlefield this turn, read off each one's last-known counters. Cleared at end
+ * of turn by CleanupPhaseManager.
+ *
+ * Credited to the last-known controller like `ArtifactsDiedThisTurnComponent`; the game-wide
+ * `PermanentWithCounterPutIntoGraveyardThisTurn` (Churning Reservoir) reads every player's record.
+ */
+@Serializable
+data class PermanentsWithCountersPutIntoGraveyardThisTurnComponent(
+    val kinds: Set<CounterType> = emptySet()
+) : Component {
+    fun with(added: Collection<CounterType>): PermanentsWithCountersPutIntoGraveyardThisTurnComponent =
+        if (kinds.containsAll(added)) this else copy(kinds = kinds + added)
+}
+
+/**
  * Marks a player as having been dealt combat damage this turn.
  * Cleared at end of turn by CleanupPhaseManager.
  * Used for YouWereDealtCombatDamageThisTurn condition.

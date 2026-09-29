@@ -11451,6 +11451,23 @@ answer it and would silently return `false`.
   counter" of any kind. Fed by both counter-placement funnels (`DamageUtils.markCounterPlacedOnCreature`
   / `recordCounterPlacement`) plus the cost, saga-lore and entry-rider paths, via
   `DamageUtils.markCounterOnControlledPermanent`; a new placement path should go through one of them.
+- `CounterRemovedFromPermanentYouControlledThisTurn(counterType, player = Player.You)` — "if an oil
+  counter was removed from a permanent you controlled this turn" (Churning Reservoir). The removal
+  mirror of `CounterPutOnPermanentYouControlledThisTurn`: keyed on who controlled the permanent as the
+  counter left it, whoever removed it and however — a cost, an effect, a move, +1/+1 and -1/-1
+  annihilation (CR 704.5q). Counters leaving a player or a non-permanent card don't count. Turn
+  history (`CountersRemovedFromYourPermanentsThisTurnComponent`, cleared at cleanup), recorded by
+  `CounterHistory.recordRemovals` at the settle boundary from every `CountersRemovedEvent`, so a new
+  removal path needs no extra call — it only has to emit the event. Because it records at settle, a
+  removal is visible to conditions from the next action on, not mid-resolution of the one that made
+  it. `null` `counterType` is "a counter" of any kind.
+- `PermanentWithCounterPutIntoGraveyardThisTurn(counterType)` — "if a permanent with an oil counter on
+  it was put into a graveyard this turn" (Churning Reservoir). Game-wide: any permanent, any
+  controller, battlefield → graveyard (exile doesn't count). The counter is read off the permanent's
+  last-known counters as it left, so a counter removed before it died (as part of the same cost)
+  doesn't count. Backed by `PermanentsWithCountersPutIntoGraveyardThisTurnComponent`, recorded in the
+  zone-transition funnel and credited to the last-known controller; the condition reads every
+  player's record. `null` `counterType` is "with a counter on it" of any kind.
 - `CardsPutIntoExileThisTurn(atLeast = 1)` — `atLeast` or more cards were put into exile this turn,
   game-wide (summed across every player via `Player.Each`, backed by the `CARDS_PUT_INTO_EXILE`
   turn tracker), not just yours. Used by Ennis, Debate Moderator's end-step "if one or more cards

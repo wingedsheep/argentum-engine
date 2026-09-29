@@ -604,6 +604,101 @@
     ]
 }
 
+// Churning Reservoir
+{
+    "name": "Churning Reservoir",
+    "manaCost": "{R}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of your upkeep, put an oil counter on another target nontoken artifact or creature you control.\n{2}, {T}: Create a 1/1 red Phyrexian Goblin creature token. Activate only if an oil counter was removed from a permanent you controlled this turn or a permanent with an oil counter on it was put into a graveyard this turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Churning Reservoir:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|artifact nontoken ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Churning Reservoir:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Phyrexian",
+                        "Goblin"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/6/3663e79b-2bf9-44af-a638-c0ad9067d8d4.jpg?1783918169"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Any",
+                            "conditions": [
+                                {
+                                    "type": "CounterRemovedFromPermanentYouControlledThisTurn",
+                                    "counterType": "OIL"
+                                },
+                                {
+                                    "type": "PermanentWithCounterPutIntoGraveyardThisTurn",
+                                    "counterType": "OIL"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "UNCOMMON",
+        "artist": "Piotr Dura",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c117239-8e40-4e7e-ab1b-82f2ddf55cf4.jpg?1783918032"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Compleat Devotion
 {
     "name": "Compleat Devotion",
