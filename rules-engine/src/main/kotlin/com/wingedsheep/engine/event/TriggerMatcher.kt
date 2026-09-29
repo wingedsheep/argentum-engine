@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
@@ -2420,6 +2421,12 @@ class TriggerMatcher(
         trigger.placedBy?.let { placer ->
             val placedBy = event.placedBy ?: return false
             if (!matchesPlayer(state, placer, placedBy, controllerId)) return false
+        }
+        // A player recipient (poison from toxic, a proliferated player) satisfies only the "on a
+        // permanent or player" template, and [filter] — the permanent half — doesn't apply to it.
+        // Without the flag a player is never a recipient, even for an unfiltered pattern.
+        if (state.getEntity(event.entityId)?.has<LifeTotalComponent>() == true) {
+            return trigger.includePlayers
         }
         // Check filter: the permanent receiving counters must match. Battlefield recipients are read
         // through projected state, so a Hero by virtue of a type-changing effect counts.

@@ -309,6 +309,11 @@ class TriggerDetector(
             })
         }
 
+        // One placement that gives a recipient several counter kinds (proliferate) or reaches it from
+        // several sources at once (two toxic creatures hitting one player) is one "counters were put
+        // on it" event for that recipient (CR 603.2c), so fold the per-kind/per-source events.
+        mergePerRecipientCounterTriggers(triggers)
+
         // Rule 603.10: "Look back in time" for simultaneous deaths.
         // When multiple creatures die at the same time (e.g., from Infest),
         // each creature's death triggers should still see the others dying.
@@ -2974,6 +2979,48 @@ class TriggerDetector(
                 )
             }
         }
+    }
+
+    /**
+     * Collapse the per-permanent ("one or more counters on **a** permanent/player") counter triggers
+     * the per-event path produced so each ability fires once per *recipient* per detection pass,
+     * with `counterCount` summed across the folded events ("that many" / "that much").
+     *
+     * The engine emits one [CountersAddedEvent] per counter kind (proliferate) and per damage
+     * source (toxic), but a single simultaneous placement is one trigger event for its recipient —
+     * All Will Be One's ruling: toxic creatures dealing combat damage to one player at once
+     * trigger it once. Batch patterns are already once-per-pass and are left alone.
+     */
+    private fun mergePerRecipientCounterTriggers(triggers: MutableList<PendingTrigger>) {
+        if (triggers.count { isPerRecipientCounterTrigger(it) } < 2) return
+        val merged = mutableListOf<PendingTrigger>()
+        val slotByKey = mutableMapOf<List<Any?>, Int>()
+        for (pending in triggers) {
+            if (!isPerRecipientCounterTrigger(pending)) {
+                merged.add(pending)
+                continue
+            }
+            val key = listOf(
+                pending.sourceId, pending.ability.id, pending.granterId,
+                pending.triggerContext.triggeringEntityId
+            )
+            val slot = slotByKey[key]
+            if (slot == null) {
+                slotByKey[key] = merged.size
+                merged.add(pending)
+            } else {
+                val first = merged[slot]
+                val total = (first.triggerContext.counterCount ?: 0) + (pending.triggerContext.counterCount ?: 0)
+                merged[slot] = first.copy(triggerContext = first.triggerContext.copy(counterCount = total))
+            }
+        }
+        triggers.clear()
+        triggers.addAll(merged)
+    }
+
+    private fun isPerRecipientCounterTrigger(pending: PendingTrigger): Boolean {
+        val trigger = pending.ability.trigger
+        return trigger is EventPattern.CountersPlacedEvent && !trigger.batch
     }
 
     private fun sacrificedPermanentMatchesFilter(

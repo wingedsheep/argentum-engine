@@ -2259,7 +2259,15 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * ("counters put on this permanent") and [TriggerBinding.OTHER] ("on one or more **other**
          * Heroes you control").
          */
-        val batch: Boolean = false
+        val batch: Boolean = false,
+        /**
+         * Whether a *player* receiving counters (poison from toxic, a proliferated player, "that
+         * player gets a poison counter") also satisfies the recipient — the "on a permanent **or
+         * player**" template (All Will Be One). [filter] constrains only the permanent half; a
+         * player recipient is matched by this flag alone. `false` (default) keeps every
+         * permanent-worded trigger blind to counters on players, whatever its filter.
+         */
+        val includePlayers: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
             val typeLabel = counterType?.let { "${it.printed} " } ?: ""
@@ -2278,6 +2286,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             } else {
                 append(describeObjectForEvent(filter))
             }
+            if (includePlayers) append(" or player")
             if (firstTimeEachTurn) append(" for the first time this turn")
         }
     }
