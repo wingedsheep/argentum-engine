@@ -14018,8 +14018,17 @@ The priority groups are (CR 616.1a–f):
   then `ZoneTransitionService` installs the chosen identity only for actual battlefield entries.
   `filterByTotalManaSpent` uses zero on these non-cast entries. Existing entry-pipeline limits such
   as collection `OnEnterRun` choices remain separate; this does not expand those replacement types.
-  Copying an Aura still lacks the subsequent attachment choice on these card entry paths;
-  enchantment copiers that can select Auras require that additional entry support.
+  A copied Aura's attachment choice is covered in the entry above.
+  **The copy is settled first, then the copied identity's own entry replacements run (CR 614.12).**
+  On the cast path the spell takes on the copied identity and then walks the rest of the as-enters
+  pipeline *as the copy*: the copied card's `EntersWithChoice` questions (chained in choice-type
+  order, including granted riot), amplify, exile-for-counters, devour, "pay life or enter tapped",
+  its own enters-tapped / enters-with-counters, Saga lore, and `OnEnterRun` — so Clone copying
+  Adaptive Automaton chooses a creature type of its own. The original's choices are not copiable
+  values and are never inherited; declining the copy walks the printed card's pipeline instead. A
+  copied Aura picks its host before those questions. The land/token direct-entry path and the
+  effect-driven `MoveToZone` / `MoveCollection` paths do not yet ask a copied `EntersWithChoice`
+  (those paths do not ask a printed one on non-land cards either).
 - `ModifyDrawAmount(modifier, multiplier, restrictions, appliesTo)` — modify the number of cards a draw
   instruction announces to `(count * multiplier) + modifier`, clamped to ≥ 0, optionally gated by extra
   `restrictions: List<Condition>`

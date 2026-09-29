@@ -384,7 +384,6 @@ class ModalAndCloneContinuationResumer(
 
         // If a creature was selected, copy its CardComponent
         val selectedCreatureId = selectedCards.firstOrNull()
-        val copiedCardDef: com.wingedsheep.sdk.model.CardDefinition?
         var copyApplied = false
 
         if (selectedCreatureId != null) {
@@ -423,16 +422,8 @@ class ModalAndCloneContinuationResumer(
                     newState = afterCounters
                     events.addAll(counterEvents)
                 }
-
-                // Look up the card definition for the copied creature
-                copiedCardDef = services.cardRegistry.getCard(targetCardComponent.cardDefinitionId)
-            } else {
-                // Target creature no longer exists - enter as itself
-                copiedCardDef = services.cardRegistry.getCard(originalCardComponent.cardDefinitionId)
             }
-        } else {
-            // Player declined to copy - enter as itself (0/0 Clone)
-            copiedCardDef = services.cardRegistry.getCard(originalCardComponent.cardDefinitionId)
+            // Otherwise the chosen object is gone — enter as itself, like a declined copy.
         }
 
         // Get the (possibly updated) card component for event names
@@ -460,32 +451,24 @@ class ModalAndCloneContinuationResumer(
             }
         }
 
-        // Track whether a copy was made (original name differs from final name)
-        val copyOfOriginalName = if (selectedCreatureId != null && finalCardComponent.name != originalCardComponent.name) {
-            originalCardComponent.name
-        } else null
-
-        // Complete the permanent entry using the shared helper
-        val (enterState, enterEvents) = services.stackResolver.enterPermanentOnBattlefield(
-            newState, spellId, spellComponent, finalCardComponent, copiedCardDef
-        )
-        newState = enterState
-        events.addAll(enterEvents.map { event ->
-            if (event is ZoneChangeEvent && event.entityId == spellId && event.toZone == Zone.BATTLEFIELD)
-                event.copy(copyOfOriginalName = copyOfOriginalName) else event
-        })
-
-        events.add(ResolvedEvent(spellId, finalCardComponent.name))
-
-        // "When you do, exile that card." (Superior Spider-Man) — exile the copied
-        // graveyard card after the copy has been applied and the permanent has entered.
+        // "When you do, exile that card." (Superior Spider-Man) — exile the copied graveyard card
+        // once the copy has been applied. Done before the rest of entry, which may pause for the
+        // copied identity's own as-enters choices.
         if (continuation.exileCopiedCard && copyApplied && selectedCreatureId != null) {
             val exileResult = services.zones.moveToZone(newState, selectedCreatureId, Zone.EXILE)
             newState = exileResult.state
             events.addAll(exileResult.events)
         }
 
-        return checkForMore(newState, events)
+        // The rest of entry runs from the copied identity (CR 614.12): its "as this enters" choices,
+        // amplify / devour / pay-life-or-tapped, then the move itself and any OnEnterRun. Each
+        // of those resumers completes entry — and emits the resolved event — if it pauses.
+        val entry = services.stackResolver.resolvePermanentSpellAfterEntryCopy(newState, spellId)
+        if (entry.outcome is Outcome.Paused) return ExecutionResult.propagatePause(entry.state, events + entry.events)
+        if (entry.outcome !is Outcome.Done) return entry
+        events.addAll(entry.events)
+        events.add(ResolvedEvent(spellId, finalCardComponent.name))
+        return checkForMore(entry.state, events)
     }
 
     /**

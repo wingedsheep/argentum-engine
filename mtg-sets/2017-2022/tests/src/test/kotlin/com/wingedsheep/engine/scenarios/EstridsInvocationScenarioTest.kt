@@ -8,6 +8,9 @@ import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.c18.cards.EstridsInvocation
 import com.wingedsheep.mtg.sets.definitions.lea.cards.HolyStrength
+import com.wingedsheep.mtg.sets.definitions.ons.cards.SteelyResolve
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
+import com.wingedsheep.engine.state.components.battlefield.withCastChoice
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
@@ -17,7 +20,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 
 class EstridsInvocationScenarioTest : FunSpec({
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(EstridsInvocation, HolyStrength))
+        it.registerCards(TestCards.all + listOf(EstridsInvocation, HolyStrength, SteelyResolve))
         it.initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -39,6 +42,27 @@ class EstridsInvocationScenarioTest : FunSpec({
         passPriorityUntil(Step.PRECOMBAT_MAIN)
         passPriorityUntil(Step.UPKEEP)
         state.activePlayerId shouldBe player1
+    }
+    test("copying an enchantment with an as-enters choice makes the Invocation's own choice") {
+        val d = driver()
+        val resolve = d.putPermanentOnBattlefield(d.player1, "Steely Resolve")
+        d.replaceState(d.state.updateEntity(resolve) {
+            it.withCastChoice(com.wingedsheep.sdk.scripting.ChoiceSlot.CREATURE_TYPE,
+                com.wingedsheep.engine.state.components.battlefield.ChoiceValue.TextChoice("Goblin"))
+        })
+        val bear = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
+        val id = d.castInvocation()
+        d.submitCardSelection(d.player1, listOf(resolve)).error shouldBe null
+
+        (id in d.state.getBattlefield()) shouldBe false
+        val choice = d.state.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        d.submitDecision(d.player1, OptionChosenResponse(choice.id, choice.options.indexOf("Bear"))).error shouldBe null
+
+        (id in d.state.getBattlefield()) shouldBe true
+        d.state.getEntity(id)!!.get<CardComponent>()!!.name shouldBe "Steely Resolve"
+        d.state.getEntity(id)!!.chosenCreatureType() shouldBe "Bear"
+        d.state.getEntity(resolve)!!.chosenCreatureType() shouldBe "Goblin"
+        d.state.projectedState.hasKeyword(bear, Keyword.SHROUD) shouldBe true
     }
     test("copies only your enchantment and chooses a different creature for the copied Aura") {
         val d = driver()

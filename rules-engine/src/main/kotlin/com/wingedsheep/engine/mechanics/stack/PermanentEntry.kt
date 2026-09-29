@@ -151,6 +151,8 @@ internal class PermanentEntry(
             spellId, nameVisibleToAll(newState, spellId, cardComponent?.name ?: "Unknown"),
             Zone.STACK, Zone.BATTLEFIELD, cardComponent?.ownerId ?: controllerId,
             xValue = spellComponent.xValue,
+            // An "enters as a copy" spell (Clone) enters under the copied name; say what it was.
+            copyOfOriginalName = copyOf?.originalCardComponent?.name?.takeIf { it != cardComponent?.name },
             enteredBattlefieldTimestamp = newState.getEntity(spellId)
                 ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()?.timestamp,
             oldObject = state.objectRef(spellId), newObject = newState.objectRef(spellId),
