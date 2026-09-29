@@ -56,9 +56,17 @@ class EmblemGrantedWardTest : FunSpec({
         toughness = 2
     }
 
+    val plainChangeling = card("Plain Changeling") {
+        manaCost = "{1}{U}"
+        typeLine = "Creature — Shapeshifter"
+        power = 2
+        toughness = 2
+        keywords(Keyword.CHANGELING)
+    }
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(knightEmblemSorcery, plainKnight, plainBear))
+        driver.registerCards(TestCards.all + listOf(knightEmblemSorcery, plainKnight, plainBear, plainChangeling))
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingLife = 20)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -141,5 +149,22 @@ class EmblemGrantedWardTest : FunSpec({
 
         driver.pendingDecision shouldBe null
         driver.findPermanent(active, "Plain Knight") shouldBe null
+    }
+
+    test("a changeling is a Knight for the emblem's group — the ward trigger reads projected subtypes") {
+        val driver = createDriver()
+        val active = driver.activePlayer!!
+        val opponent = driver.getOpponent(active)
+
+        driver.giveEmblem(active)
+        val changeling = driver.putCreatureOnBattlefield(active, "Plain Changeling")
+        driver.state.projectedState.getKeywords(changeling) shouldContain Keyword.WARD.name
+
+        driver.passPriority(active)
+        driver.boltFrom(opponent, changeling)
+
+        val decision = driver.pendingDecision
+        decision.shouldBeInstanceOf<YesNoDecision>()
+        decision.playerId shouldBe opponent
     }
 })
