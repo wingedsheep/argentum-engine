@@ -155,15 +155,12 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
     // the reduced cost — the engine will re-solve on submit, but this keeps the UI
     // pre-selection honest about what will actually tap.
     if (result.type === 'delve') {
-      const originalSymbols = parseManaCostUtil(actionInfo.manaCostString ?? '')
-      // If X was resolved earlier, expand each {X} symbol to its numeric value so
-      // getRemainingCostSymbols can reduce that generic via delve.
-      const xValue =
-        mergedAction.type === 'CastSpell' ? mergedAction.xValue ?? 0 : 0
-      const resolvedSymbols =
-        xValue > 0
-          ? originalSymbols.map((s) => (s === 'X' ? String(xValue) : s))
-          : originalSymbols
+      // Delve pays generic mana of the total cost, X included (CR 601.2f / 702.66a), so fold the
+      // chosen X in first — same handoff as convoke below.
+      const resolvedSymbols = materializeX(
+        parseManaCostUtil(actionInfo.manaCostString ?? ''),
+        mergedAction.type === 'CastSpell' ? mergedAction.xValue : undefined,
+      )
       const remainingSymbols = getRemainingCostSymbols(resolvedSymbols, result.delvedCards.length)
       const modifiedManaCost = remainingSymbols.map((s) => `{${s}}`).join('')
       const trimmedPreview: readonly EntityId[] | undefined =
