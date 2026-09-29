@@ -9,6 +9,7 @@ import com.wingedsheep.engine.state.GameState
  * a suspension's answer is not itself a stack frame — reaching it needs the extra hop.
  */
 internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? = when (this) {
+    is EffectCopyEntryContinuation -> context.objectReferences
     is CounterUnlessPaysContinuation -> objectReferences
     is MayPayManaContinuation -> effectContext.objectReferences
     is MayPayManaSelectionContinuation -> effectContext.objectReferences
@@ -119,6 +120,7 @@ internal fun ContinuationFrame.objectReferences(): ObjectReferenceEnvironment? =
 }
 
 internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnvironment): AnswerContinuation = when (this) {
+    is EffectCopyEntryContinuation -> copy(context = context.copy(objectReferences = refs))
     is CounterUnlessPaysContinuation -> copy(objectReferences = refs)
     is MayPayManaContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
     is MayPayManaSelectionContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))

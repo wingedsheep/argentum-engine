@@ -334,7 +334,9 @@ data class EffectContext(
      * fails closed instead of `StackOverflowError`. Lives on the (immutable) context rather than
      * on the shared registry so it stays correct under the AI's parallel state evaluation.
      */
-    val resolutionDepth: Int = 0
+    val resolutionDepth: Int = 0,
+    /** Choices prepared for this single zone-moving instruction, before any entrants move. */
+    val entryCopies: Map<EntityId, com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice> = emptyMap()
 ) {
     val activatedAbilityId: com.wingedsheep.sdk.scripting.AbilityId?
         get() = activatedAbility?.id

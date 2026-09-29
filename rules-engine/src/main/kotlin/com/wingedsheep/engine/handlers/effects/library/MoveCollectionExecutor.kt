@@ -91,6 +91,25 @@ class MoveCollectionExecutor(
             return EffectResult.success(state)
         }
 
+        if (effect.faceDown == null) {
+            val entrants = cards.filter { id ->
+                when (destination) {
+                    is CardDestination.ToZone -> destination.zone == Zone.BATTLEFIELD
+                    is CardDestination.ToZoneExiledFrom -> originZoneOf(state, id, destination.fallback) == Zone.BATTLEFIELD
+                }
+            }.associateWith { id ->
+                val owner = state.getEntity(id)?.get<OwnerComponent>()?.playerId
+                    ?: state.getEntity(id)?.get<CardComponent>()?.ownerId ?: context.controllerId
+                if (effect.underOwnersControl) owner else when (destination) {
+                    is CardDestination.ToZone -> resolvePlayer(destination.player, context, state) ?: context.controllerId
+                    is CardDestination.ToZoneExiledFrom -> context.controllerId
+                }
+            }
+            com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.prepare(
+                state, effect, context, entrants, cardRegistry, predicateEvaluator
+            )?.let { return it }
+        }
+
         val attachTo = effect.attachTo
         if (attachTo != null && destination is CardDestination.ToZone && destination.zone == Zone.BATTLEFIELD) {
             return moveAurasAttachedTo(state, context, cards, destination, attachTo, effect)
@@ -890,6 +909,7 @@ class MoveCollectionExecutor(
 
             val entryOptions = com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(
                 controllerId = actualDestPlayerId,
+                entryCopy = context.entryCopies[cardId],
                 libraryPlacement = libraryPlacement,
                 tapped = destination.placement == ZonePlacement.Tapped || destination.placement == ZonePlacement.TappedAndAttacking,
                 tappedAndAttacking = destination.placement == ZonePlacement.TappedAndAttacking,

@@ -122,9 +122,15 @@ class MoveToZoneEffectExecutor(
             return EffectResult.success(state)
         }
 
+        if (effect.destination == Zone.BATTLEFIELD && effect.faceDown == null) {
+            com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.prepare(
+                state, effect, context, mapOf(targetId to controllerId), cardRegistry, zones.predicateEvaluator
+            )?.let { return it }
+        }
+
         // Build ZoneEntryOptions based on placement and effect properties
         val entryOptions = buildEntryOptions(effect, cardComponent, controllerId, context.controllerId)
-            .copy(conditionalSelfGrantIds = context.lookBackSelfGrants[targetId])
+            .copy(conditionalSelfGrantIds = context.lookBackSelfGrants[targetId], entryCopy = context.entryCopies[targetId])
 
         val transitionResult = zones.moveToZone(
             state, targetId, effect.destination, entryOptions, currentZone

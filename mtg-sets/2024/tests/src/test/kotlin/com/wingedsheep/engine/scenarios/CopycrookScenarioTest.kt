@@ -8,6 +8,9 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.mh3.cards.Copycrook
 import com.wingedsheep.mtg.sets.definitions.lea.cards.Clone
 import com.wingedsheep.sdk.core.*
+import com.wingedsheep.sdk.dsl.*
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
@@ -16,7 +19,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 
 class CopycrookScenarioTest : FunSpec({
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(Copycrook, Clone))
+        it.registerCards(TestCards.all + listOf(Copycrook, Clone, com.wingedsheep.mtg.sets.definitions.ody.cards.Zombify))
         it.initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -104,4 +107,40 @@ class CopycrookScenarioTest : FunSpec({
         (d.state.getEntity(id)!!.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0) shouldBe 0
     }
 
+    test("reanimated Copycrook offers its copy choice and retains attack connive") {
+        val d = driver()
+        val bear = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
+        val id = d.putCardInGraveyard(d.player1, "Copycrook")
+        val spell = d.putCardInHand(d.player1, "Zombify")
+        d.giveMana(d.player1, Color.BLACK, 4)
+        d.castSpellWithTargets(d.player1, spell, listOf(ChosenTarget.Card(id, d.player1, Zone.GRAVEYARD))).error shouldBe null
+        d.bothPass()
+        d.state.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
+        d.submitCardSelection(d.player1, listOf(bear)).error shouldBe null
+        d.state.getEntity(id)!!.get<CardComponent>()!!.copyTriggeredAbilities.size shouldBe 1
+        val discard = d.putCardInHand(d.player1, "Hill Giant")
+        d.attack(id)
+        d.bothPass()
+        d.submitCardSelection(d.player1, listOf(discard)).error shouldBe null
+        d.state.getEntity(id)!!.get<CountersComponent>()!!.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
+    }
+    test("blink restores Copycrook then offers a fresh copy without accumulating exceptions") {
+        val d = driver()
+        val bear = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
+        val giant = d.putPermanentOnBattlefield(d.player2, "Hill Giant")
+        val id = d.copy(bear)
+        val blink = card("Test Blink Copycrook") {
+            manaCost = "{U}"; typeLine = "Instant"
+            spell { val t = target(TargetFilter.Creature); effect = Effects.Exile(t).then(com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect(t, Zone.BATTLEFIELD)) }
+        }
+        d.registerCards(listOf(blink))
+        val spell = d.putCardInHand(d.player1, blink.name)
+        d.giveMana(d.player1, Color.BLUE, 1)
+        d.castSpellWithTargets(d.player1, spell, listOf(ChosenTarget.Permanent(id))).error shouldBe null
+        d.bothPass()
+        d.state.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
+        d.submitCardSelection(d.player1, listOf(giant)).error shouldBe null
+        d.state.getEntity(id)!!.get<CardComponent>()!!.name shouldBe "Hill Giant"
+        d.state.getEntity(id)!!.get<CardComponent>()!!.copyTriggeredAbilities.size shouldBe 1
+    }
 })

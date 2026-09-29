@@ -69,6 +69,7 @@ import com.wingedsheep.engine.event.ConditionalSelfGrants
  * Options controlling how an entity enters a destination zone.
  */
 data class ZoneEntryOptions(
+    val entryCopy: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice? = null,
     val controllerId: EntityId? = null,
     val libraryPlacement: LibraryPlacement = LibraryPlacement.Top,
     val tapped: Boolean = false,
@@ -714,9 +715,16 @@ class ZoneTransitionService(
                     grantedActivatedAbilities = newState.grantedActivatedAbilities
                         .filter { it.entityId != entityId }
                 )
+                if (!options.faceDown) {
+                    options.entryCopy?.let { choice ->
+                        newState = com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.apply(newState, entityId, choice)
+                    }
+                }
                 newState = newState.addToZone(destZoneKey, entityId)
                 newState = applyBattlefieldEntry(
-                    newState, entityId, cardComponent, destControllerId, options, fromZone
+                    newState, entityId, cardComponent, destControllerId,
+                    options.copy(tapped = options.tapped ||
+                        (options.entryCopy?.copiedCard != null && options.entryCopy.replacement.tappedIfCopied)), fromZone
                 )
                 // Record entry for per-player ETB-by-type tracking (Mechan Shieldmate and similar).
                 // This pipeline records via PermanentEntryTracker.record directly rather than
@@ -737,6 +745,22 @@ class ZoneTransitionService(
                 )
                 newState = entryCounterState
                 events.addAll(entryCounterEvents)
+                val entryCopy = options.entryCopy?.takeIf { it.copiedCard != null && !options.faceDown }
+                entryCopy?.replacement?.additionalCounters?.let { amount ->
+                    val count = predicateEvaluator.amounts.evaluate(newState, amount,
+                        com.wingedsheep.engine.handlers.EffectContext(entityId, destControllerId))
+                    val (afterCounters, counterEvents) = EntersWithReplacements.placeEntryCounters(
+                        newState, entityId, com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE,
+                        count, destControllerId, newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "",
+                        predicateEvaluator = predicateEvaluator)
+                    newState = afterCounters
+                    events.addAll(counterEvents)
+                }
+                if (entryCopy?.replacement?.exileCopiedCard == true && entryCopy.copiedEntity != null) {
+                    val exiled = moveToZone(newState, entryCopy.copiedEntity, Zone.EXILE)
+                    newState = exiled.state
+                    events.addAll(exiled.events)
+                }
             }
             Zone.LIBRARY -> {
                 if (effectiveLibraryPlacement is LibraryPlacement.Shuffled) {

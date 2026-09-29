@@ -31,6 +31,7 @@ class ModalAndCloneContinuationResumer(
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(ModalContinuation::class, ::resumeModal),
         resumer(ModalTargetContinuation::class, ::resumeModalTarget),
+        resumer(EffectCopyEntryContinuation::class, ::resumeEffectCopyEntry),
         resumer(CloneEntersContinuation::class, ::resumeCloneEnters),
         resumer(CloneEntersOnBattlefieldContinuation::class, ::resumeCloneEntersOnBattlefield),
         resumer(EntersWithChoiceSpellContinuation::class, ::resumeEntersWithChoiceSpell),
@@ -47,6 +48,23 @@ class ModalAndCloneContinuationResumer(
         resumer(CreateTokenCopyAuraHostContinuation::class, ::resumeCreateTokenCopyAuraHost),
         resumer(ChooseActionContinuation::class, ::resumeChooseAction)
     )
+
+    fun resumeEffectCopyEntry(
+        state: GameState,
+        continuation: EffectCopyEntryContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore,
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) return ExecutionResult.error(state, "Expected copy selection")
+        val selected = response.selectedCards.firstOrNull()
+        val choice = com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice(
+            continuation.replacement, selected?.let { state.getEntity(it)?.copiableCardComponent() }, selected)
+        val context = continuation.context.copy(entryCopies = continuation.context.entryCopies +
+            (continuation.entityId to choice))
+        val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
+        if (result.outcome !is Outcome.Done) return result.toExecutionResult()
+        return checkForMore(exposeCollectionsToNextFrame(result.state, result.updatedCollections), result.events)
+    }
 
     fun resumeModal(
         state: GameState,
