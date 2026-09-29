@@ -17,7 +17,6 @@ object MarchOfTheMachineSet : MtgSet {
     override val code = "MOM"
     override val displayName = "March of the Machine"
     override val releaseDate = "2023-04-21"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

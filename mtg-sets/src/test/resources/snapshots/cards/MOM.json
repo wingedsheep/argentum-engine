@@ -12657,6 +12657,248 @@
     ]
 }
 
+// Invasion of New Phyrexia
+{
+    "name": "Invasion of New Phyrexia",
+    "manaCost": "{X}{W}{U}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, create X 2/2 white and blue Knight creature tokens with vigilance.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of New Phyrexia:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": "CastX",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE",
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/8/88439bfc-8942-473b-9e4f-863017788476.jpg?1783916669"
+                },
+                "descriptionOverride": "When this Siege enters, create X 2/2 white and blue Knight creature tokens with vigilance."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Teferi Akosa of Zhalfir",
+        "manaCost": "",
+        "typeLine": "Legendary Planeswalker — Teferi",
+        "oracleText": "+1: Draw two cards. Then discard two cards unless you discard a creature card.\n−2: You get an emblem with \"Knights you control get +1/+0 and have ward {1}.\"\n−3: Tap any number of untapped creatures you control. When you do, shuffle target nonland permanent an opponent controls with mana value X or less into its owner's library, where X is the number of creatures tapped this way.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Teferi Akosa of Zhalfir:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 1
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 2
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 2 cards to discard, or 1 creature card",
+                                        "restrictions": [
+                                            {
+                                                "type": "ReducedMinimumIfMatches",
+                                                "reducedMinimum": 1,
+                                                "filter": "creature"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true
+                },
+                {
+                    "id": "Teferi Akosa of Zhalfir:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -2
+                    },
+                    "effect": {
+                        "type": "CreatePermanentEmblem",
+                        "groupFilter": {
+                            "baseFilter": "creature Knight ctrl:you"
+                        },
+                        "powerBonus": 1,
+                        "ownedStaticAbilities": [
+                            {
+                                "type": "GrantWard",
+                                "cost": {
+                                    "type": "WardCost.Mana",
+                                    "manaCost": "{1}"
+                                },
+                                "filter": {
+                                    "baseFilter": "creature Knight ctrl:you"
+                                }
+                            }
+                        ],
+                        "emblemDescription": "Knights you control get +1/+0 and have ward {1}."
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true
+                },
+                {
+                    "id": "Teferi Akosa of Zhalfir:3",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -3
+                    },
+                    "effect": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "ControlledPermanents",
+                                        "filter": "creature untapped"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": "ChooseAnyNumber",
+                                    "storeSelected": "tappedCreatures",
+                                    "prompt": "Tap any number of untapped creatures you control",
+                                    "useTargetingUI": true
+                                },
+                                {
+                                    "type": "TapUntapCollection",
+                                    "collectionName": "tappedCreatures"
+                                }
+                            ]
+                        },
+                        "optional": false,
+                        "reflexiveEffect": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Library",
+                            "placement": "Shuffled"
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": {
+                                        "cardPredicates": [
+                                            "IsNonland",
+                                            "IsPermanent",
+                                            {
+                                                "type": "ManaValueAtMostDynamic",
+                                                "amount": {
+                                                    "type": "VariableReference",
+                                                    "variableName": "tappedCreatures_count"
+                                                }
+                                            }
+                                        ],
+                                        "controllerPredicate": "ControlledByOpponent"
+                                    }
+                                },
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "Tap any number of untapped creatures you control. When you do, shuffle target nonland permanent an opponent controls with mana value X or less into its owner's library, where X is the number of creatures tapped this way."
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "239",
+            "rarity": "MYTHIC",
+            "artist": "Chris Rallis",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/b/1b83af86-e1a9-4be1-83dc-0c1ab81b129e.jpg?1783916950",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "You activate Teferi Akosa's last ability without choosing a target or tapping any creatures. As it resolves, you choose which untapped creatures you control to tap, if any. If you don't tap any creatures (including if you don't control any), X is 0. After you tap creatures or not, the reflexive triggered ability triggers. You choose the target for that ability as it's put on the stack."
+                }
+            ]
+        },
+        "startingLoyalty": 4,
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b83af86-e1a9-4be1-83dc-0c1ab81b129e.jpg?1783916950"
+    },
+    "startingDefense": 6,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Invasion of Pyrulea
 {
     "name": "Invasion of Pyrulea",

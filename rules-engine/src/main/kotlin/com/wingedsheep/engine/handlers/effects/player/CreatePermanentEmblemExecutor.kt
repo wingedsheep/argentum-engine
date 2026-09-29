@@ -17,7 +17,10 @@ import com.wingedsheep.engine.state.components.identity.EmblemSourceComponent
 import com.wingedsheep.engine.state.components.identity.EmblemActivatedAbilityComponent
 import com.wingedsheep.engine.state.components.identity.EmblemStaticAbilityComponent
 import com.wingedsheep.sdk.scripting.ChoiceSlot
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.GrantWard
+import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.effects.CreatePermanentEmblemEffect
 import kotlin.reflect.KClass
 
@@ -114,6 +117,21 @@ class CreatePermanentEmblemExecutor : EffectExecutor<CreatePermanentEmblemEffect
                 duration = Duration.Permanent,
                 context = emblemContext,
                 dynamicGroupFilter = effect.groupFilter
+            )
+        }
+
+        // An owned "<group> have ward <cost>" static triggers through BattlefieldStaticsIndex, which
+        // reads the emblem's EmblemStaticAbilityComponent; the WARD keyword it shows on the group is
+        // projected here, as GrantWard's own layer-6 conversion does for a printed grant.
+        for (ability in effect.ownedStaticAbilities) {
+            if (ability !is GrantWard || ability.filter.scope !is Scope.Battlefield) continue
+            newState = newState.addFloatingEffect(
+                layer = Layer.ABILITY,
+                modification = SerializableModification.GrantKeyword(Keyword.WARD.name),
+                affectedEntities = emptySet(),
+                duration = Duration.Permanent,
+                context = emblemContext,
+                dynamicGroupFilter = ability.filter
             )
         }
 

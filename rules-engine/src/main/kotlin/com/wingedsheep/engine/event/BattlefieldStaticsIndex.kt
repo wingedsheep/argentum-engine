@@ -9,6 +9,8 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.battlefield.SuppressesWardForGroupComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.EmblemStaticAbilityComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -41,7 +43,8 @@ class BattlefieldStaticsIndex private constructor(
      */
     val triggerGrantProviders: List<TriggerIndex.GrantProviderEntry>,
     /**
-     * Battlefield-scope [GrantWard] statics, with the granter's projected controller (needed to
+     * Battlefield-scope [GrantWard] statics — printed on a permanent or owned by an emblem
+     * ([EmblemStaticAbilityComponent]) — with the granter's projected controller (needed to
      * evaluate "you control" / "an opponent controls" predicates) and its id (needed for
      * `excludeSelf`).
      */
@@ -150,6 +153,20 @@ class BattlefieldStaticsIndex private constructor(
                                 }
                             }
                         }
+                    }
+                }
+            }
+
+            // "Knights you control have ward {1}" on an emblem (Teferi Akosa of Zhalfir). The
+            // emblem entity lives in no zone, so the battlefield walk above never reaches it; its
+            // grant reads exactly like one printed on a permanent its controller controls.
+            for ((emblemId, container) in state.entities) {
+                val statics = container.get<EmblemStaticAbilityComponent>() ?: continue
+                val emblemControllerId = container.get<ControllerComponent>()?.playerId ?: continue
+                for (ability in statics.abilities) {
+                    if (ability is GrantWard && ability.filter.scope is Scope.Battlefield) {
+                        (wardGrants ?: mutableListOf<WardGrantProvider>().also { wardGrants = it })
+                            .add(WardGrantProvider(emblemId, ability, emblemControllerId))
                     }
                 }
             }

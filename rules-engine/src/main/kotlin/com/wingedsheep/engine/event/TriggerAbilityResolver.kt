@@ -250,7 +250,7 @@ class TriggerAbilityResolver(
                         is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
                             targetCard.typeLine.isCreature
                         is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                            targetCard.typeLine.hasSubtype(predicate.subtype)
+                            projected.hasSubtype(entityId, predicate.subtype.value)
                         else -> true
                     }
                 }
@@ -443,7 +443,7 @@ class TriggerAbilityResolver(
                         is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
                             targetCard.typeLine.isCreature
                         is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                            targetCard.typeLine.hasSubtype(predicate.subtype)
+                            projected.hasSubtype(entityId, predicate.subtype.value)
                         else -> true
                     }
                 }
@@ -631,7 +631,7 @@ class TriggerAbilityResolver(
      *    face-down permanent has no characteristics beyond those listed by the rules that made it
      *    face down, so the printed card's ward is suppressed, and disguise (CR 702.168a) / cloak
      *    (CR 701.58a) contribute ward {2} of their own.
-     * 2. Ward granted by GrantWard static abilities on other permanents — these are external
+     * 2. Ward granted by GrantWard static abilities on other permanents or on an emblem — these are external
      *    continuous effects rather than characteristics of the object, so they keep applying to a
      *    face-down permanent.
      *
@@ -650,7 +650,7 @@ class TriggerAbilityResolver(
         val result = mutableListOf<TriggeredAbility>()
 
         val targetContainer = state.getEntity(entityId) ?: return result
-        val targetCard = targetContainer.get<CardComponent>() ?: return result
+        if (!targetContainer.has<CardComponent>()) return result
         val projected = state.projectedState
         val targetControllerId = projected.getController(entityId)
 
@@ -691,7 +691,7 @@ class TriggerAbilityResolver(
                         projected.isCreature(entityId)
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent -> true // On battlefield = permanent
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                        targetCard.typeLine.hasSubtype(predicate.subtype)
+                        projected.hasSubtype(entityId, predicate.subtype.value)
                     else -> true
                 }
             }
