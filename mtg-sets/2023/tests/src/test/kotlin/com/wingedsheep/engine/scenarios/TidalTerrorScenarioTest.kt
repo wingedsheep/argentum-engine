@@ -20,6 +20,9 @@ class TidalTerrorScenarioTest : ScenarioTestBase() {
             .withCardOnBattlefield(1, "Tidal Terror")
             .withCardOnBattlefield(1, "Grizzly Bears")
             .withCardOnBattlefield(1, "Grizzly Bears")
+            // A third candidate makes "tap two" a real choice — with exactly two, the pick is forced
+            // and the engine auto-selects without prompting.
+            .withCardOnBattlefield(1, "Hill Giant")
             .withCardOnBattlefield(2, "Wall of Granite")
             .withActivePlayer(1)
             .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
@@ -44,6 +47,9 @@ class TidalTerrorScenarioTest : ScenarioTestBase() {
                 withClue("both Grizzly Bears were tapped to pay") {
                     bears.forEach { game.state.getEntity(it)?.has<TappedComponent>() shouldBe true }
                 }
+                withClue("the unchosen Hill Giant stays untapped") {
+                    game.state.getEntity(game.findPermanent("Hill Giant")!!)?.has<TappedComponent>() shouldBe false
+                }
 
                 game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
                 withClue("Wall of Granite can't block the unblockable Terror") {
@@ -56,8 +62,8 @@ class TidalTerrorScenarioTest : ScenarioTestBase() {
                 game.answerYesNo(false)
                 game.resolveStack()
 
-                withClue("no Grizzly Bears were tapped") {
-                    game.findPermanents("Grizzly Bears").forEach {
+                withClue("no other creatures were tapped") {
+                    (game.findPermanents("Grizzly Bears") + game.findPermanents("Hill Giant")).forEach {
                         game.state.getEntity(it)?.has<TappedComponent>() shouldBe false
                     }
                 }
