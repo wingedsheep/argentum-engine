@@ -1,3 +1,109 @@
+// Angel of Light
+{
+    "name": "Angel of Light",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying, vigilance",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "UNCOMMON",
+        "artist": "Todd Lockwood",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/750ea219-b62d-49bd-9b30-8e0a62e75553.jpg?1783946053"
+    }
+}
+
+// Champion Lancer
+{
+    "name": "Champion Lancer",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Prevent all damage that would be dealt to this creature by creatures.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    },
+                    "source": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Chippy",
+        "flavorText": "The flash of his lance projects the pure radiance of his honor.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26b4171b-2d49-4e06-a2fd-9fe3cfd6ce95.jpg?1783946053"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Devout Monk
+{
+    "name": "Devout Monk",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Monk Cleric",
+    "oracleText": "When this creature enters, you gain 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Devout Monk:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "artist": "Daniel Gelon",
+        "flavorText": "Discipline wears many robes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd1101f5-0bc1-47fa-891b-206b9c1c7f79.jpg?1783946049"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Eager Cadet
 {
     "name": "Eager Cadet",
@@ -92,6 +198,125 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Loyal Sentry
+{
+    "name": "Loyal Sentry",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature blocks a creature, destroy that creature and this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Loyal Sentry:1",
+                "trigger": {
+                    "type": "BlockEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "TriggeringEntity",
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "RARE",
+        "artist": "Ron Spears",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e50b20e6-5853-405e-b2f5-3e302dc7103f.jpg?1783946049",
+        "rulings": [
+            {
+                "date": "2018-03-16",
+                "text": "Loyal Sentry and the creature it blocks are destroyed before combat damage is dealt. The blocked creature is destroyed even if Loyal Sentry leaves the battlefield before its triggered ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Royal Falcon
+{
+    "name": "Royal Falcon",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "24",
+        "artist": "Carl Critchlow",
+        "flavorText": "Hunter by instinct, weapon by training.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11270682-d751-49e7-9c84-e47bde2f2647.jpg?1783946048"
+    }
+}
+
+// Royal Trooper
+{
+    "name": "Royal Trooper",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever this creature blocks, it gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Royal Trooper:1",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "UNCOMMON",
+        "artist": "Scott M. Fischer",
+        "flavorText": "\"Fortune does not side with the faint-hearted.\"\n—Sophocles, *Phaedra*",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1dc22489-6754-4418-a991-7046c14a0934.jpg?1783946048"
+    }
 }
 
 // Sea Eagle
@@ -281,6 +506,31 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Veteran Cavalier
+{
+    "name": "Veteran Cavalier",
+    "manaCost": "{W}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "UNCOMMON",
+        "artist": "rk post",
+        "flavorText": "Spirit is the sword and experience the sharpening stone.\n—Arabian proverb",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67301687-42a5-45b5-aeeb-d57da3ac0ce0.jpg?1783946045"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
