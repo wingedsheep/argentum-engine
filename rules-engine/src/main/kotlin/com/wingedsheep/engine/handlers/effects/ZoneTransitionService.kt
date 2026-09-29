@@ -717,6 +717,8 @@ class ZoneTransitionService(
                 )
                 if (!options.faceDown) {
                     options.entryCopy?.let { choice ->
+                        // Face tracking belongs to the physical entrant, not the copied definition.
+                        newState = stampDoubleFacedFrontFace(newState, cardRegistry, entityId)
                         newState = com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.apply(newState, entityId, choice)
                     }
                 }
@@ -1363,13 +1365,14 @@ class ZoneTransitionService(
         // double-faced card that arrived by any other route could not be turned over at all. Face-down
         // entries are excluded: a face-down permanent has no characteristics to flip between (CR 708.2).
         // (Playing a land bypasses this whole method, so PlayLandHandler makes the same call itself.)
-        val withDfcEntry = if (!options.faceDown) {
+        val hasEntryCopy = options.entryCopy?.copiedCard != null
+        val withDfcEntry = if (!options.faceDown && !hasEntryCopy) {
             stampDoubleFacedFrontFace(withEntity, cardRegistry, entityId)
         } else {
             withEntity
         }
 
-        val withDayboundEntry = if (!options.faceDown) {
+        val withDayboundEntry = if (!options.faceDown && (!hasEntryCopy || cardComponent.isDoubleFaced)) {
             DayNightService.applyDayboundEntry(withDfcEntry, cardRegistry, entityId)
         } else {
             withDfcEntry

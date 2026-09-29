@@ -157,4 +157,26 @@ class EffectCopyEntryTest : FunSpec({
         d.state.getEntity(id)!!.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() shouldBe true
         d.state.getEntity(id)!!.has<TappedComponent>() shouldBe false
     }
+    test("simultaneous owners choose in active-player order regardless of collection order") {
+        val d = driver()
+        val target = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
+        val activeCopy = d.putCardInGraveyard(d.player1, copier.name)
+        val otherCopy = d.putCardInGraveyard(d.player2, copier.name)
+        val result = d.services.effectExecutorRegistry.execute(
+            d.state,
+            MoveCollectionEffect("entries", CardDestination.ToZone(Zone.BATTLEFIELD), underOwnersControl = true),
+            com.wingedsheep.engine.handlers.EffectContext(null, d.player2,
+                pipeline = com.wingedsheep.engine.handlers.PipelineState(
+                    storedCollections = mapOf("entries" to listOf(otherCopy, activeCopy)))))
+        d.replaceState(result.state)
+        d.state.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>().playerId shouldBe d.player1
+        d.submitCardSelection(d.player1, listOf(target)).error shouldBe null
+        d.state.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>().playerId shouldBe d.player2
+        (activeCopy in d.state.getGraveyard(d.player1)) shouldBe true
+        (otherCopy in d.state.getGraveyard(d.player2)) shouldBe true
+        d.submitCardSelection(d.player2, listOf(target)).error shouldBe null
+        d.state.projectedState.getController(activeCopy) shouldBe d.player1
+        d.state.projectedState.getController(otherCopy) shouldBe d.player2
+    }
+
 })

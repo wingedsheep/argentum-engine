@@ -31,7 +31,8 @@ object EffectCopyEntry {
         registry: CardRegistry,
         evaluator: PredicateEvaluator,
     ): EffectResult? {
-        for ((id, controller) in entrants) {
+        val playerOrder = state.apnapOrder.withIndex().associate { it.value to it.index }
+        for ((id, controller) in entrants.entries.sortedBy { playerOrder[it.value] ?: Int.MAX_VALUE }) {
             if (id in context.entryCopies || id in state.getBattlefield()) continue
             val card = state.getEntity(id)?.get<CardComponent>() ?: continue
             val replacement = registry.getCard(card.cardDefinitionId)?.script?.replacementEffects
