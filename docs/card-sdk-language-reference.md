@@ -10631,6 +10631,14 @@ composite abilities).
   `Effects.CreateToken(2, 2, colors = setOf(Color.RED), creatureTypes = setOf("Rebel"))`. The token sets no
   `imageUri`; its art resolves from the printing set's token sheet. Author the equip cost and equipped-creature bonus
   alongside (Barbed Batterfist: `forMirrodin()` + `ModifyStats(1, -1, Filters.EquippedCreature)` + `equipAbility("{1}")`).
+- `Compleated` — "Compleated ({G/P} can be paid with {G} or 2 life. For each {G/P} paid with life, this planeswalker
+  enters with two fewer loyalty counters.)" (CR 702.150; Nissa, Ascended Animist). Planeswalker keyword read by the
+  engine: `card { keywords(Keyword.COMPLEATED) }` and nothing else. The cast records how many Phyrexian pips the caster
+  chose to pay with life (`PaymentResult.phyrexianLifePips` → `SpellOnStackComponent.phyrexianLifePips`, whether the
+  pips were picked explicitly or by auto-pay), and the planeswalker's starting-loyalty entry replacement in
+  `PermanentEntry` subtracts two per pip (floored at 0) before the shared `placeEntryCounters` path, so other
+  loyalty-entry replacements still apply on top. A compleated planeswalker put onto the battlefield without being cast
+  (or a copy of the spell) enters with its full loyalty.
 - `Toxic(n)` — adds poison counters on combat damage.
 - `Cycling(cost)` — pay cost, discard, draw a card. The cost may contain `{X}`
   (`KeywordAbility.cycling("{X}{G}{G}")`, Webstrike Elite): cycling is an activated ability (CR 702.29a), so X is

@@ -265,6 +265,7 @@ export enum Keyword {
   // Equipment that makes its own bearer (Final Fantasy)
   JOB_SELECT = 'JOB_SELECT',
   FOR_MIRRODIN = 'FOR_MIRRODIN',
+  COMPLEATED = 'COMPLEATED',
   // Ability words
   EERIE = 'EERIE',
   // Instant/sorcery recast next upkeep (Rise of the Eldrazi; granted by Ojer Pakpatiq)
@@ -388,6 +389,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.NIGHTBOUND]: 'Nightbound',
   [Keyword.JOB_SELECT]: 'Job select',
   [Keyword.FOR_MIRRODIN]: 'For Mirrodin!',
+  [Keyword.COMPLEATED]: 'Compleated',
   [Keyword.EERIE]: 'Eerie',
   [Keyword.REBOUND]: 'Rebound',
   [Keyword.PROTECTION_FROM_EACH_OPPONENT]: 'Protection from each opponent',

@@ -188,6 +188,12 @@ data class SpellOnStackComponent(
      */
     val manaSpentOnXByColor: Map<Color, Int> = emptyMap(),
     /**
+     * Phyrexian mana symbols in this spell's cost the caster paid with life (CR 107.4f). Read at
+     * resolution by compleated (CR 702.150a): the planeswalker enters with two fewer loyalty
+     * counters per symbol. Zero for a spell that wasn't cast (a copy).
+     */
+    val phyrexianLifePips: Int = 0,
+    /**
      * For split-layout cards (CR 709), the index of the face that was cast into
      * [com.wingedsheep.sdk.model.CardDefinition.cardFaces]. Threaded from
      * [com.wingedsheep.engine.core.CastSpell.faceIndex] so the resolution-time handler

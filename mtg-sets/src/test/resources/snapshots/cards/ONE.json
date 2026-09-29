@@ -1348,6 +1348,164 @@
     }
 }
 
+// Nissa, Ascended Animist
+{
+    "name": "Nissa, Ascended Animist",
+    "manaCost": "{3}{G}{G}{G/P}{G/P}",
+    "typeLine": "Legendary Planeswalker — Nissa",
+    "oracleText": "Compleated ({G/P} can be paid with {G} or 2 life. For each {G/P} paid with life, this planeswalker enters with two fewer loyalty counters.)\n+1: Create an X/X green Phyrexian Horror creature token, where X is Nissa's loyalty.\n−1: Destroy target artifact or enchantment.\n−7: Until end of turn, creatures you control get +1/+1 for each Forest you control and gain trample.",
+    "keywords": [
+        "COMPLEATED"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nissa, Ascended Animist:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Phyrexian",
+                        "Horror"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f5fc2cb-a172-418a-a0f3-1a63a5f1aa2c.jpg?1783918168",
+                    "dynamicPower": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "LOYALTY"
+                        }
+                    },
+                    "dynamicToughness": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "LOYALTY"
+                        }
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nissa, Ascended Animist:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|enchantment"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nissa, Ascended Animist:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "land Forest"
+                                },
+                                "toughnessModifier": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "land Forest"
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1dd64b1d-bcef-476c-bf0b-3ac7df7cbed3.jpg?1783918012",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "The token created by Nissa's first ability has its power and toughness set only once, at the time the ability resolves. It doesn't change later as loyalty counters are added to or removed from Nissa."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If Nissa is no longer on the battlefield at the time her first ability resolves, use the number of loyalty counters she had when she last existed on the battlefield to determine the value of X."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "The power and toughness bonus granted to creatures by Nissa's last ability is determined only once, as that ability resolves. It won't increase or decrease if the number of Forests you control later changes. Similarly, it applies only to creatures you control at the time it resolves. Creatures that come under your control after it resolves will not have the bonus."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "A Phyrexian mana symbol contributes 1 toward the mana value of a card, even if life is paid for it. Specifically, Nissa's mana value is always 7."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "The compleated ability looks only at whether a player chose to pay 2 life for a Phyrexian mana symbol as they were casting the spell. If a player paid life for some other reason while casting the spell, that will not reduce the number of loyalty counters the planeswalker enters the battlefield with."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Other replacement effects that would change the number of loyalty counters Nissa enters with will apply as normal."
+            }
+        ]
+    },
+    "startingLoyalty": 7,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Offer Immortality
 {
     "name": "Offer Immortality",

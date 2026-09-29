@@ -54,7 +54,13 @@ data class PaymentResult(
      * stack object so it can be read at resolution via `DynamicAmount.ManaSpentOnX`
      * (e.g. Soul Burn's "gain life equal to the {B} spent on X"). Empty when X is unrestricted.
      */
-    val xManaSpentByColor: Map<Color, Int> = emptyMap()
+    val xManaSpentByColor: Map<Color, Int> = emptyMap(),
+    /**
+     * How many Phyrexian mana symbols the caster chose to pay with 2 life instead of mana
+     * (CR 107.4f). Carried onto the spell so compleated (CR 702.150a) can reduce the resolving
+     * planeswalker's starting loyalty.
+     */
+    val phyrexianLifePips: Int = 0
 )
 
 /**
@@ -159,7 +165,8 @@ class CastPaymentProcessor(
             ?: return PaymentResult(state, emptyList(), "Unable to pay life for Phyrexian mana")
         return manaResult.copy(
             state = lifePayment.first,
-            events = manaResult.events + lifePayment.second
+            events = manaResult.events + lifePayment.second,
+            phyrexianLifePips = lifePayments.size
         )
     }
 

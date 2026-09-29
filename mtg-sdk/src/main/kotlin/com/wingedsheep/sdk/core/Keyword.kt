@@ -763,6 +763,19 @@ enum class Keyword(val displayName: String) {
      */
     FOR_MIRRODIN("For Mirrodin!"),
 
+    /**
+     * Compleated (CR 702.150). A static ability on planeswalkers with Phyrexian mana in their
+     * cost: "If this permanent would enter with one or more loyalty counters on it and the player
+     * who cast it chose to pay life for any part of its cost represented by Phyrexian mana
+     * symbols, it instead enters the battlefield with that many loyalty counters minus two for
+     * each of those mana symbols."
+     *
+     * Read by the engine at resolution: the cast records how many Phyrexian pips were paid with
+     * life on the spell, and the planeswalker's starting-loyalty entry replacement subtracts two
+     * per pip when the card has this keyword.
+     */
+    COMPLEATED("Compleated"),
+
     // ── Ability words (display prefix, no uniform mechanic) ──
     /**
      * Eerie (Duskmourn: House of Horror).

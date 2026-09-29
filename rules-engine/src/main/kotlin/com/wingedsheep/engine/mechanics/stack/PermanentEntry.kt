@@ -33,6 +33,7 @@ import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.engine.state.permissions.removeMayPlayPermissionsForCard
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -677,8 +678,12 @@ internal class PermanentEntry(
         // placeEntryCounters call through ZoneMovementUtils.applyIntrinsicEntryCountersIfNeeded.
         val intrinsicEntryCounters = if (cardDef != null && !spellComponent.castFaceDown) {
             when {
-                cardDef.startingLoyalty != null ->
-                    CounterType.LOYALTY to cardDef.startingLoyalty!!
+                // Compleated (CR 702.150a): two fewer loyalty counters for each Phyrexian mana
+                // symbol the caster paid with life.
+                cardDef.startingLoyalty != null -> {
+                    val lifePips = if (Keyword.COMPLEATED in cardDef.keywords) spellComponent.phyrexianLifePips else 0
+                    CounterType.LOYALTY to (cardDef.startingLoyalty!! - 2 * lifePips).coerceAtLeast(0)
+                }
                 cardDef.startingDefense != null ->
                     com.wingedsheep.engine.mechanics.battle.Battles.DEFENSE_COUNTER to cardDef.startingDefense!!
                 else -> null

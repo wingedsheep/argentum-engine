@@ -113,6 +113,7 @@ internal class SpellCaster(
         manaSpentGreen: Int = 0,
         manaSpentColorless: Int = 0,
         manaSpentOnXByColor: Map<Color, Int> = emptyMap(),
+        phyrexianLifePips: Int = 0,
         faceIndex: Int? = null,
         spentManaProvenance: com.wingedsheep.engine.mechanics.mana.SpentManaProvenance =
             com.wingedsheep.engine.mechanics.mana.SpentManaProvenance(),
@@ -246,6 +247,7 @@ internal class SpellCaster(
             manaSpentBySubtype = spentManaProvenance.bySubtype,
             manaSpentByCardType = spentManaProvenance.byCardType,
             manaSpentOnXByColor = manaSpentOnXByColor,
+            phyrexianLifePips = phyrexianLifePips,
             faceIndex = faceIndex,
             castTimeFlags = castTimeFlags
         )

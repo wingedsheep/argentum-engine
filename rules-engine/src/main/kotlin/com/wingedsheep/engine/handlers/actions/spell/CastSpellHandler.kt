@@ -633,6 +633,7 @@ class CastSpellHandler(
             manaSpentGreen = manaSpentEvent?.green ?: 0,
             manaSpentColorless = manaSpentEvent?.colorless ?: 0,
             manaSpentOnXByColor = paid.payment.xManaSpentByColor,
+            phyrexianLifePips = paid.payment.phyrexianLifePips,
             faceIndex = action.faceIndex,
             spentManaProvenance = paid.payment.spentManaProvenance,
             castTimeFlags = castTimeFlags(state, action, castTimeScript),
