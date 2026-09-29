@@ -32,3 +32,11 @@ data class CastSpellAdditionalCostContinuation(
     val baseCastAction: CastSpell,
     val costKind: AdditionalCostSelectionKind,
 ) : AnswerContinuation
+
+/** Announcement of a named additional-cost branch, before any payment is made. */
+@Serializable
+data class CastCostChoiceContinuation(
+    val baseCastAction: CastSpell,
+    val slot: com.wingedsheep.sdk.scripting.ChoiceSlot,
+    val offeredIndices: List<Int>,
+) : AnswerContinuation

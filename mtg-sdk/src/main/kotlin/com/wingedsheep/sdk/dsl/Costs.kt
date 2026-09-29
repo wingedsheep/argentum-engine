@@ -788,7 +788,10 @@ object Costs {
          * costs; use the `*OrPay` family instead when one branch pays extra *mana*. See
          * [AdditionalCost.Choice].
          */
-        fun Choice(vararg options: AdditionalCost): AdditionalCost = AdditionalCost.Choice(options.toList())
+        fun Choice(
+            vararg options: AdditionalCost,
+            choiceSlot: com.wingedsheep.sdk.scripting.ChoiceSlot? = null,
+        ): AdditionalCost = AdditionalCost.Choice(options.toList(), choiceSlot)
 
         /** Blight X — put X -1/-1 counters on a creature you control (X declared at cast time, min [minCount]). */
         fun BlightVariable(minCount: Int = 0): AdditionalCost = AdditionalCost.BlightVariable(minCount)

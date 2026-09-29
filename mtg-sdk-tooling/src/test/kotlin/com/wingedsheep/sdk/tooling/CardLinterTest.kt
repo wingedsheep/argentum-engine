@@ -304,6 +304,20 @@ class CardLinterTest : DescribeSpec({
     }
 
     describe("choice slots") {
+        it("recognizes a named additional-cost branch as a slot declaration") {
+            val card = instant("Branch Reader", CardScript(
+                additionalCosts = listOf(AdditionalCost.Choice(
+                    listOf(AdditionalCost.Atom(CostAtom.Sacrifice(GameObjectFilter.Creature))),
+                    choiceSlot = ChoiceSlot.ADDITIONAL_COST_BRANCH,
+                )),
+                spellEffect = Effects.If(
+                    com.wingedsheep.sdk.dsl.Conditions.CastChoiceIs(ChoiceSlot.ADDITIONAL_COST_BRANCH, "0"),
+                    Effects.DrawCards(1),
+                ),
+            ))
+            CardLinter.lint(card).shouldBeEmpty()
+        }
+
 
         it("flags a slot read with no declaration") {
             val card = instant(

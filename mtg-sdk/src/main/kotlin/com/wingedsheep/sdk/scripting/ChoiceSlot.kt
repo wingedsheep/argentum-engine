@@ -201,4 +201,7 @@ enum class ChoiceSlot {
      * that is not tied to casting.
      */
     CHOSEN_NUMBER,
+
+    /** Zero-based branch of a declared additional-cost choice. */
+    ADDITIONAL_COST_BRANCH,
 }

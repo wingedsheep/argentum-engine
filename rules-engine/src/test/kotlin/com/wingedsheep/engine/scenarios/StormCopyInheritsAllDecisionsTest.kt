@@ -105,6 +105,7 @@ class StormCopyInheritsAllDecisionsTest : FunSpec({
             casterId = p1,
             xValue = 5,
             declaredCostSlot = ChoiceSlot.KICKED,
+            additionalCostChoices = mapOf(ChoiceSlot.ADDITIONAL_COST_BRANCH to 1),
             wasWarped = true,
             wasEvoked = true,
             sacrificedPermanents = listOf(
@@ -133,6 +134,7 @@ class StormCopyInheritsAllDecisionsTest : FunSpec({
         copy.casterId shouldBe p1
         copy.xValue shouldBe 5
         copy.declaredCostSlot shouldBe ChoiceSlot.KICKED
+        copy.additionalCostChoices shouldBe mapOf(ChoiceSlot.ADDITIONAL_COST_BRANCH to 1)
         copy.wasWarped shouldBe true
         copy.wasEvoked shouldBe true
         copy.sacrificedPermanents shouldBe listOf(

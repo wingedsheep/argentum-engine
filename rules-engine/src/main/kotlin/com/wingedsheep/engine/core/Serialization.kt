@@ -385,6 +385,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ChainCopyCostContinuation::class)
         subclass(ChainCopyTargetContinuation::class)
         subclass(CastSpellAdditionalCostContinuation::class)
+        subclass(CastCostChoiceContinuation::class)
         subclass(PutFromHandContinuation::class)
         subclass(SecretBidContinuation::class)
         subclass(OpenLifeBidContinuation::class)

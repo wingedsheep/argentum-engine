@@ -16,8 +16,8 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
  * which action to play and the existing per-cost picker (SacrificePermanent / DiscardCard /
  * ExileFromGraveyard) drives the selection with **no new client UI**. This object builds the
  * [AdditionalCostData] payload for each option; the enumerator's post-process attaches one to each
- * expanded cast action, and payment is recovered downstream from which field the client populated
- * (see `CastSpellHandler.reduceChoiceCosts`).
+ * expanded cast action. Named choices also carry the original option index on that action;
+ * unnamed choices retain their legacy inference from distinct payment fields.
  *
  * Only options that map to a client-rendered cost picker are emitted; an option whose atom has no
  * picker (or which can't currently be paid) is dropped, so a [Choice] with no payable option yields
@@ -37,7 +37,7 @@ object ChoiceCostResolver {
         cardId: EntityId,
     ): List<AdditionalCostData> = choice.options.mapNotNull { optionCostInfo(state, playerId, it, costUtils, cardId) }
 
-    private fun optionCostInfo(
+    fun optionCostInfo(
         state: GameState,
         playerId: EntityId,
         option: AdditionalCost,

@@ -1948,6 +1948,8 @@ class TriggerDetector(
                         controllerId = controllerId,
                         triggerContext = TriggerContext.fromEvent(event).copy(
                             selfCastCostChoices = castCostChoices,
+                            selfCastAdditionalCostChoices = container.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
+                                ?.additionalCostChoices ?: emptyMap(),
                             selfCastManaSpent = castManaSpent
                         )
                     )

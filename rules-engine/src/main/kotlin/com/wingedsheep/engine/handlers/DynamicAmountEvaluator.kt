@@ -265,7 +265,15 @@ class DynamicAmountEvaluator(
             // becomes a permanent still resolves it from what was paid at cast.
             is DynamicAmount.CastChoice -> {
                 val source = context.sourceId?.let { state.getEntity(it) }
-                when (amount.slot) {
+                val branchSnapshot = context.triggerContext
+                    ?.takeIf { it.triggeringEntityId == context.sourceId }?.selfCastAdditionalCostChoices
+                val branch = branchSnapshot?.get(amount.slot)
+                    ?: source?.get<SpellOnStackComponent>()?.additionalCostChoices?.get(amount.slot)
+                if (branchSnapshot != null && amount.slot == com.wingedsheep.sdk.scripting.ChoiceSlot.ADDITIONAL_COST_BRANCH) {
+                    branchSnapshot[amount.slot] ?: 0
+                } else if (branch != null) {
+                    branch
+                } else when (amount.slot) {
                     com.wingedsheep.sdk.scripting.ChoiceSlot.BLIGHT_AMOUNT ->
                         source?.blightAmountChoice() ?: context.additionalCostBlightAmount
                     // "The number of creatures that convoked it" (CR 702.51c) — every creature

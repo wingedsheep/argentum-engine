@@ -800,7 +800,14 @@ class ConditionEvaluator(
                 val declaredThisCast = (ctx as? Resolution)?.effectContext?.declaredCostSlot
                 val selfCastChoice = (ctx as? Resolution)?.effectContext
                     ?.let(::selfCastCostChoices)?.get(condition.slot)
-                if (selfCastChoice != null) {
+                val branchSnapshot = (ctx as? Resolution)?.effectContext?.triggerContext
+                    ?.takeIf { it.triggeringEntityId == sourceId }?.selfCastAdditionalCostChoices
+                if (branchSnapshot != null && (condition.slot == ChoiceSlot.ADDITIONAL_COST_BRANCH || condition.slot in branchSnapshot)) {
+                    condition.slot in branchSnapshot
+                } else if (sourceId?.let { state.getEntity(it) }?.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
+                    ?.additionalCostChoices?.containsKey(condition.slot) == true) {
+                    true
+                } else if (selfCastChoice != null) {
                     selfCastChoice
                 } else if (declaredThisCast == condition.slot) {
                     true
@@ -812,8 +819,13 @@ class ConditionEvaluator(
             }
             is CastChoiceIs -> {
                 val sourceId = ctx.sourceId
-                sourceId != null &&
-                    castChoiceMatches(state.getEntity(sourceId), condition.slot, condition.value)
+                val snapshot = (ctx as? Resolution)?.effectContext?.triggerContext
+                    ?.takeIf { it.triggeringEntityId == sourceId }?.selfCastAdditionalCostChoices
+                if (snapshot != null && (condition.slot == ChoiceSlot.ADDITIONAL_COST_BRANCH || condition.slot in snapshot)) {
+                    snapshot[condition.slot]?.toString() == condition.value
+                } else {
+                    sourceId != null && castChoiceMatches(state.getEntity(sourceId), condition.slot, condition.value)
+                }
             }
             is CastTimeFlagSet -> {
                 // The "as you cast this spell" capture, frozen onto the spell on the stack at cast
@@ -1812,6 +1824,8 @@ class ConditionEvaluator(
         slot: ChoiceSlot,
         value: String
     ): Boolean {
+        entity?.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
+            ?.additionalCostChoices?.get(slot)?.let { return it.toString() == value }
         val cv = entity?.get<CastChoicesComponent>()?.chosen?.get(slot) ?: return false
         val actual = when (cv) {
             is ChoiceValue.ColorChoice -> cv.color.name

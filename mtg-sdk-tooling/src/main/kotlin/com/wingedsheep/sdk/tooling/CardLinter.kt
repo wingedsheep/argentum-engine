@@ -917,6 +917,10 @@ object CardLinter {
                 // The optional-additional-cost keyword (serial name "Kicker") declares whichever
                 // slot its own mechanic uses: KICKED for kicker/multikicker/offspring, BARGAINED
                 // for bargain (CR 702.166b).
+                if (type == "ChoiceCost") {
+                    (element["choiceSlot"] as? JsonPrimitive)?.contentOrNull
+                        ?.let { slots.declared.add(it) }
+                }
                 if (type == "Kicker") {
                     val declaredSlot = (element["declaredSlot"] as? JsonPrimitive)?.contentOrNull
                     slots.declared.add(declaredSlot ?: "KICKED")

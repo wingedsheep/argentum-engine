@@ -1522,11 +1522,14 @@ class CastSpellEnumerator(
                 continue
             }
             // One action per payable option; if none is payable the card is dropped (uncastable).
-            val optionInfos = com.wingedsheep.engine.handlers.costs.ChoiceCostResolver
-                .costInfos(state, cs.playerId, choice, context.costUtils, cs.cardId)
-            for (info in optionInfos) {
+            for ((index, option) in choice.options.withIndex()) {
+                val info = com.wingedsheep.engine.handlers.costs.ChoiceCostResolver
+                    .optionCostInfo(state, cs.playerId, option, context.costUtils, cs.cardId) ?: continue
                 out.add(la.copy(
                     description = "${la.description} (${info.description})",
+                    action = choice.choiceSlot?.let { slot ->
+                        cs.copy(additionalCostChoices = cs.additionalCostChoices + (slot to index))
+                    } ?: cs,
                     additionalCostInfo = info
                 ))
             }

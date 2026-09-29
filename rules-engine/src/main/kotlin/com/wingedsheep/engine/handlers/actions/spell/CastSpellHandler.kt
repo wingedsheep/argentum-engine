@@ -198,7 +198,8 @@ class CastSpellHandler(
         state: GameState,
         playerId: EntityId,
         payment: AdditionalCostPayment?,
-    ): List<AdditionalCost> = SpellCosts.reduceAlternatives(costs, state, playerId, payment, costHandler)
+        choices: Map<ChoiceSlot, Int>,
+    ): List<AdditionalCost> = SpellCosts.reduceAlternatives(costs, state, playerId, payment, costHandler, choices)
 
     /**
      * Casts the spell, one stage of the casting procedure (CR 601.2) after another:
@@ -217,6 +218,33 @@ class CastSpellHandler(
         return if (action.cardId !in result.state.stack && action.cardId !in result.state.getBattlefield()) {
             result.copy(state = com.wingedsheep.engine.mechanics.BestowCasts.end(result.state, action.cardId))
         } else result
+    }
+
+    private fun surfaceAdditionalCostChoice(
+        state: GameState,
+        action: CastSpell,
+        costs: List<AdditionalCost>,
+    ): ExecutionResult? {
+        val choice = SpellCosts.flattenComposites(costs).filterIsInstance<AdditionalCost.Choice>()
+            .firstOrNull { it.choiceSlot != null && it.choiceSlot !in action.additionalCostChoices }
+            ?: return null
+        val offered = choice.options.indices.filter {
+            com.wingedsheep.engine.handlers.costs.ChoiceCostResolver.optionCostInfo(
+                state, action.playerId, choice.options[it], costEnumerationUtils, action.cardId
+            ) != null
+        }
+        if (offered.isEmpty()) return ExecutionResult.error(state, "Cannot pay any additional-cost branch")
+        return state.withPriority(action.playerId).suspendForDecision(
+            question = { id -> com.wingedsheep.engine.core.ChooseOptionDecision(
+                id = id,
+                playerId = action.playerId,
+                prompt = "Choose an additional cost",
+                context = DecisionContext(sourceId = action.cardId, phase = DecisionPhase.CASTING),
+                options = offered.map { choice.options[it].description },
+                canCancel = true,
+            ) },
+            answer = com.wingedsheep.engine.core.CastCostChoiceContinuation(action, choice.choiceSlot!!, offered),
+        )
     }
 
     private fun executeAnnounced(inputState: GameState, action: CastSpell): ExecutionResult {
@@ -242,6 +270,11 @@ class CastSpellHandler(
         // recast) before additional costs run — a behold-and-exile cost on this same cast will attach
         // a fresh one afterwards.
         val announcedState = state.updateEntity(action.cardId) { c -> c.without<LinkedExileComponent>() }
+        val rawCosts = castCostPayer.owedAdditionalCosts(announcedState, action, cardDef)
+        SpellCosts.validateChoiceDeclarations(rawCosts, action.additionalCostChoices)?.let {
+            return ExecutionResult.error(state, it)
+        }
+        surfaceAdditionalCostChoice(announcedState, action, rawCosts)?.let { return it }
         pauseForUnannouncedModesOrTargets(announcedState, action, cardDef, cardComponent)?.let { return it }
         val authorization = castRecords.captureAuthorization(announcedState, action, cardComponent)
 
@@ -262,7 +295,7 @@ class CastSpellHandler(
             ?: cardComponent.manaCost
 
         val owedCosts = reduceCostAlternatives(
-            castCostPayer.owedAdditionalCosts(announcedState, action, cardDef), announcedState, action.playerId, action.additionalCostPayment
+            castCostPayer.owedAdditionalCosts(announcedState, action, cardDef), announcedState, action.playerId, action.additionalCostPayment, action.additionalCostChoices
         )
         // The declared optional cost, put through the *same* reduction as the full list, so payment
         // can recognise it by equality. Reducing both sides is what makes the match survive an
@@ -270,7 +303,7 @@ class CastSpellHandler(
         // a Choice's leg, so an unreduced wrapper would never match and would silently drop the tap
         // cause.
         val declaredSlotCosts = reduceCostAlternatives(
-            listOfNotNull(castCostPayer.declaredSlotCost(action, cardDef)), announcedState, action.playerId, action.additionalCostPayment
+            listOfNotNull(castCostPayer.declaredSlotCost(action, cardDef)), announcedState, action.playerId, action.additionalCostPayment, action.additionalCostChoices
         )
 
         // Server-initiated free cast: pay the spell's printed additional costs even though the mana
@@ -280,6 +313,14 @@ class CastSpellHandler(
         // surfaced here. The pause sits before any cost is paid, so the re-entry on resume (with the
         // chosen entities merged into the payment) is side-effect free.
         surfaceUnpaidAdditionalCostSelection(announcedState, action, owedCosts)?.let { return it }
+        if (action.additionalCostChoices.isNotEmpty()) {
+            val check = com.wingedsheep.engine.mechanics.cost.spell.SpellCostCheck(
+                announcedState, action, costHandler, predicateEvaluator
+            )
+            owedCosts.firstNotNullOfOrNull { SpellCosts.validate(check, it) }?.let {
+                return ExecutionResult.error(announcedState, it)
+            }
+        }
 
         // "You may pay any amount of mana" as an additional cost (Chorus of the Conclave): the {N}
         // is part of the total cost above. The grant is read *now*, before any cost is paid: the
@@ -552,6 +593,7 @@ class CastSpellHandler(
             additionalCostBlightAmount = action.additionalCostPayment?.blightAmount ?: 0,
             additionalCostPayXLifeAmount = payXLifeAmount,
             declaredCostSlot = action.declaredCostSlot,
+            additionalCostChoices = action.additionalCostChoices,
             wasBlightPaid = (action.additionalCostPayment?.blightTargets?.isNotEmpty() == true),
             // True when the spell's waterbend additional cost was paid (Avatar) — mandatory costs
             // always, optional "you may waterbend {N}" only when the player elected it.

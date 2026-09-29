@@ -309,6 +309,9 @@ internal class PermanentEntry(
         val entered = updated.get<com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent>()
         var bag = entered ?: com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent()
         spellComponent.xValue?.let { bag = bag.copy(x = it) }
+        spellComponent.additionalCostChoices.forEach { (slot, index) ->
+            bag = bag.withChoice(slot, com.wingedsheep.engine.state.components.battlefield.ChoiceValue.NumberChoice(index))
+        }
         // The optional additional cost declared while casting (kicker → KICKED, bargain →
         // BARGAINED, CR 702.166b) marks the permanent under its own slot, so a bargained
         // permanent's "if it was bargained" enters trigger reads true while a kicker payoff

@@ -583,8 +583,13 @@ internal class CastValidator(
 
     /** The first reason the submitted payment can't pay [additionalCosts] (CR 601.2h), or null. */
     private fun validateAdditionalCosts(state: GameState, additionalCosts: List<AdditionalCost>, action: CastSpell): String? {
+        SpellCosts.validateChoiceDeclarations(additionalCosts, action.additionalCostChoices)?.let { return it }
+        // Missing named branches are announced by execute() before targets or payment.
+        val announcedCosts = SpellCosts.flattenComposites(additionalCosts).filterNot {
+            it is AdditionalCost.Choice && it.choiceSlot != null && it.choiceSlot !in action.additionalCostChoices
+        }
         val check = SpellCostCheck(state, action, costHandler, predicateEvaluator)
-        return SpellCosts.reduceAlternatives(additionalCosts, state, action.playerId, action.additionalCostPayment, costHandler)
+        return SpellCosts.reduceAlternatives(announcedCosts, state, action.playerId, action.additionalCostPayment, costHandler, action.additionalCostChoices)
             .firstNotNullOfOrNull { SpellCosts.validate(check, it) }
     }
 

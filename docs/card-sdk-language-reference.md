@@ -913,24 +913,28 @@ definitions construct these through the facade, e.g. `Costs.additional.Sacrifice
   the turn's discard tracking (CR 701.8), so it counts toward
   `DynamicAmounts.cardsDiscardedThisTurn()` / `Conditions.YouDiscardedACardThisTurn` /
   `Conditions.YouDiscardedThisCardThisTurn` (Mayhem).
-- `Costs.additional.Choice(vararg options)` — **cost-vs-cost**: "as an additional cost to cast this
-  spell, pay exactly one of `options`" (Souls of the Lost: *"discard a card **or** sacrifice a
-  permanent"*). The general, parameterized form of `Forage` — each option is itself an
-  `AdditionalCost` (compose the `Sacrifice` / `Discard` / `ExileFrom` atoms). Distinct from the
-  `OrPay` family (`OrPay` and its `SacrificeOrPay` / `DiscardOrPay` / `ExileFromGraveyardOrPay` /
-  `BeholdOrPay` wordings, plus `BlightOrPay`): those
-  fold a **mana** alternative into the spell's cost, whereas `Choice` is for options that are each
-  independently payable **non-mana** costs (no mana-cost change). The enumerator emits **one cast
-  action per payable option** (`CastSpellEnumerator.expandChoiceAdditionalCosts` +
-  `ChoiceCostResolver`), each carrying that option's existing picker (`SacrificePermanent` /
-  `DiscardCard` / `ExileFromGraveyard`) — so the caster picks the sub-cost by choosing which action to
-  play, with **no new client UI**. The plain (un-expanded) base action is dropped, since a mandatory
-  choice cost can't be skipped. At payment time `CastSpellHandler.reduceCostAlternatives` collapses the
-  `Choice` to the single option the caller populated (or, for a server-initiated free/AI cast with no
-  payment, the first payable option — mirroring `ForageCostResolver`'s engine-direct fallback), so
-  validation, application, and the free-cast selection pause all handle it as a plain atom. Keep the
-  options on **distinct** payment fields (sacrifice vs. discard vs. exile) — two options consuming the
-  same field can't be told apart by the payment alone.
+- `Costs.additional.Choice(vararg options, choiceSlot = null)` — pay exactly one additional
+  non-mana cost. `Sacrifice`, `Discard`, and `ExileFrom` alternatives use their existing payment
+  pickers. `OrPay` remains the spelling for an alternative that adds mana instead.
+  With `choiceSlot = ChoiceSlot.ADDITIONAL_COST_BRANCH`, each offered cast action carries the
+  **original zero-based option index** in `CastSpell.additionalCostChoices`. This distinguishes
+  alternatives that use the same payment field, including overlapping sacrifice filters:
+  Lethal Throwdown may sacrifice a modified creature through either its ordinary branch (0)
+  or modified branch (1), and only branch 1 draws. Read the declared branch with
+  `Conditions.CastChoiceIs(ChoiceSlot.ADDITIONAL_COST_BRANCH, "1")`. The generic
+  `CastChoiceMade` and numeric `DynamicAmount.CastChoice` readers also read the declared slot.
+  Validation rejects unknown slots, out-of-range indices, and payments that fail the declared
+  branch's filter. The declaration is separate from the sacrificed object's characteristics.
+  When a named branch has not been announced, including server-initiated and alternative/free
+  casts, casting pauses for `ChooseOptionDecision` before targets and payment, then reuses the
+  ordinary cost picker. Cancellation leaves costs unpaid. The client preserves the server's
+  action metadata through its existing casting pipeline; no client-side rules are added.
+  `SpellOnStackComponent` carries the choices; spell copies retain them; permanent entry stores
+  them as numbers in `CastChoicesComponent`, cleared on leaving the battlefield. Self-cast
+  triggers snapshot the selected branches so source removal or a later cast cannot change them.
+  A slot must identify exactly one choice on a spell. This does not add independently selectable
+  kicker instances. An unnamed choice preserves the existing inference from distinct payment
+  fields (sacrifice vs. discard vs. exile); declare a slot whenever branch identity matters.
 - `Costs.additional.RemoveCounters(count, counterType = null, filter = Any)` — "as an additional
   cost to cast this spell, remove `count` counters from among permanents matching `filter` you
   control." When `counterType` is set (e.g. `"+1/+1"`), only counters of that type are removed;

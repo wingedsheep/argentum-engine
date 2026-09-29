@@ -133,6 +133,7 @@ export interface CastSpellAction {
    * stamps it on the cast variant it offers; the client only echoes it back.
    */
   readonly declaredCostSlot?: string
+  readonly additionalCostChoices?: Readonly<Record<string, number>>
   /**
    * Whether the spell's optional waterbend additional cost was elected (Avatar: The Last
    * Airbender). Set by the server on the paid cast variant; preserved through the pipeline so the

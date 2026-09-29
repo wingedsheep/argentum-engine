@@ -154,12 +154,15 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
      * option is recovered from which [AdditionalCostPayment] field the client populated; options that
      * consume *different* payment fields (sacrifice vs. discard vs. exile) disambiguate cleanly. Two
      * options that consume the *same* field (e.g. two different Sacrifice filters) are not
-     * distinguishable by payment alone — keep options on distinct fields.
+     * distinguishable by payment alone — declare [Choice.choiceSlot] to require an explicit
+     * branch selection and retain it for later effects.
      */
     @SerialName("ChoiceCost")
     @Serializable
     data class Choice(
-        val options: List<AdditionalCost>
+        val options: List<AdditionalCost>,
+        /** Store the explicitly chosen zero-based branch in this durable cast-choice slot. */
+        val choiceSlot: ChoiceSlot? = null,
     ) : AdditionalCost {
         override val description: String get() = options.joinToString(" or ") { it.description }
 
