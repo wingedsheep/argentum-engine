@@ -13,6 +13,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AlternativePaymentChoice
+import com.wingedsheep.sdk.scripting.ConvokePayment
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -41,9 +43,17 @@ class HybridPhyrexianManaTest : FunSpec({
         loyaltyAbility(+1) { effect = Effects.DrawCards(1) }
     }
 
+    val convokeProbe = card("Hybrid Phyrexian Convoke Probe") {
+        manaCost = "{R/G/P}"
+        typeLine = "Sorcery"
+        oracleText = "Convoke\nDraw a card."
+        keywords(Keyword.CONVOKE)
+        spell { effect = Effects.DrawCards(1) }
+    }
+
     fun newDriver(): Pair<GameTestDriver, EntityId> {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(probe, walker))
+        driver.registerCards(TestCards.all + listOf(probe, walker, convokeProbe))
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
         val me = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -115,6 +125,23 @@ class HybridPhyrexianManaTest : FunSpec({
         driver.submitSuccess(CastSpell(playerId = me, cardId = cardId))
         driver.bothPass()
         driver.state.getEntity(cardId)?.get<CountersComponent>()?.getCount(CounterType.LOYALTY) shouldBe 5
+        driver.getLifeTotal(me) shouldBe 20
+    }
+
+    test("a green creature convokes the hybrid Phyrexian pip") {
+        val (driver, me) = newDriver()
+        val bear = driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val cardId = driver.putCardInHand(me, "Hybrid Phyrexian Convoke Probe")
+        driver.submitSuccess(
+            CastSpell(
+                playerId = me, cardId = cardId,
+                alternativePayment = AlternativePaymentChoice(
+                    convokedCreatures = mapOf(bear to ConvokePayment(color = Color.GREEN))
+                )
+            )
+        )
+        driver.bothPass()
+        driver.isTapped(bear) shouldBe true
         driver.getLifeTotal(me) shouldBe 20
     }
 })

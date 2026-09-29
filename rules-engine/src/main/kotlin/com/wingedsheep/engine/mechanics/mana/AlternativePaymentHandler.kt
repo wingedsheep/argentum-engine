@@ -427,7 +427,7 @@ class AlternativePaymentHandler(
      * Under CR 107.4e a hybrid symbol like {W/U} is itself a colored mana symbol of both
      * colors, and CR 702.51a lets convoke pay "colored mana" by tapping a creature of that
      * color — so a white creature paying convoke can cover a {W/U} pip (choosing its white
-     * half). A monocolored hybrid pip like {2/B} is also a colored symbol of its color, so a
+     * half), and a hybrid Phyrexian {R/G/P} pip is the same (CR 107.4f). A monocolored hybrid pip like {2/B} is also a colored symbol of its color, so a
      * black creature can pay its colored side. Prefer an exact colored match first so we don't
      * waste a hybrid pip when a plain colored pip is available.
      */
@@ -442,7 +442,7 @@ class AlternativePaymentHandler(
         }
 
         val hybridIndex = mutableSymbols.indexOfFirst { symbol ->
-            (symbol is ManaSymbol.Hybrid && (symbol.color1 == color || symbol.color2 == color)) ||
+            (symbol is ManaSymbol.HybridPair && (symbol.color1 == color || symbol.color2 == color)) ||
                 (symbol is ManaSymbol.MonocolorHybrid && symbol.color == color)
         }
         if (hybridIndex >= 0) {
