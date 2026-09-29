@@ -121,6 +121,15 @@ data class TriggerContext(
      */
     val lastKnownBlockingOrBlockedByIds: List<EntityId>? = null,
     /**
+     * The Auras/Equipment attached to the triggering permanent as it last existed on the
+     * battlefield (CR 608.2h), frozen off [ZoneChangeEvent.lastKnown]. By resolution of a dies /
+     * leaves trigger the attachment links are gone (the host left and the SBA unattached them), so
+     * `CardSource.AttachedTo(EffectTarget.TriggeringEntity, …)` reads this instead — "attach all
+     * Equipment attached to that creature" (Rhuk, Hexgold Nabber). `null` when nothing was attached
+     * or the trigger was not a battlefield exit.
+     */
+    val lastKnownAttachmentIds: List<EntityId>? = null,
+    /**
      * For SpellCastEvent triggers — number of mode picks the cast spell recorded. `null`
      * when the trigger was not driven by a spell cast. Read by
      * `ContextPropertyKey.MODES_CHOSEN_ON_TRIGGERING_SPELL` so abilities like Riku of
@@ -268,7 +277,8 @@ data class TriggerContext(
                     lastKnownDamageDealtByPlayers =
                         event.lastKnown?.damageDealtByPlayers?.takeIf { it.isNotEmpty() },
                     lastKnownBlockingOrBlockedByIds =
-                        event.lastKnown?.blockingOrBlockedByIds?.takeIf { it.isNotEmpty() }
+                        event.lastKnown?.blockingOrBlockedByIds?.takeIf { it.isNotEmpty() },
+                    lastKnownAttachmentIds = event.lastKnown?.attachmentIds?.takeIf { it.isNotEmpty() }
                 )
                 is DamageDealtEvent -> TriggerContext(
                     triggeringEntityId = event.targetId,

@@ -1210,10 +1210,13 @@ class TriggerDetector(
                 if (matcher.matchesTrigger(ability.trigger, ability.binding, event, entityId, controllerId, state)) {
                     // For "whenever a creature attacks" (AttackEvent with ANY binding),
                     // create one trigger per attacking creature (Rule 603.2c)
-                    if (ability.trigger is EventPattern.AttackEvent && ability.binding == TriggerBinding.ANY &&
+                    // "Whenever another creature attacks" (OTHER) expands the same way, minus the source.
+                    if (ability.trigger is EventPattern.AttackEvent &&
+                        (ability.binding == TriggerBinding.ANY || ability.binding == TriggerBinding.OTHER) &&
                         event is AttackersDeclaredEvent) {
                         val attackFilter = (ability.trigger as EventPattern.AttackEvent).filter
                         for (attackerId in event.attackers) {
+                            if (ability.binding == TriggerBinding.OTHER && attackerId == entityId) continue
                             if (attackFilter != null) {
                                 // Filtered trigger: match creature against filter (includes controller predicate)
                                 if (predicateEvaluator.matches(

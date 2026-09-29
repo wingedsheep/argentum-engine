@@ -4053,7 +4053,13 @@ effect = Effects.Pipeline {
   filter matches. The non-targeted counterpart of "the Equipment/Aura attached to that creature": yields
   nothing when the host has left play or has no matching attachments. Backs "destroy up to one Equipment
   attached to that creature" (Light of Judgment): `gather(AttachedTo(targetCreature, Equipment))` →
-  `chooseUpTo(1)` → `destroy(...)`.
+  `chooseUpTo(1)` → `destroy(...)`. **Last-known leg:** with `host = TriggeringEntity` on a dies/leaves
+  trigger, once the host is off the battlefield the gather reads the attachments frozen on the trigger's
+  zone change (`TriggerContext.lastKnownAttachmentIds`, CR 608.2h) — still filtered to permanents on the
+  battlefield that match `filter` now. "Whenever an equipped creature dies, you may attach all Equipment
+  attached to that creature to Rhuk" (Rhuk, Hexgold Nabber) = `May(Pipeline { gather(AttachedTo(
+  TriggeringEntity, Equipment)); ForEachInCollection(it, AttachTargetEquipmentToCreature(IterationEntity,
+  Self)) })`.
 - `CardSource.ChosenTargets` — the spell/ability's already-resolved targets.
 - `CardSource.FromLinkedExile(count?)` — the cards in the source's linked-exile pile.
 - `CardSource.CraftedMaterials` — the cards exiled to Craft the source (its
@@ -6290,6 +6296,9 @@ The shapes in this family, with their engine notes.
 - `Triggers.<subject>.attacks(requires)` — Covers ANY-binding scopes,
   type-filtered scopes (creature-you-control, nontoken-creature-you-control),
   and attack-time predicates (alone, Battalion-style count gates, first-attack-each-turn).
+  `Triggers.a(filter)` and `Triggers.another(filter)` both fire once per matching attacker with that
+  attacker as `TriggeringEntity`; `another` skips the source's own attack ("whenever an equipped creature
+  you control other than Rhuk attacks").
 
 **Attacks (player-level)**
 

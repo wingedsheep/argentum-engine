@@ -1470,7 +1470,7 @@ class TriggerMatcher(
     fun checkBinding(binding: TriggerBinding, sourceId: EntityId, entityIds: List<EntityId>): Boolean {
         return when (binding) {
             TriggerBinding.SELF -> sourceId in entityIds
-            TriggerBinding.OTHER -> true  // "whenever another creature attacks" (not currently used, but correct)
+            TriggerBinding.OTHER -> entityIds.any { it != sourceId }  // "whenever another creature attacks"
             TriggerBinding.ANY -> true
             TriggerBinding.ATTACHED -> false // handled by AttachmentTriggerDetector
         }

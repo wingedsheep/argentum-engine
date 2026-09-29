@@ -206,10 +206,20 @@ class GatherCardsExecutor(
                 // follow. The stateless overload returns null for those and the gather silently
                 // yields nothing; it is a strict subset of this one, so every other host shape
                 // resolves exactly as before.
+                //
+                // Last-known leg (CR 608.2h): once the triggering permanent has left the battlefield
+                // — "whenever an equipped creature dies, attach all Equipment attached to that
+                // creature" (Rhuk, Hexgold Nabber) — its links are gone, so the attachments frozen on
+                // the trigger's zone change identify them. They still have to be on the battlefield
+                // and match the filter now; last-known info names them, it doesn't resurrect them.
                 val hostId = context.resolveTarget(source.host, state)
-                val attachedIds = hostId
-                    ?.let { state.getEntity(it)?.get<AttachmentsComponent>()?.attachedIds }
-                    ?: emptyList()
+                val attachedIds = if (hostId != null && hostId in state.getBattlefield()) {
+                    state.getEntity(hostId)?.get<AttachmentsComponent>()?.attachedIds ?: emptyList()
+                } else if (source.host == com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity) {
+                    context.triggerContext?.lastKnownAttachmentIds ?: emptyList()
+                } else {
+                    emptyList()
+                }
                 if (attachedIds.isEmpty()) {
                     emptyList()
                 } else {

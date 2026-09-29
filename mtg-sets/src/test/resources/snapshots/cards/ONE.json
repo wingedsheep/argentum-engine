@@ -2227,6 +2227,144 @@
     ]
 }
 
+// Rhuk, Hexgold Nabber
+{
+    "name": "Rhuk, Hexgold Nabber",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Goblin Rebel",
+    "oracleText": "Trample, haste\nWhenever an equipped creature you control other than Rhuk attacks or dies, you may attach all Equipment attached to that creature to Rhuk.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rhuk, Hexgold Nabber:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEquipped"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Attach all Equipment attached to that creature to Rhuk?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "AttachedToTarget",
+                                    "host": "TriggeringEntity",
+                                    "filter": "artifact Equipment"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "gathered0"
+                                },
+                                "body": {
+                                    "type": "AttachTargetEquipmentToCreature",
+                                    "equipmentTarget": "IterationEntity",
+                                    "creatureTarget": "Self"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever an equipped creature you control other than Rhuk attacks, you may attach all Equipment attached to that creature to Rhuk."
+            },
+            {
+                "id": "Rhuk, Hexgold Nabber:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEquipped"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Attach all Equipment attached to that creature to Rhuk?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "AttachedToTarget",
+                                    "host": "TriggeringEntity",
+                                    "filter": "artifact Equipment"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "gathered0"
+                                },
+                                "body": {
+                                    "type": "AttachTargetEquipmentToCreature",
+                                    "equipmentTarget": "IterationEntity",
+                                    "creatureTarget": "Self"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever an equipped creature you control other than Rhuk dies, you may attach all Equipment attached to that creature to Rhuk."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "407",
+        "rarity": "RARE",
+        "artist": "Andrea De Dominicis",
+        "flavorText": "Never get between a goblin and the closest shiny object.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7c25806-1da6-4789-a17e-d2440184ec40.jpg?1783917920",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "If that creature has more than one Equipment attached to it, you may move all of those Equipment to Rhuk or none of those Equipment to Rhuk. You can't move some of them and leave others."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ribskiff
 {
     "name": "Ribskiff",
