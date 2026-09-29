@@ -7421,6 +7421,17 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   `SpellCast`/`Triggers.<player>.castsNth(n, spell)` trigger that observes *other* spells: this one travels with the spell
   onto the stack and is detected only by `TriggerDetector`'s self-cast path (it is deliberately
   **not** indexed against battlefield permanents, so it never fires after the spell resolves).
+  The trigger snapshots the source spell's declared optional-additional-cost slots: `Conditions.WasKicked`
+  and `Conditions.CastChoiceMade(slot)` read that declaration during detection, modal selection, and
+  resolution, even if the spell has been countered, returned to hand, or cast again. An unkicked cast
+  retains its empty declaration; a bargain declaration never counts as kicker. Other permanents'
+  cast watchers do not inherit these source-only choices. Sowing Mycospawn uses the snapshot in its
+  intervening-if exile trigger; Depth Defiler uses it in both modal bounds. For a mandatory dynamic
+  modal trigger ("choose both instead"), set `dynamicChooseCount` and `dynamicMinChooseCount` to the
+  same `DynamicAmounts.conditional(Conditions.WasKicked, 2, 1)`. Both bounds are fixed when stacking;
+  omitting the dynamic minimum retains the existing "up to" behavior. Pre-chosen modes execute in
+  printed order regardless of click order, with their own targets and the enclosing trigger record;
+  that record also survives a decision pause between modes.
   Pair with a `interveningIf` for an intervening "if" (CR 603.4). Sage of the Skies — "When you
   cast this spell, if you've cast another spell this turn, copy this spell" — uses
   `interveningIf = Conditions.YouCastSpellsThisTurn(atLeast = 2)` (the spell itself is already

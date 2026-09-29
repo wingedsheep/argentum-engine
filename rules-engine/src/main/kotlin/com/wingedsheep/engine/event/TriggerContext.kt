@@ -51,6 +51,13 @@ data class TriggerContext(
     val damageAmount: Int? = null,
     val step: Step? = null,
     val xValue: Int? = null,
+    /**
+     * Optional additional-cost choices on this trigger's own source spell, captured on its
+     * self-cast path. Each offered slot records whether it was declared, including false. Null
+     * means there is no self-cast snapshot. Unrelated entry choices are not part of this record.
+     * Remains authoritative if the spell leaves the stack or the same card is cast again.
+     */
+    val selfCastCostChoices: Map<com.wingedsheep.sdk.scripting.ChoiceSlot, Boolean>? = null,
     /** Last known +1/+1 counter count when the source left the battlefield */
     val counterCount: Int? = null,
     /** Last known total counter count (all types) when the source left the battlefield */

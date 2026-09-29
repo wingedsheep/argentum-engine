@@ -166,8 +166,8 @@ data class ModalEffect(
      * result as the effective maximum, clamped to `modes.size`. Two evaluation sites with
      * different floor semantics:
      *
-     * - **Put-on-stack / resolution-time** (modal abilities): [minChooseCount] is treated as `0`
-     *   (always "choose up to"); [chooseCount] is ignored. A modal *triggered* ability evaluates it
+     * - **Put-on-stack / resolution-time** (modal abilities): [dynamicMinChooseCount] supplies the
+     *   floor when present; otherwise it is `0` ("choose up to"). [chooseCount] is ignored. A modal *triggered* ability evaluates it
      *   as the ability goes onto the stack (CR 603.3c, `TriggerProcessor`) and the result is then
      *   fixed; a modal *activated* ability evaluates it on resolution (`ModalEffectExecutor`). Used
      *   for "choose up to X" where X depends on game state rather than the cast (Riku of Many
@@ -183,7 +183,7 @@ data class ModalEffect(
     val dynamicChooseCount: com.wingedsheep.sdk.scripting.values.DynamicAmount? = null,
     /**
      * Optional runtime-evaluated *lower* bound, the mandatory sibling of [dynamicChooseCount].
-     * Evaluated the same way, at the same cast-time site, and clamped the same way.
+     * Evaluated alongside the upper bound at cast time, trigger stacking, or effect resolution.
      *
      * The two exist because the printed wording splits: "you **may** choose two instead" leaves the
      * floor at one (Flame of Anor — set [dynamicChooseCount] alone), while "choose both **instead**"
@@ -191,7 +191,7 @@ data class ModalEffect(
      * `teamworkModal { }` does). With only a ceiling, a player who paid the extra cost could still
      * take a single mode, which no printed card allows.
      *
-     * Ignored at the resolution-time site, where [minChooseCount] is already treated as 0.
+     * For modal abilities, omitting this preserves the default floor of 0 ("choose up to").
      */
     val dynamicMinChooseCount: com.wingedsheep.sdk.scripting.values.DynamicAmount? = null,
     /**

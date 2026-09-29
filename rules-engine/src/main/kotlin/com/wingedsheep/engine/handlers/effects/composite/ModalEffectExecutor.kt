@@ -190,6 +190,7 @@ class ModalEffectExecutor(
             sourceName = sourceName,
             xValue = context.xValue,
             triggeringEntityId = context.triggeringEntityId,
+            triggerContext = context.triggerContext,
             // The resolution so far, carried into each mode. A mode's effect can read what an
             // earlier step of the same resolution stored — Cemetery Desecrator's two modes both
             // spell X as `StoredCardManaValue("exiledCard")`, the collection its reflexive
@@ -214,7 +215,8 @@ class ModalEffectExecutor(
             modeTargetsOrdered: List<List<com.wingedsheep.engine.state.components.stack.ChosenTarget>>,
             modeTargetRequirements: Map<Int, List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>>
         ): List<PreTargetedEffectEntry> {
-            return chosenModes.mapIndexed { ordinal, modeIndex ->
+            // Execute in printed mode order while retaining each pick's own target slice.
+            return chosenModes.withIndex().sortedBy { it.value }.map { (ordinal, modeIndex) ->
                 val mode = effect.modes.getOrNull(modeIndex)
                 val targets = modeTargetsOrdered.getOrNull(ordinal) ?: emptyList()
                 val reqs = modeTargetRequirements[modeIndex]
@@ -246,6 +248,7 @@ internal data class PreTargetedEffectContext(
     val sourceName: String?,
     val xValue: Int?,
     val triggeringEntityId: com.wingedsheep.sdk.model.EntityId?,
+    val triggerContext: com.wingedsheep.engine.event.TriggerContext? = null,
     /**
      * Pipeline state the enclosing resolution had already built — stored collections, numbers,
      * chosen values — which each mode's own [EffectContext] inherits. Only the per-mode
@@ -331,7 +334,9 @@ internal fun processPreTargetedEffectQueue(
             namedTargets = ctx.pipeline.namedTargets +
                 EffectContext.buildNamedTargets(head.targetRequirements, head.targets)
         ),
-        triggeringEntityId = ctx.triggeringEntityId
+        triggeringEntityId = ctx.triggeringEntityId,
+        triggeringPlayerId = ctx.triggerContext?.triggeringPlayerId,
+        triggerContext = ctx.triggerContext
     )
 
     // Pre-push the tail continuation so that if the effect pauses, our frame sits
@@ -346,6 +351,7 @@ internal fun processPreTargetedEffectQueue(
                 sourceName = ctx.sourceName,
                 xValue = ctx.xValue,
                 triggeringEntityId = ctx.triggeringEntityId,
+                triggerContext = ctx.triggerContext,
                 pipeline = ctx.pipeline,
                 remainingEntries = tail
             )
