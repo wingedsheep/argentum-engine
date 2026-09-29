@@ -43,6 +43,11 @@ describe('landscapeImageRotateDeg', () => {
     expect(landscapeImageRotateDeg({ layout: 'TRANSFORM', typeLine: 'Battle — Siege' })).toBe(90)
   })
 
+  it('falls back to card types for catalog cards that carry no type line', () => {
+    expect(landscapeImageRotateDeg({ layout: 'TRANSFORM', cardTypes: ['BATTLE'] })).toBe(90)
+    expect(landscapeImageRotateDeg({ layout: 'TRANSFORM', cardTypes: ['CREATURE'] })).toBe(0)
+  })
+
   it('leaves ordinary portrait cards alone, including other transforming DFCs', () => {
     expect(landscapeImageRotateDeg({ layout: 'NORMAL', typeLine: 'Creature — Human Wizard' })).toBe(0)
     expect(landscapeImageRotateDeg({ layout: 'TRANSFORM', typeLine: 'Creature — Human Cleric' })).toBe(0)

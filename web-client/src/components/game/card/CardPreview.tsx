@@ -4,6 +4,7 @@ import { useGameStore } from '@/store/gameStore.ts'
 import { selectGameState, selectViewingPlayerId, useCardLegalActions } from '@/store/selectors.ts'
 import { AbilityFlagDisplayNames, ZoneType, zoneIdEquals } from '@/types'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
+import { DfcFlipHint } from '@/components/ui/useDfcHoverFlip'
 import { useResponsiveContext, handleImageError, getCounterStatModifier, hasStatCounters, listCardCounters, getTokenFrameGradient, getTokenFrameTextColor, getPTColor } from '../board/shared'
 import { styles } from '../board/styles'
 import { counterManaClass } from '@/assets/icons/keywords'
@@ -218,40 +219,6 @@ export function CardPreview() {
           <ManaCost cost={manaCostInfo.cost} size={18} gap={2} />
         </div>
       )}
-      {isDfc && (
-        <div style={{
-          position: 'absolute',
-          // A landscape face (a battle's Siege front) runs its rules text right down to the bottom
-          // edge, so the hint moves up onto the art, clear of the name bar.
-          ...(isLandscapePrint
-            ? { top: '14%', right: 12 }
-            : { bottom: 10, left: '50%', transform: 'translateX(-50%)' }),
-          backgroundColor: 'rgba(0, 0, 0, 0.88)',
-          color: '#d0d4e0',
-          fontSize: 13,
-          fontWeight: 600,
-          padding: '5px 12px',
-          borderRadius: 6,
-          border: '1px solid rgba(180, 190, 220, 0.5)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
-          whiteSpace: 'nowrap',
-          zIndex: 5,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-        }}>
-          <i className={`ms ms-dfc-${showingBackFace ? 'night' : 'day'}`} style={{ fontSize: 14 }} />
-          <span style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.15)',
-            padding: '1px 6px',
-            borderRadius: 3,
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: 0.5,
-          }}>F</span>
-          <span>to flip</span>
-        </div>
-      )}
       {isRoom && card.cardFaces && card.cardFaces.length === 2 && card.cardFaces.map((face, idx) => {
         if (face.isUnlocked) return null
         // After +90° image rotation: face[1] (source top half) → right of visible,
@@ -298,6 +265,7 @@ export function CardPreview() {
       extraHeight={extraHeight}
       imageRotateDeg={previewImageRotateDeg}
       overlay={previewOverlay}
+      hint={isDfc ? <DfcFlipHint flipped={showingBackFace} /> : undefined}
     >
       {/* Ways to play, with what each one costs. The badge on the image can only fit the two ends of
           the range; this is where an adventure face, a kicker, a morph, an alternative cost or a

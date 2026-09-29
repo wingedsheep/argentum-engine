@@ -751,6 +751,18 @@ enum class Keyword(val displayName: String) {
      */
     JOB_SELECT("Job select"),
 
+    /**
+     * For Mirrodin! (Phyrexia: All Will Be One). A keyword ability on Equipment:
+     * "When this Equipment enters, create a 2/2 red Rebel creature token, then attach
+     * this to it."
+     *
+     * Display-only on the keyword; the behavior is the enters-the-battlefield triggered
+     * ability wired by the `forMirrodin()` DSL helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder] — the same create-then-attach token-pipeline
+     * chain as [JOB_SELECT], with a 2/2 red Rebel in place of the 1/1 colorless Hero.
+     */
+    FOR_MIRRODIN("For Mirrodin!"),
+
     // ── Ability words (display prefix, no uniform mechanic) ──
     /**
      * Eerie (Duskmourn: House of Horror).

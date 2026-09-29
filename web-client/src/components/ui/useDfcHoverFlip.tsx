@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { landscapeImageRotateDeg } from '@/utils/cardImages.ts'
 
 export interface DfcHoverable {
   readonly name: string
@@ -14,6 +15,11 @@ export interface DfcHoverFlip {
   readonly displayName: string | null
   readonly displayImageUri: string | null
   readonly hint: ReactNode
+  /**
+   * Rotation for the face on screen. A sideways-printed front (a battle) rotates to landscape; its
+   * back face is a portrait card, so flipping to it drops the rotation.
+   */
+  readonly imageRotateDeg: (card: Parameters<typeof landscapeImageRotateDeg>[0]) => 0 | 90
   readonly resetFlip: () => void
 }
 
@@ -49,6 +55,10 @@ export function useDfcHoverFlip(hoveredCard: DfcHoverable | null): DfcHoverFlip 
   // Stable identity so memoized hover-handler consumers don't re-create their
   // useCallback-wrapped closures on every render of this hook.
   const resetFlip = useCallback(() => setDfcFlipped(false), [])
+  const imageRotateDeg = useCallback(
+    (card: Parameters<typeof landscapeImageRotateDeg>[0]) => (showBack ? 0 : landscapeImageRotateDeg(card)),
+    [showBack],
+  )
 
   return {
     isHoveredDfc,
@@ -56,17 +66,19 @@ export function useDfcHoverFlip(hoveredCard: DfcHoverable | null): DfcHoverFlip 
     displayName,
     displayImageUri,
     hint: isHoveredDfc ? <DfcFlipHint flipped={dfcFlipped} /> : undefined,
+    imageRotateDeg,
     resetFlip,
   }
 }
 
-function DfcFlipHint({ flipped }: { flipped: boolean }) {
+/**
+ * The "F to flip" pill. Rendered *below* the card image, never over it: any spot on the image
+ * covers something — rules text on a normal card, the sideways text column on a battle.
+ */
+export function DfcFlipHint({ flipped }: { flipped: boolean }) {
   return (
     <div style={{
-      position: 'absolute',
-      bottom: 10,
-      left: '50%',
-      transform: 'translateX(-50%)',
+      alignSelf: 'center',
       backgroundColor: 'rgba(0, 0, 0, 0.88)',
       color: '#d0d4e0',
       fontSize: 13,
@@ -76,7 +88,6 @@ function DfcFlipHint({ flipped }: { flipped: boolean }) {
       border: '1px solid rgba(180, 190, 220, 0.5)',
       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
       whiteSpace: 'nowrap',
-      zIndex: 5,
       display: 'flex',
       alignItems: 'center',
       gap: 6,

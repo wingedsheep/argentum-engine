@@ -60,11 +60,17 @@ export const CARD_BACK_IMAGE_URL = 'https://backs.scryfall.io/normal/2/2/222b7a3
  * predate the flag, and exists so no surface silently reverts to upright.
  */
 export function landscapeImageRotateDeg(
-  card: { isLandscape?: boolean; layout?: string; typeLine?: string | null } | null | undefined
+  card: {
+    isLandscape?: boolean
+    layout?: string
+    typeLine?: string | null
+    cardTypes?: readonly string[]
+  } | null | undefined
 ): 0 | 90 {
   if (!card) return 0
   if (card.isLandscape !== undefined) return card.isLandscape ? 90 : 0
   if (card.layout === 'SPLIT') return 90
+  if (card.cardTypes?.includes('BATTLE')) return 90
   return isBattleTypeLine(card.typeLine) ? 90 : 0
 }
 

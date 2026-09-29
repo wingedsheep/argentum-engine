@@ -62,6 +62,11 @@ export interface CardSummary {
    * preview rotates them 90° to read landscape. Defaults to `NORMAL` for legacy fixtures.
    */
   layout?: string
+  /**
+   * Front printed sideways — split layouts and battles (`CardDefinition.isLandscapePrint`). The
+   * hover preview rotates it to landscape; a flipped battle's back face stays portrait.
+   */
+  isLandscape?: boolean
 }
 
 export type { CardPredicate, ParseResult, ParseError } from './query'

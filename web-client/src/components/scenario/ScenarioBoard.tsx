@@ -14,7 +14,7 @@ import {
   type CardDragPayload,
 } from '@/components/deckbuilder/browser'
 import { useDfcHoverFlip } from '@/components/ui/useDfcHoverFlip'
-import { getCardImageUrl, landscapeImageRotateDeg } from '@/utils/cardImages'
+import { getCardImageUrl } from '@/utils/cardImages'
 import type { BuilderSeat, BuilderState } from './builderState'
 import { PILE_ZONES, SCENARIO_ZONES, ZONE_LABEL, type ScenarioBattlefieldCard, type ScenarioZone } from './types'
 import styles from './ScenarioBuilder.module.css'
@@ -82,8 +82,8 @@ export function ScenarioBoard(props: ScenarioBoardProps) {
       <HoverFollowPreview
         name={hoverName ? (dfc.displayName ?? hoverName) : null}
         imageUri={hoverName ? (dfc.displayImageUri ?? hoverCard?.imageUri ?? null) : null}
-        overlay={dfc.hint}
-        imageRotateDeg={landscapeImageRotateDeg(hoverCard)}
+        hint={dfc.hint}
+        imageRotateDeg={dfc.imageRotateDeg(hoverCard)}
       />
     </div>
   )

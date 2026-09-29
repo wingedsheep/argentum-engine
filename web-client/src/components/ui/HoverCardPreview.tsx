@@ -4,6 +4,8 @@ import { getCardImageUrl } from '@/utils/cardImages.ts'
 
 const PREVIEW_WIDTH = 280
 const MARGIN = 40
+/** Height of the `hint` row below the image, for vertical positioning. */
+const HINT_HEIGHT = 30
 const VIEWPORT_PADDING = 10
 const RULINGS_MAX_HEIGHT = 300
 
@@ -18,6 +20,8 @@ export interface HoverCardPreviewProps {
   children?: ReactNode
   /** Content rendered as an overlay on top of the card image */
   overlay?: ReactNode
+  /** A short hint rendered directly below the card image (the DFC "F to flip" pill) */
+  hint?: ReactNode
   /** Estimated extra height from children, used for vertical positioning (default 0) */
   extraHeight?: number
   /**
@@ -41,7 +45,7 @@ export interface HoverCardPreviewProps {
  * also live inside `overflow: hidden` / transformed ancestors (a tapped permanent rotates),
  * which would clip a preview rendered in place.
  */
-export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rulings, children, overlay, extraHeight = 0, imageRotateDeg = 0 }: HoverCardPreviewProps) {
+export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rulings, children, overlay, hint, extraHeight = 0, imageRotateDeg = 0 }: HoverCardPreviewProps) {
   const [showRulings, setShowRulings] = useState(false)
   const [lastCardName, setLastCardName] = useState<string | null>(null)
 
@@ -92,8 +96,8 @@ export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rul
   const previewHeight = isLandscape ? portraitWidth : portraitHeight
 
   // Estimate total height for positioning
-  let panelHeight = extraHeight
   const GAP = 8
+  let panelHeight = extraHeight + (hint ? HINT_HEIGHT + GAP : 0)
   if (rulingsOpen) panelHeight += 120 + GAP
   else if (hasRulings) panelHeight += 20 + GAP
   const estimatedHeight = previewHeight + panelHeight
@@ -125,7 +129,7 @@ export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rul
   // Keep the rulings panel inside the viewport; anything beyond it scrolls (see the wheel hook).
   const rulingsMaxHeight = Math.max(
     120,
-    Math.min(RULINGS_MAX_HEIGHT, window.innerHeight - top - previewHeight - extraHeight - GAP * 2 - VIEWPORT_PADDING),
+    Math.min(RULINGS_MAX_HEIGHT, window.innerHeight - top - previewHeight - extraHeight - (hint ? HINT_HEIGHT + GAP : 0) - GAP * 2 - VIEWPORT_PADDING),
   )
 
   return createPortal(
@@ -169,6 +173,8 @@ export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rul
         />
         {overlay}
       </div>
+
+      {hint}
 
       {children}
 

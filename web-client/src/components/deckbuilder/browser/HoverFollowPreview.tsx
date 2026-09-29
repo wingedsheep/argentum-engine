@@ -11,11 +11,13 @@ export function HoverFollowPreview({
   name,
   imageUri,
   overlay,
+  hint,
   imageRotateDeg = 0,
 }: {
   name: string | null
   imageUri: string | null
   overlay?: React.ReactNode
+  hint?: React.ReactNode
   imageRotateDeg?: 0 | 90
 }) {
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
@@ -47,6 +49,7 @@ export function HoverFollowPreview({
       imageUri={imageUri}
       pos={pos}
       overlay={overlay}
+      hint={hint}
       imageRotateDeg={imageRotateDeg}
     />
   )

@@ -120,6 +120,14 @@ class CardsController(
          */
         val layout: String = "NORMAL",
         /**
+         * True when the card's front is printed sideways and the hover preview rotates it 90°:
+         * split layouts and battles (CR 310). Straight from [CardDefinition.isLandscapePrint];
+         * [layout] alone can't say it, since a battle's layout is `TRANSFORM`. Its back face is
+         * always portrait, so a flipped preview never rotates.
+         */
+        @get:JsonProperty("isLandscape")
+        val isLandscape: Boolean = false,
+        /**
          * The printing the catalog grid renders by default. Lets the deckbuilder picker
          * highlight the row that matches the catalog thumbnail without re-deriving it from
          * `setCode + collectorNumber` on the client. Null only for cards missing both
@@ -163,6 +171,7 @@ class CardsController(
             backFaceName = backFace?.name,
             backFaceImageUri = latest?.backFaceImageUri ?: backFace?.metadata?.imageUri,
             layout = layout.name,
+            isLandscape = isLandscapePrint,
             defaultPrinting = latestRef ?: defaultPrintingRef,
             printingSetCodes = printingRegistry.printingsOf(name)
                 .map { it.setCode }
