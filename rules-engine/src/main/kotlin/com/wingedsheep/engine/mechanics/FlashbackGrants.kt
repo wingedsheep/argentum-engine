@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics
 
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
@@ -16,7 +17,8 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
  * the stack resolver's exile-on-resolution clause).
  *
  * Flashback (CR 702.34) can come from three sources, checked in priority order:
- *  1. **Printed** on the card ([KeywordAbility.Flashback] in the card's keyword abilities).
+ *  1. **Printed** on the card ([KeywordAbility.Flashback] in the card's keyword abilities) —
+ *     gated by its optional [KeywordAbility.Flashback.condition] when it has one.
  *  2. **Per-entity runtime grant** to a specific card (Archmage's Newt: "target instant or sorcery
  *     card in your graveyard gains flashback until end of turn").
  *  3. **Whole-graveyard group grant** from a battlefield static ([GraveyardCardsHaveFlashback],
@@ -52,7 +54,10 @@ object FlashbackGrants {
     ): KeywordAbility.Flashback? {
         cardDef?.keywordAbilities
             ?.firstOrNull { it is KeywordAbility.Flashback }
-            ?.let { return it as KeywordAbility.Flashback }
+            ?.let { it as KeywordAbility.Flashback }
+            ?.let { printed ->
+                if (printedConditionHolds(state, cardId, printed, controllerId, predicateEvaluator)) return printed
+            }
 
         state.grantedKeywordAbilities
             .lastOrNull { it.entityId == cardId && it.ability is KeywordAbility.Flashback }
@@ -63,6 +68,26 @@ object FlashbackGrants {
                 ?.let { return it }
         }
         return null
+    }
+
+    /**
+     * A printed flashback with no [KeywordAbility.Flashback.condition] always applies. A conditional
+     * one (Viral Spawning: "As long as an opponent has three or more poison counters, this card has
+     * flashback") applies only while its condition holds, evaluated with the card as the source and
+     * [controllerId] — else the card's owner — as "you". With no evaluator to check it, a
+     * conditional flashback fails closed.
+     */
+    private fun printedConditionHolds(
+        state: GameState,
+        cardId: EntityId,
+        printed: KeywordAbility.Flashback,
+        controllerId: EntityId?,
+        predicateEvaluator: PredicateEvaluator?,
+    ): Boolean {
+        val condition = printed.condition ?: return true
+        val evaluator = predicateEvaluator ?: return false
+        val you = controllerId ?: state.getEntity(cardId)?.get<CardComponent>()?.ownerId ?: return false
+        return evaluator.conditions.evaluate(state, condition, EffectContext(sourceId = cardId, controllerId = you))
     }
 
     /**
