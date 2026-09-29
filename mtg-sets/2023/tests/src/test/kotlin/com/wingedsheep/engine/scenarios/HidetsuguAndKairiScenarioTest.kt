@@ -43,6 +43,7 @@ class HidetsuguAndKairiScenarioTest : ScenarioTestBase() {
         .withLandsOnBattlefield(1, "Swamp", 3)
         .withCardInLibrary(1, topCard)
         .withCardInLibrary(1, "Island")
+        .withCardInLibrary(1, "Island")
         .withCardInLibrary(2, "Island")
         .withActivePlayer(1)
         .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
@@ -93,8 +94,9 @@ class HidetsuguAndKairiScenarioTest : ScenarioTestBase() {
 
                 game.getLifeTotal(2) shouldBe 17
                 game.isInGraveyard(1, "Divination") shouldBe true
-                // Divination drew two cards (Island + nothing else left? library had one Island).
-                game.isInHand(1, "Island") shouldBe true
+                // Divination drew the two Islands left under the exiled card.
+                game.handSize(1) shouldBe 2
+                game.librarySize(1) shouldBe 0
             }
 
             test("dies: declining the cast leaves the instant or sorcery in exile") {
