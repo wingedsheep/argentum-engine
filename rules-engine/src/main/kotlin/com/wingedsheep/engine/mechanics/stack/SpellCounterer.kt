@@ -123,6 +123,7 @@ class SpellCounterer(
         }
 
         // Remove stack components
+        newState = com.wingedsheep.engine.mechanics.BestowCasts.end(newState, spellId)
         newState = newState.updateEntity(spellId) { c ->
             c.without<SpellOnStackComponent>().without<TargetsComponent>()
         }
@@ -246,6 +247,7 @@ class SpellCounterer(
         }
         val destinationObject = newState.objectRef(spellId)
 
+        newState = com.wingedsheep.engine.mechanics.BestowCasts.end(newState, spellId)
         newState = newState.updateEntity(spellId) { c ->
             c.without<SpellOnStackComponent>().without<TargetsComponent>()
         }
@@ -311,6 +313,8 @@ class SpellCounterer(
         // Put in exile (instead of graveyard)
         val exileZone = ZoneKey(ownerId, Zone.EXILE)
         newState = newState.addToZone(exileZone, spellId)
+
+        newState = com.wingedsheep.engine.mechanics.BestowCasts.end(newState, spellId)
 
         // Remove stack components and optionally grant the counter's controller a free recast
         // (Kheru Spellsnatcher).
@@ -393,6 +397,7 @@ class SpellCounterer(
         var newState = state.removeFromStack(spellId)
         val exileZone = ZoneKey(ownerId, Zone.EXILE)
         newState = newState.addToZone(exileZone, spellId)
+        newState = com.wingedsheep.engine.mechanics.BestowCasts.end(newState, spellId)
         newState = newState.updateEntity(spellId) { c ->
             c.without<SpellOnStackComponent>().without<TargetsComponent>()
         }
@@ -546,6 +551,7 @@ class SpellCounterer(
 
         var newState = state.removeFromStack(spellId)
         newState = newState.addToZone(ZoneKey(ownerId, Zone.EXILE), spellId)
+        newState = com.wingedsheep.engine.mechanics.BestowCasts.end(newState, spellId)
         newState = newState.updateEntity(spellId) { c ->
             c.without<SpellOnStackComponent>().without<TargetsComponent>()
         }

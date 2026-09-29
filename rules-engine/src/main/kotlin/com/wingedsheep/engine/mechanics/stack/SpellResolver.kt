@@ -73,6 +73,11 @@ internal class SpellResolver(
                 targetEntryStamps = targetsComponent.targetEntryStamps
             )
             if (validTargets.isEmpty()) {
+                if (container.has<com.wingedsheep.engine.mechanics.BestowedComponent>()) {
+                    val restored = com.wingedsheep.engine.mechanics.BestowCasts.end(state, spellId)
+                        .updateEntity(spellId) { it.without<TargetsComponent>() }
+                    return resolveSpell(restored, spellId, restored.getEntity(spellId)!!)
+                }
                 // All targets invalid - spell fizzles
                 return fizzleSpell(state, spellId, cardComponent, spellComponent)
             }

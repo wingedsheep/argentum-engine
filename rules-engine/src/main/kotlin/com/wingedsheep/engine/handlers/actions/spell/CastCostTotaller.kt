@@ -90,7 +90,8 @@ internal class CastCostTotaller(
         // (CR 601.2f) — the card's own ruling spells it out: a free cast still owes the tax for
         // targets beyond the first. `calculateEffectiveCost` already applied it on the ordinary
         // path, so only the bases that bypassed it are topped up here.
-        if (cardDef != null && (playForFree || action.useAlternativeCost || action.castFaceDown)) {
+        if (cardDef != null && !com.wingedsheep.engine.mechanics.BestowCasts.selected(action) &&
+            (playForFree || action.useAlternativeCost || action.castFaceDown)) {
             effectiveCost = effectiveCost + costCalculator.selfPerTargetTax(
                 cardDef, action.targets.map { it.toEntityId() }
             )
@@ -378,6 +379,17 @@ internal class CastCostTotaller(
         AlternativeCostType.WEB_SLINGING to {
             WebSlinging.effectiveWebSlinging(state, cardId, cardDef, playerId, cardRegistry, predicateEvaluator)
                 ?.let { priced(it.cost) }
+        },
+        AlternativeCostType.BESTOW to {
+            if (action.alternativeCostType == AlternativeCostType.BESTOW) {
+                cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Bestow>().firstOrNull()?.let {
+                    costCalculator.calculateEffectiveCost(state, cardDef, playerId,
+                        chosenTargets = action.targets.map { target -> target.toEntityId() },
+                        fromZone = if (zoneResolver.hasCommanderCastPermission(state, playerId, cardId)) Zone.COMMAND else castSourceZone(state, cardId),
+                        declaredCostSlot = action.declaredCostSlot,
+                        baseCost = action.xValue?.let { x -> it.cost.withXAs(x) } ?: it.cost)
+                }
+            } else null
         },
         AlternativeCostType.EVOKE to {
             cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Evoke>().firstOrNull()?.let { priced(it.cost) }

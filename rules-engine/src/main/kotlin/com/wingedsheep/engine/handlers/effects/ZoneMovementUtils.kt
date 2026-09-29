@@ -384,6 +384,7 @@ object ZoneMovementUtils {
 
         var newState = cleanupReverseAttachmentLink(state, attachmentId)
         newState = newState.updateEntity(attachmentId) { c -> c.without<AttachedToComponent>() }
+        newState = com.wingedsheep.engine.mechanics.BestowCasts.end(newState, attachmentId)
 
         return newState to listOf(
             com.wingedsheep.engine.core.PermanentUnattachedEvent(

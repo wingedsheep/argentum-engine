@@ -248,6 +248,7 @@ enum class Keyword(val displayName: String) {
      */
     DISTURB("Disturb"),
     EVOKE("Evoke"),
+    BESTOW("Bestow"),
 
     /**
      * Sneak [cost] (CR 702.190, Teenage Mutant Ninja Turtles).

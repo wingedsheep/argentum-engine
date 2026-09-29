@@ -47,7 +47,7 @@ object AttachmentMover {
         val projected = state.projectedState
         if (projected.isBattle(attachmentId)) return false
         return when {
-            card.typeLine.isAura -> {
+            projected.hasSubtype(attachmentId, "Aura") -> {
                 if (projected.isCreature(attachmentId)) return false
                 val controllerId = projected.getController(attachmentId) ?: return false
                 EnchantRestriction.couldAttach(
@@ -57,7 +57,7 @@ object AttachmentMover {
             card.typeLine.isEquipment ->
                 projected.isCreature(hostId) &&
                     !(projected.isCreature(attachmentId) && !projected.hasKeyword(attachmentId, "RECONFIGURE")) &&
-                    !EnchantRestriction.hostProtectedFromAttachmentColor(
+                    !EnchantRestriction.hostProtectedFromAttachment(
                         state, projected, cardRegistry, attachmentId, card, hostId
                     ) &&
                     equipRestrictionAllows(state, predicateEvaluator, cardRegistry, attachmentId, hostId)
@@ -117,6 +117,11 @@ object AttachmentMover {
             val (detached, unattachEvents) = ZoneMovementUtils.unattachEmittingEvent(newState, attachmentId)
             newState = detached
             events += unattachEvents
+            // Becoming unattached ends bestow immediately; the resulting creature cannot be
+            // attached to the new host by this same instruction.
+            if (state.getEntity(attachmentId)?.has<com.wingedsheep.engine.mechanics.BestowedComponent>() == true) {
+                return newState to events
+            }
         }
 
         newState = newState.updateEntity(attachmentId) { it.with(AttachedToComponent(hostId)) }

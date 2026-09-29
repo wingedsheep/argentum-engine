@@ -37,6 +37,7 @@ class LegalActionEnumerator(
         CastSpellEnumerator(predicateEvaluator = predicateEvaluator),
         SneakCastEnumerator(),
         EmergeCastEnumerator(),
+        BestowCastEnumerator(),
         WebSlingingCastEnumerator(),
         CyclingEnumerator(),
         PlotEnumerator(),

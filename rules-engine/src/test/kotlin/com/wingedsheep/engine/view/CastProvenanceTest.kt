@@ -34,6 +34,11 @@ class CastProvenanceTest : FunSpec({
         CastProvenance.badgeLabel(AlternativeCostType.EVOKE, Zone.HAND) shouldBe "Evoke"
     }
 
+    test("bestow identifies the Aura cast in the log and stack badge") {
+        CastProvenance.logPhrase(AlternativeCostType.BESTOW, Zone.HAND) shouldBe "bestow"
+        CastProvenance.badgeLabel(AlternativeCostType.BESTOW, Zone.HAND) shouldBe "Bestow"
+    }
+
     test("a normal cast from a zone other than hand names the zone alone") {
         CastProvenance.logPhrase(null, Zone.COMMAND) shouldBe "from command zone"
         CastProvenance.badgeLabel(null, Zone.COMMAND) shouldBe "Command zone"

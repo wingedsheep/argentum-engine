@@ -334,3 +334,18 @@ describe('attachmentStackLayout', () => {
     expect(layout(false, [false, false]).containerHeight).toBe(CARD_HEIGHT + 2 * PEEK)
   })
 })
+
+
+describe('bestow cast choice', () => {
+  const card = { name: 'Bestow Creature', manaCost: '{1}{G}', cardTypes: [], bestow: { cost: '{3}{G}' } } as unknown as ClientCard
+  it('opens the menu when only the ordinary cast is legal', () => {
+    expect(shouldShowCastModal([castSpell()], card)).toBe(true)
+  })
+  it('opens the menu when only bestow is legal', () => {
+    const bestow = {
+      ...evokeCast(),
+      action: { type: 'CastSpell', playerId: PLAYER, cardId: CARD, useAlternativeCost: true, alternativeCostType: 'BESTOW' },
+    } as unknown as LegalActionInfo
+    expect(shouldShowCastModal([bestow], card)).toBe(true)
+  })
+})

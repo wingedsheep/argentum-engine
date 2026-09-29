@@ -254,6 +254,7 @@ enum class AlternativeCostType {
     DASH,
     /** Evoke ([com.wingedsheep.sdk.scripting.KeywordAbility.Evoke]) — hand. */
     EVOKE,
+    BESTOW,
     /**
      * Emerge ([com.wingedsheep.sdk.scripting.KeywordAbility.Emerge], CR 702.119) — hand, at the
      * spell's normal timing. Pays the emerge mana *reduced by the sacrificed creature's mana value*

@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.serialization.CardSerialization
 import kotlinx.serialization.json.Json
@@ -400,7 +401,8 @@ object CardLinter {
      *
      * Attachability is judged across the whole physical card — either side of a DFC and any
      * [com.wingedsheep.sdk.model.CardFace] counts — so a creature that transforms into an Aura is
-     * not flagged for the attach-scope abilities on its other face.
+     * not flagged for the attach-scope abilities on its other face. Bestow also permits attachment
+     * despite the printed creature type: its alternative cast makes the card an Aura.
      */
     private fun checkAttachedScope(
         card: CardDefinition,
@@ -480,8 +482,11 @@ object CardLinter {
                 // mismatch on its own, and this check has no business double-reporting it.
                 script.auraTarget != null
 
-        if (attaches(card.typeLine, card.script) || card.equipCost != null) return true
-        if (card.cardFaces.any { attaches(it.typeLine, it.script) }) return true
+        if (attaches(card.typeLine, card.script) || card.equipCost != null ||
+            card.keywordAbilities.any { it is KeywordAbility.Bestow }) return true
+        if (card.cardFaces.any { face ->
+                attaches(face.typeLine, face.script)
+            }) return true
         return card.backFace?.let { canEverBeAttached(it) } ?: false
     }
 

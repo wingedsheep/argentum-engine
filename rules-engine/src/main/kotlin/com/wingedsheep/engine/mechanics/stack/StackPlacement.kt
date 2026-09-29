@@ -177,6 +177,9 @@ internal object StackPlacement {
         )
 
         var newState = stateWithId.withEntity(copyId, container)
+        sourceContainer.get<com.wingedsheep.engine.mechanics.BestowedComponent>()?.let { bestowed ->
+            newState = newState.updateEntity(copyId) { it.with(bestowed.copy(original = bestowed.original.copy(ownerId = copyController))) }
+        }
         newState = newState.pushToStack(copyId).copy(priorityPassedBy = emptySet())
 
         val events = mutableListOf<GameEvent>(

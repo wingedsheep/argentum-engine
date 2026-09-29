@@ -213,7 +213,7 @@ function reductionHintFor(action: LegalActionInfo): { hint: string } | null {
  */
 export interface KeywordAlternativeCost {
   /** Option key, also the discriminator the tests and the menu identify the row by. */
-  readonly key: 'impending' | 'evoke'
+  readonly key: 'impending' | 'evoke' | 'bestow'
   /** Button label. */
   readonly label: string
   /** The alternative mana cost, e.g. "{2}{U}". */
@@ -232,6 +232,15 @@ export interface KeywordAlternativeCost {
  * different shape of this one.
  */
 export function keywordAlternativeCostFor(cardInfo: ClientCard): KeywordAlternativeCost | null {
+  if (cardInfo.bestow) {
+    return {
+      key: 'bestow',
+      label: `Bestow ${cardInfo.name}`,
+      cost: cardInfo.bestow.cost || '{0}',
+      alternativeCostType: 'BESTOW',
+      hint: ['cast as an Aura enchanting a creature', cardInfo.bestow.additionalCostDescription].filter(Boolean).join(' — '),
+    }
+  }
   if (cardInfo.impending) {
     return {
       key: 'impending',

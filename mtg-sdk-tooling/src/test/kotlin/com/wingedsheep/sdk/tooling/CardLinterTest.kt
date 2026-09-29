@@ -792,6 +792,15 @@ class CardLinterTest : DescribeSpec({
             found[0].message shouldContain "silent no-op"
         }
 
+        it("accepts attached stats on a bestow creature but rejects the same ordinary creature") {
+            val creature = beast(CardScript(staticAbilities = listOf(ModifyStats(1, 1))))
+            findings(creature).shouldHaveSize(1)
+            val bestowed = creature.copy(
+                keywordAbilities = listOf(KeywordAbility.bestow("{3}{G}")),
+            )
+            findings(bestowed).shouldBeEmpty()
+        }
+
         it("accepts the same grant on an Aura, where attach scope is the point") {
             val aura = CardDefinition(
                 name = "Warding Aura",

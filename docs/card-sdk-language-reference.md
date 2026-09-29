@@ -783,6 +783,8 @@ counted as affordable.
   authorization can't outlive the enumeration that offered it). Omit for an unconditional
   alternative (Zahid, Djinn of the Lamp).
 - `evoke` — pay evoke cost; creature is sacrificed at ETB.
+- `keywordAbility(KeywordAbility.bestow(cost, additionalCost = null))` — cast as an Aura for the
+  bestow price, or normally as a creature. See the parameterized keyword entry below.
 - `morph` — cast face-down for `{3}`-ish.
 - `disguise` — cast face-down for `{3}` as a 2/2 with ward {2} (CR 702.168a); same sorcery-speed
   timing and the same `MorphCastEnumerator` as morph.
@@ -10104,6 +10106,24 @@ composite abilities).
   (attached by `CardEntityFactory.applyDefinitionDecorations`); the remaining `ProtectionScope`s in the
   *hexproof* namespace format the oracle text but have no targeting wiring yet and are deliberately not
   projected.
+- `Bestow(cost, additionalCost = null)` (`KeywordAbility.bestow("{3}{G}")`) — an alternative
+  casting price for an enchantment creature. `cost` is a mana-cost string in the facade (a
+  `ManaCost` in the data type), including variable costs such as `"{X}{G}"`. Optional
+  `additionalCost` carries a nonmana part of the **bestow price**, e.g.
+  `KeywordAbility.bestow("{G}", Costs.additional.PayLife(2))`; it is not charged for the ordinary
+  creature cast. The engine chooses this mode with `AlternativeCostType.BESTOW` and applies the
+  usual cost increases, reductions, and additional spell costs.
+  Bestowing makes the spell an Aura with enchant creature and supplies its creature target only
+  for that casting mode; the ordinary creature cast has no Aura target. Do not add an unconditional
+  `auraTarget` to the card script merely to enable bestow. If that target is illegal at resolution,
+  the spell resolves as a creature instead. If the bestowed permanent becomes unattached, it
+  becomes a creature without leaving and reentering the battlefield.
+  Author the enchanted creature's bonuses and abilities with the existing attachment primitives.
+  Bestow does **not** automatically condition the card's other abilities: when Oracle says
+  “As long as this permanent is a creature”, condition that self branch
+  with `Conditions.SourceMatches(GameObjectFilter.Creature)` and author the enchanted-creature
+  branch separately. Intrinsic keywords remain on the Aura unless another effect removes them;
+  granting those keywords to the enchanted creature still needs an explicit static ability.
 - `Affinity(filter)` — cost reduction per matching permanent.
 - `Amplify(n)` — ETB reveal-creatures-for-counters.
 - `Devour(multiplier, sacrificeFilter, variant)` — "As this enters, you may sacrifice any number of [sacrificeFilter]. It enters with [multiplier] × that many +1/+1 counters." Plain Devour uses `sacrificeFilter = Creature` and `variant = ""`; the Edge of Eternities variant "Devour land N" uses `KeywordAbility.devourLand(n)` (`sacrificeFilter = Land`, `variant = "land"`). The keyword surfaces the rules text; pair with [`EntersWithDevour`](#15-replacement-effects) for the mechanical behavior.

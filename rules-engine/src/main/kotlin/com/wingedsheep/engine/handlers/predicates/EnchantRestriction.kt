@@ -59,11 +59,15 @@ object EnchantRestriction {
         hostId: EntityId,
         controllerId: EntityId
     ): Boolean {
-        val requirement = cardRegistry.getCard(auraCard.cardDefinitionId)?.script?.auraTarget ?: return false
+        if (projected.hasKeyword(hostId, com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_ENCHANTED)) return false
+        val requirement = if (state.getEntity(auraId)?.has<com.wingedsheep.engine.mechanics.BestowedComponent>() == true) {
+            if (!projected.hasKeyword(auraId, com.wingedsheep.engine.mechanics.BestowCasts.ENCHANT_CREATURE)) return false
+            com.wingedsheep.engine.mechanics.BestowCasts.enchantCreature
+        } else cardRegistry.getCard(auraCard.cardDefinitionId)?.script?.auraTarget ?: return false
         if (hostSatisfies(state, projected, predicateEvaluator, requirement, hostId, controllerId, auraId) != true) {
             return false
         }
-        return !hostProtectedFromAttachmentColor(state, projected, cardRegistry, auraId, auraCard, hostId)
+        return !hostProtectedFromAttachment(state, projected, cardRegistry, auraId, auraCard, hostId)
     }
 
     /**
@@ -74,7 +78,7 @@ object EnchantRestriction {
      * doesn't remove this Aura" — and one with a dynamic protection grant is exempt entirely
      * (Pledge of Loyalty). (Approximation: the exemption is per-color rather than per-effect.)
      */
-    fun hostProtectedFromAttachmentColor(
+    fun hostProtectedFromAttachment(
         state: GameState,
         projected: ProjectedState,
         cardRegistry: CardRegistry,
@@ -82,6 +86,19 @@ object EnchantRestriction {
         attachmentCard: CardComponent,
         hostId: EntityId
     ): Boolean {
+        val battlefield = attachmentId in state.getBattlefield()
+        val types = if (battlefield) projected.getTypes(attachmentId) else attachmentCard.typeLine.cardTypes.map { it.name }.toSet()
+        if (types.any { projected.hasKeyword(hostId, "PROTECTION_FROM_CARDTYPE_$it") }) return true
+        val subtypes = if (battlefield) projected.getSubtypes(attachmentId) else attachmentCard.typeLine.subtypes.map { it.value }.toSet()
+        if (subtypes.any { projected.hasKeyword(hostId, "PROTECTION_FROM_SUBTYPE_${it.uppercase()}") }) return true
+        val supertypes = if (battlefield) projected.getSupertypes(attachmentId) else attachmentCard.typeLine.supertypes.map { it.name }.toSet()
+        if (supertypes.any { projected.hasKeyword(hostId, "PROTECTION_FROM_SUPERTYPE_${it.uppercase()}") }) return true
+        if (projected.hasKeyword(hostId, "PROTECTION_FROM_EACH_OPPONENT")) {
+            val hostController = projected.getController(hostId)
+            val attachmentController = projected.getController(attachmentId)
+                ?: state.getEntity(attachmentId)?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
+            if (hostController != null && attachmentController in state.getOpponents(hostController)) return true
+        }
         val colors: Set<String> = if (attachmentId in state.getBattlefield()) projected.getColors(attachmentId)
         else attachmentCard.colors.map { it.name }.toSet()
         // A colorless attachment meets protection from colorless (CR 105.2c, 702.16c/d).

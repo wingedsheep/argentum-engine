@@ -321,3 +321,37 @@ describe('buildActionOptions — keyword alternative costs (evoke, impending)', 
     expect(options.map((o) => o.key)).toEqual(['cast', 'evoke', 'cast-extra-0'])
   })
 })
+
+
+describe('buildActionOptions — bestow', () => {
+  const creature = card('{1}{G}', { name: 'Test Bestow', bestow: { cost: '{3}{G}' } })
+  const normal = action({ manaCostString: '{1}{G}' })
+  const bestow = action({
+    action: { type: 'CastSpell', alternativeCostType: 'BESTOW', useAlternativeCost: true },
+    actionType: 'CastWithAlternativeCost',
+    manaCostString: '{3}{G}',
+    validTargets: [{ targetId: 'creature' }],
+  })
+
+  it.each([
+    { actions: [normal], enabled: [true, false] },
+    { actions: [bestow], enabled: [false, true] },
+    { actions: [normal, bestow], enabled: [true, true] },
+  ])('shows both prices and follows server availability: $enabled', ({ actions, enabled }) => {
+    const options = buildActionOptions(creature, actions)
+    expect(options.map(o => o.key)).toEqual(['cast', 'bestow'])
+    expect(options.map(o => o.isAvailable)).toEqual(enabled)
+    expect(options[1]).toMatchObject({ label: 'Bestow Test Bestow', manaCost: '{3}{G}' })
+    expect(options[1]!.hint).toContain('Aura')
+    if (enabled[1]) expect(options[1]!.action).toBe(bestow)
+    else expect(options[1]!.action).toBeNull()
+  })
+
+  it('shows the nonmana payment even when bestow is unavailable', () => {
+    const options = buildActionOptions(card('{1}{G}', {
+      bestow: { cost: '{G}', additionalCostDescription: 'Pay 2 life' },
+    }), [normal])
+    expect(options[1]).toMatchObject({ manaCost: '{G}', isAvailable: false, action: null })
+    expect(options[1]!.hint).toContain('Pay 2 life')
+  })
+})

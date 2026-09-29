@@ -181,7 +181,8 @@ class StateProjector {
         applyTextReplacements(state, projectedValues)
 
         // Collect all active continuous effects
-        val effects = collectContinuousEffects(state, projectedValues)
+        val effects = collectContinuousEffects(state, projectedValues) +
+            com.wingedsheep.engine.mechanics.BestowCasts.effects(state)
 
         // Sort effects by layer and dependency
         val sortedEffects = effectSorter.sortByLayerAndDependency(effects, state)

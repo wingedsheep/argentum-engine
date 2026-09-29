@@ -197,7 +197,10 @@ internal class CastValidator(
     private val legality: com.wingedsheep.engine.legality.LegalityKernel
 ) {
 
-    fun validate(state: GameState, action: CastSpell): String? {
+    fun validate(inputState: GameState, action: CastSpell): String? {
+        if (com.wingedsheep.engine.mechanics.BestowCasts.selected(action) &&
+            (action.castFaceDown || action.faceIndex != null)) return "Bestow cannot be combined with another face or face-down casting"
+        val state = com.wingedsheep.engine.mechanics.BestowCasts.announce(inputState, action, cardRegistry)
         if (!state.hasPriority(action.playerId)) {
             return "You don't have priority"
         }
@@ -207,7 +210,9 @@ internal class CastValidator(
             ?: return "Not a card: ${action.cardId}"
         val source = castSource(state, action, cardComponent)
             ?: return "Card is not in your hand"
-        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+        val cardDef = com.wingedsheep.engine.mechanics.BestowCasts.definitionForCast(
+            cardRegistry.getCard(cardComponent.cardDefinitionId), action
+        )
 
         validateAuthority(state, action, cardComponent, cardDef, source)?.let { return it }
         if (action.castFaceDown) return validateFaceDownCast(state, action, cardDef)
@@ -660,6 +665,10 @@ internal class CastValidator(
         }
         val playForFree = zoneResolver.hasPlayWithoutPayingCost(state, action.playerId, action.cardId) ||
             action.useWithoutPayingManaCost
+        if (com.wingedsheep.engine.mechanics.BestowCasts.selected(action) && (playForFree ||
+            state.getEntity(action.cardId)?.has<PlayWithFixedAlternativeManaCostComponent>() == true)) {
+            return "Bestow cannot be combined with another alternative cost"
+        }
         // The engine, not the client, decides what a convoke/delve/improvise choice is worth: every
         // chosen permanent or card must be one the payment could actually use, or the cost stage
         // would price a payment `execute` then silently declines to apply. A free cast has no

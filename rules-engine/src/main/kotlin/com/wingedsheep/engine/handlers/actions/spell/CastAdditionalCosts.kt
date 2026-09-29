@@ -59,6 +59,10 @@ class CastAdditionalCosts(
             // Each bundled additional cost is gated by the chosen alternative-cost type so a
             // collision (e.g. granted warp on a card also being evoked) doesn't drag in the
             // unchosen cost's bundled additional cost.
+            if (action.alternativeCostType == AlternativeCostType.BESTOW) {
+                cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Bestow>().firstOrNull()
+                    ?.additionalCost?.let { add(it) }
+            }
             val selfAltCost = cardDef.script.selfAlternativeCost
             if (selfAltCost != null && action.altAllows(AlternativeCostType.SELF_ALTERNATIVE)) addAll(selfAltCost.additionalCosts)
             // A battlefield-granted alternative cost's non-mana half (Conspiracy Unraveler's

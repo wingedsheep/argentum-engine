@@ -425,6 +425,7 @@ val engineSerializersModule = SerializersModule {
     // Component hierarchy (for GameState persistence)
     polymorphic(Component::class) {
         // Identity components
+        subclass(com.wingedsheep.engine.mechanics.BestowedComponent::class)
         subclass(CardComponent::class)
         subclass(OwnerComponent::class)
         subclass(ControllerComponent::class)

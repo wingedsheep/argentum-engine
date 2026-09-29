@@ -710,7 +710,10 @@ data class ClientCard(
      * A bare cost string rather than a DTO of its own: evoke carries no second value the way
      * [ClientImpending] carries its time-counter count.
      */
-    val evoke: String? = null
+    val evoke: String? = null,
+
+    /** Bestow price, including any nonmana payment, shown alongside the ordinary creature cast. */
+    val bestow: ClientBestow? = null
 )
 
 /**
@@ -1133,3 +1136,10 @@ sealed interface ClientChosenTarget {
     @kotlinx.serialization.SerialName("Card")
     data class Card(val cardId: EntityId) : ClientChosenTarget
 }
+
+/** Printed bestow price; legal actions determine whether it can currently be paid. */
+@Serializable
+data class ClientBestow(
+    val cost: String,
+    val additionalCostDescription: String? = null
+)

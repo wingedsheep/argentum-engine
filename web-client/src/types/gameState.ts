@@ -605,6 +605,12 @@ export interface ClientCard {
    * can only afford to evoke never casts itself the moment you drag it out.
    */
   readonly evoke?: string | null
+
+  /** Printed bestow price; enabled options come exclusively from server legal actions. */
+  readonly bestow?: {
+    readonly cost: string
+    readonly additionalCostDescription?: string | null
+  } | null
 }
 
 /** One face of a split-layout card (CR 709). */

@@ -129,6 +129,11 @@ internal class PermanentEntry(
 
         // Add to battlefield — clean up any may-play permission first (mirrors the same
         // cleanup done in resolveNonPermanentSpell before the card goes to the graveyard).
+        newState.getEntity(spellId)?.get<com.wingedsheep.engine.mechanics.BestowedComponent>()?.let { bestowed ->
+            newState = newState.updateEntity(spellId) {
+                it.with(bestowed.original).with(bestowed.copy(entered = true))
+            }
+        }
         newState = newState.removeMayPlayPermissionsForCard(spellId)
         newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
             .place(newState, controllerId, spellId)
