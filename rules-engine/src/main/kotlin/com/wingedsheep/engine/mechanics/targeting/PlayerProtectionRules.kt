@@ -14,10 +14,8 @@ import com.wingedsheep.sdk.scripting.ProtectionScope
  * for a player carrying a [PlayerProtectionComponent] (The One Ring's "protection from
  * everything until your next turn").
  *
- * For a player, only the **D**amage and **T**argeting parts of DEBT apply: a protected
- * player can't be the target of, nor be dealt damage by, a source matching one of the
- * player's protection [ProtectionScope]s. This is the single source of truth so the
- * targeting validator, target enumerator, and damage executor stay consistent.
+ * A protected player cannot be enchanted, targeted, or dealt damage by a matching source.
+ * Attachment choice, state-based checks, targeting, and damage share this reading.
  */
 object PlayerProtectionRules {
 
@@ -67,14 +65,24 @@ object PlayerProtectionRules {
         if (sourceId == null) return false
 
         val projected = state.projectedState
+        // Attachment choices inspect an Aura before entry; spells likewise need their current
+        // off-battlefield characteristics rather than an absent battlefield projection.
+        val card = state.getEntity(sourceId)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+        val onBattlefield = sourceId in state.getBattlefield()
         return when (scope) {
-            is ProtectionScope.Color -> scope.color.name in projected.getColors(sourceId)
-            is ProtectionScope.Colors -> scope.colors.any { it.name in projected.getColors(sourceId) }
-            is ProtectionScope.Subtype ->
+            is ProtectionScope.Color -> if (onBattlefield) scope.color.name in projected.getColors(sourceId)
+                else scope.color in card?.colors.orEmpty()
+            is ProtectionScope.Colors -> scope.colors.any { color ->
+                if (onBattlefield) color.name in projected.getColors(sourceId) else color in card?.colors.orEmpty()
+            }
+            is ProtectionScope.Subtype -> if (onBattlefield)
                 projected.getSubtypes(sourceId).any { it.equals(scope.subtype, ignoreCase = true) }
-            is ProtectionScope.Supertype ->
+                else card?.typeLine?.subtypes?.any { it.value.equals(scope.subtype, ignoreCase = true) } == true
+            is ProtectionScope.Supertype -> if (onBattlefield)
                 projected.getSupertypes(sourceId).any { it.equals(scope.supertype, ignoreCase = true) }
-            is ProtectionScope.CardType -> projected.hasType(sourceId, scope.cardType.uppercase())
+                else card?.typeLine?.supertypes?.any { it.name.equals(scope.supertype, ignoreCase = true) } == true
+            is ProtectionScope.CardType -> if (onBattlefield) projected.hasType(sourceId, scope.cardType.uppercase())
+                else card?.typeLine?.cardTypes?.any { it.name.equals(scope.cardType, ignoreCase = true) } == true
             is ProtectionScope.EachOpponent -> {
                 val sourceController = casterId
                     ?: projected.getController(sourceId)

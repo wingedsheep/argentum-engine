@@ -336,7 +336,9 @@ data class EffectContext(
      */
     val resolutionDepth: Int = 0,
     /** Choices prepared for this single zone-moving instruction, before any entrants move. */
-    val entryCopies: Map<EntityId, com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice> = emptyMap()
+    val entryCopies: Map<EntityId, com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice> = emptyMap(),
+    /** Prepared attachment choices; a null host means the Aura cannot enter. */
+    val entryAuraHosts: Map<EntityId, EntityId?> = emptyMap()
 ) {
     val activatedAbilityId: com.wingedsheep.sdk.scripting.AbilityId?
         get() = activatedAbility?.id

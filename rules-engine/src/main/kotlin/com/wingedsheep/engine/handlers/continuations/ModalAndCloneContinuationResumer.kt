@@ -32,6 +32,8 @@ class ModalAndCloneContinuationResumer(
         resumer(ModalContinuation::class, ::resumeModal),
         resumer(ModalTargetContinuation::class, ::resumeModalTarget),
         resumer(EffectCopyEntryContinuation::class, ::resumeEffectCopyEntry),
+        resumer(EffectCopyAuraEntryContinuation::class, ::resumeEffectCopyAuraEntry),
+        resumer(CloneAuraEntryContinuation::class, ::resumeCloneAuraEntry),
         resumer(CloneEntersContinuation::class, ::resumeCloneEnters),
         resumer(CloneEntersOnBattlefieldContinuation::class, ::resumeCloneEntersOnBattlefield),
         resumer(EntersWithChoiceSpellContinuation::class, ::resumeEntersWithChoiceSpell),
@@ -48,6 +50,27 @@ class ModalAndCloneContinuationResumer(
         resumer(CreateTokenCopyAuraHostContinuation::class, ::resumeCreateTokenCopyAuraHost),
         resumer(ChooseActionContinuation::class, ::resumeChooseAction)
     )
+
+    private fun resumeEffectCopyAuraEntry(
+        state: GameState, continuation: EffectCopyAuraEntryContinuation,
+        response: DecisionResponse, checkForMore: CheckForMore,
+    ): ExecutionResult {
+        if (response !is TargetsResponse) return ExecutionResult.error(state, "Expected enchant choice")
+        val context = continuation.context.copy(entryAuraHosts = continuation.context.entryAuraHosts +
+            (continuation.entityId to response.selectedTargets[0]?.firstOrNull()))
+        val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
+        if (result.outcome !is Outcome.Done) return result.toExecutionResult()
+        return checkForMore(exposeCollectionsToNextFrame(result.state, result.updatedCollections), result.events)
+    }
+
+    private fun resumeCloneAuraEntry(
+        state: GameState, continuation: CloneAuraEntryContinuation,
+        response: DecisionResponse, checkForMore: CheckForMore,
+    ): ExecutionResult {
+        if (response !is TargetsResponse) return ExecutionResult.error(state, "Expected enchant choice")
+        return finishCloneEnters(state, continuation.clone, listOf(continuation.copiedEntityId),
+            checkForMore, response.selectedTargets[0]?.firstOrNull())
+    }
 
     fun resumeEffectCopyEntry(
         state: GameState,
@@ -336,6 +359,13 @@ class ModalAndCloneContinuationResumer(
             return ExecutionResult.error(state, "Expected card selection response for clone")
         }
 
+        return finishCloneEnters(state, continuation, response.selectedCards, checkForMore)
+    }
+
+    private fun finishCloneEnters(
+        state: GameState, continuation: CloneEntersContinuation, selectedCards: List<EntityId>,
+        checkForMore: CheckForMore, auraHost: EntityId? = null,
+    ): ExecutionResult {
         val spellId = continuation.spellId
         val controllerId = continuation.controllerId
         val ownerId = continuation.ownerId
@@ -353,7 +383,7 @@ class ModalAndCloneContinuationResumer(
         var newState = state
 
         // If a creature was selected, copy its CardComponent
-        val selectedCreatureId = response.selectedCards.firstOrNull()
+        val selectedCreatureId = selectedCards.firstOrNull()
         val copiedCardDef: com.wingedsheep.sdk.model.CardDefinition?
         var copyApplied = false
 
@@ -407,6 +437,28 @@ class ModalAndCloneContinuationResumer(
 
         // Get the (possibly updated) card component for event names
         val finalCardComponent = newState.getEntity(spellId)?.get<CardComponent>() ?: originalCardComponent
+
+        if (copyApplied && finalCardComponent.isAura && !originalCardComponent.isAura) {
+            val hosts = com.wingedsheep.engine.handlers.effects.copy.CopyAuraEntry.legalHosts(
+                state, spellId, finalCardComponent, controllerId, services.cardRegistry, services.targetFinder,
+                services.predicateEvaluator)
+            if (hosts.isEmpty() || (auraHost != null && auraHost !in hosts)) {
+                // No legal enchant choice: the original card goes from stack to graveyard, never enters.
+                val moved = services.zones.moveToZone(state, spellId, Zone.GRAVEYARD)
+                return checkForMore(moved.state, moved.events + ResolvedEvent(spellId, originalCardComponent.name))
+            }
+            if (auraHost == null) {
+                return state.suspendForDecision(
+                    com.wingedsheep.engine.handlers.effects.copy.CopyAuraEntry.question(
+                        spellId, finalCardComponent.name, controllerId, hosts),
+                    CloneAuraEntryContinuation(continuation, selectedCreatureId!!))
+            }
+            // PermanentEntry consumes this attachment choice without targeting or ward triggers.
+            newState = newState.updateEntity(spellId) {
+                it.with(com.wingedsheep.engine.state.components.stack.TargetsComponent(
+                    listOf(entityIdToChosenTarget(newState, auraHost))))
+            }
+        }
 
         // Track whether a copy was made (original name differs from final name)
         val copyOfOriginalName = if (selectedCreatureId != null && finalCardComponent.name != originalCardComponent.name) {

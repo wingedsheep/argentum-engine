@@ -69,6 +69,7 @@ import com.wingedsheep.engine.event.ConditionalSelfGrants
  * Options controlling how an entity enters a destination zone.
  */
 data class ZoneEntryOptions(
+    val auraHostId: EntityId? = null,
     val entryCopy: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice? = null,
     val controllerId: EntityId? = null,
     val libraryPlacement: LibraryPlacement = LibraryPlacement.Top,
@@ -728,6 +729,13 @@ class ZoneTransitionService(
                     options.copy(tapped = options.tapped ||
                         (options.entryCopy?.copiedCard != null && options.entryCopy.replacement.tappedIfCopied)), fromZone
                 )
+                options.auraHostId?.let { host ->
+                    val (attached, attachmentEvents) =
+                        com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachmentMover.attach(
+                            newState, entityId, host, destControllerId)
+                    newState = attached
+                    events.addAll(attachmentEvents)
+                }
                 // Record entry for per-player ETB-by-type tracking (Mechan Shieldmate and similar).
                 // This pipeline records via PermanentEntryTracker.record directly rather than
                 // BattlefieldEntry.place because the read must happen *after* applyBattlefieldEntry

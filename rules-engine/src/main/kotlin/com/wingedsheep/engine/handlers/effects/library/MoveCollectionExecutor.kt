@@ -56,6 +56,7 @@ class MoveCollectionExecutor(
         effect: MoveCollectionEffect,
         context: EffectContext
     ): EffectResult {
+        var context = context
         val allCards = context.pipeline.storedCollections[effect.from]
             ?: return EffectResult.error(state, "No collection named '${effect.from}' in storedCollections")
 
@@ -108,6 +109,12 @@ class MoveCollectionExecutor(
             com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.prepare(
                 state, effect, context, entrants, cardRegistry, predicateEvaluator
             )?.let { return it }
+            if (targetFinder != null) {
+                val prepared = com.wingedsheep.engine.handlers.effects.copy.CopyAuraEntry.prepare(
+                    state, effect, context, entrants, cardRegistry, targetFinder, predicateEvaluator)
+                prepared.pause?.let { return it }
+                context = prepared.context
+            }
         }
 
         val attachTo = effect.attachTo
@@ -167,7 +174,7 @@ class MoveCollectionExecutor(
         attachTo: com.wingedsheep.sdk.scripting.targets.EffectTarget,
         effect: MoveCollectionEffect
     ): EffectResult {
-        val (auras, others) = cards.partition { state.getEntity(it)?.get<CardComponent>()?.isAura == true }
+        val (auras, others) = cards.partition { context.entryCopies[it]?.copiedCard == null && state.getEntity(it)?.get<CardComponent>()?.isAura == true }
         val hostId = context.resolveTarget(attachTo, state)?.takeIf { it in state.getBattlefield() }
         val defaultControllerId = resolvePlayer(destination.player, context, state) ?: context.controllerId
         var newState = state
@@ -550,7 +557,7 @@ class MoveCollectionExecutor(
             for (cardId in cards) {
                 val container = state.getEntity(cardId)
                 val cardComponent = container?.get<CardComponent>()
-                if (cardComponent?.isAura == true) {
+                if (cardComponent?.isAura == true && context.entryCopies[cardId]?.copiedCard == null) {
                     auraCards.add(cardId)
                 } else {
                     nonAuraCards.add(cardId)
@@ -840,6 +847,8 @@ class MoveCollectionExecutor(
         }
 
         for (cardId in cards) {
+            if (destZone == Zone.BATTLEFIELD && cardId in context.entryAuraHosts &&
+                context.entryAuraHosts[cardId] == null) continue
             // Ownership lives on OwnerComponent once a card has been minted into a zone, but a
             // card that has only ever been library content carries it on CardComponent.
             val ownerId = newState.getEntity(cardId)?.get<OwnerComponent>()?.playerId
@@ -910,6 +919,7 @@ class MoveCollectionExecutor(
             val entryOptions = com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(
                 controllerId = actualDestPlayerId,
                 entryCopy = context.entryCopies[cardId],
+                auraHostId = context.entryAuraHosts[cardId],
                 libraryPlacement = libraryPlacement,
                 tapped = destination.placement == ZonePlacement.Tapped || destination.placement == ZonePlacement.TappedAndAttacking,
                 tappedAndAttacking = destination.placement == ZonePlacement.TappedAndAttacking,

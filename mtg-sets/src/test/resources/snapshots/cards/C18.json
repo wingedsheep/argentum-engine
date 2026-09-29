@@ -1,0 +1,96 @@
+// Estrid's Invocation
+{
+    "name": "Estrid's Invocation",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "You may have this enchantment enter as a copy of an enchantment you control, except it has \"At the beginning of your upkeep, you may exile this enchantment. If you do, return it to the battlefield under its owner's control.\"",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "copyFilter": {
+                    "cardPredicates": [
+                        "IsEnchantment"
+                    ],
+                    "controllerPredicate": "ControlledByYou"
+                },
+                "exceptions": {
+                    "addedTriggeredAbilities": [
+                        {
+                            "id": "Estrid's Invocation:1",
+                            "trigger": {
+                                "type": "StepEvent",
+                                "step": "UPKEEP"
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": "Self",
+                                            "storeAs": "gathered0"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "gathered0",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Exile"
+                                            },
+                                            "storeMovedAs": "moved1"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "moved1",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Battlefield"
+                                            },
+                                            "underOwnersControl": true
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04c01143-f7fc-4874-87fd-59d1432c2bbb.jpg?1783934343",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If Estrid's Invocation doesn't copy an enchantment as it enters the battlefield, it won't have the ability to exile it at the beginning of your upkeep. You can't have it copy itself to get this ability."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Once Estrid's Invocation returns, it's considered a new object with no relation to the object that it was. You must choose an enchantment that's currently on the battlefield to copy (or to not copy anything). Auras that were attached to it will be put into their owners' graveyards. Any counters that were on it cease to exist."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Estrid's Invocation copies exactly what was printed on the original enchantment (unless that enchantment is copying something else or is a token; see below). It doesn't copy whether that enchantment is tapped or untapped, whether it has any counters on it or any Auras attached to it, or any non-copy effects that have changed its types, color, or so on."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If the chosen enchantment is an Aura, you choose what it enchants just before Estrid's Invocation enters the battlefield. The chosen recipient must be able to legally be enchanted by the Aura Estrid's Invocation will be. This doesn't target the player or permanent it will enchant, so an opponent's permanent with hexproof may be chosen this way."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If the chosen enchantment is an Aura but Estrid's Invocation won't be able to legally enchant anything, Estrid's Invocation remains in its current zone and doesn't enter the battlefield. If Estrid's Invocation is on the stack, it's put into its owner's graveyard."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If Estrid's Invocation somehow enters the battlefield at the same time as another enchantment, it can't become a copy of that enchantment. You may choose only an enchantment that's already on the battlefield."
+            }
+        ]
+    }
+}

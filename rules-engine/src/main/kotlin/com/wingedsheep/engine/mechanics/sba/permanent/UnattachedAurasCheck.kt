@@ -162,10 +162,14 @@ class UnattachedAurasCheck(
                 }
                 // Equipment not attached to anything is fine - stays on battlefield
             } else if (isAura && attachedTo.targetId in state.turnOrder) {
-                // 704.5m — an "enchant player" Aura (Grievous Wound) is attached to a player, not
-                // a battlefield permanent. It stays as long as that player is still in the game;
-                // once the player leaves, PlayerLeavesGameProcessor removes them from turnOrder and
-                // the next check sends the now-unattached Aura to the graveyard.
+                // Player protection also forbids enchantment, including protection acquired
+                // after the Aura entered (CR 702.16c).
+                if (com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules.isProtectedFromSource(
+                        state, attachedTo.targetId, entityId, projected.getController(entityId), predicateEvaluator)) {
+                    val result = SbaZoneMovementHelper.putPermanentInGraveyard(zones, newState, entityId, cardComponent)
+                    newState = result.newState
+                    events.addAll(result.events)
+                }
                 continue
             } else {
                 // Check if attached target still exists on battlefield
