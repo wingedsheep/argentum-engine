@@ -424,7 +424,7 @@ data class ManaPool(
                 is ManaSymbol.X -> {
                     // X is 0 unless specified otherwise
                 }
-                is ManaSymbol.Hybrid -> {
+                is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> {
                     val spent = remaining.trySpendColored(symbol.color1, spellContext)
                         ?: remaining.trySpendColored(symbol.color2, spellContext)
                         ?: return false
@@ -507,7 +507,7 @@ data class ManaPool(
                 is ManaSymbol.X -> {
                     // Handled by caller
                 }
-                is ManaSymbol.Hybrid -> {
+                is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> {
                     remaining = remaining.trySpendColored(symbol.color1, spellContext)
                         ?: remaining.trySpendColored(symbol.color2, spellContext)!!
                 }
@@ -615,7 +615,7 @@ data class ManaPool(
                         unpaidSymbols.add(symbol)
                     }
                 }
-                is ManaSymbol.Hybrid -> {
+                is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> {
                     val beforeRemaining = remaining
                     val spent = remaining.trySpendColored(symbol.color1, spellContext)
                         ?: remaining.trySpendColored(symbol.color2, spellContext)

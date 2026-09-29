@@ -615,7 +615,7 @@ class ManaSolver(
                     // Check if the bonus mana from this source can pay remaining colored costs
                     // (handled naturally on next iteration via spendBonusMana)
                 }
-                is ManaSymbol.Hybrid -> {
+                is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> {
                     // Try bonus mana first
                     if (spendBonusMana(symbol.color1)) continue
                     if (spendBonusMana(symbol.color2)) continue
@@ -2199,7 +2199,7 @@ class ManaSolver(
         spellContext: SpellPaymentContext? = null,
         xManaRestriction: Set<Color> = emptySet()
     ): List<Color>? {
-        val pipColors = cost.phyrexianSymbols.map { it.color }
+        val pipColors = cost.phyrexianSymbols.mapNotNull { it.phyrexianLifeColor }
         if (pipColors.isEmpty()) return emptyList()
         val life = state.lifeTotal(playerId)
         for (lifePips in 0..pipColors.size) {
@@ -2258,8 +2258,9 @@ class ManaSolver(
         if (allowPhyrexianLife && (phyrexianLifePipsCommitted + 1) * 2 <= life) {
             val triedColors = mutableSetOf<Color>()
             for (pip in cost.phyrexianSymbols) {
-                if (!triedColors.add(pip.color)) continue
-                val reduced = cost.withPhyrexianPaidByLife(listOf(pip.color)) ?: continue
+                val lifeColor = pip.phyrexianLifeColor ?: continue
+                if (!triedColors.add(lifeColor)) continue
+                val reduced = cost.withPhyrexianPaidByLife(listOf(lifeColor)) ?: continue
                 if (canPay(
                         state, playerId, reduced, xValue, excludeSources, spellContext,
                         precomputedSources, xManaRestriction, phyrexianLifePipsCommitted + 1
@@ -2930,7 +2931,7 @@ class ManaSolver(
             when (symbol) {
                 is ManaSymbol.Colored -> colorNeeds[symbol.color] = (colorNeeds[symbol.color] ?: 0) + 1
                 is ManaSymbol.Phyrexian -> colorNeeds[symbol.color] = (colorNeeds[symbol.color] ?: 0) + 1
-                is ManaSymbol.Hybrid -> {
+                is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> {
                     // For hybrid, add to both colors (overestimates but correct for affordability)
                     colorNeeds[symbol.color1] = (colorNeeds[symbol.color1] ?: 0) + 1
                     colorNeeds[symbol.color2] = (colorNeeds[symbol.color2] ?: 0) + 1

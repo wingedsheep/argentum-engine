@@ -24,7 +24,7 @@ if (import.meta.env.DEV) {
  * Renders a single mana symbol as an SVG icon.
  */
 export function ManaSymbol({ symbol, size = 14 }: { symbol: string; size?: number }) {
-  const normalized = symbol.replace('/', '')
+  const normalized = symbol.replaceAll('/', '')
   const url = SYMBOL_URLS[normalized]
 
   if (!url) {

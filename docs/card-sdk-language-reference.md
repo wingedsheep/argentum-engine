@@ -62,7 +62,8 @@ section; do not let SDK additions land without a corresponding doc update.
 
 - `manaCost: String` — mana cost in `{X}{R}{U}` syntax. Supported pip forms: generic (`{2}`),
   colored (`{R}`), colorless (`{C}`), variable (`{X}`), hybrid (`{W/U}` — either colour),
-  Phyrexian (`{W/P}` — colour or 2 life), and monocolored hybrid / "twobrid" (`{2/B}` — two
+  Phyrexian (`{W/P}` — colour or 2 life), hybrid Phyrexian (`{R/G/P}` — either colour or 2 life,
+  and both colours; CR 107.4f; `ManaSymbol.HybridPhyrexian`), and monocolored hybrid / "twobrid" (`{2/B}` — two
   generic **or** one mana of the colour; mana value counts the generic side per CR 202.3f).
   Gurmag Nightwatch's `{2/B}{2/G}{2/U}` is the canonical twobrid example.
 - `typeLine: String` — full type line including supertypes and subtypes. A `Legendary Instant` /
@@ -405,6 +406,13 @@ life (CR 119.4), and charges it through the shared life-payment service. Auto-pa
 `ManaSolver.choosePhyrexianLifePayments` — the fewest pips to pay with life so mana covers the rest —
 so it spends life only on a pip no available source can make, and pays exactly the split `canPay`
 counted as affordable.
+
+Hybrid Phyrexian symbols (`{R/G/P}`, Lukka, Bound to Ruin) pay with one mana of **either** colour or 2
+life (CR 107.4f). Paid with mana they take the same solver branches as `{R/G}` (both are
+`ManaSymbol.HybridPair`); paid with life they join the same `phyrexianLifePayments` multiset, named by
+their **first** colour — `{R/G/P}` is `RED`. When one colour names both a `{R/P}` and a `{R/G/P}`, the
+single-coloured pip is paid with life first, leaving the more flexible hybrid for mana. Compleated
+counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
 
 > **One cost vocabulary (`CostAtom`).** The payable things shared across cost *contexts* — mana, life,
 > sacrifice, discard, exile-from-zone, tap, return-to-hand, reveal — are defined **once** in the

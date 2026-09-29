@@ -51,26 +51,37 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
     val xCount: Int
         get() = symbols.count { it is ManaSymbol.X }
 
-    val phyrexianSymbols: List<ManaSymbol.Phyrexian>
-        get() = symbols.filterIsInstance<ManaSymbol.Phyrexian>()
+    /**
+     * The pips payable with 2 life instead of mana (CR 107.4f) — Phyrexian `{B/P}` and hybrid
+     * Phyrexian `{R/G/P}` — in cost order.
+     */
+    val phyrexianSymbols: List<ManaSymbol>
+        get() = symbols.filter { it.phyrexianLifeColor != null }
 
     /**
      * Remove the Phyrexian pips the payer chose to satisfy with 2 life instead of mana.
-     * [colors] is a multiset: `{B/P}{B/P}` paid entirely with life is `[BLACK, BLACK]`.
+     * [colors] is a multiset keyed by each pip's [ManaSymbol.phyrexianLifeColor]: `{B/P}{B/P}` paid
+     * entirely with life is `[BLACK, BLACK]`, and `{R/G/P}` is named `RED`.
+     *
+     * When a color names both a `{R/P}` and a `{R/G/P}`, the single-colored pip goes first: the two
+     * cost the same life, and the hybrid one left behind is the easier to pay with mana.
      * Returns `null` when the choice names more pips of a color than this cost contains.
      */
     fun withPhyrexianPaidByLife(colors: List<Color>): ManaCost? {
         if (colors.isEmpty()) return this
         val remainingChoices = colors.groupingBy { it }.eachCount().toMutableMap()
-        val kept = mutableListOf<ManaSymbol>()
-        for (symbol in symbols) {
-            if (symbol is ManaSymbol.Phyrexian && (remainingChoices[symbol.color] ?: 0) > 0) {
-                remainingChoices[symbol.color] = remainingChoices.getValue(symbol.color) - 1
-            } else {
-                kept.add(symbol)
+        val removed = BooleanArray(symbols.size)
+        for (pass in listOf<(ManaSymbol) -> Boolean>({ it is ManaSymbol.Phyrexian }, { it is ManaSymbol.HybridPhyrexian })) {
+            symbols.forEachIndexed { index, symbol ->
+                val key = symbol.phyrexianLifeColor
+                if (key != null && pass(symbol) && (remainingChoices[key] ?: 0) > 0) {
+                    remainingChoices[key] = remainingChoices.getValue(key) - 1
+                    removed[index] = true
+                }
             }
         }
-        return if (remainingChoices.values.all { it == 0 }) ManaCost(kept) else null
+        if (remainingChoices.values.any { it != 0 }) return null
+        return ManaCost(symbols.filterIndexed { index, _ -> !removed[index] })
     }
 
     fun isEmpty(): Boolean = symbols.isEmpty()
@@ -262,7 +273,7 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
      */
     private fun paysFor(reductionSymbol: ManaSymbol, costSymbol: ManaSymbol): Boolean =
         when (reductionSymbol) {
-            is ManaSymbol.Hybrid -> costSymbol is ManaSymbol.Colored &&
+            is ManaSymbol.HybridPair -> costSymbol is ManaSymbol.Colored &&
                 (costSymbol.color == reductionSymbol.color1 || costSymbol.color == reductionSymbol.color2)
             is ManaSymbol.Phyrexian -> costSymbol is ManaSymbol.Colored && costSymbol.color == reductionSymbol.color
             is ManaSymbol.MonocolorHybrid -> costSymbol is ManaSymbol.Colored && costSymbol.color == reductionSymbol.color
@@ -335,7 +346,7 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
      */
     fun relaxColors(): ManaCost {
         if (symbols.none { it is ManaSymbol.Colored || it is ManaSymbol.Hybrid ||
-                it is ManaSymbol.Phyrexian || it is ManaSymbol.Colorless ||
+                it is ManaSymbol.Phyrexian || it is ManaSymbol.HybridPhyrexian || it is ManaSymbol.Colorless ||
                 it is ManaSymbol.MonocolorHybrid }) return this
         var addedGeneric = 0
         val keptSymbols = mutableListOf<ManaSymbol>()
@@ -344,7 +355,7 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
                 // Each of these is a single-mana requirement once colors are relaxed: a
                 // monocolored hybrid's colored side ({B} in {2/B}) is 1 mana of any type.
                 is ManaSymbol.Colored, is ManaSymbol.Hybrid, is ManaSymbol.Phyrexian,
-                is ManaSymbol.Colorless, is ManaSymbol.MonocolorHybrid -> addedGeneric++
+                is ManaSymbol.HybridPhyrexian, is ManaSymbol.Colorless, is ManaSymbol.MonocolorHybrid -> addedGeneric++
                 is ManaSymbol.Generic, is ManaSymbol.X -> keptSymbols.add(symbol)
             }
         }
@@ -406,6 +417,17 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
                             ManaSymbol.MonocolorHybrid(generic, color)
                         } else {
                             throw IllegalArgumentException("Unknown monocolored hybrid mana symbol: {$content}")
+                        }
+                    }
+                    // Hybrid Phyrexian mana: {R/G/P}, {W/U/P}, etc. (CR 107.4f)
+                    content.count { it == '/' } == 2 && content.endsWith("/P") -> {
+                        val parts = content.split("/")
+                        val color1 = parts[0].singleOrNull()?.let { Color.fromSymbol(it) }
+                        val color2 = parts[1].singleOrNull()?.let { Color.fromSymbol(it) }
+                        if (color1 != null && color2 != null) {
+                            ManaSymbol.HybridPhyrexian(color1, color2)
+                        } else {
+                            throw IllegalArgumentException("Unknown hybrid Phyrexian mana symbol: {$content}")
                         }
                     }
                     // Hybrid mana: {W/U}, {G/U}, etc.

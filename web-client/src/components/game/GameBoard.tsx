@@ -585,7 +585,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       const inner = match.slice(1, -1)
       if (inner.endsWith('/P')) {
         if (!manaSelectionState.phyrexianLifePipIndices.includes(pipIndex)) {
-          coloredReqs.push(inner.split('/')[0]!)
+          // Paid with mana, {R/P} is {R} and hybrid Phyrexian {R/G/P} is the hybrid {R/G}.
+          coloredReqs.push(inner.slice(0, -2))
         }
         continue
       }
