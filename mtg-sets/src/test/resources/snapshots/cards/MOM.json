@@ -9714,6 +9714,238 @@
     ]
 }
 
+// Jin-Gitaxias
+{
+    "name": "Jin-Gitaxias",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Legendary Creature — Phyrexian Praetor",
+    "oracleText": "Ward {2}\nWhenever you cast a noncreature spell with mana value 3 or greater, draw a card.\n{3}{U}: Exile Jin-Gitaxias, then return it to the battlefield transformed under its owner's control. Activate only as a sorcery and only if you have seven or more cards in hand.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jin-Gitaxias:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature",
+                            {
+                                "type": "ManaValueAtLeast",
+                                "min": 3
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Jin-Gitaxias:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{U}"
+                    }
+                },
+                "effect": "ExileAndReturnTransformed",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Hand"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 7
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "backFace": {
+        "name": "The Great Synthesis",
+        "manaCost": "",
+        "typeLine": "Enchantment — Saga",
+        "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Draw cards equal to the number of cards in your hand. You have no maximum hand size for as long as you control this Saga.\nII — Return all non-Phyrexian creatures to their owners' hands.\nIII — You may cast any number of spells from your hand without paying their mana costs. Exile this Saga, then return it to the battlefield (front face up).",
+        "script": {
+            "staticAbilities": [
+                "NoMaximumHandSize"
+            ],
+            "sagaChapters": [
+                {
+                    "chapter": 1,
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Hand"
+                        }
+                    }
+                },
+                {
+                    "chapter": 2,
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "NotSubtype",
+                                                "subtype": "Phyrexian"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "returnAllToHand_gathered"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "returnAllToHand_gathered",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "chapter": 3,
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RepeatWhile",
+                                "body": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Hand",
+                                                "filter": "nonland"
+                                            },
+                                            "storeAs": "gathered0"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "gathered0",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "greatSynthesisPick",
+                                            "selectedLabel": "Cast without paying its mana cost"
+                                        },
+                                        {
+                                            "type": "CastFromCollectionWithoutPayingCost",
+                                            "from": "greatSynthesisPick"
+                                        }
+                                    ]
+                                },
+                                "repeatCondition": {
+                                    "type": "WhileCondition",
+                                    "condition": {
+                                        "type": "CollectionContainsMatch",
+                                        "collection": "greatSynthesisPick"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "ExileAndReturnTransformed",
+                                "returnAs": "FRONT"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "65",
+            "rarity": "MYTHIC",
+            "artist": "Ekaterina Burmak",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/1/41c83142-b948-4ee5-a486-41306d2bb411.jpg?1783917044"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "MYTHIC",
+        "artist": "Ekaterina Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41c83142-b948-4ee5-a486-41306d2bb411.jpg?1783917044",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Once you've activated Jin-Gitaxias's last ability, it doesn't matter what happens to the number of cards in your hand. The ability will resolve even if you have six or fewer cards in your hand by that time."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "For chapter I of The Great Synthesis, the number of cards you draw is determined as the ability resolves. If you no longer control The Great Synthesis at that time, your maximum hand size remains unchanged."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "All the spells you cast due to chapter III are cast during the resolution of that ability. You can cast them in any order, and timing restrictions based on the cards' types are ignored. Once you're done casting spells, before any of them resolve, The Great Synthesis will be exiled and return as Jin-Gitaxias."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Karsus Depthguard
 {
     "name": "Karsus Depthguard",
@@ -10463,6 +10695,96 @@
     ]
 }
 
+// Moment of Truth
+{
+    "name": "Moment of Truth",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Look at the top three cards of your library. Put one of those cards into your hand, one into your graveyard, and one on the bottom of your library.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "selectedLabel": "Put into your hand",
+                    "remainderLabel": "Not put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "remainder1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected3",
+                    "storeRemainder": "remainder3",
+                    "selectedLabel": "Put into your graveyard",
+                    "remainderLabel": "Put on the bottom of your library"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "Rovina Cai",
+        "flavorText": "On the precipice of eternity, Elspeth made a choice. The fight would not end without her.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e758594-a48c-4508-b400-9028aec07f63.jpg?1783917033"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mutagen Connoisseur
 {
     "name": "Mutagen Connoisseur",
@@ -10834,6 +11156,57 @@
     ]
 }
 
+// Omen Hawker
+{
+    "name": "Omen Hawker",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Octopus Advisor",
+    "oracleText": "{T}: Add {C}{U}. Spend this mana only to activate abilities.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Omen Hawker:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddColorlessMana",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "restriction": "AbilityActivationOnly"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "BLUE",
+                            "restriction": "AbilityActivationOnly"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}{U}. Spend this mana only to activate abilities."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "UNCOMMON",
+        "artist": "Josh Hass",
+        "flavorText": "After years of fabricating visions for naive customers of the Obscura, Stafano was flummoxed by the nightmarish scenes that played out unbidden in his mind's eye.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0749c3c-e3f7-4c96-8c5b-4fd2401544c4.jpg?1783917029"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Omnath, Locus of All
 {
     "name": "Omnath, Locus of All",
@@ -11031,6 +11404,224 @@
     ]
 }
 
+// Oracle of Tragedy
+{
+    "name": "Oracle of Tragedy",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters or dies, choose one —\n• Draw a card, then discard a card.\n• Shuffle up to four target cards with mana value 3 or greater from your graveyard into your library.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oracle of Tragedy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Hand"
+                                                },
+                                                "storeAs": "hand"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "hand",
+                                                "selection": {
+                                                    "type": "ChooseExactly",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "discarded",
+                                                "prompt": "Choose 1 card to discard"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "discarded",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Graveyard"
+                                                },
+                                                "moveType": "Discard"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "description": "Draw a card, then discard a card."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": "ChosenTargets",
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Shuffled"
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "count": 4,
+                                    "optional": true,
+                                    "filter": {
+                                        "baseFilter": "mv>=3 own:you",
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Shuffle up to four target cards with mana value 3 or greater from your graveyard into your library."
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Oracle of Tragedy:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Hand"
+                                                },
+                                                "storeAs": "hand"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "hand",
+                                                "selection": {
+                                                    "type": "ChooseExactly",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "discarded",
+                                                "prompt": "Choose 1 card to discard"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "discarded",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Graveyard"
+                                                },
+                                                "moveType": "Discard"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "description": "Draw a card, then discard a card."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": "ChosenTargets",
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Shuffled"
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "count": 4,
+                                    "optional": true,
+                                    "filter": {
+                                        "baseFilter": "mv>=3 own:you",
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Shuffle up to four target cards with mana value 3 or greater from your graveyard into your library."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "UNCOMMON",
+        "artist": "Pavel Kolomeyets",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1d2aa39-b876-4136-8e16-5272a8083235.jpg?1783917029"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Order of the Mirror
 {
     "name": "Order of the Mirror",
@@ -11117,6 +11708,68 @@
         "WHITE",
         "BLUE"
     ]
+}
+
+// Phyrexian Archivist
+{
+    "name": "Phyrexian Archivist",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Phyrexian Construct",
+    "oracleText": "Reach\n{2}, {T}: Put target card from a graveyard on the bottom of its owner's library.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Phyrexian Archivist:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Bottom"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}: Put target card from a graveyard on the bottom of its owner's library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "262",
+        "artist": "Andreas Zafiratos",
+        "flavorText": "Silence quickly went from an annoying library rule to an imperative for survival.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93960b5e-b13c-4f7d-a826-8aad6bd210b4.jpg?1783916935"
+    },
+    "colorIdentityOverride": []
 }
 
 // Phyrexian Awakening
@@ -11524,6 +12177,79 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Protocol Knight
+{
+    "name": "Protocol Knight",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "When this creature enters, tap target creature an opponent controls. Put a stun counter on that creature if you control another Knight. (If a permanent with a stun counter would become untapped, remove one from it instead.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Protocol Knight:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "permanent Knight",
+                                    "excludeSelf": true
+                                }
+                            },
+                            "then": {
+                                "type": "AddCounters",
+                                "counterType": "STUN",
+                                "count": 1,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"Ingress without proper writ of extraplanar intent? Unacceptable!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af6cb380-0b4d-4870-abef-928eb63e1702.jpg?1783917026"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -12709,6 +13435,83 @@
     ]
 }
 
+// Saiba Cryptomancer
+{
+    "name": "Saiba Cryptomancer",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Moonfolk Ninja",
+    "oracleText": "Flash\nBackup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)\nHexproof",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "HEXPROOF"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Saiba Cryptomancer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": "TargetIsSource"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "HEXPROOF",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "isBackup": true,
+                "descriptionOverride": "Backup 1 (When this creature enters, put a +1/+1 counter on target creature. If that's another creature, it gains the following ability until end of turn.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Aaron J. Riley",
+        "flavorText": "\"Good luck getting through a class-seven proxy ward, creep.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/3934d535-740d-471a-bbf1-c3b26b1cd596.jpg?1783917025"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Scrappy Bruiser
 {
     "name": "Scrappy Bruiser",
@@ -13002,6 +13805,110 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// See Double
+{
+    "name": "See Double",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "This spell can't be copied.\nChoose one. If an opponent has eight or more cards in their graveyard, you may choose both instead.\n• Copy target spell. You may choose new targets for the copy. (A copy of a permanent spell becomes a token.)\n• Create a token that's a copy of target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CopyTargetSpell",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Stack"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Copy target spell. You may choose new targets for the copy"
+                },
+                {
+                    "effect": {
+                        "type": "CreateTokenCopyOfTarget",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Create a token that's a copy of target creature"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1,
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        },
+        "cantBeCopied": true
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "RARE",
+        "artist": "Marc Simonetti",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41634103-7b58-4feb-84b7-90a07a7b474f.jpg?1783917024",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "You may choose both modes if any opponent has eight or more cards in their graveyard, not necessarily all of them."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Once you've cast See Double and legally chosen both modes, it doesn't matter what happens to the number of cards in opponents' graveyards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -13466,6 +14373,43 @@
         "artist": "Michal Ivan",
         "flavorText": "Together with her beloved falcon, she had explored every waterway on Zendikar, from the Tazeem highlands to the inland sea.",
         "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd1c8e1a-bd38-47a2-a55a-682ebaede960.jpg?1783917029"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Stasis Field
+{
+    "name": "Stasis Field",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has base power and toughness 0/2, has defender, and loses all other abilities.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 0,
+                "toughness": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEFENDER"
+            },
+            "LoseAllAbilities"
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "artist": "Jinho Bae",
+        "flavorText": "Old glitches in mage-ring function became critical tools in Vryn's defense.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38211d78-ebac-4150-ac11-7613a0e9e1bc.jpg?1783917023"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -14073,6 +15017,94 @@
     ]
 }
 
+// Tidal Terror
+{
+    "name": "Tidal Terror",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Octopus",
+    "oracleText": "Whenever this creature attacks, you may tap two other untapped creatures you control. If you do, this creature can't be blocked this turn.\nIslandcycling {2} ({2}, Discard this card: Search your library for an Island card, reveal it, put it into your hand, then shuffle.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}",
+            "searchFilter": {
+                "cardPredicates": [
+                    {
+                        "type": "HasSubtype",
+                        "subtype": "Island"
+                    }
+                ]
+            },
+            "displayPrefix": "Islandcycling"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tidal Terror:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "BattlefieldMatching",
+                                        "filter": "creature untapped",
+                                        "player": "You",
+                                        "excludeSelf": true
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "Tap two other untapped creatures you control",
+                                    "useTargetingUI": true
+                                },
+                                {
+                                    "type": "TapUntapCollection",
+                                    "collectionName": "selected1"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "CANT_BE_BLOCKED",
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "You may tap two other untapped creatures you control. If you do, this creature can't be blocked this turn."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e943948-2326-4446-9a16-64d6040b8856.jpg?1783917022"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Tiller of Flesh
 {
     "name": "Tiller of Flesh",
@@ -14223,6 +15255,51 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Transcendent Message
+{
+    "name": "Transcendent Message",
+    "manaCost": "{X}{U}{U}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nDraw X cards.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": "XValue"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "RARE",
+        "artist": "Liiga Smilshkalne",
+        "flavorText": "Wrenn reached out to Teferi through the Blind Eternities, and an impossible connection flared across the vast emptiness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/3261c7e6-45be-44d1-8855-026359ba0ae7.jpg?1783917021",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "When calculating a spell's total cost, include any alternative costs, additional costs, or anything else that increases or reduces the cost to cast the spell. Convoke applies after the total cost is calculated. Convoke doesn't change a spell's mana cost or mana value."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "You can tap any untapped creature you control to convoke a spell, even one you haven't controlled continuously since the beginning of your most recent turn."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "Tapping an untapped creature that's attacking or blocking to convoke a spell won't cause that creature to stop attacking or blocking."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "Tapping a multicolored creature using convoke will pay for {1} or one mana of your choice of any of that creature's colors."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -14896,6 +15973,78 @@
     ]
 }
 
+// Wicked Slumber
+{
+    "name": "Wicked Slumber",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nTap up to two target creatures. Put a stun counter on either of them. Then put a stun counter on either of them. (If a permanent with a stun counter would become untapped, remove one from it instead.)",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                {
+                    "type": "DistributeCountersAmongTargets",
+                    "totalCounters": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "counterType": "STUN",
+                    "minPerTarget": 0
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "minCount": 0,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "UNCOMMON",
+        "artist": "Anato Finnstark",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/140cd8bd-b74d-4cb1-b78f-8de3cbd878ff.jpg?1783917023",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "The two stun counters can end up on the same creature, or they can each end up on a different one of the target creatures."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If you choose two target creatures, but one of them is an illegal target as Wicked Slumber resolves, the illegal target will be unaffected. You'll put both stun counters on the remaining legal target. If both targets become illegal, Wicked Slumber won't resolve at all."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Wicked Slumber can target creatures that are already tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Wrenn and Realmbreaker
 {
     "name": "Wrenn and Realmbreaker",
@@ -15122,6 +16271,65 @@
     ]
 }
 
+// Xerex Strobe-Knight
+{
+    "name": "Xerex Strobe-Knight",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Flying, vigilance\n{T}: Create a 2/2 white and blue Knight creature token with vigilance. Activate only if you've cast two or more spells this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Xerex Strobe-Knight:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE",
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/8/88439bfc-8942-473b-9e4f-863017788476.jpg?1783916669"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "PlayerCastSpellsThisTurn",
+                            "atLeast": 2
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "UNCOMMON",
+        "artist": "Pavel Kolomeyets",
+        "flavorText": "Phyrexia broke the laws of reality to invade the planes. On Xerex, reality merely bent around the invaders.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e38a32bc-133d-43d1-a6e3-80d39fe53d32.jpg?1783917020"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Yargle and Multani
 {
     "name": "Yargle and Multani",
@@ -15207,6 +16415,58 @@
     ]
 }
 
+// Zephyr Winder
+{
+    "name": "Zephyr Winder",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player, untap up to one target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zephyr Winder:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "328",
+        "artist": "Jana Schirmer",
+        "flavorText": "It twines through the roiling cloudscape feeding on the energies of nascent storms.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14456a8e-016c-4407-8410-c490db3f5ea9.jpg?1783916904"
+    }
+}
+
 // Zhalfirin Lancer
 {
     "name": "Zhalfirin Lancer",
@@ -15261,6 +16521,62 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Zhalfirin Shapecraft
+{
+    "name": "Zhalfirin Shapecraft",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature has base power and toughness 4/3 until end of turn.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "SetBaseStats",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "artist": "Aldo Domínguez",
+        "flavorText": "Patient and observant, the people of Zhalfir lurked beyond the veil of time until their moment came to finally strike at Phyrexia.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e446a380-0316-46f7-8ac9-22bce773b35f.jpg?1783917019"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
