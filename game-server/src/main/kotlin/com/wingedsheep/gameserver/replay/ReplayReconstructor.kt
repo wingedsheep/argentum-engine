@@ -204,6 +204,7 @@ private class ReplayEngine(
             teams = setup.teams,
             seed = setup.seed,
             shuffledDeckIds = replay.version >= CompactReplay.SHUFFLED_DECK_IDS_VERSION,
+            shuffledTeamSeats = replay.version >= CompactReplay.SHUFFLED_TEAM_SEATS_VERSION,
         )
         return applyYields(gameInitializer.initializeGame(config).state, replay.yields, afterActionCount = 0)
     }

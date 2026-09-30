@@ -95,6 +95,12 @@ data class GameConfig(
      * recorded actions name the old ids.
      */
     val shuffledDeckIds: Boolean = true,
+    /**
+     * In a team game whose starting team is drawn at random, also shuffle the seats *within* each
+     * team, so teammates don't always sit in lobby-join order. False reproduces team games recorded
+     * before seats were mixed, whose RNG stream didn't include those shuffles.
+     */
+    val shuffledTeamSeats: Boolean = true,
 )
 
 /**
@@ -255,14 +261,24 @@ class GameInitializer(
 
         // 2. Set turn order. In a team game with shared team turns (CR 805.1) the members of each
         // team must sit in adjacent seats, so the order is built team-by-team — teammates are never
-        // interleaved; only the order *between* teams is chosen or randomized (CR 805.3, which team
-        // goes first). [config.startingPlayerIndex] selects the starting team (the team containing
-        // that player). Non-team games shuffle individual players exactly as before.
+        // interleaved. [config.startingPlayerIndex] selects the starting team (the team containing
+        // that player) and keeps the seats as listed; otherwise the seats within each team and the
+        // order between teams (CR 805.3, which team goes first) are both randomized. Non-team games
+        // shuffle individual players exactly as before.
         val teams = config.teams
         val shuffledOrder: List<EntityId> = if (teams != null) {
-            val teamMemberIds = teams.map { members -> members.map { playerIds[it] } }
             val startTeam = config.startingPlayerIndex
                 ?.let { sp -> teams.indexOfFirst { sp in it }.takeIf { it >= 0 } }
+            val teamMemberIds = teams.map { members ->
+                val ids = members.map { playerIds[it] }
+                if (startTeam == null && config.shuffledTeamSeats) {
+                    val (shuffled, shuffledState) = state.nextRandom { shuffle(ids) }
+                    state = shuffledState
+                    shuffled
+                } else {
+                    ids
+                }
+            }
             val orderedTeams = if (startTeam != null) {
                 teamMemberIds.subList(startTeam, teamMemberIds.size) + teamMemberIds.subList(0, startTeam)
             } else {

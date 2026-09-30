@@ -99,17 +99,20 @@ class TeamVsTeamTest : FunSpec({
     // Life: each player has their own total (CR 808.5) — not a shared pool.
     // ---------------------------------------------------------------------------------------------
 
-    test("a randomly chosen first team starts with the seat left of its midpoint, and turn order wraps the table (CR 808.4)") {
-        val result = GameInitializer(registry()).initializeGame(
-            GameConfig(
-                format = Format.TeamVsTeam(),
-                players = (1..4).map { PlayerConfig("Player $it", Deck.of(forest to 40)) },
-                teams = listOf(listOf(0, 1), listOf(2, 3)),
-                startingPlayerIndex = null,
-                skipMulligans = true,
-                seed = 42L,
-            )
+    fun randomSeating(seed: Long, shuffledTeamSeats: Boolean = true) = GameInitializer(registry()).initializeGame(
+        GameConfig(
+            format = Format.TeamVsTeam(),
+            players = (1..4).map { PlayerConfig("Player $it", Deck.of(forest to 40)) },
+            teams = listOf(listOf(0, 1), listOf(2, 3)),
+            startingPlayerIndex = null,
+            skipMulligans = true,
+            seed = seed,
+            shuffledTeamSeats = shuffledTeamSeats,
         )
+    )
+
+    test("a randomly chosen first team starts with the seat left of its midpoint, and turn order wraps the table (CR 808.4)") {
+        val result = randomSeating(seed = 42L, shuffledTeamSeats = false)
         val p = result.playerIds
         val order = result.state.turnOrder
         val teamA = listOf(p[0], p[1])
@@ -123,6 +126,23 @@ class TeamVsTeamTest : FunSpec({
         // … and comes back round to the starting team's first seat last.
         order.last() shouldBe startTeam[0]
         result.state.activePlayerId shouldBe startTeam[1]
+    }
+
+    test("a random seating also mixes the seats within each team, keeping teammates adjacent") {
+        val seatings = (1L..40L).map { seed ->
+            val result = randomSeating(seed)
+            val p = result.playerIds
+            val order = result.state.turnOrder
+            val teamOf = mapOf(p[0] to 0, p[1] to 0, p[2] to 1, p[3] to 1)
+            // Starting team wraps the table: its two seats are first and last, the other team sits between.
+            teamOf[order.first()] shouldBe teamOf[order.last()]
+            teamOf[order[1]] shouldBe teamOf[order[2]]
+            (teamOf[order.first()] == teamOf[order[1]]) shouldBe false
+            order.map { p.indexOf(it) }
+        }
+        // Both within-team orders turn up for each team across seeds.
+        seatings.map { it.indexOf(0) < it.indexOf(1) }.toSet() shouldBe setOf(true, false)
+        seatings.map { it.indexOf(2) < it.indexOf(3) }.toSet() shouldBe setOf(true, false)
     }
 
     test("each player has their own life total; damaging one teammate doesn't touch the other (CR 808.5)") {

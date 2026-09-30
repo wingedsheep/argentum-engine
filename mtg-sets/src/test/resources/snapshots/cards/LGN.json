@@ -5293,19 +5293,17 @@
                             "type": "GatherCards",
                             "source": {
                                 "type": "BattlefieldMatching",
-                                "filter": "creature",
-                                "excludeSelf": true
+                                "filter": "creature"
                             },
-                            "storeAs": "linked_exile"
+                            "storeAs": "gathered0"
                         },
                         {
                             "type": "MoveCollection",
-                            "from": "linked_exile",
+                            "from": "gathered0",
                             "destination": {
                                 "type": "ToZone",
                                 "zone": "Exile"
-                            },
-                            "linkToSource": true
+                            }
                         },
                         {
                             "type": "CreateDelayedTrigger",
@@ -5314,13 +5312,8 @@
                                 "type": "Composite",
                                 "effects": [
                                     {
-                                        "type": "GatherCards",
-                                        "source": "FromLinkedExile",
-                                        "storeAs": "linked_return"
-                                    },
-                                    {
                                         "type": "MoveCollection",
-                                        "from": "linked_return",
+                                        "from": "gathered0",
                                         "destination": {
                                             "type": "ToZone",
                                             "zone": "Battlefield"
@@ -5328,7 +5321,10 @@
                                         "underOwnersControl": true
                                     }
                                 ]
-                            }
+                            },
+                            "carryCollections": [
+                                "gathered0"
+                            ]
                         }
                     ]
                 }

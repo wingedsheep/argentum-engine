@@ -100,11 +100,19 @@ data class CompactReplay(
          * replay a different, still-legal game and call it exact. Decoding stays deliberately tolerant (`ignoreUnknownKeys`,
          * defaults for every added field) so a record written by a newer build never becomes
          * unreadable by an older one mid-deploy.
+         *
+         * v3 → v4 shuffles the seats within each team of a team game
+         * ([com.wingedsheep.engine.core.GameConfig.shuffledTeamSeats]). Also a reconstruction gate:
+         * those shuffles draw from the seeded RNG, so a v3 team game rebuilt with them would seat
+         * players and shuffle libraries differently from the game that was recorded.
          */
-        const val CURRENT_VERSION = 3
+        const val CURRENT_VERSION = 4
 
         /** The first version whose decks were given shuffled ids. */
         const val SHUFFLED_DECK_IDS_VERSION = 3
+
+        /** The first version whose team games shuffled the seats within each team. */
+        const val SHUFFLED_TEAM_SEATS_VERSION = 4
 
         const val UNKNOWN_VERSION = "unknown"
     }
