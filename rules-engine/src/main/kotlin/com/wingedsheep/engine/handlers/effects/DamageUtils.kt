@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
+import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
@@ -285,7 +286,7 @@ object DamageUtils {
             }
 
             // Protection from a kind of source — spells, permanents cast this turn (CR 702.16e)
-            if (com.wingedsheep.engine.mechanics.targeting.SourceKindProtection.isProtectedFromObject(state, targetId, sourceId)) {
+            if (SourceKindProtection.isProtectedFromObject(state, targetId, sourceId)) {
                 return EffectResult.success(state)
             }
 
