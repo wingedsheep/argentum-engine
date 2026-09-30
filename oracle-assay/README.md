@@ -619,6 +619,34 @@ were all **card bugs, fixed**: Abandon Attachments, Flaring Cinder (both trigger
 spelled "if you do" as `May(A then B)`, so the draw happened whether or not anything was discarded.
 Only their goldens moved.
 
+## The exile-until-leaves band
+
+The third loop band, keyed on the tail family `until ~ leaves …` (**71 lines over 39 whole cards** by
+the prefix probe, over the whole corpus). It delivered **22 hand-written cards read whole (7,164 →
+7,186)** and took the family off the implemented tail entirely (34 cards → 0); the gap to the probe is
+the unimplemented half of the corpus plus lines whose *other* sentences still decline.
+
+### One sentence, two abilities
+
+"When ~ enters, exile target creature an opponent controls until ~ leaves the battlefield." is, in
+42 of 46 goldens, **two** triggered abilities: `Effects.ExileUntilLeaves(target)` on the printed
+trigger, and a `Triggers.self.leaves()` ability running `Effects.ReturnLinkedExileUnderOwnersControl()`.
+The exile half is one more row family beside "exile {q}target {filter}" — singular quantifiers only,
+because the effect takes one target and no card spells a plural one through `ForEachTargetEffect`.
+The return half is a *lowering* of the first, the same shape as amplify and equip: a step rule can
+only return an effect, so `Grammar.triggerLine` and `activatedLine` append the return whenever the
+line's script exiles until the source leaves, and refuse to print one that lacks it — an exile whose
+card never comes back is not what the sentence says.
+
+### What the differential found
+
+Differential **6,789 compared / 53 divergent → 6,810 / 55**. Both new divergences are one **standing
+SDK finding**: Memory Trap and Ossification spell the sentence as
+`Effects.MoveUntilSourceLeaves(target, Zone.EXILE)`, the one-shot "until" whose return is not a
+triggered ability — the reading the Comprehensive Rules give "until" durations on one-shot effects.
+Two spellings of one concept; the grammar prints the majority (42 goldens), so the two cards stay
+divergent until the corpus converges on one of them.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
