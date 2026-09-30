@@ -1873,7 +1873,8 @@ data class EntersAsCopy(
         val tappedWord = if (tappedIfCopied) "tapped " else ""
         val lead = if (duration == Duration.EndOfTurn) {
             val who = if (optional) "you may have it" else "it"
-            "As $subject enters, $who become${if (optional) "" else "s"} a copy of any $where until end of turn"
+            // "Becomes a copy … until end of turn" is printed on non-creatures (Cursed Mirror).
+            "As this permanent enters, $who become${if (optional) "" else "s"} a copy of any $where until end of turn"
         } else if (optional) {
             "You may have $subject enter ${tappedWord}as a copy of any $where"
         } else {
