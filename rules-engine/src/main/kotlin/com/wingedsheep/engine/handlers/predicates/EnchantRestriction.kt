@@ -106,7 +106,7 @@ object EnchantRestriction {
         else attachmentCard.colors.map { it.name }.toSet()
         // A colorless attachment meets protection from colorless (CR 105.2c, 702.16c/d).
         if (colors.isEmpty()) return projected.hasKeyword(hostId, ColorProtection.PROTECTION_FROM_COLORLESS)
-        // A multicolored attachment meets protection from multicolored (CR 105.1).
+        // A multicolored attachment meets protection from multicolored (CR 105.2b).
         if (colors.size >= 2 && projected.hasKeyword(hostId, ColorProtection.PROTECTION_FROM_MULTICOLORED)) return true
         val statics = cardRegistry.getCard(attachmentCard.cardDefinitionId)?.staticAbilities.orEmpty()
         if (statics.any { it is GrantProtectionFromControlledColors || it is GrantProtectionFromChosenColorToGroup }) {

@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.model.EntityId
  * The colour axis of protection (CR 702.16a): "protection from <colour>", "protection from
  * colorless" and "protection from multicolored". A colorless object has no color (CR 105.2c), so
  * protection from colorless matches a source whose colour set is empty rather than one that contains
- * some named colour; a multicolored object has two or more colors (CR 105.1), so protection from
+ * some named colour; a multicolored object has two or more colors (CR 105.2b), so protection from
  * multicolored matches on the count, not on any one colour.
  *
  * Every protection read site (targeting, attach, blocking, damage) asks this one question so the

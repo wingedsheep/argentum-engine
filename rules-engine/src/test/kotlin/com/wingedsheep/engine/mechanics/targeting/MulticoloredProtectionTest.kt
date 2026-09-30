@@ -22,7 +22,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
 /**
- * Protection from multicolored (CR 702.16a; a multicolored object has two or more colors, CR 105.1)
+ * Protection from multicolored (CR 702.16a; a multicolored object has two or more colors, CR 105.2b)
  * — Argentum Masticore. Pins every leg of DEBT against a two-colour source, and that a monocolored
  * or colorless source is unaffected.
  */

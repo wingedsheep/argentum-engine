@@ -35,7 +35,7 @@ sealed interface ProtectionScope {
     data class NonColor(val color: com.wingedsheep.sdk.core.Color) : ProtectionScope
 
     /**
-     * From multicolored — matches a source with two or more colors (CR 105.1: a multicolored
+     * From multicolored — matches a source with two or more colors (CR 105.2b: a multicolored
      * object has two or more colors). Enforced on the same colour axis as [Color], so it covers
      * damage, enchanting/equipping, blocking and targeting (Argentum Masticore).
      */

@@ -10287,7 +10287,7 @@ composite abilities).
   by exactly one card (Ureni, the Song Unending). Argentum Assay reads the printed text as two
   abilities and never emits `Colors`.
 - `Protection(ProtectionScope.Multicolored)` — "protection from multicolored" (Argentum Masticore): matches
-  a source with two or more colors (CR 105.1). Projected as `PROTECTION_FROM_MULTICOLORED` and answered by
+  a source with two or more colors (CR 105.2b). Projected as `PROTECTION_FROM_MULTICOLORED` and answered by
   the shared colour-axis helper `ColorProtection`, so targeting (validator *and* legal-action target
   enumeration), damage prevention, blocking and enchanting/equipping all honour it. Also valid in
   `GrantPlayerProtection` / `GrantProtectionToController` scopes.
