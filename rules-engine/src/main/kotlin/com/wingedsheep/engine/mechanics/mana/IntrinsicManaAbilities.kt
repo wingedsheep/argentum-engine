@@ -50,12 +50,24 @@ object IntrinsicManaAbilities {
         val card = container.get<CardComponent>() ?: return emptyList()
         if (!card.typeLine.isLand) return emptyList()
 
-        val subtypes = projected.getSubtypes(entityId)
-        val colors = SUBTYPE_TO_COLOR.entries
-            .filter { (subtype, _) -> subtype in subtypes }
-            .map { it.value }
-        return colors.map(::build)
+        return forSubtypes(projected.getSubtypes(entityId))
     }
+
+    /**
+     * The intrinsic mana abilities a land *card* has off the battlefield, from its printed basic
+     * land types — for effects that read abilities of cards in other zones (Mirran Safehouse's
+     * "all activated abilities of all land cards in all graveyards"). Off the battlefield there is
+     * no projection, so the base type line is the card's type line.
+     */
+    fun forCard(card: CardComponent): List<ActivatedAbility> {
+        if (!card.typeLine.isLand) return emptyList()
+        return forSubtypes(card.typeLine.subtypes.map { it.value }.toSet())
+    }
+
+    private fun forSubtypes(subtypes: Set<String>): List<ActivatedAbility> =
+        SUBTYPE_TO_COLOR.entries
+            .filter { (subtype, _) -> subtype in subtypes }
+            .map { build(it.value) }
 
     /**
      * Looks up an intrinsic mana ability by id. Used by the activation handler so

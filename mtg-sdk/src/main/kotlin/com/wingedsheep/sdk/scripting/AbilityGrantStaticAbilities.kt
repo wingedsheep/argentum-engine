@@ -78,6 +78,12 @@ enum class DonorCards {
      * to the player, so it re-reads live as cards enter and leave that graveyard.
      */
     @SerialName("YourGraveyard") YOUR_GRAVEYARD,
+
+    /**
+     * Cards in *every* player's graveyard (Mirran Safehouse — "all land cards in all graveyards").
+     * Anchored to no one: it re-reads each graveyard live, whoever controls the source.
+     */
+    @SerialName("AllGraveyards") ALL_GRAVEYARDS,
 }
 
 /**
@@ -133,6 +139,7 @@ data class HasAllActivatedAbilitiesOfCards(
                 DonorCards.LINKED_EXILE -> " cards exiled with this"
                 DonorCards.CRAFT_MATERIALS -> " cards exiled to craft this"
                 DonorCards.YOUR_GRAVEYARD -> " cards in your graveyard"
+                DonorCards.ALL_GRAVEYARDS -> " cards in all graveyards"
             }
         )
         if (oncePerTurnEach) append(" (each only once each turn)")

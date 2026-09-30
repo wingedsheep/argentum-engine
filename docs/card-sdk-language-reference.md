@@ -8685,13 +8685,16 @@ staticAbility {
   donor pool**. `donors` (a `DonorCards`, required) selects the pool: `LINKED_EXILE` reads the
   `LinkedExileComponent`; `CRAFT_MATERIALS` reads the `CraftedFromExiledComponent` recorded by a
   `craft(...)` cost (CR 702.167c); `YOUR_GRAVEYARD` reads the graveyard of the source's *current
-  controller*. Resolved dynamically at activation-legality time: the engine pulls each donor card's
+  controller*; `ALL_GRAVEYARDS` reads every player's graveyard (Mirran Safehouse). A land donor with basic
+  land types also lends the intrinsic mana abilities those types give it (CR 305.6), so a Watery Grave
+  donates "{T}: Add {U}" and "{T}: Add {B}" though its definition declares none. Resolved dynamically at activation-legality time: the engine pulls each donor card's
   `activatedAbilities` and surfaces them on every matching permanent, with **that permanent** as granter
   (so `{T}` taps it and "this card" self-references bind to it — CR 113.7). Grants *activated* abilities
   only, not triggered/static/replacement.
     - `receivedBy = GroupFilter.source()` (the default) → "This permanent has all activated abilities of
       the donor cards" — the source grants to *itself* (Territory Forge with `LINKED_EXILE`; Locus of
-      Enlightenment with `CRAFT_MATERIALS`; Thranduil, the Elvenking with `YOUR_GRAVEYARD`).
+      Enlightenment with `CRAFT_MATERIALS`; Thranduil, the Elvenking with `YOUR_GRAVEYARD`; Mirran
+      Safehouse with `ALL_GRAVEYARDS` + `cardFilter = Filters.Land`).
     - any battlefield filter → the source grants to *other* matching permanents ("Creatures you control
       with +1/+1 counters on them have all activated abilities of all creature cards exiled with this" —
       Agatha's Soul Cauldron →
@@ -8707,7 +8710,7 @@ staticAbility {
       granter-dedup. Left `false`, abilities are granted unmodified (Territory Forge, Agatha, Thranduil).
       Locus → `HasAllActivatedAbilitiesOfCards(donors = DonorCards.CRAFT_MATERIALS, oncePerTurnEach = true)`.
     - Fill a `LINKED_EXILE` pool with `Effects.ExileLinkedToSource(target)`; a `CRAFT_MATERIALS` pool is
-      filled by the `craft(...)` cost; a `YOUR_GRAVEYARD` pool needs no wiring — it follows the zone.
+      filled by the `craft(...)` cost; a `YOUR_GRAVEYARD` / `ALL_GRAVEYARDS` pool needs no wiring — it follows the zone.
 - `HasAbilitiesOfChosenLinkedExiledCard(grantActivated = true, grantTriggered = true)` — the source
   permanent has all **activated and/or triggered abilities of the single card it most recently *chose***
   from its linked-exile pile (its "last chosen card", stamped by
