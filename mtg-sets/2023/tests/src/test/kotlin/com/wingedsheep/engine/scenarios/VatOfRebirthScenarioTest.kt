@@ -5,7 +5,9 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.lea.cards.Shatter
 import com.wingedsheep.mtg.sets.definitions.one.cards.VatOfRebirth
+import com.wingedsheep.mtg.sets.definitions.wth.cards.MindStone
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
@@ -30,7 +32,7 @@ class VatOfRebirthScenarioTest : FunSpec({
 
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(VatOfRebirth))
+        driver.registerCards(TestCards.all + listOf(VatOfRebirth, MindStone, Shatter))
         driver.initMirrorMatch(deck = Deck.of("Swamp" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -49,6 +51,15 @@ class VatOfRebirthScenarioTest : FunSpec({
         val bolt = driver.putCardInHand(driver.player1, "Lightning Bolt")
         driver.giveMana(driver.player1, Color.RED, 1)
         driver.castSpellWithTargets(driver.player1, bolt, listOf(ChosenTarget.Permanent(target))).error shouldBe null
+        driver.bothPass()
+        while (driver.pendingDecision != null) driver.autoResolveDecision()
+        if (driver.state.stack.isNotEmpty()) driver.bothPass()
+    }
+
+    fun shatter(driver: GameTestDriver, target: EntityId) {
+        val spell = driver.putCardInHand(driver.player1, "Shatter")
+        driver.giveMana(driver.player1, Color.RED, 2)
+        driver.castSpellWithTargets(driver.player1, spell, listOf(ChosenTarget.Permanent(target))).error shouldBe null
         driver.bothPass()
         while (driver.pendingDecision != null) driver.autoResolveDecision()
         if (driver.state.stack.isNotEmpty()) driver.bothPass()
@@ -105,10 +116,21 @@ class VatOfRebirthScenarioTest : FunSpec({
         giveOil(driver, vat, 4)
         val dead = driver.putCardInGraveyard(p1, "Centaur Courser")
         driver.passPriorityUntil(Step.BEGIN_COMBAT)
+        driver.currentStep shouldBe Step.BEGIN_COMBAT
 
         driver.giveMana(p1, Color.BLACK, 3)
         driver.submitExpectFailure(
             ActivateAbility(playerId = p1, sourceId = vat, abilityId = reanimate, targets = listOf(ChosenTarget.Card(dead, p1, Zone.GRAVEYARD)))
         )
+    }
+
+    test("a noncreature artifact you control going to the graveyard also adds an oil counter") {
+        val driver = newDriver()
+        val vat = driver.putPermanentOnBattlefield(driver.player1, "Vat of Rebirth")
+        val stone = driver.putPermanentOnBattlefield(driver.player1, "Mind Stone")
+
+        shatter(driver, stone)
+        driver.assertInGraveyard(driver.player1, "Mind Stone")
+        oil(driver, vat) shouldBe 1
     }
 })

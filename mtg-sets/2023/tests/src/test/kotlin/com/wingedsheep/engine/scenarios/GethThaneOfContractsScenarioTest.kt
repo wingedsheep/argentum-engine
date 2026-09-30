@@ -74,7 +74,7 @@ class GethThaneOfContractsScenarioTest : FunSpec({
         driver.getGraveyard(you) shouldNotContain bears
     }
 
-    test("a returned 1/1 dies to Geth's -1/-1 and is exiled instead of going to the graveyard") {
+    test("a returned X/1 dies to Geth's -1/-1 and is exiled instead of going to the graveyard") {
         val driver = createDriver()
         val you = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)

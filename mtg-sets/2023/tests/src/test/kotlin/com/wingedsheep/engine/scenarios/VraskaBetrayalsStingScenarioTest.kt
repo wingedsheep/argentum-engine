@@ -6,6 +6,7 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.mtg.sets.definitions.one.cards.VraskaBetrayalsSting
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
@@ -41,6 +42,7 @@ class VraskaBetrayalsStingScenarioTest : ScenarioTestBase() {
             .withPlayers("Player", "Opponent")
             .withCardOnBattlefield(1, "Vraska, Betrayal's Sting")
             .withCardOnBattlefield(2, "Grizzly Bears")
+            .withCardOnBattlefield(2, "Wind Drake")
             .withCardInLibrary(1, "Swamp")
             .withCardInLibrary(2, "Forest")
             .withActivePlayer(1)
@@ -70,25 +72,28 @@ class VraskaBetrayalsStingScenarioTest : ScenarioTestBase() {
 
         test("−2 turns a creature into a Treasure artifact that keeps its color and loses its abilities") {
             val (game, vraska) = board()
-            val bears = game.findPermanent("Grizzly Bears")!!
+            val drake = game.findPermanent("Wind Drake")!!
 
             game.execute(
-                ActivateAbility(game.player1Id, vraska, minusTwo, targets = listOf(ChosenTarget.Permanent(bears)))
+                ActivateAbility(game.player1Id, vraska, minusTwo, targets = listOf(ChosenTarget.Permanent(drake)))
             ).error shouldBe null
             game.resolveStack()
 
             count(game, vraska, CounterType.LOYALTY) shouldBe 4
             val projected = game.state.projectedState
             withClue("only a Treasure artifact now") {
-                projected.isCreature(bears) shouldBe false
-                projected.hasType(bears, "ARTIFACT") shouldBe true
-                projected.getSubtypes(bears) shouldBe setOf("Treasure")
+                projected.isCreature(drake) shouldBe false
+                projected.hasType(drake, "ARTIFACT") shouldBe true
+                projected.getSubtypes(drake) shouldBe setOf("Treasure")
+            }
+            withClue("its printed flying is gone") {
+                projected.hasKeyword(drake, Keyword.FLYING) shouldBe false
             }
             withClue("the ruling keeps its color — the ability says nothing about colour") {
-                projected.getColors(bears) shouldBe setOf("GREEN")
+                projected.getColors(drake) shouldBe setOf("BLUE")
             }
             withClue("it carries the Treasure sac-for-mana ability") {
-                game.state.grantedActivatedAbilities.any { it.entityId == bears && it.ability.isManaAbility } shouldBe true
+                game.state.grantedActivatedAbilities.any { it.entityId == drake && it.ability.isManaAbility } shouldBe true
             }
         }
 
