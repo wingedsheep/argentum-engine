@@ -351,6 +351,14 @@ enum class Keyword(val displayName: String) {
     CASUALTY("Casualty"),
 
     /**
+     * Replicate (CR 702.56). "As an additional cost to cast this spell, you may pay [cost] any
+     * number of times" plus "when you cast this spell, copy it for each time its replicate cost was
+     * paid." Carried by [com.wingedsheep.sdk.scripting.KeywordAbility.replicate] on the
+     * optional-additional-cost rail, declaring [com.wingedsheep.sdk.scripting.ChoiceSlot.REPLICATED].
+     */
+    REPLICATE("Replicate"),
+
+    /**
      * Bargain (CR 702.166, Wilds of Eldraine). A static ability that functions while the spell is
      * on the stack: "As an additional cost to cast this spell, you may sacrifice an artifact,
      * enchantment, or token." A spell whose controller declared that intention has been

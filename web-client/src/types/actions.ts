@@ -133,6 +133,11 @@ export interface CastSpellAction {
    * stamps it on the cast variant it offers; the client only echoes it back.
    */
   readonly declaredCostSlot?: string
+  /**
+   * How many times the declared optional cost is paid — above 1 only for a repeatable cost
+   * (replicate). Server-stamped on each "Replicate ×N" variant; the client only echoes it back.
+   */
+  readonly declaredCostTimes?: number
   readonly additionalCostChoices?: Readonly<Record<string, number>>
   /**
    * Whether the spell's optional waterbend additional cost was elected (Avatar: The Last

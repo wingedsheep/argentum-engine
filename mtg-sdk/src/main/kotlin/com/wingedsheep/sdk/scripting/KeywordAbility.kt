@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.WardCost
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import com.wingedsheep.sdk.dsl.firebending
@@ -373,7 +374,39 @@ sealed interface KeywordAbility {
             require(manaCost != null || additionalCost != null) {
                 "OptionalAdditionalCost requires either a manaCost or an additionalCost"
             }
+            require(!multi || additionalCost == null || additionalCostPaid(2) != null) {
+                "A repeatable optional cost's non-mana half must be an amount that scales " +
+                    "(pay life, pay player counters); got ${additionalCost?.description}"
+            }
         }
+
+        /**
+         * The mana half of this cost paid [times] times over — each payment repeats the symbols
+         * (CR 702.56a "pay [cost] any number of times"). Null when this cost has no mana half.
+         */
+        fun manaCostPaid(times: Int): ManaCost? =
+            manaCost?.let { cost -> ManaCost(List(times) { cost.symbols }.flatten()) }
+
+        /**
+         * The non-mana half of this cost paid [times] times over, as one cost whose amount is
+         * multiplied — "pay {E}{E}{E}" twice is "pay six energy". Only amount-shaped atoms scale;
+         * anything else returns null for [times] > 1, which is why a [multi] cost is restricted to
+         * them at construction.
+         */
+        fun additionalCostPaid(times: Int): AdditionalCost? {
+            val cost = additionalCost ?: return null
+            if (times == 1) return cost
+            val atom = (cost as? AdditionalCost.Atom)?.atom ?: return null
+            return when {
+                atom is CostAtom.PayLife ->
+                    AdditionalCost.Atom(atom.copy(amount = atom.amount * times))
+                atom is CostAtom.PayPlayerCounters &&
+                    atom.amount is DynamicAmount.Fixed ->
+                    AdditionalCost.Atom(atom.copy(amount = DynamicAmount.Fixed((atom.amount as DynamicAmount.Fixed).amount * times)))
+                else -> null
+            }
+        }
+
         override val description: String = when {
             // Bargain's and Teamwork's costs are definitional (CR 702.166a / 702.194a), so the
             // printed text is the bare keyword — never "Bargain—sacrifice …" / "Teamwork 2—tap …".
@@ -1351,6 +1384,35 @@ sealed interface KeywordAbility {
             manaCost = ManaCost.parse(cost),
             multi = true,
             displayPrefix = "Multikicker"
+        )
+
+        /**
+         * Create Replicate (CR 702.56) — "as an additional cost to cast this spell, you may pay
+         * [cost] any number of times", and "when you cast this spell, copy it for each time its
+         * replicate cost was paid". The cast declares [ChoiceSlot.REPLICATED] and the payment count
+         * together; the engine's cast triggers put the copy trigger on the stack.
+         */
+        fun replicate(cost: String): KeywordAbility = OptionalAdditionalCost(
+            manaCost = ManaCost.parse(cost),
+            multi = true,
+            displayPrefix = "Replicate",
+            keyword = Keyword.REPLICATE,
+            branchesEffect = false,
+            declaredSlot = ChoiceSlot.REPLICATED
+        )
+
+        /**
+         * Replicate with a non-mana cost — "Replicate—Pay {E}{E}{E}" (Reiterating Bolt). The cost
+         * must be amount-shaped (pay life, pay player counters) so that paying it N times is one
+         * cost of N times the amount.
+         */
+        fun replicate(additionalCost: AdditionalCost): KeywordAbility = OptionalAdditionalCost(
+            additionalCost = additionalCost,
+            multi = true,
+            displayPrefix = "Replicate",
+            keyword = Keyword.REPLICATE,
+            branchesEffect = false,
+            declaredSlot = ChoiceSlot.REPLICATED
         )
 
         /**

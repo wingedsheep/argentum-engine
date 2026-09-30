@@ -303,6 +303,69 @@
     }
 }
 
+// Consign to Memory
+{
+    "name": "Consign to Memory",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Replicate {1} (When you cast this spell, copy it for each time you paid its replicate cost. You may choose new targets for the copies.)\nCounter target triggered ability or colorless spell.",
+    "keywords": [
+        "REPLICATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{1}",
+            "multi": true,
+            "displayPrefix": "Replicate",
+            "keyword": "REPLICATE",
+            "branchesEffect": false,
+            "declaredSlot": "REPLICATED"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "target": "CounterTarget.SpellOrAbility"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsTriggeredAbility",
+                                    "IsColorless"
+                                ]
+                            }
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Ben Hill",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc95af55-d1dd-4fe6-adb0-3ad6db20d986.jpg?1783911293",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "A copy of a spell can be countered like any other spell, but it must be countered individually. Countering a spell with replicate won't affect the copies."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Copycrook
 {
     "name": "Copycrook",
@@ -1598,6 +1661,72 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Reiterating Bolt
+{
+    "name": "Reiterating Bolt",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Replicate—Pay {E}{E}{E}. (When you cast this spell, copy it for each time you paid its replicate cost. You may choose new targets for the copies.)\nReiterating Bolt deals 3 damage to target creature or planeswalker.",
+    "keywords": [
+        "REPLICATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomPayPlayerCounters",
+                    "counterType": "ENERGY",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            },
+            "multi": true,
+            "displayPrefix": "Replicate",
+            "keyword": "REPLICATE",
+            "branchesEffect": false,
+            "declaredSlot": "REPLICATED"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "UNCOMMON",
+        "artist": "G-host Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/51f57902-85d1-4c40-b79c-6cffafb4557a.jpg?1783911267",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "A copy of a spell can be countered like any other spell, but it must be countered individually. Countering a spell with replicate won't affect the copies."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

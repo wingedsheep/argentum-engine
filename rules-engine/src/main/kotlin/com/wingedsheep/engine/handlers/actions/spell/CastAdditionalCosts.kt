@@ -46,7 +46,8 @@ class CastAdditionalCosts(
      * ([com.wingedsheep.sdk.scripting.TapReason.forChoiceSlot]).
      */
     fun declaredSlotCost(action: CastSpell, cardDef: CardDefinition?): AdditionalCost? =
-        declaredOptionalCosts(action, cardDef).firstOrNull { it.additionalCost != null }?.additionalCost
+        declaredOptionalCosts(action, cardDef).firstOrNull { it.additionalCost != null }
+            ?.additionalCostPaid(action.declaredCostTimes)
 
     /**
      * Every additional cost this cast owes: the card's (or its chosen modes'), the declared optional
