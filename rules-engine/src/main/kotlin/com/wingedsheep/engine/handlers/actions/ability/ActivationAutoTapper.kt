@@ -65,7 +65,8 @@ internal class ActivationAutoTapper(
         val remainingCost = partialResult.remainingCost
 
         // The floating pool also pays toward the {X} portion before any sources are tapped —
-        // sharing the same coverage rule as CastPaymentProcessor.autoPay (ManaPool.xCoveragePlan).
+        // eligible restricted mana first, then the unrestricted coverage rule CastPaymentProcessor.autoPay
+        // shares (ManaPool.xCoverage).
         // Without this, an {X} ability whose X is solved purely by tapping sources reports "Not
         // enough mana" even when the pool already holds enough (e.g. Aladdin's Lamp activated with
         // X=4 while 4 mana float in the pool). We only reduce how much X the solver must tap for
