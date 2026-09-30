@@ -509,7 +509,7 @@ class ReplacementEffectProcessor(
             }
         }
 
-        results.addAll(DredgeReplacements.gather(state, event, context))
+        results.addAll(DredgeReplacements.gather(state, event, context, conditionEvaluator.predicates))
 
         return results
     }

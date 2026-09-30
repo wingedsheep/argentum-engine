@@ -2693,6 +2693,103 @@
     ]
 }
 
+// The Necrobloom
+{
+    "name": "The Necrobloom",
+    "manaCost": "{1}{W}{B}{G}",
+    "typeLine": "Legendary Creature — Plant",
+    "oracleText": "Landfall — Whenever a land you control enters, create a 0/1 green Plant creature token. If you control seven or more lands with different names, create a 2/2 black Zombie creature token instead.\nLand cards in your graveyard have dredge 2. (You may return a land card from your graveyard to your hand and mill two cards instead of drawing a card.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 7
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Necrobloom:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land",
+                                "aggregation": "DISTINCT_NAMES"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 7
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Zombie"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c923eed-3d09-4b38-a884-513700aebca3.jpg?1783911106"
+                    },
+                    "otherwise": {
+                        "type": "CreateToken",
+                        "power": 0,
+                        "toughness": 1,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Plant"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/9/0/909f85b2-0d7b-42ac-a0b7-402e20cedab4.jpg?1783911105"
+                    }
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, create a 0/1 green Plant creature token. If you control seven or more lands with different names, create a 2/2 black Zombie creature token instead."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GraveyardCardsHaveDredge",
+                "filter": "land",
+                "amount": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "RARE",
+        "artist": "Igor Krstic",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8fcf68cf-0dac-4b29-90d5-c18c685182e6.jpg?1783911249",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If you control multiple lands with the same name, only one of those lands will count toward the seven or more required to create a Zombie."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If multiple lands enter the battlefield under your control simultaneously, all of those lands are counted. For example, if you sacrifice seven lands while resolving Scapeshift and search your library for seven lands with different names, you'll create seven Zombie tokens."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Dredge can replace any card draw, not just the one during your draw step. One card draw can't be replaced by multiple dredge abilities."
+            }
+        ]
+    }
+}
+
 // Thraben Charm
 {
     "name": "Thraben Charm",
