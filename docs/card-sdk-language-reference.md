@@ -13703,6 +13703,28 @@ EntersWithChoice(
   (`CREATURE_ON_BATTLEFIELD` with no other creature you control) is skipped. Face-down entries ask
   nothing (CR 708.2).
 
+**"It becomes your choice of …" — `ModeOption.becomes`** (Primal Clay, Corrupted Shapeshifter):
+
+```kotlin
+EntersWithChoice(
+    ChoiceType.MODE,
+    modeOptions = listOf(
+        ModeOption("3/3 flying", "3/3 creature with flying",
+            becomes = EntryCharacteristics(3, 3, keywords = setOf(Keyword.FLYING))),
+        ModeOption("1/6 defender", "1/6 Wall with defender",
+            becomes = EntryCharacteristics(1, 6, keywords = setOf(Keyword.DEFENDER), subtypes = listOf("Wall"))),
+    ),
+)
+```
+
+- An "as … enters" ability that sets power and toughness sets **copiable values** (CR 707.2), so the
+  chosen `EntryCharacteristics` are written into the permanent's own card: `power`/`toughness`
+  replace the printed star/star, `keywords` and `subtypes` are added. No mode-gated statics needed.
+- An object that *becomes* a copy of it is the chosen shape without choosing. One *entering* as a
+  copy makes its own choice on top: keywords accumulate, the last-chosen P/T wins.
+- Undone when the permanent leaves the battlefield (CR 400.7) — the card is star/star again. The
+  mode id is still recorded, so `SourceChosenModeIs` keeps working alongside it.
+
 **Other `ChoiceType`s** — `ChoiceType.COLOR` writes `ChosenColorComponent` (read by
 `GrantChosenColor`), and takes `excludedColors` for "choose a color other than red" (the Thriving lands — the
 `ChooseColorDecision` offers only the remaining colors and the validator rejects an excluded one),
