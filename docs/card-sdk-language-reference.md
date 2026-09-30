@@ -9598,7 +9598,7 @@ change. Gate a from-zone ability to sorcery timing with `timing = TimingRule.Sor
 **`genericCostReduction` — "this ability costs {N} less to activate for each …".** The
 `activatedAbility { }` builder exposes `genericCostReduction: DynamicAmount?`. When set, the engine
 reduces the generic-mana portion of the ability's `cost` by that amount at activation time (floored
-at {0}; colored pips are never touched — CR 118.9a), and both the legal-action enumerator and
+at {0}; colored pips are never touched — CR 118.7a), and both the legal-action enumerator and
 `ActivateAbilityHandler` apply the same reduction so the displayed/affordable cost matches what's
 paid. It accepts **any** `DynamicAmount`, so the reduction can read:
 - a **per-source property** — `DynamicAmount.EntityProperty(Self, Power)` for "costs {X} less,
@@ -9611,6 +9611,17 @@ paid. It accepts **any** `DynamicAmount`, so the reduction can read:
 
 No new vocabulary is needed for a "costs {N} less per «permanents you control matching a filter»"
 ability — feed the matching count `DynamicAmount` to `genericCostReduction`.
+
+**`costsLessIf(reduction, condition)` — "this ability costs {4}{B} less to activate if …".** Sets
+`ActivatedAbility.conditionalCostReduction = ConditionalCostReduction(ManaCost, Condition)`. While
+the condition holds (evaluated against the ability's source and controller when the cost is
+totalled), the whole `reduction` is subtracted from the ability's first mana component **pip-wise**
+(`ManaCost.subtract`, CR 118.7): a colored pip removes a matching pip, and an unmatched colored pip
+spills onto generic (CR 118.7b/c) — `{3}{B}{B}` − `{R}{B}` = `{2}{B}`. Use it whenever the printed
+reduction contains a colored or colorless pip, which `genericCostReduction` can't express. Both
+enumerators and `ActivateAbilityHandler` apply it through `AbilityCostReduction.applyConditional`,
+before `genericCostReduction` and the battlefield statics. Kami of Jealous Thirst:
+`costsLessIf("{4}{B}", Conditions.YouDrewCardsThisTurn(3))` — the ability is free after three draws.
 
 **`TimingRule`**
 

@@ -1322,6 +1322,77 @@
     }
 }
 
+// Kami of Jealous Thirst
+{
+    "name": "Kami of Jealous Thirst",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Deathtouch\n{4}{B}: Each opponent loses 2 life and you gain 2 life. This ability costs {4}{B} less to activate if you've drawn three or more cards this turn. Activate only once each turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kami of Jealous Thirst:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "conditionalCostReduction": {
+                    "reduction": "{4}{B}",
+                    "condition": {
+                        "type": "PlayerDrewCardsThisTurn",
+                        "atLeast": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "artist": "Xavier Ribeiro",
+        "flavorText": "The bustle of life in Towashi opened up new avenues for less benevolent kami.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2958c96-97f8-4961-813c-938b83e20d07.jpg?1783911279"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Lethal Throwdown
 {
     "name": "Lethal Throwdown",

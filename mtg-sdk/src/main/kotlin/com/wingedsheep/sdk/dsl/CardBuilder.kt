@@ -1761,6 +1761,16 @@ class ActivatedAbilityBuilder(private val declaredTargets: TargetList = TargetLi
     var isBoast: Boolean = false
     var holdPriority: Boolean = false
     var genericCostReduction: DynamicAmount? = null
+    /**
+     * "This ability costs [reduction] less to activate if [condition]" — a pip-wise (CR 118.7)
+     * self reduction. See [ActivatedAbility.conditionalCostReduction].
+     */
+    var conditionalCostReduction: ConditionalCostReduction? = null
+
+    /** Sets [conditionalCostReduction]: `costsLessIf("{4}{B}", Conditions.YouDrewCardsThisTurn(3))`. */
+    fun costsLessIf(reduction: String, condition: Condition) {
+        conditionalCostReduction = ConditionalCostReduction(ManaCost.parse(reduction), condition)
+    }
     /** Colors that may be spent on the `{X}` portion of this ability's cost (empty = any). */
     var xManaRestriction: Set<Color> = emptySet()
     /** Minimum legal value for `{X}` in this ability's cost (set to 1 for "X can't be 0"). */
@@ -1827,6 +1837,7 @@ class ActivatedAbilityBuilder(private val declaredTargets: TargetList = TargetLi
             isBoast = isBoast,
             holdPriority = holdPriority,
             genericCostReduction = genericCostReduction,
+            conditionalCostReduction = conditionalCostReduction,
             xManaRestriction = xManaRestriction,
             minimumXValue = minimumXValue,
             xDefinedAs = xDefinedAs,

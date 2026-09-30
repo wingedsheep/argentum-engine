@@ -1,8 +1,10 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.legalactions.utils.AbilityCostReduction
 import com.wingedsheep.engine.legalactions.utils.CastPermissionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
@@ -18,14 +20,17 @@ import com.wingedsheep.sdk.scripting.ActivatedAbility
  */
 internal class ActivationCostTotaller(
     private val castPermissionUtils: CastPermissionUtils,
-    private val amountEvaluator: DynamicAmountEvaluator
+    private val conditionEvaluator: ConditionEvaluator
 ) {
+    private val amountEvaluator: DynamicAmountEvaluator get() = conditionEvaluator.amounts
+
 
     /**
      * The cost this activation will be charged.
      *
      * Resolve a *defined* {X} (CR 107.3c) before anything else reads the cost, so validation
-     * sees the same fixed cost enumeration offered and payment will charge. Then apply
+     * sees the same fixed cost enumeration offered and payment will charge. Then apply the
+     * ability's own conditional pip-wise reduction (Kami of Jealous Thirst), then its
      * ability-specific generic cost reduction (e.g., The Dominion Bracelet's
      * "{X} less, where X is this creature's power"). Per Scryfall ruling, the reduced
      * cost is locked in here, before costs are paid. Then apply generic equip-cost reduction
@@ -53,8 +58,11 @@ internal class ActivationCostTotaller(
         val equipTargetIdForCost = action.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()?.entityId
         val costWithDefinedX =
             castPermissionUtils.applyDefinedXValue(rawCost, ability, state, action.sourceId, action.playerId)
+        val costAfterConditionalReduction = AbilityCostReduction.applyConditional(
+            costWithDefinedX, ability, state, action.sourceId, action.playerId, conditionEvaluator
+        )
         val costAfterGenericReduction = applyGenericCostReduction(
-            costWithDefinedX, ability, state, action.sourceId, action.playerId, action.targets
+            costAfterConditionalReduction, ability, state, action.sourceId, action.playerId, action.targets
         )
         val costAfterAbilityReduction = castPermissionUtils.applyActivatedAbilityCostReduction(
             costAfterGenericReduction, state, action.sourceId, ability.isExhaust, ability.isPowerUp,
