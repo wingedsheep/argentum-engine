@@ -565,6 +565,124 @@
     ]
 }
 
+// Black Sun's Twilight
+{
+    "name": "Black Sun's Twilight",
+    "manaCost": "{X}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Up to one target creature gets -X/-X until end of turn. If X is 5 or more, return a creature card with mana value X or less from your graveyard to the battlefield tapped.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Multiply",
+                        "amount": "XValue",
+                        "multiplier": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Multiply",
+                        "amount": "XValue",
+                        "multiplier": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": "XValue",
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            "ManaValueAtMostX"
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "Choose a creature card to return to the battlefield tapped"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "placement": "Tapped"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "Jonas De Ro",
+        "flavorText": "\"Where once there was complacence, Sheoldred brought ambition, and soon the will of Yawgmoth reigned.\"\n—Monument inscription",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e5bb4def-c67c-44c2-b3b2-8c53a077432d.jpg?1783918050",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "The creature card you return, if any, isn't a target of Black Sun's Twilight. You choose it as Black Sun's Twilight resolves if X is 5 or more."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "You can cast Black Sun's Twilight without a target (presumably with X equal to 5 or more) just to return a creature card. However, if you do choose a target, and that target is illegal at the time the spell tries to resolve, the spell won't resolve and none of its effects will happen. You won't get to return a creature card to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Blade of Shared Souls
 {
     "name": "Blade of Shared Souls",
@@ -983,6 +1101,88 @@
     ]
 }
 
+// Bonepicker Skirge
+{
+    "name": "Bonepicker Skirge",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Phyrexian Imp",
+    "oracleText": "Flying\nCorrupted — As long as an opponent has three or more poison counters, this creature has deathtouch and lifelink.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "PlayerCounterCount",
+                            "counterType": "POISON"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "PlayerCounterCount",
+                            "counterType": "POISON"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "artist": "Dave Kendall",
+        "flavorText": "\"Get away from there! I must rebuild that one for the next bout. Shoo, shoo!\"\n—Keskit, the Flesh Sculptor",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b83f4e41-a5f5-4929-9816-06dc1c228474.jpg?1783918050"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Branchblight Stalker
 {
     "name": "Branchblight Stalker",
@@ -1101,6 +1301,71 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Chittering Skitterling
+{
+    "name": "Chittering Skitterling",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Phyrexian Rat",
+    "oracleText": "Corrupted — Sacrifice an artifact or creature: Draw a card. Activate only if an opponent has three or more poison counters and only once each turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chittering Skitterling:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "artifact|creature"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "GreatestAmongPlayers",
+                                "players": "EachOpponent",
+                                "inner": {
+                                    "type": "PlayerCounterCount",
+                                    "counterType": "POISON"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "OncePerTurn"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "flavorText": "What cannot be remade will be unmade, one scrap at a time.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0328d43-ae9b-462a-a1e5-8ed408eea1a7.jpg?1783918050"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1901,6 +2166,171 @@
     ]
 }
 
+// Fleshless Gladiator
+{
+    "name": "Fleshless Gladiator",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Phyrexian Skeleton",
+    "oracleText": "Corrupted — {2}{B}: Return this card from your graveyard to the battlefield tapped. You lose 1 life. Activate only if an opponent has three or more poison counters.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fleshless Gladiator:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "placement": "Tapped",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "You"
+                            }
+                        }
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "GreatestAmongPlayers",
+                                "players": "EachOpponent",
+                                "inner": {
+                                    "type": "PlayerCounterCount",
+                                    "counterType": "POISON"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    }
+                ],
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "artist": "Konstantin Porubov",
+        "flavorText": "What she lacks in skin she makes up in swagger.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b2a32c9-f0ae-4ae4-a5c5-72bea05018fb.jpg?1783918046"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Geth, Thane of Contracts
+{
+    "name": "Geth, Thane of Contracts",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Legendary Creature — Phyrexian Zombie",
+    "oracleText": "Other creatures you control get -1/-1.\n{1}{B}{B}, {T}: Return target creature card from your graveyard to the battlefield. It gains \"If this creature would leave the battlefield, exile it instead of putting it anywhere else.\" Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Geth, Thane of Contracts:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "GrantExileOnLeave",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": -1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "RARE",
+        "artist": "Martin de Diego Sádaba",
+        "flavorText": "\"It seems someone forgot to read the fine print.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c26e18be-81a1-4645-866a-fae5c2fdf7c9.jpg?1783918044"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Glistener Seer
 {
     "name": "Glistener Seer",
@@ -2391,6 +2821,106 @@
         "BLUE",
         "BLACK"
     ]
+}
+
+// Karumonix, the Rat King
+{
+    "name": "Karumonix, the Rat King",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Legendary Creature — Phyrexian Rat",
+    "oracleText": "Toxic 1 (Players dealt combat damage by this creature also get a poison counter.)\nOther Rats you control have toxic 1.\nWhen Karumonix enters, look at the top five cards of your library. You may reveal any number of Rat cards from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Karumonix, the Rat King:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": "ChooseAnyNumber",
+                            "filter": "Rat",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal any number of Rat cards and put them into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TOXIC_1",
+                "filter": {
+                    "baseFilter": "creature Rat ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "RARE",
+        "artist": "Helge C. Balzer",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f16e282d-8941-46c7-a974-c05b6f73c964.jpg?1783918045",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "Multiple instances of toxic are cumulative. For example, if a creature has toxic 2 and gains toxic 1 due to another effect, combat damage that creature deals to a player will cause that player to get 3 poison counters."
+            }
+        ]
+    }
 }
 
 // Kinzu of the Bleak Coven
@@ -3401,6 +3931,141 @@
     ]
 }
 
+// Necrosquito
+{
+    "name": "Necrosquito",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Phyrexian Insect",
+    "oracleText": "Flying\nThis creature enters with two oil counters on it.\nThis creature gets +1/+1 for each oil counter on it.\nWhenever another creature or artifact you control is put into a graveyard from the battlefield, put an oil counter on this creature.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Necrosquito:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature|artifact ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "OIL"
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "OIL"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 2,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "UNCOMMON",
+        "artist": "Abz J Harding",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72af72d2-5995-4cad-82f1-e2d0c465d6f1.jpg?1783918044"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Nimraiser Paladin
+{
+    "name": "Nimraiser Paladin",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Phyrexian Knight",
+    "oracleText": "Toxic 2 (Players dealt combat damage by this creature also get two poison counters.)\nWhen this creature enters, return target creature card with mana value 3 or less from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nimraiser Paladin:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature mv<=3 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "José Parodi",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a99fe9a8-d9e7-4286-81a1-adfb753e4741.jpg?1783918043"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nissa, Ascended Animist
 {
     "name": "Nissa, Ascended Animist",
@@ -4104,6 +4769,68 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Ravenous Necrotitan
+{
+    "name": "Ravenous Necrotitan",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Phyrexian Horror",
+    "oracleText": "Corrupted — When this creature enters, sacrifice a creature unless an opponent has three or more poison counters.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ravenous Necrotitan:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "GreatestAmongPlayers",
+                                    "players": "EachOpponent",
+                                    "inner": {
+                                        "type": "PlayerCounterCount",
+                                        "counterType": "POISON"
+                                    }
+                                },
+                                "operator": "GTE",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Sacrifice",
+                        "filter": "creature"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "flavorText": "Some of Sheoldred's goliaths spread the glory of Phyrexia. Others just eat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce7e1e9b-ad7f-4f4c-bdb5-2ccb6f147037.jpg?1783918042"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5580,6 +6307,93 @@
     ]
 }
 
+// Vat of Rebirth
+{
+    "name": "Vat of Rebirth",
+    "manaCost": "{B}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever another artifact or creature you control is put into a graveyard from the battlefield, put an oil counter on this artifact.\n{2}{B}, {T}, Remove four oil counters from this artifact: Return target creature card from your graveyard to the battlefield. Activate only as a sorcery.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vat of Rebirth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature|artifact ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Vat of Rebirth:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "UNCOMMON",
+        "artist": "Peter Polach",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20a961ea-0639-4f5d-8cf4-f909c59a4ae1.jpg?1783918038"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Veil of Assimilation
 {
     "name": "Veil of Assimilation",
@@ -5758,6 +6572,64 @@
     ]
 }
 
+// Vraan, Executioner Thane
+{
+    "name": "Vraan, Executioner Thane",
+    "manaCost": "{1}{B}",
+    "typeLine": "Legendary Creature — Phyrexian Vampire",
+    "oracleText": "Whenever one or more other creatures you control die, each opponent loses 2 life and you gain 2 life. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vraan, Executioner Thane:1",
+                "trigger": {
+                    "type": "CreaturesYouControlDiedEvent",
+                    "excludeSelf": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "RARE",
+        "artist": "Helge C. Balzer",
+        "flavorText": "\"Soon enough each praetor will have hired me to kill the others, and I will stand alone as the true Father of Machines.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c4a3119-c70a-46ff-8ede-6356f2b7bc13.jpg?1783918037"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Vraska's Fall
 {
     "name": "Vraska's Fall",
@@ -5801,6 +6673,159 @@
         "flavorText": "The dull, creeping pain of phyresis curdled in Vraska's blood. She knew as soon as it took her, she would betray everything—even Jace.",
         "imageUri": "https://cards.scryfall.io/normal/front/0/1/0173b7b4-2832-4943-ba45-8ba498d7a056.jpg?1783918037"
     },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Vraska, Betrayal's Sting
+{
+    "name": "Vraska, Betrayal's Sting",
+    "manaCost": "{4}{B}{B/P}",
+    "typeLine": "Legendary Planeswalker — Vraska",
+    "oracleText": "Compleated ({B/P} can be paid with {B} or 2 life. If life was paid, this planeswalker enters with two fewer loyalty counters.)\n0: You draw a card and lose 1 life. Proliferate.\n−2: Target creature becomes a Treasure artifact with \"{T}, Sacrifice this artifact: Add one mana of any color\" and loses all other card types and abilities.\n−9: If target player has fewer than nine poison counters, they get a number of poison counters equal to the difference.",
+    "keywords": [
+        "COMPLEATED"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vraska, Betrayal's Sting:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        },
+                        "Proliferate"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Vraska, Betrayal's Sting:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "BecomeArtifact",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "subtypes": [
+                        "Treasure"
+                    ],
+                    "colors": null,
+                    "grantedAbility": {
+                        "id": "Vraska, Betrayal's Sting:2",
+                        "cost": {
+                            "type": "CostComposite",
+                            "costs": [
+                                "CostTap",
+                                "CostSacrificeSelf"
+                            ]
+                        },
+                        "effect": "AddManaOfChoice",
+                        "isManaAbility": true,
+                        "descriptionOverride": "{T}, Sacrifice this artifact: Add one mana of any color."
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Vraska, Betrayal's Sting:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "POISON",
+                    "amount": {
+                        "type": "Subtract",
+                        "left": {
+                            "type": "Fixed",
+                            "amount": 9
+                        },
+                        "right": {
+                            "type": "PlayerCounterCount",
+                            "counterType": "POISON",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f59f2b07-47ad-4efd-ae8c-1c04b9265024.jpg?1783918037",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "In most cases, the target of Vraska's last loyalty ability will end up with nine poison counters. However, once you calculate what the difference is, replacement effects can change how many poison counters the player actually gets. For example, if the player controls Melira, the Living Cure, they will end up getting one poison counter if they had eight or fewer to begin with."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "The target of Vraska's second loyalty ability will lose any other subtypes and card types it previously had and will be only a Treasure artifact. It will retain any supertypes it had."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "A Phyrexian mana symbol contributes 1 toward the mana value of a card, even if life is paid for it. Specifically, Vraska's mana value is always 6."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "The compleated ability looks only at whether a player chose to pay 2 life for a Phyrexian mana symbol as they were casting the spell. If a player paid life for some other reason while casting the spell, that will not reduce the number of loyalty counters the planeswalker enters the battlefield with."
+            }
+        ]
+    },
+    "startingLoyalty": 6,
     "colorIdentityOverride": [
         "BLACK"
     ]
