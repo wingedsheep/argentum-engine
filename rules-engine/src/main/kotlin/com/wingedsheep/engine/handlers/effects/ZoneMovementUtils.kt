@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.consumeShieldCounter
@@ -443,6 +444,7 @@ object ZoneMovementUtils {
         return container
             // Identity
             .without<ControllerComponent>()
+            .without<TextReplacementComponent>()
             .without<FaceDownComponent>()
             .without<com.wingedsheep.engine.state.components.identity.FaceDownModeComponent>()
             .without<MorphDataComponent>()

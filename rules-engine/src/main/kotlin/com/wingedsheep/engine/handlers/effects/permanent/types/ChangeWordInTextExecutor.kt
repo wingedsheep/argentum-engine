@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.ChangeWordInTextEffect
+import com.wingedsheep.sdk.scripting.effects.TextWordCategory
 import kotlin.reflect.KClass
 
 /**
@@ -21,22 +22,7 @@ internal fun oracleWords(oracleText: String?): Set<String> =
     if (oracleText.isNullOrBlank()) emptySet()
     else Regex("[^A-Za-z'\\-]+").split(oracleText).filter { it.isNotBlank() }.map { it.lowercase() }.toSet()
 
-/**
- * Executor for [ChangeWordInTextEffect] (Crystal Spray).
- *
- * "Change the text of target spell or permanent by replacing all instances of one
- * color word with another or one basic land type with another."
- *
- * This executor:
- * 1. Resolves the target (battlefield or stack).
- * 2. Presents a ChooseOptionDecision with the FROM options — the five color words
- *    followed by the five basic land types.
- * 3. Pushes a [ChooseFromWordContinuation].
- *
- * The continuation handler ([com.wingedsheep.engine.handlers.continuations.WordChangeChoiceContinuationResumer])
- * handles the TO choice (constrained to the same category) and attaches the
- * [com.wingedsheep.engine.state.components.identity.TextReplacementComponent].
- */
+/** Offers a single FROM/TO decision constrained to the effect's word categories. */
 class ChangeWordInTextExecutor(
     private val decisionHandler: DecisionHandler = DecisionHandler()
 ) : EffectExecutor<ChangeWordInTextEffect> {
@@ -49,6 +35,11 @@ class ChangeWordInTextExecutor(
 
         /** Combined FROM options: color words then basic land types. */
         val ALL_WORDS: List<String> = COLOR_WORDS + Subtype.ALL_BASIC_LAND_TYPES.toList()
+
+        fun wordsFor(categories: Set<TextWordCategory>): List<String> = ALL_WORDS.filter {
+            if (it in COLOR_WORDS) TextWordCategory.COLOR_WORD in categories
+            else TextWordCategory.BASIC_LAND_TYPE in categories
+        }
 
         /** Color of the basic land type whose word this is (for the mana pip), or the color word itself. */
         private val WORD_TO_COLOR: Map<String, Color> = buildMap {
@@ -74,20 +65,25 @@ class ChangeWordInTextExecutor(
             val subtypes = projected.getSubtypes(targetId)
             val keywords = projected.getKeywords(targetId)
             val words = oracleWords(state.getEntity(targetId)?.get<CardComponent>()?.oracleText)
+            val text = com.wingedsheep.engine.state.components.identity.TextChanges.of(state, targetId)
             return buildSet {
-                Subtype.ALL_BASIC_LAND_TYPES.forEach { if (it in subtypes) add(it) }
+                Subtype.ALL_BASIC_LAND_TYPES.forEach { landType ->
+                    if (landType in subtypes || "${landType.uppercase()}WALK" in keywords) add(landType)
+                    if (landType.lowercase() in words || "${landType.lowercase()}walk" in words) {
+                        add(text?.replaceCreatureType(landType) ?: landType)
+                    }
+                }
                 Color.entries.forEach { c ->
                     val name = c.displayName.lowercase()
-                    if ("PROTECTION_FROM_${c.name}" in keywords || name in words || "non$name" in words) {
-                        add(c.displayName)
-                    }
+                    if ("PROTECTION_FROM_${c.name}" in keywords) add(c.displayName)
+                    if (name in words || "non$name" in words) add((text?.replaceColor(c) ?: c).displayName)
                 }
             }
         }
 
         /** Orders [ALL_WORDS] so relevant (on-card) words come first, each group in WUBRG/land order. */
-        fun orderWords(relevant: Set<String>): List<String> =
-            ALL_WORDS.filter { it in relevant } + ALL_WORDS.filter { it !in relevant }
+        fun orderWords(relevant: Set<String>, words: List<String> = ALL_WORDS): List<String> =
+            words.filter { it in relevant } + words.filter { it !in relevant }
 
         /**
          * Per-option metadata aligned to [words]: a small mana pip ("pip_w"..) the web client
@@ -136,15 +132,20 @@ class ChangeWordInTextExecutor(
         val targetName = state.getEntity(targetId)?.get<CardComponent>()?.name
 
         val relevant = relevantWords(state, targetId)
-        val fromOptions = orderWords(relevant)            // on-card words first
-        val toOptions = ALL_WORDS                          // every word is a candidate replacement
+        val words = wordsFor(effect.categories)
+        val fromOptions = orderWords(relevant, words)            // on-card words first
+        val toOptions = words                          // every word is a candidate replacement
         // Pre-select the first on-card word so the common single-relevant case is one click.
         val defaultFromIndex = fromOptions.indexOfFirst { it in relevant }.takeIf { it >= 0 }
 
         val decision = { decisionId: String -> ChooseReplacementDecision(
             id = decisionId,
             playerId = context.controllerId,
-            prompt = prompt(targetName),
+            prompt = when (effect.categories.singleOrNull()) {
+                TextWordCategory.COLOR_WORD -> "Change a color word in ${targetName ?: "the target"}"
+                TextWordCategory.BASIC_LAND_TYPE -> "Change a basic land type in ${targetName ?: "the target"}"
+                null -> prompt(targetName)
+            },
             context = DecisionContext(
                 sourceId = context.sourceId,
                 sourceName = sourceName,

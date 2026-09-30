@@ -417,30 +417,32 @@ data class ChangeCreatureTypeTextEffect(
     }
 }
 
+/** Categories of words a text-changing effect lets its controller choose. */
+@Serializable
+enum class TextWordCategory { COLOR_WORD, BASIC_LAND_TYPE }
+
 /**
- * Change the text of target spell or permanent by replacing all instances of one
- * color word with another, or one basic land type with another, for [duration].
- *
- * Used by Crystal Spray. Resolution involves two player decisions:
- * 1. Choose the word to replace (FROM) — a color word or a basic land type.
- * 2. Choose the replacement word (TO), of the same category.
- *
- * The executor adds (or extends) a [com.wingedsheep.engine.state.components.identity.TextReplacementComponent]
- * on the target entity with the chosen replacement. Because a basic-land subtype change
- * flows through the projected type line, mana production, landwalk, and type checks all
- * follow automatically; color-word changes rewrite protection-from-color and color filters.
- *
- * @param duration How long the text change lasts. Crystal Spray uses [Duration.EndOfTurn];
- *   indefinite changes (Artificial Evolution shape) would use [Duration.Permanent].
+ * Replace all instances of a chosen word with a different word in the same category.
+ * [categories] defines the legal choices; [duration] controls their lifetime.
+ * Choices are made together at resolution, even when neither word appears on the target.
  */
 @SerialName("ChangeWordInText")
 @Serializable
 data class ChangeWordInTextEffect(
+    val categories: Set<TextWordCategory>,
     val target: EffectTarget = EffectTarget.ContextTarget(0),
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
+    init { require(categories.isNotEmpty()) { "At least one text-word category is required" } }
+
     override val description: String = buildString {
-        append("Change the text of ${target.description} by replacing all instances of one color word with another or one basic land type with another")
+        append("Change the text of ${target.description} by replacing all instances of ")
+        append(TextWordCategory.entries.filter { it in categories }.joinToString(" or ") {
+            when (it) {
+                TextWordCategory.COLOR_WORD -> "one color word with another"
+                TextWordCategory.BASIC_LAND_TYPE -> "one basic land type with another"
+            }
+        })
         if (duration is Duration.EndOfTurn) append(" until end of turn")
         append(".")
     }

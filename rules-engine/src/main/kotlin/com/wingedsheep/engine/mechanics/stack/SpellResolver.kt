@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.mechanics.stack
 
+import com.wingedsheep.engine.state.components.identity.TextChanges
+import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.TargetingSourceType
@@ -12,7 +14,6 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.engine.state.nameVisibleToAll
@@ -198,7 +199,9 @@ internal class SpellResolver(
         val destZoneKey = ZoneKey(ownerId, destZone)
 
         var newState = state.updateEntity(spellId) { c ->
-            c.without<SpellOnStackComponent>().without<TargetsComponent>()
+            c.without<SpellOnStackComponent>()
+                .without<TextReplacementComponent>()
+                .without<TargetsComponent>()
         }
         newState = newState.addToZone(destZoneKey, spellId)
         // CR 712.8a — a fizzled card cast transformed is front face up again once off the stack.

@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.state.components.stack
 
+import com.wingedsheep.engine.state.components.identity.TextChanges
+import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
@@ -103,6 +105,10 @@ data class EntitySnapshot(
     val typeLine: TypeLine? = null,
     /** Card definition id, so dies/leaves triggers resolve for tokens after 704.5d cleanup. */
     val cardDefinitionId: String? = null,
+    /** Effective text at departure, before zone movement ends the object's text changes. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val textChanges: TextReplacementComponent? = null,
     /**
      * The permanent's name at capture time. Frozen because a *cost* has to be describable after the
      * permanent it consumed is gone: the emerge sacrifice (CR 702.119a) is named on the stack card
@@ -308,6 +314,7 @@ fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot {
         keywords = state.projectedState.getKeywords(entityId),
         cardDefinitionId = container?.get<CardComponent>()?.cardDefinitionId,
         copyTriggeredAbilities = captureCopyTriggeredAbilities(state, entityId),
+        textChanges = TextChanges.of(state, entityId),
         wasAttacking = container?.has<AttackingComponent>() ?: false,
         wasBlocking = container?.has<BlockingComponent>() ?: false,
         attachmentIds = attachmentIdsOf(state, entityId),
@@ -366,7 +373,7 @@ fun captureCopyTriggeredAbilities(state: GameState, entityId: EntityId): List<co
     if (container.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() ||
         state.projectedState.hasLostAllAbilities(entityId)
     ) return emptyList()
-    val replacement = com.wingedsheep.engine.state.components.identity.TextChanges.of(state, entityId)
+    val replacement = TextChanges.of(state, entityId)
         ?: return abilities
     return abilities.map { it.applyTextReplacement(replacement) }
 }

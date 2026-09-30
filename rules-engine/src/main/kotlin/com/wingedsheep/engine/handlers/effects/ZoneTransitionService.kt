@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.state.components.identity.TextChanges
+import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.CardExiledWithMadnessEvent
 import com.wingedsheep.engine.core.CardsDiscardedEvent
@@ -459,6 +461,7 @@ class ZoneTransitionService(
                 lostAllAbilities = lastKnownLostAllAbilities,
                 typeLine = lastKnownTypeLine,
                 cardDefinitionId = cardComponent.cardDefinitionId,
+                textChanges = TextChanges.of(state, entityId),
                 attachedTo = lastKnownAttachedTo,
                 wasEquipped = lastKnownWasEquipped,
                 attachmentIds = lastKnownAttachmentIds,
@@ -585,6 +588,13 @@ class ZoneTransitionService(
                         .without<PlayWithFixedAlternativeManaCostComponent>()
                 }
             }
+        }
+
+        // Text changes follow a permanent spell onto the battlefield, but not other new objects.
+        if (fromZone != actualDestZone && !(fromZone == Zone.STACK && actualDestZone == Zone.BATTLEFIELD) &&
+            newState.getEntity(entityId)?.has<TextReplacementComponent>() == true
+        ) {
+            newState = newState.updateEntity(entityId) { it.without<TextReplacementComponent>() }
         }
 
         // 6. Remove from current zone

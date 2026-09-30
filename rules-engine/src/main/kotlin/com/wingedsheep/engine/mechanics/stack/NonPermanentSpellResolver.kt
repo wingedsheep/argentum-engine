@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.mechanics.stack
 
+import com.wingedsheep.engine.state.components.identity.TextChanges
+import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
@@ -22,7 +24,6 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
-import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.engine.state.permissions.removeMayPlayPermissionsForCard
@@ -375,6 +376,7 @@ internal class NonPermanentSpellResolver(
 
         newState = newState.updateEntity(spellId) { c ->
             c.without<SpellOnStackComponent>()
+                .without<TextReplacementComponent>()
                 .without<TargetsComponent>()
                 .without<com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent>()
                 .without<com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent>()
@@ -723,6 +725,7 @@ internal class NonPermanentSpellResolver(
         // becomes a permanent, mirroring the normal resolved-spell cleanup.
         var working = state.updateEntity(spellId) { c ->
             c.without<SpellOnStackComponent>()
+                .without<TextReplacementComponent>()
                 .without<TargetsComponent>()
                 .without<PlayWithoutPayingCostComponent>()
                 .without<com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent>()

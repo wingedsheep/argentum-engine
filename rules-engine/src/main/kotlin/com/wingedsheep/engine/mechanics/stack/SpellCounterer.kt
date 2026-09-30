@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.stack
 
+import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -125,7 +126,9 @@ class SpellCounterer(
         // Remove stack components
         newState = com.wingedsheep.engine.mechanics.BestowCasts.end(newState, spellId)
         newState = newState.updateEntity(spellId) { c ->
-            c.without<SpellOnStackComponent>().without<TargetsComponent>()
+            c.without<SpellOnStackComponent>()
+                .without<TextReplacementComponent>()
+                .without<TargetsComponent>()
         }
 
         return ExecutionResult.success(
@@ -263,7 +266,9 @@ class SpellCounterer(
 
         newState = com.wingedsheep.engine.mechanics.BestowCasts.end(newState, spellId)
         newState = newState.updateEntity(spellId) { c ->
-            c.without<SpellOnStackComponent>().without<TargetsComponent>()
+            c.without<SpellOnStackComponent>()
+                .without<TextReplacementComponent>()
+                .without<TargetsComponent>()
         }
         if (destZone == Zone.LIBRARY) {
             newState = LibraryRevealUtils
@@ -333,7 +338,9 @@ class SpellCounterer(
         // Remove stack components and optionally grant the counter's controller a free recast
         // (Kheru Spellsnatcher).
         newState = newState.updateEntity(spellId) { c ->
-            var updated = c.without<SpellOnStackComponent>().without<TargetsComponent>()
+            var updated = c.without<SpellOnStackComponent>()
+                .without<TextReplacementComponent>()
+                .without<TargetsComponent>()
             if (grantFreeCast) {
                 updated = updated
                     .with(PlayWithoutPayingCostComponent(controllerId = controllerId, permanent = true))
@@ -413,7 +420,9 @@ class SpellCounterer(
         newState = newState.addToZone(exileZone, spellId)
         newState = com.wingedsheep.engine.mechanics.BestowCasts.end(newState, spellId)
         newState = newState.updateEntity(spellId) { c ->
-            c.without<SpellOnStackComponent>().without<TargetsComponent>()
+            c.without<SpellOnStackComponent>()
+                .without<TextReplacementComponent>()
+                .without<TargetsComponent>()
         }
 
         val events = mutableListOf<GameEvent>(
@@ -567,7 +576,9 @@ class SpellCounterer(
         newState = newState.addToZone(ZoneKey(ownerId, Zone.EXILE), spellId)
         newState = com.wingedsheep.engine.mechanics.BestowCasts.end(newState, spellId)
         newState = newState.updateEntity(spellId) { c ->
-            c.without<SpellOnStackComponent>().without<TargetsComponent>()
+            c.without<SpellOnStackComponent>()
+                .without<TextReplacementComponent>()
+                .without<TargetsComponent>()
         }
         val then = replacement.then
         if (then != null && !isSpellCopy) {

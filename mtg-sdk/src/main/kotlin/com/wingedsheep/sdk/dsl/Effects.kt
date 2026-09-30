@@ -172,6 +172,7 @@ import com.wingedsheep.sdk.scripting.effects.BecomeChosenManaColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeColorEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeWordInTextEffect
+import com.wingedsheep.sdk.scripting.effects.TextWordCategory
 import com.wingedsheep.sdk.scripting.CardNamePool
 import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
@@ -2483,12 +2484,13 @@ object Effects {
     /**
      * Change the text of a target spell or permanent by replacing one color word with another,
      * or one basic land type with another, for [duration]. The player chooses the word to replace
-     * and its replacement at resolution. Used by Crystal Spray (until end of turn).
+     * and its replacement at resolution, limited to the nonempty [categories] set.
      */
     fun ChangeWordInText(
+        categories: Set<TextWordCategory>,
         target: EffectTarget,
         duration: Duration = Duration.EndOfTurn
-    ): Effect = ChangeWordInTextEffect(target = target, duration = duration)
+    ): Effect = ChangeWordInTextEffect(categories = categories, target = target, duration = duration)
 
     /**
      * Set a creature's base power to a dynamic value (Layer 7b, set values), leaving toughness alone.

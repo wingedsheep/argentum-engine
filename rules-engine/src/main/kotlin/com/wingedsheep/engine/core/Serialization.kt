@@ -112,6 +112,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ManaAddedEvent::class)
         subclass(ManaSpentEvent::class)
         subclass(ManaPoolChangedEvent::class)
+        subclass(TextChangedEvent::class)
         subclass(AbilityCounteredEvent::class)
         subclass(BecomesTargetEvent::class)
         subclass(CardCycledEvent::class)

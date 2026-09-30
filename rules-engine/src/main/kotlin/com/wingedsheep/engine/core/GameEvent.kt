@@ -2278,3 +2278,8 @@ data class DoorLockedEvent(
 @Serializable
 @SerialName("ManaPoolChangedEvent")
 data class ManaPoolChangedEvent(val playerId: EntityId) : GameEvent
+
+/** A text-changing effect attached a word replacement to a spell or permanent. */
+@Serializable
+@SerialName("TextChangedEvent")
+data class TextChangedEvent(val targetId: EntityId, val fromWord: String, val toWord: String) : GameEvent

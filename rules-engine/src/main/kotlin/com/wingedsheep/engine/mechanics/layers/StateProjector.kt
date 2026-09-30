@@ -592,6 +592,17 @@ class StateProjector {
             values.types.removeAll(oldSubtypesInTypes)
             values.types.addAll(transformedSubtypes)
 
+            // Rewrite the original set together: Forestwalk -> Islandwalk must not consume
+            // a separate printed Islandwalk before its own replacement is applied.
+            val landwalkKeywords = values.keywords.filter { keyword ->
+                com.wingedsheep.sdk.core.Subtype.ALL_BASIC_LAND_TYPES.any { "${it.uppercase()}WALK" == keyword }
+            }
+            values.keywords.removeAll(landwalkKeywords.toSet())
+            landwalkKeywords.forEach { keyword ->
+                val landType = com.wingedsheep.sdk.core.Subtype.ALL_BASIC_LAND_TYPES.first { "${it.uppercase()}WALK" == keyword }
+                values.keywords.add("${textReplacement.replaceCreatureType(landType).uppercase()}WALK")
+            }
+
             val protectionSubtypePrefix = "PROTECTION_FROM_SUBTYPE_"
             val protectionKeywords = values.keywords.filter { it.startsWith(protectionSubtypePrefix) }
             for (keyword in protectionKeywords) {

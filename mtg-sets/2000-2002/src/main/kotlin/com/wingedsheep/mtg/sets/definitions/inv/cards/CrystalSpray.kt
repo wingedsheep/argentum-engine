@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.TargetSpellOrPermanent
+import com.wingedsheep.sdk.scripting.effects.TextWordCategory
 
 /**
  * Crystal Spray
@@ -31,7 +32,7 @@ val CrystalSpray = card("Crystal Spray") {
 
     spell {
         val t = target(TargetSpellOrPermanent())
-        effect = Effects.ChangeWordInText(t) then Effects.DrawCards(1)
+        effect = Effects.ChangeWordInText(TextWordCategory.entries.toSet(), t) then Effects.DrawCards(1)
     }
 
     metadata {

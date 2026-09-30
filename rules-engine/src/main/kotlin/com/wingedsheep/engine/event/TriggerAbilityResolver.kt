@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.event
 
+import com.wingedsheep.engine.state.components.identity.TextChanges
+import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.mechanics.SoulbondPairing
 import com.wingedsheep.engine.mechanics.battle.Battles
 import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
@@ -19,7 +21,6 @@ import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.identity.RoomComponent
 import com.wingedsheep.engine.state.components.player.TheRingComponent
-import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -58,6 +59,7 @@ class TriggerAbilityResolver(
         cardDefinitionId: String,
         state: GameState,
         statics: BattlefieldStaticsIndex = BattlefieldStaticsIndex.build(state, cardRegistry, predicateEvaluator = predicateEvaluator),
+        textReplacement: TextReplacementComponent? = TextChanges.of(state, entityId),
     ): List<TriggeredAbility> {
         // First check the AbilityRegistry (for manually registered abilities)
         val registryAbilities = abilityRegistry.getTriggeredAbilities(entityId, cardDefinitionId)
@@ -160,7 +162,6 @@ class TriggerAbilityResolver(
         val combined = if (allGranted.isNotEmpty()) intrinsic + allGranted else intrinsic
 
         // Apply text replacement if the entity has one
-        val textReplacement = TextChanges.of(state, entityId)
         return if (textReplacement != null) {
             combined.map { it.applyTextReplacement(textReplacement) }
         } else {
@@ -624,7 +625,7 @@ class TriggerAbilityResolver(
         if (event.lastKnown?.lostAllAbilities == true || event.lastKnown?.wasFaceDown == true) return emptyList()
         val currentCopyAbilityIds = state.getEntity(event.entityId)?.get<CardComponent>()
             ?.copyTriggeredAbilities.orEmpty().mapTo(HashSet()) { it.id }
-        val live = getTriggeredAbilities(event.entityId, cardDefinitionId, state, statics)
+        val live = getTriggeredAbilities(event.entityId, cardDefinitionId, state, statics, event.lastKnown?.textChanges)
             .filterNot { it.id in currentCopyAbilityIds } + event.lastKnown?.copyTriggeredAbilities.orEmpty()
         val frozenIds = event.lastKnown?.conditionalSelfGrantIds ?: return live
         val liveIds = live.mapTo(HashSet()) { it.id }

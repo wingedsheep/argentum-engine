@@ -63,6 +63,6 @@ class TextReplacementContinuationResumer(
             container.with(newComponent)
         }
 
-        return checkForMore(newState, emptyList())
+        return checkForMore(newState, listOf(TextChangedEvent(targetId, fromWord, toWord)))
     }
 }

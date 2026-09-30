@@ -2020,15 +2020,22 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   resolution. Compose as `ChooseColorThen(then = ChangeColorToChosen(target))` for "target ...
   becomes the color of your choice" (Blind Seer). Under `ChooseColorsThen` it takes the whole chosen
   set (`EffectContext.chosenColors`) — "the color **or colors** of your choice" (Quickchange).
-- `ChangeWordInText(target, duration)` — Layer-3 text change: the player picks one **color word**
-  or **basic land type** on the target and a replacement of the same category, recorded as a
-  `TextReplacement` on the target. A basic-land-type swap flows through the projected type line, so
+- `ChangeWordInText(categories, target, duration)` — Layer-3 text change: the player picks one **color word**
+  or **basic land type** and a different replacement of the same category, recorded as a
+  `TextReplacement` on the target. `categories` is a required nonempty set of `TextWordCategory`
+  (`COLOR_WORD`, `BASIC_LAND_TYPE`): Sleight of Mind allows only color words, Magical Hack only
+  basic land types, and Crystal Spray both. Words absent from the target remain legal choices.
+  A basic-land-type swap flows through the projected type line, so
   the land's mana (via `IntrinsicManaAbilities`), landwalk relevance, and type checks all follow
   automatically (Forest→Island taps for `{U}`); a color-word swap rewrites protection-from-color and
   `HasColor`/`NotColor` filters. `duration = EndOfTurn` is stripped at cleanup; `Permanent` is the
   Artificial-Evolution-style indefinite change. The player picks the FROM and TO words on **one
   screen** (a `ChooseReplacementDecision`), with words **present on the target** surfaced first
   (labeled "On <card>") so a no-op pick is discouraged, and a live `from → to` preview. (Crystal Spray)
+  Text changes also rewrite printed basic landwalk (Swampwalk→Plainswalk), end on a zone change,
+  and follow a permanent spell onto the battlefield. Dies/leaves triggers use the effective
+  text captured in `EntitySnapshot.textChanges` before cleanup. Each applied change emits
+  `TextChangedEvent`; the existing active-effect projection supplies the client display.
   The global, static counterpart is `ChangeAllColorWordsToChosenColor` (Swirl the Mists).
 
 ### Mana

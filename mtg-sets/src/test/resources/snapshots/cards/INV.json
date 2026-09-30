@@ -3494,6 +3494,10 @@
             "effects": [
                 {
                     "type": "ChangeWordInText",
+                    "categories": [
+                        "COLOR_WORD",
+                        "BASIC_LAND_TYPE"
+                    ],
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
