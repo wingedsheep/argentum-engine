@@ -107,6 +107,14 @@ enum class ChoiceSlot {
     TEAMWORK,
 
     /**
+     * Whether the spell's **replicate** cost was paid at least once (CR 702.56a). The number of
+     * payments rides on the cast itself (`CastSpell.declaredCostTimes`), because only the cast
+     * trigger that copies the spell reads it. Distinct from [KICKED] so a replicated spell never
+     * reads as kicked to "whenever you cast a kicked spell" payoffs.
+     */
+    REPLICATED,
+
+    /**
      * Whether the spell's sneak cost was paid when cast (CR 702.190, e.g. Leonardo, Leader
      * in Blue). A present value means "cast for its sneak cost". Read back through
      * [com.wingedsheep.sdk.scripting.conditions.SneakCostWasPaid].

@@ -123,7 +123,12 @@ class FrozenBaselineTest : FunSpec({
          * `", additionalCostChoices={}"` stripped from the recorded action text, this branch
          * reproduces the previous golden `6193d6504283455a` exactly. Seat 1 still wins on turn
          * 20 at life -8 / 16.
+         *
+         * Re-blessed 2026-09-30 for replicate adding `CastSpell.declaredCostTimes`. **`LEGACY_V0` did
+         * not move.** With `", declaredCostTimes=1"` stripped from the recorded action text, this
+         * branch reproduces the previous golden `d8f35146e25ee2b1` exactly. Seat 1 still wins on turn
+         * 20 at life -8 / 16.
          */
-        private const val GOLDEN_HASH = "d8f35146e25ee2b1"
+        private const val GOLDEN_HASH = "b1efc4d47dce9a1c"
     }
 }

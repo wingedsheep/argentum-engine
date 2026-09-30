@@ -2149,7 +2149,8 @@ class PredicateEvaluator(
                 playerMatchesControlLeaf(state, projected, protector, predicate.protector, ctx)
             }
 
-            StatePredicate.IsModified -> com.wingedsheep.engine.handlers.predicates.isModified(state, entityId)
+            StatePredicate.IsModified ->
+                com.wingedsheep.engine.handlers.predicates.isModified(state, entityId) { projected.getController(it) }
 
             // Attached-to-type — entity has an AttachedToComponent and the referenced
             // permanent currently has the requested CardType (Pyramids: "Aura attached

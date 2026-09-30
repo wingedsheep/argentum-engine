@@ -79,7 +79,7 @@ internal class CastCostTotaller(
         if (!playForFree && !action.useAlternativeCost) {
             val kickerManaCost = declaredOptionalCosts(action, cardDef)
                 .firstOrNull { it.manaCost != null }
-                ?.manaCost
+                ?.manaCostPaid(action.declaredCostTimes)
             if (kickerManaCost != null) {
                 effectiveCost = ManaCost(effectiveCost.symbols + kickerManaCost.symbols)
             }

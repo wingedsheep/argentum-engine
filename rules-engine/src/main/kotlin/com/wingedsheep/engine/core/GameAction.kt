@@ -80,6 +80,14 @@ data class CastSpell(
      * is never mistaken for a kicked one.
      */
     val declaredCostSlot: ChoiceSlot? = null,
+    /**
+     * How many times the declared optional cost is paid (CR 601.2b "announces their intentions to
+     * pay any or all of those costs"). Always 1 for a once-only cost; a repeatable one
+     * ([com.wingedsheep.sdk.scripting.KeywordAbility.OptionalAdditionalCost.multi] — replicate,
+     * CR 702.56a) may declare more, and the handler charges the cost that many times over.
+     * Ignored when [declaredCostSlot] is null.
+     */
+    val declaredCostTimes: Int = 1,
     /** Explicit branches of named additional-cost choices; retained independently of payment. */
     val additionalCostChoices: Map<ChoiceSlot, Int> = emptyMap(),
     /**

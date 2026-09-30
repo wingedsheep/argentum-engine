@@ -303,6 +303,69 @@
     }
 }
 
+// Consign to Memory
+{
+    "name": "Consign to Memory",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Replicate {1} (When you cast this spell, copy it for each time you paid its replicate cost. You may choose new targets for the copies.)\nCounter target triggered ability or colorless spell.",
+    "keywords": [
+        "REPLICATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{1}",
+            "multi": true,
+            "displayPrefix": "Replicate",
+            "keyword": "REPLICATE",
+            "branchesEffect": false,
+            "declaredSlot": "REPLICATED"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "target": "CounterTarget.SpellOrAbility"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsTriggeredAbility",
+                                    "IsColorless"
+                                ]
+                            }
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Ben Hill",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc95af55-d1dd-4fe6-adb0-3ad6db20d986.jpg?1783911293",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "A copy of a spell can be countered like any other spell, but it must be countered individually. Countering a spell with replicate won't affect the copies."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Copycrook
 {
     "name": "Copycrook",
@@ -563,6 +626,108 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Dog Umbra
+{
+    "name": "Dog Umbra",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nAs long as another player controls enchanted creature, it can't attack or block. Otherwise, this Aura has umbra armor. (If enchanted creature would be destroyed, instead remove all damage from it and destroy this Aura.)",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CantAttack",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "AttachedTo"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CantBlock",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "AttachedTo"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "UMBRA_ARMOR",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "EntityMatches",
+                        "entity": "EnchantedPermanent",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": "ControlledByYou"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Brian Valeza",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d4ba710-eddb-40ca-b2fe-0e4e778aab9c.jpg?1783911304"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1138,6 +1303,56 @@
     ]
 }
 
+// Lion Umbra
+{
+    "name": "Lion Umbra",
+    "manaCost": "{G}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant modified creature (Equipment, Auras its controller controls, and counters are modifications.)\nEnchanted creature gets +3/+3 and has reach and vigilance.\nUmbra armor (If enchanted creature would be destroyed, instead remove all damage from it and destroy this Aura.)",
+    "keywords": [
+        "UMBRA_ARMOR"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "REACH"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ],
+                    "statePredicates": [
+                        "IsModified"
+                    ]
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Julia Metzger",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89d58e9b-b1d9-4174-a30d-426d2e0ace07.jpg?1783911259"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Malevolent Rumble
 {
     "name": "Malevolent Rumble",
@@ -1598,6 +1813,72 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Reiterating Bolt
+{
+    "name": "Reiterating Bolt",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Replicate—Pay {E}{E}{E}. (When you cast this spell, copy it for each time you paid its replicate cost. You may choose new targets for the copies.)\nReiterating Bolt deals 3 damage to target creature or planeswalker.",
+    "keywords": [
+        "REPLICATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomPayPlayerCounters",
+                    "counterType": "ENERGY",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            },
+            "multi": true,
+            "displayPrefix": "Replicate",
+            "keyword": "REPLICATE",
+            "branchesEffect": false,
+            "declaredSlot": "REPLICATED"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "UNCOMMON",
+        "artist": "G-host Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/51f57902-85d1-4c40-b79c-6cffafb4557a.jpg?1783911267",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "A copy of a spell can be countered like any other spell, but it must be countered individually. Countering a spell with replicate won't affect the copies."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

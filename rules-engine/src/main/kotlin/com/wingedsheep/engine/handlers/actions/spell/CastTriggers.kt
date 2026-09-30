@@ -27,6 +27,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -53,7 +54,8 @@ internal class CastSpellOnStack(
  * The abilities that trigger on, and the one-shot riders consumed by, the casting of a spell — the
  * things the cast itself sets off rather than an event the settle boundary detects:
  *
- * - copy triggers: storm (CR 702.40), conspire (CR 702.78), casualty (CR 702.153);
+ * - copy triggers: storm (CR 702.40), conspire (CR 702.78), casualty (CR 702.153),
+ *   replicate (CR 702.56);
  * - riders carried by the mana that paid (Cavern of Souls, Path of Ancestry, Pyromancer's Goggles,
  *   Carnelian Orb of Dragonkind);
  * - "the next spell you cast" riders — copies (Howl of the Horde), can't-be-countered (Mistrise
@@ -130,10 +132,17 @@ internal class CastTriggers(
         val casualty = if (action.casualtyCreature != null) {
             listOf(selfTrigger(state, spell, "casualty", copyEffect(spell, spellEffect, 1), "Casualty — copy $name"))
         } else emptyList()
+        // Replicate (CR 702.56a): "When you cast this spell, if a replicate cost was paid for it,
+        // copy it for each time its replicate cost was paid." One trigger making N copies, each
+        // of which may be given new targets.
+        val replicate = if (action.declaredCostSlot == ChoiceSlot.REPLICATED && action.declaredCostTimes > 0) {
+            val times = action.declaredCostTimes
+            listOf(selfTrigger(state, spell, "replicate", copyEffect(spell, spellEffect, times), "Replicate — copy $name $times time(s)"))
+        } else emptyList()
         val storm = List(stormInstances(state, action, cardDef)) {
             selfTrigger(state, spell, "storm", copyEffect(spell, spellEffect, stormCount), "Storm — copy $name $stormCount time(s)")
         }
-        return conspire + casualty + storm
+        return conspire + casualty + replicate + storm
     }
 
     private fun stormInstances(state: GameState, action: CastSpell, cardDef: CardDefinition): Int {

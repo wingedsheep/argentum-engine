@@ -1273,6 +1273,89 @@
     ]
 }
 
+// Ichormoon Gauntlet
+{
+    "name": "Ichormoon Gauntlet",
+    "manaCost": "{2}{U}",
+    "typeLine": "Artifact",
+    "oracleText": "Planeswalkers you control have \"[0]: Proliferate\" and \"[−12]: Take an extra turn after this one.\"\nWhenever you cast a noncreature spell, choose a counter on target permanent. Put an additional counter of that kind on that permanent.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ichormoon Gauntlet:3",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCountersOfChosenKind",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Ichormoon Gauntlet:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 0
+                    },
+                    "effect": "Proliferate",
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Proliferate."
+                },
+                "filter": {
+                    "baseFilter": "planeswalker ctrl:you"
+                }
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Ichormoon Gauntlet:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -12
+                    },
+                    "effect": "TakeExtraTurn",
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Take an extra turn after this one."
+                },
+                "filter": {
+                    "baseFilter": "planeswalker ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "MYTHIC",
+        "artist": "Tiffany Turrill",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c093ce0-2561-4847-ab58-f6f1650d743e.jpg?1786522813"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ichorspit Basilisk
 {
     "name": "Ichorspit Basilisk",

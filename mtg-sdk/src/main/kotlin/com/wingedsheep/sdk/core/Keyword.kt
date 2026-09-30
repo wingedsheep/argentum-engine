@@ -61,6 +61,16 @@ enum class Keyword(val displayName: String) {
     PROTECTION("Protection"),
     PROTECTION_FROM_EACH_OPPONENT("Protection from each opponent"),
 
+    /**
+     * Umbra armor (CR 702.89a; printed as "totem armor" before 2023, CR 702.89b). A static ability
+     * on an Aura: "If enchanted permanent would be destroyed, instead remove all damage marked on it
+     * and destroy this Aura." Carried by the **Aura**, not its host, and read through projection, so a
+     * conditional self-grant ("Otherwise, this Aura has umbra armor" — Dog Umbra) works like any
+     * keyword grant. The engine applies it at every destruction chokepoint (destroy effects, board
+     * wipes, the lethal-damage/deathtouch state-based action); see `ZoneMovementUtils.findUmbraArmorAura`.
+     */
+    UMBRA_ARMOR("Umbra armor"),
+
     // ── Speed ────────────────────────────────────────────────
     HASTE("Haste"),
     FLASH("Flash"),
@@ -349,6 +359,14 @@ enum class Keyword(val displayName: String) {
      * [com.wingedsheep.sdk.scripting.GrantKeywordToOwnSpells.keywordParameter] (granted).
      */
     CASUALTY("Casualty"),
+
+    /**
+     * Replicate (CR 702.56). "As an additional cost to cast this spell, you may pay [cost] any
+     * number of times" plus "when you cast this spell, copy it for each time its replicate cost was
+     * paid." Carried by [com.wingedsheep.sdk.scripting.KeywordAbility.replicate] on the
+     * optional-additional-cost rail, declaring [com.wingedsheep.sdk.scripting.ChoiceSlot.REPLICATED].
+     */
+    REPLICATE("Replicate"),
 
     /**
      * Bargain (CR 702.166, Wilds of Eldraine). A static ability that functions while the spell is

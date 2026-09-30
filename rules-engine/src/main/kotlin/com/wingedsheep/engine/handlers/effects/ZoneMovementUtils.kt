@@ -605,6 +605,12 @@ object ZoneMovementUtils {
             return applyRemoveDamageReplacement(damageShieldState, entityId)
         }
 
+        // Umbra armor (CR 702.89a) — like Pyramids, not regeneration, so `canRegenerate` doesn't
+        // gate it. The Aura it spends is destroyed by this same destruction, hence the flag passes on.
+        findUmbraArmorAura(state, entityId)?.let { auraId ->
+            return applyUmbraArmor(zones, state, entityId, auraId, canRegenerate)
+        }
+
         // Delegate to ZoneTransitionService
         val result = zones.moveToZone(
             state, entityId, Zone.GRAVEYARD,
@@ -1173,6 +1179,54 @@ object ZoneMovementUtils {
      */
     fun applyRemoveDamageReplacement(state: GameState, entityId: EntityId): EffectResult {
         return EffectResult.success(DamageUtils.healMarkedDamage(state, entityId))
+    }
+
+    /**
+     * The Aura whose umbra armor (CR 702.89a) replaces the destruction of [entityId], or null.
+     *
+     * "If enchanted permanent would be destroyed, instead remove all damage marked on it and destroy
+     * this Aura." The keyword lives on the *Aura* and is read through projection, so a conditional
+     * self-grant (Dog Umbra) is honoured. Only one Aura is spent per destruction (per the rulings the
+     * permanent's controller picks which); the oldest by timestamp is used.
+     *
+     * @param lookupState the state whose battlefield decides which Auras shield the permanent. For a
+     *        destruction that is one of a simultaneous batch (a board wipe, one SBA pass) this is the
+     *        state before the batch began: a wipe that destroys both the Aura and its creature still
+     *        saves the creature (the Aura is "destroyed in two ways at once"), so an Aura the batch
+     *        already moved still counts, and is preferred — spending it costs nothing more.
+     */
+    fun findUmbraArmorAura(state: GameState, entityId: EntityId, lookupState: GameState = state): EntityId? {
+        val projected = lookupState.projectedState
+        val candidates = lookupState.getBattlefield().filter { auraId ->
+            lookupState.getEntity(auraId)?.get<AttachedToComponent>()?.targetId == entityId &&
+                projected.hasSubtype(auraId, "Aura") &&
+                projected.hasKeyword(auraId, Keyword.UMBRA_ARMOR)
+        }
+        if (candidates.isEmpty()) return null
+        val battlefield = state.getBattlefield().toSet()
+        return candidates.minWith(
+            compareBy<EntityId>({ it in battlefield }, {
+                lookupState.getEntity(it)?.get<TimestampComponent>()?.timestamp ?: Long.MAX_VALUE
+            })
+        )
+    }
+
+    /**
+     * Apply umbra armor's replacement (CR 702.89a): remove all damage marked on [entityId] and destroy
+     * [auraId] instead. Not regeneration — the permanent is neither tapped nor removed from combat.
+     * The Aura's own destruction is an ordinary one (indestructible, shields and redirects all apply);
+     * if it already left the battlefield in the same simultaneous batch, only the heal remains.
+     */
+    fun applyUmbraArmor(
+        zones: ZoneTransitionService,
+        state: GameState,
+        entityId: EntityId,
+        auraId: EntityId,
+        canRegenerate: Boolean = true
+    ): EffectResult {
+        val healed = DamageUtils.healMarkedDamage(state, entityId)
+        if (auraId !in healed.getBattlefield()) return EffectResult.success(healed)
+        return destroyPermanent(zones, healed, auraId, canRegenerate)
     }
 
     /**

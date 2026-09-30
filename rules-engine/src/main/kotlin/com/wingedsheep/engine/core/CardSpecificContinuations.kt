@@ -193,6 +193,22 @@ data class RemoveAnyNumberOfCountersContinuation(
 ) : AnswerContinuation
 
 /**
+ * Resume after the controller picks which kind of counter on [recipientId] to add [count] more of,
+ * for `AddCountersOfChosenKindEffect` (Ichormoon Gauntlet). `OptionChosenResponse.optionIndex`
+ * indexes [counterKinds], the kinds shown in the decision. Placement goes through the standard
+ * `AddCountersEffect` path.
+ */
+@Serializable
+data class AddCountersOfChosenKindContinuation(
+    val recipientId: EntityId,
+    val controllerId: EntityId,
+    val counterKinds: List<CounterType>,
+    val count: Int,
+    val sourceId: EntityId?,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+) : AnswerContinuation
+
+/**
  * Resume after the controller picks how many counters (0..max) to put on a target, for
  * `AddCountersUpToEffect` ("Put up to N [counterType] counters on target" — Esper Terra's lore
  * chapters). The chosen count is placed through the standard `AddCountersEffect` path so
