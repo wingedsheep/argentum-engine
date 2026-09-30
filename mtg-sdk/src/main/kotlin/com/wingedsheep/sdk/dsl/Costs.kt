@@ -749,6 +749,26 @@ object Costs {
             filter: GameObjectFilter = GameObjectFilter.Any,
         ): AdditionalCost = AdditionalCost.Atom(CostAtom.ExileFrom(Zone.GRAVEYARD, filter, count, excludeSelf = true))
 
+        /**
+         * "Exile any number of **other** cards from your graveyard with [minTypes] or more card types
+         * among them" — Nethergoyf's escape cost (`KeywordAbility.escape("{2}{B}",
+         * Costs.additional.ExileOtherCardsWithCardTypes(4))`). A [CostAtom.ExileFromGraveyardForTotal]
+         * under the union measure [CardMeasure.DistinctCardTypes]: the count is free, the card types
+         * the chosen cards show between them are the constraint, and the cast isn't offered when the
+         * rest of the graveyard can't show that many.
+         */
+        fun ExileOtherCardsWithCardTypes(
+            minTypes: Int,
+            filter: GameObjectFilter = GameObjectFilter.Any,
+        ): AdditionalCost = AdditionalCost.Atom(
+            CostAtom.ExileFromGraveyardForTotal(
+                filter = filter,
+                measure = CardMeasure.DistinctCardTypes,
+                minTotal = minTypes,
+                excludeSelf = true,
+            )
+        )
+
         /** Exile a variable number (at least [minCount]) of cards matching [filter] from [fromZone] (Chill Haunting). */
         fun ExileVariableCards(
             minCount: Int = 1,

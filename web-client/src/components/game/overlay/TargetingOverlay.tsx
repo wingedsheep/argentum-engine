@@ -31,7 +31,7 @@ function ZoneCardTargetingOverlay({
   onViewBattlefield,
 }: {
   zoneCards: ClientCard[]
-  targetingState: { selectedTargets: readonly EntityId[]; minTargets: number; maxTargets: number; targetDescription?: string; currentRequirementIndex?: number; totalRequirements?: number; sourceCardName?: string; minTotalWeight?: number; cardWeights?: Record<string, number>; weightUnit?: string }
+  targetingState: { selectedTargets: readonly EntityId[]; minTargets: number; maxTargets: number; targetDescription?: string; currentRequirementIndex?: number; totalRequirements?: number; sourceCardName?: string; minTotalWeight?: number; cardWeights?: Record<string, number>; weightUnit?: string; cardTypes?: Record<string, readonly string[]> }
   responsive: ResponsiveSizes
   onSelect: (cardId: EntityId) => void
   onDeselect: (cardId: EntityId) => void
@@ -66,10 +66,15 @@ function ZoneCardTargetingOverlay({
   const weights = targetingState.cardWeights
   const floorUnit = targetingState.weightUnit ? ` ${targetingState.weightUnit}` : ''
   const weightOf = (id: EntityId): number => weights?.[id] ?? 0
+  // A union-measured cost ("four or more card types among them") counts distinct types across the
+  // selection rather than summing: an artifact creature plus a creature shows two types, not three.
+  const cardTypes = targetingState.cardTypes
   const totalSelected =
     sumFloor == null
       ? 0
-      : targetingState.selectedTargets.reduce((sum, id) => sum + weightOf(id), 0)
+      : cardTypes != null
+        ? new Set(targetingState.selectedTargets.flatMap((id) => cardTypes[id] ?? [])).size
+        : targetingState.selectedTargets.reduce((sum, id) => sum + weightOf(id), 0)
   const meetsSumFloor =
     sumFloor == null || selectedCount === 0 || totalSelected >= sumFloor
 

@@ -363,7 +363,7 @@ class ActivatedAbilityEnumerator(
                         // entirely rather than offered and rejected at payment.
                         is CostAtom.ExileFromGraveyardForTotal -> {
                             prebuiltCostInfo = com.wingedsheep.engine.handlers.costs
-                                .GraveyardTotalExileResolver.costInfo(state, playerId, atom, predicateEvaluator = context.predicateEvaluator)
+                                .GraveyardTotalExileResolver.costInfo(state, playerId, atom, excludeCardId = entityId.takeIf { atom.excludeSelf }, predicateEvaluator = context.predicateEvaluator)
                                 ?: continue
                         }
                         // Pay-life / reveal carry no enumeration-time selection or affordability gate
@@ -574,7 +574,7 @@ class ActivatedAbilityEnumerator(
                                     is CostAtom.ExileFromGraveyardForTotal -> {
                                         prebuiltCostInfo = com.wingedsheep.engine.handlers.costs
                                             .GraveyardTotalExileResolver
-                                            .costInfo(state, playerId, atom, predicateEvaluator = context.predicateEvaluator)
+                                            .costInfo(state, playerId, atom, excludeCardId = entityId.takeIf { atom.excludeSelf }, predicateEvaluator = context.predicateEvaluator)
                                         if (prebuiltCostInfo == null) {
                                             costCanBePaid = false
                                             break

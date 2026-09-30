@@ -432,6 +432,7 @@ internal class ActivationCostPayer(
         return resolver.resolveSelection(
             resolver.candidates(
                 state, action.playerId, totalExileAtom.measure, totalExileAtom.filter,
+                excludeCardId = action.sourceId.takeIf { totalExileAtom.excludeSelf },
                 predicateEvaluator = predicateEvaluator
             ),
             totalExileAtom.minTotal,

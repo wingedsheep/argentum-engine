@@ -455,6 +455,14 @@ data class AdditionalCostData(
      */
     val exileWeightUnit: String = "",
     /**
+     * Each offered card's card types (CR 205.2a), for a cost measured by a **union** rather than a
+     * sum — `CardMeasure.DistinctCardTypes`, Nethergoyf's "four or more card types among them".
+     * When non-empty the client's running total is the number of distinct entries across the
+     * selected cards' lists, not the sum of [exileCardWeights] (an artifact creature plus a creature
+     * shows two types, not three); [exileCardWeights] then only carries each card's own type count.
+     */
+    val exileCardTypes: Map<EntityId, List<String>> = emptyMap(),
+    /**
      * What each of the spell's *legal targets* would add to [exileMinTotalWeight] if chosen —
      * non-empty only for a cost whose threshold is priced off the targets rather than printed:
      * Urgent Necropsy's "collect evidence X, where X is the total mana value of the permanents this

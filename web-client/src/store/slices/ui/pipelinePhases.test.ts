@@ -293,6 +293,36 @@ describe('enterPhase — sum-gated graveyard exile costs', () => {
       weightUnit: 'black mana symbols',
     })
   })
+  it('a union-measured ExileForTotal (card types among them) carries each card\'s types', () => {
+    const captured = captureTargeting(
+      exileCostAction('ExileForTotal', {
+        validExileTargets: ['golem', 'bolt'],
+        exileMinCount: 1,
+        exileMaxCount: 2,
+        exileMinTotalWeight: 4,
+        exileCardWeights: { golem: 2, bolt: 1 },
+        exileWeightUnit: 'card types',
+        exileCardTypes: { golem: ['ARTIFACT', 'CREATURE'], bolt: ['INSTANT'] },
+      }),
+    )
+    expect(captured).toMatchObject({
+      minTotalWeight: 4,
+      weightUnit: 'card types',
+      cardTypes: { golem: ['ARTIFACT', 'CREATURE'], bolt: ['INSTANT'] },
+    })
+  })
+
+  it('a summed ExileForTotal carries no card types', () => {
+    const captured = captureTargeting(
+      exileCostAction('ExileForTotal', {
+        validExileTargets: ['x'],
+        exileMinTotalWeight: 1,
+        exileCardWeights: { x: 1 },
+        exileCardTypes: {},
+      }),
+    )
+    expect((captured as { cardTypes?: unknown }).cardTypes).toBeUndefined()
+  })
 })
 
 describe('computePhases — per-target mana tax (Officious Interrogation)', () => {

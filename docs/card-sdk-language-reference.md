@@ -658,6 +658,7 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   permissions). That path stamps no `ChoiceSlot`, so unlike the linked `card { collectEvidence(n) }`
   form it does **not** make `Conditions.WasEvidenceCollected` read true on the spell being cast.
 - `Costs.ExileFromGraveyardForTotal(minTotal, measure, filter = Any)` /
+  `Costs.additional.ExileOtherCardsWithCardTypes(minTypes, filter = Any)` /
   `Costs.ExileFromGraveyardForColoredSymbols(minSymbols, vararg colors)` — the **unnamed, filtered
   generalization of collect evidence**: "exile any number of `<filter>` cards from your graveyard
   whose summed `<measure>` is `minTotal` or more". Backed by `CostAtom.ExileFromGraveyardForTotal`
@@ -674,7 +675,21 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
     also behind `CardPredicate.ColoredManaSymbolsAtLeast` and
     `EntityNumericProperty.ColoredManaSymbolCount`, so a group total and a per-card read can never
     disagree (hybrid/Phyrexian pips count for their colour(s), CR 107.4e/f; generic, `{C}` and `{X}`
-    count for none).
+    count for none);
+  - `CardMeasure.DistinctCardTypes` — how many card types (CR 205.2a; never supertypes or subtypes)
+    appear **among** the chosen cards. The one **union** measure: each card contributes its *set* of
+    card types and the selection is worth the size of their union, so an artifact creature plus a
+    creature shows two types, not three. The payload additionally ships
+    `AdditionalCostData.exileCardTypes` (each offered card's types), and the client tallies distinct
+    types across the selection instead of summing `exileCardWeights`; the engine's own pick is a
+    greedy cover (most new types first, fewest own types on a tie).
+
+  The atom's `excludeSelf = true` reads "any number of **other** cards" and drops the paying object
+  from the pool (for a spell it is already on the stack when costs are paid, CR 601.2a before
+  601.2h, so only the wording changes). `Costs.additional.ExileOtherCardsWithCardTypes(4)` is
+  **Nethergoyf**'s escape cost — `KeywordAbility.escape("{2}{B}",
+  Costs.additional.ExileOtherCardsWithCardTypes(4))`, "exile any number of other cards from your
+  graveyard with four or more card types among them".
 
   `ExileFromGraveyardForColoredSymbols(15, Color.BLACK)` is **Baron Helmut Zemo**'s boast cost,
   "exile any number of black cards from your graveyard with fifteen or more black mana symbols among
@@ -700,9 +715,10 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   selection regardless — a submitted selection that doesn't pay is **rejected**, never silently
   replaced with the engine's own pick.
 
-  Activated-ability cost only today: it is deliberately reported unpayable as a spell's additional
-  cost and as a `PayCost`, since no printed card wants either and an offered-then-unpayable cost is
-  worse than an absent one.
+  Payable as an activated-ability cost and as a spell's additional or alternative-cost half (escape);
+  the spell form validates the submitted `exiledCards` against the pool and the floor, and records
+  the exiled cards as "exiled this way". It is still deliberately reported unpayable as a `PayCost`,
+  since no printed card wants it and an offered-then-unpayable cost is worse than an absent one.
 - `Costs.Craft(filter, minCount = 1, maxCount = null)` — Craft material cost (CR 702.167a): exile
   this permanent **and** exile at least `minCount` (and, when `maxCount` is set, at most `maxCount`)
   cards matching `filter` selected from the combined pool of
@@ -825,6 +841,10 @@ definitions construct these through the facade, e.g. `Costs.additional.Sacrifice
   *every* spell exile-from-zone cost already leaves the card being cast out of its pool — it is on the stack
   by the time costs are paid (CR 601.2a before 601.2h) — and the payment validator rejects a submission that
   names the spell itself or repeats a card.
+- `Costs.additional.ExileOtherCardsWithCardTypes(minTypes, filter = Any)` — "exile any number of other
+  cards from your graveyard with N or more card types among them" (Nethergoyf's escape cost). A
+  `CostAtom.ExileFromGraveyardForTotal` under the union measure `CardMeasure.DistinctCardTypes`; see
+  `Costs.ExileFromGraveyardForTotal` for the shared sum/union-gated picker.
 - `Costs.additional.SacrificeAll(filter = GameObjectFilter.Creature)` — "as an additional cost to
   cast this spell, sacrifice all creatures you control" (Soulblast). A `CostAtom.SacrificeAll`: nothing
   is selected (every matching permanent you control goes), so the enumerator offers no picker, the

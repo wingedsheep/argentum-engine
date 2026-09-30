@@ -440,18 +440,19 @@ internal object CollectEvidenceCostKind : SpellCostKind<CostAtom.CollectEvidence
 }
 
 /**
- * Exile cards from your graveyard with a summed measure — the filtered generalization behind collect
- * evidence. An activated-ability cost: it only reaches the casting context through an alternative
- * cost's presentation rail.
+ * Exile any number of cards from your graveyard whose measure reaches a floor — a sum (Baron Helmut
+ * Zemo's pips) or a union of card types (Nethergoyf's escape cost, "four or more card types among
+ * them"). [GraveyardTotalExileResolver] owns the legality rule, so enumeration, validation and
+ * payment can't drift; the spell being cast is on the stack by the time costs are paid (CR 601.2a
+ * before 601.2h), so it is never in its own pool.
  */
 internal object ExileFromGraveyardForTotalCostKind : SpellCostKind<CostAtom.ExileFromGraveyardForTotal> {
-    // Not payable as a *spell's* additional cost today: nothing offers this atom in a cast context,
-    // and the cast-time picker has no sum-gated exile mode to raise, so an unreachable one would be
-    // offered and then fail at payment. Fails closed until a printed card needs it, matching the
-    // "prefer absent to unpayable" rule collect evidence follows.
-    override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.ExileFromGraveyardForTotal, costHandler: CostHandler) = false
+    // Fails closed (CR 118.3): a graveyard that can't reach the floor means the cast isn't offered.
+    override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.ExileFromGraveyardForTotal, costHandler: CostHandler) =
+        GraveyardTotalExileResolver.canPay(state, payerId, cost.measure, cost.minTotal, cost.filter, predicateEvaluator = costHandler.predicateEvaluator)
 
-    override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.ExileFromGraveyardForTotal, offer: SpellCostOffer) = true
+    override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.ExileFromGraveyardForTotal, offer: SpellCostOffer) =
+        canPayFrom(env, cost, emptyList())
 
     override fun candidates(env: SpellCostEnumeration, cost: CostAtom.ExileFromGraveyardForTotal) =
         GraveyardTotalExileResolver
@@ -469,8 +470,37 @@ internal object ExileFromGraveyardForTotalCostKind : SpellCostKind<CostAtom.Exil
         return "Exile from graveyard" to info
     }
 
-    // Never offered as a spell's additional cost (see canPay), so no payment can satisfy it here.
-    override fun selectionSupplied(cost: CostAtom.ExileFromGraveyardForTotal, payment: AdditionalCostPayment) = false
+    override fun selectionSupplied(cost: CostAtom.ExileFromGraveyardForTotal, payment: AdditionalCostPayment) =
+        payment.exiledCards.isNotEmpty()
+
+    // A GameAction is client-supplied: the submitted selection is re-checked against the pool and
+    // the floor. The cast card is already on the stack here, so it can't appear in the pool.
+    override fun validate(check: SpellCostCheck, cost: CostAtom.ExileFromGraveyardForTotal): String? {
+        val candidates = GraveyardTotalExileResolver.candidates(
+            check.state, check.playerId, cost.measure, cost.filter,
+            excludeCardId = check.action.cardId, predicateEvaluator = check.predicateEvaluator,
+        )
+        val exiled = check.payment?.exiledCards ?: emptyList()
+        if (!GraveyardTotalExileResolver.isLegalSelection(candidates, cost.minTotal, exiled)) {
+            return "Those cards don't pay this cost: ${cost.description}"
+        }
+        return null
+    }
+
+    override fun pay(ledger: SpellCostLedger, cost: CostAtom.ExileFromGraveyardForTotal): String? {
+        val candidates = GraveyardTotalExileResolver.candidates(
+            ledger.state, ledger.playerId, cost.measure, cost.filter,
+            excludeCardId = ledger.action.cardId, predicateEvaluator = ledger.costHandler.predicateEvaluator,
+        )
+        val toExile = GraveyardTotalExileResolver.resolveSelection(candidates, cost.minTotal, ledger.payment.exiledCards)
+        if (toExile.isEmpty()) return "Cannot pay ${cost.description}"
+        val (exiledState, events) = GraveyardTotalExileResolver.exile(ledger.zones, ledger.state, toExile)
+        ledger.state = exiledState
+        ledger.events.addAll(events)
+        ledger.exiledAsCostCards.addAll(toExile)
+        ledger.exiledCardCount = toExile.size
+        return null
+    }
 }
 
 /** "Tap an untapped artifact you control" (Zahid, Guardian of the Great Door). */

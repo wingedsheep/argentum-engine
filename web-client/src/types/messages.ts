@@ -1185,6 +1185,12 @@ export interface AdditionalCostInfo {
   readonly exileCardWeights?: Readonly<Record<EntityId, number>>
   readonly exileWeightUnit?: string
   /**
+   * Each offered card's card types, for a cost measured by a *union* rather than a sum —
+   * Nethergoyf's "four or more card types among them". When present, the running total is the
+   * number of distinct types across the selected cards, not the sum of `exileCardWeights`.
+   */
+  readonly exileCardTypes?: Readonly<Record<EntityId, readonly string[]>>
+  /**
    * What each legal target would add to `exileMinTotalWeight` — present only for a cost whose
    * threshold is priced off the spell's targets rather than printed (Urgent Necropsy's "collect
    * evidence X, where X is the total mana value of the permanents this spell targets").

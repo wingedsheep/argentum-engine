@@ -340,6 +340,7 @@ internal class ActivationValidator(
         val resolver = GraveyardTotalExileResolver
         val candidates = resolver.candidates(
             state, action.playerId, atom.measure, atom.filter,
+            excludeCardId = action.sourceId.takeIf { atom.excludeSelf },
             predicateEvaluator = predicateEvaluator
         )
         return if (!resolver.isLegalSelection(candidates, atom.minTotal, submitted)) {

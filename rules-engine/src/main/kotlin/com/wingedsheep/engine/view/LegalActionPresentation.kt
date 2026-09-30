@@ -306,6 +306,12 @@ data class AdditionalCostInfo(
     val exileCardWeights: Map<EntityId, Int> = emptyMap(),
     val exileWeightUnit: String = "",
     /**
+     * Per-card card types for a union-measured exile cost — see
+     * [com.wingedsheep.engine.legalactions.AdditionalCostData.exileCardTypes]. When non-empty the
+     * client tallies distinct types across the selection instead of summing [exileCardWeights].
+     */
+    val exileCardTypes: Map<EntityId, List<String>> = emptyMap(),
+    /**
      * What each legal target would add to [exileMinTotalWeight] — see
      * [com.wingedsheep.engine.legalactions.AdditionalCostData.exileWeightPerTarget]. Non-empty only
      * for a cost priced off the spell's targets, and its presence is what tells the client to run

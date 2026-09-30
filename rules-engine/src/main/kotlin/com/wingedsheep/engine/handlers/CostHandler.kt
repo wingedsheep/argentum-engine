@@ -689,7 +689,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
         // floor. Card count is never the question — the summed measure is.
         is CostAtom.ExileFromGraveyardForTotal ->
             com.wingedsheep.engine.handlers.costs.GraveyardTotalExileResolver
-                .canPay(state, controllerId, atom.measure, atom.minTotal, atom.filter, predicateEvaluator = predicateEvaluator)
+                .canPay(state, controllerId, atom.measure, atom.minTotal, atom.filter, excludeCardId = sourceId.takeIf { atom.excludeSelf }, predicateEvaluator = predicateEvaluator)
         // CR 701.17b — a player can't pay a cost that includes milling more cards than their
         // library holds. Checked against the printed count; a ModifyMillAmount replacement only
         // enlarges the mill once the cost is actually being paid.
@@ -862,7 +862,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
         // falls back to the resolver's own pick, which is what the AI / engine-direct paths use.
         is CostAtom.ExileFromGraveyardForTotal -> {
             val resolver = com.wingedsheep.engine.handlers.costs.GraveyardTotalExileResolver
-            val candidates = resolver.candidates(state, controllerId, atom.measure, atom.filter, predicateEvaluator = predicateEvaluator)
+            val candidates = resolver.candidates(state, controllerId, atom.measure, atom.filter, excludeCardId = sourceId.takeIf { atom.excludeSelf }, predicateEvaluator = predicateEvaluator)
             val toExile = resolver.resolveSelection(candidates, atom.minTotal, choices.exileChoices)
             if (toExile.isEmpty()) {
                 CostPaymentResult.failure(

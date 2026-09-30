@@ -283,6 +283,7 @@ class LegalActionEnricher(
         exileMinTotalWeight = exileMinTotalWeight,
         exileCardWeights = exileCardWeights,
         exileWeightUnit = exileWeightUnit,
+        exileCardTypes = exileCardTypes,
         exileWeightPerTarget = exileWeightPerTarget,
         validBeholdTargets = validBeholdTargets,
         beholdCount = beholdCount,

@@ -133,6 +133,12 @@ export interface TargetingState {
   minTotalWeight?: number
   cardWeights?: Record<string, number>
   weightUnit?: string
+  /**
+   * Per-card card types for a union-measured exile (Nethergoyf's "four or more card types among
+   * them"). When set, the tally toward `minTotalWeight` is the count of distinct types across the
+   * selection instead of the sum of `cardWeights`.
+   */
+  cardTypes?: Record<string, readonly string[]>
   /** The zone the current targets are in (e.g., "Graveyard"). Set by server via targetRequirements. */
   targetZone?: string
   /** Description of the current target requirement (e.g., "non-Zombie creature") */

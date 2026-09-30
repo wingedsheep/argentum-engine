@@ -51,16 +51,29 @@ object GraveyardTotalExileResolver {
     /** The cost-payload discriminator the client switches on to raise the sum-gated exile picker. */
     const val COST_TYPE: String = "ExileForTotal"
 
-    /** The graveyard cards a payer could spend, and what each is worth under the measure. */
+    /**
+     * The graveyard cards a payer could spend, and what each is worth under the measure.
+     *
+     * [typesById] is set only for the **union** measure ([CardMeasure.DistinctCardTypes]): each
+     * card's card-type names, whose union across a selection is the selection's measure. When it is
+     * null the measure is additive and a selection is worth the sum of its [weightById]; when set,
+     * [weightById] still carries each card's own type count, but only for display.
+     */
     data class Candidates(
         val cards: List<EntityId>,
         val weightById: Map<EntityId, Int>,
+        val typesById: Map<EntityId, Set<String>>? = null,
     ) {
         /** Combined measure of every available card — the most that could possibly be paid. */
-        val total: Int get() = weightById.values.sum()
+        val total: Int get() = totalOf(cards)
 
         /** Can this graveyard reach [minTotal] at all? */
         fun canReach(minTotal: Int): Boolean = total >= minTotal
+
+        /** What [selection] (distinct ids drawn from [cards]) is worth: a sum, or a union's size. */
+        fun totalOf(selection: Collection<EntityId>): Int =
+            if (typesById == null) selection.sumOf { weightById[it] ?: 0 }
+            else selection.flatMapTo(mutableSetOf()) { typesById[it].orEmpty() }.size
     }
 
     /**
@@ -84,6 +97,10 @@ object GraveyardTotalExileResolver {
             val projected = state.projectedState
             inZone.filter { predicateEvaluator.matches(state, projected, it, filter, context) }
         }
+        if (measure is CardMeasure.DistinctCardTypes) {
+            val typesById = cards.associateWith { cardTypesOf(state, it) }
+            return Candidates(cards, typesById.mapValues { it.value.size }, typesById)
+        }
         return Candidates(cards, cards.associateWith { weightOf(state, it, measure) })
     }
 
@@ -103,7 +120,7 @@ object GraveyardTotalExileResolver {
 
     /**
      * Whether [chosenCards] is a legal payment: a selection drawn entirely from [candidates] whose
-     * weights sum to at least [minTotal]. A deliberately *overpaying* selection is legal — exiling
+     * measure ([Candidates.totalOf] — a sum, or for the card-type measure a union) reaches [minTotal]. A deliberately *overpaying* selection is legal — exiling
      * more than needed is the payer's right. Every `GameAction` field is client-supplied, so this
      * runs on the server before anything is exiled.
      *
@@ -122,7 +139,7 @@ object GraveyardTotalExileResolver {
     ): Boolean {
         val distinct = chosenCards.distinct()
         return distinct.all { it in candidates.weightById } &&
-            distinct.sumOf { candidates.weightById.getValue(it) } >= minTotal
+            candidates.totalOf(distinct) >= minTotal
     }
 
     /**
@@ -146,9 +163,13 @@ object GraveyardTotalExileResolver {
      * arbitrary-order sweep — it never dumps a graveyard's worth of cheap cards to pay a threshold
      * two expensive ones would have covered.
      *
+     * Under the union measure the same idea is a greedy set cover: repeatedly take the card that
+     * adds the most card types not yet shown, cheapest (fewest types of its own) on ties.
+     *
      * Returns an empty list when the threshold is unreachable.
      */
     fun autoSelect(candidates: Candidates, minTotal: Int): List<EntityId> {
+        candidates.typesById?.let { typesById -> return autoSelectUnion(candidates.cards, typesById, minTotal) }
         val selected = mutableListOf<EntityId>()
         var total = 0
         for (cardId in candidates.cards.sortedByDescending { candidates.weightById[it] ?: 0 }) {
@@ -157,6 +178,27 @@ object GraveyardTotalExileResolver {
             total += candidates.weightById[cardId] ?: 0
         }
         return if (total >= minTotal) selected else emptyList()
+    }
+
+    private fun autoSelectUnion(
+        cards: List<EntityId>,
+        typesById: Map<EntityId, Set<String>>,
+        minTotal: Int,
+    ): List<EntityId> {
+        val selected = mutableListOf<EntityId>()
+        val shown = mutableSetOf<String>()
+        val remaining = cards.toMutableList()
+        while (shown.size < minTotal) {
+            val best = remaining.maxWithOrNull(
+                compareBy<EntityId> { (typesById[it].orEmpty() - shown).size }
+                    .thenByDescending { typesById[it].orEmpty().size }
+            ) ?: break
+            if ((typesById[best].orEmpty() - shown).isEmpty()) break
+            selected.add(best)
+            shown.addAll(typesById[best].orEmpty())
+            remaining.remove(best)
+        }
+        return if (shown.size >= minTotal) selected else emptyList()
     }
 
     /**
@@ -182,6 +224,7 @@ object GraveyardTotalExileResolver {
             exileMinTotalWeight = atom.minTotal,
             exileCardWeights = candidates.weightById,
             exileWeightUnit = atom.measure.unitLabel,
+            exileCardTypes = candidates.typesById?.mapValues { it.value.sorted() } ?: emptyMap(),
         )
     }
 
@@ -223,6 +266,16 @@ object GraveyardTotalExileResolver {
             // EntityNumericProperty.ColoredManaSymbolCount, so the filter, the per-card amount and
             // this group total can never disagree (hybrid/Phyrexian pips count, generic/{X} don't).
             is CardMeasure.ColoredManaSymbols -> card.manaCost.coloredSymbolCount(measure.colors.toSet())
+            is CardMeasure.DistinctCardTypes -> cardTypesOf(state, cardId).size
         }
     }
+
+    /**
+     * The card's card types (CR 205.2a) by name, off its printed type line — never supertypes or
+     * subtypes. The per-card half of [CardMeasure.DistinctCardTypes]; the selection's measure is
+     * the union of these sets.
+     */
+    fun cardTypesOf(state: GameState, cardId: EntityId): Set<String> =
+        state.getEntity(cardId)?.get<CardComponent>()?.typeLine?.cardTypes?.mapTo(mutableSetOf()) { it.name }
+            ?: emptySet()
 }

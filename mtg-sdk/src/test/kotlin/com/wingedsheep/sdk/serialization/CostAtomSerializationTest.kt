@@ -65,6 +65,11 @@ class CostAtomSerializationTest : FunSpec({
         CostAtom.ExileFromGraveyardForTotal(
             measure = CardMeasure.ManaValue,
             minTotal = 6,
+        ),
+        CostAtom.ExileFromGraveyardForTotal(
+            measure = CardMeasure.DistinctCardTypes,
+            minTotal = 4,
+            excludeSelf = true,
         )
     )
 

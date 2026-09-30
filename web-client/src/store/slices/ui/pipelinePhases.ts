@@ -1053,6 +1053,9 @@ export function enterPhase(
             flags.minTotalWeight = costInfo.exileMinTotalWeight + targetTotal
             flags.cardWeights = { ...(costInfo.exileCardWeights ?? {}) }
             if (costInfo.exileWeightUnit != null) flags.weightUnit = costInfo.exileWeightUnit
+            if (costInfo.exileCardTypes != null && Object.keys(costInfo.exileCardTypes).length > 0) {
+              flags.cardTypes = { ...costInfo.exileCardTypes }
+            }
           }
           // The count floor follows the sum gate rather than leading it: any threshold above 0
           // needs at least one card, but collecting evidence 0 — Urgent Necropsy cast with no

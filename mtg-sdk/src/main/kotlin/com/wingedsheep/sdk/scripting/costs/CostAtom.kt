@@ -648,9 +648,19 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      * matching graveyard cards cannot reach [minTotal] can't choose to pay, so the ability is not
      * offered at all rather than offered and refused.
      *
+     * The same shape also carries a *union* measure — [CardMeasure.DistinctCardTypes], Nethergoyf's
+     * escape cost "exile any number of other cards from your graveyard with four or more card types
+     * among them" — where the chosen cards' measure is the size of the union of their card types
+     * rather than a sum. The measure decides how the selection is totalled; everything else
+     * (variable count, fail-closed gate, overpay legal) is identical.
+     *
      * @property filter which graveyard cards may be chosen.
-     * @property measure the per-card quantity that is summed toward [minTotal].
-     * @property minTotal the floor the chosen cards' summed [measure] must meet or exceed.
+     * @property measure the per-card quantity that is totalled toward [minTotal].
+     * @property minTotal the floor the chosen cards' totalled [measure] must meet or exceed.
+     * @property excludeSelf "any number of **other** cards" — the object paying the cost is never in
+     *   the pool. For a spell this only changes the wording (the spell is on the stack by the time
+     *   costs are paid, CR 601.2a before 601.2h); for an ability whose source sits in the graveyard it
+     *   also drops that source from the pool.
      */
     @SerialName("AtomExileFromGraveyardForTotal")
     @Serializable
@@ -658,6 +668,7 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
         val filter: GameObjectFilter = GameObjectFilter.Any,
         val measure: CardMeasure,
         val minTotal: Int,
+        val excludeSelf: Boolean = false,
     ) : CostAtom {
         init {
             require(minTotal >= 1) {
@@ -674,6 +685,7 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
             // `filter.description` is a noun phrase without the head noun ("black", "artifact"),
             // and reads "card" for the unfiltered case — so append "cards" only when it isn't
             // already the head noun itself.
+            if (excludeSelf) append("other ")
             if (filter != GameObjectFilter.Any) append("${filter.description} ")
             append("cards from your graveyard with ")
             append(measure.thresholdPhrase(minTotal))
@@ -836,7 +848,8 @@ enum class VariableCostMeasure {
 }
 
 /**
- * A per-card quantity that a variable-size *card* selection can be summed against —
+ * A per-card quantity that a variable-size *card* selection is totalled against (summed, or for
+ * [DistinctCardTypes] unioned) —
  * the graveyard-side counterpart of [VariableCostMeasure] (which measures battlefield permanents).
  *
  * Kept separate rather than folded into [VariableCostMeasure] because the two answer different
@@ -904,5 +917,23 @@ sealed interface CardMeasure {
 
         override val unitLabel: String
             get() = "${colors.joinToString(" or ") { it.displayName.lowercase() }} mana symbols"
+    }
+
+    /**
+     * How many distinct card types (CR 205.2a; on a graveyard card: artifact, battle, creature, enchantment, instant,
+     * kindred, land, planeswalker, sorcery; never supertypes or subtypes) appear **among** the
+     * chosen cards — Nethergoyf's "with four or more card types among them".
+     *
+     * **A union, not a sum.** An artifact creature and a second creature together show two card
+     * types, not three: each card contributes its *set* of card types, and the selection's measure
+     * is the size of their union. That is why this measure can't be expressed by summing per-card
+     * weights, and why the engine ships each card's types to the picker rather than a number.
+     * Read off the card's printed type line, like every other graveyard measure.
+     */
+    @SerialName("MeasureDistinctCardTypes")
+    @Serializable
+    data object DistinctCardTypes : CardMeasure {
+        override fun thresholdPhrase(minTotal: Int): String = "$minTotal or more card types among them"
+        override val unitLabel: String get() = "card types"
     }
 }
