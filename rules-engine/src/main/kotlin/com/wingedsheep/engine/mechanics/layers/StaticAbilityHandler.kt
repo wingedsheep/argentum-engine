@@ -825,8 +825,19 @@ class StaticAbilityHandler(
                 )
             }
             is GrantCardType -> {
+                val crossZone = if (ability.includeControlledSpells || ability.includeOwnedCardsOutsideBattlefield) {
+                    Modification.CrossZoneReach(
+                        includeControlledSpells = ability.includeControlledSpells,
+                        includeOwnedCardsOutsideBattlefield = ability.includeOwnedCardsOutsideBattlefield,
+                        // Off the battlefield only the card predicates qualify an object; the
+                        // controller/state half of the filter describes the battlefield group.
+                        eligibility = com.wingedsheep.sdk.scripting.GameObjectFilter(
+                            cardPredicates = ability.filter.baseFilter.cardPredicates
+                        )
+                    )
+                } else null
                 ContinuousEffectData(
-                    modification = Modification.AddType(ability.cardType.uppercase()),
+                    modification = Modification.AddType(ability.cardType.uppercase(), crossZone),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

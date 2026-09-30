@@ -20,6 +20,7 @@ import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationC
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComponent
 import com.wingedsheep.engine.state.components.stack.GraveyardCastRiderComponent
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
@@ -143,7 +144,13 @@ internal class CastRecords(
             // "only the characteristics of the face that's up" with no such exception — so a
             // back-face cast reports that face's own mana value. Mirrors `StackResolver`'s
             // `spellManaValue`, which stamps the same number onto the SpellCastEvent.
-            typeLine = transformedFace?.typeLine ?: cardComponent.typeLine,
+            typeLine = (transformedFace?.typeLine ?: cardComponent.typeLine).let { printed ->
+                // A cross-zone GrantCardType (Encroaching Mycosynth) already reaches the card in its
+                // origin zone, so history records the spell as the type it is cast as.
+                val granted = state.projectedState.crossZoneGrantedCardTypes(action.cardId)
+                    .mapNotNull { name -> CardType.entries.firstOrNull { it.name == name } }
+                if (granted.isEmpty()) printed else printed.copy(cardTypes = printed.cardTypes + granted)
+            },
             manaValue = modalBackFace?.manaCost?.cmc ?: cardComponent.manaValue,
             colors = transformedFace?.colors ?: cardComponent.colors,
             isFaceDown = action.castFaceDown,

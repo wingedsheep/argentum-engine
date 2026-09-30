@@ -313,10 +313,30 @@ sealed interface Modification {
 
     // --- Layer 4: Type-changing ---
 
+    /**
+     * Add [type] (a card type or supertype) to the affected entity, in addition to its other types.
+     *
+     * Layer 4 projection only ever touches battlefield permanents, so [crossZone] is not read by
+     * [EffectApplicator]; [StateProjector] reads it to register the off-battlefield half of a
+     * cross-zone [com.wingedsheep.sdk.scripting.GrantCardType] (Encroaching Mycosynth) in
+     * [ProjectedState.crossZoneCardTypes].
+     */
     @Serializable
-    data class AddType(val type: String) : Modification {
+    data class AddType(val type: String, val crossZone: CrossZoneReach? = null) : Modification {
         override val layer get() = Layer.TYPE
     }
+
+    /**
+     * Where a type grant reaches beyond the battlefield — the "the same is true for … spells you
+     * control and … cards you own that aren't on the battlefield" clause. [eligibility] carries the
+     * card predicates an off-battlefield object must match (its printed characteristics).
+     */
+    @Serializable
+    data class CrossZoneReach(
+        val includeControlledSpells: Boolean,
+        val includeOwnedCardsOutsideBattlefield: Boolean,
+        val eligibility: GameObjectFilter
+    )
     @Serializable
     data class RemoveType(val type: String) : Modification {
         override val layer get() = Layer.TYPE

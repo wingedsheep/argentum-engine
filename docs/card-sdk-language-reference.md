@@ -7851,6 +7851,15 @@ staticAbility {
 - `GrantCardType(cardType, filter)` / `RemoveCardType(cardType, filter)` — Layer 4 type-changing statics that add or
   remove a card type (e.g. `"CREATURE"`). `RemoveCardType` backs Impending's "isn't a creature while it has a time
   counter" (wrapped in a `ConditionalStaticAbility`); reuse it for any "it's no longer a [type]" effect.
+  `GrantCardType` also takes `includeControlledSpells` / `includeOwnedCardsOutsideBattlefield` (default `false`), the
+  card-type twin of `GrantChosenSubtype`'s flags, for "the same is true for permanent spells you control and nonland
+  permanent cards you own that aren't on the battlefield" (Encroaching Mycosynth:
+  `GrantCardType("ARTIFACT", GroupFilter(GameObjectFilter.NonlandPermanent.youControl()), true, true)`). Off the
+  battlefield only `filter`'s **card predicates** qualify an object (read against printed characteristics); its
+  controller half is replaced by "spells the source's controller controls" / "cards that player owns". Honored by the
+  `ProjectedState.crossZoneGrantedCardTypes` overlay, which `PredicateEvaluator`'s type predicates, cast triggers,
+  cast history (`CastSpellRecord.typeLine`) and the client type line read. Spell cost modifiers
+  (`ModifySpellCost`'s spell filter) match the `CardDefinition`, not the entity, so they don't see the grant yet.
 - `GrantSubtype(subtype, filter)` — Layer 4 type-changing static that adds a **fixed** creature subtype to the group,
   in addition to their other types ("is a Knight in addition to its other types"). (Dub, Angelic Destiny)
   **`filter` defaults to the source, not the attached creature** — unlike `ModifyStats` / `GrantKeyword`, which

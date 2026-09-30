@@ -555,9 +555,11 @@ class PredicateEvaluator(
             CardType.entries.firstOrNull { it.name.equals(type, ignoreCase = true) }?.name
         }
         if (fromProjection.isNotEmpty()) return fromProjection
-        return state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.cardTypes
+        val printed = state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.cardTypes
             ?.mapTo(mutableSetOf()) { it.name }
-            ?: emptySet()
+            ?: return emptySet()
+        // A cross-zone GrantCardType (Encroaching Mycosynth) reaches objects off the battlefield.
+        return printed + projected.crossZoneGrantedCardTypes(entityId)
     }
 
     /**
@@ -674,7 +676,8 @@ class PredicateEvaluator(
         // by StateProjector — mirror that here so predicates like IsLegendary work for non-
         // battlefield entities (cards in hand/library/graveyard) which have no projection entry.
         val types = projectedValues?.types ?: (
-            card.typeLine.cardTypes.map { it.name } + card.typeLine.supertypes.map { it.name }
+            card.typeLine.cardTypes.map { it.name } + card.typeLine.supertypes.map { it.name } +
+                projected.crossZoneGrantedCardTypes(entityId)
         ).toSet()
         val colors = projectedValues?.colors ?: card.colors.map { it.name }.toSet()
         val keywords = projectedValues?.keywords ?: (card.baseKeywords.map { it.name } + card.baseFlags.map { it.name }).toSet()

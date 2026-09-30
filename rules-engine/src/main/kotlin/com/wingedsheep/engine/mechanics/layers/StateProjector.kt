@@ -21,6 +21,8 @@ import com.wingedsheep.engine.state.components.identity.RingBearerComponent
 import com.wingedsheep.engine.state.components.identity.ToxicComponent
 import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.Duration
@@ -85,6 +87,7 @@ class StateProjector {
     )
     private val dynamicAmountEvaluator = conditionEvaluator.amounts
     private val filterResolver = AffectsFilterResolver(conditionEvaluator.predicates)
+    private val predicateEvaluator = conditionEvaluator.predicates
     private val effectApplicator = EffectApplicator(conditionEvaluator)
     private val effectSorter = EffectSorter()
 
@@ -469,7 +472,66 @@ class StateProjector {
             )
         }
 
-        return ProjectedState(state, finalValues, crossZoneGrants)
+        return ProjectedState(
+            state,
+            finalValues,
+            crossZoneGrants,
+            collectCrossZoneCardTypes(state, sortedEffects, projectedValues, finalValues)
+        )
+    }
+
+    /**
+     * The off-battlefield half of cross-zone card-type grants (Encroaching Mycosynth: "The same is
+     * true for permanent spells you control and nonland permanent cards you own that aren't on the
+     * battlefield"). Layer 4 above only touched battlefield permanents; here each
+     * [Modification.AddType] carrying a [Modification.CrossZoneReach] adds its type to the spells its
+     * source's controller controls and the cards that player owns outside the battlefield, when they
+     * match the reach's card predicates (printed characteristics — a non-battlefield object has no
+     * projection entry). Computed eagerly because such grants are rare: the loop never runs without
+     * one, so the common state pays one `filter` over the effect list.
+     */
+    private fun collectCrossZoneCardTypes(
+        state: GameState,
+        sortedEffects: List<ContinuousEffect>,
+        projectedValues: Map<EntityId, MutableProjectedValues>,
+        finalValues: Map<EntityId, ProjectedValues>
+    ): Map<EntityId, Set<String>> {
+        val grants = sortedEffects.filter { (it.modification as? Modification.AddType)?.crossZone != null }
+        if (grants.isEmpty()) return emptyMap()
+        val eligibilityProjection = ProjectedState(state, finalValues)
+        val result = HashMap<EntityId, MutableSet<String>>()
+        for (effect in grants) {
+            val mod = effect.modification as Modification.AddType
+            val reach = mod.crossZone ?: continue
+            val controllerId = projectedValues[effect.sourceId]?.controllerId ?: continue
+            val context = com.wingedsheep.engine.handlers.PredicateContext(
+                controllerId = controllerId,
+                sourceId = effect.sourceId
+            )
+            val candidates = buildList {
+                if (reach.includeControlledSpells) {
+                    state.stack.filterTo(this) { id ->
+                        val container = state.getEntity(id)
+                        container?.has<SpellOnStackComponent>() == true &&
+                            (container.get<ControllerComponent>()?.playerId
+                                ?: container.get<SpellOnStackComponent>()?.casterId) == controllerId
+                    }
+                }
+                if (reach.includeOwnedCardsOutsideBattlefield) {
+                    for (zone in OWNED_ZONES_OUTSIDE_BATTLEFIELD) {
+                        state.getZone(controllerId, zone).filterTo(this) { id ->
+                            state.getEntity(id)?.get<CardComponent>()?.ownerId == controllerId
+                        }
+                    }
+                }
+            }
+            for (id in candidates) {
+                if (predicateEvaluator.matches(state, eligibilityProjection, id, reach.eligibility, context)) {
+                    result.getOrPut(id) { mutableSetOf() }.add(mod.type)
+                }
+            }
+        }
+        return result
     }
 
     private fun Sublayer?.isAfterBaseStats(): Boolean =
@@ -951,3 +1013,6 @@ class StateProjector {
         }
     }
 }
+
+/** The zones "cards you own that aren't on the battlefield" reach (the stack is the spells half). */
+private val OWNED_ZONES_OUTSIDE_BATTLEFIELD = listOf(Zone.HAND, Zone.LIBRARY, Zone.GRAVEYARD, Zone.EXILE, Zone.COMMAND)

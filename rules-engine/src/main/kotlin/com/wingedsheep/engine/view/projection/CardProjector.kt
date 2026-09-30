@@ -589,7 +589,9 @@ internal class CardProjector(
             grantedCardTypes = if (onBattlefield) {
                 val printed = cardComponent.typeLine.cardTypes.map { it.name }.toSet()
                 typeLine.cardTypes.map { it.name }.filterNot { it in printed }.toSet()
-            } else emptySet(),
+            } else frame.projectedState.crossZoneGrantedCardTypes(frame.entityId)
+                .filterNot { name -> cardComponent.typeLine.cardTypes.any { it.name == name } }
+                .toSet(),
             damageDistribution = (spellOnStack?.damageDistribution ?: container.get<TriggeredAbilityOnStackComponent>()?.damageDistribution)?.takeIf { it.isNotEmpty() },
             sagaTotalChapters = cardDef?.finalChapter,
             classLevel = container.get<ClassLevelComponent>()?.currentLevel,
@@ -706,7 +708,11 @@ internal class CardProjector(
         val displayCardTypes = if (projectedTypes != null) {
             projectedTypes.mapNotNull { try { CardType.valueOf(it) } catch (_: Exception) { null } }
         } else {
-            typeLine.cardTypes.toList()
+            // Off the battlefield a cross-zone GrantCardType (Encroaching Mycosynth) still adds
+            // types; granted ones lead, matching "Artifact Creature" printed order.
+            val granted = frame.projectedState.crossZoneGrantedCardTypes(frame.entityId)
+                .mapNotNull { name -> CardType.entries.firstOrNull { it.name == name } }
+            (granted + typeLine.cardTypes).distinct()
         }
         // Supertypes share the projected `types` set with card types and subtypes (see
         // StateProjector.extractTypes), so a granted supertype — Origin of Spider-Man's "it becomes

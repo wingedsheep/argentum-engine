@@ -86,8 +86,24 @@ class ProjectedState(
      * Active cross-zone "is the chosen type" grants (Conspiracy / Leyline of Transformation).
      * Empty for virtually every game state, so [crossZoneGrantedSubtypes] short-circuits to no-op.
      */
-    val crossZoneSubtypeGrants: List<CrossZoneSubtypeGrant> = emptyList()
+    val crossZoneSubtypeGrants: List<CrossZoneSubtypeGrant> = emptyList(),
+    /**
+     * Card types granted to **non-battlefield** objects (spells on the stack, cards in
+     * hand/library/graveyard/exile/command) by cross-zone `GrantCardType`s — Encroaching
+     * Mycosynth's "the same is true for permanent spells you control and nonland permanent cards
+     * you own that aren't on the battlefield". Resolved eagerly by `StateProjector`; empty for
+     * virtually every game state. Battlefield permanents get the type through Layer 4 instead.
+     */
+    private val crossZoneCardTypes: Map<EntityId, Set<String>> = emptyMap()
 ) {
+    /**
+     * The card types a cross-zone `GrantCardType` adds to a non-battlefield object (see
+     * [crossZoneCardTypes]). Read by `PredicateEvaluator`'s type predicates for objects with no
+     * projection entry, so a Mycosynth-granted artifact drives "artifact spell" / "artifact card"
+     * checks everywhere a filter is evaluated.
+     */
+    fun crossZoneGrantedCardTypes(entityId: EntityId): Set<String> = crossZoneCardTypes[entityId] ?: emptySet()
+
     fun getBaseState(): GameState = baseState
 
     /**

@@ -1111,6 +1111,37 @@
     }
 }
 
+// Encroaching Mycosynth
+{
+    "name": "Encroaching Mycosynth",
+    "manaCost": "{3}{U}",
+    "typeLine": "Artifact",
+    "oracleText": "Nonland permanents you control are artifacts in addition to their other types. The same is true for permanent spells you control and nonland permanent cards you own that aren't on the battlefield.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantCardType",
+                "cardType": "ARTIFACT",
+                "filter": {
+                    "baseFilter": "nonland permanent ctrl:you"
+                },
+                "includeControlledSpells": true,
+                "includeOwnedCardsOutsideBattlefield": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "RARE",
+        "artist": "Martin de Diego Sádaba",
+        "flavorText": "\"Careful—however they might look, they're not human. A step too close and they'll drag you in.\"\n—Kara Vrist, resistance spymaster",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65a2fcc9-2317-48a1-a5eb-234fb3300364.jpg?1783918066"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Feed the Infection
 {
     "name": "Feed the Infection",

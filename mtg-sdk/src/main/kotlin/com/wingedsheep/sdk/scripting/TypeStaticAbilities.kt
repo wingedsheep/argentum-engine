@@ -157,18 +157,39 @@ data class HasCreatureTypesOf(
  *
  * This is a Layer 4 (type-changing) continuous effect that adds a card type.
  *
+ * The two cross-zone flags extend the grant beyond the battlefield, the card-type twin of
+ * [GrantChosenSubtype]'s flags — Encroaching Mycosynth's "The same is true for permanent spells
+ * you control and nonland permanent cards you own that aren't on the battlefield":
+ *  - [includeControlledSpells] — spells the source's controller controls (on the stack) that
+ *    match [filter]'s card predicates also have [cardType].
+ *  - [includeOwnedCardsOutsideBattlefield] — cards the source's controller owns in any
+ *    non-battlefield, non-stack zone that match [filter]'s card predicates also have [cardType].
+ *
+ * Off the battlefield only [filter]'s *card* predicates (type, colour, …) decide which objects
+ * qualify, read against printed characteristics; its controller/state predicates describe the
+ * battlefield half. So `filter = GroupFilter(GameObjectFilter.NonlandPermanent.youControl())`
+ * reaches "permanent spells" and "nonland permanent cards" without a second filter.
+ *
  * @property cardType The card type to add (e.g., "CREATURE", "ARTIFACT")
  * @property filter What this ability applies to
+ * @property includeControlledSpells Whether matching spells the controller controls gain the type.
+ * @property includeOwnedCardsOutsideBattlefield Whether matching cards the controller owns outside
+ *   the battlefield gain the type.
  */
 @SerialName("GrantCardType")
 @Serializable
 data class GrantCardType(
     val cardType: String,
-    val filter: GroupFilter = GroupFilter.source()
+    val filter: GroupFilter = GroupFilter.source(),
+    val includeControlledSpells: Boolean = false,
+    val includeOwnedCardsOutsideBattlefield: Boolean = false
 ) : StaticAbility {
-    override val description: String = "is also ${
-        if (cardType.first().lowercaseChar() in "aeiou") "an" else "a"
-    } ${cardType.lowercase()}"
+    override val description: String = buildString {
+        append("is also ${if (cardType.first().lowercaseChar() in "aeiou") "an" else "a"} ${cardType.lowercase()}")
+        if (includeControlledSpells || includeOwnedCardsOutsideBattlefield) {
+            append("; so are your matching spells and cards outside the battlefield")
+        }
+    }
 }
 
 /**
