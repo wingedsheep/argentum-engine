@@ -507,6 +507,44 @@
     "colorIdentityOverride": []
 }
 
+// Relearn
+{
+    "name": "Relearn",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target instant or sorcery card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "instant|sorcery own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "UNCOMMON",
+        "artist": "Zina Saunders",
+        "flavorText": "\"Barrin taught me that the hardest lessons to grasp are the ones you've already learned.\"\n—Ertai, wizard adept",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/902f8480-8ae7-4b5f-abdf-1bd46066049e.jpg?1783946738"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sage Owl
 {
     "name": "Sage Owl",
