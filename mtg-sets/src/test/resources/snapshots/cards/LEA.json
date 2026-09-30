@@ -588,6 +588,50 @@
     "colorIdentityOverride": []
 }
 
+// Channel
+{
+    "name": "Channel",
+    "manaCost": "{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Until end of turn, any time you could activate a mana ability, you may pay 1 life. If you do, add {C}.",
+    "script": {
+        "spellEffect": {
+            "type": "GrantPlayerAction",
+            "cost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomPayLife",
+                    "amount": 1
+                }
+            },
+            "effect": {
+                "type": "AddColorlessMana",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            },
+            "timing": "ManaAbility",
+            "actionDescription": "Channel: Pay 1 life to add {C}"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "UNCOMMON",
+        "artist": "Richard Thomas",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1862c47-71cc-45a3-8805-a5ddc62e55ea.jpg?1783948678",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Once your life total is 0, you can't pay any more life, even if you've somehow not lost the game yet."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Clone
 {
     "name": "Clone",
