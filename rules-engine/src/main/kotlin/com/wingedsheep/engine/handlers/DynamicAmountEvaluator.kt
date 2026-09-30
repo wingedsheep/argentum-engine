@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.battlefield.entitiesChoice
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsStationUsingToughnessComponent
+import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -544,10 +545,18 @@ class DynamicAmountEvaluator(
                 if (lkiPolicyFor(amount.entity) == LkiPolicy.LIVE_THEN_LKI &&
                     entityId !in state.getBattlefield()
                 ) {
+                    // A reference-specific capture (the cost-paid snapshot) wins; otherwise the
+                    // departed object's own battlefield-exit snapshot, which the entity carries until
+                    // its next zone change — Archfiend of the Dross killed with its upkeep trigger on
+                    // the stack counts the oil counters it left with (ruling 2023-02-04).
                     val snapshot = context.lkiSnapshotFor(amount.entity, entityId)
-                    when (amount.numericProperty) {
+                        ?: state.getEntity(entityId)?.get<LastKnownPermanentComponent>()?.snapshot
+                    when (val property = amount.numericProperty) {
                         is EntityNumericProperty.Power -> snapshot?.power?.let { return it }
                         is EntityNumericProperty.Toughness -> snapshot?.toughness?.let { return it }
+                        is EntityNumericProperty.CounterCount -> snapshot?.let {
+                            return property.counterType?.let { type -> it.counters[type] ?: 0 } ?: it.totalCounters
+                        }
                         else -> { /* fall through to base characteristics */ }
                     }
                 }

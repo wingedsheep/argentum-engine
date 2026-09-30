@@ -204,6 +204,116 @@
     ]
 }
 
+// Archfiend of the Dross
+{
+    "name": "Archfiend of the Dross",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Phyrexian Demon",
+    "oracleText": "Flying\nThis creature enters with four oil counters on it.\nAt the beginning of your upkeep, remove an oil counter from this creature. Then if it has no oil counters on it, you lose the game.\nWhenever a creature an opponent controls dies, its controller loses 2 life.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Archfiend of the Dross:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveCounters",
+                            "counterType": "OIL",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "OIL"
+                                        }
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "LoseGame",
+                                "message": "Archfiend of the Dross"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, remove an oil counter from this creature. Then if it has no oil counters on it, you lose the game."
+            },
+            {
+                "id": "Archfiend of the Dross:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "ControllerOfTriggeringEntity"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 4,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86b0edaf-8cfd-4508-9554-6f0fddc2dfc4.jpg?1783918050",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "If Archfiend of the Dross somehow loses all of its oil counters due to an effect other than its upkeep triggered ability, this won't cause you to lose the game until the next time that ability resolves."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If Archfiend of the Dross is no longer on the battlefield as its upkeep triggered ability resolves, use the number of oil counters it had the last time it existed on the battlefield to determine whether you lose the game. You can't remove oil counters from it if it's not on the battlefield, so you won't lose the game if it had only one oil counter on it before leaving the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Argentum Masticore
 {
     "name": "Argentum Masticore",
