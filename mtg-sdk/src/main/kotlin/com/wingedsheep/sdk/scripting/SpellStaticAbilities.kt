@@ -497,6 +497,36 @@ data class GrantMadnessToOwnedCards(
 }
 
 /**
+ * "[filter] cards in your graveyard have dredge [amount]." A whole-graveyard grant of dredge
+ * (CR 702.52) to every card in the controller's graveyard matching [filter] — The Necrobloom's
+ * "Land cards in your graveyard have dredge 2."
+ *
+ * Read by the draw-replacement gatherer exactly where printed dredge is read, so a granted dredge
+ * behaves identically to a printed one: optional, needs at least [amount] cards in the library, and
+ * rechecked on each draw of a multi-card instruction. A card with printed dredge that also matches
+ * the grant has both abilities and its owner picks one (CR 616.1). The grant ends the moment the
+ * granting permanent leaves the battlefield or changes controller.
+ *
+ * @property filter Which graveyard cards gain dredge (matched against the card's characteristics).
+ * @property amount The granted dredge number.
+ */
+@SerialName("GraveyardCardsHaveDredge")
+@Serializable
+data class GraveyardCardsHaveDredge(
+    val filter: GameObjectFilter,
+    val amount: Int
+) : StaticAbility {
+    init {
+        require(amount >= 0) { "Dredge amount must not be negative" }
+    }
+    override val description: String = "Each ${filter.description} card in your graveyard has dredge $amount"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * You may cast spells matching [filter] from your graveyard, optionally by paying [lifeCost]
  * life in addition to their other costs. Only during your turn if [duringYourTurnOnly] is true.
  *

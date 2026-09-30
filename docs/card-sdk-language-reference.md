@@ -15334,6 +15334,14 @@ drawing player, and its source identifies the public graveyard card. The client
 keyword label is `DREDGE`. The mtgish emitter preserves the numeric argument through
 `KeywordAbility.dredge(N)`; unsupported numeric shapes remain scaffolded.
 
+`GraveyardCardsHaveDredge(filter, amount)` is the static grant: "[filter] cards in your graveyard
+have dredge N" (The Necrobloom: `GraveyardCardsHaveDredge(GameObjectFilter.Land, amount = 2)`).
+`StaticAbilityHandler` bakes it into a `GrantsDredgeToGraveyardCardsComponent` on the permanent, and
+`DredgeReplacements` reads it beside printed dredge, so a granted dredge follows every rule above.
+The grant reaches only the graveyard of the permanent's controller and stops the moment the permanent
+leaves the battlefield. A card with printed dredge that also matches offers each ability as its own
+option (printed first). A grant wrapped in `staticAbility { condition = … }` is not read.
+
 ### Live library-top references
 
 `EffectTarget.LibraryTop(player = Player.You)` reads the current top card of the named
