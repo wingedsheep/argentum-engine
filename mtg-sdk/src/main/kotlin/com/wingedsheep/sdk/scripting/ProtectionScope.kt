@@ -58,4 +58,37 @@ sealed interface ProtectionScope {
     @SerialName("ProtectionScope.EachOpponent")
     @Serializable
     data object EachOpponent : ProtectionScope
+
+    /**
+     * From spells — the quality of *being a spell* (CR 702.16a: the quality "can be any
+     * characteristic value or information"). Matches a spell source: a spell being cast or on the
+     * stack, including a copy of a spell. Once a permanent spell resolves it is a permanent, not a
+     * spell, so its Aura/Equipment/creature half no longer matches (Emrakul, the World Anew).
+     */
+    @SerialName("ProtectionScope.Spells")
+    @Serializable
+    data object Spells : ProtectionScope
+
+    /**
+     * From permanents that were cast this turn — a battlefield source that entered this turn by
+     * resolving as a cast spell (not a copy, a token, or a permanent put onto the battlefield),
+     * and hasn't left since. Emrakul, the World Anew.
+     */
+    @SerialName("ProtectionScope.PermanentsCastThisTurn")
+    @Serializable
+    data object PermanentsCastThisTurn : ProtectionScope
+
+    /**
+     * From activated abilities — only the targeting leg applies, since an ability never deals
+     * damage, blocks, or enchants on its own (its *source* does). Volatile Stormdrake's "hexproof
+     * from activated and triggered abilities" is this plus [TriggeredAbilities] (CR 702.11f).
+     */
+    @SerialName("ProtectionScope.ActivatedAbilities")
+    @Serializable
+    data object ActivatedAbilities : ProtectionScope
+
+    /** From triggered abilities — the triggered twin of [ActivatedAbilities]. */
+    @SerialName("ProtectionScope.TriggeredAbilities")
+    @Serializable
+    data object TriggeredAbilities : ProtectionScope
 }

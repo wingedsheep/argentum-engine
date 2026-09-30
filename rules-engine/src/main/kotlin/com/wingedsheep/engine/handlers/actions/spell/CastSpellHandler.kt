@@ -792,7 +792,7 @@ class CastSpellHandler(
         if (mode.targetRequirements.isEmpty()) return true
         return mode.targetRequirements.all { req ->
             req.effectiveMinCount == 0 ||
-                targetFinder.findLegalTargets(state, req, casterId, sourceId).isNotEmpty()
+                targetFinder.findLegalTargets(state, req, casterId, sourceId, targetingSourceType = TargetingSourceType.SPELL).isNotEmpty()
         }
     }
 
@@ -1160,7 +1160,8 @@ class CastSpellHandler(
             val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
             modeTargetReqs.forEachIndexed { index, req ->
                 legalTargetsMap[index] = targetFinder.findLegalTargets(
-                    state, req, casterId, cardId, pipelineContext = xContext
+                    state, req, casterId, cardId,
+                    targetingSourceType = TargetingSourceType.SPELL, pipelineContext = xContext
                 )
             }
             val allSatisfied = modeTargetReqs.withIndex().all { (index, req) ->

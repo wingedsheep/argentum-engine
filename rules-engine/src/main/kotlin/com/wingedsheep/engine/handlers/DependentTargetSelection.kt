@@ -88,7 +88,7 @@ object DependentTargetSelection {
             return targetFinder.findLegalTargets(
                 state, requirements[prefix.size], context.controllerId,
                 sourceId = context.sourceId,
-                targetingSourceType = TargetingSourceType.ABILITY,
+                targetingSourceType = TargetingSourceType.TRIGGERED_ABILITY,
                 triggeringEntityId = context.triggeringEntityId,
                 pipelineContext = context.copy(
                     targets = prefixTargets,

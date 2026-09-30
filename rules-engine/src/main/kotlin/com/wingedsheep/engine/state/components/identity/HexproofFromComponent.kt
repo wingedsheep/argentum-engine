@@ -27,5 +27,10 @@ import kotlinx.serialization.Serializable
 data class HexproofFromComponent(
     val colors: Set<Color> = emptySet(),
     val cardTypes: Set<String> = emptySet(),
-    val nonColors: Set<Color> = emptySet()
+    val nonColors: Set<Color> = emptySet(),
+    /**
+     * Source-kind qualities — "hexproof from activated and triggered abilities" (Volatile
+     * Stormdrake), projected as `HEXPROOF_FROM_SOURCEKIND_<KIND>`.
+     */
+    val sourceKinds: Set<com.wingedsheep.engine.mechanics.targeting.SourceKind> = emptySet()
 ) : Component

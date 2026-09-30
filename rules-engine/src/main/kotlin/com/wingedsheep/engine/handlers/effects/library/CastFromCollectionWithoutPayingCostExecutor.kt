@@ -10,6 +10,7 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.TargetRequirementInfo
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
+import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.effects.ChooserResolution
 import com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -308,6 +309,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
                     requirement = requirement,
                     controllerId = casterId,
                     sourceId = cardId,
+                    targetingSourceType = TargetingSourceType.SPELL,
                 )
                 legalTargetsMap[index] = legal
                 TargetRequirementInfo(

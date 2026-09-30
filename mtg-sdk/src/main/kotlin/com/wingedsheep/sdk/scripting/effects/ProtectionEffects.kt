@@ -186,6 +186,10 @@ fun ProtectionScope.protectionDescription(): String = when (this) {
     is ProtectionScope.Supertype -> supertype.lowercase() + " permanents"
     ProtectionScope.Everything -> "everything"
     ProtectionScope.EachOpponent -> "each opponent"
+    ProtectionScope.Spells -> "spells"
+    ProtectionScope.PermanentsCastThisTurn -> "permanents that were cast this turn"
+    ProtectionScope.ActivatedAbilities -> "activated abilities"
+    ProtectionScope.TriggeredAbilities -> "triggered abilities"
 }
 
 /**

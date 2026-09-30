@@ -93,6 +93,8 @@ object EnchantRestriction {
         if (subtypes.any { projected.hasKeyword(hostId, "PROTECTION_FROM_SUBTYPE_${it.uppercase()}") }) return true
         val supertypes = if (battlefield) projected.getSupertypes(attachmentId) else attachmentCard.typeLine.supertypes.map { it.name }.toSet()
         if (supertypes.any { projected.hasKeyword(hostId, "PROTECTION_FROM_SUPERTYPE_${it.uppercase()}") }) return true
+        // An Aura or Equipment that was cast this turn (CR 702.16c/d) — Emrakul, the World Anew.
+        if (com.wingedsheep.engine.mechanics.targeting.SourceKindProtection.isProtectedFromObject(state, hostId, attachmentId)) return true
         if (projected.hasKeyword(hostId, "PROTECTION_FROM_EACH_OPPONENT")) {
             val hostController = projected.getController(hostId)
             val attachmentController = projected.getController(attachmentId)

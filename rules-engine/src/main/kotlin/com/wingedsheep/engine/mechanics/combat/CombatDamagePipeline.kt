@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat
 
+import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -107,7 +108,9 @@ internal class ProtectionModifier(
                     val tgtController = projected.getController(assignment.targetId)
                     srcController != null && tgtController != null && srcController != tgtController
                 }
-            !protectedByColor && !protectedBySubtype && !protectedBySupertype && !protectedByCardType && !protectedFromOpponent
+            val protectedFromKind = SourceKindProtection.isProtectedFromObject(state, assignment.targetId, assignment.sourceId)
+            !protectedByColor && !protectedBySubtype && !protectedBySupertype && !protectedByCardType &&
+                !protectedFromOpponent && !protectedFromKind
         }
     }
 }

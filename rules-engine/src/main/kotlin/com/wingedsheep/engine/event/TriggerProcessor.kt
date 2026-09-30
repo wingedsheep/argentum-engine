@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.event
 
+import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.DependentTargetSelection
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
@@ -182,6 +183,7 @@ class TriggerProcessor(
             requirement = targetRequirement,
             controllerId = trigger.controllerId,
             sourceId = trigger.sourceId,
+            targetingSourceType = TargetingSourceType.TRIGGERED_ABILITY,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,
             // Carry the triggering player so a "target … that player controls" filter
             // (ControllerPredicate.ControlledByTriggeringPlayer / ControlledByReferencedPlayer over
@@ -429,6 +431,7 @@ class TriggerProcessor(
             requirement = targetRequirement,
             controllerId = trigger.controllerId,
             sourceId = trigger.sourceId,
+            targetingSourceType = TargetingSourceType.TRIGGERED_ABILITY,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,
             // Carry the triggering player so a "target … that player controls" filter
             // (ControllerPredicate.ControlledByTriggeringPlayer / ControlledByReferencedPlayer over
@@ -548,6 +551,7 @@ class TriggerProcessor(
             requirement = targetRequirement,
             controllerId = trigger.controllerId,
             sourceId = trigger.sourceId,
+            targetingSourceType = TargetingSourceType.TRIGGERED_ABILITY,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,
             // Carry the triggering player so a "target … that player controls" filter
             // (ControllerPredicate.ControlledByTriggeringPlayer / ControlledByReferencedPlayer over
@@ -656,6 +660,7 @@ class TriggerProcessor(
                 requirement = req,
                 controllerId = trigger.controllerId,
                 sourceId = trigger.sourceId,
+                targetingSourceType = TargetingSourceType.TRIGGERED_ABILITY,
                 triggeringEntityId = trigger.triggerContext.triggeringEntityId,
                 // Carry the triggering player so "target … that player controls" filters
                 // (ControllerPredicate.ControlledByReferencedPlayer over Player.TriggeringPlayer)
@@ -1196,6 +1201,7 @@ class TriggerProcessor(
         requirement = requirement,
         controllerId = ability.controllerId,
         sourceId = ability.sourceId,
+        targetingSourceType = TargetingSourceType.TRIGGERED_ABILITY,
         triggeringEntityId = ability.triggerContext?.triggeringEntityId,
         pipelineContext = com.wingedsheep.engine.handlers.PredicateContext(
             controllerId = ability.controllerId,

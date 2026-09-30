@@ -11,6 +11,7 @@ import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.mechanics.ControllerGrants
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.targeting.HexproofSuppression
+import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.mechanics.targeting.PlayerTargetRestriction
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -226,6 +227,15 @@ internal class ResolutionTargetValidator(
                 sourceKnown = sourceId != null && state.getEntity(sourceId) != null
             ) != null
         ) return false
+
+        // Protection / hexproof from a kind of source (spells, permanents cast this turn,
+        // activated or triggered abilities) — the same reading as at targeting.
+        if (SourceKindProtection.targetingError(
+                state, target.entityId, sourceId, controllerId, targetingSourceType, predicateEvaluator
+            ) != null
+        ) {
+            return false
+        }
 
         // Check can't-be-targeted-by-abilities (Shanna, Sisay's Legacy)
         if (targetingSourceType != TargetingSourceType.SPELL && entityController != controllerId) {

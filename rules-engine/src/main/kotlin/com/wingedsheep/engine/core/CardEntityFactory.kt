@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.mechanics.targeting.SourceKind
 import com.wingedsheep.engine.registry.PrintingRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.components.identity.*
@@ -152,8 +153,9 @@ object CardEntityFactory {
         }
 
         // "Hexproof from [quality]" (CR 702.11d). Only the scopes the rules engine enforces are
-        // carried: colors (`HEXPROOF_FROM_<COLOR>`), non-colors (`HEXPROOF_FROM_NON_<COLOR>`) and
-        // card types (`HEXPROOF_FROM_CARDTYPE_<TYPE>`).
+        // carried: colors (`HEXPROOF_FROM_<COLOR>`), non-colors (`HEXPROOF_FROM_NON_<COLOR>`),
+        // card types (`HEXPROOF_FROM_CARDTYPE_<TYPE>`) and source kinds
+        // (`HEXPROOF_FROM_SOURCEKIND_<KIND>`, see [SourceKindProtection]).
         // Other [ProtectionScope]s format oracle text but have no targeting wiring yet, so they are
         // dropped rather than projected as a keyword nothing consults.
         val hexproofScopes = cardDef.keywordAbilities
@@ -172,8 +174,13 @@ object CardEntityFactory {
         val hexproofNonColors = hexproofScopes.filterIsInstance<ProtectionScope.NonColor>()
             .map { it.color }
             .toSet()
-        if (hexproofColors.isNotEmpty() || hexproofCardTypes.isNotEmpty() || hexproofNonColors.isNotEmpty()) {
-            result = result.with(HexproofFromComponent(hexproofColors, hexproofCardTypes, hexproofNonColors))
+        val hexproofSourceKinds = hexproofScopes.mapNotNull { SourceKind.of(it) }.toSet()
+        if (hexproofColors.isNotEmpty() || hexproofCardTypes.isNotEmpty() ||
+            hexproofNonColors.isNotEmpty() || hexproofSourceKinds.isNotEmpty()
+        ) {
+            result = result.with(
+                HexproofFromComponent(hexproofColors, hexproofCardTypes, hexproofNonColors, hexproofSourceKinds)
+            )
         }
 
         return applyNumericKeywords(result, cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Numeric>())
@@ -243,9 +250,14 @@ object CardEntityFactory {
         val protectionCardTypes = protections.mapNotNull {
             (it.scope as? ProtectionScope.CardType)?.cardType?.uppercase()
         }.toSet()
+        // "Protection from spells and from permanents that were cast this turn" (Emrakul, the World
+        // Anew) — source-kind qualities, enforced through [SourceKindProtection].
+        val protectionSourceKinds = protections.mapNotNull { SourceKind.of(it.scope) }.toSet()
         if (protectionColors.isEmpty() && protectionSubtypes.isEmpty() &&
-            protectionSupertypes.isEmpty() && protectionCardTypes.isEmpty()
+            protectionSupertypes.isEmpty() && protectionCardTypes.isEmpty() && protectionSourceKinds.isEmpty()
         ) return null
-        return ProtectionComponent(protectionColors, protectionSubtypes, protectionSupertypes, protectionCardTypes)
+        return ProtectionComponent(
+            protectionColors, protectionSubtypes, protectionSupertypes, protectionCardTypes, protectionSourceKinds
+        )
     }
 }

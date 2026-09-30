@@ -284,6 +284,11 @@ object DamageUtils {
                 }
             }
 
+            // Protection from a kind of source — spells, permanents cast this turn (CR 702.16e)
+            if (com.wingedsheep.engine.mechanics.targeting.SourceKindProtection.isProtectedFromObject(state, targetId, sourceId)) {
+                return EffectResult.success(state)
+            }
+
             // Protection from each opponent (Rule 702.16e)
             if (projected.hasKeyword(targetId, "PROTECTION_FROM_EACH_OPPONENT")) {
                 val sourceController = projected.getController(sourceId)

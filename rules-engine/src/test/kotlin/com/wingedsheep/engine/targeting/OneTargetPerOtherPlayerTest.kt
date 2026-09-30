@@ -114,7 +114,7 @@ class OneTargetPerOtherPlayerTest : FunSpec({
                 casterId = driver.player1,
                 // The shape under test is a planeswalker's loyalty ability (Kaya's −2), so the
                 // spells-only restrictions (Lurker) must not apply to it.
-                targetingSourceType = TargetingSourceType.ABILITY,
+                targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY,
             )
 
         test("one creature from each of two opponents is legal") {

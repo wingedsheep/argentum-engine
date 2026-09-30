@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ActivateAbilityChooseManaXContinuation
 import com.wingedsheep.engine.core.ActivateAbilityChooseXContinuation
@@ -486,7 +487,8 @@ internal class ActivationChoicePauses(
         val legalTargets = mutableMapOf<Int, List<EntityId>>()
         val requirementInfos = controllerTargetReqsExec.mapIndexed { index, req ->
             val legal = finder.findLegalTargets(
-                state, req, action.playerId, action.sourceId, pipelineContext = pipelineContext
+                state, req, action.playerId, action.sourceId,
+                targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY, pipelineContext = pipelineContext
             )
             if (legal.isEmpty() && req.effectiveMinCount > 0) {
                 return ExecutionResult.error(state, "No legal target for ${sourceName}")
@@ -620,7 +622,7 @@ internal class ActivationChoicePauses(
         val finder = targetFinder
         val legalTargets = mutableMapOf<Int, List<EntityId>>()
         val requirementInfos = opponentReqs.mapIndexed { index, req ->
-            val legal = finder.findLegalTargets(state, req, action.playerId, action.sourceId)
+            val legal = finder.findLegalTargets(state, req, action.playerId, action.sourceId, targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY)
             if (legal.isEmpty() && req.effectiveMinCount > 0) {
                 // A required target with no legal choice means the ability can't be activated
                 // (the enumerator gates on this; guard the engine-direct path too).

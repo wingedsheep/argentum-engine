@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat
 
+import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -1785,7 +1786,8 @@ internal class CombatDamageManager(
                             projected.hasKeyword(targetId, "PROTECTION_FROM_SUBTYPE_${it.uppercase()}")
                         } || attackerTypes.any {
                             projected.hasKeyword(targetId, "PROTECTION_FROM_CARDTYPE_${it.uppercase()}")
-                        }) || protectedFromOpponent
+                        }) || protectedFromOpponent ||
+                            (!damageCantBePrevented && SourceKindProtection.isProtectedFromObject(state, targetId, attackerId))
                         if (!blockerProtected) {
                             incomingDamage.getOrPut(targetId) { mutableMapOf() }
                                 .merge(attackerId, amplified) { a, b -> a + b }

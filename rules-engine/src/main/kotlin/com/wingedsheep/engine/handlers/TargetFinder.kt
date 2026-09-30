@@ -11,6 +11,7 @@ import com.wingedsheep.engine.mechanics.ControllerGrants
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.targeting.ControllerHexproof
 import com.wingedsheep.engine.mechanics.targeting.ControllerShroud
+import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.mechanics.targeting.PlayerTargetRestriction
 import com.wingedsheep.engine.mechanics.targeting.StackObjectTargeting
 import com.wingedsheep.sdk.core.Keyword
@@ -31,8 +32,10 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
 enum class TargetingSourceType {
     /** The source is a spell (instant/sorcery/aura/etc.) */
     SPELL,
-    /** The source is an activated or triggered ability */
-    ABILITY,
+    /** The source is an activated ability (including loyalty and mana abilities that target) */
+    ACTIVATED_ABILITY,
+    /** The source is a triggered ability, reflexive ones included */
+    TRIGGERED_ABILITY,
     /** Unknown or default — no source-type-based restrictions apply */
     ANY
 }
@@ -174,6 +177,13 @@ class TargetFinder(
         targetingSourceType: TargetingSourceType,
         sourceId: EntityId? = null
     ): Boolean {
+        // Protection / hexproof from a kind of source — spells, permanents cast this turn,
+        // activated or triggered abilities. Protection isn't controller-gated; the helper gates
+        // the hexproof half on the target's controller itself.
+        if (SourceKindProtection.targetingError(state, entityId, sourceId, controllerId, targetingSourceType, predicateEvaluator) != null) {
+            return true
+        }
+
         // Source-card-type restriction (Artifact Ward) is checked first because, unlike the
         // opponent-ability restriction, it is NOT controller-gated: a matching source can't target
         // the warded creature even if the same player controls both. It still only blocks abilities

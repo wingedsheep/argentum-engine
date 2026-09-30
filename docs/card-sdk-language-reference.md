@@ -10215,6 +10215,26 @@ composite abilities).
   (attached by `CardEntityFactory.applyDefinitionDecorations`); the remaining `ProtectionScope`s in the
   *hexproof* namespace format the oracle text but have no targeting wiring yet and are deliberately not
   projected.
+- **Source-kind scopes** — qualities that are a *kind of source* rather than a characteristic
+  (CR 702.16a): `ProtectionScope.Spells`, `ProtectionScope.PermanentsCastThisTurn`,
+  `ProtectionScope.ActivatedAbilities`, `ProtectionScope.TriggeredAbilities`. Usable in both
+  `Protection(...)` and `Hexproof(...)`; one ability per quality, as printed (CR 702.16g / 702.11f):
+  - "protection from spells and from permanents that were cast this turn" (Emrakul, the World Anew) —
+    `Protection(Spells)` + `Protection(PermanentsCastThisTurn)`;
+  - "hexproof from activated and triggered abilities" (Volatile Stormdrake) —
+    `Hexproof(ActivatedAbilities)` + `Hexproof(TriggeredAbilities)`.
+
+  A *spell* is anything on the stack as a spell (a copy counts); a *permanent that was cast this turn*
+  entered this turn by resolving as a cast spell (not a token, copy, blink or reanimation). An ability
+  kind names the targeting ability itself, so it only has a targeting leg; the two object kinds also
+  prevent damage, stop blocks, and knock off / forbid attachment of an Aura or Equipment cast this
+  turn. Projected as `PROTECTION_FROM_SOURCEKIND_<KIND>` / `HEXPROOF_FROM_SOURCEKIND_<KIND>`, and read
+  in one place — `SourceKindProtection` — by legal-target enumeration (`TargetFinder`,
+  `TargetEnumerationUtils`), cast/activation validation (`TargetValidator`), the resolution re-check
+  (`ResolutionTargetValidator`), damage (`DamageUtils`, `CombatDamagePipeline`, `CombatDamageManager`),
+  blocking (`BlockEvasionRules`) and attachment (`EnchantRestriction`). Knowing which kind of ability is
+  targeting relies on `TargetingSourceType` (`SPELL`, `ACTIVATED_ABILITY`, `TRIGGERED_ABILITY`); a caller
+  that passes `ANY` gets no ability-kind restriction.
 - `Bestow(cost, additionalCost = null)` (`KeywordAbility.bestow("{3}{G}")`) — an alternative
   casting price for an enchantment creature. `cost` is a mana-cost string in the facade (a
   `ManaCost` in the data type), including variable costs such as `"{X}{G}"`. Optional

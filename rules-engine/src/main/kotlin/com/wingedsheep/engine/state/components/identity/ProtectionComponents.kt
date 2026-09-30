@@ -22,5 +22,7 @@ data class ProtectionComponent(
     val colors: Set<Color>,
     val subtypes: Set<String> = emptySet(),
     val supertypes: Set<String> = emptySet(),
-    val cardTypes: Set<String> = emptySet()
+    val cardTypes: Set<String> = emptySet(),
+    /** Source-kind qualities — "protection from spells" (`PROTECTION_FROM_SOURCEKIND_<KIND>`). */
+    val sourceKinds: Set<com.wingedsheep.engine.mechanics.targeting.SourceKind> = emptySet()
 ) : Component

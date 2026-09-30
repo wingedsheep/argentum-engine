@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.handlers.actions.spell.CastAdditionalCosts
@@ -115,7 +116,7 @@ class BestowCastEnumerator : ActionEnumerator {
                     if (costInfo == null) costInfo = SpellCosts.present(env, term, choices)?.second
                 }
                 if (!payable) continue
-                val targets = context.targetUtils.buildTargetInfos(state, player, listOf(BestowCasts.enchantCreature), id)
+                val targets = context.targetUtils.buildTargetInfos(state, player, listOf(BestowCasts.enchantCreature), id, TargetingSourceType.SPELL)
                 if (!context.targetUtils.allRequirementsSatisfied(targets)) continue
                 val maxX = if (cost.hasX) {
                     // Reprice announced X before reductions: an enchantment discount can pay X.

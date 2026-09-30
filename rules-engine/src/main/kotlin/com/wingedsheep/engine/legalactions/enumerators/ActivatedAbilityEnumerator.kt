@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -1010,13 +1011,13 @@ class ActivatedAbilityEnumerator(
                 // computed relative to the controller (playerId), matching how the handler finds
                 // legal targets for the opponent.
                 if (allTargetReqs.any { it.chooser != com.wingedsheep.sdk.scripting.targets.TargetChooser.Controller }) {
-                    val allReqInfos = context.targetUtils.buildTargetInfos(state, playerId, allTargetReqs, sourceId = entityId)
+                    val allReqInfos = context.targetUtils.buildTargetInfos(state, playerId, allTargetReqs, sourceId = entityId, targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY)
                     if (!context.targetUtils.allRequirementsSatisfied(allReqInfos)) continue
                 }
                 val targetReqs = allTargetReqs.filter { it.chooser == com.wingedsheep.sdk.scripting.targets.TargetChooser.Controller }
                 if (targetReqs.isNotEmpty()) {
                     // Build target info for each requirement (same pattern as spells)
-                    val targetReqInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, sourceId = entityId)
+                    val targetReqInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, sourceId = entityId, targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY)
 
                     // All requirements must be satisfiable
                     if (!context.targetUtils.allRequirementsSatisfied(targetReqInfos)) continue
@@ -1256,7 +1257,7 @@ class ActivatedAbilityEnumerator(
                     ability.targetRequirements
                 }
                 if (targetReqs.isNotEmpty()) {
-                    val targetReqInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, sourceId = entityId)
+                    val targetReqInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, sourceId = entityId, targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY)
 
                     if (!context.targetUtils.allRequirementsSatisfied(targetReqInfos)) continue
 
