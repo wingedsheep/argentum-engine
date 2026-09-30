@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.PipelineState
 import com.wingedsheep.engine.handlers.effects.EntersWithReplacements
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
+import com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry
 import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
 import com.wingedsheep.engine.mechanics.modal.ChosenModeMemory
 import com.wingedsheep.engine.state.GameState
@@ -303,6 +304,7 @@ class ModalAndCloneContinuationResumer(
         nameOverride: String?,
         powerOverride: Int?,
         toughnessOverride: Int?,
+        duration: com.wingedsheep.sdk.scripting.Duration,
     ): GameState {
         // The riders are the same "except …" clause every other copy path carries (CR 707.9b), so
         // they go through the one engine-side implementation rather than a fourth hand-rolled copy.
@@ -333,6 +335,7 @@ class ModalAndCloneContinuationResumer(
                     copiedCardDefinitionId = targetCardComponent.cardDefinitionId,
                     originalCardComponent = originalCardComponent
                 ))
+                .let { EffectCopyEntry.tagCopyDuration(it, duration) }
         }
     }
 
@@ -425,6 +428,7 @@ class ModalAndCloneContinuationResumer(
                     nameOverride = continuation.nameOverride,
                     powerOverride = continuation.powerOverride,
                     toughnessOverride = continuation.toughnessOverride,
+                    duration = continuation.duration,
                 )
 
                 // "except it enters with X additional +1/+1 counters on it" (Altered Ego) — part of
@@ -536,6 +540,7 @@ class ModalAndCloneContinuationResumer(
                     nameOverride = continuation.nameOverride,
                     powerOverride = continuation.powerOverride,
                     toughnessOverride = continuation.toughnessOverride,
+                    duration = continuation.duration,
                 )
             }
         }

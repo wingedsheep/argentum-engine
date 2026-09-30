@@ -273,7 +273,9 @@ data class CloneEntersContinuation(
     val powerOverride: Int? = null,
     val toughnessOverride: Int? = null,
     val exileCopiedCard: Boolean = false,
-    val additionalCounters: DynamicAmount? = null
+    val additionalCounters: DynamicAmount? = null,
+    /** [com.wingedsheep.sdk.scripting.EntersAsCopy.duration] — `EndOfTurn` tags the copy to revert at cleanup. */
+    val duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.Permanent
 ) : AnswerContinuation
 
 /**
@@ -313,6 +315,8 @@ data class CloneEntersOnBattlefieldContinuation(
     val exileCopiedCard: Boolean = false,
     val tappedIfCopied: Boolean = false,
     val additionalCounters: DynamicAmount? = null,
+    /** See [CloneEntersContinuation.duration]. */
+    val duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.Permanent,
     /** Actual entry refs, retained across every as-enters decision. */
     val entryOldObject: com.wingedsheep.engine.state.ObjectRef? = null,
     val entryNewObject: com.wingedsheep.engine.state.ObjectRef? = null

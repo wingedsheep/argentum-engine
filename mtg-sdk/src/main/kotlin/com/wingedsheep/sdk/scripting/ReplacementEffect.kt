@@ -1827,6 +1827,11 @@ data class ReplaceLifePaymentWithLibraryExile(
  *                   copy applies. Declining the copy therefore also declines the counters, which is
  *                   the printed ruling ("You can choose not to copy anything. … It won't have +1/+1
  *                   counters placed on it by its ability.").
+ * @param duration How long the copy lasts. [Duration.Permanent] (default) is every Clone;
+ *                   [Duration.EndOfTurn] is "you may have it become a copy of any creature on the
+ *                   battlefield until end of turn" (Cursed Mirror) — at cleanup the permanent reverts
+ *                   to its printed self, riders (the granted haste) included. No other duration is
+ *                   supported.
  */
 @SerialName("EntersAsCopy")
 @Serializable
@@ -1846,11 +1851,18 @@ data class EntersAsCopy(
     val additionalCounters: DynamicAmount? = null,
     val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions =
         com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
+    val duration: Duration = Duration.Permanent,
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     )
 ) : ReplacementEffect {
+    init {
+        require(duration == Duration.Permanent || duration == Duration.EndOfTurn) {
+            "EntersAsCopy supports only Permanent or EndOfTurn durations, got $duration"
+        }
+    }
+
     override val priorityGroup: ReplacementPriorityGroup
         get() = ReplacementPriorityGroup.COPY
 
@@ -1859,7 +1871,10 @@ data class EntersAsCopy(
         val where = if (copyFromZone == Zone.GRAVEYARD) "$filterDesc card in a graveyard" else "$filterDesc on the battlefield"
         val subject = if (copyFilter == GameObjectFilter.Land) "this land" else "this creature"
         val tappedWord = if (tappedIfCopied) "tapped " else ""
-        val lead = if (optional) {
+        val lead = if (duration == Duration.EndOfTurn) {
+            val who = if (optional) "you may have it" else "it"
+            "As $subject enters, $who become${if (optional) "" else "s"} a copy of any $where until end of turn"
+        } else if (optional) {
             "You may have $subject enter ${tappedWord}as a copy of any $where"
         } else {
             "$subject enters ${tappedWord}as a copy of any $where"

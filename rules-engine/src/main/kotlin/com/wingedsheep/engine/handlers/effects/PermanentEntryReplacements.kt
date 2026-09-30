@@ -324,6 +324,7 @@ object PermanentEntryReplacements {
             exileCopiedCard = effect.exileCopiedCard,
             tappedIfCopied = effect.tappedIfCopied,
             additionalCounters = effect.additionalCounters,
+            duration = effect.duration,
             entryOldObject = entryOldObject,
             entryNewObject = entryNewObject,
         )
