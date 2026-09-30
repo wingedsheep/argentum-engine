@@ -129,6 +129,7 @@ sealed interface KeywordAbility {
             is ProtectionScope.Color -> "Protection from ${scope.color.displayName.lowercase()}"
             is ProtectionScope.Colors -> "Protection from " +
                 scope.colors.joinToString(" and from ") { it.displayName.lowercase() }
+            is ProtectionScope.NonColor -> "Protection from non${scope.color.displayName.lowercase()}"
             is ProtectionScope.CardType -> "Protection from ${scope.cardType.lowercase()}"
             is ProtectionScope.Subtype -> "Protection from ${scope.subtype}s"
             is ProtectionScope.Supertype -> "Protection from ${scope.supertype.lowercase()}"
@@ -139,12 +140,14 @@ sealed interface KeywordAbility {
 
     /**
      * Hexproof from a quality. Parameterized by [ProtectionScope]; `ProtectionScope.Color`,
-     * `ProtectionScope.Colors` and `ProtectionScope.CardType` are engine-supported (the remaining
+     * `ProtectionScope.Colors`, `ProtectionScope.NonColor` and `ProtectionScope.CardType` are engine-supported (the remaining
      * scopes format the oracle text but have no rules-engine wiring yet).
      *
      * Examples:
      * - `Hexproof(ProtectionScope.Color(Color.WHITE))`    — "Hexproof from white" (Knight of Malice)
      * - `Hexproof(ProtectionScope.CardType("Instant"))`   — "Hexproof from instants" (Elenda, Saint of Dusk)
+     * - `Hexproof(ProtectionScope.NonColor(Color.GREEN))`  — "can't be the target of nongreen spells or
+     *   abilities your opponents control" (Thrun, Breaker of Silence)
      */
     @SerialName("Hexproof")
     @Serializable
@@ -153,6 +156,7 @@ sealed interface KeywordAbility {
             is ProtectionScope.Color -> "Hexproof from ${scope.color.displayName.lowercase()}"
             is ProtectionScope.Colors -> "Hexproof from " +
                 scope.colors.joinToString(" and from ") { it.displayName.lowercase() }
+            is ProtectionScope.NonColor -> "Hexproof from non${scope.color.displayName.lowercase()}"
             is ProtectionScope.CardType -> "Hexproof from ${scope.cardType.lowercase()}"
             is ProtectionScope.Subtype -> "Hexproof from ${scope.subtype}s"
             is ProtectionScope.Supertype -> "Hexproof from ${scope.supertype.lowercase()}"
@@ -1162,6 +1166,9 @@ sealed interface KeywordAbility {
          * Create Hexproof from a color.
          */
         fun hexproofFrom(color: Color): KeywordAbility = Hexproof(ProtectionScope.Color(color))
+
+        /** "Hexproof from non<color>" — opponents' sources that aren't [color] (colorless included). */
+        fun hexproofFromNon(color: Color): KeywordAbility = Hexproof(ProtectionScope.NonColor(color))
 
         /**
          * Create Protection from a color.

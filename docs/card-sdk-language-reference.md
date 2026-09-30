@@ -10196,6 +10196,16 @@ composite abilities).
   unaffected. Rides on the card entity as `ProtectionComponent.cardTypes`.
 - `Hexproof(ProtectionScope.Color(Color.WHITE))` — "hexproof from white" (Knight of Malice). Projected as
   `HEXPROOF_FROM_<COLOR>`.
+- `Hexproof(ProtectionScope.NonColor(Color.GREEN))` / `KeywordAbility.hexproofFromNon(Color.GREEN)` —
+  "can't be the target of nongreen spells your opponents control or abilities from nongreen sources
+  your opponents control" (Thrun, Breaker of Silence), which is CR 702.11d's definition of "hexproof
+  from nongreen". Matches every source that isn't the color, **colorless included** (CR 105.2c); a
+  green-white source is green and gets through. Projected as `HEXPROOF_FROM_NON_<COLOR>`
+  (`HexproofFromComponent.nonColors`). Every hexproof-from quality — color, mono/multicolored,
+  non-color, card type — is matched by the one `HexproofFromRules.blockingQuality`, which all four
+  targeting sites (`TargetFinder`, `TargetEnumerationUtils`, `TargetValidator`,
+  `ResolutionTargetValidator`) call. `NonColor` also works for player protection
+  (`GrantPlayerProtection`); creature *protection* from a non-color is not projected.
 - `Hexproof(ProtectionScope.CardType("Instant"))` — "hexproof from instants" (Elenda, Saint of Dusk).
   Projected as `HEXPROOF_FROM_CARDTYPE_<TYPE>`, mirroring the `PROTECTION_FROM_CARDTYPE_<TYPE>` idiom, and
   enforced at all three targeting sites: legal-target enumeration (`TargetFinder`), cast/activation

@@ -21,6 +21,19 @@ sealed interface ProtectionScope {
     @Serializable
     data class Colors(val colors: Set<com.wingedsheep.sdk.core.Color>) : ProtectionScope
 
+    /**
+     * The complement of a single color — "from nongreen". Matches every source that is **not**
+     * [color], colorless sources included (CR 105.2c: a colorless object has no color, so it is
+     * "nongreen"). A green-white source is green, so it does not match.
+     *
+     * Engine-wired for *hexproof* (Thrun, Breaker of Silence: "can't be the target of nongreen
+     * spells your opponents control or abilities from nongreen sources your opponents control")
+     * and for player protection; creature *protection* from a non-color is not projected.
+     */
+    @SerialName("ProtectionScope.NonColor")
+    @Serializable
+    data class NonColor(val color: com.wingedsheep.sdk.core.Color) : ProtectionScope
+
     /** Protection from a card type — "from creatures". */
     @SerialName("ProtectionScope.CardType")
     @Serializable

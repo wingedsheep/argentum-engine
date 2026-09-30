@@ -377,14 +377,9 @@ class TargetValidator(
         val spellTargetingError = checkCantBeTargetedBySpells(state, target, targetingSourceType)
         if (spellTargetingError != null) return spellTargetingError
 
-        // Check hexproof from color (Rule 702.11b)
-        val hexproofError = checkHexproofFromColor(state, target, casterId, sourceColors)
+        // Check hexproof from a quality — color, non-color, card type (Rule 702.11d)
+        val hexproofError = checkHexproofFrom(state, target, casterId, sourceColors, sourceId)
         if (hexproofError != null) return hexproofError
-
-        // Check hexproof from card type, e.g. "hexproof from instants" (Rule 702.11b).
-        // Elenda, Saint of Dusk.
-        val hexproofCardTypeError = checkHexproofFromCardType(state, target, casterId, sourceId)
-        if (hexproofCardTypeError != null) return hexproofCardTypeError
 
         // Check protection from each opponent (Rule 702.16e)
         val protectionFromOpponentError = checkProtectionFromEachOpponent(state, target, casterId)
@@ -552,74 +547,20 @@ class TargetValidator(
     }
 
     /**
-     * Check if a target has hexproof from any of the source's colors.
-     * "Hexproof from [color]" prevents opponents from targeting with spells/abilities of that color.
-     * Returns an error message if hexproof blocks this targeting, null otherwise.
+     * Check if a target has "hexproof from [quality]" matching the source — a color ("hexproof
+     * from white"), monocolored/multicolored, a non-color ("nongreen", colorless sources included)
+     * or a card type ("hexproof from instants"). CR 702.11d: it only blocks *opponents*, and
+     * hexproof-suppressing effects turn it off for the caster. The quality match itself is the
+     * shared [HexproofFromRules]; the source's card types resolve as for protection-from-card-type.
      */
-    private fun checkHexproofFromColor(
+    private fun checkHexproofFrom(
         state: GameState,
         target: ChosenTarget,
         casterId: EntityId,
-        sourceColors: Set<Color>
-    ): String? {
-        if (sourceColors.isEmpty()) return null
-
-        val entityId = when (target) {
-            is ChosenTarget.Permanent -> target.entityId
-            else -> return null
-        }
-
-        // Only check permanents on the battlefield
-        if (entityId !in state.getBattlefield()) return null
-
-        // Hexproof from color only blocks opponents — owner can still target
-        val entityController = state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
-        if (entityController == casterId) return null
-
-        val projected = state.projectedState
-        val hexproofSuppressed = HexproofSuppression.isSuppressedForCaster(state, projected, entityId, casterId, predicateEvaluator = predicateEvaluator)
-        if (!hexproofSuppressed) {
-            for (color in sourceColors) {
-                if (projected.hasKeyword(entityId, "HEXPROOF_FROM_${color.name}")) {
-                    val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
-                    return "$cardName has hexproof from ${color.displayName.lowercase()}"
-                }
-            }
-            // Hexproof from monocolored: a source with exactly one color can't target (CR 105.2).
-            if (sourceColors.size == 1 && projected.hasKeyword(entityId, "HEXPROOF_FROM_MONOCOLORED")) {
-                val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
-                return "$cardName has hexproof from monocolored"
-            }
-            // Hexproof from multicolored: a source with two or more colors can't target (CR 105.2b).
-            if (sourceColors.size >= 2 && projected.hasKeyword(entityId, "HEXPROOF_FROM_MULTICOLORED")) {
-                val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
-                return "$cardName has hexproof from multicolored"
-            }
-        }
-        return null
-    }
-
-    /**
-     * Check if a target has hexproof from one of the source's card types — "hexproof from
-     * instants" (Rule 702.11b). Format: `HEXPROOF_FROM_CARDTYPE_<CARDTYPE>`.
-     *
-     * Like hexproof from a color this only blocks *opponents*: the permanent's controller can
-     * still target it with their own instants, and hexproof-suppressing effects (Glaring Spotlight
-     * and friends) turn it off for the caster. The source's card types are resolved the same way as
-     * for protection-from-card-type — projected types for a permanent source, falling back to the
-     * printed type line for a spell on the stack, which the layer projector doesn't cover.
-     */
-    private fun checkHexproofFromCardType(
-        state: GameState,
-        target: ChosenTarget,
-        casterId: EntityId,
+        sourceColors: Set<Color>,
         sourceId: EntityId?
     ): String? {
-        if (sourceId == null) return null
-        val entityId = when (target) {
-            is ChosenTarget.Permanent -> target.entityId
-            else -> return null
-        }
+        val entityId = (target as? ChosenTarget.Permanent)?.entityId ?: return null
         if (entityId !in state.getBattlefield()) return null
 
         val entityController = state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
@@ -628,13 +569,15 @@ class TargetValidator(
         val projected = state.projectedState
         if (HexproofSuppression.isSuppressedForCaster(state, projected, entityId, casterId, predicateEvaluator = predicateEvaluator)) return null
 
-        for (cardType in SourceTypeTargeting.sourceCardTypes(state, sourceId)) {
-            if (projected.hasKeyword(entityId, "HEXPROOF_FROM_CARDTYPE_${cardType.uppercase()}")) {
-                val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
-                return "$cardName has hexproof from ${cardType.lowercase()}s"
-            }
-        }
-        return null
+        val quality = HexproofFromRules.blockingQuality(
+            projected,
+            entityId,
+            sourceColors = sourceColors.mapTo(mutableSetOf()) { it.name },
+            sourceCardTypes = sourceId?.let { SourceTypeTargeting.sourceCardTypes(state, it) }.orEmpty(),
+            sourceKnown = sourceId != null && state.getEntity(sourceId) != null
+        ) ?: return null
+        val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
+        return "$cardName has hexproof from $quality"
     }
 
     /**

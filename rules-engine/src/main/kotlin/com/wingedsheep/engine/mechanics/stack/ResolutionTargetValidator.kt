@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.stack
 
+import com.wingedsheep.engine.mechanics.targeting.HexproofFromRules
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
@@ -214,27 +215,17 @@ internal class ResolutionTargetValidator(
         val hexproofSuppressed = HexproofSuppression.isSuppressedForCaster(state, projected, target.entityId, controllerId, predicateEvaluator = predicateEvaluator)
         if (!hexproofSuppressed && projected.hasKeyword(target.entityId, "HEXPROOF") && entityController != controllerId) return false
 
-        // Check hexproof from color (Rule 702.11b)
-        if (!hexproofSuppressed && entityController != controllerId) {
-            for (color in sourceColors) {
-                if (projected.hasKeyword(target.entityId, "HEXPROOF_FROM_${color.name}")) {
-                    return false
-                }
-            }
-            // ...and from the source's card types, e.g. "hexproof from instants"
-            // (Elenda, Saint of Dusk). Same source-type resolution as protection.
-            if (sourceId != null) {
-                for (cardType in SourceTypeTargeting.sourceCardTypes(state, sourceId)) {
-                    if (projected.hasKeyword(
-                            target.entityId,
-                            "HEXPROOF_FROM_CARDTYPE_${cardType.uppercase()}"
-                        )
-                    ) {
-                        return false
-                    }
-                }
-            }
-        }
+        // Check hexproof from a quality — color, non-color, card type (Rule 702.11d). Same
+        // shared quality match as the cast-time check, so the two can't disagree.
+        if (!hexproofSuppressed && entityController != controllerId &&
+            HexproofFromRules.blockingQuality(
+                projected,
+                target.entityId,
+                sourceColors = sourceColors.mapTo(mutableSetOf()) { it.name },
+                sourceCardTypes = sourceId?.let { SourceTypeTargeting.sourceCardTypes(state, it) }.orEmpty(),
+                sourceKnown = sourceId != null && state.getEntity(sourceId) != null
+            ) != null
+        ) return false
 
         // Check can't-be-targeted-by-abilities (Shanna, Sisay's Legacy)
         if (targetingSourceType != TargetingSourceType.SPELL && entityController != controllerId) {

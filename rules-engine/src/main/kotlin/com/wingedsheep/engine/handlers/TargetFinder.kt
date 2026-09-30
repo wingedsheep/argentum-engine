@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.mechanics.targeting.HexproofFromRules
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
@@ -642,25 +643,16 @@ class TargetFinder(
         if (entityController == controllerId || sourceId == null) return false
         // Try projected colors first (for permanents on the battlefield),
         // then fall back to base CardComponent colors (for spells in hand/on stack)
-        var sourceColors = projected.getColors(sourceId)
-        if (sourceColors.isEmpty()) {
-            sourceColors = state.getEntity(sourceId)?.get<CardComponent>()
-                ?.colors?.map { it.name }?.toSet() ?: emptySet()
+        val sourceColors = projected.getColors(sourceId).ifEmpty {
+            state.getEntity(sourceId)?.get<CardComponent>()?.colors?.map { it.name }?.toSet().orEmpty()
         }
-        if (sourceColors.any { colorName -> projected.hasKeyword(entityId, "HEXPROOF_FROM_$colorName") }) {
-            return true
-        }
-        // Hexproof from monocolored: a source with exactly one color can't target (CR 105.2).
-        if (sourceColors.size == 1 && projected.hasKeyword(entityId, "HEXPROOF_FROM_MONOCOLORED")) {
-            return true
-        }
-        // Hexproof from multicolored: a source with two or more colors can't target (CR 105.2b).
-        if (sourceColors.size >= 2 && projected.hasKeyword(entityId, "HEXPROOF_FROM_MULTICOLORED")) {
-            return true
-        }
-        return SourceTypeTargeting.sourceCardTypes(state, sourceId).any { cardType ->
-            projected.hasKeyword(entityId, "HEXPROOF_FROM_CARDTYPE_${cardType.uppercase()}")
-        }
+        return HexproofFromRules.blockingQuality(
+            projected,
+            entityId,
+            sourceColors = sourceColors,
+            sourceCardTypes = SourceTypeTargeting.sourceCardTypes(state, sourceId),
+            sourceKnown = state.getEntity(sourceId) != null
+        ) != null
     }
 
     /**

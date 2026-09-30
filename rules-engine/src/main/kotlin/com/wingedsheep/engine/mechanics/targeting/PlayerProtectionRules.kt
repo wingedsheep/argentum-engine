@@ -75,6 +75,8 @@ object PlayerProtectionRules {
             is ProtectionScope.Colors -> scope.colors.any { color ->
                 if (onBattlefield) color.name in projected.getColors(sourceId) else color in card?.colors.orEmpty()
             }
+            is ProtectionScope.NonColor -> if (onBattlefield) scope.color.name !in projected.getColors(sourceId)
+                else scope.color !in card?.colors.orEmpty()
             is ProtectionScope.Subtype -> if (onBattlefield)
                 projected.getSubtypes(sourceId).any { it.equals(scope.subtype, ignoreCase = true) }
                 else card?.typeLine?.subtypes?.any { it.value.equals(scope.subtype, ignoreCase = true) } == true

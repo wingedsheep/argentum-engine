@@ -3259,6 +3259,56 @@
     ]
 }
 
+// Thrun, Breaker of Silence
+{
+    "name": "Thrun, Breaker of Silence",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Creature — Troll Shaman",
+    "oracleText": "This spell can't be countered.\nTrample\nThrun can't be the target of nongreen spells your opponents control or abilities from nongreen sources your opponents control.\nDuring your turn, Thrun has indestructible.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Hexproof",
+            "scope": {
+                "type": "ProtectionScope.NonColor",
+                "color": "GREEN"
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "RARE",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d9f51dd-0393-4b3c-bea5-8f74634ab0e5.jpg?1783918008"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Tyrranax Atrocity
 {
     "name": "Tyrranax Atrocity",
