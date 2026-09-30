@@ -405,6 +405,104 @@
     ]
 }
 
+// Bladehold War-Whip
+{
+    "name": "Bladehold War-Whip",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)\nEquip abilities you activate of other Equipment cost {1} less to activate.\nEquipped creature has double strike.\nEquip {3}{R}{W}",
+    "keywords": [
+        "FOR_MIRRODIN"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bladehold War-Whip:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Rebel"
+                            ]
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Bladehold War-Whip:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ReduceEquipCost",
+                "amount": 1,
+                "onlyOtherEquip": true
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOUBLE_STRIKE"
+            }
+        ]
+    },
+    "equipCost": "{3}{R}{W}",
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "UNCOMMON",
+        "artist": "Tony Foti",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/563e9ba5-e0ec-4fb3-8301-689aa145cc19.jpg?1783918004"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Blazing Crescendo
 {
     "name": "Blazing Crescendo",

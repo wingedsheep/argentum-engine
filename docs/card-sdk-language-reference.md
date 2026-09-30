@@ -9059,7 +9059,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   nonmana parts such as paying life, while the per-player
   `EquipActivationsThisTurnComponent.count == 0`, and increments that counter on every equip
   activation (reset at turn start by `TurnManager`).
-- `ReduceEquipCost(amount, onlyIfTargetIsSource = false, onlyOwnEquip = false)` — the controller's equip abilities cost
+- `ReduceEquipCost(amount, onlyIfTargetIsSource = false, onlyOwnEquip = false, onlyOtherEquip = false)` — the controller's equip abilities cost
   `{amount}` generic mana less to activate (Éowyn, Lady of Rohan: "Equip abilities you activate cost
   {1} less to activate"). The engine reduces only the generic portion of the equip cost (floored at
   {0}); colored pips are untouched, and multiple sources stack additively. Controller-scoped — it
@@ -9080,6 +9080,10 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   equip ability's source. Because it is typically granted to a token (via
   `CreateTokenCopyOfTargetEffect.addedStaticAbilities`), the equip-cost reader unions
   `grantedStaticAbilities` with printed statics.
+  Set `onlyOtherEquip = true` for the mirror form — "Equip abilities you activate of **other** Equipment
+  cost `{amount}` less to activate" (Bladehold War-Whip): the reduction skips the bearer's own equip
+  abilities and applies to every other equip ability its controller activates. Mutually exclusive with
+  `onlyOwnEquip`.
 - `ReduceActivatedAbilityCost(filter, amount, manaFloor = 0, exhaustOnly = false)` — the activated
   abilities of permanents
   matching `filter` cost the dynamic `amount` of generic mana less to activate, with the mana in each
