@@ -3273,7 +3273,7 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "creature Human ctrl:you",
+                        "baseFilter": "permanent Human ctrl:you",
                         "excludeSelf": true
                     },
                     "id": "t0"

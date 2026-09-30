@@ -319,7 +319,8 @@
                     {
                         "type": "TargetObject",
                         "filter": {
-                            "baseFilter": "artifact"
+                            "baseFilter": "artifact",
+                            "excludeSelf": true
                         },
                         "id": "t0"
                     }
