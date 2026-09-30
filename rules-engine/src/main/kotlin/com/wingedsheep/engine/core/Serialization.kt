@@ -467,6 +467,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CopyWhileAttachedComponent::class)
         subclass(DoubleFacedComponent::class)
         subclass(FlippedComponent::class)
+        subclass(EntryCharacteristicsComponent::class)
         subclass(RoomComponent::class)
         subclass(CantBeCounteredComponent::class)
         subclass(CantBeCopiedComponent::class)

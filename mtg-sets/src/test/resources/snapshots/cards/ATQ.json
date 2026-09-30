@@ -2977,97 +2977,6 @@
         "toughness": 0
     },
     "script": {
-        "staticAbilities": [
-            {
-                "type": "ConditionalStaticAbility",
-                "ability": {
-                    "type": "SetBasePowerToughnessStatic",
-                    "power": 3,
-                    "toughness": 3,
-                    "filter": {
-                        "baseFilter": "permanent",
-                        "scope": "Self"
-                    }
-                },
-                "condition": {
-                    "type": "SourceChosenModeIs",
-                    "modeId": "3/3"
-                }
-            },
-            {
-                "type": "ConditionalStaticAbility",
-                "ability": {
-                    "type": "SetBasePowerToughnessStatic",
-                    "power": 2,
-                    "toughness": 2,
-                    "filter": {
-                        "baseFilter": "permanent",
-                        "scope": "Self"
-                    }
-                },
-                "condition": {
-                    "type": "SourceChosenModeIs",
-                    "modeId": "2/2 flying"
-                }
-            },
-            {
-                "type": "ConditionalStaticAbility",
-                "ability": {
-                    "type": "GrantKeyword",
-                    "keyword": "FLYING",
-                    "filter": {
-                        "baseFilter": "permanent",
-                        "scope": "Self"
-                    }
-                },
-                "condition": {
-                    "type": "SourceChosenModeIs",
-                    "modeId": "2/2 flying"
-                }
-            },
-            {
-                "type": "ConditionalStaticAbility",
-                "ability": {
-                    "type": "SetBasePowerToughnessStatic",
-                    "power": 1,
-                    "toughness": 6,
-                    "filter": {
-                        "baseFilter": "permanent",
-                        "scope": "Self"
-                    }
-                },
-                "condition": {
-                    "type": "SourceChosenModeIs",
-                    "modeId": "1/6 defender"
-                }
-            },
-            {
-                "type": "ConditionalStaticAbility",
-                "ability": {
-                    "type": "GrantSubtype",
-                    "subtype": "Wall"
-                },
-                "condition": {
-                    "type": "SourceChosenModeIs",
-                    "modeId": "1/6 defender"
-                }
-            },
-            {
-                "type": "ConditionalStaticAbility",
-                "ability": {
-                    "type": "GrantKeyword",
-                    "keyword": "DEFENDER",
-                    "filter": {
-                        "baseFilter": "permanent",
-                        "scope": "Self"
-                    }
-                },
-                "condition": {
-                    "type": "SourceChosenModeIs",
-                    "modeId": "1/6 defender"
-                }
-            }
-        ],
         "replacementEffects": [
             {
                 "type": "EntersWithChoice",
@@ -3075,15 +2984,36 @@
                 "modeOptions": [
                     {
                         "id": "3/3",
-                        "label": "3/3 artifact creature"
+                        "label": "3/3 artifact creature",
+                        "becomes": {
+                            "power": 3,
+                            "toughness": 3
+                        }
                     },
                     {
                         "id": "2/2 flying",
-                        "label": "2/2 artifact creature with flying"
+                        "label": "2/2 artifact creature with flying",
+                        "becomes": {
+                            "power": 2,
+                            "toughness": 2,
+                            "keywords": [
+                                "FLYING"
+                            ]
+                        }
                     },
                     {
                         "id": "1/6 defender",
-                        "label": "1/6 Wall artifact creature with defender"
+                        "label": "1/6 Wall artifact creature with defender",
+                        "becomes": {
+                            "power": 1,
+                            "toughness": 6,
+                            "keywords": [
+                                "DEFENDER"
+                            ],
+                            "subtypes": [
+                                "Wall"
+                            ]
+                        }
                     }
                 ]
             }

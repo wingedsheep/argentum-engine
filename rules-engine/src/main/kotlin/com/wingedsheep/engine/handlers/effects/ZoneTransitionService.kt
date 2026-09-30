@@ -747,7 +747,12 @@ class ZoneTransitionService(
                 )
                 if (!options.faceDown && options.entryChoices.isNotEmpty()) {
                     newState = newState.updateEntity(entityId) { c ->
-                        options.entryChoices.entries.fold(c) { acc, (slot, value) -> acc.withCastChoice(slot, value) }
+                        val recorded = options.entryChoices.entries.fold(c) { acc, (slot, value) -> acc.withCastChoice(slot, value) }
+                        val modeId = (options.entryChoices[com.wingedsheep.sdk.scripting.ChoiceSlot.MODE]
+                            as? com.wingedsheep.engine.state.components.battlefield.ChoiceValue.TextChoice)?.text
+                        if (modeId == null) recorded
+                        else com.wingedsheep.engine.state.components.identity.EntryCharacteristicsBaking
+                            .bake(recorded, modeId, cardRegistry)
                     }
                 }
                 options.auraHostId?.let { host ->
