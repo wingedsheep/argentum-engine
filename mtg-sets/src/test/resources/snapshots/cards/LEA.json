@@ -4214,6 +4214,84 @@
     ]
 }
 
+// Sleight of Mind
+{
+    "name": "Sleight of Mind",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Change the text of target spell or permanent by replacing all instances of one color word with another. (For example, you may change \"target black spell\" to \"target blue spell.\" This effect lasts indefinitely.)",
+    "script": {
+        "spellEffect": {
+            "type": "ChangeWordInText",
+            "categories": [
+                "COLOR_WORD"
+            ],
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "duration": "Permanent"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetSpellOrPermanent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "RARE",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d427790c-e322-446e-8d7d-a6b48ad41a42.jpg?1783948701",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "You can’t Sleight proper nouns (i.e. card names). This means that you can’t affect a “Black Vise”."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Can target a card with no color words on it."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Can’t change a color word to the same color word. It must be a different word."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Alters all occurrences of the chosen word in the text box and the type line of the given card."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Can target a card with no appropriate words on it, or even one with no words at all."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "It can’t change a word to the same word. It must be a different word."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "It only changes what is printed on the card (or set on a token when it was created or set by a copy effect). It will not change any effects that are on the permanent."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "You choose the words to change on resolution."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Changing the text of a spell will not allow you to change the targets of the spell because the targets were chosen when the spell was cast. The text change will (probably) cause it to be countered since the targets will be illegal."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If you change the text of a spell which is to become a permanent, the permanent will retain the text change until the effect wears off."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sol Ring
 {
     "name": "Sol Ring",
