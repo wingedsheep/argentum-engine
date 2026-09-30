@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 
 /**
  * Byway Barterer {2}{R}
@@ -28,7 +29,12 @@ val BywayBarterer = card("Byway Barterer") {
     triggeredAbility {
         trigger = Triggers.you.expends(4)
         effect = Effects.May(
-            Patterns.Hand.discardHand() then Effects.DrawCards(2)
+            Effects.IfYouDo(
+                action = Patterns.Hand.discardHand(),
+                then = Effects.DrawCards(2),
+                // Discarding your hand can be done with no cards in it, so the draw still happens.
+                successCriterion = SuccessCriterion.Always,
+            )
         )
     }
 

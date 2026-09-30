@@ -27,7 +27,7 @@ val FlaringCinder = card("Flaring Cinder") {
     triggeredAbility {
         trigger = Triggers.self.enters()
         effect = Effects.May(
-            effect = Patterns.Hand.discardCards(1) then Effects.DrawCards(1),
+            effect = Effects.IfYouDo(Patterns.Hand.discardCards(1), Effects.DrawCards(1)),
             descriptionOverride = "You may discard a card. If you do, draw a card."
         )
     }
@@ -35,7 +35,7 @@ val FlaringCinder = card("Flaring Cinder") {
     triggeredAbility {
         trigger = Triggers.you.casts(GameObjectFilter.Any.manaValueAtLeast(4))
         effect = Effects.May(
-            effect = Patterns.Hand.discardCards(1) then Effects.DrawCards(1),
+            effect = Effects.IfYouDo(Patterns.Hand.discardCards(1), Effects.DrawCards(1)),
             descriptionOverride = "You may discard a card. If you do, draw a card."
         )
     }
