@@ -5196,7 +5196,10 @@
                     }
                 ]
             },
-            "maxValue": 10,
+            "maxValue": {
+                "type": "Fixed",
+                "amount": 10
+            },
             "prompt": "Choose a number between 0 and 10"
         }
     },

@@ -46,6 +46,32 @@ data class AddDynamicCountersEffect(
 }
 
 /**
+ * Place [amount] counters without this instruction raising their total above [totalLimit].
+ * The limit applies after placement replacements and does not remove existing counters or
+ * restrict other instructions. Compose with ChooseNumberThen for an optional placement.
+ */
+@SerialName("AddCountersWithLimit")
+@Serializable
+data class AddCountersWithLimitEffect(
+    val counterType: CounterType,
+    val amount: DynamicAmount,
+    val totalLimit: DynamicAmount,
+    val target: EffectTarget
+) : Effect {
+    override val description: String =
+        "Put ${amount.description} ${counterType.printed} counters on ${target.description}, " +
+            "without raising their total above ${totalLimit.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newAmount = amount.applyTextReplacement(replacer)
+        val newLimit = totalLimit.applyTextReplacement(replacer)
+        return if (newAmount != amount || newLimit != totalLimit)
+            copy(amount = newAmount, totalLimit = newLimit) else this
+    }
+
+}
+
+/**
  * Put a player-chosen number (0 up to [max]) of a single kind of counter on a target.
  * "Put up to three lore counters on it." (Esper Terra) — "Put up to two +1/+1 counters on
  * target creature."

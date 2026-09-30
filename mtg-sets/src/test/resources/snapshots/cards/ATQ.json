@@ -1044,31 +1044,62 @@
                     ]
                 },
                 "effect": {
-                    "type": "AddDynamicCounters",
-                    "counterType": "PLUS_ONE_PLUS_ZERO",
-                    "amount": {
-                        "type": "IfPositive",
-                        "amount": {
-                            "type": "Min",
-                            "left": "XValue",
-                            "right": {
-                                "type": "Subtract",
-                                "left": {
-                                    "type": "Fixed",
-                                    "amount": 4
-                                },
-                                "right": {
-                                    "type": "EntityProperty",
-                                    "entity": "Self",
-                                    "numericProperty": {
-                                        "type": "CounterCount",
-                                        "counterType": "PLUS_ONE_PLUS_ZERO"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsPermanent"
+                                ],
+                                "statePredicates": [
+                                    "IsSource",
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Battlefield"
                                     }
-                                }
+                                ]
                             }
                         }
                     },
-                    "target": "Self"
+                    "then": {
+                        "type": "ChooseNumberThen",
+                        "then": {
+                            "type": "AddCountersWithLimit",
+                            "counterType": "PLUS_ONE_PLUS_ZERO",
+                            "amount": "XValue",
+                            "totalLimit": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "target": "Self"
+                        },
+                        "maxValue": {
+                            "type": "IfPositive",
+                            "amount": {
+                                "type": "Min",
+                                "left": "XValue",
+                                "right": {
+                                    "type": "Subtract",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    },
+                                    "right": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "PLUS_ONE_PLUS_ZERO"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "prompt": "Put how many +1/+0 counters on Clockwork Avian?"
+                    }
                 },
                 "restrictions": [
                     {
@@ -1094,7 +1125,7 @@
         "collectorNumber": "45",
         "rarity": "RARE",
         "artist": "Randy Asplund-Faith",
-        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1dea8c2f-4aea-478d-aee7-cba1f74edd6c.jpg?1562901278"
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1dea8c2f-4aea-478d-aee7-cba1f74edd6c.jpg?1783948363"
     },
     "colorIdentityOverride": []
 }

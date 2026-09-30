@@ -28,6 +28,13 @@ class AddCountersExecutor(
         state: GameState,
         effect: AddCountersEffect,
         context: EffectContext
+    ): EffectResult = place(state, effect, context)
+
+    internal fun place(
+        state: GameState,
+        effect: AddCountersEffect,
+        context: EffectContext,
+        totalLimit: Int? = null
     ): EffectResult {
         // Counters usually go on a permanent, but "that player gets two poison counters"
         // (Virulent Silencer) puts them on a player — a PlayerRef target only resolves through
@@ -47,10 +54,13 @@ class AddCountersExecutor(
         val current = state.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
 
         // Apply counter placement replacement effects (e.g., Hardened Scales)
-        val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
+        val replacedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
             state, targetId, counterType, effect.count, placerId = context.controllerId,
             predicateEvaluator = predicateEvaluator
         )
+
+        val modifiedCount = if (totalLimit == null) replacedCount else
+            minOf(replacedCount, (totalLimit.toLong() - current.getCount(counterType)).coerceIn(0, Int.MAX_VALUE.toLong()).toInt())
 
         // Every placement was replaced away (a capped player already locked out this turn, or a
         // negative modifier): nothing is placed, so nothing is recorded or announced.

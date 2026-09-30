@@ -3631,7 +3631,25 @@ object Effects {
         minValue: Int = 0,
         maxValue: Int = 16,
         prompt: String = "Choose a number"
+    ): Effect = ChooseNumberThenEffect(then, minValue, DynamicAmount.Fixed(maxValue), prompt)
+
+    /** Choose a number with a ceiling evaluated before the choice replaces X. */
+    fun ChooseNumberThen(
+        then: Effect,
+        maxValue: DynamicAmount,
+        minValue: Int = 0,
+        prompt: String = "Choose a number"
     ): Effect = ChooseNumberThenEffect(then, minValue, maxValue, prompt)
+
+    /** Place counters while limiting the resulting total, including replacement effects. */
+    fun AddCountersWithLimit(
+        counterType: CounterType,
+        amount: DynamicAmount,
+        totalLimit: DynamicAmount,
+        target: EffectTarget
+    ): Effect = com.wingedsheep.sdk.scripting.effects.AddCountersWithLimitEffect(
+        counterType, amount, totalLimit, target
+    )
 
     /**
      * Choose a number in [[minValue], [maxValue]] and store it durably on the source permanent

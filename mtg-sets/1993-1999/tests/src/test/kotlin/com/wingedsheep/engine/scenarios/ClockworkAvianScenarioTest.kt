@@ -9,15 +9,14 @@ import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 
-/**
- * Scenario tests for Clockwork Avian (ATQ #45).
- *
- * {5} Artifact Creature — Bird 0/4, Flying
- * "This creature enters with four +1/+0 counters on it.
- *  At end of combat, if this creature attacked or blocked this combat, remove a +1/+0 counter from it."
- *
- * Exercises the new +1/+0 stat counter (layer 7c) and the attacked-or-blocked end-of-combat shed.
- */
+import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.support.GameTestDriver
+import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.atq.cards.ClockworkAvian
+import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.core.Outcome
+
 class ClockworkAvianScenarioTest : ScenarioTestBase() {
 
     private val stateProjector = StateProjector()
@@ -146,5 +145,76 @@ class ClockworkAvianScenarioTest : ScenarioTestBase() {
                 }
             }
         }
+    }
+
+    init {
+    val refillAbilityId = ClockworkAvian.activatedAbilities[0].id // {X}, {T}: put up to X +1/+0 counters
+
+    fun createDriver(): GameTestDriver {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all)
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingLife = 20)
+        return driver
+    }
+
+    fun plusOneZero(driver: GameTestDriver, id: EntityId): Int =
+        driver.state.getEntity(id)?.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ZERO) ?: 0
+
+    test("refill puts the full X when it stays at or below four total") {
+        val driver = createDriver()
+        val player = driver.player1
+        val avian = driver.putCreatureOnBattlefield(player, "Clockwork Avian")
+        driver.removeSummoningSickness(avian)
+        // Below the cap: one counter, so X=2 fits entirely (1 + 2 = 3 ≤ 4).
+        driver.addComponent(avian, CountersComponent(mapOf(CounterType.PLUS_ONE_PLUS_ZERO to 1)))
+
+        driver.passPriorityUntil(Step.UPKEEP)
+        driver.giveColorlessMana(player, 2)
+        driver.submit(
+            ActivateAbility(playerId = player, sourceId = avian, abilityId = refillAbilityId, xValue = 2)
+        ).outcome shouldBe Outcome.Done
+        driver.bothPass()
+        val decision = driver.pendingDecision as com.wingedsheep.engine.core.ChooseNumberDecision
+        driver.submitDecision(player, com.wingedsheep.engine.core.NumberChosenResponse(decision.id, decision.maxValue)).error shouldBe null
+
+        plusOneZero(driver, avian) shouldBe 3 // 1 + min(2, 4-1) = 1 + 2
+    }
+
+    test("refill choice respects the remaining capacity") {
+        val driver = createDriver()
+        val player = driver.player1
+        val avian = driver.putCreatureOnBattlefield(player, "Clockwork Avian")
+        driver.removeSummoningSickness(avian)
+        // Two counters already; X=5 would overshoot, so only 4-2 = 2 may be added.
+        driver.addComponent(avian, CountersComponent(mapOf(CounterType.PLUS_ONE_PLUS_ZERO to 2)))
+
+        driver.passPriorityUntil(Step.UPKEEP)
+        driver.giveColorlessMana(player, 5)
+        driver.submit(
+            ActivateAbility(playerId = player, sourceId = avian, abilityId = refillAbilityId, xValue = 5)
+        ).outcome shouldBe Outcome.Done
+        driver.bothPass()
+        val decision = driver.pendingDecision as com.wingedsheep.engine.core.ChooseNumberDecision
+        driver.submitDecision(player, com.wingedsheep.engine.core.NumberChosenResponse(decision.id, decision.maxValue)).error shouldBe null
+
+        plusOneZero(driver, avian) shouldBe 4 // capped at four total, NOT 2 + 5 = 7
+    }
+
+    test("refill cannot be activated outside your upkeep") {
+        val driver = createDriver()
+        val player = driver.player1
+        val avian = driver.putCreatureOnBattlefield(player, "Clockwork Avian")
+        driver.removeSummoningSickness(avian)
+        driver.addComponent(avian, CountersComponent(mapOf(CounterType.PLUS_ONE_PLUS_ZERO to 1)))
+
+        // In the main phase (not upkeep) the DuringStep(UPKEEP) restriction makes activation illegal.
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.giveColorlessMana(player, 2)
+        driver.submitExpectFailure(
+            ActivateAbility(playerId = player, sourceId = avian, abilityId = refillAbilityId, xValue = 2)
+        )
+
+        plusOneZero(driver, avian) shouldBe 1 // unchanged — the ability never resolved
+    }
     }
 }

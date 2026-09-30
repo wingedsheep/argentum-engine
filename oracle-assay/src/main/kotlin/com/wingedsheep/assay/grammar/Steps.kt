@@ -1837,8 +1837,9 @@ object Steps {
             match { script ->
                 val choose = script.spellEffect as? ChooseNumberThenEffect ?: return@match null
                 val inner = script.copy(spellEffect = choose.then)
-                if (script != scriptFor(inner, choose.minValue, choose.maxValue)) return@match null
-                bind("min" to choose.minValue, "max" to choose.maxValue, "payload" to inner)
+                val max = (choose.maxValue as? DynamicAmount.Fixed)?.amount ?: return@match null
+                if (script != scriptFor(inner, choose.minValue, max)) return@match null
+                bind("min" to choose.minValue, "max" to max, "payload" to inner)
             }
         }
     }

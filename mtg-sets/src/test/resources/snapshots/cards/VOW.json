@@ -2642,7 +2642,10 @@
                 },
                 "dynamicCount": "XValue"
             },
-            "maxValue": 13,
+            "maxValue": {
+                "type": "Fixed",
+                "amount": 13
+            },
             "prompt": "Choose a number between 0 and 13"
         }
     },

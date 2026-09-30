@@ -3527,6 +3527,16 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   under `then` read it through `ManaValueEqualsX` (`.manaValueEqualsX()`). Compose with `CompositeEffect` for
   multi-step cards (Void: destroy all artifacts/creatures with that mana value, then a target player reveals their
   hand and discards all nonland cards with that mana value).
+  The `maxValue` overload accepts a `DynamicAmount`, evaluated once before the chosen
+  number replaces X. An empty range skips both the choice and the inner effect.
+- `Effects.AddCountersWithLimit(type, amount, totalLimit, target)` — put a computed number
+  of counters on a permanent or player without this instruction raising that kind's total
+  above `totalLimit`. The limit applies **after** placement replacements (including doubling);
+  existing counters above the limit remain, and other instructions can exceed it. Emits and
+  tracks only the number actually placed. Compose `ChooseNumberThen(maxValue = xValue(),
+  then = AddCountersWithLimit(type, xValue(), fixed(7), Self))` for optional bounded placement.
+  Bound the choice by the available capacity as well as X, as Clockwork Beast does.
+
 - `Effects.ChooseNumberForSource(minValue=0, maxValue=7, slot=ChoiceSlot.CHOSEN_NUMBER, prompt)` — pick a number in
   `[minValue, maxValue]` and **store it durably on the source permanent** under `slot` (a `ChoiceValue.NumberChoice`
   in its `CastChoicesComponent`, replacing any prior value). Unlike `ChooseNumberThen` (transient X for one inner

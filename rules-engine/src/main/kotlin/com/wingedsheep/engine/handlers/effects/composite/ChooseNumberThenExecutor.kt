@@ -20,7 +20,8 @@ import kotlin.reflect.KClass
  * effects/filters read the chosen number uniformly (e.g. `manaValueEqualsX()`). Used by Void.
  */
 class ChooseNumberThenExecutor(
-    private val decisionHandler: DecisionHandler
+    private val decisionHandler: DecisionHandler,
+    private val amountEvaluator: com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 ) : EffectExecutor<ChooseNumberThenEffect> {
 
     override val effectType: KClass<ChooseNumberThenEffect> = ChooseNumberThenEffect::class
@@ -30,6 +31,9 @@ class ChooseNumberThenExecutor(
         effect: ChooseNumberThenEffect,
         context: EffectContext
     ): EffectResult {
+        val max = amountEvaluator.evaluate(state, effect.maxValue, context)
+        if (max < effect.minValue) return EffectResult.success(state, emptyList())
+
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "Unknown"
 
         val continuation = ChooseNumberThenContinuation(
@@ -47,7 +51,7 @@ class ChooseNumberThenExecutor(
             sourceName = sourceName,
             prompt = effect.prompt,
             minValue = effect.minValue,
-            maxValue = effect.maxValue,
+            maxValue = max,
             phase = DecisionPhase.RESOLUTION,
             answer = continuation
         )

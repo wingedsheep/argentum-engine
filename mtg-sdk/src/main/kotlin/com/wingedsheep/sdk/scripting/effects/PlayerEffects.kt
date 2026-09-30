@@ -1188,14 +1188,15 @@ data class TheRingTemptsYouEffect(
 data class ChooseNumberThenEffect(
     val then: Effect,
     val minValue: Int = 0,
-    val maxValue: Int = 16,
+    val maxValue: DynamicAmount = DynamicAmount.Fixed(16),
     val prompt: String = "Choose a number"
 ) : Effect {
     override val description: String = "Choose a number. ${then.description}"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newThen = then.applyTextReplacement(replacer)
-        return if (newThen !== then) copy(then = newThen) else this
+        val newMax = maxValue.applyTextReplacement(replacer)
+        return if (newThen !== then || newMax != maxValue) copy(then = newThen, maxValue = newMax) else this
     }
 }
 

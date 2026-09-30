@@ -9720,7 +9720,10 @@
                 ]
             },
             "minValue": 1,
-            "maxValue": 99,
+            "maxValue": {
+                "type": "Fixed",
+                "amount": 99
+            },
             "prompt": "Choose a number greater than 0"
         },
         "targetRequirements": [

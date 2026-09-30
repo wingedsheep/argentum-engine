@@ -137,6 +137,7 @@ class PermanentExecutors(
 
     override fun executors(): List<EffectExecutor<*>> = listOf(
         // counters
+        com.wingedsheep.engine.handlers.effects.permanent.counters.AddCountersWithLimitExecutor(amountEvaluator),
         AddCountersExecutor(predicateEvaluator = zones.predicateEvaluator),
         AddDynamicCountersExecutor(amountEvaluator = amountEvaluator),
         com.wingedsheep.engine.handlers.effects.permanent.counters.AddCountersUpToExecutor(amountEvaluator = amountEvaluator),
