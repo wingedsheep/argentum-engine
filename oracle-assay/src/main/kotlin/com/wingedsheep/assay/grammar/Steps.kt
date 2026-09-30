@@ -3167,7 +3167,7 @@ object Steps {
          * The pay-gates' shape with an *action* where the cost was: `Effects.IfYouDo` gates the
          * consequence on the action having happened, and `Effects.May` puts the choice around both,
          * which is the spelling the card facade's own KDoc gives this sentence. The two are not
-         * `May(A then B)`: an empty hand still "may discard" and then draws, where CR 603.12's
+         * `May(A then B)`: an empty hand still "may discard" and then draws, where
          * "if you do" asks whether the discard was actually performed.
          *
          * The criterion is derived, never slotted: the one the SDK infers (`SuccessCriterion.Auto`),

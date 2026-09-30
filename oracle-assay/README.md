@@ -603,7 +603,7 @@ intervening-if in front of the choice — which is the fronted-duration lesson a
 
 "You may discard a card. If you do, draw a card." is the pay-gates' shape with an action in the
 cost's place: `Effects.May(Effects.IfYouDo(action, then))`, the spelling the facade's own KDoc gives
-the sentence. It is **not** `May(A then B)`: CR 603.12's "if you do" asks whether the action was
+the sentence. It is **not** `May(A then B)`: "if you do" asks whether the action was
 performed, so an empty hand that "may discard" must not draw. The success criterion is derived, never
 slotted — `SuccessCriterion.Auto` over an action it can infer from (a terminal zone move), and
 `Always` for "discard your hand", which a ruling (Narset, Jeskai Waymaster) makes doable with an empty
