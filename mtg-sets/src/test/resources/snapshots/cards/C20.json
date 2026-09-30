@@ -1,0 +1,82 @@
+// Nesting Grounds
+{
+    "name": "Nesting Grounds",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{1}, {T}: Move a counter from target permanent you control onto a second target permanent. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nesting Grounds:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Nesting Grounds:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveChosenCountersToTarget",
+                    "source": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "maxTotal": 1,
+                    "minTotal": 1
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetOther",
+                        "baseRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "permanent"
+                            }
+                        },
+                        "id": "t1",
+                        "excludeSource": false
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "Dappled coats become armored hides. Soft jaws become razor tusks. Nestling play becomes the fight for survival.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf559d4e-07a7-4ca4-b76a-d0615222cb60.jpg?1783931205"
+    },
+    "colorIdentityOverride": []
+}

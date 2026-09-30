@@ -134,14 +134,17 @@ class TargetEnumerationUtils(
     /**
      * Which entity a [TargetOther] requirement excludes: an explicit [TargetOther.excludeSourceId],
      * else the source's attached creature when [TargetOther.excludeAttachedCreature] is set
-     * ("enchanted creature deals damage … to any other target"), else the source itself.
+     * ("enchanted creature deals damage … to any other target"), else the source itself — unless
+     * [TargetOther.excludeSource] is off ("a second target permanent"), which excludes nothing.
      */
     private fun resolveOtherExclusion(
         state: GameState,
         requirement: TargetOther,
         sourceId: EntityId?
     ): EntityId? = requirement.excludeSourceId
-        ?: if (requirement.excludeAttachedCreature) {
+        ?: if (!requirement.excludeSource) {
+            null
+        } else if (requirement.excludeAttachedCreature) {
             sourceId?.let { state.getEntity(it)?.get<AttachedToComponent>()?.targetId }
         } else {
             sourceId

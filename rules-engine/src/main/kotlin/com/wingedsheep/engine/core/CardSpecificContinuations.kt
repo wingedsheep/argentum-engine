@@ -270,7 +270,7 @@ data class PayCountersContinuation(
  * [sourceId] permanent onto a [destinationId] permanent. The executor for
  * `MoveChosenCountersToTargetEffect` issues one decision per counter kind on the source;
  * on resume, the chosen amount is removed from the source and added to the destination, and
- * the next kind (if any) is prompted. After the last kind, if [drawCardOnMove] is set and at
+ * the walk carries on in `MoveChosenCountersFlow` (budget and floor decremented). After the last kind, if [drawCardOnMove] is set and at
  * least one counter was moved overall, the controller draws a card. (Goldberry — ability B.)
  *
  * @property sourceId The permanent counters are moved from
@@ -283,6 +283,9 @@ data class PayCountersContinuation(
  * @property destinationName Display name of the destination for follow-up prompts
  * @property drawCardOnMove Whether to draw a card at the end if any counter was moved
  * @property anyMovedSoFar Whether any counter has been moved across prior prompts
+ * @property currentMinAmount Floor for the active decision (the share later kinds can't cover)
+ * @property remainingBudget Counters still movable in total after the active kind, or null for no cap
+ * @property remainingFloor Counters that must still be moved in total, including the active kind
  */
 @Serializable
 data class MoveChosenCountersToTargetContinuation(
@@ -296,6 +299,9 @@ data class MoveChosenCountersToTargetContinuation(
     val destinationName: String,
     val drawCardOnMove: Boolean,
     val anyMovedSoFar: Boolean = false,
+    val currentMinAmount: Int = 0,
+    val remainingBudget: Int? = null,
+    val remainingFloor: Int = 0,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : AnswerContinuation
 

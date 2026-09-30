@@ -127,7 +127,9 @@ class TargetFinder(
                 // (or, for "enchanted creature deals damage to any other target", the attached creature).
                 val baseTargets = findLegalTargets(state, requirement.baseRequirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType, triggeringEntityId, pipelineContext)
                 val excludeId = requirement.excludeSourceId
-                    ?: if (requirement.excludeAttachedCreature) {
+                    ?: if (!requirement.excludeSource) {
+                        null
+                    } else if (requirement.excludeAttachedCreature) {
                         sourceId?.let { state.getEntity(it)?.get<AttachedToComponent>()?.targetId }
                     } else {
                         sourceId

@@ -1914,6 +1914,14 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 - `MoveChosenCountersToTarget(source, destination, drawCardOnMove?)` — Goldberry, River-Daughter (ability B) —
   player chooses how many of each kind to move from `source` onto `destination` (one `ChooseNumberDecision` per
   kind). When `drawCardOnMove` is true, the controller draws a card if any counter was moved ("if you do, draw").
+  The underlying `MoveChosenCountersToTargetEffect` also carries `maxTotal` / `minTotal` (total across kinds),
+  walked with the same budget-and-floor arithmetic as `RemoveAnyNumberOfCounters`.
+- `MoveCounterOfAnyKind(source, destination, count = 1)` — "**move a counter** from X onto Y": the player picks
+  which *kind* moves, not *whether* one does (`minTotal = maxTotal = count`). A source with one kind moves it
+  without a prompt; with several, each prompt's minimum is the share of the floor later kinds can't cover, so
+  declining every kind but the last forces the last. Clamped to what the source carries. Nesting Grounds:
+  `Effects.MoveCounterOfAnyKind(source = target(PermanentYouControl), destination = target(TargetOther(…,
+  excludeSource = false)))`.
 - `MoveCounters(counterType, amount, source, destination)` — Tester of the Tangential — deterministic,
   count-carrying move of a single counter kind: moves `amount` (a `DynamicAmount`, e.g. `DynamicAmount.XValue`
   from a may-pay-{X} reflexive) of `counterType` from `source` onto `destination`. The count is capped at the
@@ -4676,7 +4684,9 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   `TargetOther` — `.other()`/`excludeSelf` on a filter only excludes the *source*, not another chosen target.
   `TargetOther` is a pure wrapper: it delegates every count-shaping field (`count`, `minCount`,
   `optional`, `unlimited`, `chooser`) to its base requirement, so `TargetOther(TargetObject(filter = TargetFilter.Creature, minCount = …, unlimited = true))`
-  stays "any number of **other** target …".
+  stays "any number of **other** target …". By default the wrapper also excludes the ability's source
+  ("another target"); `excludeSource = false` keeps only the distinctness from earlier targets — "a
+  **second** target permanent" (Nesting Grounds) may be the source itself.
 - **An unbounded (`unlimited`) requirement must be the *last* one.** Targets are matched to requirements
   positionally (`TargetValidator`, `EffectContext.buildNamedTargets`), and an unbounded slot has no fixed
   width, so every requirement declared after it loses its slice. When the printed order puts "any number

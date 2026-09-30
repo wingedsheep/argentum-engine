@@ -409,19 +409,41 @@ data class MoveCountersEachKindMissingEffect(
  * the source and added to the destination (honoring counter-placement replacement effects).
  * If [drawCardOnMove] is set and at least one counter was moved, the controller draws a card.
  *
+ * [maxTotal] caps the total moved across all kinds and [minTotal] floors it, with the same
+ * arithmetic as [RemoveAnyNumberOfCountersEffect]: each prompt's minimum is the share of the floor
+ * the later kinds can't cover, and a prompt whose bounds coincide is applied without asking.
+ * "Move a counter from target permanent you control onto a second target permanent" (Nesting
+ * Grounds) is `minTotal = maxTotal = 1` — the player picks which *kind* moves, not whether one
+ * does. The floor is clamped to what the source actually carries.
+ *
  * @property source The permanent counters are moved *from*
  * @property destination The permanent counters are moved *onto*
  * @property drawCardOnMove When true, the controller draws a card if any counter was moved
+ * @property maxTotal Most counters moved in total across all kinds, or null for no cap
+ * @property minTotal Fewest counters that must be moved in total (0 = the move is optional)
  */
 @SerialName("MoveChosenCountersToTarget")
 @Serializable
 data class MoveChosenCountersToTargetEffect(
     val source: EffectTarget,
     val destination: EffectTarget,
-    val drawCardOnMove: Boolean = false
+    val drawCardOnMove: Boolean = false,
+    val maxTotal: Int? = null,
+    val minTotal: Int = 0
 ) : Effect {
+    init {
+        require(minTotal >= 0) { "minTotal must be non-negative" }
+        require(maxTotal == null || maxTotal >= minTotal) { "maxTotal must be at least minTotal" }
+    }
+
     override val description: String = buildString {
-        append("Move one or more counters from ${source.description} onto ${destination.description}")
+        val what = when {
+            minTotal == 1 && maxTotal == 1 -> "a counter"
+            minTotal > 0 && minTotal == maxTotal -> "$minTotal counters"
+            maxTotal != null -> "up to $maxTotal counters"
+            else -> "one or more counters"
+        }
+        append("Move $what from ${source.description} onto ${destination.description}")
         if (drawCardOnMove) append(". If you do, draw a card")
     }
 }

@@ -582,6 +582,9 @@ data class TargetObject(
  * Aura/Equipment target) is excluded instead of the source itself — used for "enchanted
  * creature deals damage … to any other target" wording, where the dealer is the attached
  * creature rather than the ability's source permanent.
+ *
+ * If [excludeSource] is false, only the distinctness from earlier targets applies — "a second
+ * target permanent" (Nesting Grounds) differs from the first target but may be the source itself.
  */
 @SerialName("TargetOther")
 @Serializable
@@ -589,11 +592,13 @@ data class TargetOther(
     val baseRequirement: TargetRequirement,
     val excludeSourceId: EntityId? = null,
     val excludeAttachedCreature: Boolean = false,
-    override val id: String? = null
+    override val id: String? = null,
+    val excludeSource: Boolean = true
 ) : TargetRequirement {
     /** "another target creature", "any other target", "up to one other target creature". */
     override val description: String = baseRequirement.description.let { base ->
         when {
+            !excludeSource && base.startsWith("target ") -> "a second $base"
             base.contains("other target") || base.contains("another target") -> base
             base.startsWith("target ") -> "another " + base
             base.startsWith("any target") -> base.replaceFirst("any target", "any other target")

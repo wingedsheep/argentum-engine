@@ -2267,6 +2267,20 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect(source, destination, drawCardOnMove)
 
     /**
+     * "Move a counter from [source] onto [destination]" — the player picks *which kind* moves, but
+     * not *whether* one does (Nesting Grounds). The floored form of [MoveChosenCountersToTarget]:
+     * exactly [count] counters move, chosen across whatever kinds [source] carries; a source with a
+     * single kind raises no prompt, and one with fewer than [count] moves all it has.
+     */
+    fun MoveCounterOfAnyKind(
+        source: EffectTarget,
+        destination: EffectTarget,
+        count: Int = 1
+    ): Effect = com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect(
+        source, destination, maxTotal = count, minTotal = count
+    )
+
+    /**
      * Remove every counter (of any kind) from a target permanent. Mandatory; clears
      * all counter kinds currently on the target. Used by Perfect Intimidation.
      */
