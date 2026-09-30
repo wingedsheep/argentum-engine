@@ -178,7 +178,8 @@ class ActivatedAbilityEnumerator(
                             ability, state, playerId, abilitySourceId = entityId
                         ),
                         ability, state, playerId
-                    )
+                    ),
+                    playerId
                 )
                 )
 
@@ -1233,7 +1234,9 @@ class ActivatedAbilityEnumerator(
                                 null
                             }
                             else -> {
-                                val mana = effectiveCost.manaCostOrNull ?: continue
+                                val mana = com.wingedsheep.engine.mechanics.mana.LifePayableMana.apply(
+                                    state, context.cardRegistry, playerId, effectiveCost.manaCostOrNull ?: continue
+                                )
                                 if (!context.manaSolver.canPay(state, playerId, mana, precomputedSources = context.availableManaSources, spellContext = anyPlayerAbilityContext)) continue
                                 mana.toString()
                             }

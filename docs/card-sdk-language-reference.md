@@ -8778,6 +8778,17 @@ staticAbility {
   payment validation, but deliberately **not** to the mana cost string sent to the client, so a
   creature card still shows its printed `{2}{G}` instead of a misleading `{3}`. (Vizier of the
   Menagerie — "You can spend mana of any type to cast creature spells" → `GameObjectFilter.Creature`.)
+- `PayLifeForColoredMana(color)` — "For each {B} in a cost, you may pay 2 life rather than pay that
+  mana": the bearing permanent's **controller** may pay each `color` symbol in any spell cost they pay
+  or activation cost they pay (including "any player may activate" abilities) with 2 life. It changes
+  how the cost is paid, never the cost — mana value and every increase/reduction are untouched, and it
+  is lowered *after* all of them (`LifePayableMana.apply`) by rewriting `{B}` into `{B/P}` and a hybrid
+  with a black half (`{B/R}`, `{R/B}`) into `{B/R/P}`, so the existing Phyrexian path does the rest:
+  explicit life choices, auto-pay's fewest-life fallback, and the client's "Pay with life" toggles
+  (the cast/activate cost string shows the `/P` form). Generic, `{C}` and monocolored hybrid `{2/B}`
+  stay mana-only. Compleated counts only printed Phyrexian pips paid with life — substituted pips
+  absorb life payments first. Not yet reached: mana paid during resolution ("pay {B}" in an effect,
+  ward) and face-up/special-action costs. (K'rrik, Son of Yawgmoth — `Color.BLACK`.)
 - `PreventManaPoolEmptying` — mana pools don't empty between steps/phases. (Upwelling)
 - `ConvertEmptyingMana(color)` — "If you would lose unspent mana, that mana becomes [color] instead."
   The colour-converting cousin of `PreventManaPoolEmptying`: at every step/phase-end mana emptying

@@ -337,6 +337,33 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
     }
 
     /**
+     * Return this cost with every [color] mana symbol also payable with 2 life — "For each {B} in a
+     * cost, you may pay 2 life rather than pay that mana" (K'rrik, Son of Yawgmoth).
+     *
+     * Modelled by rewriting each substitutable symbol into the Phyrexian symbol that already means
+     * "this mana or 2 life" (CR 107.4f), so no new payment path is needed:
+     *  - `{B}` becomes `{B/P}`;
+     *  - a two-color hybrid with a [color] half, `{B/R}` or `{R/B}`, becomes the hybrid Phyrexian
+     *    `{B/R/P}` — [color] first, because a hybrid Phyrexian's life choice is keyed by its first
+     *    color ([ManaSymbol.phyrexianLifeColor]) — since K'rrik's ruling lets you choose to pay it
+     *    as `{B}` and then pay life for that.
+     *
+     * Generic, `{C}`, `{X}` and existing Phyrexian symbols are untouched, as is the monocolored
+     * hybrid `{2/B}`: no symbol can say "two generic, one [color], or 2 life", so that choice stays
+     * mana-only. Mana value is unaffected either way — a Phyrexian symbol is still 1.
+     */
+    fun withLifePayable(color: Color): ManaCost {
+        fun substitute(symbol: ManaSymbol): ManaSymbol = when {
+            symbol is ManaSymbol.Colored && symbol.color == color -> ManaSymbol.Phyrexian(color)
+            symbol is ManaSymbol.Hybrid && symbol.color1 == color -> ManaSymbol.HybridPhyrexian(color, symbol.color2)
+            symbol is ManaSymbol.Hybrid && symbol.color2 == color -> ManaSymbol.HybridPhyrexian(color, symbol.color1)
+            else -> symbol
+        }
+        if (symbols.none { substitute(it) != it }) return this
+        return ManaCost(symbols.map(::substitute))
+    }
+
+    /**
      * Return a relaxed cost where every colored, hybrid, phyrexian, and colorless requirement
      * is converted into generic mana — suitable for "mana of any type can be spent" effects
      * (e.g. Taster of Wares, Cruelclaw's Heist).

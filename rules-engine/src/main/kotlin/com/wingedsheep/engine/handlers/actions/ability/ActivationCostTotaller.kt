@@ -76,7 +76,7 @@ internal class ActivationCostTotaller(
             costAfterEquipReduction, ability, state, action.playerId
         )
         return castPermissionUtils.relaxAbilityCostColorsIfAny(
-            state, action.sourceId, costAfterEquipDiscount
+            state, action.sourceId, costAfterEquipDiscount, action.playerId
         )
     }
 

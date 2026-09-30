@@ -968,6 +968,32 @@ data class SpendAnyManaTypeForSpells(
 }
 
 /**
+ * "For each {[color]} in a cost, you may pay 2 life rather than pay that mana." — the controller of
+ * this permanent may pay each [color] mana symbol in any cost *they* pay with 2 life instead
+ * (K'rrik, Son of Yawgmoth). Applies to the mana costs of spells they cast and to the activation
+ * costs of abilities they activate.
+ *
+ * It changes only *how* the cost is paid, never the cost itself, so mana value and cost
+ * reductions are untouched. Per K'rrik's rulings it never reaches generic mana, and a symbol with a
+ * choice of payments — hybrid `{B/R}`, Phyrexian `{B/P}` — may be paid as its [color] half and then
+ * with life. Lowered by rewriting each substitutable symbol into the Phyrexian symbol that already
+ * means "this mana or 2 life" ([com.wingedsheep.sdk.core.ManaCost.withLifePayable]) once every
+ * reduction has been applied, so the existing Phyrexian payment path — explicit life choices,
+ * auto-pay's fewest-life fallback, the client's "Pay with life" toggles — carries it.
+ *
+ * @property color The mana symbol color that may be paid with life.
+ */
+@SerialName("PayLifeForColoredMana")
+@Serializable
+data class PayLifeForColoredMana(
+    val color: Color
+) : StaticAbility {
+    override val description: String =
+        "For each {${color.symbol}} in a cost, you may pay 2 life rather than pay that mana"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
+/**
  * Permanents matching [filter] entering the battlefield don't cause abilities to trigger
  * (CR 603.6 enters-the-battlefield triggers are suppressed).
  *

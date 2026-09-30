@@ -24,6 +24,7 @@ import com.wingedsheep.engine.mechanics.cost.spell.SpellCostLedger
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCosts
 import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
+import com.wingedsheep.engine.mechanics.mana.LifePayableMana
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
@@ -140,13 +141,24 @@ internal class CastCostPayer(
         if (isCastWithAnyManaType(ledger.state, action)) {
             cost = cost.relaxColors()
         }
-        val paymentResult = paymentProcessor.processPayment(
+        // "Pay 2 life rather than pay that {B}" (K'rrik) over the *whole* mana owed — including
+        // mana added after pricing (kicker, X) that the cost calculator never saw.
+        cost = LifePayableMana.apply(ledger.state, cardRegistry, action.playerId, cost)
+        val substitutedPips = LifePayableMana.substitutedPipCount(
+            ledger.state, cardRegistry, action.playerId, cardComponent.manaCost
+        )
+        val processed = paymentProcessor.processPayment(
             ledger.state, action, cost, cardComponent.name, paymentXValue,
             spellPaymentContext(ledger.state, action, cardComponent), xManaRestriction(action, cardDef)
         )
-        if (paymentResult.error != null) {
-            return CastPaymentOutcome.Failed(paymentResult.error)
+        if (processed.error != null) {
+            return CastPaymentOutcome.Failed(processed.error)
         }
+        // Compleated (CR 702.150a) counts only *Phyrexian* symbols paid with life. A pip that is
+        // life-payable only through a substitution isn't one, and the payer chooses which pip each
+        // life payment covers, so those absorb the life payments first.
+        val paymentResult = if (substitutedPips == 0) processed
+            else processed.copy(phyrexianLifePips = (processed.phyrexianLifePips - substitutedPips).coerceAtLeast(0))
         ledger.state = paymentResult.state
         ledger.events.addAll(paymentResult.events)
 
@@ -500,7 +512,10 @@ internal class CastCostPayer(
 
         // "Mana of any type can be spent" — relax colored requirements when the cast permission
         // carries that flag (e.g. Taster of Wares, Cruelclaw's Heist).
-        val effectiveCost = if (isCastWithAnyManaType(state, action)) cost.relaxColors() else cost
+        val effectiveCost = LifePayableMana.apply(
+            state, cardRegistry, action.playerId,
+            if (isCastWithAnyManaType(state, action)) cost.relaxColors() else cost
+        )
 
         // "Spend only [colors] on X" restriction (Soul Burn) — limits which mana can pay X.
         val cardDef = cardComponent?.let { cardRegistry.getCard(it.cardDefinitionId) }

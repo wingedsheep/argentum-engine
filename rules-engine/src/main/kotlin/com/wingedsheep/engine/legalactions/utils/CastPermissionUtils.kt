@@ -1480,7 +1480,9 @@ class CastPermissionUtils(
     /**
      * If [sourceId] is under a [com.wingedsheep.sdk.scripting.SpendAnyManaTypeForActivatedAbilities]
      * static, return [cost] with the mana portion relaxed accordingly; otherwise return [cost]
-     * unchanged. Non-mana cost components (tap, sacrifice, …) are left intact.
+     * unchanged. Non-mana cost components (tap, sacrifice, …) are left intact. Then, if [payerId]
+     * controls a [com.wingedsheep.sdk.scripting.PayLifeForColoredMana] static, the symbols they may
+     * pay with life are rewritten into their Phyrexian form.
      *
      * When several statics apply, the strongest wins: one "mana of any type" static relaxes
      * everything to generic ([com.wingedsheep.sdk.core.ManaCost.relaxColors]) and there is nothing a
@@ -1521,15 +1523,21 @@ class CastPermissionUtils(
     fun relaxAbilityCostColorsIfAny(
         state: GameState,
         sourceId: EntityId,
-        cost: AbilityCost
+        cost: AbilityCost,
+        payerId: EntityId,
     ): AbilityCost {
         val relaxations = spendRelaxationsForAbilities(state, sourceId)
-        if (relaxations.isEmpty()) return cost
+        // "For each {B} in a cost, you may pay 2 life rather than pay that mana" (K'rrik) — the
+        // activator's, applied after the spend relaxations so a widened pip keeps its life option.
+        val lifePayable = com.wingedsheep.engine.mechanics.mana.LifePayableMana.colors(state, cardRegistry, payerId)
+        if (relaxations.isEmpty() && lifePayable.isEmpty()) return cost
         val anyType = relaxations.any { it.substituteColor == null }
         val substitutes = relaxations.mapNotNull { it.substituteColor }.distinct()
-        fun relax(mana: com.wingedsheep.sdk.core.ManaCost): com.wingedsheep.sdk.core.ManaCost =
-            if (anyType) mana.relaxColors()
-            else substitutes.fold(mana) { acc, color -> acc.relaxColorsTo(color) }
+        fun relax(mana: com.wingedsheep.sdk.core.ManaCost): com.wingedsheep.sdk.core.ManaCost {
+            val spendRelaxed = if (anyType) mana.relaxColors()
+                else substitutes.fold(mana) { acc, color -> acc.relaxColorsTo(color) }
+            return lifePayable.fold(spendRelaxed) { acc, color -> acc.withLifePayable(color) }
+        }
         return when (cost) {
             is AbilityCost.Atom -> {
                 val mana = cost.manaCostOrNull ?: return cost

@@ -1013,6 +1013,7 @@ class StaticAbilityHandler(
             is CantCastSpellsSharingColorWithLastCast,
             is CastSpellTypesFromTopOfLibrary,
             is com.wingedsheep.sdk.scripting.SpendAnyManaTypeForSpells,
+            is com.wingedsheep.sdk.scripting.PayLifeForColoredMana,
             is GrantAdditionalLandDrop,
             is GrantFlashToSpellType,
             is GrantMayCastFromLinkedExile,

@@ -167,7 +167,10 @@ class CostCalculator(
         if (coloredReductionWithOverflow.isNotEmpty()) {
             effectiveCost = reduceColoredCostWithOverflow(effectiveCost, coloredReductionWithOverflow)
         }
-        return effectiveCost
+        // Last, once the cost is final: symbols the caster may pay with life (K'rrik) become
+        // Phyrexian. This changes how the cost may be paid, not the cost, so it follows every
+        // increase and reduction.
+        return LifePayableMana.apply(state, cardRegistry, casterId, effectiveCost)
     }
 
     /**
@@ -1822,7 +1825,7 @@ class CostCalculator(
                 else -> { /* Battlefield reductions don't apply to alternative casting costs. */ }
             }
         }
-        return increaseGenericCost(alternativeCost, totalIncrease)
+        return LifePayableMana.apply(state, cardRegistry, casterId, increaseGenericCost(alternativeCost, totalIncrease))
     }
 
     /**
