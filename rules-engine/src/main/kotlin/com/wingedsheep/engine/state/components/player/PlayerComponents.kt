@@ -1630,17 +1630,6 @@ data class PutCounterOnCreatureThisTurnComponent(
 }
 
 /**
- * The kinds of counter put this turn on permanents this player controlled at the moment each
- * counter was placed — whoever put them there. Cleared at end of turn by CleanupPhaseManager.
- *
- * The recipient-controller sibling of [PutCounterOnCreatureThisTurnComponent], which is keyed on the
- * *placing* player and only sees creatures. This one answers "if a +1/+1 counter was put on a
- * permanent under your control this turn" (Fairgrounds Trumpeter), read through
- * `CounterPutOnPermanentYouControlledThisTurn`. Its ruling fixes both axes: the permanent had to be
- * yours *as the counter was placed*, and it doesn't matter whether you still control it or whether
- * it still has the counter — so the fact is recorded at placement time, never derived from the board.
- */
-/**
  * The kinds of counter this player can't get for the rest of the turn, because a
  * `CapCounterPlacementThisTurn` replacement already applied to them ("instead you get one poison
  * counter and you can't get additional poison counters this turn" — Melira, the Living Cure).
@@ -1657,6 +1646,17 @@ data class CountersLockedThisTurnComponent(
         if (kind in kinds) this else copy(kinds = kinds + kind)
 }
 
+/**
+ * The kinds of counter put this turn on permanents this player controlled at the moment each
+ * counter was placed — whoever put them there. Cleared at end of turn by CleanupPhaseManager.
+ *
+ * The recipient-controller sibling of [PutCounterOnCreatureThisTurnComponent], which is keyed on the
+ * *placing* player and only sees creatures. This one answers "if a +1/+1 counter was put on a
+ * permanent under your control this turn" (Fairgrounds Trumpeter), read through
+ * `CounterPutOnPermanentYouControlledThisTurn`. Its ruling fixes both axes: the permanent had to be
+ * yours *as the counter was placed*, and it doesn't matter whether you still control it or whether
+ * it still has the counter — so the fact is recorded at placement time, never derived from the board.
+ */
 @Serializable
 data class CountersPutOnYourPermanentsThisTurnComponent(
     val kinds: Set<CounterType> = emptySet()
