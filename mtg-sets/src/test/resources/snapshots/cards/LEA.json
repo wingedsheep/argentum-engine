@@ -1792,6 +1792,66 @@
     ]
 }
 
+// Guardian Angel
+{
+    "name": "Guardian Angel",
+    "manaCost": "{X}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent the next X damage that would be dealt to any target this turn. Until end of turn, you may pay {1} any time you could cast an instant. If you do, prevent the next 1 damage that would be dealt to that permanent or player this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "amount": "XValue"
+                },
+                {
+                    "type": "GrantPlayerAction",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{1}"
+                        }
+                    },
+                    "effect": {
+                        "type": "PreventDamageShield",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "timing": "Instant",
+                    "actionDescription": "Guardian Angel: Pay {1} to prevent the next 1 damage"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f84d676-5327-454c-a033-b4498a9d28e2.jpg?1783948714"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Healing Salve
 {
     "name": "Healing Salve",
