@@ -852,6 +852,7 @@ class LibraryAndZoneContinuationResumer(
         var newState = state.removeFromStack(spellId)
         newState = newState.updateEntity(spellId) { c ->
             c.without<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
+                .without<com.wingedsheep.engine.state.components.identity.TextReplacementComponent>()
                 .without<com.wingedsheep.engine.state.components.stack.TargetsComponent>()
         }
 

@@ -605,13 +605,11 @@ class StateProjector {
 
             val protectionSubtypePrefix = "PROTECTION_FROM_SUBTYPE_"
             val protectionKeywords = values.keywords.filter { it.startsWith(protectionSubtypePrefix) }
+            values.keywords.removeAll(protectionKeywords.toSet())
             for (keyword in protectionKeywords) {
                 val originalSubtype = keyword.removePrefix(protectionSubtypePrefix)
                 val transformed = textReplacement.applyToCreatureType(originalSubtype).uppercase()
-                if (transformed != originalSubtype) {
-                    values.keywords.remove(keyword)
-                    values.keywords.add("$protectionSubtypePrefix$transformed")
-                }
+                values.keywords.add("$protectionSubtypePrefix$transformed")
             }
 
             // Rewrite protection-from-color keywords for color-word changes (Crystal Spray:
@@ -623,13 +621,11 @@ class StateProjector {
                 kw.startsWith(colorPrefix) &&
                     com.wingedsheep.sdk.core.Color.entries.any { it.name == kw.removePrefix(colorPrefix) }
             }
+            values.keywords.removeAll(colorProtectionKeywords.toSet())
             for (keyword in colorProtectionKeywords) {
                 val originalColor = com.wingedsheep.sdk.core.Color.valueOf(keyword.removePrefix(colorPrefix))
                 val transformed = textReplacement.replaceColor(originalColor)
-                if (transformed != originalColor) {
-                    values.keywords.remove(keyword)
-                    values.keywords.add("$colorPrefix${transformed.name}")
-                }
+                values.keywords.add("$colorPrefix${transformed.name}")
             }
         }
     }

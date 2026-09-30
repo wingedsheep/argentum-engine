@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.identity.TextReplacement
+import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementCategory
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.Keyword
@@ -61,13 +62,38 @@ class TextWordCategoriesTest : FunSpec({
         val outside = state.copy(zones = mapOf(ZoneKey(player, Zone.HAND) to listOf(target)))
         executor.execute(outside, ChangeWordInTextEffect(setOf(TextWordCategory.COLOR_WORD)), context).pendingDecision shouldBe null
     }
-    test("landwalk replacements preserve multiple original abilities and chain in effect order") {
+    test("landwalk replacements preserve separate original abilities") {
+        val changes = TextReplacementComponent(listOf(
+            TextReplacement("Island", "Swamp", TextReplacementCategory.BASIC_LAND_TYPE),
+            TextReplacement("Forest", "Island", TextReplacementCategory.BASIC_LAND_TYPE)
+        ))
+        val changed = state.updateEntity(target) { it.with(changes) }
+        changed.projectedState.getKeywords(target) shouldBe setOf("ISLANDWALK", "SWAMPWALK")
+        state.projectedState.getKeywords(target) shouldBe setOf("FORESTWALK", "ISLANDWALK")
+    }
+    test("landwalk replacements chain in effect order") {
         val changes = TextReplacementComponent(listOf(
             TextReplacement("Forest", "Island", TextReplacementCategory.BASIC_LAND_TYPE),
             TextReplacement("Island", "Swamp", TextReplacementCategory.BASIC_LAND_TYPE)
         ))
-        val changed = state.updateEntity(target) { it.with(changes) }
-        changed.projectedState.getKeywords(target) shouldBe setOf("SWAMPWALK")
-        state.projectedState.getKeywords(target) shouldBe setOf("FORESTWALK", "ISLANDWALK")
+        state.updateEntity(target) { it.with(changes) }.projectedState.getKeywords(target) shouldBe setOf("SWAMPWALK")
+    }
+    test("subtype protection replacements preserve each original ability") {
+        val witness = card("Protected Type Witness") {
+            manaCost = "{0}"
+            typeLine = "Creature — Bear"
+            power = 2
+            toughness = 2
+        }
+        val changes = TextReplacementComponent(listOf(
+            TextReplacement("Wizard", "Elf", TextReplacementCategory.CREATURE_TYPE),
+            TextReplacement("Goblin", "Wizard", TextReplacementCategory.CREATURE_TYPE)
+        ))
+        val changed = state.updateEntity(target) {
+            CardEntityFactory.create(witness, player)
+                .with(changes)
+                .with(ProtectionComponent(colors = emptySet(), subtypes = setOf("Goblin", "Wizard")))
+        }
+        changed.projectedState.getKeywords(target) shouldBe setOf("PROTECTION_FROM_SUBTYPE_WIZARD", "PROTECTION_FROM_SUBTYPE_ELF")
     }
 })

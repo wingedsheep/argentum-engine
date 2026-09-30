@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.ChooseReplacementDecision
 import com.wingedsheep.engine.core.ReplacementChosenResponse
 import com.wingedsheep.engine.core.TextChangedEvent
@@ -55,6 +57,14 @@ class SleightOfMindScenarioTest : FunSpec({
             effect = Effects.GrantProtectionFromColor(Color.BLACK, subject)
         }
     }
+    val tuckSpell = card("Tuck Spell Witness") {
+        manaCost = "{0}"
+        typeLine = "Instant"
+        spell {
+            val subject = target(com.wingedsheep.sdk.scripting.targets.TargetSpellOrPermanent())
+            effect = Effects.PutOnTopOrBottomOfLibrary(subject)
+        }
+    }
     val dyingWitness = card("Dying Word Witness") {
         manaCost = "{0}"
         typeLine = "Creature — Bear"
@@ -77,7 +87,7 @@ class SleightOfMindScenarioTest : FunSpec({
     }
     fun newGame(): Pair<GameTestDriver, EntityId> {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(SleightOfMind, WhiteKnight, Unsummon, removeRed, redWitness, blueWitness, grantProtection, dyingWitness, killWitness))
+        driver.registerCards(TestCards.all + listOf(SleightOfMind, WhiteKnight, Unsummon, removeRed, redWitness, blueWitness, grantProtection, dyingWitness, killWitness, tuckSpell))
         driver.initMirrorMatch(Deck.of("Island" to 30, "Forest" to 30))
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver to driver.activePlayer!!
@@ -161,6 +171,43 @@ class SleightOfMindScenarioTest : FunSpec({
         driver.replace(player, "Red", "Green")
         driver.state.projectedState.getKeywords(knight) shouldContain "PROTECTION_FROM_GREEN"
         driver.state.projectedState.getKeywords(knight) shouldNotContain "PROTECTION_FROM_RED"
+    }
+
+    test("successive changes preserve separate original protection abilities") {
+        val (driver, player) = newGame()
+        val bear = driver.putCreatureOnBattlefield(player, "Grizzly Bears")
+        driver.addComponent(bear, ProtectionComponent(colors = linkedSetOf(Color.RED, Color.WHITE)))
+        driver.castSleight(player, bear)
+        driver.replace(player, "White", "Green")
+        driver.castSleight(player, bear)
+        driver.replace(player, "Red", "White")
+        driver.state.projectedState.getKeywords(bear).shouldContainExactlyInAnyOrder("PROTECTION_FROM_WHITE", "PROTECTION_FROM_GREEN")
+    }
+
+    test("putting a changed spell into its library ends the text change before recasting") {
+        val (driver, player) = newGame()
+        val red = driver.putCreatureOnBattlefield(player, "Red Witness")
+        val removal = driver.putCardInHand(player, "Remove Red Witness")
+        driver.giveMana(player, Color.BLUE, 1)
+        driver.castSpell(player, removal, listOf(red)).error shouldBe null
+        driver.castSleight(player, removal, onStack = true)
+        driver.replace(player, "Red", "Blue")
+        val tuck = driver.putCardInHand(player, "Tuck Spell Witness")
+        driver.castSpellWithTargets(player, tuck, listOf(ChosenTarget.Spell(removal))).error shouldBe null
+        driver.bothPass().error shouldBe null
+        val decision = driver.pendingDecision as ChooseOptionDecision
+        driver.submitDecision(player, OptionChosenResponse(decision.id, 0)).error shouldBe null
+        driver.state.getLibrary(player).first() shouldBe removal
+        driver.state.getEntity(removal)!!.get<TextReplacementComponent>() shouldBe null
+        driver.passPriorityUntil(Step.END)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.passPriorityUntil(Step.END)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.state.getHand(player) shouldContain removal
+        driver.giveMana(player, Color.BLUE, 1)
+        driver.castSpell(player, removal, listOf(red)).error shouldBe null
+        driver.bothPass().error shouldBe null
+        driver.state.getGraveyard(player) shouldContain red
     }
 
     test("target leaving before resolution fizzles without presenting a word choice") {
