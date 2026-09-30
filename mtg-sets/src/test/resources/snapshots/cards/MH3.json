@@ -2528,6 +2528,171 @@
     ]
 }
 
+// Spymaster's Vault
+{
+    "name": "Spymaster's Vault",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless you control a Swamp.\n{T}: Add {B}.\n{B}, {T}: Target creature you control connives X, where X is the number of creatures that died this turn. (Draw X cards, then discard X cards. Put a +1/+1 counter on that creature for each nonland card discarded this way.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Spymaster's Vault:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Spymaster's Vault:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Connive",
+                    "subject": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "StoreNumber",
+                                "name": "connive_n",
+                                "amount": {
+                                    "type": "Add",
+                                    "left": {
+                                        "type": "TurnTracking",
+                                        "player": "You",
+                                        "tracker": "CREATURES_DIED"
+                                    },
+                                    "right": {
+                                        "type": "TurnTracking",
+                                        "player": "EachOpponent",
+                                        "tracker": "CREATURES_DIED"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "connive_n"
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "connive_hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "connive_hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "VariableReference",
+                                        "variableName": "connive_n"
+                                    }
+                                },
+                                "storeSelected": "connive_discarded",
+                                "prompt": "Choose cards to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "connive_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "connive_discarded",
+                                "filter": "nonland",
+                                "storeMatching": "connive_nonland"
+                            },
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "VariableReference",
+                                    "variableName": "connive_nonland_count"
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ],
+                        "descriptionOverride": "Connive (the number of creatures that died under your control this turn + the number of creatures that died under each opponent's control this turn)"
+                    },
+                    "count": {
+                        "type": "Add",
+                        "left": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "CREATURES_DIED"
+                        },
+                        "right": {
+                            "type": "TurnTracking",
+                            "player": "EachOpponent",
+                            "tracker": "CREATURES_DIED"
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "land Swamp"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "RARE",
+        "artist": "David Álvarez",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d5fbb30-abfc-4e79-8ce5-bbb04a241c9f.jpg?1783911234"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Thraben Charm
 {
     "name": "Thraben Charm",

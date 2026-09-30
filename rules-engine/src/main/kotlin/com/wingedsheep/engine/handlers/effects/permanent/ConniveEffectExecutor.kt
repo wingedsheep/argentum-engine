@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.EmitConnivedEventEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlin.reflect.KClass
 
 /**
@@ -31,6 +32,9 @@ import kotlin.reflect.KClass
  *  - the composite executor's pause-sequencing carries the connive's own discard decision;
  *  - `replacementsApplied` stops the replacement applying to its own re-issue (CR 614.5), while two
  *    separate sources each still contribute their prefix.
+ *
+ * **Connive N (CR 701.50d/e).** [ConniveEffect.count] is evaluated only for the zero check: a
+ * connive 0 is no connive at all. The body computes and stores N itself.
  *
  * **Observation (CR 701.50f).** [EmitConnivedEventEffect] is appended as the pipeline's last step
  * rather than emitted inline here: connive pauses mid-way for the discard choice, and an event
@@ -57,6 +61,15 @@ class ConniveEffectExecutor(
         effect: ConniveEffect,
         context: EffectContext
     ): EffectResult {
+        // CR 701.50e: a permanent that would connive 0 doesn't connive — nothing is drawn or
+        // discarded, no connive replacement applies and no connive event fires. Plain connive is a
+        // fixed 1, so only connive N ever reaches the evaluator.
+        if (effect.count != DynamicAmount.Fixed(1) &&
+            predicateEvaluator.amounts.evaluate(state, effect.count, context) <= 0
+        ) {
+            return EffectResult.success(state)
+        }
+
         // An unresolvable subject (the permanent left the battlefield before the connive ran) still
         // draws and discards — that is what the bare pipeline did before it was wrapped, and CR
         // 701.50b keeps the connive happening off last known information. What is skipped is the

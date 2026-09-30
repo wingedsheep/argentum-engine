@@ -701,6 +701,14 @@ object Effects {
         HandPatterns.connive(target)
 
     /**
+     * Connive N (CR 701.50d): draw [count] cards, discard that many, then put a +1/+1 counter on
+     * [target] for each nonland card discarded — "connives X, where X is …" (Spymaster's Vault).
+     * A connive 0 does nothing and fires no connive trigger (CR 701.50e). See [HandPatterns.connive].
+     */
+    fun Connive(target: EffectTarget, count: DynamicAmount): Effect =
+        HandPatterns.connive(target, count)
+
+    /**
      * Connive whose +1/+1 counter lands on a *reflexively chosen* target rather than the conniving
      * permanent — "draw a card, then discard a card. When you discard a nonland card this way, put a
      * +1/+1 counter on target creature you control" (Teo, Spirited Glider).
