@@ -3660,6 +3660,60 @@
     ]
 }
 
+// Soulless Jailer
+{
+    "name": "Soulless Jailer",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Phyrexian Golem",
+    "oracleText": "Permanent cards in graveyards can't enter the battlefield.\nPlayers can't cast noncreature spells from graveyards or exile.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantEnterTheBattlefield",
+                "filter": "permanent",
+                "fromZones": [
+                    "Graveyard"
+                ]
+            },
+            {
+                "type": "PlayersCantCastSpells",
+                "affected": "Each",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "IsNoncreature"
+                    ]
+                },
+                "fromZones": [
+                    "Graveyard",
+                    "Exile"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "241",
+        "rarity": "RARE",
+        "artist": "Donato Giancola",
+        "flavorText": "\"Lock the door and eat the key.\"\n—Vraan, Executioner Thane",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf9991fd-ea6a-4ed7-b5f1-46a95f8d0634.jpg?1783917986",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "Players may still cast creature spells from graveyards and from exile if an effect allows them to do so."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Putting a permanent card onto the battlefield from a graveyard is an impossible action while Soulless Jailer is on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Surgical Skullbomb
 {
     "name": "Surgical Skullbomb",

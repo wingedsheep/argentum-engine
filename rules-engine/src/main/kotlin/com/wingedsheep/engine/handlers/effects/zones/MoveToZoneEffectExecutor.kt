@@ -102,12 +102,11 @@ class MoveToZoneEffectExecutor(
             ownerId
         }
 
-        // "Lands can't enter the battlefield" (Worms of the Earth). The land simply doesn't enter:
-        // the move is a no-op and the card stays where it was. Only this path needs the check —
-        // *playing* a land is stopped earlier by PlayersCantPlayLands, and a land can't be cast.
+        // "<Cards> can't enter the battlefield" (Worms of the Earth, Soulless Jailer). The card simply
+        // doesn't enter and stays where it was. The transition service enforces this for every move;
+        // asking here too keeps a locked card from prompting for an Aura host or an entry choice.
         if (effect.destination == Zone.BATTLEFIELD &&
-            cardComponent.typeLine.isLand &&
-            LandEntryLocks.landsCantEnter(state, cardRegistry, predicateEvaluator = zones.predicateEvaluator)
+            EntryLocks.cantEnter(state, targetId, currentZone.zoneType, cardRegistry, zones.predicateEvaluator)
         ) {
             return EffectResult.success(state)
         }

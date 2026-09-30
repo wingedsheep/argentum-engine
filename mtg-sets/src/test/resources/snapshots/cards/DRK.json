@@ -6921,7 +6921,10 @@
         ],
         "staticAbilities": [
             "PlayersCantPlayLands",
-            "LandsCantEnterTheBattlefield"
+            {
+                "type": "CantEnterTheBattlefield",
+                "filter": "land"
+            }
         ]
     },
     "metadata": {

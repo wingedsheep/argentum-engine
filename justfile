@@ -222,6 +222,12 @@ check:
 set-loop CODE="" MODEL="":
     scripts/set-loop "{{CODE}}" "{{MODEL}}"
 
+# Waits out subscription usage limits; stop with `touch .claude/loop-runs/assay.stop`.
+# Widen Assay's grammar, one band per PR, over text the engine already expresses: assay-loop [model] [focus]
+[group: 'ai']
+assay-loop MODEL="" FOCUS="":
+    scripts/assay-loop "{{MODEL}}" "{{FOCUS}}"
+
 # Report implemented vs missing cards for a set (e.g., just card-status --set BLB --list)
 [group: 'build']
 card-status *ARGS:

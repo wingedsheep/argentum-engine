@@ -11,6 +11,8 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
@@ -19,7 +21,8 @@ import kotlin.reflect.KClass
 /**
  * Executor for GainControlEffect.
  *
- * Gains control of target permanent for the controller of the spell/ability.
+ * Gains control of target permanent — or target spell on the stack — for the controller of the
+ * spell/ability.
  */
 class GainControlExecutor : EffectExecutor<GainControlEffect> {
 
@@ -40,6 +43,10 @@ class GainControlExecutor : EffectExecutor<GainControlEffect> {
 
         val cardComponent = targetContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Target is not a card")
+
+        targetContainer.get<SpellOnStackComponent>()?.let { spell ->
+            return gainControlOfSpell(state, targetId, spell, cardComponent, context.controllerId)
+        }
 
         // "Other players can't gain control of it" (Guardian Beast): a different player can't take
         // control. The controller keeping control of their own permanent is a no-op anyway.
@@ -105,5 +112,33 @@ class GainControlExecutor : EffectExecutor<GainControlEffect> {
         )
 
         return EffectResult.success(newState, events)
+    }
+
+    /**
+     * "Gain control of target spell" (Invert Polarity). A spell's controller is not a layer
+     * characteristic — continuous effects never touch objects on the stack — so the change is a
+     * direct rewrite of the stack object: [SpellOnStackComponent.casterId] is what every
+     * resolution, targeting and "you" read uses as the spell's controller (copies, which are
+     * never cast, already store their controller there). It lasts until the spell leaves the
+     * stack, so [GainControlEffect.duration] has nothing to bound; a resolving permanent spell
+     * enters under the new controller because permanent entry reads the same field.
+     */
+    private fun gainControlOfSpell(
+        state: GameState,
+        spellId: EntityId,
+        spell: SpellOnStackComponent,
+        cardComponent: CardComponent,
+        newControllerId: EntityId
+    ): EffectResult {
+        val oldControllerId = spell.casterId
+        if (oldControllerId == newControllerId) return EffectResult.success(state)
+        val newState = state.updateEntity(spellId) { container ->
+            val updated = container.with(spell.copy(casterId = newControllerId))
+            if (updated.has<ControllerComponent>()) updated.with(ControllerComponent(newControllerId)) else updated
+        }
+        return EffectResult.success(
+            newState,
+            listOf(ControlChangedEvent(spellId, cardComponent.name, oldControllerId, newControllerId))
+        )
     }
 }

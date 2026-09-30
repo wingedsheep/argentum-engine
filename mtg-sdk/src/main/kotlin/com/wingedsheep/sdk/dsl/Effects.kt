@@ -3838,7 +3838,8 @@ object Effects {
     // =========================================================================
 
     /**
-     * Gain control of target permanent.
+     * Gain control of target permanent — or of target spell on the stack, until it leaves the stack
+     * ([duration] is ignored for a spell).
      */
     fun GainControl(target: EffectTarget, duration: Duration = Duration.Permanent): Effect =
         GainControlEffect(target, duration)

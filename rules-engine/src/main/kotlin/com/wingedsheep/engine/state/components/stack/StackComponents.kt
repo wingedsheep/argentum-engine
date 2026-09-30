@@ -21,6 +21,10 @@ import com.wingedsheep.sdk.dsl.sneak
  */
 @Serializable
 data class SpellOnStackComponent(
+    /**
+     * The spell's controller: the player who cast it, the player who put a copy on the stack, or —
+     * after a "gain control of target spell" effect (Invert Polarity) — the player who took it.
+     */
     val casterId: EntityId,
     val xValue: Int? = null,  // For X spells
     /**

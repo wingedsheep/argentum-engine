@@ -2031,7 +2031,8 @@ data class FlippedEvent(
 // =============================================================================
 
 /**
- * Control of a permanent changed.
+ * Control of a permanent changed — or of a spell on the stack (Invert Polarity), in which case
+ * [permanentId] names the spell and permanent-only control triggers ignore it.
  */
 @Serializable
 @SerialName("ControlChangedEvent")

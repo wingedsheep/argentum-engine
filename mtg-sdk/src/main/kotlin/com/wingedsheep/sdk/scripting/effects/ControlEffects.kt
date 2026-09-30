@@ -15,7 +15,8 @@ import kotlinx.serialization.Serializable
  * Gain control of target permanent.
  * "Gain control of target permanent."
  *
- * Used by Blatant Thievery and similar control-stealing effects.
+ * Used by Blatant Thievery and similar control-stealing effects. Aimed at a spell on the stack
+ * (Invert Polarity) it takes the spell until it leaves the stack; [duration] is then ignored.
  */
 @SerialName("GainControl")
 @Serializable

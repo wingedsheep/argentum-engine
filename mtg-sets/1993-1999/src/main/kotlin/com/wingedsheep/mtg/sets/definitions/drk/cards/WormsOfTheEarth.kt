@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.LandsCantEnterTheBattlefield
+import com.wingedsheep.sdk.scripting.CantEnterTheBattlefield
 import com.wingedsheep.sdk.scripting.PlayersCantPlayLands
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.references.Player
@@ -24,7 +24,7 @@ import com.wingedsheep.sdk.core.Step
  *
  * The two lock lines are two statics because they are two different events, and neither subsumes
  * the other: [PlayersCantPlayLands] stops the *special action* of playing a land, while
- * [LandsCantEnterTheBattlefield] also catches a land arriving by an effect. A card printing only
+ * [CantEnterTheBattlefield] also catches a land arriving by an effect. A card printing only
  * the second would still let lands be played from hand; one printing only the first would lose to
  * any fetch effect. Worms prints both, so the engine grew both.
  *
@@ -45,7 +45,7 @@ val WormsOfTheEarth = card("Worms of the Earth") {
         "enchantment deal 5 damage to that player. If a player does either, destroy this enchantment."
 
     staticAbility { ability = PlayersCantPlayLands(Player.Each) }
-    staticAbility { ability = LandsCantEnterTheBattlefield }
+    staticAbility { ability = CantEnterTheBattlefield(GameObjectFilter.Land) }
 
     triggeredAbility {
         trigger = Triggers.anyPlayer.beginningOf(Step.UPKEEP)

@@ -568,6 +568,87 @@
     }
 }
 
+// Corrupted Shapeshifter
+{
+    "name": "Corrupted Shapeshifter",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Eldrazi Shapeshifter",
+    "oracleText": "Devoid (This card has no color.)\nAs this creature enters, it becomes your choice of a 3/3 creature with flying, a 2/5 creature with vigilance, or a 0/12 creature with defender.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "3/3 flying",
+                        "label": "3/3 creature with flying",
+                        "becomes": {
+                            "power": 3,
+                            "toughness": 3,
+                            "keywords": [
+                                "FLYING"
+                            ]
+                        }
+                    },
+                    {
+                        "id": "2/5 vigilance",
+                        "label": "2/5 creature with vigilance",
+                        "becomes": {
+                            "power": 2,
+                            "toughness": 5,
+                            "keywords": [
+                                "VIGILANCE"
+                            ]
+                        }
+                    },
+                    {
+                        "id": "0/12 defender",
+                        "label": "0/12 creature with defender",
+                        "becomes": {
+                            "power": 0,
+                            "toughness": 12,
+                            "keywords": [
+                                "DEFENDER"
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "Ralph Horsley",
+        "flavorText": "Within its body, three lineages warred for supremacy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27534c8a-cb71-43bc-b706-80a525396222.jpg?1783911293",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "While not on the battlefield, Corrupted Shapeshifter is a 0/0 creature card. It doesn't have flying, vigilance, or defender."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If an object on the battlefield becomes a copy of Corrupted Shapeshifter, it copies the values determined by its enters-the-battlefield replacement effect."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a permanent enters the battlefield as a copy of Corrupted Shapeshifter, there will be two copy effects to apply to it. One will copy the values chosen for the Corrupted Shapeshifter being copied. And you'll choose the values for the copy's own enters-the-battlefield replacement effect. The resulting permanent will have the abilities from both effects, and its power and toughness will be determined by the last effect to apply. For example, if a creature entering the battlefield is copying an 0/12 Corrupted Shapeshifter with defender, you could make it a 3/3 or an 0/12, either way with flying and defender."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Depth Defiler
 {
     "name": "Depth Defiler",
@@ -1230,6 +1311,74 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Invert Polarity
+{
+    "name": "Invert Polarity",
+    "manaCost": "{U}{U}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target spell, then flip a coin. If you win the flip, gain control of that spell and you may choose new targets for it. If you lose the flip, counter that spell.",
+    "script": {
+        "spellEffect": {
+            "type": "FlipCoin",
+            "wonEffect": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GainControl",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    {
+                        "type": "ChangeTriggeringObjectTargets",
+                        "spell": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                ]
+            },
+            "lostEffect": "Counter"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "RARE",
+        "artist": "Leonardo Santanna",
+        "flavorText": "\"Skreeg! I thought I told you to stop messing with... Oh, that worked. Good job, Skreeg.\"\n—Ral Zarek",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dcee6a8a-c3a8-43bc-beb9-be30d03ab952.jpg?1783911250",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "You don't make any decisions about new targets for the spell until you win the flip."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If you choose new targets for the target spell, the new targets must be legal."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If the target spell has a variable number of targets, you can't change how many targets it has."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If the target spell has damage divided as it was cast, the division can't be changed although the targets receiving that damage still can. The same is true of spells that distribute counters."
+            }
+        ]
+    }
 }
 
 // Jolted Awake

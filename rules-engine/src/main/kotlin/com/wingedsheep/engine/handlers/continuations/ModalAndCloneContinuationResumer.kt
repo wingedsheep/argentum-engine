@@ -662,7 +662,9 @@ class ModalAndCloneContinuationResumer(
                 val modeId = continuation.modeOptionIds.getOrNull(response.optionIndex)
                     ?: return ExecutionResult.error(state, "Invalid mode option index: ${response.optionIndex}")
                 state.updateEntity(spellId) { c ->
-                    c.withCastChoice(ChoiceSlot.MODE, ChoiceValue.TextChoice(modeId))
+                    com.wingedsheep.engine.state.components.identity.EntryCharacteristicsBaking.bake(
+                        c.withCastChoice(ChoiceSlot.MODE, ChoiceValue.TextChoice(modeId)), modeId, services.cardRegistry
+                    )
                 }
             }
             com.wingedsheep.sdk.scripting.ChoiceType.BASIC_LAND_TYPE -> {
@@ -816,7 +818,13 @@ class ModalAndCloneContinuationResumer(
         val (slot, value) = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
             .decodeEntersChoice(continuation, response)
             ?: return ExecutionResult.error(state, "Unexpected response for ${continuation.choiceType} choice")
-        var newState = state.updateEntity(entityId) { c -> c.withCastChoice(slot, value) }
+        var newState = state.updateEntity(entityId) { c ->
+            val recorded = c.withCastChoice(slot, value)
+            if (slot == ChoiceSlot.MODE && value is ChoiceValue.TextChoice) {
+                com.wingedsheep.engine.state.components.identity.EntryCharacteristicsBaking
+                    .bake(recorded, value.text, services.cardRegistry)
+            } else recorded
+        }
 
         // Granted-Riot synthesis: apply the chosen +1/+1-counter / haste branch to the (already
         // on-battlefield) permanent — it has no printed EntersWithCounters/haste static — before ETB

@@ -1800,7 +1800,8 @@ class TriggerDetector(
 
         // Handle "when you gain control of this from another player" triggers (e.g., Risky Move)
         // and "whenever an opponent gains control of a permanent from you" triggers (e.g., Zidane).
-        if (event is ControlChangedEvent) {
+        // A stolen *spell* (Invert Polarity) is not a permanent, so neither pass sees it.
+        if (event is ControlChangedEvent && !state.isSpellOnStack(event.permanentId)) {
             detectControlChangeTriggers(state, index.statics, event, triggers)
             detectOpponentGainsControlTriggers(state, index.statics, event, triggers)
         }

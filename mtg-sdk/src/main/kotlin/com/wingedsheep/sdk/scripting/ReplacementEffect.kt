@@ -2007,7 +2007,31 @@ data class ModeOption(
     val id: String,
     val label: String,
     val description: String? = null,
-    val iconKey: String? = null
+    val iconKey: String? = null,
+    /**
+     * The characteristics the permanent *becomes* when this option is chosen — "as this creature
+     * enters, it becomes your choice of a 3/3 creature with flying, …" (Primal Clay, Corrupted
+     * Shapeshifter). Unlike a mode-gated static ability, these are written into the permanent's
+     * copiable values (CR 707.2: "as … enters" abilities that set power and toughness), so a
+     * copy of the permanent is the chosen shape without choosing. `null` = the option only records
+     * its [id].
+     */
+    val becomes: EntryCharacteristics? = null,
+)
+
+/**
+ * Copiable characteristics an [EntersWithChoice] option sets as the permanent enters (CR 707.2).
+ * [power]/[toughness] replace the printed (usually star) values; [keywords] and [subtypes] are
+ * added to the printed ones ("a 1/6 Wall artifact creature with defender in addition to its other
+ * types"). A copy entering as a copy of such a permanent that makes its own choice layers its
+ * choice on top: the keywords accumulate and the last-set power/toughness wins.
+ */
+@Serializable
+data class EntryCharacteristics(
+    val power: Int,
+    val toughness: Int,
+    val keywords: Set<Keyword> = emptySet(),
+    val subtypes: List<String> = emptyList(),
 )
 
 /**

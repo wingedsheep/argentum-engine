@@ -441,7 +441,10 @@ object ZoneMovementUtils {
      * tapped, damage, counters, summoning sickness, combat state, attachments, etc.
      */
     fun stripBattlefieldComponents(container: ComponentContainer): ComponentContainer {
-        return container
+        // "As this enters, it becomes …" choices were baked into the card's copiable values; the
+        // card that leaves is its printed self again (CR 400.7). Runs after the copy revert: when
+        // both snapshots exist, this one is the older.
+        return com.wingedsheep.engine.state.components.identity.EntryCharacteristicsBaking.unbake(container)
             // Identity
             .without<ControllerComponent>()
             .without<TextReplacementComponent>()
