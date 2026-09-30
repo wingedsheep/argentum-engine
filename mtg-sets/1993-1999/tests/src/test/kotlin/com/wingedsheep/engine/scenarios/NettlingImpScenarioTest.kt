@@ -5,6 +5,9 @@ import com.wingedsheep.engine.core.ControlHistory
 import com.wingedsheep.engine.core.DeclareAttackers
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.player.AdditionalPhasesComponent
+import com.wingedsheep.engine.state.components.player.ExtraPhaseKind
+import com.wingedsheep.engine.state.components.player.QueuedPhase
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -116,6 +119,22 @@ class NettlingImpScenarioTest : ScenarioTestBase() {
             val late = board()
             late.state = late.state.copy(phase = Phase.POSTCOMBAT_MAIN, step = Step.POSTCOMBAT_MAIN)
             activate(late).error shouldNotBe null
+        }
+
+        test("activation is forbidden before attackers in an additional combat") {
+            val game = board()
+            val turnNumber = game.state.turnNumber
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+            game.execute(DeclareAttackers(game.player2Id, emptyMap())).error shouldBe null
+            game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+            game.state = game.state.updateEntity(game.player2Id) {
+                it.with(AdditionalPhasesComponent(listOf(QueuedPhase(ExtraPhaseKind.COMBAT))))
+            }
+            game.passUntilPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
+            game.state.turnNumber shouldBe turnNumber
+            game.passPriority().error shouldBe null
+            game.state.priorityPlayerId shouldBe game.player1Id
+            activate(game).error shouldBe "Activation condition not met"
         }
 
         test("blinked target is a new object and survives delayed destruction") {

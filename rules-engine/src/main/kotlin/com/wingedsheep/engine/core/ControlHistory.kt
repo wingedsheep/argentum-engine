@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent
+import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.TurnStartControl
@@ -43,13 +45,28 @@ object ControlHistory {
         if (history.isEmpty()) return state
         val interrupted = events.filterIsInstance<ControlChangedEvent>()
             .filter { it.oldControllerId != it.newControllerId }.mapTo(HashSet()) { it.permanentId }
-        val projected = state.projectedState
-        val retained = history.filter { (id, _) -> id !in interrupted && matches(state, projected, id) }
+        // Only control-layer effects can make a controller differ from its stored component.
+        // Avoid a full battlefield projection after every instruction on ordinary boards; any
+        // potential control effect, including inactive or phased sources, keeps the projected path.
+        val projected = if (hasControlEffects(state)) state.projectedState else null
+        val retained = history.filter { (id, _) ->
+            id !in interrupted && matches(state, id, controller(state, projected, id))
+        }
         return if (retained.size == history.size) state else state.copy(controlAtTurnStart = retained)
     }
 
+    // Mirrors the static and floating sources read by StateProjector.collectContinuousEffects.
+    private fun hasControlEffects(state: GameState): Boolean =
+        state.floatingEffects.any { it.effect.layer == Layer.CONTROL } ||
+            state.zones.any { (zone, ids) ->
+                zone.zoneType == Zone.BATTLEFIELD && ids.any { id ->
+                    state.getEntity(id)?.get<ContinuousEffectSourceComponent>()
+                        ?.effects?.any { it.layer == Layer.CONTROL } == true
+                }
+            }
+
     // Phased-out permanents have no projection entry, but their battlefield visit continues.
-    private fun controller(state: GameState, projected: ProjectedState, id: EntityId): EntityId? =
-        projected.getController(id) ?: state.getEntity(id)?.get<PhasedOutComponent>()?.phasedOutByController
+    private fun controller(state: GameState, projected: ProjectedState?, id: EntityId): EntityId? =
+        projected?.getController(id) ?: state.getEntity(id)?.get<PhasedOutComponent>()?.phasedOutByController
             ?: state.getEntity(id)?.get<ControllerComponent>()?.playerId
 }

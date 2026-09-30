@@ -554,10 +554,8 @@ class BeginningPhaseManager(
         is StatePredicate.Or -> predicate.predicates.any { matchesStatePredicateForUntap(state, projected, entityId, it, container) }
         is StatePredicate.And -> predicate.predicates.all { matchesStatePredicateForUntap(state, projected, entityId, it, container) }
         is StatePredicate.Not -> !matchesStatePredicateForUntap(state, projected, entityId, predicate.predicate, container)
-        // Relational battlefield predicates need the whole projected battlefield, which this
-        // narrow untap helper deliberately does not receive. Fail closed rather than untapping an
-        // unrelated permanent.
         StatePredicate.ControlledSinceTurnBegan -> ControlHistory.matches(state, projected, entityId)
+        // Least-mana-value comparison remains unsupported by this narrow untap evaluator.
         is StatePredicate.HasLeastManaValueAmong -> false
         // Protector scoping needs a "you" this helper has no context for; fail closed.
         is StatePredicate.IsProtectedBy -> false
