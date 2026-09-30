@@ -59,8 +59,8 @@ class DrownInIchorScenarioTest : ScenarioTestBase() {
         test("proliferating onto the target happens before state-based actions") {
             val game = board()
             val giant = game.findPermanent("Hill Giant")!!
-            // 3/3 with two +1/+1 counters = 5/5; -4/-4 leaves 1/1, proliferate makes it 2/2.
-            seed(game, giant, CounterType.PLUS_ONE_PLUS_ONE, 2)
+            // 3/3 with one +1/+1 counter = 4/4; -4/-4 alone would leave 0/0, proliferate makes it 1/1.
+            seed(game, giant, CounterType.PLUS_ONE_PLUS_ONE, 1)
 
             game.castSpell(1, "Drown in Ichor", giant).error shouldBe null
             game.resolveStack()
@@ -68,8 +68,8 @@ class DrownInIchorScenarioTest : ScenarioTestBase() {
             game.resolveStack()
 
             game.isOnBattlefield("Hill Giant") shouldBe true
-            count(game, giant, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 3
-            game.state.projectedState.getToughness(giant) shouldBe 2
+            count(game, giant, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 2
+            game.state.projectedState.getToughness(giant) shouldBe 1
         }
 
         test("choosing nothing to proliferate still applies -4/-4") {
