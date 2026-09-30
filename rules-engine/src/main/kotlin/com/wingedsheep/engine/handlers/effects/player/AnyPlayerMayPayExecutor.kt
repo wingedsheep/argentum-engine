@@ -128,8 +128,7 @@ class AnyPlayerMayPayExecutor(
             }
             // CR 119.4: a player may pay life only if their life total is at least the amount.
             is CostAtom.PayLife -> {
-                val life = state.lifeTotal(playerId) // CR 810.9a — team's shared total
-                life >= atom.amount
+                state.canPayLife(playerId, atom.amount) // CR 810.9a / 119.8
             }
             else -> false
         }

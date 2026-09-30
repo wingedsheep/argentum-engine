@@ -642,10 +642,10 @@ class CostHandler(private val zones: ZoneTransitionService) {
         is CostAtom.SacrificeAll -> true
         is CostAtom.PayLife -> {
             // CR 810.9a — affordability uses the team's shared total in Two-Headed Giant.
-            val life = state.lifeTotal(controllerId)
             // CR 119.4 — a player may pay life only if their life total is >= the payment.
             // Paying down to exactly 0 is legal; the state-based action checker handles the loss.
-            life >= atom.amount
+            // CR 119.8 — a player who can't lose life can't pay it at all.
+            state.canPayLife(controllerId, atom.amount)
         }
         is CostAtom.Sacrifice -> {
             val candidates = findMatchingPermanentsUnified(state, controllerId, atom.filter, sourceId)

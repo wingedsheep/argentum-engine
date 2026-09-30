@@ -73,6 +73,7 @@ class PlayerExecutors(
         HijackNextTurnExecutor(),
         ControlCombatDeclarationsExecutor(),
         LockLifeGainExecutor(),
+        LockLifeLossExecutor(),
         openLifeBidExecutor,
         LoseGameExecutor(predicateEvaluator = zones.predicateEvaluator),
         WinGameExecutor(predicateEvaluator = zones.predicateEvaluator),

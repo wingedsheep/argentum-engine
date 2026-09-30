@@ -1012,6 +1012,26 @@ data class GameState(
             ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 0
 
     /**
+     * Whether [playerId] can't lose life (CR 119.8) — a `CantLoseLifeComponent` lock on them, or in a
+     * shared-life team game on any teammate (CR 810.9h). Damage and life loss leave the total
+     * unchanged; a lowering exchange or redistribution doesn't happen.
+     */
+    fun isLifeLossLocked(playerId: EntityId): Boolean {
+        val seats = if (format.sharesTeamLife) teamOf(playerId) else listOf(playerId)
+        return seats.any {
+            getEntity(it)?.has<com.wingedsheep.engine.state.components.player.CantLoseLifeComponent>() == true
+        }
+    }
+
+    /**
+     * Whether [playerId] can pay [amount] life: paying 0 always can (CR 119.4 / 118.3); otherwise
+     * the (team's, CR 810.9a) life total must be at least the amount and the player must be able to
+     * lose life (CR 119.8 — "a cost that involves having that player pay life can't be paid").
+     */
+    fun canPayLife(playerId: EntityId, amount: Int): Boolean =
+        amount <= 0 || (lifeTotal(playerId) >= amount && !isLifeLossLocked(playerId))
+
+    /**
      * [playerId]'s **speed** (Aetherdrift, CR 702.179), 0–[com.wingedsheep.sdk.core.Speed.MAX].
      *
      * A player who has no speed reads as 0 per CR 702.179f, so every consumer — dynamic amounts, the

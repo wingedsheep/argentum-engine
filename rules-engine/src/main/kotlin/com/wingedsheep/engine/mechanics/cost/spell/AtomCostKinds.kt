@@ -967,17 +967,17 @@ internal object PayLifeCostKind : SpellCostKind<CostAtom.PayLife> {
     // CR 810.9a — affordability uses the team's shared total in Two-Headed Giant.
     // CR 119.4 — a player may pay life only if their life total is >= the payment.
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.PayLife, costHandler: CostHandler) =
-        state.lifeTotal(payerId) >= cost.amount
+        state.canPayLife(payerId, cost.amount)
 
     // Mode-level and cast-level affordability gate, so "discard a card or pay 3 life" doesn't
     // surface a Pay-3-Life action to a caster with fewer than 3 life (Bitter Triumph). Validation
     // still backstops it.
     override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.PayLife, offer: SpellCostOffer) =
-        env.state.lifeTotal(env.playerId) >= cost.amount
+        env.state.canPayLife(env.playerId, cost.amount)
 
     override fun validate(check: SpellCostCheck, cost: CostAtom.PayLife): String? {
         // CR 119.4 — you can't pay life unless you have at least that much (CR 810.9a — team total)
-        if (check.state.lifeTotal(check.playerId) < cost.amount) {
+        if (!check.state.canPayLife(check.playerId, cost.amount)) {
             return "Not enough life to pay ${cost.amount} life"
         }
         return null

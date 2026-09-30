@@ -813,6 +813,8 @@ object DamageUtils {
         // Presence guard stays per-player (every player carries a LifeTotalComponent); the value,
         // however, is the team's shared total (CR 810.9a) — read/write via the resolver.
         if (state.getEntity(playerId)?.get<LifeTotalComponent>() == null) return state to null
+        // CR 119.8 — a player who can't lose life doesn't; nothing changes and nothing is emitted.
+        if (amount > 0 && state.isLifeLossLocked(playerId)) return state to null
         val currentLife = state.lifeTotal(playerId)
         val lossAmount = if (applyLifeLossModification) {
             applyStaticLifeLossModification(state, playerId, amount, predicateEvaluator = predicateEvaluator)
@@ -2693,6 +2695,7 @@ object DamageUtils {
         playerId: EntityId,
         predicateEvaluator: PredicateEvaluator
     ): Boolean {
+        if (state.isLifeLossLocked(playerId)) return true
         var prevented = false
         forEachLifeLossReplacement<ModifyLifeLoss>(state, playerId, predicateEvaluator, { it.restrictions }) {
             if (it.multiplier == 0 && it.modifier <= 0) prevented = true
@@ -2720,6 +2723,8 @@ object DamageUtils {
         predicateEvaluator: PredicateEvaluator
     ): Int {
         if (amount <= 0) return 0
+        // CR 119.8 — a player-scoped "can't lose life" lock (LockLifeLossEffect).
+        if (state.isLifeLossLocked(losingPlayerId)) return 0
 
         var modifiedAmount = amount
         forEachLifeLossReplacement<ModifyLifeLoss>(state, losingPlayerId, predicateEvaluator, { it.restrictions }) { effect ->

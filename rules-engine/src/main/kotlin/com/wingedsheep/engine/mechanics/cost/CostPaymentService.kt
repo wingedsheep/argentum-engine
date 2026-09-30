@@ -793,7 +793,7 @@ class CostPaymentService(private val services: EngineServices) {
                     is CostAtom.Mana -> manaSolver.canPay(state, payerId, atom.cost)
                     // CR 119.4 — a player may pay life only if their life total is at least the amount; paying
                     // life that would reduce them to 0 or less is legal (they then lose as a state-based action).
-                    is CostAtom.PayLife -> life(state, payerId) >= atom.amount
+                    is CostAtom.PayLife -> state.canPayLife(payerId, atom.amount) // CR 119.8 too
                     is CostAtom.Discard -> domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator).size >= atom.count
                     // CR 118.3 — an empty hand discards nothing, and a cost of nothing is payable.
                     is CostAtom.DiscardHand -> true
@@ -950,9 +950,6 @@ class CostPaymentService(private val services: EngineServices) {
             val manaCost = state.getEntity(sourceId)?.get<CardComponent>()?.manaCost ?: return cost
             return PayCost.Atom(CostAtom.Mana(manaCost))
         }
-
-        private fun life(state: GameState, playerId: EntityId): Int =
-            state.lifeTotal(playerId) // CR 810.9a — team's shared total in Two-Headed Giant
 
         fun cardsInHand(state: GameState, playerId: EntityId, filter: GameObjectFilter, predicateEvaluator: PredicateEvaluator): List<EntityId> {
             val context = PredicateContext(controllerId = playerId)

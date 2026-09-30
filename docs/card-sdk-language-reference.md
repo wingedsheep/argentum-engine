@@ -1402,6 +1402,13 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   unlike the `PreventLifeGain` *replacement* (§11), which ends when its permanent leaves play.
   Non-player targets are a no-op, so it composes after a "deal damage to any target" rider (Screaming
   Nemesis). Checked by `DamageUtils.isLifeGainPrevented`.
+- `LockLifeLoss(target?, duration?)` — "target player can't lose life" for `duration` (CR 119.8), the
+  sibling of `LockLifeGain` (tags `CantLoseLifeComponent`; same durations, same non-player no-op). Damage
+  and life loss leave the total unchanged, a lowering set-life/exchange/redistribution doesn't happen,
+  and a cost that pays life — any `PayLife` atom, Phyrexian life, ward, pay-or-suffer — can't be paid
+  (`GameState.canPayLife`). In a shared-life team game a lock on either head covers the team (CR 810.9h).
+  "Your life total can't change" (CR 119.7–8) is both locks: `LockLifeGain(...) then LockLifeLoss(...)`
+  (Flare of Fortitude).
 - `LoseGame(target, message?)` — target loses the game.
 - `RemoveMaximumHandSize(target?)` — "target has no maximum hand size for the rest of the game"
   (default target: controller). One-shot resolution effect that confers a permanent, player-scoped

@@ -979,6 +979,17 @@ data class CantGainLifeComponent(
 ) : Component
 
 /**
+ * Component indicating that a player can't lose life (CR 119.8). Conferred by
+ * [com.wingedsheep.sdk.scripting.effects.LockLifeLossEffect]; the sibling of [CantGainLifeComponent].
+ * Consulted by [com.wingedsheep.engine.state.GameState.isLifeLossLocked] — every life-loss and
+ * life-payment path reads it through there.
+ */
+@Serializable
+data class CantLoseLifeComponent(
+    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.Permanent
+) : Component
+
+/**
  * Component indicating that a player cannot activate planeswalkers' loyalty abilities for the
  * rest of this turn. Applied by effects like Revel in Silence. Sibling of [CantCastSpellsComponent].
  *

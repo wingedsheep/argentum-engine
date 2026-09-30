@@ -52,6 +52,10 @@ class SetLifeTotalExecutor(
             if (newLife > currentLife && DamageUtils.isLifeGainPrevented(newState, playerId)) {
                 continue
             }
+            // CR 119.8 — likewise a player who can't lose life can't be set lower.
+            if (newLife < currentLife && newState.isLifeLossLocked(playerId)) {
+                continue
+            }
 
             if (newLife != currentLife) {
                 newState = newState.withLifeTotal(playerId, newLife)

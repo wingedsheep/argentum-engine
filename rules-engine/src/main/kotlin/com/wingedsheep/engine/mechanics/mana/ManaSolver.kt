@@ -2210,7 +2210,8 @@ class ManaSolver(
     ): List<Color>? {
         val pipColors = cost.phyrexianSymbols.mapNotNull { it.phyrexianLifeColor }
         if (pipColors.isEmpty()) return emptyList()
-        val life = state.lifeTotal(playerId)
+        // CR 119.8 — a player who can't lose life pays no Phyrexian pip with life.
+        val life = if (state.isLifeLossLocked(playerId)) 0 else state.lifeTotal(playerId)
         for (lifePips in 0..pipColors.size) {
             // A player can't pay more life than they have (CR 119.4).
             if (lifePips * 2 > life) return null
@@ -2263,7 +2264,8 @@ class ManaSolver(
         // A Phyrexian pip may be paid with 2 life instead of its color. Try each distinct pip
         // choice before the mana-only solver below; recursive calls see a strictly smaller cost.
         // Paying down to exactly 0 is legal, though state-based actions will make the player lose.
-        val life = state.lifeTotal(playerId)
+        // CR 119.8 — a player who can't lose life pays no Phyrexian pip with life.
+        val life = if (state.isLifeLossLocked(playerId)) 0 else state.lifeTotal(playerId)
         if (allowPhyrexianLife && (phyrexianLifePipsCommitted + 1) * 2 <= life) {
             val triedColors = mutableSetOf<Color>()
             for (pip in cost.phyrexianSymbols) {
