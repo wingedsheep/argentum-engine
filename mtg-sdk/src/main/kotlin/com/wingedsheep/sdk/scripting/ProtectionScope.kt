@@ -34,6 +34,15 @@ sealed interface ProtectionScope {
     @Serializable
     data class NonColor(val color: com.wingedsheep.sdk.core.Color) : ProtectionScope
 
+    /**
+     * From multicolored — matches a source with two or more colors (CR 105.2b: a multicolored
+     * object has two or more colors). Enforced on the same colour axis as [Color], so it covers
+     * damage, enchanting/equipping, blocking and targeting (Argentum Masticore).
+     */
+    @SerialName("ProtectionScope.Multicolored")
+    @Serializable
+    data object Multicolored : ProtectionScope
+
     /** Protection from a card type — "from creatures". */
     @SerialName("ProtectionScope.CardType")
     @Serializable

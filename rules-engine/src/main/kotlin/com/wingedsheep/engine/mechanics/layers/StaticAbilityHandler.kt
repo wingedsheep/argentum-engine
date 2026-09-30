@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSour
 import com.wingedsheep.engine.state.components.battlefield.SuppressesHexproofForGroupComponent
 import com.wingedsheep.engine.state.components.battlefield.SuppressesWardForGroupComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.GrantsDredgeToGraveyardCardsComponent
 import com.wingedsheep.engine.state.components.identity.GrantsMadnessToOwnedCardsComponent
 import com.wingedsheep.engine.state.components.identity.RoomFaceStatics
 import com.wingedsheep.sdk.model.CardDefinition
@@ -331,6 +332,14 @@ class StaticAbilityHandler(
             .map { it.filter }
         if (madnessGrantFilters.isNotEmpty()) {
             result = result.with(GrantsMadnessToOwnedCardsComponent(madnessGrantFilters))
+        }
+
+        // Add component for "[filter] cards in your graveyard have dredge N" (The Necrobloom) —
+        // read off the permanent by DredgeReplacements at draw time.
+        val dredgeGrants = allStaticAbilities
+            .filterIsInstance<com.wingedsheep.sdk.scripting.GraveyardCardsHaveDredge>()
+        if (dredgeGrants.isNotEmpty()) {
+            result = result.with(GrantsDredgeToGraveyardCardsComponent(dredgeGrants))
         }
 
         // Add component for "ward abilities of creatures matching filter don't trigger"
@@ -1122,6 +1131,7 @@ class StaticAbilityHandler(
             is StationUsingToughness,
             is SuppressHexproofForGroup,
             is com.wingedsheep.sdk.scripting.GrantMadnessToOwnedCards,
+            is com.wingedsheep.sdk.scripting.GraveyardCardsHaveDredge,
             is SuppressWardForGroup -> null
         }
     }

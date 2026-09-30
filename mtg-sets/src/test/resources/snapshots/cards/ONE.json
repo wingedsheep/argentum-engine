@@ -51,6 +51,138 @@
     ]
 }
 
+// Argentum Masticore
+{
+    "name": "Argentum Masticore",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Phyrexian Masticore",
+    "oracleText": "First strike, protection from multicolored\nAt the beginning of your upkeep, sacrifice this creature unless you discard a card. When you discard a card this way, destroy target nonland permanent an opponent controls with mana value less than or equal to the mana value of the discarded card.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": "ProtectionScope.Multicolored"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Argentum Masticore:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Discard a card? If you don't, sacrifice Argentum Masticore.",
+                        "feasibility": {
+                            "type": "HasCardsInZone",
+                            "zone": "Hand"
+                        }
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        },
+                        "optional": false,
+                        "reflexiveEffect": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": {
+                                        "cardPredicates": [
+                                            "IsNonland",
+                                            "IsPermanent",
+                                            {
+                                                "type": "ManaValueAtMostDynamic",
+                                                "amount": {
+                                                    "type": "StoredCardManaValue",
+                                                    "collectionName": "discarded"
+                                                }
+                                            }
+                                        ],
+                                        "controllerPredicate": "ControlledByOpponent"
+                                    }
+                                },
+                                "id": "t0"
+                            }
+                        ]
+                    },
+                    "otherwise": "SacrificeSelf"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/9746e3ab-c0a6-46c1-a418-275b419962e4.jpg?1783917994",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "You don't choose a target for Argentum Masticore's upkeep triggered ability at the time it triggers. Rather, a second \"reflexive\" ability triggers when you discard a card this way. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Notably, this means that you may discard a card to keep Argentum Masticore on the battlefield even if there isn't a legal target for that second triggered ability. In that case, no players may respond to the second triggered ability and it does not resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Barbed Batterfist
 {
     "name": "Barbed Batterfist",
@@ -1206,6 +1338,46 @@
         "collectorNumber": "226",
         "artist": "Kev Walker",
         "imageUri": "https://cards.scryfall.io/normal/front/2/9/29d2c689-af37-433a-a012-e8d384702811.jpg?1783917993"
+    }
+}
+
+// Elesh Norn, Mother of Machines
+{
+    "name": "Elesh Norn, Mother of Machines",
+    "manaCost": "{4}{W}",
+    "typeLine": "Legendary Creature — Phyrexian Praetor",
+    "oracleText": "Vigilance\nIf a permanent entering causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.\nPermanents entering don't cause abilities of permanents your opponents control to trigger.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 7
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AdditionalETBOrLTBTriggers",
+                "filter": "permanent",
+                "mustBeYouControl": false
+            },
+            {
+                "type": "SuppressEntersTriggers",
+                "filter": "permanent",
+                "abilitiesOf": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "controllerPredicate": "ControlledByOpponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "MYTHIC",
+        "artist": "Martina Fačková",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44dcab01-1d13-4dfc-ae2f-fbaa3dd35087.jpg?1783918082"
     }
 }
 

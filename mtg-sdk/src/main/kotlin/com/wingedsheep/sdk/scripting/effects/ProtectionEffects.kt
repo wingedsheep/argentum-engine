@@ -181,6 +181,7 @@ fun ProtectionScope.protectionDescription(): String = when (this) {
     is ProtectionScope.Color -> color.name.lowercase()
     is ProtectionScope.Colors -> colors.joinToString(" and ") { it.name.lowercase() }
     is ProtectionScope.NonColor -> "non" + color.name.lowercase()
+    ProtectionScope.Multicolored -> "multicolored"
     is ProtectionScope.CardType -> cardType.lowercase() + "s"
     is ProtectionScope.Subtype -> subtype + "s"
     is ProtectionScope.Supertype -> supertype.lowercase() + " permanents"

@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  *
  * Each quality is projected as its own keyword — `PROTECTION_FROM_<COLOR>`,
  * `PROTECTION_FROM_SUBTYPE_<X>`, `PROTECTION_FROM_SUPERTYPE_<X>`,
- * `PROTECTION_FROM_CARDTYPE_<TYPE>` — which is what the targeting, damage-prevention, and
+ * `PROTECTION_FROM_CARDTYPE_<TYPE>`, `PROTECTION_FROM_MULTICOLORED` — which is what the targeting, damage-prevention, and
  * block-evasion checks consult. A quality that lands in no field here is silently unenforced,
  * so every [com.wingedsheep.sdk.scripting.ProtectionScope] the engine honors needs a home.
  *
@@ -24,5 +24,7 @@ data class ProtectionComponent(
     val supertypes: Set<String> = emptySet(),
     val cardTypes: Set<String> = emptySet(),
     /** Source-kind qualities — "protection from spells" (`PROTECTION_FROM_SOURCEKIND_<KIND>`). */
-    val sourceKinds: Set<com.wingedsheep.engine.mechanics.targeting.SourceKind> = emptySet()
+    val sourceKinds: Set<com.wingedsheep.engine.mechanics.targeting.SourceKind> = emptySet(),
+    /** "Protection from multicolored" (`PROTECTION_FROM_MULTICOLORED`) — Argentum Masticore. */
+    val multicolored: Boolean = false
 ) : Component

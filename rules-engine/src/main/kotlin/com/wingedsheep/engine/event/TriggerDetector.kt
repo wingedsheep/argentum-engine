@@ -862,7 +862,11 @@ class TriggerDetector(
         // Active suppressors (filter + the granting permanent's projected controller, which is the
         // reference player for the filter's controller predicate so `youControl()` scopes correctly).
         val projected = state.projectedState
-        data class Suppressor(val filter: GameObjectFilter, val controllerId: EntityId)
+        data class Suppressor(
+            val filter: GameObjectFilter,
+            val abilitiesOf: GameObjectFilter?,
+            val controllerId: EntityId
+        )
         val suppressors = mutableListOf<Suppressor>()
         for (permanentId in state.getBattlefield()) {
             val container = state.getEntity(permanentId) ?: continue
@@ -873,18 +877,29 @@ class TriggerDetector(
                 if (ability is SuppressEntersTriggers) {
                     val controller = projected.getController(permanentId)
                         ?: container.get<ControllerComponent>()?.playerId ?: continue
-                    suppressors.add(Suppressor(ability.filter, controller))
+                    suppressors.add(Suppressor(ability.filter, ability.abilitiesOf, controller))
                 }
             }
         }
         if (suppressors.isEmpty()) return
 
-        // An entered permanent whose entry is suppressed by at least one active suppressor.
-        val suppressionCache = HashMap<EntityId, Boolean>()
-        fun isSuppressed(entityId: EntityId): Boolean {
+        // Whether suppressor [s] reaches abilities of [sourceId]: every ability when unscoped,
+        // otherwise only those of a battlefield permanent matching `abilitiesOf` (Elesh Norn).
+        val battlefield = state.getBattlefield().toSet()
+        fun scopes(s: Suppressor, sourceId: EntityId): Boolean {
+            val abilitiesOf = s.abilitiesOf ?: return true
+            return sourceId in battlefield && predicateEvaluator.matches(
+                state, projected, sourceId, abilitiesOf, PredicateContext(controllerId = s.controllerId)
+            )
+        }
+
+        // An entered permanent whose entry, for a trigger of [sourceId], is suppressed by at
+        // least one active suppressor.
+        val entryCache = HashMap<Pair<EntityId, Int>, Boolean>()
+        fun isSuppressed(entityId: EntityId, sourceId: EntityId): Boolean {
             if (entityId !in enteredIds) return false
-            return suppressionCache.getOrPut(entityId) {
-                suppressors.any { s ->
+            return suppressors.withIndex().any { (i, s) ->
+                scopes(s, sourceId) && entryCache.getOrPut(entityId to i) {
                     predicateEvaluator.matches(
                         state, projected, entityId, s.filter,
                         PredicateContext(controllerId = s.controllerId)
@@ -911,7 +926,7 @@ class TriggerDetector(
             if (captured != null) {
                 // Batch trigger: strip the suppressed entries; drop the whole trigger if none
                 // of the permanents that caused it survive.
-                val survivors = captured.filterNot { isSuppressed(it) }
+                val survivors = captured.filterNot { isSuppressed(it, trigger.sourceId) }
                 when {
                     survivors.isEmpty() -> iterator.remove()
                     survivors.size != captured.size ->
@@ -919,7 +934,7 @@ class TriggerDetector(
                 }
             } else {
                 val triggeringId = ctx.triggeringEntityId ?: trigger.sourceId
-                if (isSuppressed(triggeringId)) iterator.remove()
+                if (isSuppressed(triggeringId, trigger.sourceId)) iterator.remove()
             }
         }
     }

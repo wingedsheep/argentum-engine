@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.ConditionEvaluationContext
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExileLookup
+import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.GameState
@@ -366,6 +367,7 @@ internal class EffectApplicator(
                                     protection.subtypes.forEach { values.keywords.add("PROTECTION_FROM_SUBTYPE_${it.uppercase()}") }
                                     protection.supertypes.forEach { values.keywords.add("PROTECTION_FROM_SUPERTYPE_${it.uppercase()}") }
                                     protection.cardTypes.forEach { values.keywords.add("PROTECTION_FROM_CARDTYPE_$it") }
+                                    if (protection.multicolored) values.keywords.add(ColorProtection.PROTECTION_FROM_MULTICOLORED)
                                 }
                             }
                         }

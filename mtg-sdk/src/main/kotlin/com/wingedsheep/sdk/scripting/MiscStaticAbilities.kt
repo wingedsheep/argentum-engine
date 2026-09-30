@@ -1022,17 +1022,29 @@ data class PayLifeForColoredMana(
  *
  * @property filter Which entering permanents have their entry suppressed (matched via projected
  *   state). Defaults to [GameObjectFilter.Creature].
+ * @property abilitiesOf When set, only triggered abilities *of permanents* matching this filter are
+ *   suppressed — matched in projected state against the trigger's source, with this ability's
+ *   controller as the reference player, and only while that source is on the battlefield (a
+ *   graveyard card's "whenever a creature enters" is not an ability of a permanent). `null`
+ *   (default) suppresses every ability, the Torpor Orb shape. Elesh Norn, Mother of Machines —
+ *   "Permanents entering don't cause abilities of permanents your opponents control to trigger" —
+ *   is `SuppressEntersTriggers(GameObjectFilter.Permanent, abilitiesOf = GameObjectFilter.Permanent.opponentControls())`.
  */
 @SerialName("SuppressEntersTriggers")
 @Serializable
 data class SuppressEntersTriggers(
-    val filter: GameObjectFilter = GameObjectFilter.Creature
+    val filter: GameObjectFilter = GameObjectFilter.Creature,
+    val abilitiesOf: GameObjectFilter? = null
 ) : StaticAbility {
     override val description: String =
-        "${filter.description} entering the battlefield don't cause abilities to trigger"
+        if (abilitiesOf == null) "${filter.description} entering the battlefield don't cause abilities to trigger"
+        else "${filter.description} entering the battlefield don't cause abilities of ${abilitiesOf.description} to trigger"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
+        val newAbilitiesOf = abilitiesOf?.applyTextReplacement(replacer)
+        return if (newFilter !== filter || newAbilitiesOf !== abilitiesOf) {
+            copy(filter = newFilter, abilitiesOf = newAbilitiesOf)
+        } else this
     }
 }
 

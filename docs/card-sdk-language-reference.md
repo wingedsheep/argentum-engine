@@ -2936,7 +2936,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 - `AnimateLandEffect(target, subtypes, keywords, duration)` — land becomes a creature.
 - `MassAnimateEffect(filter, power, toughness, loseAllAbilities = true, duration = EndOfTurn)` — facade `Effects.MassAnimate(filter, power, toughness, loseAllAbilities, duration)`. One-shot: animate **every** permanent matching `filter` into a creature for `duration`, setting each one's base power and toughness to the `power`/`toughness` **`DynamicAmount`s** — resolved per affected permanent (Layer 7b `SetPowerToughnessDynamic`), so `EntityProperty(AffectedEntity, ManaValue)` gives "each equal to its own mana value" — and, when `loseAllAbilities`, stripping all of its abilities (Layer 6 `RemoveAllAbilities`); Layer 4 `AddType("CREATURE")` makes them creatures. The affected set is captured **once** at resolution against the current battlefield (CR 611.2c) and locked in for the duration. This is the fixed-set, one-shot companion to expressing the same effect *continuously* via the `GrantCardType` + `LoseAllAbilities` + `SetBasePowerToughnessDynamicStatic` group statics on a permanent (which take the same `DynamicAmount` P/T) — use the statics for the while-on-battlefield behavior and this effect for the "this effect continues until end of turn" linger when the generating permanent leaves. Used by **Titania's Song** ("Each noncreature artifact loses all abilities and becomes an artifact creature with power and toughness each equal to its mana value. If this enchantment leaves the battlefield, this effect continues until end of turn.") — a `LeavesBattlefield(SELF)` trigger replays the static set as until-EOT floating effects with `power = toughness = EntityProperty(AffectedEntity, ManaValue)`. The dynamic-P/T floating effect resolves its controller from the effect's captured controller (`ContinuousEffect.controllerId`) when the source has already left the battlefield.
 - `ExploreEffect(target)` — Explore mechanic (reveal top; land → battlefield, else hand + counter).
-- `ConniveEffect(subject, body, replacementsApplied = false)` — the connive keyword action (CR 701.50), wrapping the pipeline that carries it out. Built by `Patterns.Hand.connive` / `Effects.Connive(target)`; never constructed directly by a card. `body` is the ordinary draw → discard → conditional +1/+1 counter pipeline and runs unchanged — the wrapper exists to give the action a **name and a subject**, which is what `ModifyKeywordAction` needs to replace it (`EventPattern.ConnivedEvent`) and what lets `ConniveEffectExecutor` append `EmitConnivedEventEffect` as the pipeline's tail so `PermanentConnivedEvent` fires after the discard resolves (CR 701.50f). `replacementsApplied` is the CR 614.5 recursion guard, set only on the post-replacement re-issue. Mirrors `ExploreEffect`, the other replaceable/observable keyword action.
+- `ConniveEffect(subject, body, replacementsApplied = false, count = Fixed(1))` — the connive keyword action (CR 701.50), wrapping the pipeline that carries it out. Built by `Patterns.Hand.connive` / `Effects.Connive(target)`; never constructed directly by a card. `body` is the ordinary draw → discard → conditional +1/+1 counter pipeline and runs unchanged — the wrapper exists to give the action a **name and a subject**, which is what `ModifyKeywordAction` needs to replace it (`EventPattern.ConnivedEvent`) and what lets `ConniveEffectExecutor` append `EmitConnivedEventEffect` as the pipeline's tail so `PermanentConnivedEvent` fires after the discard resolves (CR 701.50f). `replacementsApplied` is the CR 614.5 recursion guard, set only on the post-replacement re-issue. Mirrors `ExploreEffect`, the other replaceable/observable keyword action. `count` is N for connive N (CR 701.50d); the body computes N itself, and the executor evaluates `count` only to honour CR 701.50e — a connive 0 draws and discards nothing, is not replaced, and fires no connive event.
 - `AttachEquipmentEffect(equip, target)` — attach an Equipment. Facade `Effects.AttachEquipment(...)`.
   `Effects.AttachTargetEquipmentToCreature(equipmentTarget, creatureTarget)` force-attaches one
   *targeted* Equipment to one *targeted* creature (both are explicit targets, not the source) — used
@@ -3777,6 +3777,7 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
 - `loot(draw?, discard?)` — "draw N, discard M" loop.
 - `rummage(count?)` — discard then draw.
 - `connive(target?)` — draw 1, discard 1, then put a +1/+1 counter on `target` (default Self) if the discard was a nonland (CR 701.50). Also exposed as `Effects.Connive(target)`. Returns the pipeline wrapped in `ConniveEffect(subject = target, body = …)`: the wrapper names the keyword action and its subject, which is what lets `ModifyKeywordAction` replace it and what makes it emit `PermanentConnivedEvent` (CR 701.50f). The pipeline itself is unchanged.
+- `connive(target, count: DynamicAmount)` — connive N (CR 701.50d): "target creature you control connives X, where X is …" (Spymaster's Vault). Stores N once as `connive_n` (so an amount the connive changes, like hand size, can't drift), draws N, discards exactly N (all of a smaller hand), then puts one +1/+1 counter on `target` per **nonland** card discarded. Wrapped in `ConniveEffect(count = …)`, so it is replaced and observed like any connive — once per connive, not once per card — and a connive 0 does nothing (CR 701.50e). `count == Fixed(1)` returns plain `connive(target)`. Also exposed as `Effects.Connive(target, count)`.
 - `conniveTargeting(requirement, storeAs?)` — connive whose +1/+1 counter lands on a *reflexively chosen* target: "draw a card, then discard a card. When you discard a nonland card this way, put a +1/+1 counter on target creature you control" (Teo, Spirited Glider). The recipient is selected at resolution via `SelectTargetEffect` *inside* the nonland gate — so the player never chooses up front or when the discard is a land. Pass the recipient's `TargetRequirement` (e.g. `TargetObject(filter = TargetFilter.CreatureYouControl)`); do **not** also declare it as a cast-time `target(...)`. Exposed as `Effects.ConniveTargeting(requirement)`. Deliberately **not** wrapped in `ConniveEffect` — Teo's printed text spells the looting out and never says "connive", so it is not the keyword action: it fires no connive triggers and is not touched by "if a creature you control would connive" replacements.
 - `Patterns.Mechanic.clash()` — the clash procedure without an immediate win rider. It chooses
   the opponent and runs the shared reveal/top-or-bottom procedure, replacing `CLASH_WON` with the
@@ -8720,7 +8721,7 @@ staticAbility {
   `Effects.RecordChosenLinkedExile(...)` to choose. (Koh, the Face Stealer — "Pay 1 life: Choose a
   creature card exiled with Koh. Koh has all activated and triggered abilities of the last chosen card"
   → `HasAbilitiesOfChosenLinkedExiledCard()`.)
-- `SuppressEntersTriggers(filter = GameObjectFilter.Creature)` — permanents matching `filter`
+- `SuppressEntersTriggers(filter = GameObjectFilter.Creature, abilitiesOf = null)` — permanents matching `filter`
   entering the battlefield don't cause abilities to trigger (CR 603.6 enters-the-battlefield
   triggers). Suppresses both the entering permanent's *own* ETB triggers and any other permanent's
   "whenever a [...] enters" trigger whose triggering object is that permanent — the gate is whether
@@ -8728,6 +8729,10 @@ staticAbility {
   watching trigger names. Replacement effects (enters with counters/tapped) and `EntersWithChoice`
   "as it enters" choices are unaffected (they aren't triggered abilities). Torpor Orb / Hushwing Gryff
   → `SuppressEntersTriggers()`; Tocatli Honor Guard → `SuppressEntersTriggers(GameObjectFilter.Creature.youControl())`.
+  `abilitiesOf` narrows *whose* abilities are suppressed: only triggers whose source is a battlefield
+  permanent matching it (projected, reference player = this ability's controller); a graveyard card's
+  enters trigger is untouched. Elesh Norn, Mother of Machines → `SuppressEntersTriggers(GameObjectFilter.Permanent,
+  abilitiesOf = GameObjectFilter.Permanent.opponentControls())`.
 - `GainActivatedAbilitiesOfPermanents(grantedTo, sourceFilter, includeManaAbilities = false)` —
   permanents matching `grantedTo` (a `GroupFilter`; use `GroupFilter.source()` for "this permanent")
   gain copies of the activated abilities of every permanent matching `sourceFilter`. The copy uses
@@ -10281,6 +10286,11 @@ composite abilities).
   spelling of the same thing, engine-supported (`CardEntityFactory`, `PlayerProtectionRules`) but used
   by exactly one card (Ureni, the Song Unending). Argentum Assay reads the printed text as two
   abilities and never emits `Colors`.
+- `Protection(ProtectionScope.Multicolored)` — "protection from multicolored" (Argentum Masticore): matches
+  a source with two or more colors (CR 105.2b). Projected as `PROTECTION_FROM_MULTICOLORED` and answered by
+  the shared colour-axis helper `ColorProtection`, so targeting (validator *and* legal-action target
+  enumeration), damage prevention, blocking and enchanting/equipping all honour it. Also valid in
+  `GrantPlayerProtection` / `GrantProtectionToController` scopes.
 - `Protection(ProtectionScope.Supertype("Legendary"))` / `KeywordAbility.protectionFromSupertype("Legendary")` — protection from a supertype, e.g. "protection from legendary creatures" (Tsabo Tavoc). Enforced across targeting, blocking, and combat damage via projected `PROTECTION_FROM_SUPERTYPE_<X>` keywords.
 - `Protection(ProtectionScope.CardType("Instant"))` — protection from a card type, e.g. "protection from
   instants" (Emrakul, the Promised End). Projected as `PROTECTION_FROM_CARDTYPE_<TYPE>` — the same keyword
@@ -15328,6 +15338,14 @@ resolution executor is introduced. The existing Yes/No decision belongs to the
 drawing player, and its source identifies the public graveyard card. The client
 keyword label is `DREDGE`. The mtgish emitter preserves the numeric argument through
 `KeywordAbility.dredge(N)`; unsupported numeric shapes remain scaffolded.
+
+`GraveyardCardsHaveDredge(filter, amount)` is the static grant: "[filter] cards in your graveyard
+have dredge N" (The Necrobloom: `GraveyardCardsHaveDredge(GameObjectFilter.Land, amount = 2)`).
+`StaticAbilityHandler` bakes it into a `GrantsDredgeToGraveyardCardsComponent` on the permanent, and
+`DredgeReplacements` reads it beside printed dredge, so a granted dredge follows every rule above.
+The grant reaches only the graveyard of the permanent's controller and stops the moment the permanent
+leaves the battlefield. A card with printed dredge that also matches offers each ability as its own
+option (printed first). A grant wrapped in `staticAbility { condition = … }` is not read.
 
 ### Live library-top references
 
