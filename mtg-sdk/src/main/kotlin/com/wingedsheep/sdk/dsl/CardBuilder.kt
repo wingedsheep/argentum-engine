@@ -1903,7 +1903,12 @@ class LoyaltyAbilityBuilder(
      */
     var restrictions: List<ActivationRestriction> = emptyList()
 
-
+    /**
+     * An X the ability's own text defines, locked as the ability is activated (CR 107.3c) — Lukka,
+     * Bound to Ruin's "where X is the greatest power among creatures you control as you activate
+     * this ability". The effect reads it as `DynamicAmount.XValue`. See [ActivatedAbility.xDefinedAs].
+     */
+    var xDefinedAs: DynamicAmount? = null
 
     fun build(): ActivatedAbility {
         requireNotNull(effect) { "Loyalty ability must have an effect" }
@@ -1920,7 +1925,8 @@ class LoyaltyAbilityBuilder(
             isPlaneswalkerAbility = true,
             timing = TimingRule.SorcerySpeed,
             restrictions = restrictions,
-            descriptionOverride = description
+            descriptionOverride = description,
+            xDefinedAs = xDefinedAs
         )
     }
 }

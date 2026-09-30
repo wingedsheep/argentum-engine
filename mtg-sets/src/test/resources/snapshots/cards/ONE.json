@@ -1998,6 +1998,157 @@
     ]
 }
 
+// Lukka, Bound to Ruin
+{
+    "name": "Lukka, Bound to Ruin",
+    "manaCost": "{2}{R}{R/G/P}{G}",
+    "typeLine": "Legendary Planeswalker — Lukka",
+    "oracleText": "Compleated ({R/G/P} can be paid with {R}, {G}, or 2 life. If life was paid, this planeswalker enters with two fewer loyalty counters.)\n+1: Add {R}{G}. Spend this mana only to cast creature spells or activate abilities of creatures.\n−1: Create a 3/3 green Phyrexian Beast creature token with toxic 1.\n−4: Lukka deals X damage divided as you choose among any number of target creatures and/or planeswalkers, where X is the greatest power among creatures you control as you activate this ability.",
+    "keywords": [
+        "COMPLEATED"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Lukka, Bound to Ruin:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "RED",
+                            "restriction": {
+                                "type": "CardTypeSpellsOrAbilitiesOnly",
+                                "cardType": "CREATURE",
+                                "allowAbilities": true
+                            }
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN",
+                            "restriction": {
+                                "type": "CardTypeSpellsOrAbilitiesOnly",
+                                "cardType": "CREATURE",
+                                "allowAbilities": true
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Lukka, Bound to Ruin:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Phyrexian",
+                        "Beast"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/1/919381b0-2d23-4794-b4ff-923c23e18196.jpg?1783918168",
+                    "numericKeywords": [
+                        {
+                            "keyword": "TOXIC",
+                            "n": 1
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Lukka, Bound to Ruin:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -4
+                },
+                "effect": {
+                    "type": "DividedDamage",
+                    "totalDamage": 0,
+                    "dynamicTotal": "XValue"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "minCount": 0,
+                        "unlimited": true,
+                        "filter": {
+                            "baseFilter": "creature|planeswalker"
+                        },
+                        "id": "t0",
+                        "dynamicMaxCount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature",
+                            "aggregation": "MAX",
+                            "property": "POWER"
+                        }
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "xDefinedAs": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature",
+                    "aggregation": "MAX",
+                    "property": "POWER"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6df77017-c4a7-4b79-a16b-26463bd6a96a.jpg?1783918000",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "For Lukka's last ability, you announce the targets and how damage is divided as you activate the ability. Once the ability has been activated, the greatest power among creatures you control no longer matters for this ability. This means once you announce you're activating it, no player can respond to try and lower that power and decrease the damage Lukka can deal."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "You can't choose more targets than the greatest power among creatures you control as you activate the ability, and each chosen target must receive at least 1 damage."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If some of the targets of the last ability become illegal, the original division of damage still applies, but the damage that would have been dealt to illegal targets isn't dealt at all."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "A hybrid Phyrexian mana symbol contributes 1 toward the mana value of a card, even if life is paid for it. Specifically, Lukka's mana value is always 5."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "The compleated ability looks only at whether a player chose to pay 2 life for a Phyrexian mana symbol as they were casting the spell. If a player paid life for some other reason while casting the spell, that will not reduce the number of loyalty counters the planeswalker enters the battlefield with."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Other replacement effects that would change the number of loyalty counters Lukka enters with will apply as normal."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Malcator's Watcher
 {
     "name": "Malcator's Watcher",
