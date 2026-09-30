@@ -632,6 +632,182 @@
     ]
 }
 
+// Clockwork Beast
+{
+    "name": "Clockwork Beast",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Beast",
+    "oracleText": "This creature enters with seven +1/+0 counters on it.\nAt end of combat, if this creature attacked or blocked this combat, remove a +1/+0 counter from it.\n{X}, {T}: Put up to X +1/+0 counters on this creature. This ability can't cause the total number of +1/+0 counters on this creature to be greater than seven. Activate only during your upkeep.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Clockwork Beast:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "RemoveCounters",
+                    "counterType": "PLUS_ONE_PLUS_ZERO",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisCombat"
+                                ]
+                            }
+                        },
+                        {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "BlockedThisCombat"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At end of combat, if this creature attacked or blocked this combat, remove a +1/+0 counter from it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Clockwork Beast:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsPermanent"
+                                ],
+                                "statePredicates": [
+                                    "IsSource",
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Battlefield"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ChooseNumberThen",
+                        "then": {
+                            "type": "AddCountersWithLimit",
+                            "counterType": "PLUS_ONE_PLUS_ZERO",
+                            "amount": "XValue",
+                            "totalLimit": {
+                                "type": "Fixed",
+                                "amount": 7
+                            },
+                            "target": "Self"
+                        },
+                        "maxValue": {
+                            "type": "IfPositive",
+                            "amount": {
+                                "type": "Min",
+                                "left": "XValue",
+                                "right": {
+                                    "type": "Subtract",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 7
+                                    },
+                                    "right": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "PLUS_ONE_PLUS_ZERO"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "prompt": "Put how many +1/+0 counters on Clockwork Beast?"
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "DuringStep",
+                        "step": "UPKEEP"
+                    },
+                    "OnlyDuringYourTurn"
+                ],
+                "descriptionOverride": "{X}, {T}: Put up to X +1/+0 counters on this creature (max seven total). Activate only during your upkeep."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "PLUS_ONE_PLUS_ZERO",
+                "count": 7,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "RARE",
+        "artist": "Drew Tucker",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27f916a2-0ace-44b5-99dc-72979af34db9.jpg?1783948668",
+        "rulings": [
+            {
+                "date": "2007-09-16",
+                "text": "This is a change from the most recent wording. Now, if some other spell or ability causes +1/+0 counters to be put on Clockwork Beast, it can wind up with more than seven such counters on it."
+            },
+            {
+                "date": "2007-09-16",
+                "text": "If Clockwork Beast has seven or fewer +1/+0 counters on it when its last ability resolves, it can wind up a maximum of seven such counters on it. If it has seven or more +1/+0 counters on it, the ability will have no effect."
+            },
+            {
+                "date": "2007-09-16",
+                "text": "Clockwork Beast’s last ability resolves, you can choose to put fewer than X +1/+0 counters on it."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Loses a counter even if it is affected by a Fog-like effect which prevents it from dealing damage."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Can attack or block even if it has no counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Clone
 {
     "name": "Clone",
