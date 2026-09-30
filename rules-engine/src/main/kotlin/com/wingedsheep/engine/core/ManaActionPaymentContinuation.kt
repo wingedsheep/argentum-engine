@@ -12,4 +12,6 @@ data class ManaActionPaymentContinuation(
     val lockedCastCost: ManaCost? = null,
     val lockedAbilityCost: AbilityCost? = null,
     val lockedAbilityX: Int? = null,
+    val excludedSources: Set<com.wingedsheep.sdk.model.EntityId> = emptySet(),
+    val paymentContext: com.wingedsheep.engine.mechanics.mana.SpellPaymentContext? = null,
 ) : AnswerContinuation

@@ -627,7 +627,8 @@ references; a permanent leaving and returning cannot inherit an old permission's
 never become stack objects or activated abilities. Legal-action enumeration exposes them at their
 specified timing, including mana-production permissions inside a suspended payment window.
 End-of-turn permissions expire with the cleanup turn-based actions. Spell and ability mana-payment
-continuations preserve their announced total costs while the player produces mana.
+continuations preserve their announced total costs, reserved cost sources, and mana-spending
+context while the player produces mana.
 
 ### 2.4 Reentrant Continuations
 

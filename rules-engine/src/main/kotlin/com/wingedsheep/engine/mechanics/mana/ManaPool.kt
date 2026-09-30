@@ -22,6 +22,7 @@ import kotlinx.serialization.Serializable
  * [abilitySourceCardTypes] (plus [subtypes] of the source) carry the source's type
  * information for restrictions that check it.
  */
+@Serializable
 data class SpellPaymentContext(
     val isInstantOrSorcery: Boolean = false,
     val isKicked: Boolean = false,

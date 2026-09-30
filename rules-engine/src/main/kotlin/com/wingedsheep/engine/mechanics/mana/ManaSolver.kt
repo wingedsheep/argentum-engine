@@ -2446,6 +2446,7 @@ class ManaSolver(
      * This is affordability only: auto-pay never spends life without the player's explicit action.
      */
     private fun playerActionMana(state: GameState, playerId: EntityId, committedLife: Int = 0): TapPermanentsBonusMana {
+        if (state.isLifeLossLocked(playerId)) return TapPermanentsBonusMana()
         var bestProduction = 0L
         val life = (state.lifeTotal(playerId) - committedLife).coerceAtLeast(0)
         for (permission in state.playerActionPermissions) {

@@ -16,7 +16,9 @@ export function PlayerActionBar() {
             const current = live.legalActions.find((candidate) =>
               candidate.action.type === 'TakePlayerAction' && offer.action.type === 'TakePlayerAction' &&
               candidate.action.permissionId === offer.action.permissionId && candidate.isAffordable)
-            if (current && live.pipelineState == null) live.submitAction(current.action, current.interactionEpoch)
+            if (current && live.pipelineState == null && offer.interactionEpoch === live.interactionEpoch) {
+              live.submitAction(offer.action, offer.interactionEpoch)
+            }
           }}>
           {offer.description}
         </button>

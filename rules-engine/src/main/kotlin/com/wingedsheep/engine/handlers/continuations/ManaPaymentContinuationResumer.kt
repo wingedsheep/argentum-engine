@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
+import com.wingedsheep.engine.mechanics.mana.isSatisfiedBy
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
@@ -58,12 +59,15 @@ class ManaPaymentContinuationResumer(
         if (response !is ManaSourcesSelectedResponse) return ExecutionResult.error(state, "Expected mana sources")
         val player = continuation.action.playerId
         if (response.declined) return checkForMore(state.withPriority(player), emptyList())
-        val decision = services.manaSolver.findAvailableManaSources(state, player).map { source ->
+        val decision = services.manaSolver.findAvailableManaSources(state, player, continuation.paymentContext)
+            .filter { it.entityId !in continuation.excludedSources && it.tapPermanentsSubCost == null &&
+                (continuation.paymentContext == null || it.restriction?.isSatisfiedBy(continuation.paymentContext) != false) }.map { source ->
             ManaSourceOption(source.entityId, source.name, source.producesColors, source.producesColorless,
                 requiresSacrifice = source.requiresSacrifice, manaAmount = source.manaAmount)
         }
         val floated = com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow.floatSelectedMana(
             services.zones, state, player, continuation.cost, response, decision, services,
+            excludeSources = continuation.excludedSources, spellContext = continuation.paymentContext,
         )
         if (!floated.paid) return ExecutionResult.error(state, "Selected sources cannot pay the announced cost")
         val current = floated.state.withPriority(player)

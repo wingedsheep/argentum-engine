@@ -125,6 +125,127 @@ class PlayerActionPermissionTest : ScenarioTestBase() {
             services.legalActionEnumerator.enumerate(game.state, game.player1Id).none { it.action is TakePlayerAction } shouldBe true
         }
 
+        test("life locked players cannot fund mana affordability") {
+            val game = scenario().withPlayers().withActivePlayer(1).build()
+            game.state = services.effectExecutorRegistry.execute(game.state,
+                Effects.GrantPlayerAction(Costs.pay.PayLife(1), Effects.AddColorlessMana(1), PlayerActionTiming.ManaAbility, "Life mana"),
+                EffectContext(null, game.player1Id)).state
+            services.manaSolver.canPay(game.state, game.player1Id, com.wingedsheep.sdk.core.ManaCost.parse("{1}")) shouldBe true
+            game.state = game.state.updateEntity(game.player1Id) { it.with(com.wingedsheep.engine.state.components.player.CantLoseLifeComponent()) }
+            services.manaSolver.canPay(game.state, game.player1Id, com.wingedsheep.sdk.core.ManaCost.parse("{1}")) shouldBe false
+            services.manaSolver.getAvailableManaCount(game.state, game.player1Id) shouldBe 0
+        }
+        test("activation mana window reserves the source tap cost") {
+            val card = com.wingedsheep.sdk.dsl.card("Reserved tap source") {
+                typeLine = "Artifact"
+                activatedAbility { cost = Costs.Tap; effect = Effects.AddColorlessMana(1); manaAbility = true; timing = com.wingedsheep.sdk.scripting.TimingRule.ManaAbility }
+                activatedAbility { cost = Costs.Composite(Costs.Mana("{2}"), Costs.Tap); effect = Effects.GainLife(3) }
+            }
+            cardRegistry.register(card)
+            val game = scenario().withPlayers().withCardOnBattlefield(1, card.name).withActivePlayer(1).build()
+            game.state = services.effectExecutorRegistry.execute(game.state,
+                Effects.GrantPlayerAction(Costs.pay.PayLife(1), Effects.AddColorlessMana(1), PlayerActionTiming.ManaAbility, "Life mana"), EffectContext(null, game.player1Id)).state
+            val source = game.findPermanent(card.name)!!
+            val id = game.state.playerActionPermissions.single().id
+            game.execute(com.wingedsheep.engine.core.ActivateAbility(game.player1Id, source, card.script.activatedAbilities.last().id)).error shouldBe null
+            val window = game.state.pendingDecision as com.wingedsheep.engine.core.SelectManaSourcesDecision
+            window.availableSources.none { it.entityId == source } shouldBe true
+            game.execute(TakePlayerAction(game.player1Id, id)).error shouldBe null
+            game.submitDecision(com.wingedsheep.engine.core.ManaSourcesSelectedResponse(window.id, listOf(source), autoPay = false)).error!! shouldContain "Selected sources"
+            game.execute(TakePlayerAction(game.player1Id, id)).error shouldBe null
+            game.submitDecision(com.wingedsheep.engine.core.ManaSourcesSelectedResponse(window.id, autoPay = true)).error shouldBe null
+            game.resolveStack()
+            game.getLifeTotal(1) shouldBe 21
+        }
+        test("manually tapping an announced activation source cannot pay the tap cost twice") {
+            val card = com.wingedsheep.sdk.dsl.card("Manual reserved tap source") {
+                typeLine = "Artifact"
+                activatedAbility { cost = Costs.Tap; effect = Effects.AddColorlessMana(1); manaAbility = true; timing = com.wingedsheep.sdk.scripting.TimingRule.ManaAbility }
+                activatedAbility { cost = Costs.Composite(Costs.Mana("{2}"), Costs.Tap); effect = Effects.GainLife(3) }
+            }
+            cardRegistry.register(card)
+            val game = scenario().withPlayers().withCardOnBattlefield(1, card.name).withActivePlayer(1).build()
+            game.state = services.effectExecutorRegistry.execute(game.state,
+                Effects.GrantPlayerAction(Costs.pay.PayLife(1), Effects.AddColorlessMana(1), PlayerActionTiming.ManaAbility, "Life mana"), EffectContext(null, game.player1Id)).state
+            val source = game.findPermanent(card.name)!!
+            val id = game.state.playerActionPermissions.single().id
+            game.execute(com.wingedsheep.engine.core.ActivateAbility(game.player1Id, source, card.script.activatedAbilities.last().id)).error shouldBe null
+            val window = game.state.pendingDecision as com.wingedsheep.engine.core.SelectManaSourcesDecision
+            game.execute(com.wingedsheep.engine.core.ActivateAbility(game.player1Id, source, card.script.activatedAbilities.first().id)).error shouldBe null
+            game.execute(TakePlayerAction(game.player1Id, id)).error shouldBe null
+            game.submitDecision(com.wingedsheep.engine.core.ManaSourcesSelectedResponse(window.id)).error!! shouldContain "tap cost"
+            game.state.stack shouldBe emptyList()
+            game.getLifeTotal(1) shouldBe 19
+        }
+        test("casting window does not turn creature-only mana into unrestricted mana") {
+            val sourceCard = com.wingedsheep.sdk.dsl.card("Restricted source") {
+                typeLine = "Artifact"
+                activatedAbility { cost = Costs.Tap; effect = Effects.AddColorlessMana(1, restriction = com.wingedsheep.sdk.scripting.effects.ManaRestriction.CreatureSpellsOnly); manaAbility = true; timing = com.wingedsheep.sdk.scripting.TimingRule.ManaAbility }
+            }
+            val spell = com.wingedsheep.sdk.dsl.card("Restricted payment spell") { typeLine = "Artifact"; manaCost = "{2}" }
+            cardRegistry.register(sourceCard); cardRegistry.register(spell)
+            val game = scenario().withPlayers().withCardOnBattlefield(1, sourceCard.name).withCardInHand(1, spell.name).withActivePlayer(1).build()
+            game.state = services.effectExecutorRegistry.execute(game.state,
+                Effects.GrantPlayerAction(Costs.pay.PayLife(1), Effects.AddColorlessMana(1), PlayerActionTiming.ManaAbility, "Life mana"), EffectContext(null, game.player1Id)).state
+            game.castSpell(1, spell.name).error shouldBe null
+            val window = game.state.pendingDecision as com.wingedsheep.engine.core.SelectManaSourcesDecision
+            window.availableSources.none { it.entityId == game.findPermanent(sourceCard.name) } shouldBe true
+            val id = game.state.playerActionPermissions.single().id
+            repeat(2) { game.execute(TakePlayerAction(game.player1Id, id)).error shouldBe null }
+            game.submitDecision(com.wingedsheep.engine.core.ManaSourcesSelectedResponse(window.id)).error shouldBe null
+            game.resolveStack()
+            game.getLifeTotal(1) shouldBe 18
+        }
+
+        test("casting window floats compatible mana with its restriction before payment") {
+            val sourceCard = com.wingedsheep.sdk.dsl.card("Surplus restricted source") {
+                typeLine = "Artifact"
+                activatedAbility {
+                    cost = Costs.Tap
+                    effect = Effects.AddColorlessMana(2, restriction = com.wingedsheep.sdk.scripting.effects.ManaRestriction.CreatureSpellsOnly)
+                    manaAbility = true
+                    timing = com.wingedsheep.sdk.scripting.TimingRule.ManaAbility
+                }
+            }
+            val spell = com.wingedsheep.sdk.dsl.card("Restricted surplus creature") {
+                typeLine = "Creature — Bear"
+                manaCost = "{3}"
+                power = 2
+                toughness = 2
+            }
+            cardRegistry.register(sourceCard)
+            cardRegistry.register(spell)
+            val game = scenario().withPlayers().withCardOnBattlefield(1, sourceCard.name)
+                .withCardInHand(1, spell.name).withActivePlayer(1).build()
+            game.state = services.effectExecutorRegistry.execute(game.state,
+                Effects.GrantPlayerAction(Costs.pay.PayLife(1), Effects.AddColorlessMana(1), PlayerActionTiming.ManaAbility, "Life mana"),
+                EffectContext(null, game.player1Id)).state
+            game.castSpell(1, spell.name).error shouldBe null
+            val window = game.state.pendingDecision as com.wingedsheep.engine.core.SelectManaSourcesDecision
+            val id = game.state.playerActionPermissions.single().id
+            repeat(2) { game.execute(TakePlayerAction(game.player1Id, id)).error shouldBe null }
+            val answer = com.wingedsheep.engine.core.ManaSourcesSelectedResponse(window.id, autoPay = true)
+            val floated = com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow.floatSelectedMana(
+                services.zones, game.state, game.player1Id, com.wingedsheep.sdk.core.ManaCost.parse("{3}"), answer,
+                window.availableSources, services,
+                spellContext = com.wingedsheep.engine.mechanics.mana.SpellPaymentContext(isCreature = true),
+            )
+            floated.paid shouldBe true
+            val producedPool = floated.state.getEntity(game.player1Id)!!.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()!!
+            producedPool.colorless shouldBe 2
+            producedPool.restrictedMana.size shouldBe 2
+            producedPool.restrictedMana.all { it.restriction == com.wingedsheep.sdk.scripting.effects.ManaRestriction.CreatureSpellsOnly } shouldBe true
+            com.wingedsheep.engine.mechanics.mana.ManaPool(restrictedMana = producedPool.restrictedMana)
+                .canPay(com.wingedsheep.sdk.core.ManaCost.parse("{1}"), com.wingedsheep.engine.mechanics.mana.SpellPaymentContext()) shouldBe false
+            game.submitDecision(answer).error shouldBe null
+            game.resolveStack()
+            val pool = game.state.getEntity(game.player1Id)!!.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()!!
+            // Eligible restricted mana is spent first; the surplus is Channel's unrestricted mana.
+            pool.colorless shouldBe 1
+            pool.restrictedMana.size shouldBe 0
+            game.getLifeTotal(1) shouldBe 18
+        }
+
         test("unaffordable life payments reject atomically") {
             val game = scenario().withPlayers().withLifeTotal(1, 1).withActivePlayer(1).build()
             game.state = services.effectExecutorRegistry.execute(game.state,

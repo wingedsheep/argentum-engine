@@ -341,9 +341,10 @@ class CastSpellHandler(
                         question = { id -> com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow.buildDecision(
                             announcedState, action.playerId, cost, id, "Produce mana for ${cardComponent.name}",
                             DecisionContext(sourceId = action.cardId, sourceName = cardComponent.name, phase = DecisionPhase.CASTING),
-                            true, manaSolver,
+                            true, manaSolver, spellContext = castCostPayer.spellPaymentContext(announcedState, action, cardComponent),
                         ) },
-                        answer = com.wingedsheep.engine.core.ManaActionPaymentContinuation(action, cost, lockedCastCost = totalCost),
+                        answer = com.wingedsheep.engine.core.ManaActionPaymentContinuation(action, cost, lockedCastCost = totalCost,
+                            paymentContext = castCostPayer.spellPaymentContext(announcedState, action, cardComponent)),
                     )
                 }
             }

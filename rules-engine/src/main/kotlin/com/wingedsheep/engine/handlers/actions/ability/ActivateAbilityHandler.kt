@@ -164,6 +164,11 @@ class ActivateAbilityHandler(
             is Announcement.Rejected -> return ExecutionResult.error(state, announced.reason)
         }
 
+        if (lockedCost != null && lockedCost.hasTapCost() &&
+            state.getEntity(action.sourceId)?.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>() == true) {
+            return ExecutionResult.error(state, "The source is already tapped and cannot pay its tap cost")
+        }
+
         // 2. Choices still to be made before any cost is paid (CR 601.2b–c): an opponent's targets,
         //    X, which objects pay a cost, a target bounded by a cost-defined X.
         choicePauses.firstPendingChoice(state, activation)?.let { return it }
@@ -193,9 +198,11 @@ class ActivateAbilityHandler(
                             state, action.playerId, mana, id, "Produce mana for ${activation.sourceName}",
                             com.wingedsheep.engine.core.DecisionContext(sourceId = action.sourceId, sourceName = activation.sourceName,
                                 phase = com.wingedsheep.engine.core.DecisionPhase.CASTING), true, manaSolver,
+                            excludeSources = excluded, spellContext = paymentContext,
                         ) },
                         answer = com.wingedsheep.engine.core.ManaActionPaymentContinuation(action, mana,
-                            lockedAbilityCost = activation.effectiveCost, lockedAbilityX = activation.effectiveXValue),
+                            lockedAbilityCost = activation.effectiveCost, lockedAbilityX = activation.effectiveXValue,
+                            excludedSources = excluded, paymentContext = paymentContext),
                     )
                 }
             }
