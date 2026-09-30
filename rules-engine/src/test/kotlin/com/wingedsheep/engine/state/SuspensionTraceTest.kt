@@ -75,7 +75,8 @@ class SuspensionTraceTest : ScenarioTestBase() {
             val action = json.decodeFromString<List<GameAction>>(fixtureText(fixture, "actions.json")).single()
             val result = actionProcessor.process(state, action).result
             result.error shouldBe null
-            result.state shouldBe json.decodeFromString<GameState>(fixtureText(fixture, "after-1.json"))
+            result.state.copy(controlAtTurnStart = null) shouldBe
+                json.decodeFromString<GameState>(fixtureText(fixture, "after-1.json"))
             result.events shouldBe json.decodeFromString<List<GameEvent>>(fixtureText(fixture, "events-1.json"))
             result.state.pendingDecision shouldBe null
             result.state.continuationStack shouldBe emptyList()
@@ -99,9 +100,12 @@ class SuspensionTraceTest : ScenarioTestBase() {
         else -> false
     }
 
-    /** Normalize only the allocation counter and owned question IDs, never entity/payload identity. */
+    /**
+     * Preserve the captured state and payload identities; normalize routing and omit control history,
+     * which postdates this trace and is verified by ControlHistoryTest and scenario tests.
+     */
     private fun normalizeRouting(value: JsonElement, root: Boolean = false): JsonElement = when (value) {
-        is JsonObject -> JsonObject(value.mapValues { (key, child) ->
+        is JsonObject -> JsonObject((if (root) value - "controlAtTurnStart" else value).mapValues { (key, child) ->
             when {
                 root && key == "nextRoutingId" -> JsonPrimitive(0)
                 key == "question" && "answer" in value -> {

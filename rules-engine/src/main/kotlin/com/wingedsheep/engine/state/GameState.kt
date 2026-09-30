@@ -72,6 +72,9 @@ data class GameState(
     /** ID of the player whose turn it is */
     val activePlayerId: EntityId? = null,
 
+    /** Uninterrupted battlefield visits from the start of this turn; null for a fresh imported board. */
+    val controlAtTurnStart: Map<EntityId, TurnStartControl>? = null,
+
     /** Current phase */
     val phase: Phase = Phase.BEGINNING,
 

@@ -2220,6 +2220,9 @@ class TriggerMatcher(
                     ?: state.getEntity(entityId)?.get<CardComponent>()?.name
             )
 
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.ControlledSinceTurnBegan ->
+            com.wingedsheep.engine.core.ControlHistory.matches(state, state.projectedState, entityId)
+
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsFaceDown -> {
             val entity = state.getEntity(entityId) ?: return false
             entity.has<FaceDownComponent>()

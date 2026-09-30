@@ -125,7 +125,7 @@ class Settler(
 
     /** Queue every trigger [events] caused, including those of a step they began. */
     private fun detect(state: GameState, events: List<GameEvent>): GameState {
-        var working = CounterHistory.recordRemovals(state, events)
+        var working = ControlHistory.record(CounterHistory.recordRemovals(state, events), events)
         val triggers = triggerDetector.detectTriggers(working, events).toMutableList()
 
         val stepChanged = events.filterIsInstance<StepChangedEvent>().lastOrNull()
@@ -154,7 +154,7 @@ class Settler(
             state = sba.state
             // SBA-caused triggers join the queue whether or not the SBA stopped for a choice (the
             // legend rule); the ones already waiting stay put until the choice is answered.
-            state = CounterHistory.recordRemovals(state, sba.events)
+            state = ControlHistory.record(CounterHistory.recordRemovals(state, sba.events), sba.events)
             state = state.enqueue(triggerDetector.detectTriggers(state, sba.events))
             if (sba.pendingDecision != null) return ExecutionResult.propagatePause(state, events)
             if (state.gameOver) return ExecutionResult.success(state.withoutPendingTriggers(), events)

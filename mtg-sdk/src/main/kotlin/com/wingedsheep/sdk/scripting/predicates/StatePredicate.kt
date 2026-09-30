@@ -549,9 +549,16 @@ sealed interface StatePredicate {
         override val description: String = "dealt damage by this creature this turn"
     }
 
+    /** Controlled by its current controller without interruption since this turn began, regardless of haste. */
+    @SerialName("ControlledSinceTurnBegan")
+    @Serializable
+    data object ControlledSinceTurnBegan : History {
+        override val description: String = "controlled continuously since the beginning of the turn"
+    }
+
     /**
      * Was declared as an attacker at least once during the current turn (set during the
-     * declare-attackers step, CR 508.1). Backed by the controller's
+     * declare-attackers step, CR 508.1). Backed by every player's
      * [com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent] (which
      * the engine already maintains for raid / "attacked this turn" tribal triggers), so it
      * does not need a separate per-entity marker. Survives leaving combat / blockers being

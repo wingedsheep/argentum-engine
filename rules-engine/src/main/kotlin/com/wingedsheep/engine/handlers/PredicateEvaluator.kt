@@ -1918,21 +1918,12 @@ class PredicateEvaluator(
                     ?.creatureIds?.contains(entityId) == true
             }
 
-            // Whether this creature has been declared as an attacker this turn — derived
-            // from the controller's PlayerAttackersThisTurnComponent, the same set that
-            // backs raid / "you attacked with N creatures this turn" tribal triggers.
-            //
-            // Controller comes from projection first: after an Act of Treason the base
-            // ControllerComponent names the player who no longer controls it, and the attacker set
-            // lives on the player who declared. AffectsFilterResolver reads it the same way.
-            StatePredicate.AttackedThisTurn -> {
-                val controllerId = projected.getController(entityId)
-                    ?: container.get<ControllerComponent>()?.playerId
-                    ?: return false
-                val attackerSet = state.getEntity(controllerId)
-                    ?.get<PlayerAttackersThisTurnComponent>()
-                    ?.attackerIds ?: emptySet()
-                entityId in attackerSet
+            StatePredicate.ControlledSinceTurnBegan ->
+                com.wingedsheep.engine.core.ControlHistory.matches(state, projected, entityId)
+
+            StatePredicate.AttackedThisTurn -> state.turnOrder.any { playerId ->
+                state.getEntity(playerId)?.get<PlayerAttackersThisTurnComponent>()
+                    ?.attackerIds?.contains(entityId) == true
             }
             // The battle-scoped sibling, read from the same controller-side record.
             StatePredicate.AttackedABattleThisTurn -> {

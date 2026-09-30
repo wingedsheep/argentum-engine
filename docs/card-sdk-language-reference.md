@@ -15349,3 +15349,22 @@ and `Not`. They delegate that relational comparison to the shared predicate eval
 intermediate projection, preserving colorless results instead of falling back to printed colors.
 Public library-reveal statics follow projected control, so stealing a reveal source switches which
 player's top card is visible.
+
+### Continuous control during the current turn
+
+`StatePredicate.ControlledSinceTurnBegan` and the fluent `.controlledSinceTurnBegan()` filter
+match a battlefield object whose current controller has controlled it without interruption since
+the current turn began. Haste does not change this fact. Compose with
+`.controlledByActivePlayer()` for Nettling Imp's target, or with a player-scoped filter for a
+delayed destruction sweep. It applies to any permanent, even one that only later becomes a creature.
+
+The engine captures projected control and object identity at turn start, independently of the untap
+step. Entry, blink, and any control interruption invalidate continuity; regaining control does not
+restore it. Each effect instruction and the settle boundary record projected changes, including
+control effects that expire or lose their source. Phasing preserves the battlefield visit.
+`AttackedThisTurn` reads declarations by every player, so a subsequent control change does not erase
+an attack already made. Untap filters and intermediate projection use the same history predicate.
+
+A step-based `Effects.CreateDelayedTrigger(..., watchedTarget = creature)` captures that object's
+identity when created and binds it to `EffectTarget.TriggeringEntity` when it fires. The original
+source may leave; a watched object that leaves and returns is a new object and is not affected.

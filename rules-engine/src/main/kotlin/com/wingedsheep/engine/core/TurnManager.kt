@@ -236,7 +236,7 @@ class TurnManager(
             }
         }
 
-        return ExecutionResult.success(newState, events)
+        return ExecutionResult.success(ControlHistory.beginTurn(newState), events)
     }
 
     /**

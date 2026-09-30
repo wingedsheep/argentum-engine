@@ -80,7 +80,7 @@ class ActionProcessor(
 
         // Handlers never detect triggers or check state-based actions themselves. The one settle
         // boundary does that for every action, paused or not (CR 117.5, 603.3).
-        val executed = services.settler.settle(registry.execute(state, action))
+        val executed = services.settler.settle(registry.execute(ControlHistory.initialize(state), action))
 
         // Action handlers may compose several immutable intermediate states before a nested
         // handler or resumed continuation rejects a later step. The public action contract is

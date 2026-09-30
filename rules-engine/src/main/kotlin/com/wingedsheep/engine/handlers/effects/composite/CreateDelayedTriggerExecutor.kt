@@ -152,7 +152,9 @@ class CreateDelayedTriggerExecutor(
             // ForEach body still refers to *that* object — "exile each creature; return it at the
             // next end step" — and, having captured its identity, stops affecting it once it is in
             // a zone the trigger didn't expect (CR 603.7c).
-            objectReferences = context.objectReferences,
+            objectReferences = if (effect.trigger == null && watchedEntityId != null) {
+                context.objectReferences.copy(triggering = state.objectRef(watchedEntityId))
+            } else context.objectReferences,
             sourceName = sourceName,
             controllerId = context.controllerId,
             trigger = resolvedTrigger,

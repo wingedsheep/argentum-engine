@@ -577,18 +577,11 @@ internal class AffectsFilterResolver(
         is StatePredicate.HasDealtDamage ->
             hasDealtDamage(container, state.turnNumber, predicate)
         StatePredicate.HasDealtCombatDamageToPlayer -> container.has<HasDealtCombatDamageToPlayerComponent>()
-        // Controller comes from the in-progress projection first: an effect that changed control
-        // this turn (Act of Treason) makes the base ControllerComponent the wrong player to ask,
-        // and PredicateEvaluator reads the projected one. Falls back to base for an entity the
-        // projection hasn't reached yet, which is the same shape the keyword reads below use.
-        StatePredicate.AttackedThisTurn -> {
-            val controllerId = projectedController(state, entityId, projectedValues)
-            val attackerSet = controllerId?.let {
-                state.getEntity(it)
-                    ?.get<PlayerAttackersThisTurnComponent>()
-                    ?.attackerIds
-            } ?: emptySet()
-            entityId in attackerSet
+        StatePredicate.ControlledSinceTurnBegan ->
+            com.wingedsheep.engine.core.ControlHistory.matches(state, entityId, projectedController(state, entityId, projectedValues))
+        StatePredicate.AttackedThisTurn -> state.turnOrder.any { playerId ->
+            state.getEntity(playerId)?.get<PlayerAttackersThisTurnComponent>()
+                ?.attackerIds?.contains(entityId) == true
         }
         StatePredicate.AttackedABattleThisTurn -> {
             val controllerId = projectedController(state, entityId, projectedValues)

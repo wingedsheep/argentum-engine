@@ -411,7 +411,7 @@ class MulliganHandler(
             return ExecutionResult.propagatePause(result.state, events + result.events)
         }
 
-        val advanceResult = turnManager.advanceStep(stateWithLeylineScan)
+        val advanceResult = turnManager.advanceStep(com.wingedsheep.engine.core.ControlHistory.beginTurn(stateWithLeylineScan))
         return ExecutionResult.success(
             advanceResult.newState,
             events + advanceResult.events

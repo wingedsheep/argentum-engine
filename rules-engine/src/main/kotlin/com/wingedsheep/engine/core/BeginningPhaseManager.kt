@@ -482,12 +482,15 @@ class BeginningPhaseManager(
         }
         // Check state predicates (e.g., HasCounter)
         for (predicate in filter.statePredicates) {
-            if (!matchesStatePredicateForUntap(predicate, container)) return false
+            if (!matchesStatePredicateForUntap(state, projected, entityId, predicate, container)) return false
         }
         return true
     }
 
     private fun matchesStatePredicateForUntap(
+        state: GameState,
+        projected: ProjectedState,
+        entityId: EntityId,
         predicate: StatePredicate,
         container: ComponentContainer
     ): Boolean = when (predicate) {
@@ -548,12 +551,13 @@ class BeginningPhaseManager(
         // survives the turn boundary — so "untap each renowned creature" is answered exactly.
         StatePredicate.IsRenowned ->
             container.has<com.wingedsheep.engine.state.components.battlefield.RenownedComponent>()
-        is StatePredicate.Or -> predicate.predicates.any { matchesStatePredicateForUntap(it, container) }
-        is StatePredicate.And -> predicate.predicates.all { matchesStatePredicateForUntap(it, container) }
-        is StatePredicate.Not -> !matchesStatePredicateForUntap(predicate.predicate, container)
+        is StatePredicate.Or -> predicate.predicates.any { matchesStatePredicateForUntap(state, projected, entityId, it, container) }
+        is StatePredicate.And -> predicate.predicates.all { matchesStatePredicateForUntap(state, projected, entityId, it, container) }
+        is StatePredicate.Not -> !matchesStatePredicateForUntap(state, projected, entityId, predicate.predicate, container)
         // Relational battlefield predicates need the whole projected battlefield, which this
         // narrow untap helper deliberately does not receive. Fail closed rather than untapping an
         // unrelated permanent.
+        StatePredicate.ControlledSinceTurnBegan -> ControlHistory.matches(state, projected, entityId)
         is StatePredicate.HasLeastManaValueAmong -> false
         // Protector scoping needs a "you" this helper has no context for; fail closed.
         is StatePredicate.IsProtectedBy -> false

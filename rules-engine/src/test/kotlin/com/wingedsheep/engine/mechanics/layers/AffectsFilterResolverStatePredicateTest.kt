@@ -305,6 +305,18 @@ class AffectsFilterResolverStatePredicateTest : FunSpec({
     // Board history predicates
     // =========================================================================
 
+    test("continuous control reads the intermediate projected controller") {
+        val permanent = EntityId.generate()
+        val state = com.wingedsheep.engine.core.ControlHistory.beginTurn(battlefield(
+            listOf(permanent to container(playerA, creature(playerA)))
+        ))
+        val filter = filterWith(StatePredicate.ControlledSinceTurnBegan)
+        resolver.resolveAffectedEntities(state, permanent, filter) shouldContain permanent
+        val intermediate = mapOf(permanent to MutableProjectedValues(controllerId = playerB))
+        resolver.resolveAffectedEntities(state, permanent, filter, intermediate) shouldNotContain permanent
+        resolver.resolveAffectedEntities(state, permanent, filter) shouldContain permanent
+    }
+
     test("EnteredThisTurn matches only entities with EnteredThisTurnComponent") {
         val fresh = EntityId.generate()
         val old = EntityId.generate()
