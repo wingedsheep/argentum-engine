@@ -822,7 +822,7 @@ internal class CastValidator(
     private fun validateTargetLifeTaxes(state: GameState, action: CastSpell): String? {
         if (action.targets.isEmpty()) return null
         val additionalLifeCost = costCalculator.calculateAdditionalLifeCost(state, action.playerId, action.targets)
-        if (additionalLifeCost > 0 && state.lifeTotal(action.playerId) < additionalLifeCost) { // CR 810.9a — team's shared total
+        if (!state.canPayLife(action.playerId, additionalLifeCost)) { // CR 810.9a — team's shared total
             return "Not enough life to pay additional life cost ($additionalLifeCost life required)"
         }
         return null

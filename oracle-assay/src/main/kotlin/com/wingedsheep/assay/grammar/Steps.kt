@@ -2239,6 +2239,43 @@ object Steps {
         }
     }
 
+    /**
+     * "Put a +1/+1 counter on each creature you control." — Abzan Ascendancy, Cathars' Crusade,
+     * Leader's Talent.
+     *
+     * [putCountersOnTargetPermanent]'s group twin: the same two quantities (the article for one, a
+     * number word from two up) over "each" and a singular noun, which is how Oracle templates every
+     * mass counter placement. The SDK spells it as [groupStep] spells a sweep — one `ForEachInGroup`
+     * over a bare `GroupFilter` whose body adds the counters to [EffectTarget.IterationEntity].
+     */
+    private val groupCounters: List<Phrase<CardScript>> = run {
+        fun scriptFor(kind: CounterType, count: Int, filter: GameObjectFilter) = CardScript(
+            spellEffect = Effects.ForEachInGroup(
+                GroupFilter(filter),
+                Effects.AddCounters(kind, count, EffectTarget.IterationEntity),
+            ),
+        )
+        fun rule(template: String, name: String, quantity: Phrase<*>?) = phrase<CardScript>(template, name = name) {
+            slot("kind", if (quantity == null) Primitives.singularCounterKind else Primitives.counterKind)
+            if (quantity != null) slot("n", quantity)
+            slot("filter", Filters.filter)
+            build { scriptFor(it.value("kind"), if (quantity == null) 1 else it.int("n"), it.value("filter")) }
+            match { script ->
+                val filter = iteratedGroup(script.spellEffect) ?: return@match null
+                val (kind, count) =
+                    countersAdded(iteratedBody(script.spellEffect), EffectTarget.IterationEntity) ?: return@match null
+                if (quantity == null && count != 1) return@match null
+                if (quantity != null && !(count >= 2 && Cardinals.spellable(count))) return@match null
+                if (script != scriptFor(kind, count, filter)) return@match null
+                bind("kind" to kind, "n" to count, "filter" to filter)
+            }
+        }
+        listOf(
+            rule("put {kind} counter on each {filter}", "put a counter on each", null),
+            rule("put {n} {kind} counters on each {filter}", "put counters on each", Cardinals.word),
+        )
+    }
+
     private val groupSteps: List<Phrase<CardScript>> = listOf(
         destroyAll,
         groupStep("exile all {filter}", "exile all", plural = true) { Effects.Exile(it) },
@@ -2293,7 +2330,7 @@ object Steps {
         ),
         groupPumpAndGrant("", "a group gets and gains", canonicalForm = true),
         groupPumpAndGrant("all ", "all of a group gets and gains", canonicalForm = false),
-    )
+    ) + groupCounters
 
     // ---------------------------------------------------------------------------------------
     // Damage whose amount is not a numeral

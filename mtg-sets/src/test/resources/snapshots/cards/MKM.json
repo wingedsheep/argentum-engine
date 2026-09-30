@@ -10802,29 +10802,38 @@
                 "id": "Greenbelt Radical:1",
                 "trigger": "TurnFaceUpEvent",
                 "effect": {
-                    "type": "ForEach",
-                    "space": {
-                        "type": "IterationSpace.Group",
-                        "filter": {
-                            "baseFilter": "creature ctrl:you"
-                        }
-                    },
-                    "body": {
-                        "type": "Composite",
-                        "effects": [
-                            {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
                                 "type": "AddCounters",
                                 "counterType": "PLUS_ONE_PLUS_ONE",
                                 "count": 1,
                                 "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
                             },
-                            {
+                            "body": {
                                 "type": "GrantKeyword",
                                 "keyword": "TRAMPLE",
                                 "target": "IterationEntity"
                             }
-                        ]
-                    }
+                        }
+                    ]
                 },
                 "descriptionOverride": "When this creature is turned face up, put a +1/+1 counter on each creature you control. Creatures you control gain trample until end of turn."
             }

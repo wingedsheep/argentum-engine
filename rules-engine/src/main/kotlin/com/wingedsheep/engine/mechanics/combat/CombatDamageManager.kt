@@ -1447,7 +1447,8 @@ internal class CombatDamageManager(
         if (isPlayer) {
             // CR 810.9 — applies to the team's shared total (isPlayer already guards presence).
             val currentLife = newState.lifeTotal(targetId)
-            val newLife = currentLife - amount
+            // CR 119.8 — damage to a player who can't lose life leaves the total unchanged.
+            val newLife = if (newState.isLifeLossLocked(targetId)) currentLife else currentLife - amount
             newState = newState.withLifeTotal(targetId, newLife)
             newState = DamageUtils.trackDamageReceivedByPlayer(newState, targetId, amount, sourceId)
             // Track combat damage: source dealt damage + dealt combat damage to player
@@ -1667,7 +1668,8 @@ internal class CombatDamageManager(
         if (state.getEntity(attackerController)?.get<LifeTotalComponent>() == null) return state
         // CR 810.9 — applies to the attacking player's team's shared total.
         val attackerControllerLife = state.lifeTotal(attackerController)
-        val newLife = attackerControllerLife - originalAmount
+        // CR 119.8 — a player who can't lose life takes the reflected damage without losing life.
+        val newLife = if (state.isLifeLossLocked(attackerController)) attackerControllerLife else attackerControllerLife - originalAmount
         var newState = state.withLifeTotal(attackerController, newLife)
         newState = DamageUtils.trackDamageReceivedByPlayer(newState, attackerController, originalAmount, sourceId)
         // Reflection is an additional damage event from the attacking creature, so it adds

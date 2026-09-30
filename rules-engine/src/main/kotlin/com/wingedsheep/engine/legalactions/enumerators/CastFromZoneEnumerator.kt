@@ -303,7 +303,7 @@ class CastFromZoneEnumerator(
                     val freeCastFromTop = topAltCost?.withoutPayingManaCost == true
                     val payLifeMv = topAltCost?.additionalCost is AdditionalCost.PayLifeEqualToManaValueOfSpell
                     val lifeForThisCard = if (payLifeMv) topCardComponent.manaCost.cmc else 0
-                    val lifeAffordable = !payLifeMv || state.lifeTotal(playerId) >= lifeForThisCard
+                    val lifeAffordable = !payLifeMv || state.canPayLife(playerId, lifeForThisCard)
                     val topAltAdditionalCostInfo = if (payLifeMv) {
                         AdditionalCostData(description = "Pay $lifeForThisCard life", costType = "PayLife")
                     } else null
@@ -898,7 +898,7 @@ class CastFromZoneEnumerator(
                     // and display are computed here rather than once-per-granter.
                     val payLifeMv = grantAbility.additionalCost is AdditionalCost.PayLifeEqualToManaValueOfSpell
                     val lifeForThisCard = if (payLifeMv) exiledCard.manaCost.cmc else 0
-                    val lifeAffordable = !payLifeMv || state.lifeTotal(playerId) >= lifeForThisCard
+                    val lifeAffordable = !payLifeMv || state.canPayLife(playerId, lifeForThisCard)
                     val perCardAdditionalCostInfo = if (payLifeMv) {
                         AdditionalCostData(
                             description = "Pay $lifeForThisCard life",
@@ -2468,10 +2468,8 @@ class CastFromZoneEnumerator(
                 if (!context.legality.castRestrictionsMet(state, playerId, castRestrictions)) continue
 
                 // Check life affordability (only when there is a life cost)
-                if (lifeCost > 0) {
-                    val currentLife = state.lifeTotal(playerId) // CR 810.9a — team's shared total
-                    if (currentLife < lifeCost) continue
-                }
+                // CR 810.9a — team's shared total; CR 119.8 — nor while the player can't lose life.
+                if (!state.canPayLife(playerId, lifeCost)) continue
 
                 // The grant's own additional cost (Six's continuous retrace: "discard a land card") —
                 // unpayable means no action, like an unaffordable life cost.
@@ -2841,7 +2839,7 @@ class CastFromZoneEnumerator(
                 }
                 else -> if (cost is AdditionalCost.PayLifeEqualToManaValueOfSpell) {
                     val amount = state.getEntity(cardId)?.get<CardComponent>()?.manaCost?.cmc ?: 0
-                    if (state.lifeTotal(playerId) < amount) return false
+                    if (!state.canPayLife(playerId, amount)) return false
                 }
             }
         }

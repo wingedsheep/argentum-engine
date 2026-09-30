@@ -50,6 +50,7 @@ import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.engine.state.components.player.CantSearchLibrariesComponent
 import com.wingedsheep.engine.state.components.player.CantCastFromNonHandZonesComponent
 import com.wingedsheep.engine.state.components.player.CantGainLifeComponent
+import com.wingedsheep.engine.state.components.player.CantLoseLifeComponent
 import com.wingedsheep.engine.state.components.player.DamageBonusComponent
 import com.wingedsheep.engine.state.components.player.DamageReceivedFromArtifactsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.FlippedCoinsThisTurnComponent
@@ -265,6 +266,10 @@ class CleanupPhaseManager(
             val cantGainLife = result.getEntity(member)?.get<CantGainLifeComponent>()
             if (cantGainLife?.removeOn == PlayerEffectRemoval.UntilYourNextTurn) {
                 result = result.updateEntity(member) { it.without<CantGainLifeComponent>() }
+            }
+            val cantLoseLife = result.getEntity(member)?.get<CantLoseLifeComponent>()
+            if (cantLoseLife?.removeOn == PlayerEffectRemoval.UntilYourNextTurn) {
+                result = result.updateEntity(member) { it.without<CantLoseLifeComponent>() }
             }
         }
         // Memory Vessel's "they can't play cards from their hand until your next turn" expires on
@@ -717,6 +722,10 @@ class CleanupPhaseManager(
                 val cantGainLife = result.get<CantGainLifeComponent>()
                 if (cantGainLife?.removeOn == PlayerEffectRemoval.EndOfTurn) {
                     result = result.without<CantGainLifeComponent>()
+                }
+                val cantLoseLife = result.get<CantLoseLifeComponent>()
+                if (cantLoseLife?.removeOn == PlayerEffectRemoval.EndOfTurn) {
+                    result = result.without<CantLoseLifeComponent>()
                 }
                 val cantLoyalty = result.get<CantActivateLoyaltyAbilitiesComponent>()
                 if (cantLoyalty?.removeOn == PlayerEffectRemoval.EndOfTurn) {

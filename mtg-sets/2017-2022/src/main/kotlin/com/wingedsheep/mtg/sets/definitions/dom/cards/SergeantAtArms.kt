@@ -28,16 +28,14 @@ val SergeantAtArms = card("Sergeant-at-Arms") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        effect = Effects.If(
-            condition = WasKicked,
-            then = Effects.CreateToken(
-                count = 2,
-                power = 1,
-                toughness = 1,
-                colors = setOf(Color.WHITE),
-                creatureTypes = setOf("Soldier"),
-                imageUri = "https://cards.scryfall.io/normal/front/c/c/cc7d137c-f6c0-44e5-af9f-a8bbd52d3b2a.jpg?1562702338"
-            )
+        interveningIf = WasKicked
+        effect = Effects.CreateToken(
+            count = 2,
+            power = 1,
+            toughness = 1,
+            colors = setOf(Color.WHITE),
+            creatureTypes = setOf("Soldier"),
+            imageUri = "https://cards.scryfall.io/normal/front/c/c/cc7d137c-f6c0-44e5-af9f-a8bbd52d3b2a.jpg?1562702338"
         )
     }
 

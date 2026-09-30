@@ -1402,6 +1402,13 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   unlike the `PreventLifeGain` *replacement* (§11), which ends when its permanent leaves play.
   Non-player targets are a no-op, so it composes after a "deal damage to any target" rider (Screaming
   Nemesis). Checked by `DamageUtils.isLifeGainPrevented`.
+- `LockLifeLoss(target?, duration?)` — "target player can't lose life" for `duration` (CR 119.8), the
+  sibling of `LockLifeGain` (tags `CantLoseLifeComponent`; same durations, same non-player no-op). Damage
+  and life loss leave the total unchanged, a lowering set-life/exchange/redistribution doesn't happen,
+  and a cost that pays life — any `PayLife` atom, Phyrexian life, ward, pay-or-suffer — can't be paid
+  (`GameState.canPayLife`). In a shared-life team game a lock on either head covers the team (CR 810.9h).
+  "Your life total can't change" (CR 119.7–8) is both locks: `LockLifeGain(...) then LockLifeLoss(...)`
+  (Flare of Fortitude).
 - `LoseGame(target, message?)` — target loses the game.
 - `RemoveMaximumHandSize(target?)` — "target has no maximum hand size for the rest of the game"
   (default target: controller). One-shot resolution effect that confers a permanent, player-scoped
@@ -4203,7 +4210,7 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
 
 `Self` always means the source — also inside a `ForEach` body. A `ForEach` over a collection or a group binds the object it is visiting as `IterationEntity`, captured with its own generation like `Self` and `TriggeringEntity`: it survives serialized decisions and pauses inside the body, is inherited by a delayed ability the body creates (which keeps it symbolic rather than baking an id, so the delayed ability stops affecting an object that has since become a new one — CR 603.7c), and cannot be replaced by a later visit of the same card. A present binding whose object vanished fails closed. Because the two are distinct, one body can relate them — "each other creature deals damage equal to its power to this creature" is `DealDamage(EntityProperty(IterationEntity, Power), Self, damageSource = IterationEntity)`. Older serialized pending abilities without historical references fail closed for actionable source/trigger card references; importing current zone membership cannot reconstruct that history.
 
-**Actions vs. value reads.** Every reference resolves through one engine mapping, entered two ways. An *action* (move, damage, counters, a grant) aimed at `Self`, `TriggeringEntity` or `IterationEntity` does nothing once that object has become a new object (CR 400.7). A *value read* — `DynamicAmount.EntityProperty`, a `…With(entity)` / `…Entity(reference)` filter predicate, `IterationSpace.ColorsOf` — does not gate: it falls back to last-known information for the references `lkiPolicyFor` classifies `LIVE_THEN_LKI` (the source, the triggering object, an Aura/Equipment host, permanents sacrificed / tapped / chosen as a cost — CR 608.2h). Value-read slots take the sealed sub-interface **`EffectTarget.SingleEntity`**: every reference that names exactly one entity, and none of the player roles (`Controller`, `PlayerRef`, the `ControllerOf…` family) or sets (`GroupRef`, `FilteredTarget`, `EachDamagedBySourceThisGame`), so those are unrepresentable where a characteristic is read.
+**Actions vs. value reads.** Every reference resolves through one engine mapping, entered two ways. An *action* (move, damage, counters, a grant) aimed at `Self`, `TriggeringEntity` or `IterationEntity` does nothing once that object has become a new object (CR 400.7). A *value read* — `DynamicAmount.EntityProperty`, a `…With(entity)` / `…Entity(reference)` filter predicate, `IterationSpace.ColorsOf` — does not gate: it falls back to last-known information for the references `lkiPolicyFor` classifies `LIVE_THEN_LKI` (the source, the triggering object, an Aura/Equipment host, permanents sacrificed / tapped / chosen as a cost — CR 608.2h). For an `EntityProperty` read that snapshot is the reference's own cost-paid capture when there is one, else the departed object's battlefield-exit snapshot (which it carries until its next zone change); power, toughness and `CounterCount` read from it — Archfiend of the Dross's upkeep "then if it has no oil counters on it" counts the counters it left with when it died in response. Value-read slots take the sealed sub-interface **`EffectTarget.SingleEntity`**: every reference that names exactly one entity, and none of the player roles (`Controller`, `PlayerRef`, the `ControllerOf…` family) or sets (`GroupRef`, `FilteredTarget`, `EachDamagedBySourceThisGame`), so those are unrepresentable where a characteristic is read.
 
 `ForEachTarget` (`IterationSpace.Targets`) is the one loop that still binds its item positionally: the body sees the current target as `ContextTarget(0)`, because the relational player references (`TargetController`, `Player.ControllerOf` / `OwnerOf`, `Player.TargetPlayer`) all read the first chosen target.
 
@@ -14366,7 +14373,7 @@ The priority groups are (CR 616.1a–f):
   or granted (`ActiveReplacements`). Not yet ordered against `CreateAdditionalToken` by the affected
   player (CR 616.1): the substitution runs first and `CreateAdditionalToken` then judges only the
   substitutes, so Worldwalker Helm adds no Map for a Treasure that became a Dragon.
-- `EntersAsCopy(optional, copyFilter, copyFromZone, filterByTotalManaSpent, additionalSubtypes, additionalColors, additionalKeywords, nameOverride, powerOverride, toughnessOverride, exileCopiedCard, tappedIfCopied, additionalCounters)` —
+- `EntersAsCopy(optional, copyFilter, copyFromZone, filterByTotalManaSpent, additionalSubtypes, additionalColors, additionalKeywords, nameOverride, powerOverride, toughnessOverride, exileCopiedCard, tappedIfCopied, additionalCounters, exceptions, duration)` —
   "enter as a copy of …". As the permanent enters, the controller picks an object matching
   `copyFilter` and the permanent enters as a copy (Rule 707 copiable values), with any overrides
   applied. `copyFromZone` selects the candidate pool: `Zone.BATTLEFIELD` (default — Clone, Clever
@@ -14390,7 +14397,15 @@ The priority groups are (CR 616.1a–f):
   ability."), and routes through `EntersWithReplacements.placeEntryCounters` so Hardened Scales-style
   placement modifiers apply exactly as for printed enters-with counters. The copy snapshots a
   `CopyOfComponent` so it reverts to its
-  printed identity when it leaves the battlefield (CR 400.7 / 707.2). Works both when the source is
+  printed identity when it leaves the battlefield (CR 400.7 / 707.2). `duration: Duration` (default
+  `Duration.Permanent`) bounds the copy: `Duration.EndOfTurn` is "as this artifact enters, you may
+  have it become a copy of any creature on the battlefield until end of turn, except it has haste"
+  (Cursed Mirror — `additionalKeywords = listOf(HASTE)`). Every entry path (cast, land/direct entry,
+  zone-moving effects) tags the copy with `RevertCopyAtEndOfTurnComponent`, the same marker
+  `EachPermanentBecomesCopyOfTargetEffect(duration = EndOfTurn)` uses, so cleanup restores the
+  printed card, riders included. Only `Permanent` and `EndOfTurn` are accepted — any other duration
+  throws at definition time. Leaving the battlefield strips every temporary-copy revert marker along
+  with the copy, so a returning card never inherits a stale revert. Works both when the source is
   cast as a spell (resolved off the stack) **and** when it enters the battlefield directly — a land
   played (Echoing Deeps) pauses via `PermanentEntryReplacements.pauseForEntersAsCopy`, its resumer
   `CloneEntersOnBattlefieldContinuation` copying onto the already-placed permanent in place.

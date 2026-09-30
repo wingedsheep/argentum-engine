@@ -1326,6 +1326,16 @@ object Effects {
     ): Effect = com.wingedsheep.sdk.scripting.effects.LockLifeGainEffect(target, duration)
 
     /**
+     * "[target] can't lose life for [duration]" (CR 119.8) — damage and life loss leave the total
+     * unchanged and life can't be paid. The sibling of [LockLifeGain]; "your life total can't
+     * change" is both (Flare of Fortitude). Defaults to the rest of the game.
+     */
+    fun LockLifeLoss(
+        target: EffectTarget = EffectTarget.PlayerRef(com.wingedsheep.sdk.scripting.references.Player.TargetPlayer),
+        duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.Permanent
+    ): Effect = com.wingedsheep.sdk.scripting.effects.LockLifeLossEffect(target, duration)
+
+    /**
      * "The Ring tempts you" (CR 701.54). The target player gets the Ring emblem (if they don't have
      * one), then chooses a creature they control to become their Ring-bearer. Defaults to the
      * controller. Tempting still happens even if the player controls no creatures.

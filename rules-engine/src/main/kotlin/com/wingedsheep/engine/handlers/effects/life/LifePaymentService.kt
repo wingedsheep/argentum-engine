@@ -43,12 +43,15 @@ object LifePaymentService {
      * Pay [amount] life from [payerId], applying any life-payment replacement first.
      *
      * @return the updated state paired with the events the payment produced, or `null` when
-     *   [payerId] has no life total (nothing mutated) so cost callers can surface a payment
+     *   [payerId] has no life total or can't lose life (nothing mutated) so cost callers can surface a payment
      *   failure. A non-positive [amount] is a no-op that still succeeds.
      */
     fun pay(zones: ZoneTransitionService, state: GameState, payerId: EntityId, amount: Int): Pair<GameState, List<GameEvent>>? {
         if (state.getEntity(payerId)?.get<LifeTotalComponent>() == null) return null
         if (amount <= 0) return state to emptyList()
+        // CR 119.8 — a player who can't lose life can't pay life. Affordability checks
+        // ([GameState.canPayLife]) keep such a payment from being offered; this is the backstop.
+        if (state.isLifeLossLocked(payerId)) return null
 
         exileFromLibraryInstead(zones, state, payerId, amount)?.let { return it }
 

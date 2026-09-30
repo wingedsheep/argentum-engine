@@ -1178,6 +1178,81 @@
     ]
 }
 
+// Flare of Fortitude
+{
+    "name": "Flare of Fortitude",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Instant",
+    "oracleText": "You may sacrifice a nontoken white creature rather than pay this spell's mana cost.\nUntil end of turn, your life total can't change, and permanents you control gain hexproof and indestructible.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "LockLifeGain",
+                    "target": "Controller",
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "LockLifeLoss",
+                    "target": "Controller",
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "HEXPROOF",
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "selfAlternativeCost": {
+            "manaCost": "{0}",
+            "additionalCosts": [
+                {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature white nontoken"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "flavorText": "\"I call upon a power greater than myself.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37b41b59-0296-443b-8a62-8d5c4641ef66.jpg?1783911302"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Furnace Hellkite
 {
     "name": "Furnace Hellkite",

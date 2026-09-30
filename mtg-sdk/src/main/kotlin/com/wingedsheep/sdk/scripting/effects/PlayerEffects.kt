@@ -1130,6 +1130,36 @@ data class LockLifeGainEffect(
 }
 
 /**
+ * Lock [target] player's life loss — they can't lose life for [duration] (CR 119.8): damage and
+ * "lose N life" leave their total unchanged, an exchange or redistribution can't lower it, and a
+ * cost that pays life can't be paid.
+ *
+ * The sibling of [LockLifeGainEffect]; "your life total can't change" (CR 119.7–8) is both locks
+ * (Flare of Fortitude). Tags the player directly, so it is independent of its source. Non-player
+ * targets are a no-op.
+ *
+ * @param target The player whose life loss is locked.
+ * @param duration How long the lock lasts (default: rest of game).
+ */
+@SerialName("LockLifeLoss")
+@Serializable
+data class LockLifeLossEffect(
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer),
+    val duration: Duration = Duration.Permanent
+) : Effect {
+    override val description: String = buildString {
+        append(target.description.replaceFirstChar { it.uppercase() })
+        append(" can't lose life")
+        when (duration) {
+            Duration.Permanent -> append(" for the rest of the game")
+            Duration.EndOfTurn -> append(" this turn")
+            Duration.UntilYourNextTurn -> append(" until your next turn")
+            else -> {}
+        }
+    }
+}
+
+/**
  * "The Ring tempts you" (CR 701.54). The target player gets an emblem named The Ring (if they
  * don't have one) and chooses a creature they control to become their Ring-bearer. The emblem's
  * four cumulative abilities are gated by how many times that player has been tempted.

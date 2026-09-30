@@ -3108,7 +3108,7 @@
                     "space": {
                         "type": "IterationSpace.Group",
                         "filter": {
-                            "baseFilter": "creature Vampire ctrl:you"
+                            "baseFilter": "permanent Vampire ctrl:you"
                         }
                     },
                     "body": {

@@ -135,6 +135,14 @@ class TriggersTest : StringSpec({
         ) shouldBe "When ~ enters, if an opponent controls more lands than you, draw a card."
     }
 
+    // The kicker permanents' intervening-if — past tense is the only spelling Oracle prints.
+    "if it was kicked is the WasKicked intervening-if" {
+        ability("When ~ enters, if it was kicked, draw a card.").interveningIf shouldBe Conditions.WasKicked
+        roundTrips("When ~ enters, if it was kicked, draw a card.")
+        Grammar.abilityLine.parseLine("When ~ enters, if it's kicked, draw a card.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+    }
+
     // The other half of the split (CR 603.2 vs CR 603.4). A `triggerRestriction` is a different
     // printed shape — "Whenever this creature attacks *while* you control a Dinosaur" — that the
     // engine reads only when the trigger fires. No trigger rule spells it, so an ability carrying

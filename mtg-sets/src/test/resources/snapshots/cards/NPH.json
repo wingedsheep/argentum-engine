@@ -199,6 +199,58 @@
     ]
 }
 
+// Phyrexian Obliterator
+{
+    "name": "Phyrexian Obliterator",
+    "manaCost": "{B}{B}{B}{B}",
+    "typeLine": "Creature — Phyrexian Horror",
+    "oracleText": "Trample\nWhenever a source deals damage to this creature, that source's controller sacrifices that many permanents of their choice.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Phyrexian Obliterator:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": {},
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "ControllerOfTriggeringEntity"
+                    },
+                    "dynamicCount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    }
+                },
+                "descriptionOverride": "Whenever a source deals damage to this creature, that source's controller sacrifices that many permanents of their choice."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "MYTHIC",
+        "artist": "Todd Lockwood",
+        "flavorText": "\"Behold blessed perfection.\"\n—Sheoldred, Whispering One",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44c4476d-58f9-420d-9545-f5d580c589de.jpg?1783941312",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "If creatures an opponent controls are dealt lethal damage at the same time that Phyrexian Obliterator is dealt damage, those creatures will be destroyed before that player chooses permanents to sacrifice."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pristine Talisman
 {
     "name": "Pristine Talisman",

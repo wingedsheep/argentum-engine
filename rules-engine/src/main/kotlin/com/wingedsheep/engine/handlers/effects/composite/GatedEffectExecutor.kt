@@ -592,8 +592,7 @@ class GatedEffectExecutor(
                 ) >= amount
             }
             is PayLifeEffect -> {
-                val life = state.lifeTotal(playerId) // CR 810.9a — team's shared total
-                life >= cost.amount
+                state.canPayLife(playerId, cost.amount) // CR 810.9a / 119.8
             }
             is PayDynamicLifeEffect -> {
                 // Resolve the cost's own payer; a computed amount of <= 0 is free (CR 119.4).
@@ -601,7 +600,7 @@ class GatedEffectExecutor(
                 val payerId = TargetResolutionUtils
                     .resolvePlayerTarget(EffectTarget.PlayerRef(cost.payer), context, state)
                     ?: playerId
-                amount <= 0 || state.lifeTotal(payerId) >= amount
+                state.canPayLife(payerId, amount)
             }
             // "You may pay {1} up to three times" as a gate cost: the repeated payment's floor is
             // one repetition, so a payer who can't afford even that must not be offered the "yes"

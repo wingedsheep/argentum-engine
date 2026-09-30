@@ -143,7 +143,7 @@ internal class ActivationCostPayer(
             ) ?: emptyList()
         }
         val phyrexianLife = phyrexianLifePayments.size * 2
-        if (phyrexianLife > currentState.lifeTotal(action.playerId)) {
+        if (!currentState.canPayLife(action.playerId, phyrexianLife)) {
             return ActivationPaymentOutcome.Failed("Insufficient life for Phyrexian mana payment")
         }
         val manaCost = if (reducedManaCost == null) null else reducedManaCost.withPhyrexianPaidByLife(phyrexianLifePayments)

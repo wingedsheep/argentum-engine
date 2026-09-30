@@ -647,6 +647,56 @@ triggered ability — the reading the Comprehensive Rules give "until" durations
 Two spellings of one concept; the grammar prints the majority (42 goldens), so the two cards stay
 divergent until the corpus converges on one of them.
 
+## The "if it was kicked" band
+
+The fourth loop band, keyed on the tail family `it was kicked, …` (**66 lines over 35 whole cards**
+by the prefix probe, over the whole corpus). It delivered **12 hand-written cards read whole (7,186 →
+7,198)**; the rest of the family's cards decline on their payload or are unimplemented.
+
+### A row spelled by analogy
+
+`Conditions` already held `WasKicked` — as "it's kicked", written beside "it's bargained". Oracle
+prints the kicker condition **only** in the past tense: "if it was kicked" 81 times, "it's kicked" never.
+Bargain is the opposite case — the present is its cost-position spelling ("costs {2} less to cast if
+it's bargained") and its trigger form ("if it was bargained", 7 cards) is a positional question this
+band leaves open. So the fix is one word in an existing row, not a new one: **count a row's spelling in
+the corpus before trusting the analogy it was written from.** The row sat unreached because no card
+could print it.
+
+### What the differential found
+
+Differential **6,810 compared / 55 divergent → 6,822 / 55**. The two new divergences were both **card
+bugs, fixed**: Sergeant-at-Arms spelled its intervening-if (CR 603.4) as an `Effects.If` inside the
+effect, so an unkicked Sergeant still put its trigger on the stack; Nullpriest of Oblivion returned its target with
+`PutOntoBattlefield`, dropping the graveyard guard `PutOntoBattlefieldFromGraveyard` carries. Only their
+goldens moved.
+
+## The group counter band
+
+The fifth loop band, keyed on the tail family `each creature you …` (**92 lines over 39 whole cards**
+by the prefix probe, over the whole corpus; the counter sentences alone probe to about 24). It
+delivered **14 hand-written cards read whole (7,198 → 7,212)** — Abzan Ascendancy, Cathars' Crusade,
+Leader's Talent and their kin.
+
+### The counter verb's group twin
+
+"Put a +1/+1 counter on each creature you control." is `Effects.ForEachInGroup(GroupFilter(filter),
+AddCounters(kind, n, IterationEntity))` in every golden that prints it — the shape `groupStep` already
+builds for "tap all" and "deals 1 damage to each". So the band is two rows, not a construct: the
+target rule's two quantities (the article for one, a number word from two) over "each" and a singular
+noun from `Filters.filter`. The rest of the family — "untap each creature you control", the dynamic
+"put X counters on each", "each creature you control with toughness less than …" — declines on
+something else and stays ranked.
+
+### What the differential found
+
+Differential **6,822 compared / 55 divergent → 6,834 / 55**. The three new divergences were all
+**card bugs, fixed**: Minwu, White Mage and Indulgent Aristocrat read "each Cleric / Vampire you
+control" as creatures, where the bare tribal noun names every permanent with the subtype (a kindred
+permanent gets the counter too); Greenbelt Radical fused its two sentences — "put a +1/+1 counter on
+each creature you control. Creatures you control gain trample" — into one iteration, where the text
+names the group twice and so gathers it twice. Only their goldens moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

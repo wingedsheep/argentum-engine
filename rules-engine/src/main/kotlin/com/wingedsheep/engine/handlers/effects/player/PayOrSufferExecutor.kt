@@ -704,7 +704,8 @@ class PayOrSufferExecutor(
         val playerLife = state.lifeTotal(controllerId)
 
         // If player doesn't have enough life to pay and survive, execute suffer effect
-        if (playerLife <= cost.amount) {
+        // CR 119.8 — a player who can't lose life can't pay it, so they suffer.
+        if (playerLife <= cost.amount || state.isLifeLossLocked(controllerId)) {
             return executeSufferEffect(state, effect.suffer, context)
         }
 
