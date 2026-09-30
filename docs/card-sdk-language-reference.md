@@ -8715,7 +8715,7 @@ staticAbility {
   `Effects.RecordChosenLinkedExile(...)` to choose. (Koh, the Face Stealer — "Pay 1 life: Choose a
   creature card exiled with Koh. Koh has all activated and triggered abilities of the last chosen card"
   → `HasAbilitiesOfChosenLinkedExiledCard()`.)
-- `SuppressEntersTriggers(filter = GameObjectFilter.Creature)` — permanents matching `filter`
+- `SuppressEntersTriggers(filter = GameObjectFilter.Creature, abilitiesOf = null)` — permanents matching `filter`
   entering the battlefield don't cause abilities to trigger (CR 603.6 enters-the-battlefield
   triggers). Suppresses both the entering permanent's *own* ETB triggers and any other permanent's
   "whenever a [...] enters" trigger whose triggering object is that permanent — the gate is whether
@@ -8723,6 +8723,10 @@ staticAbility {
   watching trigger names. Replacement effects (enters with counters/tapped) and `EntersWithChoice`
   "as it enters" choices are unaffected (they aren't triggered abilities). Torpor Orb / Hushwing Gryff
   → `SuppressEntersTriggers()`; Tocatli Honor Guard → `SuppressEntersTriggers(GameObjectFilter.Creature.youControl())`.
+  `abilitiesOf` narrows *whose* abilities are suppressed: only triggers whose source is a battlefield
+  permanent matching it (projected, reference player = this ability's controller); a graveyard card's
+  enters trigger is untouched. Elesh Norn, Mother of Machines → `SuppressEntersTriggers(GameObjectFilter.Permanent,
+  abilitiesOf = GameObjectFilter.Permanent.opponentControls())`.
 - `GainActivatedAbilitiesOfPermanents(grantedTo, sourceFilter, includeManaAbilities = false)` —
   permanents matching `grantedTo` (a `GroupFilter`; use `GroupFilter.source()` for "this permanent")
   gain copies of the activated abilities of every permanent matching `sourceFilter`. The copy uses

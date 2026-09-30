@@ -1209,6 +1209,46 @@
     }
 }
 
+// Elesh Norn, Mother of Machines
+{
+    "name": "Elesh Norn, Mother of Machines",
+    "manaCost": "{4}{W}",
+    "typeLine": "Legendary Creature — Phyrexian Praetor",
+    "oracleText": "Vigilance\nIf a permanent entering causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.\nPermanents entering don't cause abilities of permanents your opponents control to trigger.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 7
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AdditionalETBOrLTBTriggers",
+                "filter": "permanent",
+                "mustBeYouControl": false
+            },
+            {
+                "type": "SuppressEntersTriggers",
+                "filter": "permanent",
+                "abilitiesOf": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "controllerPredicate": "ControlledByOpponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "MYTHIC",
+        "artist": "Martina Fačková",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44dcab01-1d13-4dfc-ae2f-fbaa3dd35087.jpg?1783918082"
+    }
+}
+
 // Encroaching Mycosynth
 {
     "name": "Encroaching Mycosynth",
