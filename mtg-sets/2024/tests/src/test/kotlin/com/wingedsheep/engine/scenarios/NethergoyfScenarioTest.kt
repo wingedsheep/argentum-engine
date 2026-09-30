@@ -142,7 +142,30 @@ class NethergoyfScenarioTest : FunSpec({
         driver.getGraveyard(player) shouldContain goyf
     }
 
-    test("counts card types, not cards, in every zone") {
+    test("Nethergoyf can't supply the fourth type for its own escape") {
+        val (driver, player) = setup()
+        // Sorcery, instant, land — Nethergoyf itself would be the fourth type (creature).
+        val goyf = driver.putCardInGraveyard(player, "Nethergoyf")
+        val divination = driver.putCardInGraveyard(player, "Divination")
+        val bolt = driver.putCardInGraveyard(player, "Lightning Bolt")
+        val swamp = driver.putCardInGraveyard(player, "Swamp")
+        driver.giveMana(player, Color.BLACK, 3)
+
+        escapeAction(driver, player).shouldNotBeNull().affordable shouldBe false
+        driver.submitExpectFailure(
+            CastSpell(
+                playerId = player,
+                cardId = goyf,
+                useAlternativeCost = true,
+                alternativeCostType = AlternativeCostType.ESCAPE,
+                additionalCostPayment = AdditionalCostPayment(exiledCards = listOf(divination, bolt, swamp, goyf)),
+                paymentStrategy = PaymentStrategy.FromPool,
+            )
+        )
+        driver.getGraveyard(player) shouldContain goyf
+    }
+
+    test("counts card types, not cards, on the battlefield") {
         val (driver, player) = setup()
         driver.putCardInGraveyard(player, "Ornithopter")
         driver.putCardInGraveyard(player, "Memnite")

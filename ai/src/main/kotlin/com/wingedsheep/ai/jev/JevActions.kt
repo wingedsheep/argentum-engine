@@ -141,7 +141,10 @@ internal class JevActions(
             bouncedPermanents = select("Return to hand for ${c.description}", c.validBounceTargets, c.bounceCount),
             exiledCards = if (c.validCraftMaterials.isNotEmpty())
                 select("Exile craft materials", c.validCraftMaterials, c.craftMinCount, c.craftMaxCount ?: c.validCraftMaterials.size)
-            else select("Exile for ${c.description}; required total weight ${c.exileMinTotalWeight}",
+            else select(
+                if (c.exileCardTypes.isNotEmpty())
+                    "Exile for ${c.description}; ${c.exileMinTotalWeight} or more distinct card types among them"
+                else "Exile for ${c.description}; required total weight ${c.exileMinTotalWeight}",
                 c.validExileTargets, c.exileMinCount, c.exileMaxCount),
             beheldCards = select("Behold for ${c.description}", c.validBeholdTargets, c.beholdCount),
             revealedCards = select("Reveal for ${c.description}", c.validRevealTargets, c.revealCount),

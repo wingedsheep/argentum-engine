@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -16,6 +17,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.costs.CardMeasure
 import io.kotest.assertions.withClue
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 
 /**
@@ -138,6 +140,16 @@ class GraveyardTotalExileCostScenarioTest : ScenarioTestBase() {
         }
     }
 
+    /** The union measure as a *spell's* mandatory additional cost, cast from hand. */
+    private val typeRite = card("Test Type Rite") {
+        manaCost = "{0}"
+        typeLine = "Sorcery"
+        additionalCost(Costs.additional.ExileOtherCardsWithCardTypes(3))
+        spell {
+            effect = Effects.GainLife(3)
+        }
+    }
+
     // --- Harness -------------------------------------------------------------------------------
 
     private fun abilityIdOf(name: String) =
@@ -185,7 +197,7 @@ class GraveyardTotalExileCostScenarioTest : ScenarioTestBase() {
     }
 
     init {
-        listOf(trio, duo, hybrid, phyrexian, ember, rock, vault, blackVault, golem, waste, typeVault)
+        listOf(trio, duo, hybrid, phyrexian, ember, rock, vault, blackVault, golem, waste, typeVault, typeRite)
             .forEach { cardRegistry.register(it) }
 
         // -----------------------------------------------------------------------------------
@@ -387,6 +399,34 @@ class GraveyardTotalExileCostScenarioTest : ScenarioTestBase() {
                     .startsWith("Those cards don't pay this cost") shouldBe true
                 game.exileIds().isEmpty() shouldBe true
             }
+        }
+
+        test("as a spell's additional cost, the cast carries the union picker and checks the selection") {
+            var builder = scenario()
+                .withPlayers("You", "Them")
+                .withCardInHand(1, "Test Type Rite")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            listOf("Test Type Golem", "Test Pip Trio", "Test Type Waste").forEach { builder = builder.withCardInGraveyard(1, it) }
+            val game = builder.build()
+            val rite = game.findCardsInHand(1, "Test Type Rite").first()
+            val cast = game.getLegalActions(1).first { (it.action as? CastSpell)?.cardId == rite }
+            val info = cast.additionalCostInfo!!
+            info.costType shouldBe "ExileForTotal"
+            info.exileMinTotalWeight shouldBe 3
+            info.exileCardTypes[game.graveyardCard("Test Type Waste")] shouldBe listOf("LAND")
+
+            fun castWith(exiled: List<EntityId>) = game.execute(
+                CastSpell(game.player1Id, rite, additionalCostPayment = AdditionalCostPayment(exiledCards = exiled))
+            )
+            withClue("an artifact creature and a creature show two types, short of three") {
+                castWith(listOf(game.graveyardCard("Test Type Golem"), game.graveyardCard("Test Pip Trio")))
+                    .error.shouldNotBeNull()
+                game.exileIds().isEmpty() shouldBe true
+            }
+            castWith(listOf(game.graveyardCard("Test Type Golem"), game.graveyardCard("Test Type Waste")))
+                .error shouldBe null
+            game.exileNames().toSet() shouldBe setOf("Test Type Golem", "Test Type Waste")
         }
 
         test("the engine's own pick covers the types with the fewest cards") {

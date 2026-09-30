@@ -27,6 +27,7 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.DeclareAttackers
 import com.wingedsheep.engine.core.DeclareBlockers
 import com.wingedsheep.engine.core.GameAction
+import com.wingedsheep.engine.handlers.costs.GraveyardTotalExileResolver
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.legalactions.MeaningfulActionFilter
 import com.wingedsheep.engine.state.GameState
@@ -933,29 +934,22 @@ class Strategist(
 
     /**
      * The union-measured form of [withSumGatedExilePayment] — "with four or more card types among
-     * them" (Nethergoyf's escape). Greedy cover: keep taking the card that shows the most card types
-     * not yet shown, preferring the card with fewer types of its own on a tie, so the fewest and
-     * least-versatile cards leave the graveyard.
+     * them" (Nethergoyf's escape). Delegates to the engine's own greedy cover so the AI and the
+     * fallback pick can't drift.
      */
     private fun withCardTypeUnionExilePayment(
         state: GameState,
         info: com.wingedsheep.engine.legalactions.AdditionalCostData,
         cast: CastSpell,
     ): GameAction {
-        val remaining = info.validExileTargets.filter { state.getEntity(it) != null }.toMutableList()
-        val shown = mutableSetOf<String>()
-        val chosen = mutableListOf<EntityId>()
-        while (shown.size < info.exileMinTotalWeight) {
-            val best = remaining.maxWithOrNull(
-                compareBy<EntityId> { (info.exileCardTypes[it].orEmpty() - shown).size }
-                    .thenByDescending { info.exileCardTypes[it].orEmpty().size }
-            ) ?: break
-            if ((info.exileCardTypes[best].orEmpty() - shown).isEmpty()) break
-            chosen += best
-            shown += info.exileCardTypes[best].orEmpty()
-            remaining -= best
-        }
-        if (shown.size < info.exileMinTotalWeight) return cast // unreachable; the engine will refuse
+        val pool = info.validExileTargets.filter { state.getEntity(it) != null }
+        val candidates = GraveyardTotalExileResolver.Candidates(
+            cards = pool,
+            weightById = info.exileCardWeights,
+            typesById = pool.associateWith { info.exileCardTypes[it].orEmpty().toSet() },
+        )
+        val chosen = GraveyardTotalExileResolver.autoSelect(candidates, info.exileMinTotalWeight)
+        if (chosen.isEmpty()) return cast // unreachable; the engine will refuse
         return cast.copy(
             additionalCostPayment = (cast.additionalCostPayment ?: AdditionalCostPayment())
                 .copy(exiledCards = chosen),

@@ -2480,6 +2480,15 @@ class CastSpellEnumerator(
                     )
                 }
         }
+        // "Exile any number of cards from your graveyard with N or more <measure> among them" as a
+        // mandatory cast cost: the same resolver prices the picker, the gate and the exile.
+        val totalExileCost = additionalCosts.firstNotNullOfOrNull {
+            (it as? AdditionalCost.Atom)?.atom as? CostAtom.ExileFromGraveyardForTotal
+        }
+        if (totalExileCost != null && state != null && payerId != null) {
+            return com.wingedsheep.engine.handlers.costs.GraveyardTotalExileResolver
+                .costInfo(state, payerId, totalExileCost, excludeCardId = castCardId, predicateEvaluator = predicateEvaluator)
+        }
         if (blightVariableCost != null) {
             return AdditionalCostData(
                 description = blightVariableCost.description,
