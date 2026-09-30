@@ -31,6 +31,7 @@ internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? 
     is DistributeCountersContinuation -> objectReferences
     is RemoveAnyNumberOfCountersContinuation -> objectReferences
     is AddCountersUpToContinuation -> objectReferences
+    is AddCountersOfChosenKindContinuation -> objectReferences
     is PayCountersContinuation -> objectReferences
     is MoveChosenCountersToTargetContinuation -> objectReferences
     is AmassContinuation -> objectReferences
@@ -144,6 +145,7 @@ internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnviro
     is DistributeCountersContinuation -> copy(objectReferences = refs)
     is RemoveAnyNumberOfCountersContinuation -> copy(objectReferences = refs)
     is AddCountersUpToContinuation -> copy(objectReferences = refs)
+    is AddCountersOfChosenKindContinuation -> copy(objectReferences = refs)
     is PayCountersContinuation -> copy(objectReferences = refs)
     is MoveChosenCountersToTargetContinuation -> copy(objectReferences = refs)
     is AmassContinuation -> copy(objectReferences = refs)

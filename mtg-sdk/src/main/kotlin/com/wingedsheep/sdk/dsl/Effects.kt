@@ -2037,6 +2037,14 @@ object Effects {
         AddCountersUpToEffect(counterType, max, target)
 
     /**
+     * "Choose a kind of counter on [target]. Put [count] additional counter(s) of that kind on
+     * it." — the player picks among the kinds already there (no prompt when only one). The
+     * one-kind sibling of the targeted [Proliferate]. Ichormoon Gauntlet.
+     */
+    fun AddCountersOfChosenKind(target: EffectTarget = EffectTarget.ContextTarget(0), count: Int = 1): Effect =
+        com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect(target, count)
+
+    /**
      * Put every counter that was on the triggering source onto a target.
      * Reads the source's last-known counter map (captured on leave-battlefield),
      * not just +1/+1 counters. Use for "put its counters on target creature you

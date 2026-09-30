@@ -399,6 +399,7 @@ val engineSerializersModule = SerializersModule {
         subclass(RemoveAnyNumberOfCountersContinuation::class)
         subclass(PayAnyAmountOfLifeAsEntersContinuation::class)
         subclass(AddCountersUpToContinuation::class)
+        subclass(AddCountersOfChosenKindContinuation::class)
         subclass(PayCountersContinuation::class)
         subclass(MoveChosenCountersToTargetContinuation::class)
         subclass(ProliferateContinuation::class)

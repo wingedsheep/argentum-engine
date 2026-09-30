@@ -73,6 +73,33 @@ data class AddCountersUpToEffect(
 }
 
 /**
+ * "Choose a kind of counter on [target]. Put [count] additional counter(s) of that kind on it."
+ * (Ichormoon Gauntlet.) The single-kind, player-chosen sibling of the targeted
+ * `Proliferate(target)` — which adds one of *every* kind — and of [AddCountersEffect], whose kind
+ * is fixed by the card instead of read off the recipient.
+ *
+ * At resolution the executor reads the kinds currently on the target: none is a no-op, exactly one
+ * is placed without a prompt, and two or more ask the effect's controller to pick one through a
+ * `ChooseOptionDecision`. The counters are placed through the standard [AddCountersEffect] path, so
+ * counter-placement replacements (Hardened Scales) and counter-placed triggers apply. A recipient
+ * that can't have counters put on it gets none. Works on a permanent or a player target.
+ *
+ * @property target The permanent (or player) whose counters are read and added to.
+ * @property count How many counters of the chosen kind to add.
+ */
+@SerialName("AddCountersOfChosenKind")
+@Serializable
+data class AddCountersOfChosenKindEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val count: Int = 1
+) : Effect {
+    override val description: String =
+        "Choose a kind of counter on ${target.description}. Put " +
+            (if (count == 1) "an additional counter" else "$count additional counters") +
+            " of that kind on it"
+}
+
+/**
  * Put all counters that were on the triggering source onto a target.
  * "When this creature dies, put its counters on target creature you control."
  *

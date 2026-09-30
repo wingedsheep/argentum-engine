@@ -140,6 +140,7 @@ class PermanentExecutors(
         AddCountersExecutor(predicateEvaluator = zones.predicateEvaluator),
         AddDynamicCountersExecutor(amountEvaluator = amountEvaluator),
         com.wingedsheep.engine.handlers.effects.permanent.counters.AddCountersUpToExecutor(amountEvaluator = amountEvaluator),
+        com.wingedsheep.engine.handlers.effects.permanent.counters.AddCountersOfChosenKindExecutor(predicateEvaluator = zones.predicateEvaluator),
         MoveAllLastKnownCountersExecutor(predicateEvaluator = zones.predicateEvaluator),
         AddCountersToCollectionExecutor(amountEvaluator = amountEvaluator),
         DoubleCountersExecutor(predicateEvaluator = zones.predicateEvaluator),

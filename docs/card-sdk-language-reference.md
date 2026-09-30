@@ -1984,6 +1984,12 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   target is illegal on resolution (CR 608.2b). Pair it with `Targets.PermanentOrPlayer`. Both forms
   place counters identically: replacement effects honored, placement attributed to the controller,
   and a recipient that "can't have counters put on it" (Blossombind) skipped.
+- `AddCountersOfChosenKind(target?, count = 1)` — "choose a counter on target permanent. Put an additional
+  counter of that kind on that permanent" (Ichormoon Gauntlet). The one-kind sibling of the targeted
+  `Proliferate(target)`: at resolution the controller picks one kind among those on the recipient
+  (`ChooseOptionDecision`; no prompt when there is only one kind, a no-op when there are none) and `count`
+  counters of it are placed through `AddCounters`, so placement replacements and counter-placed triggers
+  apply. Works on a player target (poison) as well as a permanent.
 - `AddCountersToCollection(name, type, count)` — add counters to cards held in a pipeline collection.
   An overload takes a `DynamicAmount` instead of an `Int` count, evaluated once at resolution — "create
   a token, then put X +1/+1 counters on it, where X is …" over the `CREATED_TOKENS` collection (Emil,

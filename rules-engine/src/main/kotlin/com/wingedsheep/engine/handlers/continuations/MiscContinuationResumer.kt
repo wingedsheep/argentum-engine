@@ -44,6 +44,7 @@ class MiscContinuationResumer(
         resumer(DistributeCountersContinuation::class, ::resumeDistributeCounters),
         resumer(RemoveAnyNumberOfCountersContinuation::class, ::resumeRemoveAnyNumberOfCounters),
         resumer(AddCountersUpToContinuation::class, ::resumeAddCountersUpTo),
+        resumer(AddCountersOfChosenKindContinuation::class, ::resumeAddCountersOfChosenKind),
         resumer(com.wingedsheep.engine.core.PayAnyAmountOfLifeAsEntersContinuation::class, ::resumePayAnyAmountOfLifeAsEnters),
         resumer(PayCountersContinuation::class, ::resumePayCounters),
         resumer(ConvertCountersToTokensContinuation::class, ::resumeConvertCountersToTokens),
@@ -208,6 +209,34 @@ class MiscContinuationResumer(
         if (result.outcome is Outcome.Paused) {
             return result
         }
+
+        return checkForMore(result.state, result.events.toList())
+    }
+
+    private fun resumeAddCountersOfChosenKind(
+        state: GameState,
+        continuation: AddCountersOfChosenKindContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option chosen response for AddCountersOfChosenKind")
+        }
+        val kind = continuation.counterKinds.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid counter kind index: ${response.optionIndex}")
+
+        val addEffect = com.wingedsheep.sdk.scripting.effects.AddCountersEffect(
+            counterType = kind,
+            count = continuation.count,
+            target = com.wingedsheep.sdk.scripting.targets.EffectTarget.SpecificEntity(continuation.recipientId)
+        )
+        val addContext = EffectContext(
+            sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
+            controllerId = continuation.controllerId,
+        )
+        val result = services.effectExecutorRegistry.execute(state, addEffect, addContext).toExecutionResult()
+        if (result.outcome is Outcome.Paused) return result
 
         return checkForMore(result.state, result.events.toList())
     }
