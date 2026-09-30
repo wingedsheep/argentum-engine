@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
@@ -149,6 +150,18 @@ data class ActivatedAbility(
      *  granted activated ability "costs {X} less to activate, where X is this creature's power."
      *  Per Scryfall ruling, the reduced cost is locked in before costs are paid. */
     val genericCostReduction: DynamicAmount? = null,
+    /**
+     * "This ability costs [ConditionalCostReduction.reduction] less to activate if
+     * [ConditionalCostReduction.condition]" — Kami of Jealous Thirst's "{4}{B}: … This ability costs
+     * {4}{B} less to activate if you've drawn three or more cards this turn."
+     *
+     * Unlike [genericCostReduction] the reduction is a whole [ManaCost], subtracted pip-wise per
+     * CR 118.7 ([ManaCost.subtract]): colored pips remove matching colored pips, and anything
+     * unmatched spills onto generic. The condition is evaluated against the ability's source and
+     * controller when the cost is totalled (CR 601.2f via CR 602.2b), so the enumerator's offered
+     * price and the handler's charged price agree.
+     */
+    val conditionalCostReduction: ConditionalCostReduction? = null,
     /**
      * Colors that may be spent on the `{X}` portion of this ability's cost.
      * Empty means no restriction (the default). Used for abilities like Atalya, Samite
@@ -759,3 +772,14 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
         }
     }
 }
+
+/**
+ * An activated ability's own conditional cost reduction — see
+ * [ActivatedAbility.conditionalCostReduction]. [reduction] is subtracted pip-wise (CR 118.7) from
+ * the ability's mana cost while [condition] holds for the ability's source and controller.
+ */
+@Serializable
+data class ConditionalCostReduction(
+    val reduction: ManaCost,
+    val condition: Condition
+)

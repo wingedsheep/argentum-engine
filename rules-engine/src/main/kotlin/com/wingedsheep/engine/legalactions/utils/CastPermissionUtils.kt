@@ -504,7 +504,9 @@ class CastPermissionUtils(
      *
      * [abilitySourceId] is the permanent whose equip ability is being activated. A self-restricted
      * grant ([ReduceEquipCost.onlyOwnEquip], Firion's token) only reduces its own bearer's equip
-     * abilities, so it counts only when its bearer equals [abilitySourceId]. Pass the ability's
+     * abilities, so it counts only when its bearer equals [abilitySourceId]; an others-restricted
+     * grant ([ReduceEquipCost.onlyOtherEquip], Bladehold War-Whip) counts only when it doesn't.
+     * Pass the ability's
      * source at both enumeration and payment.
      */
     fun applyEquipCostReduction(
@@ -602,11 +604,15 @@ class CastPermissionUtils(
         var total = 0
         for (entityId in state.getBattlefield(playerId)) {
             // A self-restricted grant (onlyOwnEquip) only discounts its own bearer's equip
-            // abilities: skip the whole entity when it isn't the equip ability's source. At
-            // enumeration the source is known (the permanent whose ability is listed), so this
-            // stays exact.
-            fun countsForSource(ability: com.wingedsheep.sdk.scripting.ReduceEquipCost): Boolean =
-                !ability.onlyOwnEquip || abilitySourceId == null || entityId == abilitySourceId
+            // abilities; an others-restricted grant (onlyOtherEquip, Bladehold War-Whip) only
+            // discounts every *other* permanent's. At enumeration the source is known (the
+            // permanent whose ability is listed), so both stay exact.
+            fun countsForSource(ability: com.wingedsheep.sdk.scripting.ReduceEquipCost): Boolean = when {
+                abilitySourceId == null -> true
+                ability.onlyOwnEquip -> entityId == abilitySourceId
+                ability.onlyOtherEquip -> entityId != abilitySourceId
+                else -> true
+            }
             // Printed static abilities (from the card definition), plus any granted to this entity
             // via GameState.grantedStaticAbilities (tokens have no CardDefinition — Firion's copy).
             val card = state.getEntity(entityId)?.get<CardComponent>()

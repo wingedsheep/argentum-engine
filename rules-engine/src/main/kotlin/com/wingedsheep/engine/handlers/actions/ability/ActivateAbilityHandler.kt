@@ -90,7 +90,7 @@ class ActivateAbilityHandler(
     override val actionType: KClass<ActivateAbility> = ActivateAbility::class
 
     private val abilityResolver = ActivatedAbilityResolver(cardRegistry, castPermissionUtils)
-    private val costTotaller = ActivationCostTotaller(castPermissionUtils, amountEvaluator = conditionEvaluator.amounts)
+    private val costTotaller = ActivationCostTotaller(castPermissionUtils, conditionEvaluator)
     private val validator = ActivationValidator(
         cardRegistry = cardRegistry,
         turnManager = turnManager,

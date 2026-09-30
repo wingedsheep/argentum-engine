@@ -1646,10 +1646,21 @@ data class ReduceEquipCost(
      * Warrior's token) — rather than every equip ability the controller activates (Éowyn). Scoped
      * at the reduction site by matching the grant's bearer against the equip ability's source.
      */
-    val onlyOwnEquip: Boolean = false
+    val onlyOwnEquip: Boolean = false,
+    /**
+     * When true, the reduction skips the equip abilities of the permanent bearing this static —
+     * "Equip abilities you activate of **other** Equipment cost {amount} less to activate"
+     * (Bladehold War-Whip). The mirror of [onlyOwnEquip], matched at the same reduction site.
+     */
+    val onlyOtherEquip: Boolean = false
 ) : StaticAbility {
+    init {
+        require(!(onlyOwnEquip && onlyOtherEquip)) { "onlyOwnEquip and onlyOtherEquip are mutually exclusive" }
+    }
+
     override val description: String = when {
         onlyOwnEquip -> "This permanent's equip abilities cost {$amount} less to activate"
+        onlyOtherEquip -> "Equip abilities you activate of other Equipment cost {$amount} less to activate"
         onlyIfTargetIsSource -> "Equip abilities you activate that target this permanent cost {$amount} less to activate"
         else -> "Equip abilities you activate cost {$amount} less to activate"
     }

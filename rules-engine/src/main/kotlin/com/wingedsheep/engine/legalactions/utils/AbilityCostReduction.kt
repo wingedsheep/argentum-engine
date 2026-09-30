@@ -1,10 +1,12 @@
 package com.wingedsheep.engine.legalactions.utils
 
+import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivatedAbility
@@ -52,15 +54,37 @@ object AbilityCostReduction {
         targetUtils: TargetEnumerationUtils,
         predicateEvaluator: PredicateEvaluator
     ): AbilityCost {
-        val reduction = ability.genericCostReduction ?: return cost
+        val afterConditional = applyConditional(cost, ability, state, sourceId, controllerId, predicateEvaluator.conditions)
+        val reduction = ability.genericCostReduction ?: return afterConditional
         val evaluator = predicateEvaluator.amounts
         val amount = if (ability.targetRequirements.isNotEmpty()) {
             maxReductionOverLegalTargets(reduction, ability, state, sourceId, controllerId, targetUtils, evaluator)
         } else {
             evaluator.evaluate(state, reduction, EffectContext(sourceId = sourceId, controllerId = controllerId))
         }
-        if (amount <= 0) return cost
-        return reduceGeneric(cost, amount)
+        if (amount <= 0) return afterConditional
+        return reduceGeneric(afterConditional, amount)
+    }
+
+    /**
+     * [cost] with [ActivatedAbility.conditionalCostReduction] subtracted pip-wise (CR 118.7) from
+     * its first mana component while the reduction's condition holds for [sourceId] and
+     * [controllerId]. Shared by the enumerators (through [apply]) and the activation handler's
+     * totaller, so the offered price and the charged price never disagree. A cost with no mana
+     * component is returned unchanged — a reduction can only shrink mana already there.
+     */
+    fun applyConditional(
+        cost: AbilityCost,
+        ability: ActivatedAbility,
+        state: GameState,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        conditions: ConditionEvaluator
+    ): AbilityCost {
+        val conditional = ability.conditionalCostReduction ?: return cost
+        val context = EffectContext(sourceId = sourceId, controllerId = controllerId)
+        if (!conditions.evaluate(state, conditional.condition, context)) return cost
+        return mapFirstMana(cost) { it.subtract(conditional.reduction) }
     }
 
     /**
@@ -125,16 +149,20 @@ object AbilityCostReduction {
         }
 
     /** [cost] with [amount] shaved off the generic part of its first mana component. */
-    private fun reduceGeneric(cost: AbilityCost, amount: Int): AbilityCost = when (cost) {
+    private fun reduceGeneric(cost: AbilityCost, amount: Int): AbilityCost =
+        mapFirstMana(cost) { it.reduceGeneric(amount) }
+
+    /** [cost] with its first mana component rewritten through [modify]; unchanged if it has none. */
+    private fun mapFirstMana(cost: AbilityCost, modify: (ManaCost) -> ManaCost): AbilityCost = when (cost) {
         is AbilityCost.Atom -> cost.manaCostOrNull
-            ?.let { AbilityCost.Atom(CostAtom.Mana(it.reduceGeneric(amount))) } ?: cost
+            ?.let { AbilityCost.Atom(CostAtom.Mana(modify(it))) } ?: cost
         is AbilityCost.Composite -> {
             var applied = false
             AbilityCost.Composite(cost.costs.map { sub ->
                 val subMana = sub.manaCostOrNull
                 if (!applied && subMana != null) {
                     applied = true
-                    AbilityCost.Atom(CostAtom.Mana(subMana.reduceGeneric(amount)))
+                    AbilityCost.Atom(CostAtom.Mana(modify(subMana)))
                 } else sub
             })
         }
