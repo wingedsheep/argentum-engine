@@ -65,6 +65,26 @@ class ArnaKennerudSkycaptainScenarioTest : ScenarioTestBase() {
                 game.state.projectedState.getToughness(bears) shouldBe 10
             }
 
+            test("a token already attached to the attacker isn't copied") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Arna Kennerüd, Skycaptain")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardAttachedTo(1, "Holy Strength", "Grizzly Bears")
+                    .withCardAttachedTo(1, "Bonesplitter", "Grizzly Bears")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val bears = game.findPermanent("Grizzly Bears")!!
+                val holyStrength = game.findPermanent("Holy Strength")!!
+                game.state = game.state.updateEntity(holyStrength) { it.with(TokenComponent) }
+
+                game.attackWithBears()
+
+                game.findPermanents("Holy Strength") shouldHaveSize 1
+                game.findPermanents("Bonesplitter") shouldHaveSize 2
+            }
+
             test("a creature modified only by counters just doubles them") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
