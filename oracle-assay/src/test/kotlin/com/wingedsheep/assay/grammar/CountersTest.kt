@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -53,6 +54,19 @@ class CountersTest : StringSpec({
             AddCountersEffect(CounterType.MINUS_ONE_MINUS_ONE, 2, Targets.bound())
         roundTrips("Put two -1/-1 counters on target creature you control.")
         roundTrips("Put three +1/+1 counters on target Sliver creature.")
+    }
+
+    // Abzan Ascendancy, Cathars' Crusade: one iteration over the group, not a target.
+    "a counter on each member of a group iterates the group" {
+        fragment("Put a +1/+1 counter on each creature you control.").script shouldBe CardScript(
+            spellEffect = Effects.ForEachInGroup(
+                GroupFilter(GameObjectFilter.Creature.youControl()),
+                Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.IterationEntity),
+            ),
+        )
+        roundTrips("Put a +1/+1 counter on each creature you control.")
+        roundTrips("Put two +1/+1 counters on each creature you control.")
+        roundTrips("Put a -1/-1 counter on each creature.")
     }
 
     // The commonest effect shape in the whole hand-written corpus: 363 of the 951 AddCounters a

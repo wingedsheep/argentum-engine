@@ -671,6 +671,32 @@ effect, so an unkicked Sergeant still put its trigger on the stack; Nullpriest o
 `PutOntoBattlefield`, dropping the graveyard guard `PutOntoBattlefieldFromGraveyard` carries. Only their
 goldens moved.
 
+## The group counter band
+
+The fifth loop band, keyed on the tail family `each creature you …` (**92 lines over 39 whole cards**
+by the prefix probe, over the whole corpus; the counter sentences alone probe to about 24). It
+delivered **14 hand-written cards read whole (7,198 → 7,212)** — Abzan Ascendancy, Cathars' Crusade,
+Leader's Talent and their kin.
+
+### The counter verb's group twin
+
+"Put a +1/+1 counter on each creature you control." is `Effects.ForEachInGroup(GroupFilter(filter),
+AddCounters(kind, n, IterationEntity))` in every golden that prints it — the shape `groupStep` already
+builds for "tap all" and "deals 1 damage to each". So the band is two rows, not a construct: the
+target rule's two quantities (the article for one, a number word from two) over "each" and a singular
+noun from `Filters.filter`. The rest of the family — "untap each creature you control", the dynamic
+"put X counters on each", "each creature you control with toughness less than …" — declines on
+something else and stays ranked.
+
+### What the differential found
+
+Differential **6,822 compared / 55 divergent → 6,834 / 55**. The three new divergences were all
+**card bugs, fixed**: Minwu, White Mage and Indulgent Aristocrat read "each Cleric / Vampire you
+control" as creatures, where the bare tribal noun names every permanent with the subtype (a kindred
+permanent gets the counter too); Greenbelt Radical fused its two sentences — "put a +1/+1 counter on
+each creature you control. Creatures you control gain trample" — into one iteration, where the text
+names the group twice and so gathers it twice. Only their goldens moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
