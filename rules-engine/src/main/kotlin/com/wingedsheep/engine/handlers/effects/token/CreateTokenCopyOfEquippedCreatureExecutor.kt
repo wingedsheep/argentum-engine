@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.handlers.effects.token
 
 import com.wingedsheep.engine.state.components.identity.copiableCardComponent
+import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
+import com.wingedsheep.sdk.scripting.effects.CopyExceptions
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ZoneChangeEvent
@@ -105,8 +107,7 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
 
         var container = ComponentContainer.of(*components.toTypedArray())
         // Toxic N / bushido N ride components, not the CardComponent — carry them over too.
-        container = com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
-            .withNumericKeywords(container, equippedContainer, com.wingedsheep.sdk.scripting.effects.CopyExceptions.None)
+        container = CopyExceptionApplier.withNumericKeywords(container, equippedContainer, CopyExceptions.None)
 
         // Add static abilities from the card definition
         if (staticAbilityHandler != null) {
