@@ -592,6 +592,33 @@ Differential **6,730 compared / 52 divergent → 6,776 / 53**. Of the seven new 
   both; `excludeSelf` is the majority (88 goldens) and prints. The single-target `TargetOther` cards
   are the minority spelling of one concept, not a grammar gap.
 
+## The "you may … If you do, …" band
+
+The second loop band, keyed on the tail family `you do, draw …` (**68 lines over 43 whole cards** by
+the prefix probe). It delivered **17 hand-written cards read whole (7,147 → 7,164)**: the rest of the
+family's lines decline on their *payload* — "sacrifice another creature", gain control, an
+intervening-if in front of the choice — which is the fronted-duration lesson again.
+
+### An action where the pay-gates have a cost
+
+"You may discard a card. If you do, draw a card." is the pay-gates' shape with an action in the
+cost's place: `Effects.May(Effects.IfYouDo(action, then))`, the spelling the facade's own KDoc gives
+the sentence. It is **not** `May(A then B)`: CR 603.12's "if you do" asks whether the action was
+performed, so an empty hand that "may discard" must not draw. The success criterion is derived, never
+slotted — `SuccessCriterion.Auto` over an action it can infer from (a terminal zone move), and
+`Always` for "discard your hand", which a ruling (Narset, Jeskai Waymaster) makes doable with an empty
+hand and which Narset, Vaultguard Trooper and Sauron already carry. An action Auto cannot read ("you
+may draw a card. If you do, …") declines rather than building a card the validator refuses. The rule
+is sentence-terminal and one-declarer for `conditionalClause`'s reason: a target on both sides of the
+gate has no single reading.
+
+### What the differential found
+
+Differential **6,776 compared / 53 divergent → 6,789 / 53**, the same 53. The three new divergences
+were all **card bugs, fixed**: Abandon Attachments, Flaring Cinder (both triggers) and Byway Barterer
+spelled "if you do" as `May(A then B)`, so the draw happened whether or not anything was discarded.
+Only their goldens moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

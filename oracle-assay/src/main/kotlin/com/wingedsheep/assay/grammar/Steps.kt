@@ -55,6 +55,7 @@ import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect
+import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -2768,6 +2769,34 @@ object Steps {
         }
     }
 
+    /**
+     * "You may [action]. If you do, [inner]." — both clauses under the choice, the second gated on
+     * the first. Null when the SDK could not tell whether the action happened, or when both sides
+     * declare a target; see [Cascade]'s `mayDoClause`.
+     *
+     * Discarding your hand is the one action whose criterion is not the inferred one: it can be
+     * done with no cards in it (the official ruling on Narset, Jeskai Waymaster, 2025-04-04), so
+     * the consequence happens whenever the player chose to, which is `SuccessCriterion.Always` —
+     * the spelling Narset, Vaultguard Trooper and Sauron already carry. Auto would read an empty
+     * hand's discard as not done and skip the draw.
+     */
+    private fun mayDo(action: CardScript, inner: CardScript): CardScript? {
+        val actionEffect = action.spellEffect ?: return null
+        val innerEffect = inner.spellEffect ?: return null
+        if (action != CardScript(spellEffect = actionEffect, targetRequirements = action.targetRequirements)) return null
+        if (inner != CardScript(spellEffect = innerEffect, targetRequirements = inner.targetRequirements)) return null
+        if (action.targetRequirements.isNotEmpty() && inner.targetRequirements.isNotEmpty()) return null
+        val criterion = if (actionEffect == Patterns.Hand.discardHand()) {
+            SuccessCriterion.Always
+        } else {
+            SuccessCriterion.Auto.takeIf { it.canInfer(actionEffect) } ?: return null
+        }
+        return CardScript(
+            spellEffect = Effects.May(Effects.IfYouDo(actionEffect, innerEffect, successCriterion = criterion)),
+            targetRequirements = action.targetRequirements + inner.targetRequirements,
+        )
+    }
+
     /** Re-wrap a clause's effect, keeping the targets it declared. Shared by the two wrappers. */
     private fun wrap(inner: CardScript, wrapper: (Effect) -> Effect): CardScript? {
         val effect = inner.spellEffect ?: return null
@@ -3132,6 +3161,51 @@ object Steps {
         )
 
         /**
+         * "You may discard a card. If you do, draw a card." — Rescue Leopard, Witch's Mark, and the
+         * rummaging, sacrificing, exiling "if you do" the rest of the corpus prints.
+         *
+         * The pay-gates' shape with an *action* where the cost was: `Effects.IfYouDo` gates the
+         * consequence on the action having happened, and `Effects.May` puts the choice around both,
+         * which is the spelling the card facade's own KDoc gives this sentence. The two are not
+         * `May(A then B)`: an empty hand still "may discard" and then draws, where CR 603.12's
+         * "if you do" asks whether the discard was actually performed.
+         *
+         * The criterion is derived, never slotted: the one the SDK infers (`SuccessCriterion.Auto`),
+         * over an action it can infer it from — a terminal zone move — and `Always` for discarding
+         * your hand, which a ruling makes doable with an empty hand (see [mayDo]). An action Auto
+         * cannot read would be a card the validator refuses to load, so it declines.
+         *
+         * Sentence-terminal and one-declarer for [conditionalClause]'s reason: the consequence runs
+         * to the end of the sentence, and a target on either side of the gate has one reading only
+         * when the other side declares none.
+         */
+        private val mayDoClause: Phrase<CardScript> =
+            phrase("you may {action}. if you do, {inner}", name = "you may do an action$tag") {
+                slot("action", atom)
+                slot("inner", gatedConsequence)
+                build { bindings -> mayDo(bindings.value("action"), bindings.value("inner")) }
+                match { script ->
+                    val may = script.spellEffect as? GatedEffect ?: return@match null
+                    if (may.gate !is Gate.MayDecide) return@match null
+                    val gated = may.then as? GatedEffect ?: return@match null
+                    val gate = gated.gate as? Gate.DoAction ?: return@match null
+                    val requirements = script.targetRequirements
+                    val splits = if (requirements.isEmpty()) listOf(emptyList<TargetRequirement>() to requirements)
+                    else listOf(requirements to emptyList(), emptyList<TargetRequirement>() to requirements)
+                    val (action, inner) = splits.asSequence()
+                        .map { (own, rest) ->
+                            CardScript(spellEffect = gate.action, targetRequirements = own) to
+                                CardScript(spellEffect = gated.then, targetRequirements = rest)
+                        }
+                        .firstOrNull { (action, inner) ->
+                            mayDo(action, inner) == script &&
+                                atom.unparse(action) != null && gatedConsequence.unparse(inner) != null
+                        } ?: return@match null
+                    bind("action" to action, "inner" to inner)
+                }
+            }
+
+        /**
          * "If an opponent controls more lands than you, search your library for …" — Gift of
          * Estates.
          *
@@ -3260,7 +3334,7 @@ object Steps {
         private val clause: Phrase<CardScript> =
             oneOf(
                 "a clause position$tag",
-                listOf(simpleClause, sequenceClause, conditionalClause, runEndingInScopedClause) +
+                listOf(simpleClause, sequenceClause, conditionalClause, runEndingInScopedClause, mayDoClause) +
                     mayPayClauses,
             )
 

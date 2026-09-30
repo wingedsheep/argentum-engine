@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
+import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -645,6 +646,55 @@ class StepsTest : StringSpec({
         roundTrips("Whenever ~ attacks, sacrifice ~ at end of combat.")
         // The bare clause and the deferred one are different models, so neither prints the other.
         roundTrips("Sacrifice ~.")
+    }
+
+    // "If you do" gates the second clause on the first having happened, not on the choice: an empty
+    // hand still "may discard", and must not draw. So it is `May(IfYouDo(…))`, never `May(A then B)`.
+    "you may do an action, and if you do, the consequence follows" {
+        fragment("You may discard a card. If you do, draw a card.") shouldBe
+            CardFragment(
+                script = CardScript(
+                    spellEffect = Effects.May(Effects.IfYouDo(Effects.Discard(1), Effects.DrawCards(1))),
+                )
+            )
+        roundTrips("You may discard a card. If you do, draw a card.")
+        roundTrips("When ~ enters, you may discard a card. If you do, draw two cards.")
+        // The plain sequence under a choice is a different model, and still its own sentence.
+        Grammar.abilityLine.printLine(
+            CardFragment(script = CardScript(spellEffect = Effects.May(Effects.Discard(1) then Effects.DrawCards(1))))
+        ) shouldNotBe "You may discard a card. If you do, draw a card."
+    }
+
+    // An empty hand can still be discarded (the Narset ruling), so the gate cannot ask whether
+    // cards moved: the criterion is `Always`, which is what Narset and Sauron already carry.
+    "discarding your hand always counts as done" {
+        fragment("You may discard your hand. If you do, draw two cards.") shouldBe
+            CardFragment(
+                script = CardScript(
+                    spellEffect = Effects.May(
+                        Effects.IfYouDo(
+                            Patterns.Hand.discardHand(),
+                            Effects.DrawCards(2),
+                            successCriterion = SuccessCriterion.Always,
+                        )
+                    ),
+                )
+            )
+        roundTrips("You may discard your hand. If you do, draw two cards.")
+    }
+
+    // Auto infers "did it happen" only from a terminal zone move; a gate over anything else would
+    // be a card the validator refuses, so the rule neither builds nor prints one.
+    "an action the SDK cannot tell happened is not gated" {
+        Grammar.abilityLine.printLine(
+            CardFragment(
+                script = CardScript(
+                    spellEffect = Effects.May(Effects.IfYouDo(Effects.DrawCards(1), Effects.DrawCards(1))),
+                )
+            )
+        ) shouldBe null
+        Grammar.abilityLine.parseLine("You may draw a card. If you do, draw a card.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
     }
 
     // Another row of the life-loss recipient list, not a slot over `Player`: the recipient is a
