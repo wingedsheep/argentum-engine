@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
 import com.wingedsheep.engine.legality.LegalityKernel
+import com.wingedsheep.engine.core.AlternativeCostType
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GraveyardCastRiderSelection
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.mechanics.DisturbCasts
@@ -10,6 +12,7 @@ import com.wingedsheep.engine.mechanics.EscapeCasts
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.mechanics.ModalDfcCasts
 import com.wingedsheep.engine.mechanics.WarpGrants
+import com.wingedsheep.engine.mechanics.SneakWindow
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.registry.CardRegistry
@@ -27,6 +30,7 @@ import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGravey
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -335,10 +339,56 @@ class CastZoneResolver(
             matches.firstOrNull {
                 it.entersWithCounter == selection.entersWithCounter &&
                     it.addedSubtypeOnEntry == selection.addedSubtype &&
-                    it.exileInsteadOfGraveyard == selection.exileInsteadOfGraveyard
+                    it.exileInsteadOfGraveyard == selection.exileInsteadOfGraveyard &&
+                    it.additionalCost == selection.additionalCost
             }?.let { return it }
         }
-        return matches.firstOrNull { it.hasEntryRider } ?: matches.firstOrNull()
+        // Unspecified: a mandatory rider still wins, and among the rest a grant that owes no extra
+        // cost — choosing the cheaper permission is always the player's right, so this never lets a
+        // client dodge anything. A selection naming a cost no applicable grant carries lands here
+        // too, so claiming "no cost" when only a retrace grant applies still owes the discard.
+        return matches.firstOrNull { it.hasEntryRider }
+            ?: matches.firstOrNull { it.additionalCost == null }
+            ?: matches.firstOrNull()
+    }
+
+    /**
+     * The additional cost a [MayCastFromGraveyard] grant attaches to this cast (Six's continuous
+     * retrace: "discard a land card"), or null when the cast doesn't go through such a grant.
+     *
+     * Owed only when the grant is the permission the cast actually uses. The earlier graveyard routes
+     * of `CastValidator.castSource` — a self-zone permission, a Muldrotha-style permanent permission,
+     * flashback, harmonize, and the alternative-cost routes the caster announced (mayhem, escape,
+     * warp, sneak, disturb) — authorize the cast without it, so each one waives the grant's cost.
+     * Kept in step with that route order.
+     */
+    fun graveyardGrantAdditionalCost(
+        state: GameState,
+        action: CastSpell,
+    ): AdditionalCost? {
+        val playerId = action.playerId
+        val cardId = action.cardId
+        if (state.turnOrder.none { cardId in state.getZone(ZoneKey(it, Zone.GRAVEYARD)) }) return null
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
+        // An announced alternative cost that is a graveyard route of its own — and that this card
+        // really has, so a bare `useAlternativeCost` can't waive the grant's cost. Any other
+        // alternative cost (evoke, dash, …) is still cast through the grant: retrace is not an
+        // alternative cost (CR 702.81a), so the two combine.
+        if (action.useAlternativeCost) {
+            fun announced(type: AlternativeCostType) = action.altAllows(type)
+            if (announced(AlternativeCostType.MAYHEM) && hasMayhemPermission(state, playerId, cardId)) return null
+            if (announced(AlternativeCostType.ESCAPE) && hasEscapePermission(state, playerId, cardId)) return null
+            if (announced(AlternativeCostType.WARP) && hasWarpPermission(state, playerId, cardId)) return null
+            if (announced(AlternativeCostType.DISTURB) && disturbCastFace(state, playerId, cardId) != null) return null
+            if (announced(AlternativeCostType.SNEAK) && cardComponent.typeLine.isCreature &&
+                SneakWindow.graveyardSneakGrantCost(state, playerId, cardRegistry) != null
+            ) return null
+        }
+        if (hasMayCastSelfFromZonePermission(state, playerId, cardId)) return null
+        if (hasMayPlayPermanentFromGraveyardPermission(state, playerId, cardId, cardComponent)) return null
+        if (hasFlashbackPermission(state, playerId, cardId) || hasHarmonizePermission(state, playerId, cardId)) return null
+        return findMayCastFromGraveyardGrant(state, playerId, cardId, cardComponent, action.graveyardCastRider)
+            ?.additionalCost
     }
 
     private fun mayCastFromGraveyardGrantApplies(

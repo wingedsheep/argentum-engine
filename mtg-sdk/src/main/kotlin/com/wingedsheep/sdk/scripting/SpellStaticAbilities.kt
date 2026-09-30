@@ -570,6 +570,16 @@ data class GraveyardCardsHaveDredge(
  * exiled instead of going to) *its owner's* graveyard. Narrow it to opponents' graveyards through
  * [filter]'s ownership predicate rather than with another flag.
  *
+ * [additionalCost] is a non-mana cost owed *in addition to* the spell's other costs by a cast this
+ * grant authorizes — the grant-side twin of `MayCastSelfFromZones.additionalCost`. It is how a
+ * *continuous* retrace grant is spelled (CR 702.81a — "You may cast this card from your graveyard
+ * by discarding a land card as an additional cost to cast it"): Six's "During your turn,
+ * nonland permanent cards in your graveyard have retrace" = `MayCastFromGraveyard(NonlandPermanent,
+ * duringYourTurnOnly = true, additionalCost = Costs.additional.DiscardCards(1, GameObjectFilter.Land))`.
+ * It is owed only when this grant is the permission the cast goes through — a card also castable
+ * from the graveyard some other way (escape, a Muldrotha-style permission, a free grant the player
+ * picked) doesn't pay it.
+ *
  * @property filter The filter that spells must match (e.g., instant/sorcery, or any nonland card)
  * @property lifeCost The life cost to pay in addition to other costs (0 = free)
  * @property duringYourTurnOnly If true, only castable during your turn
@@ -579,6 +589,7 @@ data class GraveyardCardsHaveDredge(
  * @property exileInsteadOfGraveyard If true, an instant or sorcery cast this way is exiled rather
  *   than put into its owner's graveyard — whether it resolves, is countered, or fizzles
  * @property fromAnyGraveyard If true, the permission covers every player's graveyard, not just yours
+ * @property additionalCost If set, a non-mana cost a cast under this grant owes on top of its other costs
  */
 @SerialName("MayCastFromGraveyard")
 @Serializable
@@ -590,7 +601,8 @@ data class MayCastFromGraveyard(
     val addedSubtypeOnEntry: String? = null,
     val oncePerTurn: Boolean = false,
     val exileInsteadOfGraveyard: Boolean = false,
-    val fromAnyGraveyard: Boolean = false
+    val fromAnyGraveyard: Boolean = false,
+    val additionalCost: AdditionalCost? = null
 ) : StaticAbility {
     /** True when this grant carries a cast-this-way entry rider (finality counter / added subtype). */
     val hasEntryRider: Boolean get() = entersWithCounter != null || addedSubtypeOnEntry != null
@@ -605,6 +617,9 @@ data class MayCastFromGraveyard(
         append("ou may cast ${filter.description} spells from ")
         append(if (fromAnyGraveyard) "any graveyard" else "your graveyard")
         if (lifeCost > 0) append(" by paying $lifeCost life in addition to their other costs")
+        if (additionalCost != null) {
+            append(" by ${additionalCost.description.replaceFirstChar { it.lowercase() }} in addition to paying their other costs")
+        }
         if (entersWithCounter != null || addedSubtypeOnEntry != null) {
             append(". If you do, it enters")
             if (entersWithCounter != null) append(" with a ${entersWithCounter.printed} counter on it")
@@ -619,7 +634,8 @@ data class MayCastFromGraveyard(
     }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
+        val newCost = additionalCost?.applyTextReplacement(replacer)
+        return if (newFilter !== filter || newCost != additionalCost) copy(filter = newFilter, additionalCost = newCost) else this
     }
 }
 

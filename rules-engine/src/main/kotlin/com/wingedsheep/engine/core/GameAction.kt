@@ -5,6 +5,7 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.AlternativePaymentChoice
 import com.wingedsheep.sdk.scripting.ChoiceSlot
@@ -224,7 +225,13 @@ data class GraveyardCastRiderSelection(
      * Yawgmoth's Agenda when both apply to one card, and the handler's auto-pick could apply or skip
      * the exile the player didn't choose.
      */
-    val exileInsteadOfGraveyard: Boolean = false
+    val exileInsteadOfGraveyard: Boolean = false,
+    /**
+     * The grant's own additional cost (a continuous retrace grant — Six's "discard a land card").
+     * Part of the identity so a player holding both a free grant and a retrace grant picks which
+     * one they cast through — and thus whether they discard — rather than the handler choosing.
+     */
+    val additionalCost: AdditionalCost? = null
 )
 
 /**

@@ -9150,7 +9150,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   more to activate unless they're mana abilities" →
   `IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmount.Fixed(2), excludeManaAbilities = true)`.
   Without it, every land's `{T}: Add …` would be taxed too.
-- `MayCastFromGraveyard(filter, lifeCost = 0, duringYourTurnOnly = false, entersWithCounter = null, addedSubtypeOnEntry = null, oncePerTurn = false, exileInsteadOfGraveyard = false, fromAnyGraveyard = false)`
+- `MayCastFromGraveyard(filter, lifeCost = 0, duringYourTurnOnly = false, entersWithCounter = null, addedSubtypeOnEntry = null, oncePerTurn = false, exileInsteadOfGraveyard = false, fromAnyGraveyard = false, additionalCost = null)`
   — cast spells matching `filter` from your graveyard following normal timing, optionally paying
   `lifeCost` life. Free for Yawgmoth's Agenda (`MayCastFromGraveyard(Nonland)`); `lifeCost = 1,
   duringYourTurnOnly = true` for Festival of Embers. **`oncePerTurn`** limits the grant to one cast
@@ -9213,6 +9213,20 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   fromAnyGraveyard = true), EffectTarget.Controller, Duration.EndOfTurn) then
   Effects.ExileAndReturnTransformed(Self, ReturnFace.FRONT)`. The client ghosts castable cards from
   other players' graveyards next to your hand, the same as your own.
+  **Grant-carried additional cost (continuous retrace):** `additionalCost` is a non-mana cost a cast
+  under this grant owes on top of its other costs — the grant-side twin of
+  `MayCastSelfFromZones.additionalCost`. It is how "cards in your graveyard have retrace" is spelled
+  (CR 702.81a: "cast this card from your graveyard by discarding a land card as an additional cost to cast it"): Six = `MayCastFromGraveyard(GameObjectFilter.NonlandPermanent, duringYourTurnOnly = true,
+  additionalCost = Costs.additional.DiscardCards(1, GameObjectFilter.Land))`. The enumerator offers the
+  cast only when the cost is payable, with the cost's own picker (`additionalCostInfo`) and the cost in
+  the action text; `CastAdditionalCosts.owedAdditionalCosts` collects it through
+  `CastZoneResolver.graveyardGrantAdditionalCost`, which owes it only when the grant is the permission
+  the cast goes through — a self-zone permission, a Muldrotha-style permanent permission, flashback,
+  harmonize, or an announced mayhem/escape/warp/sneak/disturb cast waives it (retrace is not an
+  alternative cost, so evoke/dash etc. still owe it). The cost is part of the permission's identity
+  below (`GraveyardCastRiderSelection.additionalCost`), so a free grant beside a retrace grant is a
+  separate choice, and a selection claiming "no cost" when only the retrace grant applies still owes
+  the discard.
   **Choosing among grants (CR 601.2b):** when several `MayCastFromGraveyard` grants apply to the same
   card at once (a free `Nonland` grant *and* the Tomb's rider `Creature` grant), the graveyard-cast
   enumerator offers one legal action per distinct permission — distinguished by life cost and entry

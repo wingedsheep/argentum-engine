@@ -121,6 +121,10 @@ class CastAdditionalCosts(
         zoneResolver.findMayCastSelfFromZoneAbility(state, action.playerId, action.cardId)
             ?.additionalCost?.let { add(it) }
 
+        // A graveyard-cast grant's additional cost (Six's continuous retrace: "discard a land card"),
+        // owed only when that grant is the permission the cast goes through.
+        zoneResolver.graveyardGrantAdditionalCost(state, action)?.let { add(it) }
+
         // Gwenom: pay-life additional cost for a spell cast from the top of the library.
         zoneResolver.topOfLibraryAlternativeGrant(state, action.playerId, action.cardId)
             ?.additionalCost?.let { add(it) }

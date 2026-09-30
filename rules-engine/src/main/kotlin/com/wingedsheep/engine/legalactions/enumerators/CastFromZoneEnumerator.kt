@@ -2431,7 +2431,8 @@ class CastFromZoneEnumerator(
             // applies exactly the permission the player chose, and surfaced in the action text so the
             // options read differently when riders differ.
             val riderSelection = GraveyardCastRiderSelection(
-                permission.entersWithCounter, permission.addedSubtypeOnEntry, permission.exileInsteadOfGraveyard
+                permission.entersWithCounter, permission.addedSubtypeOnEntry, permission.exileInsteadOfGraveyard,
+                permission.additionalCost
             )
             val riderSuffix = graveyardRiderSuffix(permission)
 
@@ -2472,8 +2473,15 @@ class CastFromZoneEnumerator(
                     if (currentLife < lifeCost) continue
                 }
 
-                // Collapse permissions indistinguishable to the player (same card, life cost, rider).
-                if (!emitted.add("$cardId|$lifeCost|${permission.entersWithCounter}|${permission.addedSubtypeOnEntry}|${permission.exileInsteadOfGraveyard}")) continue
+                // The grant's own additional cost (Six's continuous retrace: "discard a land card") —
+                // unpayable means no action, like an unaffordable life cost.
+                val (grantCostInfo, canPayGrantCost) = presentOwedCosts(
+                    context, cardId, listOfNotNull(permission.additionalCost)
+                )
+                if (!canPayGrantCost) continue
+
+                // Collapse permissions indistinguishable to the player (same card, life cost, rider, extra cost).
+                if (!emitted.add("$cardId|$lifeCost|${permission.entersWithCounter}|${permission.addedSubtypeOnEntry}|${permission.exileInsteadOfGraveyard}|${permission.additionalCost}")) continue
 
                 val effectiveCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
                 val costString = effectiveCost.toString()
@@ -2488,7 +2496,8 @@ class CastFromZoneEnumerator(
                             affordable = false,
                             manaCostString = costString,
                             sourceZone = "GRAVEYARD",
-                            additionalLifeCost = lifeCost
+                            additionalLifeCost = lifeCost,
+                            additionalCostInfo = grantCostInfo
                         )
                     )
                     continue
@@ -2524,7 +2533,8 @@ class CastFromZoneEnumerator(
                                 manaCostString = costString,
                                 autoTapPreview = autoTapPreview,
                                 sourceZone = "GRAVEYARD",
-                                additionalLifeCost = lifeCost
+                                additionalLifeCost = lifeCost,
+                                additionalCostInfo = grantCostInfo
                             )
                         )
                     }
@@ -2537,7 +2547,8 @@ class CastFromZoneEnumerator(
                             manaCostString = costString,
                             autoTapPreview = autoTapPreview,
                             sourceZone = "GRAVEYARD",
-                            additionalLifeCost = lifeCost
+                            additionalLifeCost = lifeCost,
+                            additionalCostInfo = grantCostInfo
                         )
                     )
                 }
@@ -2549,14 +2560,15 @@ class CastFromZoneEnumerator(
      * Human-readable suffix describing a [MayCastFromGraveyard] permission's cast-this-way entry
      * rider, so two graveyard-cast options for the same card read differently when their riders
      * differ (e.g. "Cast Skullcap Snail (enters with a finality counter; becomes a Vampire)" vs the
-     * plain "Cast Skullcap Snail" from a free grant). Empty when the permission carries no rider.
+     * plain "Cast Skullcap Snail" from a free grant). A grant's additional cost ("discard a land card") leads. Empty when the permission carries neither.
      */
     private fun graveyardRiderSuffix(permission: MayCastFromGraveyard): String {
-        if (!permission.hasEntryRider) return ""
         val parts = buildList {
+            permission.additionalCost?.let { add(it.description.replaceFirstChar { c -> c.lowercase() }) }
             permission.entersWithCounter?.let { add("enters with a ${it.name.lowercase()} counter") }
             permission.addedSubtypeOnEntry?.let { add("becomes a $it") }
         }
+        if (parts.isEmpty()) return ""
         return " (" + parts.joinToString("; ") + ")"
     }
 

@@ -2379,6 +2379,105 @@
     ]
 }
 
+// Six
+{
+    "name": "Six",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Treefolk",
+    "oracleText": "Reach\nWhenever Six attacks, mill three cards. You may put a land card from among them into your hand.\nDuring your turn, nonland permanent cards in your graveyard have retrace. (You may cast permanent cards from your graveyard by discarding a land card in addition to paying their other costs.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Six:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "land",
+                            "storeSelected": "selected2",
+                            "prompt": "You may put a land card into your hand",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Leave in graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastFromGraveyard",
+                "filter": "nonland permanent",
+                "duringYourTurnOnly": true,
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomDiscard",
+                        "filter": "land"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "RARE",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9246b68-580f-4f53-883d-7900880e4b0d.jpg?1783911256",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If a spell you cast with retrace is countered, it's put back into your graveyard. You may use the retrace ability to cast it again."
+            }
+        ]
+    }
+}
+
 // Sneaky Snacker
 {
     "name": "Sneaky Snacker",
