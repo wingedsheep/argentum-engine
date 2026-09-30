@@ -6,6 +6,8 @@ import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.legalactions.utils.donorCardsActivatedAbilities
+import com.wingedsheep.engine.legalactions.utils.donorGrantReaches
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -2056,9 +2058,16 @@ class ManaSolver(
         state: GameState,
         manaStatics: ManaStaticsIndex
     ): List<ActivatedAbility> {
-        if (manaStatics.manaAbilityGrantors.isEmpty()) return emptyList()
+        if (manaStatics.manaAbilityGrantors.isEmpty() && manaStatics.donorGrantors.isEmpty()) return emptyList()
 
         val result = mutableListOf<ActivatedAbility>()
+        for (donor in manaStatics.donorGrantors) {
+            if (!donorGrantReaches(state, donor.granterId, entityId, donor.grant, predicateEvaluator)) continue
+            donorCardsActivatedAbilities(
+                state, donor.granterId, cardRegistry, predicateEvaluator,
+                donor.grant.donors, donor.grant.cardFilter, donor.grant.oncePerTurnEach
+            ).filterTo(result) { it.isManaAbility }
+        }
         for (grantor in manaStatics.manaAbilityGrantors) {
             val grant = grantor.grant
             if (grant.filter.excludeSelf && grantor.granterId == entityId) continue

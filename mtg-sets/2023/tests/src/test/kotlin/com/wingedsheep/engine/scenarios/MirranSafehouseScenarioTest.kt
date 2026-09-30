@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * Mirran Safehouse — {3} Artifact (Phyrexia: All Will Be One #232).
@@ -131,5 +132,19 @@ class MirranSafehouseScenarioTest : FunSpec({
         driver.submitExpectFailure(
             ActivateAbility(playerId = you, sourceId = safehouse, abilityId = AbilityId.intrinsicMana(Color.BLUE.symbol))
         )
+    }
+
+    test("auto-pay taps the Safehouse for a borrowed mana ability") {
+        val driver = createDriver()
+        val you = driver.activePlayer!!
+        val opponent = driver.getOpponent(you)
+        val safehouse = driver.putPermanentOnBattlefield(you, "Mirran Safehouse")
+        driver.putCardInGraveyard(opponent, "Forest")
+        val elves = driver.putCardInHand(you, "Llanowar Elves")
+
+        driver.castSpell(you, elves).error shouldBe null
+        driver.state.getEntity(safehouse)?.has<TappedComponent>() shouldBe true
+        resolveStack(driver)
+        driver.findPermanent(you, "Llanowar Elves") shouldNotBe null
     }
 })
