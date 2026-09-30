@@ -2671,6 +2671,23 @@ object DamageUtils {
         return amplifiedAmount
     }
 
+    /** Whether a matching life-loss lock forbids any loss, independent of the amount exchanged.
+     * A zero multiplier with no positive modifier is the existing life-loss prohibition shape.
+     * Amount reductions that merely happen to reduce this particular loss to zero are replacements,
+     * not prohibitions, and must not cancel the other half of a life-total exchange.
+     */
+    fun isLifeLossPrevented(
+        state: GameState,
+        playerId: EntityId,
+        predicateEvaluator: PredicateEvaluator
+    ): Boolean {
+        var prevented = false
+        forEachLifeLossReplacement<ModifyLifeLoss>(state, playerId, predicateEvaluator, { it.restrictions }) {
+            if (it.multiplier == 0 && it.modifier <= 0) prevented = true
+        }
+        return prevented
+    }
+
     /**
      * Apply life-loss replacement effects (ModifyLifeLoss) to a life-loss amount.
      *

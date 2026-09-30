@@ -1350,7 +1350,11 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 - `ExchangeLifeTotals(target, drawEqualToLifeLost)` — swap the controller's life total with `target`
   player's (CR 701.12c): each player gains/loses the life needed to reach the other's former total,
   applied through the shared gain/lose-life primitives so gain prevention/replacements and loss
-  modification apply and gain/loss triggers fire. With `drawEqualToLifeLost = true`, the controller
+  modification apply and gain/loss triggers fire. Before either total changes, a prohibition on the
+  required gain or loss cancels the **entire exchange** (CR 119.7–8); ordinary amount replacements
+  still modify a permitted exchange. Loss prohibitions use the existing `ModifyLifeLoss` zero-multiplier,
+  nonpositive-modifier shape, respecting its player scope and restrictions. Equal totals and self
+  exchanges do nothing. With `drawEqualToLifeLost = true`, the controller
   then draws a card for each point of life they **actually lost** in the swap (Mister Negative). Wrap
   the whole thing in `Effects.May` for "you may exchange".
 - `RedistributeLifeTotals()` — "Redistribute any number of players' life totals" (Reverse the Sands).

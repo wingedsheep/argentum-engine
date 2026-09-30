@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.handlers.effects.LifeGainModifiers
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.DrawCardPrimitive
 import com.wingedsheep.engine.state.GameState
@@ -18,7 +19,7 @@ import kotlin.reflect.KClass
  * Executor for [ExchangeLifeTotalsEffect] — each player gains or loses the amount of life needed to
  * equal the other's previous total (CR 701.12c). Both deltas are computed from the pre-exchange
  * snapshot, then applied through [DamageUtils.gainLife] / [DamageUtils.loseLife] so that life-gain
- * prevention (CR 119.5 — a player who can't gain life keeps their total), life-gain replacements
+ * prohibitions (CR 119.7–8 — either prohibition cancels the entire exchange), life-gain replacements
  * (CR 614 — Alhammarret's Archive), and life-loss modification (CR 119.3 — Bloodletter of Aclazotz)
  * all apply, and both players' [com.wingedsheep.engine.core.LifeChangedEvent]s fire for
  * gain/loss triggers.
@@ -53,11 +54,19 @@ class ExchangeLifeTotalsExecutor(
         val theirLife = state.lifeTotal(targetId)
         if (myLife == theirLife) return EffectResult.success(state) // no-op swap
 
+        // CR 701.12a/c: check both directions before mutating either total. Replacements may
+        // change the amounts, but a prohibition prevents the exchange altogether.
+        val gainingPlayer = if (myLife < theirLife) controllerId else targetId
+        val losingPlayer = if (myLife > theirLife) controllerId else targetId
+        if (DamageUtils.isLifeGainPrevented(state, gainingPlayer) ||
+            DamageUtils.isLifeLossPrevented(state, losingPlayer, predicateEvaluator)
+        ) return EffectResult.success(state)
+
         val events = mutableListOf<EngineGameEvent>()
         var newState = state
         // The controller moves toward the target's former total; the target toward the controller's.
-        newState = moveToTotal(newState, controllerId, from = myLife, to = theirLife, events)
-        newState = moveToTotal(newState, targetId, from = theirLife, to = myLife, events)
+        newState = moveToTotal(newState, state, controllerId, from = myLife, to = theirLife, events)
+        newState = moveToTotal(newState, state, targetId, from = theirLife, to = myLife, events)
 
         // "If you lost life this way, draw that many cards." Measure the controller's actual life
         // loss post-exchange so any life-loss modifier is reflected.
@@ -82,17 +91,24 @@ class ExchangeLifeTotalsExecutor(
      */
     private fun moveToTotal(
         state: GameState,
+        beforeExchange: GameState,
         playerId: EntityId,
         from: Int,
         to: Int,
         events: MutableList<EngineGameEvent>
     ): GameState {
         val (newState, event) = when {
-            to > from -> DamageUtils.gainLife(state, playerId, to - from, predicateEvaluator = predicateEvaluator)
+            to > from -> DamageUtils.gainLife(
+                state, playerId,
+                LifeGainModifiers.apply(beforeExchange, playerId, to - from, predicateEvaluator),
+                applyLifeGainModification = false,
+                predicateEvaluator = predicateEvaluator
+            )
             to < from -> DamageUtils.loseLife(
-                state, playerId, from - to,
+                state, playerId,
+                DamageUtils.applyStaticLifeLossModification(beforeExchange, playerId, from - to, predicateEvaluator),
                 reason = LifeChangeReason.LIFE_LOSS,
-                applyLifeLossModification = true,
+                applyLifeLossModification = false,
                 predicateEvaluator = predicateEvaluator
             )
             else -> state to null

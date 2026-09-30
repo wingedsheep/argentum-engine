@@ -53,4 +53,24 @@ class MisterNegativeScenarioTest : FunSpec({
         driver.getLifeTotal(opponent) shouldBe 12  // was 5, now the controller's former 12
         driver.getHandSize(you) shouldBe handBefore + 7 // lost 7 life → drew 7
     }
+    test("opponent unable to gain life cancels the exchange and the draw") {
+        val (driver, you, opponent) = newGame()
+        driver.setLifeTotal(you, 12)
+        driver.setLifeTotal(opponent, 5)
+        driver.addComponent(opponent, com.wingedsheep.engine.state.components.player.CantGainLifeComponent())
+        driver.giveMana(you, Color.WHITE, 1)
+        driver.giveMana(you, Color.BLACK, 1)
+        driver.giveColorlessMana(you, 5)
+        val mn = driver.putCardInHand(you, "Mister Negative")
+        driver.castSpell(you, mn)
+        resolveStack(driver)
+        val handBefore = driver.getHandSize(you)
+        driver.pendingDecision as YesNoDecision
+        driver.submitYesNo(you, true)
+        resolveStack(driver)
+        driver.getLifeTotal(you) shouldBe 12
+        driver.getLifeTotal(opponent) shouldBe 5
+        driver.getHandSize(you) shouldBe handBefore
+    }
+
 })
