@@ -77,7 +77,9 @@ internal object CombatDamageUtils {
     ): DamageChooser {
         val container = state.getEntity(attackerId) ?: return DamageChooser(defaultChooser, orderConstrained = true)
         val blockedBy = container.get<BlockedComponent>()
-        val blockerHasBanding = blockedBy?.blockerIds?.any { projected.hasKeyword(it, Keyword.BANDING) } == true
+        val blockerHasBanding = blockedBy?.blockerIds?.any {
+            it in state.getBattlefield() && projected.hasKeyword(it, Keyword.BANDING)
+        } == true
         if (!blockerHasBanding) return DamageChooser(defaultChooser, orderConstrained = true)
 
         // CR 702.22j: the defending player divides this attacker's damage "as they choose".

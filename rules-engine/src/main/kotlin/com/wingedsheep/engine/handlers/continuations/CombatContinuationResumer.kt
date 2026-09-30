@@ -128,8 +128,8 @@ class CombatContinuationResumer(
                 )
             }
         } else {
-            // Player chose to assign to blockers normally — mark with empty assignment
-            // so the pre-check doesn't re-ask; proposeDamageAssignments will auto-distribute
+            // Declining suppresses the bypass question, but leaves normal assignment open:
+            // the combat board still asks when blockers allow a choice, otherwise it auto-distributes.
             state.updateEntity(continuation.attackerId) { container ->
                 container.with(
                     com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent(emptyMap())

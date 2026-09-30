@@ -8011,7 +8011,11 @@ staticAbility {
   damage as though it weren't blocked" is `AssignCombatDamageAsUnblocked(GroupFilter(Creature.youControl()
   .notSubtype(Subtype.HUMAN)))`. `CombatDamageManager` (via `CombatDamageUtils.assignsAsThoughUnblocked`)
   asks a yes/no per blocked, covered attacker at each combat damage step it deals damage in; yes assigns its
-  whole assigned damage (Doran-style toughness riders included) to what it's attacking. Printed and
+  whole assigned damage (Doran-style toughness riders included) to what it's attacking. The choice
+  remains available after all blockers leave combat, since the attacker remains blocked. The normal
+  combat-damage chooser makes it: a remaining banding blocker gives the defending player this choice.
+  Declining preserves normal blocker damage allocation, including the defender's banding division;
+  it does not force an automatic distribution. Each damage step asks afresh. Printed and
   `GrantStaticAbility`-granted copies are both read. A face-down source carries nothing (CR 708.2a), but a
   face-down attacker is still covered by a face-up source's group — its prompt names it "face-down creature".
 - `AssignUnblockedCombatDamageToDefendingCreature(filter = source())` — static: "if this creature is

@@ -86,17 +86,15 @@ internal class CombatDamageManager(
 
         // Pre-check: if any blocked attacker may assign its combat damage as though it weren't
         // blocked (its own AssignCombatDamageAsUnblocked, or a battlefield-scoped one covering it),
-        // ask the controller whether to assign damage to the defending player instead of blockers.
+        // ask the damage chooser whether to assign damage to the attacked target instead of blockers.
         for ((attackerId, attackingComponent) in attackers) {
             if (attackerId !in state.getBattlefield()) continue
             val attackerContainer = state.getEntity(attackerId) ?: continue
             val attackerCard = attackerContainer.get<CardComponent>() ?: continue
 
             // Only relevant when blocked
-            val blockedBy = attackerContainer.get<BlockedComponent>() ?: continue
-            if (blockedBy.blockerIds.isEmpty()) continue
-            val liveBlockers = blockedBy.blockerIds.filter { it in state.getBattlefield() }
-            if (liveBlockers.isEmpty()) continue
+            // A creature remains blocked after its last blocker leaves combat.
+            if (!attackerContainer.has<BlockedComponent>()) continue
 
             // Already has a manual assignment (decision already made)
             if (attackerContainer.get<DamageAssignmentComponent>() != null) continue
@@ -111,6 +109,10 @@ internal class CombatDamageManager(
             if (attackerPower <= 0) continue
 
             val attackingPlayer = projected.getController(attackerId) ?: continue
+            val chooser = CombatDamageUtils.combatDamageChooser(
+                state, projected, attackerId, CombatDamageUtils.CombatSide.ATTACKER,
+                defaultChooser = attackingPlayer, activePlayerId = state.activePlayerId ?: attackingPlayer,
+            )
 
             // Never leak a face-down creature's name into the prompt.
             val attackerName = if (attackerContainer.has<FaceDownComponent>()) "face-down creature" else attackerCard.name
@@ -123,15 +125,15 @@ internal class CombatDamageManager(
                 question = { decisionId ->
                     YesNoDecision(
                         id = decisionId,
-                        playerId = attackingPlayer,
+                        playerId = chooser.playerId,
                         prompt = "Assign $attackerName's combat damage as though it weren't blocked?",
                         context = DecisionContext(
                             sourceId = attackerId,
                             sourceName = attackerName,
                             phase = DecisionPhase.COMBAT
                         ),
-                        yesText = "Assign to player",
-                        noText = "Assign to blockers"
+                        yesText = "Assign as unblocked",
+                        noText = "Assign normally"
                     )
                 },
                 answer = continuation
@@ -468,8 +470,9 @@ internal class CombatDamageManager(
             // part in the normal board here rather than being dropped from it.
             if (!attackerContainer.has<FaceDownComponent>() &&
                 cardDef?.staticAbilities?.any { it is DivideCombatDamageFreely } == true) continue
-            // AssignAsUnblocked, once answered, has written a DamageAssignmentComponent → skip.
-            if (attackerContainer.get<DamageAssignmentComponent>() != null) continue
+            // Accepting a bypass fixes the whole assignment. Declining stores an empty marker
+            // to suppress the yes/no prompt, but still permits the normal blocker division.
+            if (attackerContainer.get<DamageAssignmentComponent>()?.assignments?.isNotEmpty() == true) continue
             if (!dealsDamageThisStep(projected, attackerId, firstStrike)) continue
 
             val blockedBy = attackerContainer.get<BlockedComponent>()
