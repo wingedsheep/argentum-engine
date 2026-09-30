@@ -193,7 +193,12 @@ object Conditions {
             ),
         ),
         constant("it's bargained", SdkConditions.WasBargained),
-        constant("it's kicked", SdkConditions.WasKicked),
+        // "When ~ enters, **if it was kicked**, …" — the kicker permanents' intervening-if. Past
+        // tense is the only printed spelling (81 cards); the row used to read "it's kicked" by
+        // analogy with "it's bargained" above, which Oracle never prints. Bargain is the other way
+        // round: the present is its cost-position spelling, so its trigger form ("if it was
+        // bargained") is a separate, positional question this row doesn't answer.
+        constant("it was kicked", SdkConditions.WasKicked),
         // The life-state conditions Bloomburrow's Bats and Lizards check. Each is one whole clause
         // with a facade of its own, so they are constants rather than a shape: `Conditions` names
         // the gained/lost pair and both of its joins, and the printed English draws the same
