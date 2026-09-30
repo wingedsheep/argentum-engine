@@ -12493,7 +12493,7 @@
                     "space": {
                         "type": "IterationSpace.Group",
                         "filter": {
-                            "baseFilter": "creature Cleric ctrl:you"
+                            "baseFilter": "permanent Cleric ctrl:you"
                         }
                     },
                     "body": {

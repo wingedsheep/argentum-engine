@@ -35,7 +35,7 @@ val IndulgentAristocrat = card("Indulgent Aristocrat") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}"), Costs.Sacrifice(GameObjectFilter.Creature))
         effect = Effects.ForEachInGroup(
-            GroupFilter(GameObjectFilter.Creature.withSubtype(Subtype.VAMPIRE).youControl()),
+            GroupFilter(GameObjectFilter.Permanent.withSubtype(Subtype.VAMPIRE).youControl()),
             Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.IterationEntity)
         )
     }

@@ -23,10 +23,11 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * swing — turning face up is a special action (CR 702.168c) that uses no stack, so the opponent's
  * only response window is after the trigger is already on the stack.
  *
- * Both halves iterate the same group in one [Effects.ForEachInGroup] pass. That is not a shortcut:
- * "creatures you control" is evaluated once, on resolution, for the whole ability — a creature that
- * arrives later gets neither the counter nor the trample. The Radical itself *is* in the group,
- * because it is on the battlefield (face up) before the trigger resolves.
+ * Two sentences, two [Effects.ForEachInGroup] passes: each names "creatures you control" on its own,
+ * so each gathers the group when it runs. Nothing can enter between them mid-resolution, so both
+ * passes see the same creatures — and a creature that arrives later gets neither the counter nor
+ * the trample. The Radical itself *is* in the group, because it is on the battlefield (face up)
+ * before the trigger resolves.
  *
  * The counter is permanent and the trample is [com.wingedsheep.sdk.core.Duration.EndOfTurn] (the
  * `Effects.GrantKeyword` default), so a bounce or a second flip later in the turn leaves the
@@ -49,8 +50,10 @@ val GreenbeltRadical = card("Greenbelt Radical") {
         trigger = Triggers.self.turnedFaceUp()
         effect = Effects.ForEachInGroup(
             GroupFilter(GameObjectFilter.Creature.youControl()),
-            Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.IterationEntity) then
-                Effects.GrantKeyword(Keyword.TRAMPLE, EffectTarget.IterationEntity),
+            Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.IterationEntity),
+        ) then Effects.ForEachInGroup(
+            GroupFilter(GameObjectFilter.Creature.youControl()),
+            Effects.GrantKeyword(Keyword.TRAMPLE, EffectTarget.IterationEntity),
         )
         description = "When this creature is turned face up, put a +1/+1 counter on each creature " +
             "you control. Creatures you control gain trample until end of turn."
