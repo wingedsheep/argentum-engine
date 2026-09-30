@@ -534,6 +534,32 @@
     ]
 }
 
+// Pride of Lions
+{
+    "name": "Pride of Lions",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "You may have this creature assign its combat damage as though it weren't blocked.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            "AssignCombatDamageAsUnblocked"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "UNCOMMON",
+        "artist": "Carl Critchlow",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5006984-8e3d-4f13-b12e-1fbecd134bb3.jpg?1783946021"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Royal Falcon
 {
     "name": "Royal Falcon",
