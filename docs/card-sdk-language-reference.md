@@ -2195,7 +2195,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 - `CreateTokenCopyOfSelf(count?, overridePower?, overrideToughness?, removeLegendary?)` — token copies
   of the source. `removeLegendary = true` applies the "except it's not legendary" copy clause (Ran and
   Shaw), mirroring `CreateTokenCopyOfEquippedCreature`.
-- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, addedColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, addedStaticAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?, exileAtStep?, exileUnlessSourceIsRingBearer?, controller?, noManaCost?)` —
+- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, addedColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, addedStaticAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?, exileAtStep?, exileUnlessSourceIsRingBearer?, controller?, noManaCost?, attachedTo?)` —
   token copy of another permanent (or a card in any zone — the executor copies the target's `CardComponent`,
   so a graveyard/exile card works; pass `EffectTarget.PipelineTarget("name")` to copy a card a prior pipeline
   step exiled/stored, as Nexus of Becoming and Mardu Siegebreaker do).
@@ -2237,10 +2237,19 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   `null` defaults to the effect's controller. Set it for "**Target player** creates a token that's a copy of
   target creature you control" (Echocasting Symposium): the chosen creature is copied but the token enters
   under the named player's control. Mirrors `CreateTokenEffect.controller`.
-  **Aura copies (CR 303.4h)** need no extra parameter — the executor handles them. A token copy of an Aura
+  `attachedTo` (an `EffectTarget`) makes each copy **enter attached** to that object — "create a token
+  that's a copy of that permanent attached to that creature". The host is prescribed, so no choice is
+  offered, and legality follows the entering-attached rules (targeting restrictions like hexproof don't
+  apply), judged on the token's own characteristics: an Aura copy that can't legally enchant the host, or
+  whose host has left the battlefield, isn't created (CR 303.4i); an Equipment copy that can't equip it is
+  created unattached (CR 301.5e); any other copy enters unattached (CR 303.4h). **Arna Kennerüd,
+  Skycaptain**: `Pipeline { gather(AttachedTo(TriggeringEntity, Permanent.nontoken())) }` →
+  `ForEachInCollection(it, CreateTokenCopyOfTarget(IterationEntity, attachedTo = TriggeringEntity))` — the
+  gather runs before any token exists, so the new copies are never copied again.
+  **Aura copies (CR 303.4f)** need no extra parameter when `attachedTo` is unset — the executor handles them. A token copy of an Aura
   is created rather than cast, so it never targets; instead its controller *chooses* what it enchants as it
   enters, restricted to what the copied Aura could legally enchant (its `auraTarget`, with targeting
-  restrictions such as hexproof/shroud ignored per CR 303.4f). The choice is raised **before** the token
+  restrictions such as hexproof/shroud ignored). The choice is raised **before** the token
   exists, so it enters already attached and its enters-the-battlefield triggers see the attachment; a
   `PermanentAttachedEvent` fires so "becomes attached" triggers (Eriette, the Beguiler) work. With no legal
   object to enchant the token isn't created at all (CR 303.4g). An effect making several Aura copies asks

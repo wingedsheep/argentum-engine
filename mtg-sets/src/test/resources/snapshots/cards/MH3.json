@@ -315,6 +315,119 @@
     ]
 }
 
+// Arna Kennerüd, Skycaptain
+{
+    "name": "Arna Kennerüd, Skycaptain",
+    "manaCost": "{2}{W}{U}{B}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Flying, lifelink\nWard—Discard a card.\nWhenever a modified creature you control attacks, double the number of each kind of counter on it. Then for each nontoken permanent attached to it, create a token that's a copy of that permanent attached to that creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": "WardCost.Discard"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arna Kennerüd, Skycaptain:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsModified"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DoubleCounters",
+                            "counterType": null,
+                            "target": "TriggeringEntity"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "AttachedToTarget",
+                                        "host": "TriggeringEntity",
+                                        "filter": "permanent nontoken"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "ForEach",
+                                    "space": {
+                                        "type": "IterationSpace.Collection",
+                                        "collection": "gathered0"
+                                    },
+                                    "body": {
+                                        "type": "CreateTokenCopyOfTarget",
+                                        "target": "IterationEntity",
+                                        "attachedTo": "TriggeringEntity"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a modified creature you control attacks, double the number of each kind of counter on it. Then for each nontoken permanent attached to it, create a token that's a copy of that permanent attached to that creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "MYTHIC",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19266b5a-ff78-436c-b0f1-457e80bb647e.jpg?1783911254",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "To double the number of each kind of counter on a permanent, put another counter on it for each counter it already has. Effects that interact with counters being put onto permanents, such as the effect of Branching Evolution, apply as appropriate."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If, for any reason, an Aura token that would be created with Arna Kennerüd's last ability can't be attached to the appropriate creature, that token isn't created. If an Equipment token that can't be attached to the appropriate creature would be created, that token enters the battlefield unattached."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "An Aura controlled by another player does not cause a creature you control to be modified."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "A creature with a counter on it is considered modified no matter what kind of counter it is or which player put it on that creature."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "A creature that is equipped is considered modified no matter who controls the Equipment that's attached to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Chthonian Nightmare
 {
     "name": "Chthonian Nightmare",

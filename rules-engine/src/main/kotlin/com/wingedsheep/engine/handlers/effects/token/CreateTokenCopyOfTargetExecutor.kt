@@ -47,13 +47,18 @@ import kotlin.reflect.KClass
  * Creates N token copies of a targeted permanent (resolved via EffectTarget).
  * Used for "Create X tokens that are copies of target token you control."
  *
- * **Aura copies (CR 303.4h).** A token copy of an Aura is put onto the battlefield without being
+ * **Aura copies (CR 303.4f).** A token copy of an Aura is put onto the battlefield without being
  * cast, so it doesn't target — its controller instead *chooses* what it enchants as it enters,
  * bound by the copied Aura's own enchant restriction (CR 303.4f; targeting restrictions such as
  * hexproof and shroud are ignored). The choice is raised *before* the token exists, so the token
  * enters already attached and its enters-the-battlefield triggers see the attachment. If there is
  * no legal object to enchant, the token isn't created at all (CR 303.4g) — Yenna, Redtooth Regent
  * copying an Aura whose only legal hosts have left the battlefield.
+ *
+ * **Prescribed host.** When the effect names the host ([CreateTokenCopyOfTargetEffect.attachedTo])
+ * there is no choice: each token enters attached to that object if it legally can. An Aura copy that
+ * can't is not created (CR 303.4i); an Equipment copy that can't is created unattached (CR 301.5e);
+ * anything else simply enters unattached (CR 303.4h).
  */
 class CreateTokenCopyOfTargetExecutor(
     private val amountEvaluator: DynamicAmountEvaluator,
@@ -116,7 +121,16 @@ class CreateTokenCopyOfTargetExecutor(
                 )
             }
 
-        // An Aura token needs its host chosen before it can be created (CR 303.4h) — the copy's
+        // A prescribed host ("… attached to that creature") replaces the Aura host choice; the
+        // per-token legality check happens in createTokens, once the token's characteristics exist.
+        effect.attachedTo?.let { host ->
+            return createTokens(
+                state, effect, context, controllerId, count, auraHostId = null,
+                prescribedHostId = context.resolveTarget(host, state),
+            )
+        }
+
+        // An Aura token needs its host chosen before it can be created (CR 303.4f) — the copy's
         // type line decides, so read it off the copied CardComponent (copiable values only).
         if (auraTypeLineOf(effect, targetCard).isAura) {
             return AuraTokenHostChooser.pause(
@@ -141,6 +155,10 @@ class CreateTokenCopyOfTargetExecutor(
      * created token enters attached to it (the Aura path — see the class docs); otherwise the
      * tokens enter unattached. Split out of [execute] so the Aura host-choice continuation can
      * re-enter here once the controller has picked a host.
+     *
+     * When the effect prescribes a host ([CreateTokenCopyOfTargetEffect.attachedTo]),
+     * [prescribedHostId] is that host as resolved (null if it no longer exists); each token is
+     * attached to it only if it could legally be, and an Aura token that couldn't is not created.
      */
     internal fun createTokens(
         state: GameState,
@@ -149,6 +167,7 @@ class CreateTokenCopyOfTargetExecutor(
         controllerId: EntityId,
         count: Int,
         auraHostId: EntityId?,
+        prescribedHostId: EntityId? = null,
     ): EffectResult {
         val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.success(state)
@@ -176,6 +195,7 @@ class CreateTokenCopyOfTargetExecutor(
 
         val cappedCount = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(count, "target-copy tokens")
         for (index in 0 until cappedCount) {
+            val stateBeforeToken = newState
             val (tokenId, stateWithId) = newState.newEntity()
             newState = stateWithId
 
@@ -223,13 +243,6 @@ class CreateTokenCopyOfTargetExecutor(
                 )
             }
 
-            // CR 303.4h: an Aura token enters already attached to the host its controller chose
-            // before it was created, so the attachment is in place for any enters-the-battlefield
-            // trigger and for the very first state-based check.
-            if (auraHostId != null) {
-                components.add(AttachedToComponent(auraHostId))
-            }
-
             var container = ComponentContainer.of(*components.toTypedArray())
 
             if (staticAbilityHandler != null) {
@@ -263,11 +276,31 @@ class CreateTokenCopyOfTargetExecutor(
                     newState, tokenId, controllerId, definedTapped = effect.tapped,
                     predicateEvaluator = amountEvaluator.predicates
                 )
-            // Wire the host side of the attachment and announce it, so "becomes attached"
-            // triggers (Eriette, the Beguiler) fire for an Aura token the same way they do when
-            // an Aura card is put onto the battlefield attached (CR 603.2f).
-            if (auraHostId != null) {
-                newState = newState.updateEntity(auraHostId) { hostContainer ->
+            // The host the token enters attached to: the one its controller chose for an Aura copy
+            // (CR 303.4f), or the effect's prescribed host when the token could legally be attached
+            // to it. Legality is judged on the token's own characteristics, now that it exists.
+            val hostId = if (effect.attachedTo == null) auraHostId else prescribedHostId?.takeIf { host ->
+                cardRegistry != null && com.wingedsheep.engine.handlers.effects.permanent.attachments
+                    .AttachmentMover.canAttach(newState, amountEvaluator.predicates, cardRegistry, tokenId, host)
+            }
+            // CR 303.4i: an Aura that can't legally enchant the prescribed host (or whose host is
+            // gone) isn't created. An Equipment or anything else enters unattached (CR 301.5e,
+            // CR 303.4h).
+            if (effect.attachedTo != null && hostId == null &&
+                newState.projectedState.hasSubtype(tokenId, "Aura")
+            ) {
+                newState = stateBeforeToken
+                continue
+            }
+
+            // The token enters already attached, so the attachment is in place for any
+            // enters-the-battlefield trigger and for the very first state-based check. Wire the
+            // host side of the attachment and announce it, so "becomes attached" triggers (Eriette,
+            // the Beguiler) fire for an Aura token the same way they do when an Aura card is put
+            // onto the battlefield attached (CR 603.2f).
+            if (hostId != null) {
+                newState = newState.updateEntity(tokenId) { it.with(AttachedToComponent(hostId)) }
+                newState = newState.updateEntity(hostId) { hostContainer ->
                     val existing = hostContainer.get<AttachmentsComponent>()
                     hostContainer.with(
                         AttachmentsComponent((existing?.attachedIds ?: emptyList()) + tokenId)
@@ -277,7 +310,7 @@ class CreateTokenCopyOfTargetExecutor(
                     com.wingedsheep.engine.core.PermanentAttachedEvent(
                         attachmentId = tokenId,
                         attachmentName = tokenCard.name,
-                        attachedToId = auraHostId,
+                        attachedToId = hostId,
                         controllerId = controllerId,
                     )
                 )

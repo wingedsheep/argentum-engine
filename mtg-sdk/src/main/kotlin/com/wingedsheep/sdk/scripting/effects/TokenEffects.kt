@@ -550,6 +550,20 @@ data class CreateTokenCopyOfTargetEffect(
      * enchantment leaves the battlefield, exile the token" has to find the one token it made.
      */
     val stampCreator: Boolean = false,
+    /**
+     * The object each token copy enters the battlefield **attached to** — "create a token that's a
+     * copy of that Aura attached to that creature" (Arna Kennerüd, Skycaptain). Null (the default)
+     * creates the tokens unattached, except that an Aura copy's controller then chooses a host as
+     * it enters (CR 303.4f).
+     *
+     * The host is prescribed, so no choice is offered, and legality follows the entering-attached
+     * rules rather than targeting (hexproof and shroud don't apply):
+     *  - an **Aura** copy that can't legally enchant the host — or whose host has left the
+     *    battlefield — isn't created at all (CR 303.4i);
+     *  - an **Equipment** copy that can't legally equip it is created unattached (CR 301.5e);
+     *  - a copy that is neither enters unattached (CR 303.4h).
+     */
+    val attachedTo: EffectTarget? = null,
 ) : Effect {
     /**
      * This effect's copy exceptions (CR 707.9) in the shared [CopyExceptions] vocabulary — the same
@@ -628,6 +642,7 @@ data class CreateTokenCopyOfTargetEffect(
         if (addedKeywords.isNotEmpty()) {
             append(" with ${addedKeywords.joinToString(", ") { it.displayName.lowercase() }}")
         }
+        if (attachedTo != null) append(" attached to ${attachedTo.description}")
         if (exileAtStep != null) {
             val pronoun = if (count == DynamicAmount.Fixed(1)) "that token" else "those tokens"
             append(". At the beginning of the next ${exileAtStep.name.lowercase()} step, exile $pronoun")
