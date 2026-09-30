@@ -196,6 +196,7 @@ class DynamicAmountEvaluator(
         DynamicAmount.StationCharge,
         is DynamicAmount.StoredCardManaValue,
         is DynamicAmount.SubtypeEnteredUnderControlThisTurn,
+        is DynamicAmount.CardTypeEnteredUnderControlThisTurn,
         is DynamicAmount.CreaturesWithSubtypeDiedThisTurn,
         DynamicAmount.TotalManaSpent,
         DynamicAmount.TotalPowerSacrificedThisWay,
@@ -867,6 +868,13 @@ class DynamicAmountEvaluator(
                         ?.creatureIds?.size ?: 0
                 }
             }
+
+            is DynamicAmount.CardTypeEnteredUnderControlThisTurn ->
+                resolveUnifiedPlayerIds(state, amount.player, context, projectedState).sumOf { playerId ->
+                    state.getEntity(playerId)
+                        ?.get<com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent>()
+                        ?.countOfType(amount.cardType) ?: 0
+                }
 
             is DynamicAmount.SubtypeEnteredUnderControlThisTurn -> {
                 val playerIds = resolveUnifiedPlayerIds(state, amount.player, context, projectedState)

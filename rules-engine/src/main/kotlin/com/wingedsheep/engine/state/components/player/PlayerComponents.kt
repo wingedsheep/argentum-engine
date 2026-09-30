@@ -1590,6 +1590,8 @@ data class EnteredPermanentRecord(
  *    battlefield under your control this turn", Bioengineered Future) and the
  *    `PermanentTypeEnteredBattlefieldThisTurn` condition (Mechan Shieldmate's "as long as an
  *    artifact entered the battlefield under your control this turn").
+ *  - [countOfType] → `DynamicAmount.CardTypeEnteredUnderControlThisTurn` ("if three or more
+ *    artifacts entered the battlefield under your control this turn", Malcator, Purity Overseer).
  *  - [entries] directly → `DynamicAmount.SubtypeEnteredUnderControlThisTurn` ("each other Zombie
  *    that entered the battlefield under your control this turn", Geralf, the Fleshwright).
  */

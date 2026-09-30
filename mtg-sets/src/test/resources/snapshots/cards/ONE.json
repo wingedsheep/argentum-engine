@@ -1659,6 +1659,81 @@
     ]
 }
 
+// Malcator, Purity Overseer
+{
+    "name": "Malcator, Purity Overseer",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Legendary Creature — Phyrexian Elephant Wizard",
+    "oracleText": "When Malcator enters, create a 3/3 colorless Phyrexian Golem artifact creature token.\nAt the beginning of your end step, if three or more artifacts entered the battlefield under your control this turn, create a 3/3 colorless Phyrexian Golem artifact creature token.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Malcator, Purity Overseer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Phyrexian",
+                        "Golem"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/3/63ace2fa-8cfb-4641-a05c-d12830378e03.jpg?1783918166",
+                    "artifactToken": true
+                }
+            },
+            {
+                "id": "Malcator, Purity Overseer:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Phyrexian",
+                        "Golem"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/3/63ace2fa-8cfb-4641-a05c-d12830378e03.jpg?1783918166",
+                    "artifactToken": true
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "CardTypeEnteredUnderControlThisTurn",
+                        "player": "You",
+                        "cardType": "ARTIFACT"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if three or more artifacts entered the battlefield under your control this turn, create a 3/3 colorless Phyrexian Golem artifact creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "RARE",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36bda977-e5d1-4813-a5f5-265023965142.jpg?1783918000"
+    }
+}
+
 // Mandible Justiciar
 {
     "name": "Mandible Justiciar",

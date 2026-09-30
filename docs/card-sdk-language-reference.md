@@ -13342,6 +13342,16 @@ entrant is recorded before the triggers resolve, each one sees the others (2024-
 two single-subtype amounts would double-count a permanent carrying both. The singular facade is the
 ordinary one-tribe case.
 
+`CardTypeEnteredUnderControlThisTurn(player, cardType)` /
+`DynamicAmounts.cardTypeEnteredUnderControlThisTurn(cardType, player = Player.You)` — "the number of
+[card type]s that entered the battlefield under [player]'s control this turn", the card-type sibling of
+`SubtypeEnteredUnderControlThisTurn` over the same entry log. An entry counts if the permanent had the
+type in projected state as it entered (tokens included); it stays counted after the permanent leaves or
+loses the type, and a re-entry counts again (CR 400.7). Feed it to `Conditions.CompareAmounts` for a
+threshold — Malcator, Purity Overseer's "if three or more artifacts entered the battlefield under your
+control this turn" is `CompareAmounts(cardTypeEnteredUnderControlThisTurn(ARTIFACT), GTE, 3)` as an
+`interveningIf`. For "one or more" prefer `Conditions.PermanentTypeEnteredBattlefieldThisTurn`.
+
 `CreaturesWithSubtypeDiedThisTurn(subtype, player = Player.Each)` /
 `DynamicAmounts.creaturesWithSubtypeDiedThisTurn(subtype, player?)` — "the number of [subtype]s that
 died this turn" (the CHK Zubera cycle: "for each Zubera that died this turn"). Game-wide by default;

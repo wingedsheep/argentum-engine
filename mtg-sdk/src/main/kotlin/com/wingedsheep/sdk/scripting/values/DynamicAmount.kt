@@ -1753,6 +1753,27 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * The number of [cardType] permanents that entered the battlefield under [player]'s control this
+     * turn — the card-type sibling of [SubtypeEnteredUnderControlThisTurn] over the same per-player
+     * entry log (Malcator, Purity Overseer — "if three or more artifacts entered the battlefield
+     * under your control this turn"). An entry counts if the permanent had [cardType] (in projected
+     * state) at the moment it entered; it stays counted after the permanent leaves, changes
+     * controller or loses the type, and a permanent that leaves and re-enters counts twice (CR 400.7).
+     *
+     * Backed by `PermanentsEnteredUnderControlThisTurnComponent`.
+     */
+    @SerialName("CardTypeEnteredUnderControlThisTurn")
+    @Serializable
+    data class CardTypeEnteredUnderControlThisTurn(
+        val player: Player,
+        val cardType: com.wingedsheep.sdk.core.CardType
+    ) : DynamicAmount {
+        override val description: String =
+            "the number of ${cardType.name.lowercase()}s that entered the battlefield under " +
+                "${player.possessive} control this turn"
+    }
+
+    /**
      * The number of permanents with **any** of [subtypes] that entered the battlefield under
      * [player]'s control this turn (counting even those that have since left or changed type —
      * the entry event is what's tracked). When [excludeTriggeringEntity] is true, the permanent

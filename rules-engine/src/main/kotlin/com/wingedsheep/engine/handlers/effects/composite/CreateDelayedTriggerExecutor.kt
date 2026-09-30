@@ -329,6 +329,7 @@ class CreateDelayedTriggerExecutor(
         is DynamicAmount.StartingLifeTotal,
         DynamicAmount.StationCharge,
         is DynamicAmount.SubtypeEnteredUnderControlThisTurn,
+        is DynamicAmount.CardTypeEnteredUnderControlThisTurn,
         is DynamicAmount.CreaturesWithSubtypeDiedThisTurn,
         DynamicAmount.TotalManaSpent,
         DynamicAmount.TotalPowerSacrificedThisWay,

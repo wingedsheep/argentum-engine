@@ -792,6 +792,16 @@ object DynamicAmounts {
         DynamicAmount.SubtypeEnteredUnderControlThisTurn(player, setOf(subtype), excludeTriggeringEntity)
 
     /**
+     * "The number of [cardType]s that entered the battlefield under [player]'s control this turn"
+     * (Malcator, Purity Overseer — "three or more artifacts entered … this turn", as a `Compare`).
+     * Counts entries even after the permanent has left or stopped having the type.
+     */
+    fun cardTypeEnteredUnderControlThisTurn(
+        cardType: com.wingedsheep.sdk.core.CardType,
+        player: Player = Player.You
+    ): DynamicAmount = DynamicAmount.CardTypeEnteredUnderControlThisTurn(player, cardType)
+
+    /**
      * "The number of As and/or Bs that entered the battlefield under [player]'s control this turn"
      * (Cloudspire Coordinator — "Mounts and/or Vehicles"). Any-of over [subtypes], so a permanent
      * carrying several of them still counts once; summing per-subtype amounts would not.
