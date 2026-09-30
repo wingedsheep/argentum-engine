@@ -119,6 +119,8 @@ class CreateTokenCopyOfSourceExecutor(
             }
 
             var container = ComponentContainer.of(*components.toTypedArray())
+            // Toxic N / bushido N ride components, not the CardComponent — carry them over too.
+            container = CopyExceptionApplier.withNumericKeywords(container, sourceContainer, exceptions)
 
             // Add static abilities from the card definition (uses cardDefinitionId lookup)
             if (staticAbilityHandler != null) {

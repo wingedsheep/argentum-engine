@@ -67,6 +67,10 @@ import kotlinx.serialization.Serializable
  * @property toughnessOverride Replaces the copied base toughness.
  * @property noManaCost "except it … has no mana cost" — the copy has no mana cost and so mana
  *   value 0 (Embalm / Eternalize, CR 702.128a).
+ * @property addedNumericKeywords Numeric keywords the copy has *in addition* to the ones it copied —
+ *   "except it's 1/1 and it has toxic 1" (Kinzu of the Bleak Coven). Kept apart from
+ *   [addedKeywords] because the N is part of the ability; instances stack with the copied ones
+ *   (toxic 2 copied + toxic 1 added is a total of toxic 3, CR 702.164b).
  */
 @Serializable
 data class CopyExceptions(
@@ -83,6 +87,7 @@ data class CopyExceptions(
     val powerOverride: Int? = null,
     val toughnessOverride: Int? = null,
     val noManaCost: Boolean = false,
+    val addedNumericKeywords: List<com.wingedsheep.sdk.scripting.KeywordAbility.Numeric> = emptyList(),
     /** Abilities added as copiable rules text, including multiple identical instances. */
     val addedTriggeredAbilities: List<com.wingedsheep.sdk.scripting.TriggeredAbility> = emptyList(),
 ) {
@@ -119,6 +124,7 @@ data class CopyExceptions(
             powerOverride = powerOverride ?: base.powerOverride,
             toughnessOverride = toughnessOverride ?: base.toughnessOverride,
             noManaCost = noManaCost || base.noManaCost,
+            addedNumericKeywords = base.addedNumericKeywords + addedNumericKeywords,
             addedTriggeredAbilities = base.addedTriggeredAbilities + addedTriggeredAbilities,
         )
     }
@@ -170,6 +176,7 @@ data class CopyExceptions(
         if (addedKeywords.isNotEmpty()) {
             add("it has ${addedKeywords.joinToString(", ") { it.name.lowercase().replace('_', ' ') }}")
         }
+        for (numeric in addedNumericKeywords) add("it has ${numeric.keyword.displayName.lowercase()} ${numeric.n}")
         if (noManaCost) add("it has no mana cost")
         for (ability in addedTriggeredAbilities) add("it has \"${ability.description}\"")
     }

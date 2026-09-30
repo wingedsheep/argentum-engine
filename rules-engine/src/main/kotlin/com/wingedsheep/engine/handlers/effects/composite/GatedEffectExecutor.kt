@@ -828,7 +828,11 @@ class GatedEffectExecutor(
             val happened = evaluate(state, criterion, snapshot, effectContext, evaluationEvents)
             val branch = if (happened) then else otherwise
                 ?: return EffectResult.success(state, priorEvents)
-            val branchResult = effectExecutor(state, branch, effectContext)
+            // The branch is a later part of the same effect as the action, so it may find the object
+            // the action just moved to a public zone (CR 400.7j) — "exile it. If you do, create a
+            // token that's a copy of that creature" (Kinzu of the Bleak Coven). Same authorization
+            // CompositeEffectExecutor applies between its steps.
+            val branchResult = effectExecutor(state, branch, effectContext.authorizeObjectMoves(evaluationEvents))
             return branchResult.copy(events = priorEvents + branchResult.events)
         }
 

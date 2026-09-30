@@ -1886,6 +1886,118 @@
     ]
 }
 
+// Kinzu of the Bleak Coven
+{
+    "name": "Kinzu of the Bleak Coven",
+    "manaCost": "{4}{B}",
+    "typeLine": "Legendary Creature — Phyrexian Vampire",
+    "oracleText": "Flying\nWhenever another nontoken creature you control dies, you may pay 2 life and exile it. If you do, create a token that's a copy of that creature, except it's 1/1 and has toxic 1. (Players dealt combat damage by it also get a poison counter.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kinzu of the Bleak Coven:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayLife",
+                            "amount": 2
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": "TriggeringEntity",
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": "TriggeringEntity",
+                            "exceptions": {
+                                "powerOverride": 1,
+                                "toughnessOverride": 1,
+                                "addedNumericKeywords": [
+                                    {
+                                        "keyword": "TOXIC",
+                                        "n": 1
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "406",
+        "rarity": "RARE",
+        "artist": "Andreas Zafiratos",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28934cf3-c1e0-49c9-93ce-fd60b1881884.jpg?1783917920",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "The token copies the creature as it last existed on the battlefield before it died, not as it existed in the graveyard before it was exiled."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Except for the listed exceptions, the token copies exactly what was printed on the original creature and nothing else (unless that creature is copying something else; see below). It doesn't copy whether that creature was tapped or untapped, whether it had any counters on it or Auras or Equipment attached to it, or any non-copy effects that had changed its power, toughness, types, color, or so on."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If the copied creature was copying something else, then the token enters the battlefield as whatever that creature copied, with the exceptions noted above."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If the token is a copy of a creature whose power and toughness are defined by an ability (usually printed as */* or similar), the token doesn't copy the ability that defines its power and toughness. It remains a 1/1 creature."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If something becomes a copy of the token, the copy also has base power and toughness 1/1 and has toxic 1."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Multiple instances of toxic are cumulative. For example, if a creature has toxic 2 and gains toxic 1 due to another effect, combat damage that creature deals to a player will cause that player to get 3 poison counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Malcator's Watcher
 {
     "name": "Malcator's Watcher",

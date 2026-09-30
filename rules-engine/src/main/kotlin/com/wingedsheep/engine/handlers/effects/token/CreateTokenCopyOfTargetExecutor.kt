@@ -231,6 +231,8 @@ class CreateTokenCopyOfTargetExecutor(
             }
 
             var container = ComponentContainer.of(*components.toTypedArray())
+            // Toxic N / bushido N ride components, not the CardComponent — carry them over too.
+            container = CopyExceptionApplier.withNumericKeywords(container, targetContainer, exceptions)
 
             if (staticAbilityHandler != null) {
                 container = staticAbilityHandler.addContinuousEffectComponent(container)

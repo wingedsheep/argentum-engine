@@ -329,4 +329,43 @@ class CopyExceptionsTest : FunSpec({
         next.copyTriggeredAbilities.map { it.id }.toSet().size shouldBe 3
     }
 
+    test("numeric keywords ride onto the copy from the source's components, plus the added ones") {
+        val toxic2Bushido1 = com.wingedsheep.engine.state.ComponentContainer.of(
+            com.wingedsheep.engine.state.components.identity.ToxicComponent(2),
+            com.wingedsheep.engine.state.components.identity.NumericKeywordValuesComponent(mapOf(Keyword.BUSHIDO to 1)),
+        )
+        val toxic1 = CopyExceptions(
+            addedNumericKeywords = listOf(com.wingedsheep.sdk.scripting.KeywordAbility.Numeric(Keyword.TOXIC, 1))
+        )
+        val copy = CopyExceptionApplier.withNumericKeywords(
+            com.wingedsheep.engine.state.ComponentContainer.of(), toxic2Bushido1, toxic1
+        )
+        // CR 702.164b: toxic instances are cumulative — toxic 2 copied + toxic 1 added.
+        copy.get<com.wingedsheep.engine.state.components.identity.ToxicComponent>()?.amount shouldBe 3
+        copy.get<com.wingedsheep.engine.state.components.identity.NumericKeywordValuesComponent>()?.values shouldBe
+            mapOf(Keyword.BUSHIDO to 1)
+
+        // A plain copy of that copy keeps its toxic 3 — the exception is itself a copiable value.
+        val copyOfCopy = CopyExceptionApplier.withNumericKeywords(
+            com.wingedsheep.engine.state.ComponentContainer.of(), copy, CopyExceptions.None
+        )
+        copyOfCopy.get<com.wingedsheep.engine.state.components.identity.ToxicComponent>()?.amount shouldBe 3
+
+        // The copy's own printed values are replaced, not summed with the copied ones.
+        val overwritten = CopyExceptionApplier.withNumericKeywords(
+            com.wingedsheep.engine.state.ComponentContainer.of(com.wingedsheep.engine.state.components.identity.ToxicComponent(5)),
+            com.wingedsheep.engine.state.ComponentContainer.of(),
+            CopyExceptions.None,
+        )
+        overwritten.get<com.wingedsheep.engine.state.components.identity.ToxicComponent>() shouldBe null
+    }
+
+    test("an added numeric keyword renders as its own 'except' clause") {
+        CopyExceptions(
+            powerOverride = 1,
+            toughnessOverride = 1,
+            addedNumericKeywords = listOf(com.wingedsheep.sdk.scripting.KeywordAbility.Numeric(Keyword.TOXIC, 1)),
+        ).clauses() shouldBe listOf("it's 1/1", "it has toxic 1")
+    }
+
 })
