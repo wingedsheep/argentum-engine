@@ -2683,6 +2683,80 @@
     ]
 }
 
+// Magical Hack
+{
+    "name": "Magical Hack",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Change the text of target spell or permanent by replacing all instances of one basic land type with another. (For example, you may change \"swampwalk\" to \"plainswalk.\" This effect lasts indefinitely.)",
+    "script": {
+        "spellEffect": {
+            "type": "ChangeWordInText",
+            "categories": [
+                "BASIC_LAND_TYPE"
+            ],
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "duration": "Permanent"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetSpellOrPermanent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "RARE",
+        "artist": "Julie Baroh",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bd4202c-0477-45aa-82fd-83c85d6d4bef.jpg?1783948704",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Alters all occurrences of the chosen word in the text box and the type line of the given card."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Can target a card with no appropriate words on it, or even one with no words at all."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "It can’t change a word to the same word. It must be a different word."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "It only changes what is printed on the card (or set on a token when it was created or set by a copy effect). It will not change any effects that are on the permanent."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "You choose the words to change on resolution."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "You can’t change proper nouns (i.e. card names) such as “Island Fish Jasconius”."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Changing the text of a spell will not allow you to change the targets of the spell because the targets were chosen when the spell was cast. The text change will (probably) cause it to be countered since the targets will be illegal."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If you change the text of a spell which is to become a permanent, the permanent will retain the text change until the effect wears off."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "It can be used to change a land’s type from one basic land type to another. For example, Forest can be changed to Island so it produces blue mana. It doesn’t change the name of any permanent."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mahamoti Djinn
 {
     "name": "Mahamoti Djinn",
