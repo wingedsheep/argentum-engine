@@ -20,9 +20,12 @@ import kotlinx.serialization.Serializable
  * @property colors Colors this permanent is hexproof from (Knight of Malice — hexproof from white).
  * @property cardTypes Uppercased card-type names this permanent is hexproof from
  *   (Elenda, Saint of Dusk — hexproof from instants).
+ * @property nonColors Colors whose *complement* this permanent is hexproof from — "nongreen"
+ *   (Thrun, Breaker of Silence), projected as `HEXPROOF_FROM_NON_<COLOR>`.
  */
 @Serializable
 data class HexproofFromComponent(
     val colors: Set<Color> = emptySet(),
-    val cardTypes: Set<String> = emptySet()
+    val cardTypes: Set<String> = emptySet(),
+    val nonColors: Set<Color> = emptySet()
 ) : Component

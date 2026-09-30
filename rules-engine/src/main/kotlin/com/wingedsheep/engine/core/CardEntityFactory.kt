@@ -151,8 +151,9 @@ object CardEntityFactory {
             result = result.with(SelfZoneRedirectComponent(selfRedirects))
         }
 
-        // "Hexproof from [quality]" (CR 702.11b). Only the scopes the rules engine enforces are
-        // carried: colors (`HEXPROOF_FROM_<COLOR>`) and card types (`HEXPROOF_FROM_CARDTYPE_<TYPE>`).
+        // "Hexproof from [quality]" (CR 702.11d). Only the scopes the rules engine enforces are
+        // carried: colors (`HEXPROOF_FROM_<COLOR>`), non-colors (`HEXPROOF_FROM_NON_<COLOR>`) and
+        // card types (`HEXPROOF_FROM_CARDTYPE_<TYPE>`).
         // Other [ProtectionScope]s format oracle text but have no targeting wiring yet, so they are
         // dropped rather than projected as a keyword nothing consults.
         val hexproofScopes = cardDef.keywordAbilities
@@ -168,8 +169,11 @@ object CardEntityFactory {
         val hexproofCardTypes = hexproofScopes.filterIsInstance<ProtectionScope.CardType>()
             .map { it.cardType.uppercase() }
             .toSet()
-        if (hexproofColors.isNotEmpty() || hexproofCardTypes.isNotEmpty()) {
-            result = result.with(HexproofFromComponent(hexproofColors, hexproofCardTypes))
+        val hexproofNonColors = hexproofScopes.filterIsInstance<ProtectionScope.NonColor>()
+            .map { it.color }
+            .toSet()
+        if (hexproofColors.isNotEmpty() || hexproofCardTypes.isNotEmpty() || hexproofNonColors.isNotEmpty()) {
+            result = result.with(HexproofFromComponent(hexproofColors, hexproofCardTypes, hexproofNonColors))
         }
 
         return applyNumericKeywords(result, cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Numeric>())

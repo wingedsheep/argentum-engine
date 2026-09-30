@@ -310,6 +310,7 @@ data class GrantProtectionToController(
         "You have protection from " + when (val s = scope) {
             is ProtectionScope.Color -> s.color.displayName.lowercase()
             is ProtectionScope.Colors -> s.colors.joinToString(" and ") { it.displayName.lowercase() }
+            is ProtectionScope.NonColor -> "non" + s.color.displayName.lowercase()
             is ProtectionScope.CardType -> s.cardType.lowercase() + "s"
             is ProtectionScope.Subtype -> s.subtype + "s"
             is ProtectionScope.Supertype -> s.supertype.lowercase() + " permanents"

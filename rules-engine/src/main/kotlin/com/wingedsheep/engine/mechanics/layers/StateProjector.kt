@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.layers
 
+import com.wingedsheep.engine.mechanics.targeting.HexproofFromRules
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -136,6 +137,7 @@ class StateProjector {
                         container.get<HexproofFromComponent>()?.let { hexproof ->
                             hexproof.colors.forEach { add("HEXPROOF_FROM_${it.name}") }
                             hexproof.cardTypes.forEach { add("HEXPROOF_FROM_CARDTYPE_$it") }
+                            hexproof.nonColors.forEach { add(HexproofFromRules.nonColorKeyword(it)) }
                         }
                         container.get<ToxicComponent>()?.let { add("TOXIC_${it.amount}") }
                         // Dash supplies haste from the live marker on every projection.
