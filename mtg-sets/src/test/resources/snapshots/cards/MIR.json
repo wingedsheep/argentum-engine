@@ -3374,6 +3374,98 @@
     ]
 }
 
+// Psychic Transfer
+{
+    "name": "Psychic Transfer",
+    "manaCost": "{4}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "If the difference between your life total and target player's life total is 5 or less, exchange life totals with that player.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Subtract",
+                                "left": "YourLifeTotal",
+                                "right": {
+                                    "type": "LifeTotal",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": -5
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Subtract",
+                                "left": "YourLifeTotal",
+                                "right": {
+                                    "type": "LifeTotal",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            },
+                            "operator": "LTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
+                        }
+                    ]
+                }
+            },
+            "then": {
+                "type": "ExchangeLifeTotals",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "RARE",
+        "artist": "Dom!",
+        "flavorText": "\"The memory of your existence will fade like the final stars of morning.\"\n—Kaervek",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/5507c474-5c4b-4292-b7bc-3ab4b48ea290.jpg?1783947104",
+        "rulings": [
+            {
+                "date": "2011-01-01",
+                "text": "If an effect says that a player can’t lose life, that player can’t exchange life totals with a player who has a lower life total; in that case, the exchange won’t happen."
+            },
+            {
+                "date": "2008-08-01",
+                "text": "If one of the players has a negative life total, you use their actual life total for determining the difference. If that difference is five or less, then the other player receives the negative life total."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Rampant Growth
 {
     "name": "Rampant Growth",
