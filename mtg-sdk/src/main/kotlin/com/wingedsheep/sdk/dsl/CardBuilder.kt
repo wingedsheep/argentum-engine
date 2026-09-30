@@ -531,9 +531,9 @@ class CardBuilder(private val name: String) {
 
     /**
      * Add a state-triggered ability (CR 603.8). The [condition] is polled at priority
-     * passes; when it transitions from false to true the [effect] is enqueued on the
-     * stack. The engine latches the ability per (entityId, abilityId) so it does not
-     * re-fire while the condition stays true.
+     * boundaries; when it is true the [effect] is enqueued on the stack. The original
+     * pending/stack trigger suppresses another firing until it leaves the stack.
+     * A still-true condition then triggers again.
      *
      * Example — Dandân ("When you control no Islands, sacrifice this creature"):
      * ```

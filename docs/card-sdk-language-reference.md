@@ -2433,7 +2433,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 ### Ability granting
 
 - `GrantTriggeredAbilityEffect(ability, target, duration = Duration.EndOfTurn)` — grant a triggered ability to a battlefield permanent for a duration; `Duration.Permanent` for "gains … " with no end (Carnage, Crimson Chaos). **Target-general — not creature-only.** Nothing in the rules restricts "gains '<triggered ability>'" to creatures, and the printed wording routinely names a noncreature permanent: Down in the Valley's chapter II is "*This Saga* gains 'Landfall — Whenever a land you control enters, create a 1/1 green Elf creature token'", authored as `GrantTriggeredAbilityEffect(ability, EffectTarget.Self, Duration.Permanent)`. Whether a noncreature is a *legal* pick is the `TargetRequirement`'s job; the executor only requires the target to be on the battlefield. Recorded in `GameState.grantedTriggeredAbilities` and merged into the entity's abilities by `TriggerAbilityResolver`, so a granted trigger is detected exactly like a printed one and dies with the permanent. **The conditional "for as long as …" durations work here too**, in the same two halves every such duration gets: `TriggerAbilityResolver` gates the grant per read (so it goes dark the instant the condition fails, even mid-resolution) and `EndedDurationExpiryCheck` physically removes it, one-way per CR 611.2b, so the condition becoming true again does not bring the ability back. Both halves ask the same `GrantDurationGate`. Makeshift Mannequin is the shape: `PutOntoBattlefieldFromGraveyard(target)` + `AddCountersEffect(CounterType.MANNEQUIN, 1, target)` + `GrantTriggeredAbilityEffect(sacrificeOnBecomingTarget, target, Duration.WhileAffectedHasCounter(CounterType.MANNEQUIN))` — remove the counter (Hex Parasite, Vampire Hexmage) and the drawback really is gone. Wiring that sentence as `Duration.Permanent` reads identically on the card and is wrong in exactly that case.
-- `GrantStateTriggeredAbilityEffect(ability, target, duration = Duration.Permanent)` — grant a **state**-triggered ability (CR 603.8) to a battlefield permanent. The sibling of `GrantTriggeredAbilityEffect` for the abilities the `StateTriggerPoller` owns rather than the `TriggerIndex`: use it when the printed rider fires because a condition *becomes true*, with no event to match. **Olivia, Crimson Bride**: the reanimated creature gains `"When you don't control a legendary Vampire, exile this creature."` — nothing *happens* when the last legendary Vampire leaves, so a `GrantTriggeredAbilityEffect` has no event to hang off. Recorded in `GameState.grantedStateTriggeredAbilities`, folded into the per-permanent ability list by `StateTriggerPoller` beside the printed ones, latched per `(entityId, AbilityId)` exactly like a printed state trigger, dropped on battlefield re-entry (CR 400.7) and expired by `CleanupPhaseManager` for `Duration.EndOfTurn`. The default duration is `Permanent`, not `EndOfTurn` — a granted state trigger is a durable rider, where a granted event trigger is usually a one-turn pump. Like `GrantTriggeredAbilityEffect` it is **target-general, not creature-only**; legality is the `TargetRequirement`'s job.
+- `GrantStateTriggeredAbilityEffect(ability, target, duration = Duration.Permanent)` — grant a **state**-triggered ability (CR 603.8) to a battlefield permanent. The sibling of `GrantTriggeredAbilityEffect` for the abilities the `StateTriggerPoller` owns rather than the `TriggerIndex`: use it when the printed rider fires because a condition *becomes true*, with no event to match. **Olivia, Crimson Bride**: the reanimated creature gains `"When you don't control a legendary Vampire, exile this creature."` — nothing *happens* when the last legendary Vampire leaves, so a `GrantTriggeredAbilityEffect` has no event to hang off. Recorded in `GameState.grantedStateTriggeredAbilities`, folded into the per-permanent ability list by `StateTriggerPoller` beside the printed ones, suppressed per `(source object, AbilityId)` while its original trigger is outstanding, exactly like a printed state trigger, dropped on battlefield re-entry (CR 400.7) and expired by `CleanupPhaseManager` for `Duration.EndOfTurn`. The default duration is `Permanent`, not `EndOfTurn` — a granted state trigger is a durable rider, where a granted event trigger is usually a one-turn pump. Like `GrantTriggeredAbilityEffect` it is **target-general, not creature-only**; legality is the `TargetRequirement`'s job.
 - `CreateGlobalTriggeredAbility(ability, duration = Duration.Permanent, descriptionOverride? = null)` — engine-wide triggered ability with no source permanent. `duration` is a plain parameter, so the one method covers every lifetime: `Duration.EndOfTurn` (False Cure, Death Frenzy), `Duration.UntilYourNextTurn` (Season of the Bold), `Duration.EndOfCombat`, `Duration.Permanent` (Dimensional Breach, planeswalker emblems), etc. `descriptionOverride` sets emblem display text. This is the right shape for a *floating* "until end of turn, whenever …" payoff that must outlive its own source — Mistway Spy's turned-face-up "whenever a creature you control deals combat damage to a player, investigate" keeps triggering even if the Spy is killed in response, which a `GrantTriggeredAbilityEffect` on the Spy would not. Because a global ability is attached to no permanent it lives outside every battlefield trigger index, so each specialized detector has to walk `GameState.globalGrantedTriggeredAbilities` itself; the ANY-bound `DealsDamageEvent` observers do (`DamageTriggerDetector.detectDamageObserverTriggers`), and a new detector that doesn't will silently never fire for a global ability.
 - `GrantSpellKeywordEffect` — grant a keyword to a spell on the stack.
 - `GrantSpellsCantBeCountered(target, filter, duration)` — target's matching spells become uncounterable (Domri shape).
@@ -7731,18 +7731,19 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
 
 ## 8.5 State-triggered abilities (CR 603.8)
 
-A **state-triggered ability** fires whenever a game-state condition becomes true, rather
-than in response to a `GameEvent`. The engine polls the condition at every priority pass
-and emits the trigger on each false → true transition. Once it has fired, a per-permanent
-`StateTriggerLatchesComponent` latch suppresses re-firing until the condition next
-evaluates false again (CR 603.8).
+A **state-triggered ability** fires when a game-state condition is true, rather than in
+response to a `GameEvent`. The engine polls at priority boundaries. Its original pending
+or stack trigger suppresses additional firings until that trigger resolves, is countered,
+or otherwise leaves the stack, even if the condition becomes false and true meanwhile.
+If the same source object remains and the condition is still true, it triggers again
+(CR 603.8). A copied trigger does not extend the original's lifetime.
 
-> **Latch note.** The printed CR 603.8 resets after the ability *leaves the stack* and
-> re-triggers if the condition is still true. This engine resets on the condition next
-> being *false* instead — equivalent for "sacrifice this creature" cards (source leaves,
-> condition clears) but divergent for a state trigger that leaves source and condition
-> intact. No such card exists yet; reset-on-leaves-the-stack should be wired before one is
-> authored.
+Lifecycle occupancy is carried by the pending trigger's captured source object and
+ability id, then by `TriggeredAbilityOnStackComponent.stateTriggerAbilityId`. Removing
+the original stack object releases suppression through every removal path without a
+separate permanent latch. Resolution pauses wait until resolution finishes before polling.
+Printed and granted abilities share this path; battlefield re-entry creates a new source
+object. Printed abilities respect projected ability removal and effective text changes.
 
 ```kotlin
 stateTriggeredAbility {
@@ -7757,7 +7758,7 @@ stateTriggeredAbility {
 
 - `condition` — any `Condition`. Evaluated with the source permanent as
   `EffectContext.sourceId`; `Player.You` references resolve to the source's controller.
-- `effect` — fires when the condition transitions false → true. Resolves on the stack
+- `effect` — fires when the condition is true and no original trigger is outstanding. Resolves on the stack
   like an ordinary triggered ability.
 - `description` (optional) — overrides the auto-generated text.
 

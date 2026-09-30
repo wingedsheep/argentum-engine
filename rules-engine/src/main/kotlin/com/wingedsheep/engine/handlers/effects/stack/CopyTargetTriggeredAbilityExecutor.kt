@@ -120,6 +120,7 @@ class CopyTargetTriggeredAbilityExecutor(
         ): TriggeredAbilityOnStackComponent {
             return source.copy(
                 controllerId = copyController,
+                stateTriggerAbilityId = null,
                 description = "Copy of ${source.description}"
             )
         }

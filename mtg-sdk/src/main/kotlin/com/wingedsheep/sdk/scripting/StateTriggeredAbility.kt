@@ -15,19 +15,10 @@ import kotlinx.serialization.Serializable
  * - The condition is checked each time a player would receive priority.
  * - When the condition becomes true the ability goes onto the stack as a normal triggered
  *   ability and resolves under stack rules.
- * - It does not trigger again while the condition stays true (the "latch"). The engine
- *   tracks this per (entityId, abilityId) via
- *   [com.wingedsheep.engine.state.components.battlefield.StateTriggerLatchesComponent]
- *   in the rules-engine module.
- *
- * Deliberate simplification vs the letter of CR 603.8: the printed rule resets once the
- * ability *leaves the stack* (resolves / is countered) and re-triggers if the condition is
- * still true. This engine instead resets the latch when the condition next evaluates
- * *false*. The two agree for every state trigger whose effect removes the source or clears
- * the condition (the only shape shipped so far — "sacrifice this creature" cards). They
- * diverge only for a state trigger that leaves both the source and the condition intact,
- * where the printed rule would re-fire each time it resolves; no such card exists yet.
- * Revisit (reset on leaves-the-stack) before authoring one.
+ * - It does not trigger again until its original trigger resolves, is countered, or otherwise
+ *   leaves the stack, even if the condition becomes false and true in the meantime.
+ * - Once that trigger leaves the stack, a still-true condition triggers again if the source
+ *   remains the same object in its active zone. Copies have independent lifetimes.
  *
  * Authored on cards like Dandân ("When you control no Islands, sacrifice this creature"),
  * Force Bubble ("when there are four or more depletion counters on ~, sacrifice it"), etc.
