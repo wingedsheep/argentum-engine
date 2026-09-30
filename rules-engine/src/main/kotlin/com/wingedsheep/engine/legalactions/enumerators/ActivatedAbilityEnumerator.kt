@@ -1125,7 +1125,9 @@ class ActivatedAbilityEnumerator(
                             tapForGenericLabel = TapForGeneric.WATERBEND.label.takeIf { ability.hasWaterbend },
                             holdPriority = holdPriorityForTopOfStack,
                             requiresDamageDistribution = dividedDamage != null,
-                            totalDamageToDistribute = dividedDamage?.totalDamage,
+                            totalDamageToDistribute = dividedDamage?.let {
+                                context.castPermissionUtils.dividedDamageTotalAtActivation(state, it, ability, entityId, playerId)
+                            },
                             minDamagePerTarget = if (dividedDamage != null) 1 else null
                         ))
                     }

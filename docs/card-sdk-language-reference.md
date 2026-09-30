@@ -1280,6 +1280,15 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   Unending: `dynamicTotal = DynamicAmounts.landsYouControl()`. Works for creatures and planeswalkers
   (`GameObjectFilter.CreatureOrPlaneswalker`); zero chosen targets ⇒ no-op.
 
+  **A total fixed "as you activate this ability"** (Lukka, Bound to Ruin's −4: "X damage divided …,
+  where X is the greatest power among creatures you control as you activate this ability") is a
+  text-defined X (CR 107.3c): set `xDefinedAs = <amount>` on the ability (`activatedAbility` or
+  `loyaltyAbility`) and `dynamicTotal = DynamicAmounts.xValue()`. The engine evaluates the amount at
+  activation, offers it as the legal action's `totalDamageToDistribute`, validates the announced
+  division against it, and binds it onto the stack object as the ability's X — so the executor deals
+  that number even if the creature that set it is gone. Cap the targets with the *board* amount
+  (`dynamicMaxCount = <amount>`, not `XValue`, which enumeration treats as a player-chosen X).
+
   **Always cap the target count at the total.** Each chosen target must be assigned at least 1 damage
   (CR 601.2d), so a requirement that lets the player pick more targets than there is damage leaves them
   with no legal division to submit. Pass `dynamicMaxCount` alongside `unlimited` — a
@@ -9822,6 +9831,10 @@ controller (CR 107.3a) — **Soul Foundry** ("{X}, {T}: Create a token that's a 
 card. X is the mana value of that card." → `DynamicAmount.EntityProperty(EffectTarget.SingleEntity
 .LinkedExiledCard(), EntityNumericProperty.ManaValue)`), and the same template on Elite Arcanist,
 Prototype Portal and Caller of the Untamed.
+
+`xDefinedAs` is also available on `loyaltyAbility { }`, and an ability with no `{X}` in its cost may
+still set it: the number is then only bound as the activation's X, for an effect-text X locked "as you
+activate this ability" (Lukka, Bound to Ruin — see `Effects.DividedDamage`).
 
 Write the cost as it is printed — `Costs.Mana("{X}")` — and let `xDefinedAs` say what X is. The
 engine evaluates the amount against the source permanent and substitutes it into the cost's `{X}`
