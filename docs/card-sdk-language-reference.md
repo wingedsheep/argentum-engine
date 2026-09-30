@@ -8376,11 +8376,17 @@ staticAbility {
   **when** (`condition`). A *filtered* lock never suppresses the land drop wholesale: the blanket
   `canPlayLand` probe deliberately ignores it and `EnumerationContext.cantPlayLand(cardId)` removes
   only the named cards, so the unaffected lands in a hand stay playable.
-- `LandsCantEnterTheBattlefield` — the other half of the same lock, and genuinely separate: this one
-  catches a land arriving by an *effect* (a fetch, a reanimation, a blink), which the play-side
-  restriction never sees. A card printing only one of the two leaves the other route open, which is
-  why Worms of the Earth prints both lines. Checked by `LandEntryLocks.landsCantEnter` on the
-  move-to-battlefield path; the land simply does not enter and stays where it was.
+- `CantEnterTheBattlefield(filter = GameObjectFilter.Any, fromZones = null)` — an entry prohibition:
+  cards matching `filter` can't enter the battlefield from `fromZones` (`null` = any zone). The other
+  half of Worms of the Earth's lock — `CantEnterTheBattlefield(GameObjectFilter.Land)` — and
+  genuinely separate from `PlayersCantPlayLands`: this one catches a card arriving by an *effect* (a
+  fetch, a reanimation, a blink), which the play-side restriction never sees. Soulless Jailer =
+  `CantEnterTheBattlefield(GameObjectFilter.Permanent, fromZones = setOf(Zone.GRAVEYARD))`;
+  Grafdigger's Cage = `CantEnterTheBattlefield(GameObjectFilter.Creature, fromZones =
+  setOf(Zone.GRAVEYARD, Zone.LIBRARY))`. Checked by `EntryLocks.cantEnter` inside
+  `ZoneTransitionService.moveToZone`, so every effect-driven entry (lone or batch) honours it; the card
+  is matched in the zone it is leaving and simply stays there. A permanent spell enters from the
+  stack, so a zone-scoped lock never stops one cast from a graveyard.
 - `CantAttackUnlessSacrifice(sacrificeFilter, count = 1)` — a **non-mana** attack cost, paid as
   attackers are declared: Leviathan's "this creature can't attack unless you sacrifice two Islands".
   The clause is a restriction (CR 508.1c) whose cost is determined and paid at CR 508.1h–j — not an
@@ -8923,8 +8929,8 @@ staticAbility {
   colors of the last spell cast, cleared each turn). Never blocks the first spell of the turn; a
   colorless spell shares no color, so it is always castable and casting one lifts the restriction
   until the next colored spell. (Mana Maze)
-- `PlayersCantCastSpells(affected = Player.EachOpponent, spellFilter = GameObjectFilter.Any, condition = null, conditionFromCaster = false)`
-  — continuous cast *prohibition* parameterized along three independent axes, each a reused
+- `PlayersCantCastSpells(affected = Player.EachOpponent, spellFilter = GameObjectFilter.Any, condition = null, conditionFromCaster = false, fromZones = null)`
+  — continuous cast *prohibition* parameterized along independent axes, each a reused
   primitive: **who** (`affected`, a `Player` reference *relative to the source's controller* —
   `EachOpponent`/`Opponent`, `You`, `Each`), **which** (`spellFilter`, matched against the card being
   cast), and **when** (`condition`, evaluated in the controller's context, so `IsYourTurn` = "during
@@ -8938,7 +8944,10 @@ staticAbility {
   true` evaluates `condition` from the *casting player's* seat instead, for timing relative to each
   restricted player: Dosan the Falling Leaf = `PlayersCantCastSpells(Player.Each, condition =
   IsNotYourTurn, conditionFromCaster = true)` ("Players can cast spells only during their own turns"
-  — correct in multiplayer, where a controller-relative pair of statics is not).
+  — correct in multiplayer, where a controller-relative pair of statics is not). **where**
+  (`fromZones`, the zones the card is cast *from*, read before it moves to the stack; `null` = any):
+  Soulless Jailer = `PlayersCantCastSpells(Player.Each, GameObjectFilter.Noncreature, fromZones =
+  setOf(Zone.GRAVEYARD, Zone.EXILE))`.
 - `PlayersCantActivateAbilities(affected = Player.EachOpponent, permanentFilter = GameObjectFilter.Any, condition = null)`
   — continuous *activation* prohibition, the activated-ability twin of `PlayersCantCastSpells`,
   parameterized along the same three axes: **who** (`affected`, relative to the source's controller),

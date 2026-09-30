@@ -237,7 +237,8 @@ class CastPermissionUtils(
      * [spellCardId] — i.e. some battlefield permanent's ability whose [affected][PlayersCantCastSpells.affected]
      * group (relative to the granter's controller) includes the caster, whose
      * [condition][PlayersCantCastSpells.condition] holds in the controller's context (the caster's,
-     * with [conditionFromCaster][PlayersCantCastSpells.conditionFromCaster]), and whose
+     * with [conditionFromCaster][PlayersCantCastSpells.conditionFromCaster]), whose
+     * [fromZones][PlayersCantCastSpells.fromZones] include the zone the card is cast from, and whose
      * [spellFilter][PlayersCantCastSpells.spellFilter] matches the card. Control is read from
      * projected state; face-down permanents (no abilities) are skipped.
      */
@@ -258,6 +259,13 @@ class CastPermissionUtils(
                     ?: container.get<ControllerComponent>()?.playerId
                     ?: continue
                 if (!affectedPlayerMatches(sa.affected, controller, castingPlayerId)) continue
+                // The "where" axis (Soulless Jailer's "from graveyards or exile"): the card is read
+                // in the zone it is being cast from — this check runs before it moves to the stack.
+                val fromZones = sa.fromZones
+                if (fromZones != null) {
+                    val castFrom = state.zones.entries.firstOrNull { spellCardId in it.value }?.key?.zoneType
+                    if (castFrom !in fromZones) continue
+                }
                 val condition = sa.condition
                 if (condition != null) {
                     // A caster-relative gate (Dosan's "during their own turns") reads the

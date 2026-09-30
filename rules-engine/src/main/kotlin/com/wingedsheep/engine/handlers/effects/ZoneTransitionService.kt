@@ -14,6 +14,7 @@ import com.wingedsheep.engine.mechanics.daynight.DayNightService
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.registry.TokenArtRegistry
 import com.wingedsheep.engine.handlers.effects.token.CreateTokenExecutor
+import com.wingedsheep.engine.handlers.effects.zones.EntryLocks
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -340,6 +341,17 @@ class ZoneTransitionService(
             ZoneChangeRedirectResult(destinationZone)
         }
         val actualDestZone = redirectResult.destinationZone
+
+        // An entry prohibition ("permanent cards in graveyards can't enter the battlefield") beats
+        // whatever directed the move (CR 101.2): the card stays where it is, as an instant would
+        // (CR 304.4). Checked after the redirect, so it judges the zone the card would really enter.
+        if (actualDestZone == Zone.BATTLEFIELD &&
+            EntryLocks.cantEnter(
+                state, entityId, fromZone, cardRegistry, predicateEvaluator
+            )
+        ) {
+            return ZoneTransitionResult(state, emptyList(), redirectResult, actualDestination = fromZone)
+        }
 
         // A card-intrinsic redirect into the library shuffles the card in rather than placing it on
         // top (Darksteel Colossus, Progenitus). This holds even when the caller skipped the redirect

@@ -939,6 +939,10 @@ data class MayCastWithoutPayingManaCost(
  * @property condition Optional timing/state gate, evaluated in the controller's context; null = always.
  * @property conditionFromCaster When true, [condition] is evaluated in the *casting player's*
  *   context instead, so `IsYourTurn` reads "during their own turn".
+ * @property fromZones The **where** axis — the zones a forbidden spell is cast *from*, read off
+ *   the card before it moves to the stack; `null` = any zone. Soulless Jailer:
+ *   `PlayersCantCastSpells(Player.Each, GameObjectFilter.Noncreature,
+ *   fromZones = setOf(Zone.GRAVEYARD, Zone.EXILE))`.
  */
 /**
  * Players matching [affected] can't play lands (CR 305.1) — Worms of the Earth's "players can't
@@ -962,25 +966,66 @@ data class MayCastWithoutPayingManaCost(
  * per candidate card during enumeration, so the unaffected lands in a hand stay playable.
  *
  * This stops the *play*. A land put onto the battlefield by an effect is a different event and
- * needs [LandsCantEnterTheBattlefield]; Worms of the Earth prints both lines for exactly that
+ * needs [CantEnterTheBattlefield]; Worms of the Earth prints both lines for exactly that
  * reason.
  */
 /**
- * Lands can't enter the battlefield — Worms of the Earth's second lock line.
+ * Cards matching [filter] can't enter the battlefield from [fromZones] — an entry prohibition
+ * (CR 101.2: the "can't" wins over whatever effect directs the move).
+ *
+ *  - Worms of the Earth: `CantEnterTheBattlefield(GameObjectFilter.Land)` ("Lands can't enter the
+ *    battlefield"), from anywhere.
+ *  - Soulless Jailer: `CantEnterTheBattlefield(GameObjectFilter.Permanent, fromZones =
+ *    setOf(Zone.GRAVEYARD))` ("Permanent cards in graveyards can't enter the battlefield").
+ *  - Grafdigger's Cage: `CantEnterTheBattlefield(GameObjectFilter.Creature, fromZones =
+ *    setOf(Zone.GRAVEYARD, Zone.LIBRARY))`.
  *
  * Separate from [PlayersCantPlayLands] because it catches a different event: that one stops the
- * *special action* of playing a land, this one stops a land arriving by any other route (a search
- * effect, a reanimation, a blink). Worms of the Earth prints both lines precisely because neither
- * subsumes the other, and a card that printed only this one would still let a land be played.
+ * *special action* of playing a land, this one stops a card arriving by an effect (a search, a
+ * reanimation, a blink). Worms of the Earth prints both lines precisely because neither subsumes
+ * the other.
  *
- * The land simply does not enter (CR 614.12-style prohibition): the move is a no-op and the card
- * stays where it was.
+ * Enforced at the single zone-transition chokepoint, so every effect-driven entry honours it: the
+ * card simply does not enter and stays where it was (as an instant would, CR 304.4). A spell
+ * resolving from the stack enters from the stack, so a zone-scoped lock never stops a permanent
+ * spell cast from a graveyard.
+ *
+ * @property filter Which cards are locked out, matched in the zone they are leaving.
+ * @property fromZones The zones the lock watches; `null` = every zone.
  */
-@SerialName("LandsCantEnterTheBattlefield")
+@SerialName("CantEnterTheBattlefield")
 @Serializable
-data object LandsCantEnterTheBattlefield : StaticAbility {
-    override val description: String = "Lands can't enter the battlefield"
+data class CantEnterTheBattlefield(
+    val filter: GameObjectFilter = GameObjectFilter.Any,
+    val fromZones: Set<Zone>? = null
+) : StaticAbility {
+    override val description: String = buildString {
+        if (fromZones == null) {
+            append(if (filter == GameObjectFilter.Any) "Cards" else "${filter.description.replaceFirstChar { it.uppercase() }}s")
+        } else {
+            val noun = if (filter == GameObjectFilter.Any) "Cards" else "${filter.description.replaceFirstChar { it.uppercase() }} cards"
+            append("$noun in ${zonePhrase(fromZones, "and")}")
+        }
+        append(" can't enter the battlefield")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }
+
+/** "graveyards", "graveyards or exile", "graveyards and libraries"-style rendering of a zone set. */
+internal fun zonePhrase(zones: Set<Zone>, conjunction: String = "or"): String =
+    zones.sortedBy { it.ordinal }.map {
+        when (it) {
+            Zone.GRAVEYARD -> "graveyards"
+            Zone.LIBRARY -> "libraries"
+            Zone.HAND -> "hands"
+            Zone.EXILE -> "exile"
+            else -> it.name.lowercase()
+        }
+    }.joinToString(" $conjunction ")
 
 @SerialName("PlayersCantPlayLands")
 @Serializable
@@ -1014,7 +1059,8 @@ data class PlayersCantCastSpells(
     val affected: Player = Player.EachOpponent,
     val spellFilter: GameObjectFilter = GameObjectFilter.Any,
     val condition: Condition? = null,
-    val conditionFromCaster: Boolean = false
+    val conditionFromCaster: Boolean = false,
+    val fromZones: Set<Zone>? = null
 ) : StaticAbility {
     override val description: String = buildString {
         val who = when (affected) {
@@ -1023,7 +1069,8 @@ data class PlayersCantCastSpells(
             is Player.Each -> "Players"
             else -> affected.description.replaceFirstChar { it.uppercase() }
         }
-        val spells = if (spellFilter == GameObjectFilter.Any) "spells" else "${spellFilter.description} spells"
+        val spells = (if (spellFilter == GameObjectFilter.Any) "spells" else "${spellFilter.description} spells") +
+            (fromZones?.let { " from ${zonePhrase(it)}" } ?: "")
         if (conditionFromCaster && condition is IsNotYourTurn) {
             append("$who can cast $spells only during their own turns")
             return@buildString
