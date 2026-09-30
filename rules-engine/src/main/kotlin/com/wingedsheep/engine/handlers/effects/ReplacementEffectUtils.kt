@@ -8,6 +8,8 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.state.components.player.CountersLockedThisTurnComponent
+import com.wingedsheep.sdk.scripting.CapCounterPlacementThisTurn
 import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
 import com.wingedsheep.sdk.scripting.ModifyCounterPlacement
 import com.wingedsheep.sdk.scripting.PreventExtraTurns
@@ -59,6 +61,8 @@ object ReplacementEffectUtils {
         predicateEvaluator: PredicateEvaluator
     ): Int {
         if (count <= 0) return count
+        // A capped recipient can't get more of this kind this turn: the placement doesn't happen.
+        if (isCounterPlacementLocked(state, targetId, counterType)) return 0
 
         var modifiedCount = count
 
@@ -117,7 +121,67 @@ object ReplacementEffectUtils {
             modifiedCount += modifier.modifier
         }
 
+        // 3. Caps apply last — the order the affected player would pick (Melira's ruling), so a
+        //    doubler or an additive modifier can't push a capped placement past the cap.
+        val cap = counterPlacementCap(state, targetId, counterType, predicateEvaluator)
+        if (cap != null) modifiedCount = minOf(modifiedCount, cap)
+
         return modifiedCount.coerceAtLeast(0)
+    }
+
+    /** Whether [targetId] already took a [CapCounterPlacementThisTurn] lock on [counterType] this turn. */
+    fun isCounterPlacementLocked(state: GameState, targetId: EntityId, counterType: CounterType): Boolean =
+        state.getEntity(targetId)?.get<CountersLockedThisTurnComponent>()?.kinds?.contains(counterType) == true
+
+    /**
+     * Record the lock a [CapCounterPlacementThisTurn] replacement leaves behind — "and you can't
+     * get additional poison counters this turn". Call it after placing [placed] counters of
+     * [counterType] on a player; it stamps the lock only when a cap actually applied to that
+     * placement. The lock outlives the cap's source (it's the replacement's result), so it lives on
+     * the player and is cleared at end of turn.
+     */
+    fun recordCounterPlacementLock(
+        state: GameState,
+        targetId: EntityId,
+        counterType: CounterType,
+        placed: Int,
+        predicateEvaluator: PredicateEvaluator
+    ): GameState {
+        if (placed <= 0 || targetId !in state.turnOrder) return state
+        counterPlacementCap(state, targetId, counterType, predicateEvaluator) ?: return state
+        return state.updateEntity(targetId) { container ->
+            val existing = container.get<CountersLockedThisTurnComponent>() ?: CountersLockedThisTurnComponent()
+            container.with(existing.with(counterType))
+        }
+    }
+
+    /** The tightest [CapCounterPlacementThisTurn] on the battlefield that covers this placement, or null. */
+    private fun counterPlacementCap(
+        state: GameState,
+        targetId: EntityId,
+        counterType: CounterType,
+        predicateEvaluator: PredicateEvaluator
+    ): Int? {
+        var cap: Int? = null
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
+            // "You" is the source's current (projected) controller — a stolen Melira protects its thief.
+            val sourceControllerId = state.projectedState.getController(entityId) ?: continue
+            for (effect in replacementComponent.replacementEffects) {
+                if (effect !is CapCounterPlacementThisTurn) continue
+                val counterEvent = effect.appliesTo as? com.wingedsheep.sdk.scripting.EventPattern.CounterPlacementEvent
+                    ?: continue
+                if (counterEvent.counterType != null && counterEvent.counterType != counterType) continue
+                if (!matchesRecipient(
+                        counterEvent.recipient, state, targetId, entityId, sourceControllerId,
+                        predicateEvaluator = predicateEvaluator
+                    )
+                ) continue
+                cap = minOf(cap ?: effect.amount, effect.amount)
+            }
+        }
+        return cap
     }
 
     /**

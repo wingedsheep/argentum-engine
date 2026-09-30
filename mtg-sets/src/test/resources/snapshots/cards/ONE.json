@@ -1811,6 +1811,67 @@
     ]
 }
 
+// Melira, the Living Cure
+{
+    "name": "Melira, the Living Cure",
+    "manaCost": "{G}{W}",
+    "typeLine": "Legendary Creature — Human Scout",
+    "oracleText": "If you would get one or more poison counters, instead you get one poison counter and you can't get additional poison counters this turn.\nExile Melira: Choose another target creature or artifact. When it's put into a graveyard this turn, return that card to the battlefield under its owner's control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Melira, the Living Cure:1",
+                "cost": "CostExileSelf",
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        }
+                    },
+                    "watchedTarget": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "fireOnce": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature|artifact",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Exile Melira: Choose another target creature or artifact. When it's put into a graveyard this turn, return that card to the battlefield under its owner's control."
+            }
+        ],
+        "replacementEffects": [
+            "CapCounterPlacementThisTurn"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "RARE",
+        "artist": "Miranda Meeks",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1329ad9-5989-4920-b17b-943b9b4a0cd9.jpg?1783917999"
+    }
+}
+
 // Myr Convert
 {
     "name": "Myr Convert",

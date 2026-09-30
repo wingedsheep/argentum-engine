@@ -1640,6 +1640,23 @@ data class PutCounterOnCreatureThisTurnComponent(
  * yours *as the counter was placed*, and it doesn't matter whether you still control it or whether
  * it still has the counter — so the fact is recorded at placement time, never derived from the board.
  */
+/**
+ * The kinds of counter this player can't get for the rest of the turn, because a
+ * `CapCounterPlacementThisTurn` replacement already applied to them ("instead you get one poison
+ * counter and you can't get additional poison counters this turn" — Melira, the Living Cure).
+ * Cleared at end of turn by CleanupPhaseManager.
+ *
+ * The lock is the replacement's result, so it outlives the replacement's source: it's recorded on
+ * the player as the capped placement happens, never re-derived from the board.
+ */
+@Serializable
+data class CountersLockedThisTurnComponent(
+    val kinds: Set<CounterType> = emptySet()
+) : Component {
+    fun with(kind: CounterType): CountersLockedThisTurnComponent =
+        if (kind in kinds) this else copy(kinds = kinds + kind)
+}
+
 @Serializable
 data class CountersPutOnYourPermanentsThisTurnComponent(
     val kinds: Set<CounterType> = emptySet()

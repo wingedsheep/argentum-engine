@@ -228,7 +228,9 @@ class ProliferateExecutor(
                         counterType,
                         placerId = controllerId,
                     )
-                    newState = afterMark
+                    newState = ReplacementEffectUtils.recordCounterPlacementLock(
+                        afterMark, entityId, counterType, modifiedAmount, predicateEvaluator
+                    )
                     events.add(
                         CountersAddedEvent(
                             entityId,

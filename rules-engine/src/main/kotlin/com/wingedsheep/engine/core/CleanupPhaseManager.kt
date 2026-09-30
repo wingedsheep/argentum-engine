@@ -68,6 +68,7 @@ import com.wingedsheep.engine.state.components.player.LifeGainedThisTurnComponen
 import com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PutCounterOnCreatureThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CountersLockedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CountersPutOnYourPermanentsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CountersRemovedFromYourPermanentsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsWithCountersPutIntoGraveyardThisTurnComponent
@@ -831,6 +832,9 @@ class CleanupPhaseManager(
                 }
                 if (result.has<CountersPutOnYourPermanentsThisTurnComponent>()) {
                     result = result.without<CountersPutOnYourPermanentsThisTurnComponent>()
+                }
+                if (result.has<CountersLockedThisTurnComponent>()) {
+                    result = result.without<CountersLockedThisTurnComponent>()
                 }
                 if (result.has<CountersRemovedFromYourPermanentsThisTurnComponent>()) {
                     result = result.without<CountersRemovedFromYourPermanentsThisTurnComponent>()

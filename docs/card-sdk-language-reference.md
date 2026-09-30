@@ -14123,6 +14123,18 @@ The priority groups are (CR 616.1a–f):
   `Effects.GrantCounterPlacementModifier(...)` (§4 Counters) instead — it records a controller-scoped
   modifier in a turn-scoped game-state store consulted from the same counter-placement chokepoint,
   and expires at end of turn.
+- `CapCounterPlacementThisTurn(amount = 1, appliesTo = CounterPlacementEvent(POISON, Recipient.You))` —
+  **static** cap-and-lock: "If you would get one or more poison counters, instead you get one poison
+  counter and you can't get additional poison counters this turn" (**Melira, the Living Cure** — the
+  defaults are exactly that card). Applied last in `ReplacementEffectUtils.applyCounterPlacementModifiers`,
+  after the additive/doubling modifiers, so the recipient gets at most `amount` (the order Melira's ruling
+  says the affected player will normally pick). The lock is the replacement's *result*, not a continuous
+  effect: it's stamped on the player (`CountersLockedThisTurnComponent`) as the capped placement lands,
+  outlives the source leaving, and makes every later placement of that kind on that player this turn not
+  happen; cleared at end of turn. The lock is recorded at the player-recipient placement sites —
+  `AddCounters` / `AddDynamicCounters` (spells, abilities, ward's "get poison counters"), proliferate,
+  and toxic combat damage (which now also runs through the placement replacements) — so two toxic
+  attackers hitting together give one counter.
 - `MultiplyTokenCreation(factor = 2, appliesTo)` / `ModifyTokenCount(modifier, appliesTo)` —
   **static** token-count replacements living on a battlefield permanent. `MultiplyTokenCreation`
   multiplies the number of tokens created by `factor` (Doubling Season / Anointed Procession /

@@ -694,6 +694,7 @@ val engineSerializersModule = SerializersModule {
         subclass(RetainUnspentManaComponent::class)
         subclass(PutCounterOnCreatureThisTurnComponent::class)
         subclass(CountersPutOnYourPermanentsThisTurnComponent::class)
+        subclass(CountersLockedThisTurnComponent::class)
         subclass(CountersRemovedFromYourPermanentsThisTurnComponent::class)
         subclass(PermanentsWithCountersPutIntoGraveyardThisTurnComponent::class)
         subclass(SkipNextTurnComponent::class)

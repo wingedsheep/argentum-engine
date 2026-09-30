@@ -392,6 +392,38 @@ data class ModifyCounterPlacement(
     }
 }
 
+/**
+ * Cap a counter placement at [amount] and lock the recipient out of further counters of that
+ * kind for the rest of the turn — "If you would get one or more poison counters, instead you get
+ * one poison counter and you can't get additional poison counters this turn" (Melira, the Living
+ * Cure).
+ *
+ * Applied after the additive/multiplying placement replacements, so the capped recipient ends up
+ * with at most [amount] (the order the affected player would normally pick, per Melira's rulings).
+ * The lock is the replacement's *result*, not a continuous effect of its source: once applied it
+ * holds until end of turn even if the source leaves, and every later placement of that kind on
+ * that recipient this turn simply doesn't happen. Only placements on a **player** recipient take
+ * the lock today — the one printed use; [appliesTo] is the usual
+ * [EventPattern.CounterPlacementEvent] (kind + [Recipient]).
+ */
+@SerialName("CapCounterPlacementThisTurn")
+@Serializable
+data class CapCounterPlacementThisTurn(
+    val amount: Int = 1,
+    override val appliesTo: EventPattern = EventPattern.CounterPlacementEvent(
+        counterType = CounterType.POISON,
+        recipient = Recipient.You
+    )
+) : ReplacementEffect {
+    override val description: String =
+        "If ${appliesTo.description}, instead $amount is placed and no more can be placed this turn"
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+    }
+}
+
 // =============================================================================
 // Zone Change Replacement Effects
 // =============================================================================

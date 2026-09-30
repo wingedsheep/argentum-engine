@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.damage.OptionalDamageRedirect
 import com.wingedsheep.engine.mechanics.battle.Battles
@@ -1256,16 +1257,8 @@ internal class CombatDamageManager(
         newState = accumulateCommanderDamage(newState, sourceId, targetId, effectiveAmount)
 
         val toxicAmount = getToxicAmount(newState, newState.projectedState, sourceId)
-        if (toxicAmount > 0) {
-            val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
-            newState = newState.updateEntity(targetId) { container ->
-                container.with(counters.withAdded(CounterType.POISON, toxicAmount))
-            }
-            // Toxic (CR 702.164c): the creature's controller gives the player the poison counters,
-            // so that controller is the placer a "whenever you put counters" trigger reads.
-            events.add(CountersAddedEvent(targetId, CounterType.POISON, toxicAmount, "Player",
-                placedBy = newState.projectedState.getController(sourceId)))
-        }
+        newState = giveToxicPoison(newState, targetId, toxicAmount,
+            placerId = newState.projectedState.getController(sourceId), events = events)
 
         // Reflection (Harsh Justice)
         newState = applyDamageReflection(newState, sourceId, targetId, originalAmount, events)
@@ -1494,15 +1487,8 @@ internal class CombatDamageManager(
             newState = accumulateCommanderDamage(newState, sourceId, targetId, amount)
 
             val toxicAmount = getToxicAmount(newState, projected, sourceId)
-            if (toxicAmount > 0) {
-                val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
-                newState = newState.updateEntity(targetId) { container ->
-                    container.with(counters.withAdded(CounterType.POISON, toxicAmount))
-                }
-                // Toxic (CR 702.164c): the source's controller is the placer.
-                events.add(CountersAddedEvent(targetId, CounterType.POISON, toxicAmount, "Player",
-                    placedBy = projected.getController(sourceId)))
-            }
+            newState = giveToxicPoison(newState, targetId, toxicAmount,
+                placerId = projected.getController(sourceId), events = events)
         } else if (isPlaneswalker || isBattle) {
             if (targetId !in newState.getBattlefield()) return newState
             val counterType = if (isPlaneswalker) com.wingedsheep.sdk.core.CounterType.LOYALTY
@@ -1607,6 +1593,35 @@ internal class CombatDamageManager(
         }
 
         return newState
+    }
+
+    /**
+     * Toxic (CR 702.164c): combat damage to a player also gives them that many poison counters.
+     * The creature's controller gives them, so that controller is the placer a "whenever you put
+     * counters" trigger reads. The counters go through the same placement replacements as any other
+     * counter placement — a poison cap (Melira, the Living Cure) cuts them and locks the player out.
+     */
+    private fun giveToxicPoison(
+        state: GameState,
+        targetId: EntityId,
+        toxicAmount: Int,
+        placerId: EntityId?,
+        events: MutableList<GameEvent>
+    ): GameState {
+        if (toxicAmount <= 0) return state
+        val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
+            state, targetId, CounterType.POISON, toxicAmount, placerId = placerId,
+            predicateEvaluator = predicateEvaluator
+        )
+        if (placed <= 0) return state
+        val counters = state.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
+        val newState = state.updateEntity(targetId) { container ->
+            container.with(counters.withAdded(CounterType.POISON, placed))
+        }
+        events.add(CountersAddedEvent(targetId, CounterType.POISON, placed, "Player", placedBy = placerId))
+        return ReplacementEffectUtils.recordCounterPlacementLock(
+            newState, targetId, CounterType.POISON, placed, predicateEvaluator
+        )
     }
 
     /**
