@@ -2708,6 +2708,66 @@
     ]
 }
 
+// Mana Short
+{
+    "name": "Mana Short",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tap all lands target player controls and that player loses all unspent mana.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "player": "TargetPlayer",
+                        "filter": "land"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "TapUntapCollection",
+                    "collectionName": "gathered0"
+                },
+                {
+                    "type": "LoseUnspentMana",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "RARE",
+        "artist": "Dameon Willich",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73e3e0b3-5284-464f-8c62-0f7801c966f5.jpg?1783948704",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "If you play Mana Short in response to a spell, it will have no effect on that spell since the mana has already been paid."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "It even taps lands that do not produce mana."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Merfolk of the Pearl Trident
 {
     "name": "Merfolk of the Pearl Trident",

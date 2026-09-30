@@ -1429,6 +1429,7 @@ is PermanentsSacrificedEvent -> {
             is TurnEndedByEffectEvent,
             is PriorityChangedEvent,
             is ManaSpentEvent,
+            is ManaPoolChangedEvent,
             is LandTappedForManaEvent,
             is DecisionRequestedEvent,
             is AbilityResolvedEvent,

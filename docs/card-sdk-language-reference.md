@@ -2044,6 +2044,11 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   anything. See [ManaSpellRider](#manaspellrider).
 - `AddColorlessMana(amount, restriction?, riders?)` — add colorless; `riders` as on `AddMana`
   (Boseiju, Who Shelters All).
+- `LoseUnspentMana(target = EffectTarget.Controller)` — remove all unspent mana from the resolved
+  player, including restricted mana, combat-duration mana, and provenance tags. Player target handles
+  and player-set targets work. Step/phase retention does not apply; unconditional mana-conversion
+  replacements still apply and preserve restrictions, expiry, and provenance. Emits `ManaPoolChangedEvent`,
+  distinct from paying mana. Mana Short composes a land-tapping pipeline with this effect.
 - `RetainUnspentMana(vararg colors)` — "Until end of turn, you don't lose unspent mana of these colours
   as steps and phases end." The colour-filtered, single-player, turn-scoped one-shot cousin of the
   permanent-static `PreventManaPoolEmptying` (Upwelling, which stops *all* emptying for *everyone*).

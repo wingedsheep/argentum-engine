@@ -2602,6 +2602,10 @@ object Effects {
     fun RetainUnspentMana(vararg colors: Color): Effect =
         com.wingedsheep.sdk.scripting.effects.RetainUnspentManaEffect(colors.toSet())
 
+    /** Forced mana loss, independent of step/phase retention abilities. */
+    fun LoseUnspentMana(target: EffectTarget = EffectTarget.Controller): Effect =
+        com.wingedsheep.sdk.scripting.effects.LoseUnspentManaEffect(target)
+
     /**
      * Add a dynamic amount of colorless mana.
      */

@@ -465,6 +465,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.LoyaltyChangedEvent,
             is com.wingedsheep.engine.core.ManaAddedEvent,
             is com.wingedsheep.engine.core.ManaSpentEvent,
+            is com.wingedsheep.engine.core.ManaPoolChangedEvent,
             is com.wingedsheep.engine.core.MaximumHandSizeReducedEvent,
             is com.wingedsheep.engine.core.MaximumHandSizeRemovedEvent,
             is com.wingedsheep.engine.core.PhaseChangedEvent,

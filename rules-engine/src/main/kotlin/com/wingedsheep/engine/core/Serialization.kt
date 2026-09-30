@@ -111,6 +111,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CreatureDestroyedEvent::class)
         subclass(ManaAddedEvent::class)
         subclass(ManaSpentEvent::class)
+        subclass(ManaPoolChangedEvent::class)
         subclass(AbilityCounteredEvent::class)
         subclass(BecomesTargetEvent::class)
         subclass(CardCycledEvent::class)

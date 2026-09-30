@@ -2273,3 +2273,8 @@ data class DoorLockedEvent(
     val faceName: String,
     val controllerId: EntityId
 ) : GameEvent
+
+/** A resolving effect removed or converted unspent mana without paying a cost. */
+@Serializable
+@SerialName("ManaPoolChangedEvent")
+data class ManaPoolChangedEvent(val playerId: EntityId) : GameEvent

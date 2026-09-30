@@ -443,3 +443,10 @@ enum class ManaColorSource {
     /** The exiled cards used to craft the source (`CraftedFromExiledComponent`, printed colors). */
     CraftedMaterials,
 }
+
+/** Lose every unit of unspent mana, including restricted and combat-duration mana. */
+@SerialName("LoseUnspentMana")
+@Serializable
+data class LoseUnspentManaEffect(val target: EffectTarget = EffectTarget.Controller) : Effect {
+    override val description: String = "${target.description} loses all unspent mana"
+}
