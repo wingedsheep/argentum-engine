@@ -51,6 +51,159 @@
     ]
 }
 
+// Ambulatory Edifice
+{
+    "name": "Ambulatory Edifice",
+    "manaCost": "{2}{B}",
+    "typeLine": "Artifact Creature — Phyrexian Construct",
+    "oracleText": "When this creature enters, you may pay 2 life. When you do, target creature gets -1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ambulatory Edifice:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayLife",
+                            "amount": 2
+                        }
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "optional": false,
+                        "reflexiveEffect": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": -1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                },
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "target creature gets -1/-1 until end of turn"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "Ariel Perez",
+        "flavorText": "The Mirran forces thought they'd vanquished their foes . . . until a nearby monument got up and started stalking toward them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43c9005c-0574-4b75-8dbf-0a6641c3ae33.jpg?1783918052",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "You don't choose a target for Ambulatory Edifice's last ability at the time it triggers. Rather, a second \"reflexive\" ability triggers when you pay 2 life this way. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Annihilating Glare
+{
+    "name": "Annihilating Glare",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, pay {4} or sacrifice an artifact or creature.\nDestroy target creature or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetCreatureOrPlaneswalker",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Pay {4} — destroy target creature or planeswalker",
+                    "additionalManaCost": "{4}"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetCreatureOrPlaneswalker",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Sacrifice an artifact or creature — destroy target creature or planeswalker",
+                    "additionalCosts": [
+                        {
+                            "type": "AdditionalAtom",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact|creature"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "countsAsModalSpell": false
+        }
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "artist": "Konstantin Porubov",
+        "flavorText": "By gaze, sting, and claw, Vraska will see the will of Phyrexia done.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be5d0b95-ec12-4e8e-99a0-7aca457f9107.jpg?1783918052"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Argentum Masticore
 {
     "name": "Argentum Masticore",
@@ -716,6 +869,46 @@
     ]
 }
 
+// Blightbelly Rat
+{
+    "name": "Blightbelly Rat",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Phyrexian Rat",
+    "oracleText": "Toxic 1 (Players dealt combat damage by this creature also get a poison counter.)\nWhen this creature dies, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blightbelly Rat:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/9255cd01-a611-4fec-b9ec-b271687740ba.jpg?1783918051"
+    }
+}
+
 // Blue Sun's Twilight
 {
     "name": "Blue Sun's Twilight",
@@ -1170,6 +1363,176 @@
     ]
 }
 
+// Cruel Grimnarch
+{
+    "name": "Cruel Grimnarch",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Phyrexian Cleric",
+    "oracleText": "Deathtouch\nWhen this creature enters, each opponent discards a card. For each opponent who can't, you gain 4 life.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cruel Grimnarch:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "Exists",
+                                        "player": "You",
+                                        "zone": "Hand",
+                                        "negate": true
+                                    }
+                                },
+                                "then": {
+                                    "type": "StorePlayer",
+                                    "storeAs": "players1"
+                                }
+                            },
+                            "collectCollections": {
+                                "players1": "collected2"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Multiply",
+                                "amount": {
+                                    "type": "VariableReference",
+                                    "variableName": "collected2_count"
+                                },
+                                "multiplier": 4
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, each opponent discards a card. For each opponent who can't, you gain 4 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "artist": "Allen Williams",
+        "flavorText": "The gospel of lies sounds sweetest when whispered by many mouths.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3f571b5-ce50-4856-a151-fe6610d27bca.jpg?1783918048"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Cutthroat Centurion
+{
+    "name": "Cutthroat Centurion",
+    "manaCost": "{2}{B}",
+    "typeLine": "Artifact Creature — Phyrexian Warrior",
+    "oracleText": "Sacrifice another artifact or creature: This creature gets +2/+2 until end of turn. Activate only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cutthroat Centurion:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature|artifact",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "artist": "Ariel Perez",
+        "flavorText": "\"We both serve the Demon Thane. Your parts would better serve with me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3890961-d636-4ccc-9c42-2088a8531c9b.jpg?1783918048"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Dross Skullbomb
 {
     "name": "Dross Skullbomb",
@@ -1254,6 +1617,56 @@
         "collectorNumber": "225",
         "artist": "Gaboleps",
         "imageUri": "https://cards.scryfall.io/normal/front/6/6/66270dd2-9139-4329-9621-852962836688.jpg?1783917994"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Drown in Ichor
+{
+    "name": "Drown in Ichor",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gets -4/-4 until end of turn. Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -4
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "Proliferate"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "UNCOMMON",
+        "artist": "Tiffany Turrill",
+        "flavorText": "Sinking into the Dross is neither a gentle death nor a quiet one. But once the necrogen takes hold, it is inevitable.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf148ef4-0ed7-4fbe-8ab6-01dd3981c8d3.jpg?1783918049"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -1543,6 +1956,45 @@
     ]
 }
 
+// Gulping Scraptrap
+{
+    "name": "Gulping Scraptrap",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Phyrexian Horror",
+    "oracleText": "When this creature enters or dies, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gulping Scraptrap:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "Proliferate"
+            },
+            {
+                "id": "Gulping Scraptrap:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "Mike Franchina",
+        "flavorText": "\"Does anyone else hear that horrible crunching sound?\"\n—Jace",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28f48394-c6aa-4453-954a-68195d9bd6ea.jpg?1783918045"
+    }
+}
+
 // Ichormoon Gauntlet
 {
     "name": "Ichormoon Gauntlet",
@@ -1654,6 +2106,61 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Infectious Inquiry
+{
+    "name": "Infectious Inquiry",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "You draw two cards and you lose 2 life. Each opponent gets a poison counter.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Controller"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "POISON",
+                        "count": 1,
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "You"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "artist": "Eli Minaya",
+        "flavorText": "\"I give you pain, you give me information. A simple trade, is it not?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a10f284-b043-4307-bdc7-6dad47cc9221.jpg?1783918045"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2845,6 +3352,55 @@
     ]
 }
 
+// Necrogen Communion
+{
+    "name": "Necrogen Communion",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature you control\nEnchanted creature has toxic 2. (Players dealt combat damage by it also get two poison counters.)\nWhen enchanted creature dies, return that card to the battlefield under your control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Necrogen Communion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Battlefield",
+                    "controllerOverride": "Controller",
+                    "fromZone": "Graveyard"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TOXIC_2"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "UNCOMMON",
+        "artist": "Ernanda Souza",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6ac8cd7c-992f-4953-b5bf-42e5a9ff09ad.jpg?1783918044"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nissa, Ascended Animist
 {
     "name": "Nissa, Ascended Animist",
@@ -3907,6 +4463,64 @@
     ]
 }
 
+// Sheoldred's Edict
+{
+    "name": "Sheoldred's Edict",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Each opponent sacrifices a nontoken creature of their choice.\n• Each opponent sacrifices a creature token of their choice.\n• Each opponent sacrifices a planeswalker of their choice.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForceSacrifice",
+                        "filter": "creature nontoken",
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    },
+                    "description": "Each opponent sacrifices a nontoken creature"
+                },
+                {
+                    "effect": {
+                        "type": "ForceSacrifice",
+                        "filter": "creature token",
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    },
+                    "description": "Each opponent sacrifices a creature token"
+                },
+                {
+                    "effect": {
+                        "type": "ForceSacrifice",
+                        "filter": "planeswalker",
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    },
+                    "description": "Each opponent sacrifices a planeswalker"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "UNCOMMON",
+        "artist": "Helge C. Balzer",
+        "flavorText": "\"Congratulations. I am entertained.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9225cc3-90f0-448f-a8d9-7c6c2796d077.jpg?1783918041"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Sheoldred's Headcleaver
 {
     "name": "Sheoldred's Headcleaver",
@@ -4920,6 +5534,52 @@
     ]
 }
 
+// Vat Emergence
+{
+    "name": "Vat Emergence",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put target creature card from a graveyard onto the battlefield under your control. Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "controllerOverride": "Controller",
+                    "fromZone": "Graveyard"
+                },
+                "Proliferate"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "Andreas Zafiratos",
+        "flavorText": "The first rebirth is a reward. The fifty-first is a punishment.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a2aeaeb-7853-4588-8a5e-cfd997ba8515.jpg?1783918038"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Veil of Assimilation
 {
     "name": "Veil of Assimilation",
@@ -5098,6 +5758,54 @@
     ]
 }
 
+// Vraska's Fall
+{
+    "name": "Vraska's Fall",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Each opponent sacrifices a creature or planeswalker of their choice and gets a poison counter.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForceSacrifice",
+                    "filter": "creature|planeswalker",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "POISON",
+                        "count": 1,
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "You"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "artist": "Dibujante Nocturno",
+        "flavorText": "The dull, creeping pain of phyresis curdled in Vraska's blood. She knew as soon as it took her, she would betray everything—even Jace.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/0173b7b4-2832-4943-ba45-8ba498d7a056.jpg?1783918037"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Vulshok Splitter
 {
     "name": "Vulshok Splitter",
@@ -5188,5 +5896,54 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Whisper of the Dross
+{
+    "name": "Whisper of the Dross",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -1/-1 until end of turn. Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "Proliferate"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "artist": "Eli Minaya",
+        "flavorText": "\"Live or die, you serve the Steel Thanes now.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58d287e8-5297-415a-97d5-02002470c52b.jpg?1783918038"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
