@@ -8169,6 +8169,12 @@ staticAbility {
   the excess tapped and chooses which one untaps. Multiple copies do not stack to a stricter cap unless one
   names a smaller `max` (most restrictive per filter wins). Inert when the player has `≤ max` matching
   permanents tapped.
+- `MustAttack(filter = source(), playersOnly = false)` — matching creatures attack each combat if able
+  (Valley Dasher, Grand Melee). `playersOnly = true` is "attacks **a player** each combat if able": attacking
+  a planeswalker or battle is rejected while some player is a legal defender for it. Grant it for a
+  duration with `Effects.GrantStaticAbility(MustAttack(playersOnly = true), creature, Duration.UntilYourNextTurn)`
+  (Nahiri, the Unforgiving) — a granted static's `UntilYourNextTurn` ends at the start of the *granting*
+  player's next turn, even when an opponent controls the creature.
 - `MustBlock(filter = source())` — matching creatures must block each combat if able (Grand Melee).
 - `MustBeBlocked(allCreatures = false, filter = null)` — static: a creature must be blocked while
   active — "if able" (≥1 blocker, default) or by **all** able blockers (`allCreatures = true`,

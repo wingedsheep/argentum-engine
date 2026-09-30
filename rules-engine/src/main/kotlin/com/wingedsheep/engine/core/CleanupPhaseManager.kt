@@ -232,15 +232,24 @@ class CleanupPhaseManager(
                     ?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()
                     ?.playerId in activeTeam)
         }
+        // Granted *static* abilities (Nahiri, the Unforgiving's "attacks a player each combat if
+        // able") are keyed to the granting effect's controller, which may not control the grantee.
+        val remainingGrantedStatic = state.grantedStaticAbilities.filter { grant ->
+            !(grant.duration is Duration.UntilYourNextTurn && grant.controllerId in activeTeam)
+        }
         val floatingChanged = remainingFloating.size != state.floatingEffects.size
+        val grantedStaticChanged = remainingGrantedStatic.size != state.grantedStaticAbilities.size
         val globalChanged = remainingGlobal.size != state.globalGrantedTriggeredAbilities.size
         val grantedActivatedChanged = remainingGrantedActivated.size != state.grantedActivatedAbilities.size
         val delayedChanged = remainingDelayed.size != state.delayedTriggers.size
-        var result = if (floatingChanged || globalChanged || grantedActivatedChanged || delayedChanged) {
+        var result = if (floatingChanged || globalChanged || grantedActivatedChanged || delayedChanged ||
+            grantedStaticChanged
+        ) {
             state.copy(
                 floatingEffects = if (floatingChanged) remainingFloating else state.floatingEffects,
                 globalGrantedTriggeredAbilities = if (globalChanged) remainingGlobal else state.globalGrantedTriggeredAbilities,
                 grantedActivatedAbilities = if (grantedActivatedChanged) remainingGrantedActivated else state.grantedActivatedAbilities,
+                grantedStaticAbilities = if (grantedStaticChanged) remainingGrantedStatic else state.grantedStaticAbilities,
                 delayedTriggers = if (delayedChanged) remainingDelayed else state.delayedTriggers
             )
         } else {

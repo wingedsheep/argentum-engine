@@ -29,13 +29,19 @@ data class CantAttack(
  * Forces the affected permanents to attack each combat if able.
  * Use [GroupFilter.source] for "this creature attacks each combat", or any battlefield
  * filter for "All creatures attack each combat if able" effects (e.g. Grand Melee).
+ *
+ * @property playersOnly "attacks **a player** each combat if able" (Nahiri, the Unforgiving): the
+ *   requirement is only met by attacking a player, so attacking a planeswalker or battle is an
+ *   error while some player could legally be attacked (CR 508.1d — maximize requirements obeyed).
  */
 @SerialName("MustAttack")
 @Serializable
 data class MustAttack(
-    val filter: GroupFilter = GroupFilter.source()
+    val filter: GroupFilter = GroupFilter.source(),
+    val playersOnly: Boolean = false
 ) : StaticAbility {
-    override val description: String = "${filter.description} attack each combat if able"
+    override val description: String =
+        "${filter.description} attack${if (playersOnly) " a player" else ""} each combat if able"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this

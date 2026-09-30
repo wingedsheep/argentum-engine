@@ -746,7 +746,7 @@ class StaticAbilityHandler(
             }
             is MustAttack -> {
                 ContinuousEffectData(
-                    modification = Modification.SetMustAttack,
+                    modification = if (ability.playersOnly) Modification.SetMustAttackPlayer else Modification.SetMustAttack,
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

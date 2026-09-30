@@ -146,6 +146,14 @@ internal class AttackPhaseManager(
             return ExecutionResult.error(state, projectedMustAttackValidation)
         }
 
+        // Check "attacks a player each combat if able" (Nahiri, the Unforgiving)
+        val mustAttackPlayerValidation = validateMustAttackAPlayerRequirements(
+            state, attackingPlayer, attackers, projected, opponents
+        )
+        if (mustAttackPlayerValidation != null) {
+            return ExecutionResult.error(state, mustAttackPlayerValidation)
+        }
+
         // Check goaded requirements (CR 701.15b–c)
         val goadValidation = validateGoadedRequirements(state, attackingPlayer, attackers, projected, opponents)
         if (goadValidation != null) {
@@ -809,6 +817,51 @@ internal class AttackPhaseManager(
             it.entityId == attackerId && it.ability is MustAttack &&
                 it.ability.filter.scope is Scope.Self
         }
+    }
+
+    /**
+     * Whether [attackerId]'s must-attack requirement can only be met by attacking a *player*
+     * ([MustAttack.playersOnly]) — projected from a printed static, or granted at runtime (Nahiri,
+     * the Unforgiving's +1: "until your next turn, up to one target creature attacks a player each
+     * combat if able").
+     */
+    private fun mustAttackAPlayer(state: GameState, attackerId: EntityId): Boolean {
+        if (state.projectedState.mustAttackPlayer(attackerId)) return true
+        return state.grantedStaticAbilities.any {
+            it.entityId == attackerId && it.ability is MustAttack &&
+                it.ability.playersOnly && it.ability.filter.scope is Scope.Self
+        }
+    }
+
+    /**
+     * Validate "attacks a player each combat if able". Attacking at all is enforced by
+     * [validateProjectedMustAttackRequirements]; this adds the defender half: a creature under the
+     * requirement that attacks a planeswalker or battle is illegal while some opponent *player* is
+     * a legal defender for it (CR 508.1d — obey as many requirements as possible). Mirrors the
+     * player-only half of goad (CR 701.15b).
+     */
+    private fun validateMustAttackAPlayerRequirements(
+        state: GameState,
+        attackingPlayer: EntityId,
+        attackers: Map<EntityId, EntityId>,
+        projected: ProjectedState,
+        opponents: List<EntityId>
+    ): String? {
+        for ((attackerId, defenderId) in attackers) {
+            if (state.getEntity(defenderId)?.has<LifeTotalComponent>() == true) continue
+            if (!mustAttackAPlayer(state, attackerId)) continue
+            val ctx = AttackCheckContext(
+                state, projected, attackerId, attackingPlayer, cardRegistry
+            )
+            val canAttackAPlayer = opponents.any { playerId ->
+                attackDefenderRules.all { rule -> rule.check(ctx, playerId) == null }
+            }
+            if (canAttackAPlayer) {
+                val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                return "$cardName must attack a player this combat if able"
+            }
+        }
+        return null
     }
 
     /**

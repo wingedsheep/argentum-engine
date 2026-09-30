@@ -47,7 +47,8 @@ class GrantStaticAbilityExecutor : EffectExecutor<GrantStaticAbilityEffect> {
                         entityId = targetId,
                         ability = effect.ability,
                         duration = effect.duration,
-                        sourceId = context.sourceId
+                        sourceId = context.sourceId,
+                        controllerId = context.controllerId
                     )
                 )
             )
@@ -72,7 +73,8 @@ class GrantStaticAbilityExecutor : EffectExecutor<GrantStaticAbilityEffect> {
             entityId = targetId,
             ability = effect.ability,
             duration = effect.duration,
-            sourceId = context.sourceId
+            sourceId = context.sourceId,
+            controllerId = context.controllerId
         )
 
         val newState = state.copy(

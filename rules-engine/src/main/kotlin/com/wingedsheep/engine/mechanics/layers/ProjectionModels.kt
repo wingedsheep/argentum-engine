@@ -640,6 +640,11 @@ sealed interface Modification {
     data object SetMustAttack : Modification {
         override val layer get() = Layer.ABILITY
     }
+    /** "Attacks a player each combat if able" — sets both `mustAttack` and `mustAttackPlayer`. */
+    @Serializable
+    data object SetMustAttackPlayer : Modification {
+        override val layer get() = Layer.ABILITY
+    }
     @Serializable
     data object SetMustBlock : Modification {
         override val layer get() = Layer.ABILITY
@@ -777,6 +782,7 @@ internal data class MutableProjectedValues(
     var cantBlock: Boolean = false,
     var cantBeTurnedFaceUp: Boolean = false,
     var mustAttack: Boolean = false,
+    var mustAttackPlayer: Boolean = false,
     var mustBlock: Boolean = false,
     val cantBeBlockedExceptByFilters: MutableList<GameObjectFilter> = mutableListOf(),
     val canOnlyBlockCreaturesWithFilters: MutableList<GameObjectFilter> = mutableListOf(),

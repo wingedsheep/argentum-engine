@@ -388,6 +388,10 @@ internal class EffectApplicator(
                 is Modification.SetMustAttack -> {
                     values.mustAttack = true
                 }
+                is Modification.SetMustAttackPlayer -> {
+                    values.mustAttack = true
+                    values.mustAttackPlayer = true
+                }
                 is Modification.SetMustBlock -> {
                     values.mustBlock = true
                 }
