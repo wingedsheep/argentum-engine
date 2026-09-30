@@ -84,8 +84,8 @@ class ExchangeLifeAndStatExecutor : EffectExecutor<ExchangeLifeAndStatEffect> {
         // Set the player's life total to the creature's former stat. If the life side of
         // the exchange would be a life gain and gain is prevented (e.g. Sunspine Lynx),
         // that side doesn't happen — the creature's stat change above still stands.
-        val lifeSideBlocked = currentStat > currentLife &&
-            DamageUtils.isLifeGainPrevented(newState, playerId)
+        val lifeSideBlocked = (currentStat > currentLife && DamageUtils.isLifeGainPrevented(newState, playerId)) ||
+            (currentStat < currentLife && newState.isLifeLossLocked(playerId)) // CR 119.8
         if (currentStat != currentLife && !lifeSideBlocked) {
             newState = newState.withLifeTotal(playerId, currentStat)
 

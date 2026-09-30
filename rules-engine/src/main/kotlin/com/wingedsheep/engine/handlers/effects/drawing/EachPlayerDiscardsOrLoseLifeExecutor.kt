@@ -188,6 +188,8 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
                     if (currentState.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>() == null
                     ) continue
+                    // CR 119.8 — a player who can't lose life doesn't.
+                    if (currentState.isLifeLossLocked(playerId)) continue
                     // CR 810.9a — life loss applies to the team's shared total.
                     val currentLife = currentState.lifeTotal(playerId)
                     val newLife = currentLife - lifeLoss

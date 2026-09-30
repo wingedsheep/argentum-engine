@@ -2468,10 +2468,8 @@ class CastFromZoneEnumerator(
                 if (!context.legality.castRestrictionsMet(state, playerId, castRestrictions)) continue
 
                 // Check life affordability (only when there is a life cost)
-                if (lifeCost > 0) {
-                    val currentLife = state.lifeTotal(playerId) // CR 810.9a — team's shared total
-                    if (currentLife < lifeCost) continue
-                }
+                // CR 810.9a — team's shared total; CR 119.8 — nor while the player can't lose life.
+                if (!state.canPayLife(playerId, lifeCost)) continue
 
                 // The grant's own additional cost (Six's continuous retrace: "discard a land card") —
                 // unpayable means no action, like an unaffordable life cost.

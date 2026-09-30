@@ -33,6 +33,7 @@ class LockLifeLossTest : FunSpec({
         CardScript.spell(Effects.LockLifeLoss(EffectTarget.Controller, Duration.EndOfTurn))
     )
     val loseThree = instant("Lose Three", CardScript.spell(Effects.LoseLife(3, EffectTarget.Controller)))
+    val burnThree = instant("Burn Three", CardScript.spell(Effects.DealDamage(3, EffectTarget.Controller)))
     val setToFive = instant("Set To Five", CardScript.spell(Effects.SetLifeTotal(5, EffectTarget.Controller)))
     val gainTwo = instant("Gain Two", CardScript.spell(Effects.GainLife(2)))
     val payThree = instant(
@@ -42,7 +43,7 @@ class LockLifeLossTest : FunSpec({
 
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(lockForever, lockThisTurn, loseThree, setToFive, gainTwo, payThree))
+        driver.registerCards(TestCards.all + listOf(lockForever, lockThisTurn, loseThree, burnThree, setToFive, gainTwo, payThree))
         driver.initMirrorMatch(deck = Deck.of("Plains" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -62,6 +63,10 @@ class LockLifeLossTest : FunSpec({
 
         withClue("lose life") {
             cast(driver, me, "Lose Three").error shouldBe null
+            driver.getLifeTotal(me) shouldBe 20
+        }
+        withClue("damage") {
+            cast(driver, me, "Burn Three").error shouldBe null
             driver.getLifeTotal(me) shouldBe 20
         }
         withClue("set life lower") {
