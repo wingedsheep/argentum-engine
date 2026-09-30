@@ -138,7 +138,7 @@ data class GrantTriggeredAbilityEffect(
  * when its condition *becomes* true, polled at every priority pass. The two need separate effects
  * because the engine reads them through different paths — a `TriggeredAbility` reaches the
  * `TriggerIndex`, while a [StateTriggeredAbility] is only ever produced by the
- * `StateTriggerPoller`, which has its own latch bookkeeping.
+ * `StateTriggerPoller`, which suppresses another firing while the original trigger is outstanding.
  *
  * Authored on Olivia, Crimson Bride, whose reanimated creature gains
  * `"When you don't control a legendary Vampire, exile this creature."` — a state trigger, not an

@@ -238,8 +238,9 @@ object Steps {
         name: String,
         plural: String = singular,
         pluralAlternate: String? = null,
+        quantifiers: List<Targets.Quantifier> = Targets.quantifiers,
         effect: (EffectTarget) -> Effect,
-    ): List<Phrase<CardScript>> = Targets.quantifiers.map { quantifier ->
+    ): List<Phrase<CardScript>> = quantifiers.map { quantifier ->
         fun scriptFor(count: Int, filter: GameObjectFilter) = CardScript(
             spellEffect = quantifier.effectOver(effect),
             targetRequirements = listOf(quantifier.requirement(count, filter)),
@@ -1893,6 +1894,16 @@ object Steps {
         quantifiedPermanentSteps("destroy {q}target {filter}", "destroy") { Effects.Destroy(it) },
         quantifiedPermanentSteps("regenerate {q}target {filter}", "regenerate") { RegenerateEffect(it) },
         quantifiedPermanentSteps("exile {q}target {filter}", "exile") { Effects.Exile(it) },
+        // "Exile target creature an opponent controls until ~ leaves the battlefield." — the
+        // Banisher Priest shape, 42 hand-written goldens. The effect is only the exile half; the
+        // return is a second ability the card carries, which [Grammar]'s line rules add (see
+        // `Grammar.withLinkedReturn`). Singular rows only: `ExileUntilLeavesEffect` takes one
+        // target, and no card spells a plural exile-until-leaves through `ForEachTargetEffect`.
+        quantifiedPermanentSteps(
+            "exile {q}target {filter} until ${Normalizer.SELF} leaves the battlefield",
+            "exile until this leaves",
+            quantifiers = Targets.quantifiers.filterNot { it.plural },
+        ) { Effects.ExileUntilLeaves(it) },
         quantifiedPermanentSteps("tap {q}target {filter}", "tap") { Effects.Tap(it) },
         quantifiedPermanentSteps("untap {q}target {filter}", "untap") { Effects.Untap(it) },
         quantifiedPermanentSteps("tap or untap {q}target {filter}", "tap or untap", effect = ::tapOrUntap),

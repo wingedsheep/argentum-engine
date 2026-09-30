@@ -321,7 +321,9 @@ data class TriggeredAbilityOnStackComponent(
      * targeting object, and an ability on the stack has no card data to say what it is. A copy
      * keeps it ([com.wingedsheep.engine.handlers.effects.stack.CopyTargetTriggeredAbilityExecutor.cloneAbility]).
      */
-    val isBackup: Boolean = false
+    val isBackup: Boolean = false,
+    /** Original state trigger's lifecycle identity (CR 603.8); null on copies and event triggers. */
+    val stateTriggerAbilityId: AbilityId? = null
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }

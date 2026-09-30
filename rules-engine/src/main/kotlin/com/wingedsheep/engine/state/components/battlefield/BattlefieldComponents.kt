@@ -810,33 +810,6 @@ data class TriggeredAbilityFiredEverComponent(
 }
 
 /**
- * Per-permanent latch state for [com.wingedsheep.sdk.scripting.StateTriggeredAbility]
- * instances (CR 603.8). An [AbilityId] is in [latched] iff the engine has fired this
- * state trigger and the condition has not yet become false again — preventing repeat
- * firings while the condition stays true. (See [com.wingedsheep.sdk.scripting.StateTriggeredAbility]
- * for why this latch resets on condition-false rather than on leaves-the-stack.)
- * The [com.wingedsheep.engine.event.StateTriggerPoller]
- * adds the id when emitting a [com.wingedsheep.engine.event.PendingTrigger] and removes
- * it as soon as the condition next evaluates false.
- *
- * NOT cleared at end of turn — the latch follows the permanent for as long as the
- * condition stays true, possibly across turns. Removed automatically when the entity
- * leaves the battlefield (component lives on the entity).
- */
-@Serializable
-data class StateTriggerLatchesComponent(
-    val latched: Set<AbilityId> = emptySet()
-) : Component {
-    fun withLatched(abilityId: AbilityId): StateTriggerLatchesComponent =
-        copy(latched = latched + abilityId)
-
-    fun withoutLatched(abilityId: AbilityId): StateTriggerLatchesComponent =
-        copy(latched = latched - abilityId)
-
-    fun isLatched(abilityId: AbilityId): Boolean = abilityId in latched
-}
-
-/**
  * Tracks how many times abilities on this permanent have resolved this turn.
  * Used for cards like Harvestrite Host: "if this is the second time this ability has resolved this turn."
  * Cleared at end of turn by CleanupPhaseManager.

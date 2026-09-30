@@ -13,9 +13,8 @@ import kotlinx.serialization.Serializable
  * stored in `GameState.grantedStateTriggeredAbilities`, and folded into the poller's per-permanent
  * ability list alongside the ones printed on the card.
  *
- * Latching is unaffected — the poller keys its
- * [com.wingedsheep.engine.state.components.battlefield.StateTriggerLatchesComponent] by
- * `(entityId, AbilityId)`, and a granted ability carries its own `AbilityId`.
+ * Lifecycle suppression is keyed by the source object and the granted ability's own
+ * `AbilityId`, exactly like a printed state trigger.
  *
  * @property entityId The entity that has the granted ability
  * @property ability The state-triggered ability that was granted
