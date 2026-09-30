@@ -3035,6 +3035,93 @@
     ]
 }
 
+// Ria Ivor, Bane of Bladehold
+{
+    "name": "Ria Ivor, Bane of Bladehold",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Legendary Creature — Phyrexian Knight",
+    "oracleText": "Battle cry (Whenever this creature attacks, each other attacking creature gets +1/+0 until end of turn.)\nAt the beginning of combat on your turn, the next time target creature would deal combat damage to one or more players this combat, prevent that damage. If damage is prevented this way, create that many 1/1 colorless Phyrexian Mite artifact creature tokens with toxic 1 and \"This token can't block.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ria Ivor, Bane of Bladehold:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature attacking",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            },
+            {
+                "id": "Ria Ivor, Bane of Bladehold:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "scope": "CombatOnly",
+                    "direction": "FromTarget",
+                    "onPrevented": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Phyrexian Mite",
+                        "dynamicCount": {
+                            "type": "ContextProperty",
+                            "key": "PREVENTED_DAMAGE_AMOUNT"
+                        }
+                    },
+                    "duration": "EndOfCombat",
+                    "nextInstanceOnly": true,
+                    "toPlayersOnly": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "RARE",
+        "artist": "Andreas Zafiratos",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7531ed3-235f-4368-98a8-e4e1947c53fb.jpg?1783917997"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Ribskiff
 {
     "name": "Ribskiff",

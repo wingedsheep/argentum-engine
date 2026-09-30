@@ -380,7 +380,7 @@ object DamageUtils {
         if (!cantBePrevented) {
             // Check for deflection/reflection shields (Deflecting Palm, Eye for an Eye).
             if (sourceId != null) {
-                when (val deflect = checkDeflectDamageShield(newState, targetId, effectiveAmount, sourceId)) {
+                when (val deflect = checkDeflectDamageShield(newState, targetId, effectiveAmount, sourceId, isCombatDamage, isPlayer)) {
                     is DeflectOutcome.Prevented -> return deflect.result
                     is DeflectOutcome.Reflected -> {
                         newState = deflect.state
@@ -1844,13 +1844,17 @@ object DamageUtils {
      * @param targetId The entity about to receive damage (the protected player — the shield's affected entity)
      * @param damageAmount The amount of damage about to be dealt (and thus prevented)
      * @param sourceId The entity dealing the damage
+     * @param isCombatDamage Whether this is combat damage — a combat-only shield ignores anything else
+     * @param isPlayerRecipient Whether [targetId] is a player — a players-only shield ignores permanents
      * @return ExecutionResult if a shield matched (damage prevented, event emitted), null otherwise
      */
     fun checkDeflectDamageShield(
         state: GameState,
         targetId: EntityId,
         damageAmount: Int,
-        sourceId: EntityId
+        sourceId: EntityId,
+        isCombatDamage: Boolean,
+        isPlayerRecipient: Boolean
     ): DeflectOutcome? {
         val sourceEntity = state.getEntity(sourceId)
         val originatingSourceId = sourceEntity
@@ -1861,6 +1865,8 @@ object DamageUtils {
             val mod = effect.effect.modification
             mod is SerializableModification.PreventNextDamageFromSourceShield &&
                 (mod.damageSourceId == sourceId || mod.damageSourceId == originatingSourceId) &&
+                (!mod.combatOnly || isCombatDamage) &&
+                (!mod.playersOnly || isPlayerRecipient) &&
                 (effect.effect.affectedEntities.isEmpty() || targetId in effect.effect.affectedEntities)
         }
         if (shieldIndex == -1) return null

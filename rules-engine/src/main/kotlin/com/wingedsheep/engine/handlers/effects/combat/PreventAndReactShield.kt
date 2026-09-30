@@ -23,7 +23,10 @@ internal fun GameState.installPreventAndReactShield(
     effectSourceName: String?,
     onPrevented: Effect?,
     preventDamage: Boolean,
-    objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment
+    objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment,
+    combatOnly: Boolean = false,
+    playersOnly: Boolean = false,
+    duration: Duration = Duration.EndOfTurn
 ): GameState {
     val (stateWithSource, reactionSourceId) = if (effectSourceId != null) {
         this to effectSourceId
@@ -58,10 +61,12 @@ internal fun GameState.installPreventAndReactShield(
         modification = SerializableModification.PreventNextDamageFromSourceShield(
             damageSourceId = damageSourceId,
             linkId = delayedTriggerId,
-            preventDamage = preventDamage
+            preventDamage = preventDamage,
+            combatOnly = combatOnly,
+            playersOnly = playersOnly
         ),
         affectedEntities = protectedEntityId?.let(::setOf) ?: emptySet(),
-        duration = Duration.EndOfTurn,
+        duration = duration,
         context = EffectContext(sourceId = effectSourceId, controllerId = controllerId)
     )
 }

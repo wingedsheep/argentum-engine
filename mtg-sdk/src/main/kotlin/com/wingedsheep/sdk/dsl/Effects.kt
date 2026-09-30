@@ -5674,6 +5674,9 @@ object Effects {
      * @param gainLifeFromColors Gain life whenever damage from a source of these colors is prevented
      *   this way (Samite Ministration).
      * @param gainLifeFromPrevented Gain life equal to the damage prevented this way (Chant of Vitu-Ghazi).
+     * @param toPlayersOnly Only damage that would be dealt to a player — "would deal combat damage to
+     *   one or more players" (Ria Ivor, Bane of Bladehold). Needs `direction = FromTarget` plus
+     *   [onPrevented].
      */
     fun PreventDamage(
         target: EffectTarget = EffectTarget.Controller,
@@ -5689,6 +5692,7 @@ object Effects {
         stillDealt: Boolean = false,
         gainLifeFromColors: Set<Color> = emptySet(),
         gainLifeFromPrevented: Boolean = false,
+        toPlayersOnly: Boolean = false,
         duration: Duration = Duration.EndOfTurn
     ): Effect =
         PreventDamageEffect(
@@ -5705,7 +5709,8 @@ object Effects {
             preventDamage = !stillDealt,
             nextInstanceOnly = nextInstanceOnly,
             halvePreventedDamage = halve,
-            gainLifeFromPrevented = gainLifeFromPrevented
+            gainLifeFromPrevented = gainLifeFromPrevented,
+            toPlayersOnly = toPlayersOnly
         )
 
     /**

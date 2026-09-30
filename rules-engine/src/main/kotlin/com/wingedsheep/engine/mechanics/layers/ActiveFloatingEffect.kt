@@ -678,7 +678,14 @@ sealed interface SerializableModification {
          * full — but the shield is still consumed and its linked reaction still fires with the
          * captured amount (Eye for an Eye). Defaults to true (ordinary deflection).
          */
-        val preventDamage: Boolean = true
+        val preventDamage: Boolean = true,
+        /** Only combat damage from the source matches; noncombat damage passes and leaves the shield up. */
+        val combatOnly: Boolean = false,
+        /**
+         * Only damage to a player matches (Ria Ivor: "combat damage to one or more players"); damage
+         * to a permanent passes and leaves the shield up.
+         */
+        val playersOnly: Boolean = false
     ) : SerializableModification
 
     /**

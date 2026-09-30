@@ -1155,7 +1155,9 @@ internal class CombatDamageManager(
 
         // Deflection / reflection shields (Deflecting Palm prevents; Eye for an Eye reflects but
         // lets the damage proceed).
-        when (val deflect = DamageUtils.checkDeflectDamageShield(newState, targetId, amplifiedAmount, sourceId)) {
+        when (val deflect = DamageUtils.checkDeflectDamageShield(
+            newState, targetId, amplifiedAmount, sourceId, isCombatDamage = true, isPlayerRecipient = true
+        )) {
             is com.wingedsheep.engine.handlers.effects.DeflectOutcome.Prevented -> {
                 newState = deflect.result.state
                 events.addAll(deflect.result.events)

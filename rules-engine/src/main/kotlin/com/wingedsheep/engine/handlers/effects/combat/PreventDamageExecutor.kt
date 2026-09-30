@@ -189,9 +189,21 @@ class PreventDamageExecutor(
                 effectSourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
                 onPrevented = effect.onPrevented,
                 preventDamage = effect.preventDamage,
-                objectReferences = context.objectReferences
+                objectReferences = context.objectReferences,
+                combatOnly = effect.scope == PreventionScope.CombatOnly,
+                playersOnly = effect.toPlayersOnly,
+                duration = effect.duration
             )
             return EffectResult.success(newState)
+        }
+
+        // Only the prevent-and-react source shield above can tell a player recipient from a
+        // permanent one; any other lowering would prevent damage to the wrong recipients.
+        if (effect.toPlayersOnly) {
+            return EffectResult.error(
+                state,
+                "PreventDamageEffect.toPlayersOnly needs direction = FromTarget with an onPrevented reaction"
+            )
         }
 
         // Determine affected entities
