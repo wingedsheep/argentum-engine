@@ -2987,6 +2987,130 @@
     ]
 }
 
+// Nettling Imp
+{
+    "name": "Nettling Imp",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Imp",
+    "oracleText": "{T}: Choose target non-Wall creature the active player has controlled continuously since the beginning of the turn. That creature attacks this turn if able. Destroy it at the beginning of the next end step if it didn't attack this turn. Activate only during an opponent's turn, before attackers are declared.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nettling Imp:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MarkMustAttackThisTurn",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "EntityMatches",
+                                        "entity": "TriggeringEntity",
+                                        "filter": {
+                                            "statePredicates": [
+                                                {
+                                                    "type": "StateNot",
+                                                    "predicate": "AttackedThisTurn"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "type": "MoveToZone",
+                                    "target": "TriggeringEntity",
+                                    "destination": "Graveyard",
+                                    "byDestruction": true
+                                }
+                            },
+                            "watchedTarget": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Wall"
+                                    }
+                                ],
+                                "statePredicates": [
+                                    "ControlledSinceTurnBegan"
+                                ],
+                                "controllerPredicate": "ControlledByActivePlayer"
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                "IsOpponentsTurn",
+                                "BeforeAttackersDeclaredThisTurn"
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Quinton Hoover",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/8105973c-a94d-444c-ba20-ab0fa978bee8.jpg?1783948692",
+        "rulings": [
+            {
+                "date": "2013-09-20",
+                "text": "If a turn has multiple combat phases, the ability can only be activated before the beginning of the declare attackers step of the first combat phase in that turn."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If the Imp leaves the battlefield before the end of the turn, the creature still is destroyed."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "You can use this effect on a creature you know won’t be able to attack. For example, you can use it on a tapped creature."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "The creature is destroyed if it does not attack because it simply can’t do so legally."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nevinyrral's Disk
 {
     "name": "Nevinyrral's Disk",
