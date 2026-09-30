@@ -1085,7 +1085,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * Synthetic "trigger" event used to wrap a [StateTriggeredAbility]'s effect into a
      * [TriggeredAbility] when the engine enqueues a state trigger onto the stack
      * (CR 603.8). This event is never matched against real game events — the engine
-     * detects state-trigger transitions via the [com.wingedsheep.engine.event.StateTriggerPoller]
+ * polls state-trigger conditions via the [com.wingedsheep.engine.event.StateTriggerPoller]
      * and produces a [com.wingedsheep.engine.event.PendingTrigger] directly.
      */
     @SerialName("StateConditionMetEvent")

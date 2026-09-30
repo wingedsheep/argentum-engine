@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.EndTheTurnRequestedComponent
 import com.wingedsheep.engine.state.components.player.MulliganStateComponent
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.EventPattern
 
 /**
  * The engine's single settle boundary. [ActionProcessor] runs it once after every accepted action.
@@ -165,7 +166,8 @@ class Settler(
             if (state.pendingTriggers.isEmpty()) break
 
             val waiting = apnapOrder(state, state.pendingTriggers)
-            val placed = triggerProcessor.processTriggers(state.withoutPendingTriggers(), waiting)
+            val placementState = state.withoutPendingTriggers()
+            val placed = triggerProcessor.processTriggers(placementState, waiting)
             events += placed.events
             if (placed.outcome is Outcome.Rejected) return ExecutionResult(placed.state, events, placed.outcome)
             placedAny = true
@@ -178,6 +180,16 @@ class Settler(
                 state = state.enqueue(triggerDetector.detectTriggers(state, attackCaused))
             }
             if (placed.pendingDecision != null) return ExecutionResult.propagatePause(state, events)
+            // An automatically removed state trigger immediately fires again. With no state
+            // change or player choice, repeating this wave cannot reach priority (CR 104.4b).
+            if (waiting.any { it.ability.trigger == EventPattern.StateConditionMetEvent } &&
+                state == placementState && stateTriggerPoller.poll(state).pendingTriggers.isNotEmpty()
+            ) {
+                return ExecutionResult.success(
+                    state.copy(gameOver = true, winnerId = null),
+                    events + GameEndedEvent(null, GameEndReason.INFINITE_LOOP)
+                )
+            }
         }
 
         if (placedAny) state = state.withPriority(state.priorityPlayerId)
