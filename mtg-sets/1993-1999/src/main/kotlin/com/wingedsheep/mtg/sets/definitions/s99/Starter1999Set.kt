@@ -10,17 +10,12 @@ import com.wingedsheep.sdk.model.Printing
  *
  * Set Code: S99
  * Release Date: 1999-07-01
- *
- * Scaffolded as the canonical home for cards reprinted in later sets (e.g. Eighth
- * Edition). Only the cards relocated here so far are implemented; the set is
- * otherwise incomplete.
  */
 object Starter1999Set : MtgSet {
 
     override val code = "S99"
     override val displayName = "Starter 1999"
     override val releaseDate = "1999-07-01"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
