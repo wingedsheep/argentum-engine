@@ -1908,6 +1908,68 @@
     ]
 }
 
+// Drivnod, Carnage Dominus
+{
+    "name": "Drivnod, Carnage Dominus",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Phyrexian Horror",
+    "oracleText": "If a creature dying causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.\n{B/P}{B/P}, Exile three creature cards from your graveyard: Put an indestructible counter on Drivnod. ({B/P} can be paid with either {B} or 2 life.)",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Drivnod, Carnage Dominus:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B/P}{B/P}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "filter": "creature",
+                                "count": 3
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "INDESTRUCTIBLE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{B/P}{B/P}, Exile three creature cards from your graveyard: Put an indestructible counter on Drivnod."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "AdditionalDeathTriggers",
+                "permanentsYouControl": {}
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "MYTHIC",
+        "artist": "Bogdan Rezunenko",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bc26bca-c4d8-4e8b-a96a-9529fc2daed7.jpg?1783918048"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Dross Skullbomb
 {
     "name": "Dross Skullbomb",

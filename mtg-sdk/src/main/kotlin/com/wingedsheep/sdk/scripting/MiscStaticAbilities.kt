@@ -1542,6 +1542,11 @@ data class AdditionalAttackTriggers(
  *
  * Multiple copies are additive: N doublers add N extra firings of each affected trigger (N+1 total).
  *
+ * Leaves-the-battlefield abilities look back in time (CR 603.10a): a scoped source that left the
+ * battlefield in the same event — including the dying creature itself — is judged by its last-known
+ * information, and a doubler that left in the same event still applies (Drivnod, Carnage Dominus
+ * rulings).
+ *
  * @property attachedCreature When true, the scope includes the creature this permanent is attached
  *   to ("this creature" on an Equipment/Aura). Resolved via the doubler source's attachment.
  * @property permanentsYouControl When non-null, the scope includes battlefield permanents the

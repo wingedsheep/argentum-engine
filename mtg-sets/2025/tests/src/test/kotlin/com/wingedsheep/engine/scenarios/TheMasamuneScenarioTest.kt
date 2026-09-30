@@ -130,6 +130,27 @@ class TheMasamuneScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("equipped creature's trigger on its own death triggers an additional time") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Grave Chronicler")
+                    .withCardAttachedTo(1, "The Masamune", "Grave Chronicler")
+                    .withCardInHand(1, "Wrath of God")
+                    .withLandsOnBattlefield(1, "Plains", 4)
+                    .withLifeTotal(1, 20)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Wrath of God").error shouldBe null
+                game.resolveStack()
+
+                withClue("The Chronicler died carrying The Masamune: gain 2 twice (20 + 4 = 24)") {
+                    game.findPermanents("Grave Chronicler").size shouldBe 0
+                    game.getLifeTotal(1) shouldBe 24
+                }
+            }
+
             test("without The Masamune the death trigger fires only once") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")

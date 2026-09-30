@@ -8528,15 +8528,17 @@ staticAbility {
   — the **death-cause** analogue: if a creature dying (put into a graveyard from the battlefield,
   continuous effects included) causes a **death/leave-the-battlefield** triggered ability within
   scope to trigger, that ability triggers an additional time. Scope: `permanentsYouControl` (a
-  filter) for "a permanent you control" (Teysa Karlov = `AdditionalDeathTriggers(permanentsYouControl
+  filter) for "a permanent you control" (Teysa Karlov, Drivnod = `AdditionalDeathTriggers(permanentsYouControl
   = GameObjectFilter.Any)`); `attachedCreature = true` for "this creature" on an Equipment/Aura (The
   Masamune, modelled as an equipment-level doubler scoped to the equipped creature); `includeEmblems
   = true` for "an emblem you own". Only death/leave triggers are doubled — abilities responding to the
   event that *caused* the death (e.g. "whenever you sacrifice a creature") are not (their EventPattern
   isn't a battlefield-exit `ZoneChangeEvent`). `TriggerDetector.duplicateDeathTriggers`; additive
-  across copies (N doublers → N+1 firings). Limitation: a scoped source's own "when this creature
-  dies" trigger fired by *itself* dying isn't doubled (post-death trigger detection no longer exposes
-  the doubler's attachment) — the same constraint `AdditionalSourceTriggers` has.
+  across copies (N doublers → N+1 firings). Leaves-the-battlefield abilities look back in time (CR
+  603.10a) on both sides: a source that left the battlefield in the same batch — the dying creature's
+  own "when this creature dies", or another permanent leaving alongside it — is scoped by its
+  last-known controller, characteristics and attachments; and a doubler that left in the same batch
+  (Drivnod, Carnage Dominus dying with the creature, or being the creature) still doubles.
 
 **Spell cost statics — `ModifySpellCost`**
 

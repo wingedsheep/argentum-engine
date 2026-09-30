@@ -39,10 +39,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *     triggers that fire because a creature died - not abilities that respond to the event that
  *     caused the death (e.g. "whenever you sacrifice a creature", which fires once). N copies are
  *     additive (N+1 firings). No emblem in the engine currently carries a triggered ability (emblems
- *     are static floating effects), so that leg is presently inert but modelled. Known limitation,
- *     shared with the engine's other death/leave doublers: the equipped creature's own "when this
- *     creature dies" trigger fired by itself dying is not doubled - trigger detection runs on
- *     post-death state and the doubler's attachment is gone by then.
+ *     are static floating effects), so that leg is presently inert but modelled. The equipped
+ *     creature's own "when this creature dies" trigger is doubled too: the detector reads the
+ *     Masamune off the dying creature's last-known attachments (CR 603.10a).
  */
 val TheMasamune = card("The Masamune") {
     manaCost = "{3}"

@@ -3984,9 +3984,14 @@ class TriggerDetector(
      * Multiple copies are additive: N doublers add N extra firings of each affected trigger (N+1
      * total), matching the rulings (two Masamunes on emblems -> three firings, not four).
      *
-     * Known limitation: a scoped source's own "when this creature dies" trigger fired by *that same
-     * source* dying is not doubled - once the source is in the graveyard the doubler's attachment to
-     * it is no longer exposed to the (post-death) trigger pipeline. See [AdditionalDeathTriggers].
+     * Leaves-the-battlefield abilities look back in time (CR 603.10a), on both sides:
+     *  - a trigger whose *source* left the battlefield in this batch (a creature's own "when this
+     *    creature dies", another permanent leaving alongside the dying creature) is scoped by that
+     *    source's last-known information - its controller and characteristics as it last existed
+     *    on the battlefield, and the attachments it carried (The Masamune on the creature it
+     *    equipped);
+     *  - a *doubler* that left the battlefield in this batch (Drivnod dying alongside the creature,
+     *    or dying itself) still doubles, recovered from its last-known card definition.
      */
     private fun duplicateDeathTriggers(
         state: GameState,
@@ -4006,20 +4011,24 @@ class TriggerDetector(
 
         val registry = cardRegistry
         val projected = state.projectedState
+        val battlefield = state.getBattlefield().toSet()
+
+        // Last-known information of every permanent that left the battlefield this batch (CR
+        // 603.10a): read for departed trigger sources and departed doublers alike.
+        val departed = events.filterIsInstance<ZoneChangeEvent>()
+            .filter { it.fromZone == Zone.BATTLEFIELD && it.lastKnown != null && it.entityId !in battlefield }
+            .associateBy { it.entityId }
 
         data class DeathDoubler(
             val sourceId: EntityId,
             val controllerId: EntityId,
             val ability: AdditionalDeathTriggers,
+            /** The creature the doubler is attached to — live, or last-known for a departed doubler. */
+            val attachedTo: EntityId?,
         )
         val doublers = mutableListOf<DeathDoubler>()
-        for (permanentId in state.getBattlefield()) {
-            val container = state.getEntity(permanentId) ?: continue
-            val card = container.get<CardComponent>() ?: continue
-            if (container.has<FaceDownComponent>()) continue
-            val controllerId = projected.getController(permanentId) ?: continue
-            val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
-            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+        fun collect(sourceId: EntityId, controllerId: EntityId, cardDefinitionId: String, classLevel: Int?, attachedTo: EntityId?) {
+            val cardDef = registry.getCard(cardDefinitionId) ?: return
             for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
                 val unwrapped: AdditionalDeathTriggers? = when (ability) {
                     is AdditionalDeathTriggers -> ability
@@ -4027,35 +4036,58 @@ class TriggerDetector(
                         (ability.ability as? AdditionalDeathTriggers)?.takeIf {
                             conditionEvaluator.evaluate(
                                 state, ability.condition,
-                                EffectContext(sourceId = permanentId, controllerId = controllerId)
+                                EffectContext(sourceId = sourceId, controllerId = controllerId)
                             )
                         }
                     else -> null
                 }
-                if (unwrapped != null) doublers.add(DeathDoubler(permanentId, controllerId, unwrapped))
+                if (unwrapped != null) doublers.add(DeathDoubler(sourceId, controllerId, unwrapped, attachedTo))
             }
+        }
+        for (permanentId in battlefield) {
+            val container = state.getEntity(permanentId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            if (container.has<FaceDownComponent>()) continue
+            val controllerId = projected.getController(permanentId) ?: continue
+            collect(
+                permanentId, controllerId, card.cardDefinitionId,
+                container.get<ClassLevelComponent>()?.currentLevel,
+                container.get<AttachedToComponent>()?.targetId
+            )
+        }
+        // A doubler that left the battlefield alongside the dying creature still applies (Drivnod
+        // ruling: "a creature dying at the same time as Drivnod (including Drivnod itself dying)").
+        for (event in departed.values) {
+            val snapshot = event.lastKnown ?: continue
+            if (snapshot.lostAllAbilities || snapshot.wasFaceDown) continue
+            val cardDefId = snapshot.cardDefinitionId ?: continue
+            collect(event.entityId, snapshot.controllerId ?: event.ownerId, cardDefId, null, snapshot.attachedTo)
         }
         if (doublers.isEmpty()) return
 
         val duplicates = mutableListOf<PendingTrigger>()
         val originals = triggers.toList()
         for (doubler in doublers) {
-            val attachedCreatureId =
-                if (doubler.ability.attachedCreature) {
-                    state.getEntity(doubler.sourceId)?.get<AttachedToComponent>()?.targetId
-                } else null
+            val attachedCreatureId = if (doubler.ability.attachedCreature) doubler.attachedTo else null
             val controlledFilter = doubler.ability.permanentsYouControl
+            val context = PredicateContext(controllerId = doubler.controllerId, sourceId = doubler.sourceId)
             for (trigger in originals) {
                 if (trigger.controllerId != doubler.controllerId) continue
                 if (!isDeathCausedTrigger(trigger, dyingCreatures)) continue
                 val src = trigger.sourceId
+                val departedSource = departed[src]?.lastKnown
                 val inScope = when {
                     attachedCreatureId != null && src == attachedCreatureId -> true
-                    controlledFilter != null && src in state.getBattlefield() &&
-                        predicateEvaluator.matches(
-                            state, projected, src, controlledFilter,
-                            PredicateContext(controllerId = doubler.controllerId, sourceId = doubler.sourceId)
-                        ) -> true
+                    // The equipped creature died carrying this Equipment (its own dies trigger).
+                    doubler.ability.attachedCreature && departedSource != null &&
+                        doubler.sourceId in departedSource.attachmentIds -> true
+                    controlledFilter != null && src in battlefield &&
+                        predicateEvaluator.matches(state, projected, src, controlledFilter, context) -> true
+                    // A source that left the battlefield this batch was "a permanent you control"
+                    // as it last existed there (CR 603.10a).
+                    controlledFilter != null && departedSource != null &&
+                        departedSource.controllerId == doubler.controllerId &&
+                        predicateEvaluator.matchesSnapshot(state, departedSource, controlledFilter, context) -> true
                     doubler.ability.includeEmblems && isEmblemOwnedBy(state, src, doubler.controllerId) -> true
                     else -> false
                 }
