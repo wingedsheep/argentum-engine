@@ -2919,6 +2919,16 @@ object Steps {
             val isObject = declared is TargetObject || declared is TargetCreatureOrPlaneswalker
             if (!isObject) return null
         }
+        // **"Another" after a first target is about that target, not about the source.** "Target
+        // creature gets +2/+2 until end of turn. Another target creature gets -2/-2 until end of
+        // turn." (Drooling Groodion) and "Up to one other target creature gets +1/+1" after a first
+        // target (Mabel's Mettle) contrast the second target with the first — the SDK's
+        // `TargetOther`, distinct from earlier targets of the same ability — while the quantifier
+        // rows read "another" as `excludeSelf`, which is right only when it is the line's one target.
+        // Both round-trip, and the second would let one creature take both halves. So a
+        // self-excluding requirement anywhere but first refuses, and the line declines.
+        val declared = parts.flatMap { it.targetRequirements }
+        if (declared.drop(1).any { (it as? TargetObject)?.filter?.excludeSelf == true }) return null
         var index = 0
         return parts.map { part ->
             if (part.targetRequirements.isEmpty()) return@map part

@@ -550,6 +550,48 @@ family. Portal is a deliberately simple set, which is what makes it the right fi
 318 alternate spellings above are mostly its doing, because a card printing "A and B" or "A, then B"
 now reads correctly and prints back as the full-stop form.
 
+## The "another target" band
+
+The first band of the unattended grammar loop, keyed on the tail family `another target creature …`
+(**102 lines over 102 cards**, 41 of them hand-written). The prefix probe — rewrite "another target"
+to "target" and reparse — said **44 cards** would finish; the band delivered **48 hand-written cards
+read whole (7,099 → 7,147)**, because the same rows also read "up to one other target" and "two other
+target".
+
+### "Another" is a quantifier row, not a noun phrase
+
+"Another target creature you control", "up to one other target creature", "two other target
+creatures" differ from the rows beside them in one field: the requirement cannot choose the object
+whose ability it is. The SDK carries that as `TargetFilter.excludeSelf`, and 88 goldens spell "another
+target" that way. So these are four more rows of `Targets.quantifiers` — the singular pair and the
+counted plural pair — and every family that already takes the table (destroy, exile, tap, bounce, the
+pump, the grants, the combat restrictions, the singular damage and counter rows) reads them for free.
+The one test that used `excludeSelf` as its example of an unspelled field now uses
+`excludeTriggeringEntity`.
+
+### After a first target, "another" is about that target
+
+The differential found the reading's edge within one run. "Target creature gets +2/+2 until end of
+turn. **Another** target creature gets -2/-2 until end of turn." (Drooling Groodion) and "… **Up to one
+other** target creature gets +1/+1" (Mabel's Mettle) contrast the second target with the *first*,
+which the SDK spells `TargetOther` — distinct from earlier targets of the same ability. Read as
+`excludeSelf`, both round-trip byte-perfectly and let one creature take both halves. `Steps.merge`
+now refuses a self-excluding requirement anywhere but first, and those lines decline.
+
+### What the differential found
+
+Differential **6,730 compared / 52 divergent → 6,776 / 53**. Of the seven new divergences:
+
+- **two parser bugs, fixed** — Drooling Groodion and Mabel's Mettle, above.
+- **four card bugs, fixed** — Aetherjacket ("Destroy another target artifact") had no self-exclusion
+  at all; Earth Kingdom Protectors, Intrepid Provisioner and Tributary Vaulter read "another target
+  Ally / Human / Merfolk you control" as a *creature* of that type, where a bare subtype names a
+  permanent (CR 109.2). Only their goldens moved.
+- **one standing SDK finding** — Clammy Prowler spells its single "another target attacking creature"
+  as `TargetOther(TargetObject(…))`. With one target the two are the same requirement, and the SDK has
+  both; `excludeSelf` is the majority (88 goldens) and prints. The single-target `TargetOther` cards
+  are the minority spelling of one concept, not a grammar gap.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

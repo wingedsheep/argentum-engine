@@ -332,7 +332,8 @@ object Targets {
     const val QUANTIFIER_PLACEHOLDER = "{q}"
 
     /**
-     * Every quantifier English prints in front of "target", as six rows.
+     * Every quantifier English prints in front of "target", as ten rows — six, and the four that add
+     * "other" ([other]).
      *
      * They are exhaustive over the *printed* forms, not over the SDK's fields: "one or two target
      * creatures" is a `minCount` below its `count` and is a seventh row nobody has needed
@@ -356,7 +357,36 @@ object Targets {
         Quantifier("any number of targets", prefix = "any number of ", plural = true) { _, filter ->
             anyNumber(filter)
         },
+        Quantifier("another target", prefix = "another ", plural = false) { _, filter -> other(filter) },
+        Quantifier("up to one other target", prefix = "up to one other ", plural = false) { _, filter ->
+            other(filter, optional = true)
+        },
+        Quantifier("several other targets", prefix = "$COUNT_PLACEHOLDER other ", plural = true) { n, filter ->
+            other(filter, count = n)
+        },
+        Quantifier("up to several other targets", prefix = "up to $COUNT_PLACEHOLDER other ", plural = true) { n, filter ->
+            other(filter, count = n, optional = true)
+        },
     )
+
+    /**
+     * "**another** target creature", "up to one **other** target creature", "two **other** target
+     * creatures" — a requirement that cannot choose the object whose ability it is, which the SDK
+     * carries as [TargetFilter.excludeSelf] and which 88 hand-written goldens spell that way.
+     *
+     * The self-exclusion is the only thing these rows add, so they are the [quantifiers] rows they
+     * sit beside with one flag flipped rather than a second noun phrase layer: "another" is English's
+     * singular for "one other", and the plural rows move the word after the number the way English
+     * does. Always a [TargetObject], even over "creature or planeswalker": the filterless
+     * [TargetCreatureOrPlaneswalker] [permanent] prefers there has nowhere to carry the flag.
+     */
+    private fun other(filter: GameObjectFilter, count: Int = 1, optional: Boolean = false): TargetRequirement =
+        TargetObject(
+            count = count,
+            optional = optional,
+            filter = TargetFilter(filter, excludeSelf = true),
+            id = SLOT,
+        )
 
     /**
      * The rows whose noun stays singular — bare "target creature" and "up to one target creature".
@@ -378,7 +408,7 @@ object Targets {
      * module's fail-closed matching exists to catch. So the row set is part of what a family declares,
      * and the *reason* a family declares a subset is always that English changes the sentence rather
      * than the noun. Where it changes only the noun ([Steps.quantifiedPermanentSteps], the pump, the
-     * grants), the family takes all six.
+     * grants), the family takes all ten.
      */
     val singularQuantifiers: List<Quantifier> = quantifiers.filterNot { it.plural }
 

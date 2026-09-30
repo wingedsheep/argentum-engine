@@ -6337,7 +6337,7 @@
                     {
                         "type": "TargetObject",
                         "filter": {
-                            "baseFilter": "creature Ally ctrl:you",
+                            "baseFilter": "permanent Ally ctrl:you",
                             "excludeSelf": true
                         },
                         "id": "t0"

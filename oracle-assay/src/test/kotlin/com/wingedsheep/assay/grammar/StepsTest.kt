@@ -175,6 +175,55 @@ class StepsTest : StringSpec({
             listOf(Targets.anyNumber(GameObjectFilter.Creature))
     }
 
+    // "Another" and "other" are the quantifier rows with the source excluded — `excludeSelf` on the
+    // target filter, the spelling 88 hand-written goldens use — and "another" is English's singular
+    // for "one other", so the four rows are the singular pair and the counted plural pair.
+    "another and other exclude the source from the target" {
+        fragment("Destroy another target creature you control.") shouldBe CardFragment(
+            script = CardScript(
+                spellEffect = Effects.Destroy(Targets.bound()),
+                targetRequirements = listOf(
+                    TargetObject(
+                        filter = TargetFilter(GameObjectFilter.Creature.youControl(), excludeSelf = true),
+                        id = Targets.SLOT,
+                    )
+                ),
+            )
+        )
+        fragment("Exile up to one other target creature.").script.targetRequirements shouldBe listOf(
+            TargetObject(optional = true, filter = TargetFilter(GameObjectFilter.Creature, excludeSelf = true), id = Targets.SLOT)
+        )
+        fragment("Tap up to two other target creatures.").script.targetRequirements shouldBe listOf(
+            TargetObject(
+                count = 2,
+                optional = true,
+                filter = TargetFilter(GameObjectFilter.Creature, excludeSelf = true),
+                id = Targets.SLOT,
+            )
+        )
+        listOf(
+            "Destroy another target creature.",
+            "Destroy up to one other target creature.",
+            "Destroy two other target creatures.",
+            "Destroy up to three other target creatures.",
+            "Return another target creature you control to its owner's hand.",
+        ).forEach { roundTrips(it) }
+        // "one other" is the singular pair's alone, exactly as bare "up to one" is.
+        Grammar.abilityLine.parseLine("Destroy up to one other target creatures.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+    }
+
+    // After a first target, "another" contrasts with *that target* (the SDK's `TargetOther`), not
+    // with the source — Drooling Groodion and Mabel's Mettle. Reading it as `excludeSelf` would let
+    // one creature take both halves, so the second position declines.
+    "another after a first target declines rather than excluding the source" {
+        listOf(
+            "Target creature gets +2/+2 until end of turn. Another target creature gets -2/-2 until end of turn.",
+            "Target creature gets +2/+2 until end of turn. Up to one other target creature gets +1/+1 until end of turn.",
+        ).forEach { Grammar.abilityLine.parseLine(it).shouldBeInstanceOf<ParseOutcome.Declined>() }
+        roundTrips("Another target creature gets +2/+2 until end of turn.")
+    }
+
     // Oracle prints the plural possessive both ways, 110 lines to 55. One rule, two spellings, and
     // the minority never prints — so Scapegoat's line survives as a variant rather than a decline.
     "the older plural possessive parses and never prints" {
@@ -418,14 +467,15 @@ class StepsTest : StringSpec({
     }
 
     // Fail-closed the other way: a requirement carrying a restriction the phrase does not spell
-    // must not print as though it did. `excludeSelf` is "other target creature", a different card.
+    // must not print as though it did. `excludeTriggeringEntity` is "target creature other than that
+    // creature", a different card. (`excludeSelf` used to stand here; the "another" rows spell it now.)
     "a target requirement the phrase does not spell refuses to print" {
         val other = CardFragment(
             script = CardScript(
                 spellEffect = Effects.Destroy(Targets.bound()),
                 targetRequirements = listOf(
                     TargetObject(
-                        filter = TargetFilter(GameObjectFilter.Creature, excludeSelf = true),
+                        filter = TargetFilter(GameObjectFilter.Creature, excludeTriggeringEntity = true),
                         id = Targets.SLOT,
                     )
                 ),

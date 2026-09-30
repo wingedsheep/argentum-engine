@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.handlers.effects.token
 
 import com.wingedsheep.engine.state.components.identity.copiableCardComponent
+import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
+import com.wingedsheep.sdk.scripting.effects.CopyExceptions
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
@@ -123,6 +125,8 @@ class CreateTokenCopyOfChosenPermanentExecutor(
                 ControllerComponent(controllerId),
                 SummoningSicknessComponent
             )
+            // Toxic N / bushido N ride components, not the CardComponent — carry them over too.
+            container = CopyExceptionApplier.withNumericKeywords(container, chosenContainer, CopyExceptions.None)
 
             // CR 707.8a: a token copy of a double-faced permanent has both faces and enters
             // with the same face up as the source.

@@ -18404,7 +18404,7 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "creature Merfolk ctrl:you",
+                        "baseFilter": "permanent Merfolk ctrl:you",
                         "excludeSelf": true
                     },
                     "id": "t0"

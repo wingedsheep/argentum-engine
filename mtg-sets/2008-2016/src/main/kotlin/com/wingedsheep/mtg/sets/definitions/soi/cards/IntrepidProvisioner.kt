@@ -28,7 +28,7 @@ val IntrepidProvisioner = card("Intrepid Provisioner") {
     keywords(Keyword.TRAMPLE)
 
     triggeredAbility {
-        val target = target(TargetFilter(GameObjectFilter.Creature.youControl().withSubtype("Human"), excludeSelf = true))
+        val target = target(TargetFilter(GameObjectFilter.Permanent.youControl().withSubtype("Human"), excludeSelf = true))
         trigger = Triggers.self.enters()
         effect = Effects.ModifyStats(2, 2, target)
     }

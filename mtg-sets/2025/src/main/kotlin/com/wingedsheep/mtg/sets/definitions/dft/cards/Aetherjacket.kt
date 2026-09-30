@@ -32,7 +32,7 @@ val Aetherjacket = card("Aetherjacket") {
     keywords(Keyword.FLYING, Keyword.VIGILANCE)
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}"), Costs.Tap, Costs.SacrificeSelf)
-        val t = target(TargetFilter.Artifact)
+        val t = target(TargetFilter.Artifact.other())
         effect = Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
         timing = TimingRule.SorcerySpeed
     }

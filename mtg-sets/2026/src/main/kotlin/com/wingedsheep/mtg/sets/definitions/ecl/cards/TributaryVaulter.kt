@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 val TributaryVaulter = card("Tributary Vaulter") {
@@ -20,7 +21,7 @@ val TributaryVaulter = card("Tributary Vaulter") {
 
     triggeredAbility {
         trigger = Triggers.self.becomesTapped()
-        val merfolk = target(TargetFilter.OtherCreatureYouControl.withSubtype("Merfolk"))
+        val merfolk = target(TargetFilter(GameObjectFilter.Permanent.youControl().withSubtype("Merfolk")).other())
         effect = Effects.ModifyStats(2, 0, merfolk)
     }
 
