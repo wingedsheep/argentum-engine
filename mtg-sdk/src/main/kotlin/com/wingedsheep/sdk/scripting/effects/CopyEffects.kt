@@ -24,7 +24,12 @@ import kotlinx.serialization.Serializable
  *   "becomes a copy of that creature until end of turn"). [Duration.UntilNextEndStep] reverts on
  *   entry to the next end step (Niko, Light of Hope), and [Duration.UntilYourNextTurn] reverts
  *   after the untap step of the effect's controller's next turn (Absorbing Man, Taskmaster —
- *   "until your next turn, this becomes a copy of …"). Any other duration falls back to permanent.
+ *   "until your next turn, this becomes a copy of …"). [Duration.WhileSourceAttachedToAffected]
+ *   keeps the copy only while the effect's source (an Equipment/Aura) stays attached to the copied
+ *   permanent, reverting via the attached-copy state-based check (Blade of Shared Souls — "for as
+ *   long as this Equipment remains attached to it, you may have that creature become a copy of
+ *   another target creature you control"); a permanent the source isn't attached to at resolution
+ *   is left alone. Any other duration falls back to permanent.
  * @property excludeTarget When true, the copy source [target] itself is excluded from the set of
  *   permanents that become copies — for "each **other** creature you control becomes a copy of
  *   that creature" wordings, where the target keeps its own identity (and any counter just placed
@@ -78,14 +83,17 @@ data class EachPermanentBecomesCopyOfTargetEffect(
             Duration.UntilYourNextTurn -> " until your next turn"
             else -> ""
         }
+        val durationPrefix = if (duration == Duration.WhileSourceAttachedToAffected) {
+            "for as long as this remains attached to it, "
+        } else ""
         val clauses = exceptions.clauses() +
             (if (retainActivatingAbility) listOf("it has this ability") else emptyList())
         val exceptSuffix =
             if (clauses.isEmpty()) "" else ", except ${clauses.joinToString(" and ")}"
         if (affected != null) {
-            "${affected.description} becomes a copy of ${target.description}$durationSuffix$exceptSuffix"
+            "$durationPrefix${affected.description} becomes a copy of ${target.description}$durationSuffix$exceptSuffix"
         } else {
-            "Each ${if (excludeTarget) "other " else ""}${filter.baseFilter.description} becomes a copy of ${target.description}$durationSuffix$exceptSuffix"
+            "${durationPrefix}Each ${if (excludeTarget) "other " else ""}${filter.baseFilter.description} becomes a copy of ${target.description}$durationSuffix$exceptSuffix"
         }
     }
 

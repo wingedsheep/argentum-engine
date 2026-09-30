@@ -9,8 +9,10 @@ import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
+import com.wingedsheep.engine.state.components.identity.CopyWhileAttachedComponent
 import com.wingedsheep.engine.state.components.identity.RevertCopyAtEndOfTurnComponent
 import com.wingedsheep.engine.state.components.identity.RevertCopyAtNextEndStepComponent
 import com.wingedsheep.engine.state.components.identity.RevertCopyAtYourNextTurnComponent
@@ -71,7 +73,7 @@ class EachPermanentBecomesCopyOfTargetExecutor(
         }
 
         val affectedTarget = effect.affected
-        val affected = if (affectedTarget != null) {
+        var affected = if (affectedTarget != null) {
             // "target permanent A becomes a copy of target permanent B" — the affected set is the
             // single resolved [affected] target (Fleeting Reflection). Resolving to nothing is a
             // no-op. Must still be on the battlefield to become a copy.
@@ -94,6 +96,18 @@ class EachPermanentBecomesCopyOfTargetExecutor(
                 .filterNot { effect.excludeTarget && it == targetId }
         }
 
+        // "For as long as this Equipment remains attached to it" (Blade of Shared Souls): the copy
+        // is keyed to the source's attachment. A permanent the source is no longer attached to by
+        // resolution gets nothing — the duration has already ended (CR 611.2b).
+        val attachedSourceId = if (effect.duration == Duration.WhileSourceAttachedToAffected) {
+            context.sourceId?.takeIf { it in state.getBattlefield() }
+                ?: return EffectResult.success(state)
+        } else null
+        if (attachedSourceId != null) {
+            val hostId = state.getEntity(attachedSourceId)?.get<AttachedToComponent>()?.targetId
+            affected = affected.filter { it == hostId }
+        }
+
         if (affected.isEmpty()) {
             return EffectResult.success(state)
         }
@@ -102,7 +116,9 @@ class EachPermanentBecomesCopyOfTargetExecutor(
         // (reverted at cleanup), `UntilNextEndStep` (reverted on entry to the next end step,
         // coincident with a paired "return it at the beginning of the next end step" trigger —
         // Niko, Light of Hope), and `UntilYourNextTurn` (reverted after the controller's next
-        // untap step — Absorbing Man, Taskmaster). Anything else degrades to permanent.
+        // untap step — Absorbing Man, Taskmaster), and `WhileSourceAttachedToAffected` (reverted by
+        // `AttachedCopyExpiryCheck` once the source stops being attached — Blade of Shared Souls).
+        // Anything else degrades to permanent.
         var newState = state
         for (entityId in affected) {
             val container = newState.getEntity(entityId) ?: continue
@@ -142,6 +158,9 @@ class EachPermanentBecomesCopyOfTargetExecutor(
                     Duration.UntilYourNextTurn -> updated = updated.with(
                         RevertCopyAtYourNextTurnComponent(context.controllerId)
                     )
+                    Duration.WhileSourceAttachedToAffected -> if (attachedSourceId != null) {
+                        updated = updated.with(CopyWhileAttachedComponent(attachedSourceId))
+                    }
                     else -> {}
                 }
                 updated
