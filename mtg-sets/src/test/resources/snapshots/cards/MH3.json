@@ -566,6 +566,120 @@
     ]
 }
 
+// Emrakul, the World Anew
+{
+    "name": "Emrakul, the World Anew",
+    "manaCost": "{12}",
+    "typeLine": "Legendary Creature — Eldrazi",
+    "oracleText": "When you cast this spell, gain control of all creatures target player controls.\nFlying, protection from spells and from permanents that were cast this turn\nWhen Emrakul leaves the battlefield, sacrifice all creatures you control.\nMadness—Pay six {C}.",
+    "creatureStats": {
+        "power": 12,
+        "toughness": 12
+    },
+    "keywords": [
+        "FLYING",
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": "ProtectionScope.Spells"
+        },
+        {
+            "type": "Protection",
+            "scope": "ProtectionScope.PermanentsCastThisTurn"
+        },
+        {
+            "type": "Madness",
+            "cost": "{C}{C}{C}{C}{C}{C}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Emrakul, the World Anew:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "GainControl",
+                        "target": "IterationEntity"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When you cast this spell, gain control of all creatures target player controls."
+            },
+            {
+                "id": "Emrakul, the World Anew:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature ctrl:you"
+                            },
+                            "storeAs": "sacrificeAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "sacrificeAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Sacrifice"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Emrakul leaves the battlefield, sacrifice all creatures you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "MYTHIC",
+        "artist": "Brent Hollowell",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b914bfd9-5be3-4459-a68a-9b3ea2747bbc.jpg?1783911308",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Emrakul, the World Anew's triggered ability will resolve before Emrakul does. If Emrakul is countered or otherwise leaves the stack in response to that triggered ability, the triggered ability will still resolve as normal."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "The control-change effect of Emrakul's first ability lasts indefinitely. It doesn't wear off during the cleanup step or when Emrakul leaves the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Faithful Watchdog
 {
     "name": "Faithful Watchdog",
@@ -2332,6 +2446,127 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Volatile Stormdrake
+{
+    "name": "Volatile Stormdrake",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Drake",
+    "oracleText": "Flying, hexproof from activated and triggered abilities\nWhen this creature enters, exchange control of this creature and target creature an opponent controls. If you do, you get {E}{E}{E}{E}, then sacrifice that creature unless you pay an amount of {E} equal to its mana value.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Hexproof",
+            "scope": "ProtectionScope.ActivatedAbilities"
+        },
+        {
+            "type": "Hexproof",
+            "scope": "ProtectionScope.TriggeredAbilities"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Volatile Stormdrake:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "ExchangeControl",
+                            "target1": "Self",
+                            "target2": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "successCriterion": "SuccessCriterion.ControlChanged"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "ENERGY",
+                                "count": 4,
+                                "target": "Controller"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.MayPay",
+                                    "cost": {
+                                        "type": "PayExactCounters",
+                                        "counterType": "ENERGY",
+                                        "amount": {
+                                            "type": "EntityProperty",
+                                            "entity": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            },
+                                            "numericProperty": "ManaValue"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": []
+                                },
+                                "otherwise": {
+                                    "type": "SacrificeTarget",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "RARE",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.jpg?1783911285",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Volatile Stormdrake can't be the target of any activated or triggered abilities your opponents control."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "The effect of Volatile Stormdrake's last ability lasts indefinitely. It doesn't wear off during the cleanup step, and it doesn't expire if Volatile Stormdrake leaves the battlefield."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "As Volatile Stormdrake's last ability resolves, Volatile Stormdrake must be on the battlefield and the target creature must be a legal target. If either of these things isn't true, the ability does nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Warren Soultrader

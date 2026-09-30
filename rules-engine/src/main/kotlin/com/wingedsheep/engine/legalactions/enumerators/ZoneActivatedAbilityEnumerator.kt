@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.legalactions.ActionEnumerator
@@ -228,7 +229,7 @@ class ZoneActivatedAbilityEnumerator(private val zone: Zone, private val predica
                 // Check for target requirements
                 val targetReqs = ability.targetRequirements
                 if (targetReqs.isNotEmpty()) {
-                    val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, sourceId = entityId)
+                    val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, sourceId = entityId, targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY)
                     val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
                     if (!allSatisfied) continue
 

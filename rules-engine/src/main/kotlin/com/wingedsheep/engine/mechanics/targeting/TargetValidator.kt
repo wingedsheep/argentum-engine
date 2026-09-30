@@ -381,6 +381,14 @@ class TargetValidator(
         val hexproofError = checkHexproofFrom(state, target, casterId, sourceColors, sourceId)
         if (hexproofError != null) return hexproofError
 
+        // Protection / hexproof from a kind of source — spells, permanents cast this turn,
+        // activated or triggered abilities (Emrakul, the World Anew; Volatile Stormdrake).
+        if (target is ChosenTarget.Permanent) {
+            SourceKindProtection.targetingError(
+                state, target.entityId, sourceId, casterId, targetingSourceType, predicateEvaluator
+            )?.let { return it }
+        }
+
         // Check protection from each opponent (Rule 702.16e)
         val protectionFromOpponentError = checkProtectionFromEachOpponent(state, target, casterId)
         if (protectionFromOpponentError != null) return protectionFromOpponentError

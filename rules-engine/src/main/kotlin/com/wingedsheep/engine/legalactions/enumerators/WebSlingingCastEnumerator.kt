@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.legalactions.ActionEnumerator
@@ -81,7 +82,7 @@ class WebSlingingCastEnumerator : ActionEnumerator {
             val targetReqInfos = if (targetReqs.isEmpty()) {
                 emptyList()
             } else {
-                context.targetUtils.buildTargetInfos(state, playerId, targetReqs, cardId)
+                context.targetUtils.buildTargetInfos(state, playerId, targetReqs, cardId, TargetingSourceType.SPELL)
             }
             // A targeted web-slinging spell (e.g. Spider-Sense) is only castable if every
             // requirement has a legal target right now (CR 601.2c).

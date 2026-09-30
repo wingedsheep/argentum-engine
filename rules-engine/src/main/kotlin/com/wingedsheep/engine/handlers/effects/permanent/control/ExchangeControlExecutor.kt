@@ -49,6 +49,12 @@ class ExchangeControlExecutor : EffectExecutor<ExchangeControlEffect> {
         val card2 = container2.get<CardComponent>()
             ?: return EffectResult.error(state, "Second target is not a card")
 
+        // CR 701.12a: if the entire exchange can't be completed, none of it happens — a side that
+        // has left the battlefield (Volatile Stormdrake gone before its own trigger resolves) has no
+        // control to exchange.
+        val battlefield = state.getBattlefield()
+        if (target1Id !in battlefield || target2Id !in battlefield) return EffectResult.success(state)
+
         // Use projected controller so floating-effect-based control changes are respected
         val controller1 = state.projectedState.getController(target1Id)
             ?: container1.get<ControllerComponent>()?.playerId

@@ -80,7 +80,7 @@ internal class AbilityResolver(
                 state, targetsComponent.targets, sourceColors, sourceSubtypes,
                 abilityComponent.controllerId, targetsComponent.targetRequirements,
                 sourceId = abilityComponent.sourceId,
-                targetingSourceType = TargetingSourceType.ABILITY,
+                targetingSourceType = TargetingSourceType.TRIGGERED_ABILITY,
                 xValue = abilityComponent.xValue,
                 triggeringEntityId = abilityComponent.triggerContext?.triggeringEntityId,
                 triggeringPlayerId = abilityComponent.triggerContext?.triggeringPlayerId,
@@ -148,7 +148,7 @@ internal class AbilityResolver(
                 abilityComponent.controllerId, targetsComponent.targetRequirements,
                 sourceId = abilityComponent.sourceId,
                 xValue = abilityComponent.xValue,
-                targetingSourceType = TargetingSourceType.ABILITY,
+                targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY,
                 targetEntryStamps = targetsComponent.targetEntryStamps
             )
             if (validTargets.isEmpty()) {

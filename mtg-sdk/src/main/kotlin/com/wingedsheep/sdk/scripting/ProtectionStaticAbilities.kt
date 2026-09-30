@@ -316,6 +316,10 @@ data class GrantProtectionToController(
             is ProtectionScope.Supertype -> s.supertype.lowercase() + " permanents"
             ProtectionScope.Everything -> "everything"
             ProtectionScope.EachOpponent -> "each of your opponents"
+            ProtectionScope.Spells -> "spells"
+            ProtectionScope.PermanentsCastThisTurn -> "permanents that were cast this turn"
+            ProtectionScope.ActivatedAbilities -> "activated abilities"
+            ProtectionScope.TriggeredAbilities -> "triggered abilities"
         }
 }
 

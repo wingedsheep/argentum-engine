@@ -60,7 +60,7 @@ class OpponentOrBattleTargetTest : FunSpec({
             targets = listOf(ChosenTarget.Player(player)),
             requirements = listOf(Targets.OpponentOrBattle),
             casterId = p1,
-            targetingSourceType = TargetingSourceType.ABILITY,
+            targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY,
         )
 
         withClue("yourself") { validate(p1) shouldNotBe null }

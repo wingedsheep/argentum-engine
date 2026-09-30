@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.AlternativeCostType
@@ -183,7 +184,7 @@ class CastFromZoneEnumerator(
             }
 
             if (targetReqs.isNotEmpty()) {
-                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                 val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
                 if (canAfford && allSatisfied) {
                     val firstReq = targetReqs.first()
@@ -342,7 +343,7 @@ class CastFromZoneEnumerator(
                         }
 
                         if (targetReqs.isNotEmpty()) {
-                            val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                            val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                             val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
                             if (allSatisfied) {
                                 val firstReq = targetReqs.first()
@@ -633,7 +634,7 @@ class CastFromZoneEnumerator(
                         }
 
                         if (targetReqs.isNotEmpty()) {
-                            val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                            val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                             val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
                             if (allSatisfied) {
                                 val firstReq = targetReqs.first()
@@ -748,7 +749,7 @@ class CastFromZoneEnumerator(
                             effectiveScript?.castAuraTarget?.let { add(it) }
                         }
                         if (freeTargetReqs.isNotEmpty()) {
-                            val freeTargetInfos = context.targetUtils.buildTargetInfos(state, playerId, freeTargetReqs)
+                            val freeTargetInfos = context.targetUtils.buildTargetInfos(state, playerId, freeTargetReqs, targetingSourceType = TargetingSourceType.SPELL)
                             if (context.targetUtils.allRequirementsSatisfied(freeTargetInfos)) {
                                 val firstReq = freeTargetReqs.first()
                                 val firstInfo = freeTargetInfos.first()
@@ -915,7 +916,7 @@ class CastFromZoneEnumerator(
                             exiledCardDef?.script?.castAuraTarget?.let { add(it) }
                         }
                         if (targetReqs.isNotEmpty()) {
-                            val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                            val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                             val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
                             if (allSatisfied) {
                                 val firstReq = targetReqs.first()
@@ -1071,7 +1072,7 @@ class CastFromZoneEnumerator(
                         }
 
                         if (targetReqs.isNotEmpty()) {
-                            val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                            val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                             val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
                             if (allSatisfied) {
                                 val firstReq = targetReqs.first()
@@ -1186,7 +1187,7 @@ class CastFromZoneEnumerator(
                     }
 
                     if (targetReqs.isNotEmpty()) {
-                        val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                        val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                         val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
                         if (allSatisfied) {
                             val firstReq = targetReqs.first()
@@ -1322,7 +1323,7 @@ class CastFromZoneEnumerator(
             }
 
             if (targetReqs.isNotEmpty()) {
-                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                 val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
                 if (allSatisfied) {
                     val firstReq = targetReqs.first()
@@ -1453,7 +1454,7 @@ class CastFromZoneEnumerator(
             }
 
             if (targetReqs.isNotEmpty()) {
-                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                 val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
                 if (allSatisfied) {
                     val firstReq = targetReqs.first()
@@ -1566,7 +1567,7 @@ class CastFromZoneEnumerator(
                 result.add(offer(affordable = true, costString = costString, costInfo = escapeCostInfo).copy(autoTapPreview = autoTapPreview))
                 continue
             }
-            val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+            val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
             if (!context.targetUtils.allRequirementsSatisfied(targetInfos)) continue
             val firstReq = targetReqs.first()
             val firstInfo = targetInfos.first()
@@ -1685,7 +1686,7 @@ class CastFromZoneEnumerator(
             }
 
             if (targetReqs.isNotEmpty()) {
-                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                 if (!context.targetUtils.allRequirementsSatisfied(targetInfos)) continue
                 val firstReq = targetReqs.first()
                 val firstInfo = targetInfos.first()
@@ -1812,7 +1813,7 @@ class CastFromZoneEnumerator(
             }
 
             if (targetReqs.isNotEmpty()) {
-                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                 val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
                 if (allSatisfied) {
                     val firstReq = targetReqs.first()
@@ -1993,7 +1994,7 @@ class CastFromZoneEnumerator(
             }
 
             if (targetReqs.isNotEmpty()) {
-                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                 val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
                 if (allSatisfied) {
                     val firstReq = targetReqs.first()
@@ -2152,7 +2153,7 @@ class CastFromZoneEnumerator(
             }
 
             if (targetReqs.isNotEmpty()) {
-                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                 val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
                 if (allSatisfied) {
                     val firstReq = targetReqs.first()
@@ -2268,7 +2269,7 @@ class CastFromZoneEnumerator(
                 }
 
                 if (targetReqs.isNotEmpty()) {
-                    val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                    val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                     val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
                     if (allSatisfied) {
                         val firstReq = targetReqs.first()
@@ -2504,7 +2505,7 @@ class CastFromZoneEnumerator(
                 }
 
                 if (targetReqs.isNotEmpty()) {
-                    val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                    val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                     val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
                     if (allSatisfied) {
                         val firstReq = targetReqs.first()
@@ -2717,7 +2718,7 @@ class CastFromZoneEnumerator(
                 val kickerMinDamagePerTarget = if (kickerDividedDamage != null) 1 else null
 
                 if (targetReqs.isNotEmpty()) {
-                    val targetReqInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                    val targetReqInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
                     val allRequirementsSatisfied = context.targetUtils.allRequirementsSatisfied(targetReqInfos)
                     if (allRequirementsSatisfied) {
                         val firstReq = targetReqs.first()

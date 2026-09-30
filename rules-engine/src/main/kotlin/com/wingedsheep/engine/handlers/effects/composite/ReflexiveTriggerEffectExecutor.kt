@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
+import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
@@ -158,6 +159,7 @@ class ReflexiveTriggerEffectExecutor(
             requirement = action.requirement,
             controllerId = context.controllerId,
             sourceId = context.sourceId,
+            targetingSourceType = TargetingSourceType.TRIGGERED_ABILITY,
             // Carry granterId so the "may" feasibility check honors a granter-relative exclusion —
             // e.g. Dire Blunderbuss must NOT offer the sacrifice when the only artifact is the
             // granting Equipment itself. Minimal context (granterId only) matches the actual

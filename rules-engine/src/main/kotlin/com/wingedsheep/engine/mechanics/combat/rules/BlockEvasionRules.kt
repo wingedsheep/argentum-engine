@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat.rules
 
+import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -505,6 +506,19 @@ class ProtectionFromEachOpponentRule : BlockEvasionRule {
 }
 
 /**
+ * Protection from a kind of source (CR 702.16f): an attacker with protection from permanents that
+ * were cast this turn can't be blocked by a creature cast this turn (Emrakul, the World Anew).
+ */
+class ProtectionFromSourceKindRule : BlockEvasionRule {
+    override fun check(ctx: BlockCheckContext): String? {
+        if (!SourceKindProtection.isProtectedFromObject(ctx.state, ctx.attackerId, ctx.blockerId)) return null
+        val attackerName = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
+        val blockerName = ctx.state.getEntity(ctx.blockerId)?.get<CardComponent>()?.name ?: "Creature"
+        return "$attackerName has protection from permanents that were cast this turn and can't be blocked by $blockerName"
+    }
+}
+
+/**
  * Protection from subtype: Attacker can't be blocked by creatures of a subtype it has protection from.
  */
 class ProtectionFromSubtypeRule : BlockEvasionRule {
@@ -755,6 +769,7 @@ fun defaultBlockEvasionRules(
     ProtectionFromSupertypeRule(),
     ProtectionFromCardTypeRule(),
     ProtectionFromEachOpponentRule(),
+    ProtectionFromSourceKindRule(),
     CanOnlyBlockCreaturesWithRule(predicateEvaluator),
     CantBlockCreaturesWithGreaterPowerRule(),
     CantBeBlockedByCreaturesWithLessPowerRule(),

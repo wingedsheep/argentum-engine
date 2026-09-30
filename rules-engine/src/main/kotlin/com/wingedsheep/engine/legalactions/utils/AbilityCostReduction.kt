@@ -81,7 +81,10 @@ object AbilityCostReduction {
         evaluator: DynamicAmountEvaluator
     ): Int {
         val validTargets = targetUtils
-            .buildTargetInfos(state, controllerId, ability.targetRequirements, sourceId = sourceId)
+            .buildTargetInfos(
+                state, controllerId, ability.targetRequirements, sourceId = sourceId,
+                targetingSourceType = com.wingedsheep.engine.handlers.TargetingSourceType.ACTIVATED_ABILITY
+            )
             .firstOrNull()?.validTargets ?: emptyList()
         if (validTargets.isEmpty()) return 0
         return validTargets.maxOf { targetId ->

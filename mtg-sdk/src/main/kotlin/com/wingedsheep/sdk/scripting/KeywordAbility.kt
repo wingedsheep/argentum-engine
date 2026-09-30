@@ -117,6 +117,8 @@ sealed interface KeywordAbility {
      * - `Protection(ProtectionScope.Subtype("Goblin"))`             — "Protection from Goblins"
      * - `Protection(ProtectionScope.Everything)`                    — "Protection from everything"
      * - `Protection(ProtectionScope.EachOpponent)`                  — "Protection from each opponent" (Rule 702.16e)
+     * - `Protection(ProtectionScope.Spells)` + `Protection(ProtectionScope.PermanentsCastThisTurn)`
+     *   — "Protection from spells and from permanents that were cast this turn" (Emrakul, the World Anew)
      */
     @SerialName("Protection")
     @Serializable
@@ -135,19 +137,27 @@ sealed interface KeywordAbility {
             is ProtectionScope.Supertype -> "Protection from ${scope.supertype.lowercase()}"
             is ProtectionScope.Everything -> "Protection from everything"
             is ProtectionScope.EachOpponent -> "Protection from each opponent"
+            is ProtectionScope.Spells -> "Protection from spells"
+            is ProtectionScope.PermanentsCastThisTurn -> "Protection from permanents that were cast this turn"
+            is ProtectionScope.ActivatedAbilities -> "Protection from activated abilities"
+            is ProtectionScope.TriggeredAbilities -> "Protection from triggered abilities"
         }
     }
 
     /**
      * Hexproof from a quality. Parameterized by [ProtectionScope]; `ProtectionScope.Color`,
-     * `ProtectionScope.Colors`, `ProtectionScope.NonColor` and `ProtectionScope.CardType` are engine-supported (the remaining
-     * scopes format the oracle text but have no rules-engine wiring yet).
+     * `ProtectionScope.Colors`, `ProtectionScope.NonColor`, `ProtectionScope.CardType` and the
+     * source-kind scopes (`Spells`, `PermanentsCastThisTurn`, `ActivatedAbilities`,
+     * `TriggeredAbilities`) are engine-supported (the remaining scopes format the oracle text but
+     * have no rules-engine wiring yet).
      *
      * Examples:
      * - `Hexproof(ProtectionScope.Color(Color.WHITE))`    — "Hexproof from white" (Knight of Malice)
      * - `Hexproof(ProtectionScope.CardType("Instant"))`   — "Hexproof from instants" (Elenda, Saint of Dusk)
      * - `Hexproof(ProtectionScope.NonColor(Color.GREEN))`  — "can't be the target of nongreen spells or
      *   abilities your opponents control" (Thrun, Breaker of Silence)
+     * - `Hexproof(ProtectionScope.ActivatedAbilities)` + `Hexproof(ProtectionScope.TriggeredAbilities)`
+     *   — "Hexproof from activated and triggered abilities" (Volatile Stormdrake; CR 702.11f)
      */
     @SerialName("Hexproof")
     @Serializable
@@ -162,6 +172,10 @@ sealed interface KeywordAbility {
             is ProtectionScope.Supertype -> "Hexproof from ${scope.supertype.lowercase()}"
             is ProtectionScope.Everything -> "Hexproof from everything"
             is ProtectionScope.EachOpponent -> "Hexproof from each opponent"
+            is ProtectionScope.Spells -> "Hexproof from spells"
+            is ProtectionScope.PermanentsCastThisTurn -> "Hexproof from permanents that were cast this turn"
+            is ProtectionScope.ActivatedAbilities -> "Hexproof from activated abilities"
+            is ProtectionScope.TriggeredAbilities -> "Hexproof from triggered abilities"
         }
     }
 

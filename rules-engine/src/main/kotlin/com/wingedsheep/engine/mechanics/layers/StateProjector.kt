@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
+import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.state.components.identity.HexproofFromComponent
 import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.components.identity.RingBearerComponent
@@ -133,11 +134,13 @@ class StateProjector {
                             protection.subtypes.forEach { add("PROTECTION_FROM_SUBTYPE_${it.uppercase()}") }
                             protection.supertypes.forEach { add("PROTECTION_FROM_SUPERTYPE_${it.uppercase()}") }
                             protection.cardTypes.forEach { add("PROTECTION_FROM_CARDTYPE_$it") }
+                            protection.sourceKinds.forEach { add(SourceKindProtection.protectionKeyword(it)) }
                         }
                         container.get<HexproofFromComponent>()?.let { hexproof ->
                             hexproof.colors.forEach { add("HEXPROOF_FROM_${it.name}") }
                             hexproof.cardTypes.forEach { add("HEXPROOF_FROM_CARDTYPE_$it") }
                             hexproof.nonColors.forEach { add(HexproofFromRules.nonColorKeyword(it)) }
+                            hexproof.sourceKinds.forEach { add(SourceKindProtection.hexproofKeyword(it)) }
                         }
                         container.get<ToxicComponent>()?.let { add("TOXIC_${it.amount}") }
                         // Dash supplies haste from the live marker on every projection.
