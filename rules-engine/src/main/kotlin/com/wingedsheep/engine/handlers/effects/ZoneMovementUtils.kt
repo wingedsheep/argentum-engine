@@ -456,6 +456,12 @@ object ZoneMovementUtils {
             // (CR 400.7 / 707.2). ZoneTransitionService restores the printed
             // CardComponent before this strip runs.
             .without<com.wingedsheep.engine.state.components.identity.CopyOfComponent>()
+            // …and so do the markers that would have reverted a temporary copy later: the card is
+            // already its printed self, and a new object must not inherit a stale revert.
+            .without<com.wingedsheep.engine.state.components.identity.RevertCopyAtEndOfTurnComponent>()
+            .without<com.wingedsheep.engine.state.components.identity.RevertCopyAtNextEndStepComponent>()
+            .without<com.wingedsheep.engine.state.components.identity.RevertCopyAtYourNextTurnComponent>()
+            .without<com.wingedsheep.engine.state.components.identity.CopyWhileAttachedComponent>()
             // The Ring-bearer designation is tied to the permanent; a permanent that leaves the
             // battlefield stops being the Ring-bearer (CR 701.54e), and the object that returns is
             // a new object (CR 400.7) that must not inherit the designation (e.g. a blinked

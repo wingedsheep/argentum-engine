@@ -5,10 +5,12 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.*
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.effects.Effect
 import kotlinx.serialization.Serializable
@@ -70,8 +72,15 @@ object EffectCopyEntry {
         ))
         val copied = CopyExceptionApplier.apply(target.copy(ownerId = original.ownerId,
             isDoubleFaced = original.isDoubleFaced), exceptions)
-        return state.updateEntity(id) { it.with(copied).with(CopyOfComponent(
+        return state.updateEntity(id) { tagCopyDuration(it.with(copied).with(CopyOfComponent(
             originalCardDefinitionId = original.cardDefinitionId,
-            copiedCardDefinitionId = target.cardDefinitionId, originalCardComponent = original)) }
+            copiedCardDefinitionId = target.cardDefinitionId, originalCardComponent = original)), r.duration) }
     }
+
+    /**
+     * Mark an as-enters copy that lasts only "until end of turn" (Cursed Mirror) with the cleanup
+     * revert marker the group copy effects already use; a permanent copy is left untagged.
+     */
+    fun tagCopyDuration(container: ComponentContainer, duration: Duration): ComponentContainer =
+        if (duration == Duration.EndOfTurn) container.with(RevertCopyAtEndOfTurnComponent) else container
 }

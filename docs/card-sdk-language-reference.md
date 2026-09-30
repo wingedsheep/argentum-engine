@@ -14366,7 +14366,7 @@ The priority groups are (CR 616.1a–f):
   or granted (`ActiveReplacements`). Not yet ordered against `CreateAdditionalToken` by the affected
   player (CR 616.1): the substitution runs first and `CreateAdditionalToken` then judges only the
   substitutes, so Worldwalker Helm adds no Map for a Treasure that became a Dragon.
-- `EntersAsCopy(optional, copyFilter, copyFromZone, filterByTotalManaSpent, additionalSubtypes, additionalColors, additionalKeywords, nameOverride, powerOverride, toughnessOverride, exileCopiedCard, tappedIfCopied, additionalCounters)` —
+- `EntersAsCopy(optional, copyFilter, copyFromZone, filterByTotalManaSpent, additionalSubtypes, additionalColors, additionalKeywords, nameOverride, powerOverride, toughnessOverride, exileCopiedCard, tappedIfCopied, additionalCounters, exceptions, duration)` —
   "enter as a copy of …". As the permanent enters, the controller picks an object matching
   `copyFilter` and the permanent enters as a copy (Rule 707 copiable values), with any overrides
   applied. `copyFromZone` selects the candidate pool: `Zone.BATTLEFIELD` (default — Clone, Clever
@@ -14390,7 +14390,15 @@ The priority groups are (CR 616.1a–f):
   ability."), and routes through `EntersWithReplacements.placeEntryCounters` so Hardened Scales-style
   placement modifiers apply exactly as for printed enters-with counters. The copy snapshots a
   `CopyOfComponent` so it reverts to its
-  printed identity when it leaves the battlefield (CR 400.7 / 707.2). Works both when the source is
+  printed identity when it leaves the battlefield (CR 400.7 / 707.2). `duration: Duration` (default
+  `Duration.Permanent`) bounds the copy: `Duration.EndOfTurn` is "as this artifact enters, you may
+  have it become a copy of any creature on the battlefield until end of turn, except it has haste"
+  (Cursed Mirror — `additionalKeywords = listOf(HASTE)`). Every entry path (cast, land/direct entry,
+  zone-moving effects) tags the copy with `RevertCopyAtEndOfTurnComponent`, the same marker
+  `EachPermanentBecomesCopyOfTargetEffect(duration = EndOfTurn)` uses, so cleanup restores the
+  printed card, riders included. Only `Permanent` and `EndOfTurn` are accepted — any other duration
+  throws at definition time. Leaving the battlefield strips every temporary-copy revert marker along
+  with the copy, so a returning card never inherits a stale revert. Works both when the source is
   cast as a spell (resolved off the stack) **and** when it enters the battlefield directly — a land
   played (Echoing Deeps) pauses via `PermanentEntryReplacements.pauseForEntersAsCopy`, its resumer
   `CloneEntersOnBattlefieldContinuation` copying onto the already-placed permanent in place.

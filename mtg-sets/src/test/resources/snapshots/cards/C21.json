@@ -1,0 +1,39 @@
+// Cursed Mirror
+{
+    "name": "Cursed Mirror",
+    "manaCost": "{2}{R}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {R}.\nAs this artifact enters, you may have it become a copy of any creature on the battlefield until end of turn, except it has haste.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cursed Mirror:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "additionalKeywords": [
+                    "HASTE"
+                ],
+                "duration": "EndOfTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "RARE",
+        "artist": "David Gaillet",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/458a01ea-f161-43a4-a6db-88f6418b9c6d.jpg?1783927594"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
