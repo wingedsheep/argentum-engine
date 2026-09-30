@@ -3463,6 +3463,80 @@
     ]
 }
 
+// Pirate Ship
+{
+    "name": "Pirate Ship",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "This creature can't attack unless defending player controls an Island.\n{T}: This creature deals 1 damage to any target.\nWhen you control no Islands, sacrifice this creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "stateTriggeredAbilities": [
+            {
+                "id": "Pirate Ship:2",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "land Island",
+                    "negate": true
+                },
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "Self"
+                },
+                "descriptionOverride": "When you control no Islands, sacrifice this creature"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Pirate Ship:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "DefendingPlayer",
+                    "zone": "Battlefield",
+                    "filter": "land Island"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "RARE",
+        "artist": "Tom Wänerstrand",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0a7cb23-d229-43c5-addd-dcf423984b0c.jpg?1783948703"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Plateau
 {
     "name": "Plateau",
