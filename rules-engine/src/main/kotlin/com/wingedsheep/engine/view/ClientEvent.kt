@@ -1535,7 +1535,9 @@ is PermanentsSacrificedEvent -> {
             is TurnHijackedEvent,
             is CommitCrimeEvent,
             is CardPlayedFromPermissionEvent,
-            is TargetsChosenEvent -> null
+            is TargetsChosenEvent,
+            is PlayerActionPermissionsChangedEvent,
+            is PlayerActionTakenEvent -> null
         }
     }
 }

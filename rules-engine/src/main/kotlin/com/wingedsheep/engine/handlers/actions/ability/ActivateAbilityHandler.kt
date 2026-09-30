@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.EngineServices
@@ -153,10 +154,13 @@ class ActivateAbilityHandler(
         return ManaPaymentWindow.resumeIfPending(restored, result.events, manaSolver)
             ?: ExecutionResult.success(restored, result.events)
     }
-    private fun executeActivation(state: GameState, action: ActivateAbility): ExecutionResult {
+    internal fun executeWithLockedCost(state: GameState, action: ActivateAbility, cost: AbilityCost, x: Int?): ExecutionResult =
+        executeActivation(state, action, cost, x)
+
+    private fun executeActivation(state: GameState, action: ActivateAbility, lockedCost: AbilityCost? = null, lockedX: Int? = null): ExecutionResult {
         // 1. Announce (CR 602.2a–b): the ability, X, and the total cost.
         val activation = when (val announced = announce(state, action)) {
-            is Announcement.Announced -> announced.activation
+            is Announcement.Announced -> if (lockedCost == null) announced.activation else announced.activation.copy(effectiveCost = lockedCost, effectiveXValue = lockedX)
             is Announcement.Rejected -> return ExecutionResult.error(state, announced.reason)
         }
 
@@ -167,6 +171,35 @@ class ActivateAbilityHandler(
         // 3. Pay the total cost (CR 601.2g–h): mana abilities first, then every cost atom.
         val paymentContext =
             buildAbilityPaymentContext(activation.cardComponent, state.projectedState, action.sourceId, activation.ability)
+        if (lockedCost == null && action.paymentStrategy is com.wingedsheep.engine.core.PaymentStrategy.AutoPay &&
+            state.playerActionPermissions.any { it.playerId == action.playerId && it.action.timing == com.wingedsheep.sdk.scripting.effects.PlayerActionTiming.ManaAbility }) {
+            var previewMana = activation.effectiveCost.extractManaCost()
+            val alternative = action.alternativePayment
+            if (previewMana != null && alternative != null && !alternative.isEmpty) {
+                if (activation.ability.hasConvoke) previewMana = alternativePaymentHandler
+                    .applyConvokeForAbility(state, previewMana, alternative, action.playerId).reducedCost
+                if (activation.ability.hasWaterbend) previewMana = alternativePaymentHandler
+                    .applyWaterbendForAbility(state, previewMana, alternative, action.playerId).reducedCost
+            }
+            val mana = previewMana?.withXAs(activation.effectiveXValue ?: 0)
+            if (mana != null && !ManaPaymentWindow.floatingManaCovers(state, action.playerId, mana)) {
+                val pool = state.getEntity(action.playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
+                val remaining = ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless,
+                    restrictedMana = pool.restrictedMana).payPartial(mana, paymentContext).remainingCost
+                val excluded = if (activation.effectiveCost.hasTapCost()) setOf(action.sourceId) else emptySet()
+                if (manaSolver.solve(state, action.playerId, remaining, excludeSources = excluded, spellContext = paymentContext) == null) {
+                    return state.suspendForDecision(
+                        question = { id -> ManaPaymentWindow.buildDecision(
+                            state, action.playerId, mana, id, "Produce mana for ${activation.sourceName}",
+                            com.wingedsheep.engine.core.DecisionContext(sourceId = action.sourceId, sourceName = activation.sourceName,
+                                phase = com.wingedsheep.engine.core.DecisionPhase.CASTING), true, manaSolver,
+                        ) },
+                        answer = com.wingedsheep.engine.core.ManaActionPaymentContinuation(action, mana,
+                            lockedAbilityCost = activation.effectiveCost, lockedAbilityX = activation.effectiveXValue),
+                    )
+                }
+            }
+        }
         val payment = when (val paid = costPayer.pay(state, activation, paymentContext)) {
             is ActivationPaymentOutcome.Paid -> paid.payment
             is ActivationPaymentOutcome.Failed -> return ExecutionResult.error(state, paid.reason)

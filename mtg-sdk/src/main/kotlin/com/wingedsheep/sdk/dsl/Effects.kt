@@ -1880,6 +1880,18 @@ object Effects {
     ): Effect = com.wingedsheep.sdk.scripting.effects.GrantStateTriggeredAbilityEffect(ability, target, duration)
 
     /** [target] gains an activated ability until [duration] ends ("… gains '{T}: Add {G}{G}{G}'"). */
+    /** Grant a repeatable special action. It executes immediately and retains this resolution's context. */
+    fun GrantPlayerAction(
+        cost: com.wingedsheep.sdk.scripting.costs.PayCost,
+        effect: Effect,
+        timing: com.wingedsheep.sdk.scripting.effects.PlayerActionTiming,
+        actionDescription: String,
+        target: EffectTarget = EffectTarget.Controller,
+        duration: Duration = Duration.EndOfTurn,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantPlayerActionEffect(
+        cost, effect, timing, target, duration, actionDescription
+    )
+
     fun GrantActivatedAbility(
         ability: ActivatedAbility,
         target: EffectTarget,

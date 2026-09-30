@@ -32,6 +32,7 @@ class LegalActionEnumerator(
 
     private val enumerators: List<ActionEnumerator> = listOf(
         PassPriorityEnumerator(),
+        PlayerActionEnumerator(),
         PlayLandEnumerator(),
         MorphCastEnumerator(),
         CastSpellEnumerator(predicateEvaluator = predicateEvaluator),
@@ -110,19 +111,14 @@ class LegalActionEnumerator(
         state: GameState,
         playerId: EntityId,
         mode: EnumerationMode = EnumerationMode.FULL
-    ): List<LegalAction> = ManaAbilityEnumerator(predicateEvaluator = predicateEvaluator).enumerate(
-        EnumerationContext(
-            state = state,
-            playerId = playerId,
-            cardRegistry = cardRegistry,
-            manaSolver = manaSolver,
-            costCalculator = costCalculator,
-            predicateEvaluator = predicateEvaluator,
-            conditionEvaluator = conditionEvaluator,
-            turnManager = turnManager,
-            mode = mode
+    ): List<LegalAction> {
+        val context = EnumerationContext(
+            state, playerId, cardRegistry, manaSolver, costCalculator,
+            predicateEvaluator, conditionEvaluator, turnManager, mode,
         )
-    )
+        return ManaAbilityEnumerator(predicateEvaluator = predicateEvaluator).enumerate(context) +
+            PlayerActionEnumerator(manaOnly = true).enumerate(context)
+    }
 
     companion object {
         /**

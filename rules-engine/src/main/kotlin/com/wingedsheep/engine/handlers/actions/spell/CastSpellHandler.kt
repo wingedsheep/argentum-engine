@@ -211,8 +211,10 @@ class CastSpellHandler(
      * Any stage can pause for a player's choice; a pause before payment leaves no side effects, so
      * the re-entry with the answer merged into the action is safe.
      */
-    override fun execute(state: GameState, action: CastSpell): ExecutionResult {
-        val result = executeAnnounced(state, action)
+    override fun execute(state: GameState, action: CastSpell): ExecutionResult = executeWithLockedManaCost(state, action, null)
+
+    internal fun executeWithLockedManaCost(state: GameState, action: CastSpell, lockedCost: ManaCost?): ExecutionResult {
+        val result = executeAnnounced(state, action, lockedCost)
         // An unfinished cost/target picker still presents a card in its original zone. Rebuild
         // the announcement when resumed; cancellation must not leave Aura characteristics behind.
         return if (action.cardId !in result.state.stack && action.cardId !in result.state.getBattlefield()) {
@@ -247,7 +249,7 @@ class CastSpellHandler(
         )
     }
 
-    private fun executeAnnounced(inputState: GameState, action: CastSpell): ExecutionResult {
+    private fun executeAnnounced(inputState: GameState, action: CastSpell, lockedCost: ManaCost? = null): ExecutionResult {
         val state = com.wingedsheep.engine.mechanics.BestowCasts.announce(inputState, action, cardRegistry)
         val cardComponent = state.getEntity(action.cardId)?.get<CardComponent>()
             ?: return ExecutionResult.error(state, "Card not found")
@@ -286,7 +288,7 @@ class CastSpellHandler(
         // validate(), but `announcedState` still has it there because `castSpell` hasn't run.
         val playForFree = zoneResolver.hasPlayWithoutPayingCost(announcedState, action.playerId, action.cardId) ||
             action.useWithoutPayingManaCost
-        val totalCost = castCostTotaller.totalCost(
+        val totalCost = lockedCost ?: castCostTotaller.totalCost(
             announcedState, action, cardDef, cardComponent, playForFree,
             castingFromCommandZone = zoneResolver.hasCommanderCastPermission(announcedState, action.playerId, action.cardId),
         )
@@ -319,6 +321,31 @@ class CastSpellHandler(
             )
             owedCosts.firstNotNullOfOrNull { SpellCosts.validate(check, it) }?.let {
                 return ExecutionResult.error(announcedState, it)
+            }
+        }
+
+        // A life-funded mana action is intentionally never auto-paid. Surface the mana window
+        // before any cost is committed, retaining both the announcement and its locked price.
+        if (lockedCost == null && action.paymentStrategy is com.wingedsheep.engine.core.PaymentStrategy.AutoPay &&
+            announcedState.playerActionPermissions.any { it.playerId == action.playerId && it.action.timing == com.wingedsheep.sdk.scripting.effects.PlayerActionTiming.ManaAbility }) {
+            val computed = castCostTotaller.validationCost(announcedState, action, cardDef, cardComponent, playForFree,
+                zoneResolver.hasCommanderCastPermission(announcedState, action.playerId, action.cardId))
+            if (computed != null) {
+                val sources = manaSolver.findAvailableManaSources(announcedState, action.playerId)
+                    .filter { !it.requiresSacrifice && it.tapPermanentsSubCost == null }.map { it.entityId }
+                val explicit = action.copy(paymentStrategy = com.wingedsheep.engine.core.PaymentStrategy.Explicit(sources))
+                if (castCostPayer.validateManaPayment(announcedState, explicit, computed.cost, computed.paymentXValue) != null) {
+                    val cost = (if (castCostPayer.isCastWithAnyManaType(announcedState, action)) computed.cost.relaxColors() else computed.cost)
+                        .withXAs(computed.paymentXValue)
+                    return announcedState.suspendForDecision(
+                        question = { id -> com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow.buildDecision(
+                            announcedState, action.playerId, cost, id, "Produce mana for ${cardComponent.name}",
+                            DecisionContext(sourceId = action.cardId, sourceName = cardComponent.name, phase = DecisionPhase.CASTING),
+                            true, manaSolver,
+                        ) },
+                        answer = com.wingedsheep.engine.core.ManaActionPaymentContinuation(action, cost, lockedCastCost = totalCost),
+                    )
+                }
             }
         }
 

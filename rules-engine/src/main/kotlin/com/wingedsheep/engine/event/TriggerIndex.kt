@@ -427,6 +427,8 @@ class TriggerIndex(
 
             // No trigger watches these today. A new "whenever …" pattern over one of them needs a
             // TriggerCategory here and a branch in TriggerMatcher.
+            is com.wingedsheep.engine.core.PlayerActionPermissionsChangedEvent,
+            is com.wingedsheep.engine.core.PlayerActionTakenEvent,
             is com.wingedsheep.engine.core.TurnEndedByEffectEvent,
             is com.wingedsheep.engine.core.AbilityAutoAnsweredEvent,
             is com.wingedsheep.engine.core.AbilityCounteredEvent,

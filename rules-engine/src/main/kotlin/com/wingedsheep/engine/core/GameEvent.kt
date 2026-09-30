@@ -2284,3 +2284,11 @@ data class ManaPoolChangedEvent(val playerId: EntityId) : GameEvent
 @Serializable
 @SerialName("TextChangedEvent")
 data class TextChangedEvent(val targetId: EntityId, val fromWord: String, val toWord: String) : GameEvent
+
+@Serializable
+@SerialName("PlayerActionPermissionsChangedEvent")
+data class PlayerActionPermissionsChangedEvent(val playerId: EntityId) : GameEvent
+
+@Serializable
+@SerialName("PlayerActionTakenEvent")
+data class PlayerActionTakenEvent(val playerId: EntityId, val description: String) : GameEvent

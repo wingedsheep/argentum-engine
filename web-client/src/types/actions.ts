@@ -10,6 +10,7 @@ import { EntityId } from './entities'
 export type GameAction =
   | PassPriorityAction
   | CastSpellAction
+  | TakePlayerAction
   | ActivateAbilityAction
   | CycleCardAction
   | TypecycleCardAction
@@ -469,4 +470,11 @@ export function getActionSubject(action: GameAction): EntityId | null {
     default:
       return null
   }
+}
+
+/** A special action supplied by a resolving effect, addressed by its server permission id. */
+export interface TakePlayerAction {
+  readonly type: 'TakePlayerAction'
+  readonly playerId: EntityId
+  readonly permissionId: string
 }

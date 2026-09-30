@@ -1,0 +1,21 @@
+.player-action-bar {
+  position: absolute;
+  right: 112px;
+  bottom: 190px;
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: min(320px, calc(100vw - 112px));
+}
+.player-action-bar button {
+  padding: 8px 12px;
+  border: 1px solid var(--chrome-border);
+  border-radius: 6px;
+  background: var(--chrome-bg);
+  color: var(--chrome-text);
+  cursor: pointer;
+  text-align: left;
+}
+.player-action-bar button:disabled { opacity: 0.5; cursor: default; }
+@media (max-width: 600px) { .player-action-bar { right: 88px; bottom: 150px; } }

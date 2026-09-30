@@ -45,8 +45,36 @@ class ManaPaymentContinuationResumer(
         resumer(MayPayManaTriggerContinuation::class, ::resumeMayPayManaTrigger),
         resumer(MayPayXContinuation::class, ::resumeMayPayX),
         resumer(PayManaCostRepeatedlyContinuation::class, ::resumePayManaCostRepeatedly),
-        resumer(ManaSourceSelectionContinuation::class, ::resumeManaSourceSelection)
+        resumer(ManaSourceSelectionContinuation::class, ::resumeManaSourceSelection),
+        resumer(ManaActionPaymentContinuation::class, ::resumeActionPayment)
     )
+
+    private fun resumeActionPayment(
+        state: GameState,
+        continuation: ManaActionPaymentContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore,
+    ): ExecutionResult {
+        if (response !is ManaSourcesSelectedResponse) return ExecutionResult.error(state, "Expected mana sources")
+        val player = continuation.action.playerId
+        if (response.declined) return checkForMore(state.withPriority(player), emptyList())
+        val decision = services.manaSolver.findAvailableManaSources(state, player).map { source ->
+            ManaSourceOption(source.entityId, source.name, source.producesColors, source.producesColorless,
+                requiresSacrifice = source.requiresSacrifice, manaAmount = source.manaAmount)
+        }
+        val floated = com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow.floatSelectedMana(
+            services.zones, state, player, continuation.cost, response, decision, services,
+        )
+        if (!floated.paid) return ExecutionResult.error(state, "Selected sources cannot pay the announced cost")
+        val current = floated.state.withPriority(player)
+        val result = when (val action = continuation.action) {
+            is CastSpell -> services.castSpellHandler.executeWithLockedManaCost(current, action, continuation.lockedCastCost)
+            is ActivateAbility -> com.wingedsheep.engine.handlers.actions.ability.ActivateAbilityHandler.create(services).executeWithLockedCost(current, action,
+                continuation.lockedAbilityCost ?: return ExecutionResult.error(state, "Missing locked ability cost"), continuation.lockedAbilityX)
+            else -> return ExecutionResult.error(state, "Unsupported mana-payment action")
+        }
+        return result.copy(events = floated.events + result.events)
+    }
 
     /**
      * Resume after the payer names how many times to pay a repeatable cost ("pay {1} up to three

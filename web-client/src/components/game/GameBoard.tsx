@@ -1,3 +1,4 @@
+import { PlayerActionBar } from './overlay/PlayerActionBar'
 import { useMemo, useCallback, useRef, useEffect } from 'react'
 import { useGameStore } from '@/store/gameStore'
 import { useInteraction } from '@/hooks/useInteraction'
@@ -912,6 +913,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
           affected player even when the rest of the UI is disabled by hijack. An
           eliminated spectator has nothing to concede — they get a Leave button. */}
       {!spectatorMode && !isEliminatedSpectator && <ConcedeButton />}
+      {!spectatorMode && !isEliminatedSpectator && <PlayerActionBar />}
       {isEliminatedSpectator && (
         <>
           <button

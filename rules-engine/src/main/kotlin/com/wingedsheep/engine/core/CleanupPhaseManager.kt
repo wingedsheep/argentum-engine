@@ -1037,6 +1037,11 @@ class CleanupPhaseManager(
             newState = newState.copy(grantedStateTriggeredAbilities = remainingGrants)
         }
 
+        val expiredPermissions = newState.playerActionPermissions.filter { it.action.duration == Duration.EndOfTurn }
+        if (expiredPermissions.isNotEmpty()) {
+            newState = newState.copy(playerActionPermissions = newState.playerActionPermissions - expiredPermissions.toSet())
+        }
+
         // 7. Expire granted activated abilities with EndOfTurn duration
         if (newState.grantedActivatedAbilities.isNotEmpty()) {
             val remainingGrants = newState.grantedActivatedAbilities.filter { grant ->
@@ -1166,7 +1171,9 @@ class CleanupPhaseManager(
             state: GameState,
             cardRegistry: CardRegistry,
         ): GameState {
-            var newState = state
+            var newState = if (state.playerActionPermissions.any { it.action.duration == Duration.EndOfTurn }) {
+                state.copy(playerActionPermissions = state.playerActionPermissions.filterNot { it.action.duration == Duration.EndOfTurn })
+            } else state
 
             // Remove damage from all permanents on the battlefield (Rule 514.2).
             // Includes vehicles that reverted from creature status this turn — their damage

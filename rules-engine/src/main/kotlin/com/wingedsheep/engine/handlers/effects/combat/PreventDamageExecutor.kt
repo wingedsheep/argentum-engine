@@ -234,7 +234,7 @@ class PreventDamageExecutor(
             sourceFilter != null && effect.nextInstanceOnly &&
             effect.direction == PreventionDirection.ToTarget -> {
                 val targetId = context.resolveTarget(effect.target)
-                    ?: return EffectResult.error(state, "Could not resolve target for PreventDamageEffect")
+                    ?: return EffectResult.success(state)
                 affectedEntities = setOf(targetId)
                 modification = SerializableModification.PreventNextDamageFromMatching(sourceFilter)
             }
@@ -289,7 +289,7 @@ class PreventDamageExecutor(
             effect.direction == PreventionDirection.ToTarget &&
             effect.amount == null -> {
                 val targetId = context.resolveTarget(effect.target)
-                    ?: return EffectResult.error(state, "Could not resolve target for PreventDamageEffect")
+                    ?: return EffectResult.success(state)
                 state.getEntity(targetId) ?: return EffectResult.success(state)
                 affectedEntities = setOf(targetId)
                 modification = SerializableModification.PreventAllDamageTo(combatOnly = true)
@@ -318,7 +318,7 @@ class PreventDamageExecutor(
             // controller life for what it prevents (Candles' Glow).
             effect.amount != null -> {
                 val targetId = context.resolveTarget(effect.target)
-                    ?: return EffectResult.error(state, "Could not resolve target for PreventDamageEffect")
+                    ?: return EffectResult.success(state)
                 val effectAmount = effect.amount!!
                 val amount = amountEvaluator.evaluate(state, effectAmount, context)
                 if (amount <= 0) return EffectResult.success(state)
@@ -333,7 +333,7 @@ class PreventDamageExecutor(
             effect.direction == PreventionDirection.ToTarget &&
             effect.scope == PreventionScope.AllDamage -> {
                 val targetId = context.resolveTarget(effect.target)
-                    ?: return EffectResult.error(state, "Could not resolve target for PreventDamageEffect")
+                    ?: return EffectResult.success(state)
                 state.getEntity(targetId) ?: return EffectResult.success(state)
                 affectedEntities = setOf(targetId)
                 modification = SerializableModification.PreventAllDamageTo()

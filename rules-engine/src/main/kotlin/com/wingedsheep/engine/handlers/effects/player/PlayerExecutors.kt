@@ -52,6 +52,7 @@ class PlayerExecutors(
         ChooseOpponentForSourceExecutor(),
         ChooseCardTypeForSourceExecutor(),
         CreateGlobalTriggeredAbilityExecutor(),
+        GrantPlayerActionExecutor(),
         CreatePermanentEmblemExecutor(),
         EachPlayerChoosesCreatureTypeExecutor(),
         EndTheTurnExecutor(),

@@ -15498,3 +15498,30 @@ an attack already made. Untap filters and intermediate projection use the same h
 A step-based `Effects.CreateDelayedTrigger(..., watchedTarget = creature)` captures that object's
 identity when created and binds it to `EffectTarget.TriggeringEntity` when it fires. The original
 source may leave; a watched object that leaves and returns is a new object and is not affected.
+
+### Effect-created player actions
+
+`Effects.GrantPlayerAction(cost, effect, timing, actionDescription, target = Controller,
+duration = EndOfTurn)` gives the resolved player a repeatable **special action**. It never creates
+an activated ability or uses the stack. The granting resolution's targets, named targets, X, and
+pipeline values are captured. A permanent that changes zones is a different object; later uses do
+not reacquire it. The permission survives the granting spell leaving the stack. The recipient pays
+the cost and owns the resulting effect's perspective.
+
+- `cost`: existing `Costs.pay.*` vocabulary. Mana and life payments use the shared payment service;
+  selection and alternative costs use its existing decision flow.
+- `effect`: any existing effect or composition. Nested decisions retain the captured context.
+- `timing`: `PlayerActionTiming.Instant` (priority), `.Sorcery` (your main-phase priority with an
+  empty stack), or `.ManaAbility` (priority or a mana-payment window, including casting, activation,
+  and resolution payments). These remain special actions under split second.
+- `duration`: `Duration.EndOfTurn` or `.Permanent`. Other duration shapes are rejected at construction.
+- `actionDescription`: the player-facing button label. The server supplies the permission id and
+  affordability; the client sends `TakePlayerAction(playerId, permissionId)`.
+
+Example: Channel grants `Costs.pay.PayLife(1)` → `Effects.AddColorlessMana(1)` with mana timing.
+Guardian Angel grants `Costs.pay.Mana("{1}")` → `Effects.PreventDamage(target = recipient,
+amount = Fixed(1))` with instant timing, after its initial X-sized shield.
+
+Life-funded fixed colorless-mana actions contribute to mana affordability, sharing one life budget
+across permissions. They are never automatically spent: the player explicitly takes the action in
+the mana window. Costs of casting and activating stay locked while that window is open.

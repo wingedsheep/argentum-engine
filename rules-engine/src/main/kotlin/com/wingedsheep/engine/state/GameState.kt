@@ -126,6 +126,9 @@ data class GameState(
     /** Activated abilities granted to entities temporarily (e.g., Run Wild) */
     val grantedActivatedAbilities: List<GrantedActivatedAbility> = emptyList(),
 
+    /** Repeatable special actions created by resolved effects, retaining captured references. */
+    val playerActionPermissions: List<com.wingedsheep.engine.event.PlayerActionPermission> = emptyList(),
+
     /** Static abilities granted to entities temporarily (e.g., Full Steam Ahead) */
     val grantedStaticAbilities: List<GrantedStaticAbility> = emptyList(),
 

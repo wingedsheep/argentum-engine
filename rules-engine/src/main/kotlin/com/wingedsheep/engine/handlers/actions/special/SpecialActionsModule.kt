@@ -20,6 +20,7 @@ class SpecialActionsModule(
 ) : ActionHandlerModule {
     override fun handlers(): List<ActionHandler<*>> = listOf(
         ConcedeHandler(services.sbaChecker),
-        ChooseManaColorHandler()
+        ChooseManaColorHandler(),
+        TakePlayerActionHandler(services)
     )
 }

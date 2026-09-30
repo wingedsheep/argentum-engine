@@ -781,3 +781,8 @@ data class UnlockRoomDoor(
     val faceId: RoomFaceId,
     val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay
 ) : GameAction
+
+/** Repeatable special action created by a resolving effect; never an activated ability. */
+@Serializable
+@SerialName("TakePlayerAction")
+data class TakePlayerAction(override val playerId: EntityId, val permissionId: String) : GameAction

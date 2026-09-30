@@ -2329,6 +2329,7 @@ class ManaSolver(
             .plus(sacrificeManaBySource.values.fold(TapPermanentsBonusMana()) { acc, p -> acc + p })
             .plus(calculateCompositeTapPermanentsBonusMana(state, playerId))
             .plus(calculateExplicitActivationBonusMana(state, playerId))
+            .plus(playerActionMana(state, playerId, phyrexianLifePipsCommitted * 2))
         if (bonus.totalMana == 0) return false
 
         // Allocate any-color bonus mana to the pool based on what the cost needs,
@@ -2362,7 +2363,8 @@ class ManaSolver(
             augmentedXRemaining,
             excludeSources + sacrificeConsumedIds,
             spellContext,
-            precomputedSources
+            precomputedSources,
+            xManaRestriction
         ) != null
     }
 
@@ -2430,7 +2432,7 @@ class ManaSolver(
         val extrasMana = calculateTapPermanentsBonusMana(state, playerId).totalMana +
             sacrificeExtras +
             calculateCompositeTapPermanentsBonusMana(state, playerId).totalMana +
-            calculateExplicitActivationBonusMana(state, playerId).totalMana
+            calculateExplicitActivationBonusMana(state, playerId).totalMana + playerActionMana(state, playerId).totalMana
 
         return floatingMana + sourceMana + extrasMana
     }
@@ -2438,6 +2440,24 @@ class ManaSolver(
     /**
      * Bonus mana available from TapPermanents mana abilities.
      */
+    /** Life-funded special actions share one life budget; multiple permissions do not duplicate it.
+     * This is affordability only: auto-pay never spends life without the player's explicit action.
+     */
+    private fun playerActionMana(state: GameState, playerId: EntityId, committedLife: Int = 0): TapPermanentsBonusMana {
+        var bestProduction = 0L
+        val life = (state.lifeTotal(playerId) - committedLife).coerceAtLeast(0)
+        for (permission in state.playerActionPermissions) {
+            if (permission.playerId != playerId || permission.action.timing != com.wingedsheep.sdk.scripting.effects.PlayerActionTiming.ManaAbility) continue
+            val cost = (permission.action.cost as? com.wingedsheep.sdk.scripting.costs.PayCost.Atom)?.atom as? CostAtom.PayLife ?: continue
+            val effect = permission.action.effect as? AddColorlessManaEffect ?: continue
+            if (effect.restriction != null || effect.riders.isNotEmpty()) continue
+            val amount = (effect.amount as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: continue
+            if (cost.amount <= 0 || amount <= 0) continue
+            bestProduction = maxOf(bestProduction, (life / cost.amount).toLong() * amount)
+        }
+        return TapPermanentsBonusMana(colorlessMana = bestProduction.coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
+    }
+
     internal data class TapPermanentsBonusMana(
         val anyColorMana: Int = 0,
         val specificMana: Map<Color, Int> = emptyMap(),
