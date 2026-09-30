@@ -715,6 +715,7 @@ class Strategist(
         val targetInfos = TargetSelection.fillableRequirements(action, useMeaningfulFilter)
             ?: return heuristicTargets(state, action, playerId)
 
+        val rankTarget = TargetSelection.ranker(state, action, playerId, intents)
         // Heuristic baseline for every requirement, then refine each one by simulation.
         val chosenTargets = mutableListOf<com.wingedsheep.engine.state.components.stack.ChosenTarget>()
         val chosenIds = mutableSetOf<EntityId>()
@@ -725,7 +726,7 @@ class Strategist(
             } else {
                 info.validTargets
             }
-            val selectedId = available.maxByOrNull { TargetSelection.rank(state, it, playerId, intents) }
+            val selectedId = available.maxByOrNull(rankTarget)
                 ?: return heuristicTargets(state, action, playerId)
             chosenTargets += TargetSelection.toChosenTarget(state, info, selectedId, playerId)
             chosenIds += selectedId
@@ -747,7 +748,7 @@ class Strategist(
             val priorIds = chosenTargetIds.take(i).toSet()
             val candidates = info.validTargets
                 .filterNot { info.mustDifferFromEarlier && it in priorIds }
-                .sortedByDescending { TargetSelection.rank(state, it, playerId, intents) }
+                .sortedByDescending(rankTarget)
                 .take(targetCandidates)
             if (candidates.size <= 1) continue
             val best = candidates.maxByOrNull { candidate ->

@@ -5,6 +5,7 @@ import com.wingedsheep.engine.legalactions.support.setupP1
 import com.wingedsheep.engine.legalactions.support.shouldContainCastOf
 import com.wingedsheep.engine.legalactions.support.shouldNotContainCastOf
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -12,6 +13,8 @@ import com.wingedsheep.mtg.sets.definitions.blb.cards.FestivalOfEmbers
 import com.wingedsheep.mtg.sets.definitions.blb.cards.OtterballAntics
 import com.wingedsheep.mtg.sets.definitions.dom.cards.MuldrothaTheGravetide
 import com.wingedsheep.mtg.sets.definitions.dom.cards.SqueeTheImmortal
+import com.wingedsheep.mtg.sets.definitions.one.cards.ViralSpawning
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import io.kotest.core.spec.style.FunSpec
@@ -98,6 +101,24 @@ class CastFromZoneEnumeratorTest : FunSpec({
                 .filter { it.actionType == "CastWithFlashback" }
 
             flashbackActions shouldHaveSize 0
+        }
+
+        // A printed flashback gated by a condition (Viral Spawning: "Corrupted — As long as an
+        // opponent has three or more poison counters … it has flashback {2}{G}").
+        test("a conditional printed flashback is offered only while its condition holds") {
+            fun flashbackOffered(opponentPoison: Int): Boolean {
+                val driver = setupP1(
+                    battlefield = listOf("Forest", "Forest", "Forest"),
+                    graveyard = listOf("Viral Spawning"),
+                    extraSetCards = listOf(ViralSpawning)
+                )
+                driver.game.addComponent(driver.player2, CountersComponent(mapOf(CounterType.POISON to opponentPoison)))
+                return driver.enumerateFor(driver.player1)
+                    .any { it.actionType == "CastWithFlashback" }
+            }
+
+            flashbackOffered(opponentPoison = 2) shouldBe false
+            flashbackOffered(opponentPoison = 3) shouldBe true
         }
     }
 

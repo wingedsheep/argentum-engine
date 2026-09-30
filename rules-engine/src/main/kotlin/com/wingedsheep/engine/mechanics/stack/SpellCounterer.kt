@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
 import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -99,12 +100,11 @@ class SpellCounterer(
         // Put in graveyard (or exile if AfterResolveDestinationComponent is present)
         // Goliath Daydreamer-style components only exile on actual resolution; if the spell
         // is countered they go to graveyard normally.
-        val riderOnCounter = container.get<AfterResolveDestinationComponent>()
-            ?.takeIf { !it.onlyIfResolved }
+        val riderOnCounter = counterRiderZone(container)
         // A countered spell heading to its owner's graveyard is still a card being put into a
         // graveyard "from anywhere" — honor RedirectZoneChange replacements (Valgavoth, Leyline).
         val counterRedirect = if (riderOnCounter != null) {
-            com.wingedsheep.engine.handlers.effects.ZoneChangeRedirectResult(riderOnCounter.zone)
+            com.wingedsheep.engine.handlers.effects.ZoneChangeRedirectResult(riderOnCounter)
         } else {
             com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
                 .checkZoneChangeRedirect(state, spellId, Zone.STACK, Zone.GRAVEYARD, predicateEvaluator = predicateEvaluator)
@@ -186,8 +186,23 @@ class SpellCounterer(
         val container = state.getEntity(spellId) ?: return false
         if (spellId !in state.stack) return false
         if (container.has<CantBeCounteredComponent>() || isGrantedCantBeCountered(state, spellId)) return false
-        if (container.get<AfterResolveDestinationComponent>()?.takeIf { !it.onlyIfResolved } != null) return false
+        if (counterRiderZone(container) != null) return false
         return findExileInsteadReplacement(state, countererId) == null
+    }
+
+    /**
+     * The zone a spell's own "if it would leave the stack" rider sends it to when it is countered,
+     * or null when nothing overrides the counter's destination: an [AfterResolveDestinationComponent]
+     * that applies on a counter, or flashback's exile — CR 702.34a: "If the flashback cost was paid,
+     * exile this card instead of putting it anywhere else any time it would leave the stack".
+     */
+    private fun counterRiderZone(container: ComponentContainer): Zone? {
+        container.get<AfterResolveDestinationComponent>()?.takeIf { !it.onlyIfResolved }?.let { return it.zone }
+        val spell = container.get<SpellOnStackComponent>() ?: return null
+        return Zone.EXILE.takeIf {
+            spell.castFromZone == Zone.GRAVEYARD &&
+                spell.alternativeCost == com.wingedsheep.engine.core.AlternativeCostType.FLASHBACK
+        }
     }
 
     /**
@@ -230,9 +245,8 @@ class SpellCounterer(
 
         // A flashback/foretell-style "exile it instead" rider that applies on a counter still
         // overrides the printed destination — the same precedence [counterSpell] gives it.
-        val riderOnCounter = container.get<AfterResolveDestinationComponent>()
-            ?.takeIf { !it.onlyIfResolved }
-        val destZone = riderOnCounter?.zone ?: printedZone
+        val riderOnCounter = counterRiderZone(container)
+        val destZone = riderOnCounter ?: printedZone
         val destZoneKey = ZoneKey(ownerId, destZone)
         newState = if (riderOnCounter == null && destZone == Zone.LIBRARY && position != null) {
             val librarySize = newState.getZone(destZoneKey).size
