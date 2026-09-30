@@ -6321,6 +6321,10 @@ The shapes in this family, with their engine notes.
 
 - `Triggers.you.attacks()` — when you declare attackers (player-level, ANY binding).
 - `Triggers.you.attacks(with)` — when you attack with ≥1 matching attacker.
+- `Triggers.anyPlayer.attacks(minAttackers = 2)` — "whenever two or more creatures attack": any
+  player's declaration, once per declaration (Argent Dais). `Triggers.anOpponent.attacks(...)` is
+  "whenever an opponent attacks with …". All three read `YouAttackEvent.player` against the active
+  player (team), the way step triggers do, since only the active player declares attackers.
 - `Triggers.you.isAttacked()` — defender side; fires once per `AttackersDeclaredEvent`,
   not per attacker. Excludes creatures attacking a planeswalker you control
   (CR 509.1b). Pair with `DynamicAmounts.creaturesAttackingYou()` for

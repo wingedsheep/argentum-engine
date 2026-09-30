@@ -903,24 +903,27 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * Optional [attackerFilter] restricts which attackers count (e.g., Lizards only).
      * When set, the trigger fires only if at least [minAttackers] of the declared
      * attackers match the filter.
+     *
+     * [player] names whose attack declaration counts, read against the active player the way
+     * step triggers are: [Player.You] (the default) is "whenever you attack" — your team's turn;
+     * [Player.Each] is any declaration, which is how "whenever two or more creatures attack"
+     * (Argent Dais) is spelled, since only the active player (team) declares attackers;
+     * [Player.EachOpponent] is "whenever an opponent attacks with …". Once per declaration.
      */
     @SerialName("YouAttackEvent")
     @Serializable
     data class YouAttackEvent(
         val minAttackers: Int = 1,
-        val attackerFilter: GameObjectFilter? = null
+        val attackerFilter: GameObjectFilter? = null,
+        val player: Player = Player.You
     ) : EventPattern {
         override val description: String = buildString {
-            append("you attack with ")
-            if (minAttackers <= 1) {
-                append("one or more ")
-            } else {
-                append("$minAttackers or more ")
-            }
-            if (attackerFilter != null) {
-                append(attackerFilter.description)
-            } else {
-                append("creatures")
+            val count = if (minAttackers <= 1) "one or more " else "$minAttackers or more "
+            val attackers = attackerFilter?.description ?: "creatures"
+            when (player) {
+                Player.Each -> append(count).append(attackers).append(" attack")
+                Player.EachOpponent -> append("an opponent attacks with ").append(count).append(attackers)
+                else -> append("you attack with ").append(count).append(attackers)
             }
         }
     }

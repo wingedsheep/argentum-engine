@@ -120,8 +120,11 @@ class TriggerMatcher(
             }
             is EventPattern.YouAttackEvent -> {
                 if (event !is AttackersDeclaredEvent) return false
-                // "Whenever you attack" — the controller's team is attacking (CR 805.10a).
-                if (!state.isActiveTurnFor(controllerId)) return false
+                // "Whenever you attack" — the controller's team is attacking (CR 805.10a). Only
+                // the active player (team) declares attackers, so `player` reads the active turn
+                // the way step triggers do: Each is any declaration ("two or more creatures
+                // attack"), EachOpponent is an opposing team's.
+                if (!matchesPlayerForStep(trigger.player, controllerId, state)) return false
                 val filter = trigger.attackerFilter
                 if (filter != null) {
                     // Count attackers matching the filter

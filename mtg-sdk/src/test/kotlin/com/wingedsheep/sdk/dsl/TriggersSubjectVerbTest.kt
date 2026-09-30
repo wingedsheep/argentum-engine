@@ -84,7 +84,7 @@ class TriggersSubjectVerbTest : DescribeSpec({
 
         it("rejects a subject the verb can't mean") {
             shouldThrow<IllegalArgumentException> { Triggers.a().isCast() }
-            shouldThrow<IllegalArgumentException> { Triggers.anyPlayer.attacks() }
+            shouldThrow<IllegalArgumentException> { Triggers.chosenOpponent.attacks() }
             shouldThrow<IllegalArgumentException> { Triggers.self.beginningOf(Step.UPKEEP) }
         }
 

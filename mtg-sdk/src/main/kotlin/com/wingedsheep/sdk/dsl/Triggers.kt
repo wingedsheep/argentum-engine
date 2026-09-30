@@ -792,12 +792,14 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     // ---- Combat ------------------------------------------------------------------------------
 
     /**
-     * "attacks [with one or more [with]]" — you declare attackers, once per combat. Only
-     * [Triggers.you]; a single creature attacking is [ObjectTriggerSubject.attacks].
+     * "attacks [with one or more [with]]" — attackers are declared, once per combat.
+     * [Triggers.you] is "whenever you attack"; [Triggers.anOpponent] is "whenever an opponent
+     * attacks with …"; [Triggers.anyPlayer] is "whenever two or more creatures attack" (Argent
+     * Dais) — any declaration. A single creature attacking is [ObjectTriggerSubject.attacks].
      */
     fun attacks(with: GameObjectFilter? = null, minAttackers: Int = 1): TriggerSpec {
-        only("attacks", Player.You)
-        return spec(YouAttackEvent(minAttackers = minAttackers, attackerFilter = with))
+        only("attacks", Player.You, Player.EachOpponent, Player.Each)
+        return spec(YouAttackEvent(minAttackers = minAttackers, attackerFilter = with, player = player))
     }
 
     /**
