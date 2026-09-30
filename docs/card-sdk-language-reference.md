@@ -5837,8 +5837,9 @@ work for abilities-on-stack (which carry no `CardComponent`).
   context's controller for targets/conditions — and both evaluators **fail closed** with no controller
   rather than matching every Aura. The Aura's control is read through the projection (Layer 2), so an
   Aura that changes hands turns the predicate off continuously.
-- `IsModified` — has an Equipment attached, an Aura attached, **or** any counter (the MTG "modified"
-  definition). For the source-relative form use `Conditions.SourceIsModified`.
+- `IsModified` — has an Equipment attached, an Aura **controlled by the permanent's controller**
+  attached, **or** any counter (CR 700.9). An opponent's Aura on your creature doesn't modify it; both
+  controllers are read through projection. For the source-relative form use `Conditions.SourceIsModified`.
 - `AttachedToCardType(cardType)` — Aura/Equipment whose `AttachedToComponent` points to a
   permanent that currently has the given top-level [`CardType`] in its **projected** type
   set. Used by filters like "Aura attached to a land" (Pyramids) or "Equipment attached
@@ -9802,6 +9803,22 @@ copy of it (CR 707.10e). The activated-ability analogue of the spell-level `cant
 > doesn't rebound again. **Ojer Pakpatiq, Deepest Epoch** grants it to instants you cast from hand via
 > `Triggers.you.casts(GameObjectFilter.Instant, requires = setOf(SpellCastPredicate.CastFromZone(Zone.HAND)))`
 > → `GrantKeywordToSpellEffect(Keyword.REBOUND, EffectTarget.TriggeringEntity)`.
+
+> **Umbra armor** (`Keyword.UMBRA_ARMOR`, CR 702.89; printed as "totem armor" before 2023). "If
+> enchanted permanent would be destroyed, instead remove all damage marked on it and destroy this
+> Aura." A plain `keywords(Keyword.UMBRA_ARMOR)` on the **Aura** — nothing else to wire. It is read
+> through projection, so a conditional self-grant works: **Dog Umbra**'s "Otherwise, this Aura has
+> umbra armor" is `ConditionalStaticAbility(GrantKeyword(UMBRA_ARMOR, GroupFilter.source()),
+> Not(EnchantedPermanentMatches(Creature.withControllerPredicate(Not(ControlledByYou)))))`.
+> `ZoneMovementUtils.findUmbraArmorAura` / `applyUmbraArmor` are applied at all three destruction
+> chokepoints — `destroyPermanent` (single destroy effects), `MoveCollectionExecutor`'s `MoveType.Destroy`
+> (board wipes) and `LethalDamageCheck` (lethal damage and deathtouch) — after shield counters,
+> regeneration shields and Pyramids-style remove-damage shields. It is not regeneration: "can't be
+> regenerated" doesn't stop it, and the permanent is neither tapped nor removed from combat. Only one
+> Aura is spent per destruction (the oldest). A simultaneous batch (a wipe, one SBA pass) reads the
+> shielding Auras off the pre-batch state, so a wipe that destroys the creature *and* its umbra still
+> saves the creature. Sacrifice, the legend rule and 0 toughness aren't destruction and ignore it.
+> Engine test: `UmbraArmorTest`.
 
 > **Split second** (`Keyword.SPLIT_SECOND`, CR 702.61). "As long as this spell is on the stack,
 > players can't cast other spells or activate abilities that aren't mana abilities." A plain

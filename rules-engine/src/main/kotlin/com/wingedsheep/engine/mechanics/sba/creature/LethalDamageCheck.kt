@@ -15,7 +15,8 @@ import com.wingedsheep.sdk.core.Keyword
  * 704.5g - A creature that's been dealt lethal damage is destroyed.
  * 704.5h - A creature that's been dealt damage by a source with deathtouch is destroyed.
  * Note: Indestructible creatures are not destroyed by lethal damage (Rule 702.12b).
- * Creatures with regeneration shields are regenerated instead of destroyed.
+ * Creatures with regeneration shields are regenerated instead of destroyed; umbra armor
+ * (CR 702.89a) spends an Aura instead.
  */
 class LethalDamageCheck(private val zones: ZoneTransitionService) : StateBasedActionCheck {
     override val name = "704.5g/h Lethal Damage"
@@ -75,6 +76,16 @@ class LethalDamageCheck(private val zones: ZoneTransitionService) : StateBasedAc
                     val shieldResult = ZoneMovementUtils.applyRemoveDamageReplacement(damageShieldState, entityId)
                     newState = shieldResult.newState
                     events.addAll(shieldResult.events)
+                    continue
+                }
+
+                // Umbra armor (CR 702.89a). Which Auras shield this creature is read off
+                // `passStartState`: every destruction in this pass is simultaneous (CR 704.3).
+                val umbraAura = ZoneMovementUtils.findUmbraArmorAura(newState, entityId, passStartState)
+                if (umbraAura != null) {
+                    val umbraResult = ZoneMovementUtils.applyUmbraArmor(zones, newState, entityId, umbraAura)
+                    newState = umbraResult.newState
+                    events.addAll(umbraResult.events)
                     continue
                 }
 

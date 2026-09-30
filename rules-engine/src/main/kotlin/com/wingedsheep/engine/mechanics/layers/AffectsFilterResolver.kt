@@ -726,7 +726,9 @@ internal class AffectsFilterResolver(
                 }
             }
         }
-        StatePredicate.IsModified -> com.wingedsheep.engine.handlers.predicates.isModified(state, entityId)
+        StatePredicate.IsModified -> com.wingedsheep.engine.handlers.predicates.isModified(state, entityId) {
+            projectedController(state, it, projectedValues)
+        }
         // A general "attached to <filter>" host constraint whose nested filter may carry a controller
         // predicate ("a creature you control"). Group-static projection has no ability controller to
         // resolve that "you", so this predicate is only meaningful in target/condition contexts via

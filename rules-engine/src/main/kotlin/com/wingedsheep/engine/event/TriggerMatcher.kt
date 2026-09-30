@@ -2163,7 +2163,7 @@ class TriggerMatcher(
                 val lk = event.lastKnown
                 (lk?.totalCounters ?: 0) > 0 || lk?.wasEquipped == true || lk?.wasEnchanted == true
             } else {
-                isModified(state, event.entityId)
+                isModified(state, event.entityId) { state.projectedState.getController(it) }
             }
         }
         // Face down (CR 708) on a permanent that has left the battlefield reads last-known

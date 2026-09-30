@@ -629,6 +629,108 @@
     ]
 }
 
+// Dog Umbra
+{
+    "name": "Dog Umbra",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nAs long as another player controls enchanted creature, it can't attack or block. Otherwise, this Aura has umbra armor. (If enchanted creature would be destroyed, instead remove all damage from it and destroy this Aura.)",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CantAttack",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "AttachedTo"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CantBlock",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "AttachedTo"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "UMBRA_ARMOR",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "EntityMatches",
+                        "entity": "EnchantedPermanent",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": "ControlledByYou"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Brian Valeza",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d4ba710-eddb-40ca-b2fe-0e4e778aab9c.jpg?1783911304"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Emrakul, the World Anew
 {
     "name": "Emrakul, the World Anew",
@@ -1198,6 +1300,56 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Lion Umbra
+{
+    "name": "Lion Umbra",
+    "manaCost": "{G}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant modified creature (Equipment, Auras its controller controls, and counters are modifications.)\nEnchanted creature gets +3/+3 and has reach and vigilance.\nUmbra armor (If enchanted creature would be destroyed, instead remove all damage from it and destroy this Aura.)",
+    "keywords": [
+        "UMBRA_ARMOR"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "REACH"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ],
+                    "statePredicates": [
+                        "IsModified"
+                    ]
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Julia Metzger",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89d58e9b-b1d9-4174-a30d-426d2e0ace07.jpg?1783911259"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

@@ -274,6 +274,7 @@ export enum Keyword {
   REBOUND = 'REBOUND',
   // Mirrored from Keyword.kt once KeywordClientMirrorTest started enforcing the match
   PROTECTION_FROM_EACH_OPPONENT = 'PROTECTION_FROM_EACH_OPPONENT',
+  UMBRA_ARMOR = 'UMBRA_ARMOR',
   DEVOUR = 'DEVOUR',
   HARMONIZE = 'HARMONIZE',
   SOULBOND = 'SOULBOND',
@@ -397,6 +398,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.EERIE]: 'Eerie',
   [Keyword.REBOUND]: 'Rebound',
   [Keyword.PROTECTION_FROM_EACH_OPPONENT]: 'Protection from each opponent',
+  [Keyword.UMBRA_ARMOR]: 'Umbra armor',
   [Keyword.DEVOUR]: 'Devour',
   [Keyword.HARMONIZE]: 'Harmonize',
   [Keyword.SOULBOND]: 'Soulbond',

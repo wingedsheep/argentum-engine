@@ -860,6 +860,8 @@ class MoveCollectionExecutor(
 
             // For MoveType.Destroy, check indestructible and regeneration before moving
             if (moveType == MoveType.Destroy) {
+                // Already gone this batch — spent as another permanent's umbra armor Aura.
+                if (cardId !in newState.getBattlefield()) continue
                 if (newState.projectedState.hasKeyword(cardId, Keyword.INDESTRUCTIBLE)) {
                     continue
                 }
@@ -883,6 +885,16 @@ class MoveCollectionExecutor(
                         events.addAll(regenResult.events)
                         continue
                     }
+                }
+                // Umbra armor (CR 702.89a). The batch's permanents are destroyed simultaneously, so
+                // the shielding Auras are read off the pre-batch `state`: a wipe that also destroys
+                // the Aura still saves the creature.
+                val umbraAura = ZoneMovementUtils.findUmbraArmorAura(newState, cardId, state)
+                if (umbraAura != null) {
+                    val umbraResult = ZoneMovementUtils.applyUmbraArmor(zones, newState, cardId, umbraAura, !noRegenerate)
+                    newState = umbraResult.state
+                    events.addAll(umbraResult.events)
+                    continue
                 }
             }
 
