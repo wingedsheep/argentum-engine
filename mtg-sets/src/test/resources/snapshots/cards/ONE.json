@@ -280,6 +280,131 @@
     ]
 }
 
+// Blade of Shared Souls
+{
+    "name": "Blade of Shared Souls",
+    "manaCost": "{2}{U}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)\nWhenever this Equipment becomes attached to a creature, for as long as this Equipment remains attached to it, you may have that creature become a copy of another target creature you control.\nEquip {2}",
+    "keywords": [
+        "FOR_MIRRODIN"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blade of Shared Souls:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Rebel"
+                            ]
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)"
+            },
+            {
+                "id": "Blade of Shared Souls:2",
+                "trigger": "BecomesAttachedEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Have the equipped creature become a copy of another creature you control?"
+                    },
+                    "then": {
+                        "type": "EachPermanentBecomesCopyOfTarget",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "duration": "WhileSourceAttachedToAffected",
+                        "affected": "AttachedToTriggeringPermanent"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "StateNot",
+                                    "predicate": "IsAttachedToBySource"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this Equipment becomes attached to a creature, for as long as this Equipment remains attached to it, you may have that creature become a copy of another target creature you control."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Blade of Shared Souls:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/277aeb73-4c7c-4132-b9f9-55181d57e75d.jpg?1783918068"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Blazing Crescendo
 {
     "name": "Blazing Crescendo",
