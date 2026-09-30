@@ -4,6 +4,9 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
+import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.StoreNumberEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
@@ -713,6 +716,56 @@ object HandPatterns {
             )
         )
     )
+
+    /**
+     * Connive N (CR 701.50d): draw [count] cards, then discard that many, then put a +1/+1 counter
+     * on [target] for each nonland card discarded this way — "target creature you control connives
+     * X, where X is …" (Spymaster's Vault).
+     *
+     * N is evaluated once, before the draw, and stored as `connive_n`, so an amount the connive
+     * itself changes (cards in hand) can't drift between the draw and the discard. A hand smaller
+     * than N after the draw discards what it has. Wrapped in [ConniveEffect] with [count], so it is
+     * replaced and observed like any connive — and a connive 0 does nothing at all (CR 701.50e).
+     */
+    fun connive(target: EffectTarget, count: DynamicAmount): Effect =
+        if (count == DynamicAmount.Fixed(1)) connive(target)
+        else ConniveEffect(
+            subject = target,
+            count = count,
+            body = CompositeEffect(
+                listOf(
+                    StoreNumberEffect("connive_n", count),
+                    DrawCardsEffect(DynamicAmount.VariableReference("connive_n"), EffectTarget.Controller),
+                    GatherCardsEffect(
+                        source = CardSource.FromZone(Zone.HAND, Player.You),
+                        storeAs = "connive_hand"
+                    ),
+                    SelectFromCollectionEffect(
+                        from = "connive_hand",
+                        selection = SelectionMode.ChooseExactly(DynamicAmount.VariableReference("connive_n")),
+                        chooser = Chooser.Controller,
+                        storeSelected = "connive_discarded",
+                        prompt = "Choose cards to discard"
+                    ),
+                    MoveCollectionEffect(
+                        from = "connive_discarded",
+                        destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.You),
+                        moveType = MoveType.Discard
+                    ),
+                    FilterCollectionEffect(
+                        from = "connive_discarded",
+                        filter = GameObjectFilter.Nonland,
+                        storeMatching = "connive_nonland"
+                    ),
+                    AddDynamicCountersEffect(
+                        counterType = CounterType.PLUS_ONE_PLUS_ONE,
+                        amount = DynamicAmount.VariableReference("connive_nonland_count"),
+                        target = target
+                    )
+                ),
+                descriptionOverride = "Connive ${count.description}"
+            )
+        )
 
     /**
      * Connive variant whose +1/+1 counter lands on a *chosen target* rather than the conniving
