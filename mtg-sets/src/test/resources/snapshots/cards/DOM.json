@@ -10168,28 +10168,22 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": "WasKicked"
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
                     },
-                    "then": {
-                        "type": "CreateToken",
-                        "count": {
-                            "type": "Fixed",
-                            "amount": 2
-                        },
-                        "power": 1,
-                        "toughness": 1,
-                        "colors": [
-                            "WHITE"
-                        ],
-                        "creatureTypes": [
-                            "Soldier"
-                        ],
-                        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc7d137c-f6c0-44e5-af9f-a8bbd52d3b2a.jpg?1562702338"
-                    }
-                }
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc7d137c-f6c0-44e5-af9f-a8bbd52d3b2a.jpg?1562702338"
+                },
+                "interveningIf": "WasKicked"
             }
         ]
     },
