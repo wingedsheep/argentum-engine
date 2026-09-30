@@ -329,6 +329,36 @@ data class BecomeRenownedEffect(
 }
 
 /**
+ * "You may activate loyalty abilities of [target] [times] times this turn rather than only once"
+ * — a one-shot, per-planeswalker relaxation of the once-per-turn loyalty rule (CR 606.3) for the
+ * rest of the turn (Kaito, Dancing Shadow). The per-permanent sibling of the controller-wide
+ * static [com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation] (Oath of Teferi).
+ *
+ * Not additive: resolving it twice, or alongside Oath of Teferi, still allows [times]
+ * activations — the allowance is the largest one granted, not a sum. Activations already made
+ * this turn count against it, so a grant after one activation allows exactly one more. The
+ * allowance lapses at end of turn and if the permanent leaves the battlefield (it's a new object).
+ *
+ * @property target The planeswalker whose loyalty abilities may be activated more often
+ * @property times The total number of loyalty activations allowed this turn
+ */
+@SerialName("AllowLoyaltyActivationsThisTurn")
+@Serializable
+data class AllowLoyaltyActivationsThisTurnEffect(
+    val target: EffectTarget = EffectTarget.Self,
+    val times: Int = 2
+) : Effect {
+    init {
+        require(times >= 2) { "AllowLoyaltyActivationsThisTurnEffect.times must be at least 2, was $times" }
+    }
+
+    override val description: String =
+        "you may activate loyalty abilities of ${target.description} ${timesWord(times)} this turn rather than only once"
+
+    private fun timesWord(n: Int): String = if (n == 2) "twice" else "$n times"
+}
+
+/**
  * Make [target] become prepared (Secrets of Strixhaven). The target must be a permanent whose
  * card has the [com.wingedsheep.sdk.model.CardLayout.PREPARE] layout. Becoming prepared creates a
  * copy of its prepare spell in the controller's exile that may be cast (paying that spell's cost);

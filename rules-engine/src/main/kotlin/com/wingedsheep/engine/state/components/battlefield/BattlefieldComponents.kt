@@ -631,7 +631,14 @@ data class AbilityActivatedThisTurnComponent(
      * not — the "planeswalker that was activated this turn" of Cut Short. Stamped on every
      * activation, unlike [abilityIds], which only records abilities whose restrictions need it.
      */
-    val anyActivated: Boolean = false
+    val anyActivated: Boolean = false,
+    /**
+     * This planeswalker's own loyalty-activation allowance for the turn, raised by a one-shot
+     * grant ("you may activate loyalty abilities of Kaito twice this turn rather than only once").
+     * Not additive — a second grant of "twice" still means twice — and it lives on this
+     * turn-scoped tracker, so it lapses at cleanup and when the permanent changes zones.
+     */
+    val loyaltyActivationLimit: Int = 1
 ) : Component {
     fun withAnyActivated(): AbilityActivatedThisTurnComponent =
         if (anyActivated) this else copy(anyActivated = true)
@@ -650,9 +657,20 @@ data class AbilityActivatedThisTurnComponent(
     fun withLoyaltyActivated(): AbilityActivatedThisTurnComponent =
         copy(loyaltyActivationCount = loyaltyActivationCount + 1)
 
-    /** @return true if the loyalty activation limit has been reached for the given max. */
-    fun hasReachedLoyaltyLimit(maxActivations: Int): Boolean =
-        loyaltyActivationCount >= maxActivations
+    /** Raise this permanent's per-turn loyalty allowance to at least [limit] (never lowers it). */
+    fun withLoyaltyActivationLimitAtLeast(limit: Int): AbilityActivatedThisTurnComponent =
+        if (limit <= loyaltyActivationLimit) this else copy(loyaltyActivationLimit = limit)
+
+    /**
+     * The effective per-turn loyalty allowance: the larger of the controller-wide maximum
+     * [playerMax] (Oath of Teferi) and this permanent's own [loyaltyActivationLimit]. The two
+     * don't stack — each says "twice rather than only once".
+     */
+    fun effectiveLoyaltyLimit(playerMax: Int): Int = maxOf(playerMax, loyaltyActivationLimit)
+
+    /** @return true if the loyalty activation limit has been reached for the given player max. */
+    fun hasReachedLoyaltyLimit(playerMax: Int): Boolean =
+        loyaltyActivationCount >= effectiveLoyaltyLimit(playerMax)
 }
 
 /**

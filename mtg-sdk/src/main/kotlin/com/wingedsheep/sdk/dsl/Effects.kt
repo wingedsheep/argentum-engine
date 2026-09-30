@@ -44,6 +44,7 @@ import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.BecomePreparedEffect
 import com.wingedsheep.sdk.scripting.effects.UnprepareEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeSaddledEffect
+import com.wingedsheep.sdk.scripting.effects.AllowLoyaltyActivationsThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeRenownedEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeSolvedEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
@@ -6244,6 +6245,15 @@ object Effects {
      */
     fun BecomeSolved(target: EffectTarget = EffectTarget.Self): Effect =
         BecomeSolvedEffect(target)
+
+    /**
+     * "You may activate loyalty abilities of [target] twice this turn rather than only once"
+     * (Kaito, Dancing Shadow) — see
+     * [com.wingedsheep.sdk.scripting.effects.AllowLoyaltyActivationsThisTurnEffect]. Not additive
+     * with a second grant or with Oath of Teferi.
+     */
+    fun AllowLoyaltyActivationsThisTurn(times: Int = 2, target: EffectTarget = EffectTarget.Self): Effect =
+        AllowLoyaltyActivationsThisTurnEffect(target, times)
 
     /**
      * Target permanent becomes renowned (CR 702.112b) — the designation half of renown. Sticky

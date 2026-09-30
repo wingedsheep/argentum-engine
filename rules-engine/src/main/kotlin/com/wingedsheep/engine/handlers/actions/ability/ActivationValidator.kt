@@ -367,11 +367,12 @@ internal class ActivationValidator(
             return "Loyalty abilities can only be activated at sorcery speed"
         }
         // Rule 606.3: Only one loyalty ability per planeswalker per turn
-        // (Oath of Teferi allows two activations per turn)
+        // (Oath of Teferi, or a one-shot grant on this planeswalker, allows two per turn)
         val tracker = container.get<AbilityActivatedThisTurnComponent>()
         if (tracker != null && tracker.loyaltyActivationCount > 0) {
-            val maxActivations = getMaxLoyaltyActivations(state, action.playerId)
-            if (tracker.hasReachedLoyaltyLimit(maxActivations)) {
+            val playerMax = getMaxLoyaltyActivations(state, action.playerId)
+            if (tracker.hasReachedLoyaltyLimit(playerMax)) {
+                val maxActivations = tracker.effectiveLoyaltyLimit(playerMax)
                 return if (maxActivations > 1) {
                     "Loyalty abilities can only be activated $maxActivations times per planeswalker each turn"
                 } else {

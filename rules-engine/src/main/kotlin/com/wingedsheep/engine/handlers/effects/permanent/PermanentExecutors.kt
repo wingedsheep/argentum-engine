@@ -244,6 +244,8 @@ class PermanentExecutors(
         LockDoorExecutor(staticAbilityHandler),
         // soulbond
         PairWithSourceExecutor(),
+        // planeswalkers
+        AllowLoyaltyActivationsThisTurnExecutor(),
         // phasing
         PhaseOutExecutor(),
         PhaseOutUntilLeavesExecutor(),

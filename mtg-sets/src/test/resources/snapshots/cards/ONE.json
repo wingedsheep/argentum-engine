@@ -1419,6 +1419,203 @@
     ]
 }
 
+// Kaito, Dancing Shadow
+{
+    "name": "Kaito, Dancing Shadow",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Legendary Planeswalker — Kaito",
+    "oracleText": "Whenever one or more creatures you control deal combat damage to a player, you may return one of them to its owner's hand. If you do, you may activate loyalty abilities of Kaito twice this turn rather than only once.\n+1: Up to one target creature can't attack or block until your next turn.\n0: Draw a card.\n−2: Create a 2/2 colorless Drone artifact creature token with deathtouch and \"When this token leaves the battlefield, each opponent loses 2 life and you gain 2 life.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kaito, Dancing Shadow:1",
+                "trigger": "OneOrMoreDealCombatDamageToPlayerEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "trigger.captured",
+                                    "filter": {
+                                        "statePredicates": [
+                                            {
+                                                "type": "InZone",
+                                                "zone": "Battlefield"
+                                            }
+                                        ]
+                                    },
+                                    "storeMatching": "matching0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "matching0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "You may return one of those creatures to its owner's hand"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Hand"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": "AllowLoyaltyActivationsThisTurn"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Kaito, Dancing Shadow:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantAttack",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Kaito, Dancing Shadow:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Kaito, Dancing Shadow:5",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Drone"
+                    ],
+                    "keywords": [
+                        "DEATHTOUCH"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/f/cfacac5f-7685-4792-9e4c-166d4b421240.jpg?1783918167",
+                    "artifactToken": true,
+                    "triggeredAbilities": [
+                        {
+                            "id": "Kaito, Dancing Shadow:4",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "from": "Battlefield"
+                            },
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "EachOpponent"
+                                        }
+                                    },
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d97f59a-07b8-47ef-aa88-d94f8c3feae4.jpg?1783918002",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "If you return a creature to its owner's hand with Kaito's first ability, you may activate a single loyalty ability of Kaito twice, or you may activate two different loyalty abilities."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Even if Kaito's triggered ability triggers more than once in the same turn (perhaps because one or more attackers had first strike, multiple players were dealt combat damage by your creatures, or there were multiple combats), and you return an attacking creature to hand each time, you won't be able to activate Kaito's loyalty abilities more than twice that turn. That is, Kaito's triggered ability is not additive."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Malcator's Watcher
 {
     "name": "Malcator's Watcher",

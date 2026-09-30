@@ -1123,6 +1123,7 @@ serialized shape; the facade for each is:
 | `AddManaEffect` | `Effects.AddMana` |
 | `AddManaOfChoiceEffect` | `Effects.AddManaOfChoice` |
 | `AddSubtypeEffect` | `Effects.AddSubtype` |
+| `AllowLoyaltyActivationsThisTurnEffect` | `Effects.AllowLoyaltyActivationsThisTurn` |
 | `AnyPlayerMayPayEffect` | `Effects.AnyPlayerMayPay(cost, consequence, eligiblePlayers)` / `UnlessAnyPlayerPays(cost, effect, eligiblePlayers)` |
 | `AttachEquipmentEffect` | `Effects.AttachEquipment` |
 | `AttachToChosenHostEffect` | `Effects.AttachToChosenHost` |
@@ -2651,6 +2652,16 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   instant that made it; the filter is matched on projected state against the ability's source when the ability is
   offered and when it is activated, so a Jace that enters later that turn is covered. **Jace's Machinations**:
   `planeswalkerFilter = GameObjectFilter.Planeswalker.withSubtype("Jace").youControl()`.
+- `AllowLoyaltyActivationsThisTurnEffect(target = Self, times = 2)` — the *count* half of CR 606.3, relaxed for
+  one permanent: "you may activate loyalty abilities of [target] twice this turn rather than only once". Facade:
+  `Effects.AllowLoyaltyActivationsThisTurn(times = 2, target = Self)`. A resolution-time one-shot that raises the
+  permanent's own allowance on its turn-scoped `AbilityActivatedThisTurnComponent`, so it lapses at cleanup and when
+  the permanent leaves the battlefield. **Not additive**: a second grant, or a grant alongside the controller-wide
+  static `ExtraLoyaltyActivation` (Oath of Teferi), still allows `times` — the allowance is the largest granted, not a
+  sum. Activations already made count against it, so a grant after one activation allows exactly one more.
+  **Kaito, Dancing Shadow**: `Effects.IfYouDo(Pipeline { filter(triggerCaptured, on battlefield) → chooseUpTo(1) →
+  move to hand }, then = Effects.AllowLoyaltyActivationsThisTurn())` on a
+  `Triggers.oneOrMore(Creature).dealCombatDamageToAPlayer()` trigger.
 
 - `TapForManaPermanentsYouDontControlEffect(target, permanentFilter, restriction, duration)` — target may
   tap permanents they don't control that match `permanentFilter` for mana, for `duration` (default
