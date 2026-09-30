@@ -2426,7 +2426,12 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 ### Control & combat
 
 - `GainControlEffect(target, duration)` — gain control of a permanent; `duration` defaults to
-  `Duration.Permanent` (Blatant Thievery). Pair with `Duration.EndOfTurn` for the Threaten pattern
+  `Duration.Permanent` (Blatant Thievery). Aimed at a **spell** on the stack (`Targets.Spell`) it
+  gains control of that spell until it leaves the stack — `duration` is ignored; the new controller is
+  the spell's "you", and a permanent spell enters under them. Pair with
+  `ChangeTriggeringObjectTargetsEffect(spell = ContextTarget(0))` for "…and you may choose new targets
+  for it" (Invert Polarity). Emits `ControlChangedEvent`, which the permanent-only control triggers
+  (Risky Move, Zidane) ignore for a spell. Pair with `Duration.EndOfTurn` for the Threaten pattern
   (Act of Treason), or **`Duration.EndOfYourNextTurn`** for the long Threaten — "gain control of
   that creature until the **end of** your next turn" (Evil's Thrall). That duration is strictly
   longer than `Duration.UntilYourNextTurn`, which ends at the *beginning* of your next turn; it runs

@@ -1232,6 +1232,74 @@
     ]
 }
 
+// Invert Polarity
+{
+    "name": "Invert Polarity",
+    "manaCost": "{U}{U}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target spell, then flip a coin. If you win the flip, gain control of that spell and you may choose new targets for it. If you lose the flip, counter that spell.",
+    "script": {
+        "spellEffect": {
+            "type": "FlipCoin",
+            "wonEffect": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GainControl",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    {
+                        "type": "ChangeTriggeringObjectTargets",
+                        "spell": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                ]
+            },
+            "lostEffect": "Counter"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "RARE",
+        "artist": "Leonardo Santanna",
+        "flavorText": "\"Skreeg! I thought I told you to stop messing with... Oh, that worked. Good job, Skreeg.\"\n—Ral Zarek",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dcee6a8a-c3a8-43bc-beb9-be30d03ab952.jpg?1783911250",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "You don't make any decisions about new targets for the spell until you win the flip."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If you choose new targets for the target spell, the new targets must be legal."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If the target spell has a variable number of targets, you can't change how many targets it has."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If the target spell has damage divided as it was cast, the division can't be changed although the targets receiving that damage still can. The same is true of spells that distribute counters."
+            }
+        ]
+    }
+}
+
 // Jolted Awake
 {
     "name": "Jolted Awake",
