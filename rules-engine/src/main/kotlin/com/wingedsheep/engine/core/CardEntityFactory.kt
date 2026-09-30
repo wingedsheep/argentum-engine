@@ -253,11 +253,14 @@ object CardEntityFactory {
         // "Protection from spells and from permanents that were cast this turn" (Emrakul, the World
         // Anew) — source-kind qualities, enforced through [SourceKindProtection].
         val protectionSourceKinds = protections.mapNotNull { SourceKind.of(it.scope) }.toSet()
+        val protectionMulticolored = protections.any { it.scope == ProtectionScope.Multicolored }
         if (protectionColors.isEmpty() && protectionSubtypes.isEmpty() &&
-            protectionSupertypes.isEmpty() && protectionCardTypes.isEmpty() && protectionSourceKinds.isEmpty()
+            protectionSupertypes.isEmpty() && protectionCardTypes.isEmpty() && protectionSourceKinds.isEmpty() &&
+            !protectionMulticolored
         ) return null
         return ProtectionComponent(
-            protectionColors, protectionSubtypes, protectionSupertypes, protectionCardTypes, protectionSourceKinds
+            protectionColors, protectionSubtypes, protectionSupertypes, protectionCardTypes, protectionSourceKinds,
+            protectionMulticolored
         )
     }
 }

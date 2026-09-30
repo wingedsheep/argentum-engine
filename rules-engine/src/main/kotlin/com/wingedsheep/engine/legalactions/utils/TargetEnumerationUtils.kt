@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.legalactions.TargetInfo
+import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.mechanics.targeting.ControllerHexproof
 import com.wingedsheep.engine.mechanics.targeting.ControllerShroud
 import com.wingedsheep.engine.mechanics.targeting.HexproofSuppression
@@ -112,6 +113,7 @@ class TargetEnumerationUtils(
                             !HexproofSuppression.isSuppressedForCaster(state, projected, entityId, playerId, predicateEvaluator = predicateEvaluator)
                         ) return@filter false
                         if (projected.hasKeyword(entityId, Keyword.SHROUD)) return@filter false
+                        if (sourceId != null && hasColorProtectionFromSource(state, entityId, sourceId)) return@filter false
                         if (SourceKindProtection.targetingError(
                                 state, entityId, sourceId, playerId, targetingSourceType, predicateEvaluator
                             ) != null
@@ -170,6 +172,7 @@ class TargetEnumerationUtils(
                 hasHexproofFromSource(state, entityId, sourceId)
             ) return@filter false
             if (projected.hasKeyword(entityId, Keyword.SHROUD)) return@filter false
+            if (sourceId != null && hasColorProtectionFromSource(state, entityId, sourceId)) return@filter false
             if (SourceKindProtection.targetingError(
                     state, entityId, sourceId, playerId, targetingSourceType, predicateEvaluator
                 ) != null
@@ -178,11 +181,23 @@ class TargetEnumerationUtils(
         }
     }
 
-    private fun hasHexproofFromSource(state: GameState, targetId: EntityId, sourceId: EntityId): Boolean {
-        val projected = state.projectedState
-        val sourceColors = projected.getColors(sourceId).ifEmpty {
+    /**
+     * Protection's colour axis (CR 702.16b) — the same [ColorProtection] question the targeting
+     * validator asks, so a protected permanent isn't offered only to be rejected on submit.
+     */
+    private fun hasColorProtectionFromSource(state: GameState, targetId: EntityId, sourceId: EntityId): Boolean {
+        if (state.getEntity(sourceId) == null) return false
+        return ColorProtection.isProtected(state.projectedState, targetId, sourceColorNames(state, sourceId))
+    }
+
+    private fun sourceColorNames(state: GameState, sourceId: EntityId): Set<String> =
+        state.projectedState.getColors(sourceId).ifEmpty {
             state.getEntity(sourceId)?.get<CardComponent>()?.colors?.map { it.name }?.toSet().orEmpty()
         }
+
+    private fun hasHexproofFromSource(state: GameState, targetId: EntityId, sourceId: EntityId): Boolean {
+        val projected = state.projectedState
+        val sourceColors = sourceColorNames(state, sourceId)
         return HexproofFromRules.blockingQuality(
             projected,
             targetId,

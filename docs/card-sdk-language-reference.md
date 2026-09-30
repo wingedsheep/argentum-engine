@@ -10285,6 +10285,11 @@ composite abilities).
   spelling of the same thing, engine-supported (`CardEntityFactory`, `PlayerProtectionRules`) but used
   by exactly one card (Ureni, the Song Unending). Argentum Assay reads the printed text as two
   abilities and never emits `Colors`.
+- `Protection(ProtectionScope.Multicolored)` — "protection from multicolored" (Argentum Masticore): matches
+  a source with two or more colors (CR 105.1). Projected as `PROTECTION_FROM_MULTICOLORED` and answered by
+  the shared colour-axis helper `ColorProtection`, so targeting (validator *and* legal-action target
+  enumeration), damage prevention, blocking and enchanting/equipping all honour it. Also valid in
+  `GrantPlayerProtection` / `GrantProtectionToController` scopes.
 - `Protection(ProtectionScope.Supertype("Legendary"))` / `KeywordAbility.protectionFromSupertype("Legendary")` — protection from a supertype, e.g. "protection from legendary creatures" (Tsabo Tavoc). Enforced across targeting, blocking, and combat damage via projected `PROTECTION_FROM_SUPERTYPE_<X>` keywords.
 - `Protection(ProtectionScope.CardType("Instant"))` — protection from a card type, e.g. "protection from
   instants" (Emrakul, the Promised End). Projected as `PROTECTION_FROM_CARDTYPE_<TYPE>` — the same keyword

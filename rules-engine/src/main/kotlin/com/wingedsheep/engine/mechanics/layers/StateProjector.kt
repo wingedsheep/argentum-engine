@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.layers
 
+import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.mechanics.targeting.HexproofFromRules
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -138,6 +139,7 @@ class StateProjector {
                             protection.supertypes.forEach { add("PROTECTION_FROM_SUPERTYPE_${it.uppercase()}") }
                             protection.cardTypes.forEach { add("PROTECTION_FROM_CARDTYPE_$it") }
                             protection.sourceKinds.forEach { add(SourceKindProtection.protectionKeyword(it)) }
+                            if (protection.multicolored) add(ColorProtection.PROTECTION_FROM_MULTICOLORED)
                         }
                         container.get<HexproofFromComponent>()?.let { hexproof ->
                             hexproof.colors.forEach { add("HEXPROOF_FROM_${it.name}") }

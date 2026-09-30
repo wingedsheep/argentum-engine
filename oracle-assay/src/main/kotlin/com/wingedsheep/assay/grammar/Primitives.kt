@@ -596,6 +596,7 @@ object Primitives {
         colorScope,
         constant("everything", ProtectionScope.Everything),
         constant("each opponent", ProtectionScope.EachOpponent),
+        constant("multicolored", ProtectionScope.Multicolored),
         subtypeScope,
         constant("artifacts", ProtectionScope.CardType("Artifact")),
         constant("creatures", ProtectionScope.CardType("Creature")),
