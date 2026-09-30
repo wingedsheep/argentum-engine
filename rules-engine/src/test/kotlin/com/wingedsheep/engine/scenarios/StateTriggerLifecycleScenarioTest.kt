@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.EngineServices
+import com.wingedsheep.engine.core.GameEndedEvent
+import com.wingedsheep.engine.core.GameEndReason
 import com.wingedsheep.engine.core.engineSerializersModule
 import kotlinx.serialization.json.Json
 import com.wingedsheep.engine.event.GrantedStateTriggeredAbility
@@ -17,6 +19,9 @@ import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.effects.Mode
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -183,6 +188,42 @@ class StateTriggerLifecycleScenarioTest : ScenarioTestBase() {
             game.getLifeTotal(1) shouldBe 20
             game.state.pendingDecision shouldBe null
             game.state.stack.size shouldBe 1
+        }
+
+        test("a state trigger with no legal modal mode ends its mandatory loop in a draw") {
+            val modal = card("Modal Lifecycle Enchantment") {
+                typeLine = "Enchantment"
+                stateTriggeredAbility {
+                    condition = Conditions.YouControl(GameObjectFilter.Land.withSubtype("Island"), negate = true)
+                    effect = Effects.Modal(listOf(
+                        Mode.withTarget(Effects.Destroy(EffectTarget.ContextTarget(0)), TargetObject(filter = TargetFilter.Creature)),
+                        Mode.withTarget(Effects.Exile(EffectTarget.ContextTarget(0)), TargetObject(filter = TargetFilter.Creature))
+                    ))
+                }
+            }
+            cardRegistry.register(modal)
+            val game = scenario().withPlayers().withCardOnBattlefield(1, modal.name)
+                .withActivePlayer(1).inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
+            game.state = game.state.copy(pendingTriggers = poller.poll(game.state).pendingTriggers)
+            val result = game.passPriority()
+            result.error shouldBe null
+            game.state.gameOver shouldBe true
+            game.state.winnerId shouldBe null
+            game.state.pendingTriggers.shouldBeEmpty()
+            game.state.stack.shouldBeEmpty()
+            result.events.filterIsInstance<GameEndedEvent>().single().reason shouldBe GameEndReason.INFINITE_LOOP
+
+            // A trigger captured before the condition changed is removed only once, not a loop.
+            val recovered = scenario().withPlayers().withCardOnBattlefield(1, modal.name)
+                .withLandsOnBattlefield(1, "Island", 1)
+                .withActivePlayer(1).inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
+            val island = recovered.findPermanent("Island")!!
+            val withoutIsland = recovered.zones.moveToZone(recovered.state, island, Zone.GRAVEYARD).state
+            recovered.state = recovered.state.copy(pendingTriggers = poller.poll(withoutIsland).pendingTriggers)
+            recovered.passPriority().error shouldBe null
+            recovered.state.gameOver shouldBe false
+            recovered.state.pendingTriggers.shouldBeEmpty()
+            recovered.state.stack.shouldBeEmpty()
         }
 
         test("ability removal suppresses printed state triggers") {

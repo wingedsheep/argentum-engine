@@ -7753,6 +7753,9 @@ the original stack object releases suppression through every removal path withou
 separate permanent latch. Resolution pauses wait until resolution finishes before polling.
 Printed and granted abilities share this path; battlefield re-entry creates a new source
 object. Printed abilities respect projected ability removal and effective text changes.
+If a state trigger is automatically removed while being put on the stack (for example,
+because no modal mode has legal targets), an unchanged mandatory settle cycle ends the
+game in a draw rather than polling forever.
 
 ```kotlin
 stateTriggeredAbility {
