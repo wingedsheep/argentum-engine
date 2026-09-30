@@ -67,6 +67,7 @@ class BestowCastEnumerator : ActionEnumerator {
                 val paymentContext = com.wingedsheep.engine.mechanics.mana.SpellPaymentContext(
                     isCreature = false, isLegendary = card.typeLine.isLegendary,
                     manaValue = card.manaCost.cmc, hasXInCost = card.manaCost.hasX,
+                    isColorless = card.colors.isEmpty(),
                     subtypes = setOf("Aura"), cardTypes = card.typeLine.cardTypes,
                     isFromHand = inHand,
                     isFromExile = state.turnOrder.any { id in state.getZone(ZoneKey(it, Zone.EXILE)) }

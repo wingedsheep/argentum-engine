@@ -73,7 +73,7 @@ internal class ActivationAutoTapper(
         val xSymbolCount = cost.xCount.coerceAtLeast(1)
         var xToTap = xValue * xSymbolCount
         if (xToTap > 0) {
-            xToTap -= partialResult.newPool.xCoveragePlan(xToTap, xManaRestriction).size
+            xToTap -= partialResult.newPool.xCoverage(xToTap, xManaRestriction, abilityContext)
         }
 
         // If floating pool covers everything (and no X left to tap for), no tapping needed.

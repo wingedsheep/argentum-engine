@@ -1487,6 +1487,214 @@
     ]
 }
 
+// Rosheen, Roaring Prophet
+{
+    "name": "Rosheen, Roaring Prophet",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Legendary Creature — Giant Shaman",
+    "oracleText": "When Rosheen enters, mill six cards. You may put a card with {X} in its mana cost from among them into your hand.\n{T}: Reveal any number of cards with {X} in their mana cost in your hand. Add {C}{C} for each card revealed this way. Spend this mana only on costs that contain {X}.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rosheen, Roaring Prophet:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "HasXInManaCost"
+                                ]
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "You may put a card with {X} in its mana cost into your hand",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Leave in graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Rosheen enters, mill six cards. You may put a card with {X} in its mana cost from among them into your hand."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Rosheen, Roaring Prophet:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "HasXInManaCost"
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "rosheenRevealed",
+                            "prompt": "Reveal any number of cards with {X} in their mana cost"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "rosheenRevealed"
+                        },
+                        {
+                            "type": "AddColorlessMana",
+                            "amount": {
+                                "type": "Multiply",
+                                "amount": {
+                                    "type": "VariableReference",
+                                    "variableName": "rosheenRevealed_count"
+                                },
+                                "multiplier": 2
+                            },
+                            "restriction": "CostsContainingXOnly"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Reveal any number of cards with {X} in their mana cost in your hand. Add {C}{C} for each card revealed this way. Spend this mana only on costs that contain {X}."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "RARE",
+        "artist": "Fang Xinyu",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5ac88b2-a92e-4a12-9ba3-5a4b8cdb58dc.jpg?1783911245",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "You can spend mana generated with Rosheen's last ability on any part of a cost that contains {X}. You're not limited to spending it only on the {X} part."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "You don't have to spend all of the mana generated with Rosheen's last ability on the same cost."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "You can use the mana generated with Rosheen's last ability in any cost you pay that includes {X}, including the mana costs of spells, activation costs, and even costs for special actions (such as morph). Any time you pay mana, that's a cost."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "A \"cost that contains {X}\" may be a spell's total cost, an activated ability's cost, a suspend cost, or a cost you're asked to pay as part of the resolution of a spell or ability (such as Condescend). A spell's total cost includes either its mana cost (printed in the upper right corner) or its alternative cost (such as flashback), as well as any additional costs (such as kicker). If it's something you can spend mana on, it's a cost. If that cost includes the {X} symbol in it, you can spend mana generated by Rosheen on that cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Sage of the Unknowable
+{
+    "name": "Sage of the Unknowable",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{T}: Add {C}. Spend this mana only to cast a colorless spell or to activate an ability.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sage of the Unknowable:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "restriction": {
+                        "type": "AnyOf",
+                        "restrictions": [
+                            "ColorlessSpellsOnly",
+                            "AbilityActivationOnly"
+                        ]
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}. Spend this mana only to cast a colorless spell or to activate an ability."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"Someday, we will walk the Blind Eternities and see the truths that lie beyond the stifling veil of reality.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f481ab3-ca6c-4a5c-aa32-d087464fc4da.jpg?1783911288",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "The mana generated by Sage of the Unknowable's activated ability can be used to activate any ability, not just abilities of colorless sources."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sarpadian Simulacrum
 {
     "name": "Sarpadian Simulacrum",

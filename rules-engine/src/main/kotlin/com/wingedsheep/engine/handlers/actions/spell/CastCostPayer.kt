@@ -27,7 +27,7 @@ import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
-import com.wingedsheep.engine.mechanics.mana.paymentSubtypesOf
+import com.wingedsheep.engine.mechanics.mana.spellPaymentContextFor
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -435,17 +435,11 @@ internal class CastCostPayer(
         if (action.castFaceDown) {
             SpellPaymentContext.faceDownCast(isFromHand = isCastFrom(state, action.cardId, Zone.HAND))
         } else if (cardComponent != null) {
-            SpellPaymentContext(
-                isInstantOrSorcery = cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery,
+            spellPaymentContextFor(
+                cardComponent,
                 isKicked = action.declaredCostSlot == ChoiceSlot.KICKED,
-                isCreature = cardComponent.typeLine.isCreature,
-                isLegendary = cardComponent.typeLine.isLegendary,
-                manaValue = cardComponent.manaCost.cmc,
-                hasXInCost = cardComponent.manaCost.hasX,
-                subtypes = paymentSubtypesOf(cardComponent),
                 isFromExile = isCastFrom(state, action.cardId, Zone.EXILE),
                 isFromHand = isCastFrom(state, action.cardId, Zone.HAND),
-                cardTypes = cardComponent.typeLine.cardTypes,
             )
         } else null
 

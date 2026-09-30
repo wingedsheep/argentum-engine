@@ -241,7 +241,7 @@ internal class ActivationCostPayer(
         // so we must explicitly spend the X portion here (same pattern as CastSpellHandler.autoPay).
         // Skip for Explicit payment — sources were already tapped to cover the full cost including X.
         if (action.paymentStrategy !is PaymentStrategy.Explicit && manaCost != null && manaCost.hasX && xValue > 0) {
-            manaPool = spendXFromPool(manaPool, manaCost, xValue, ability.xManaRestriction)
+            manaPool = spendXFromPool(manaPool, manaCost, xValue, ability.xManaRestriction, paymentContext)
         }
 
         currentState = writeBackPool(currentState, action.playerId, poolComponent, manaPool)
@@ -551,15 +551,35 @@ internal class ActivationCostPayer(
     }
 
     /**
-     * Spend the X portion of [manaCost] from [pool]: X per X symbol, colorless first unless X is
-     * color-restricted ("spend only [colors] on X"), then the allowed colors.
+     * Spend the X portion of [manaCost] from [pool]: X per X symbol — restricted mana this
+     * activation may spend first (the same order as the cast path, CastPaymentProcessor), then
+     * colorless unless X is color-restricted ("spend only [colors] on X"), then the allowed colors.
      */
-    private fun spendXFromPool(pool: ManaPool, manaCost: ManaCost, xValue: Int, xManaRestriction: Set<Color>): ManaPool {
+    private fun spendXFromPool(
+        pool: ManaPool,
+        manaCost: ManaCost,
+        xValue: Int,
+        xManaRestriction: Set<Color>,
+        paymentContext: SpellPaymentContext?,
+    ): ManaPool {
         var manaPool = pool
         val xSymbolCount = manaCost.xCount.coerceAtLeast(1)
         var xRemainingToPay = xValue * xSymbolCount
         val xColorsAllowed: Set<Color> =
             if (xManaRestriction.isEmpty()) Color.entries.toSet() else xManaRestriction
+
+        if (paymentContext != null) {
+            for (entry in manaPool.restrictedMana.toList()) {
+                if (xRemainingToPay <= 0) break
+                // A color-restricted X can't be paid with off-color or colorless restricted mana.
+                if (entry.color != null && entry.color !in xColorsAllowed) continue
+                if (entry.color == null && xManaRestriction.isNotEmpty()) continue
+                manaPool.spendRestricted(entry.color, paymentContext)?.let {
+                    manaPool = it
+                    xRemainingToPay--
+                }
+            }
+        }
 
         // Spend colorless first for X — never allowed when X is color-restricted ("spend only [colors] on X").
         if (xManaRestriction.isEmpty()) {

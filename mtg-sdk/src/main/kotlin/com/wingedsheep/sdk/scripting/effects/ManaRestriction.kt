@@ -84,6 +84,34 @@ sealed interface ManaRestriction {
     }
 
     /**
+     * "Spend this mana only to cast colorless spells." A spell is colorless when its colors are
+     * empty (CR 105.2c) — a devoid spell, an artifact with no colored symbols, and a face-down
+     * spell (CR 708.2) all qualify. Ability activations never do; compose with
+     * [AbilityActivationOnly] for Sage of the Unknowable's "to cast a colorless spell or to
+     * activate an ability".
+     */
+    @SerialName("ColorlessSpellsOnly")
+    @Serializable
+    data object ColorlessSpellsOnly : ManaRestriction {
+        override val description: String = "Spend this mana only to cast colorless spells"
+    }
+
+    /**
+     * "Spend this mana only on costs that contain {X}." Satisfied by casting a spell whose mana
+     * cost contains {X}, and by activating an ability whose mana cost contains {X} — both are
+     * costs, so unlike [SpellsWithManaValueAtLeast]'s `orXInCost` this one is not spell-only.
+     * Only the {X} mana symbol counts: a loyalty "−X" or "remove X counters" cost has no {X} in it.
+     * The engine reads the spell's printed mana cost (or a cleave cost), not an alternative or
+     * additional cost the ruling also counts (a flashback or kicker cost with {X}), and special
+     * actions never qualify. Rosheen, Roaring Prophet.
+     */
+    @SerialName("CostsContainingXOnly")
+    @Serializable
+    data object CostsContainingXOnly : ManaRestriction {
+        override val description: String = "Spend this mana only on costs that contain {X}"
+    }
+
+    /**
      * "Spend this mana only to cast legendary spells." Matches spells with the Legendary supertype
      * (Great Hall of the Citadel, Delighted Halfling).
      */

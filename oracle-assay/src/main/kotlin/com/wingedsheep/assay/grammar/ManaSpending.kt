@@ -317,6 +317,11 @@ object ManaSpending {
             "cast a legendary spell",
         ),
         atom(
+            "cast colorless spells",
+            ManaRestriction.ColorlessSpellsOnly,
+            "cast a colorless spell",
+        ),
+        atom(
             "cast kicked spells",
             ManaRestriction.KickedSpellsOnly,
             "cast a kicked spell",

@@ -27,7 +27,19 @@ data class SpellPaymentContext(
     val isKicked: Boolean = false,
     val isCreature: Boolean = false,
     val manaValue: Int = 0,
+    /**
+     * True when the cost being paid contains the {X} mana symbol: the spell's mana cost for a
+     * cast, the ability's mana cost for an activation (set by [buildAbilityPaymentContext]).
+     * Restrictions that are spell-only ([ManaRestriction.SpellsWithManaValueAtLeast]) also require
+     * `!isAbilityActivation`; [ManaRestriction.CostsContainingXOnly] reads it for both.
+     */
     val hasXInCost: Boolean = false,
+    /**
+     * True when the spell being cast is colorless (CR 105.2c). Defaults to false so a cast path
+     * that forgets to set it refuses [ManaRestriction.ColorlessSpellsOnly] mana rather than
+     * letting it pay for a colored spell.
+     */
+    val isColorless: Boolean = false,
     val subtypes: Set<String> = emptySet(),
     val isFromExile: Boolean = false,
     /** True when the spell being cast is legendary (has the Legendary supertype). */
@@ -98,6 +110,7 @@ data class SpellPaymentContext(
         fun faceDownCast(isFromHand: Boolean = true): SpellPaymentContext = SpellPaymentContext(
             isCreature = true,
             manaValue = 0,
+            isColorless = true,
             cardTypes = setOf(com.wingedsheep.sdk.core.CardType.CREATURE),
             isFromHand = isFromHand,
             isFaceDownCast = true,
@@ -127,6 +140,8 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
             (context.manaValue >= minManaValue || (orXInCost && context.hasXInCost))
     is ManaRestriction.CreatureSpellsOnly -> !context.isAbilityActivation && context.isCreature
     is ManaRestriction.LegendarySpellsOnly -> !context.isAbilityActivation && context.isLegendary
+    is ManaRestriction.ColorlessSpellsOnly -> context.isSpellCast && context.isColorless
+    is ManaRestriction.CostsContainingXOnly -> (context.isSpellCast || context.isAbilityActivation) && context.hasXInCost
     is ManaRestriction.SubtypeSpellsOrAbilitiesOnly ->
         (!creatureOnly || (!context.isAbilityActivation && context.isCreature)) &&
             context.subtypes.any { it.equals(subtype, ignoreCase = true) }

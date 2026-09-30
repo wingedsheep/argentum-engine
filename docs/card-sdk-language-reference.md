@@ -12911,6 +12911,14 @@ restriction matches the spell context.
   `SpellsWithManaValueAtLeast(4)` — Ashling, Rimebound;
   `SpellsWithManaValueAtLeast(4, orXInCost = true, creatureOnly = true)` — Helga, Skittish Seer;
   `SpellsWithManaValueAtLeast(5, orXInCost = true)` — Troyan, Gutsy Explorer.
+- `ManaRestriction.ColorlessSpellsOnly` — only colorless spells (CR 105.2c: devoid, colorless artifacts,
+  face-down spells). Ability activations never satisfy it. Sage of the Unknowable:
+  `AnyOf(ColorlessSpellsOnly, AbilityActivationOnly)` ("to cast a colorless spell or to activate an ability").
+- `ManaRestriction.CostsContainingXOnly` — "Spend this mana only on costs that contain {X}": a spell
+  whose mana cost has {X}, **or** an activated ability whose mana cost has {X} (read off the ability by
+  `buildAbilityPaymentContext`). Not `SpellsWithManaValueAtLeast(orXInCost = true)`, which is spell-only
+  and also admits high-MV spells without X. Only the {X} mana symbol counts — a loyalty −X or "remove X
+  counters" cost doesn't. Rosheen, Roaring Prophet.
 - `ManaRestriction.LegendarySpellsOnly` — only legendary spells (matches `SpellPaymentContext.isLegendary`,
   populated from the cast card's `typeLine.isLegendary`). Great Hall of the Citadel
   (`AddManaInAnyCombination(2, restriction = LegendarySpellsOnly)`); Delighted Halfling pairs it with
