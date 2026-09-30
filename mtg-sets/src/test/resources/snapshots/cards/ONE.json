@@ -3445,6 +3445,68 @@
     ]
 }
 
+// Viral Spawning
+{
+    "name": "Viral Spawning",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 3/3 green Phyrexian Beast creature token with toxic 1. (Players dealt combat damage by it also get a poison counter.)\nCorrupted — As long as an opponent has three or more poison counters and this card is in your graveyard, it has flashback {2}{G}. (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{2}{G}",
+            "condition": {
+                "type": "Compare",
+                "left": {
+                    "type": "GreatestAmongPlayers",
+                    "players": "EachOpponent",
+                    "inner": {
+                        "type": "PlayerCounterCount",
+                        "counterType": "POISON"
+                    }
+                },
+                "operator": "GTE",
+                "right": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            }
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 3,
+            "toughness": 3,
+            "colors": [
+                "GREEN"
+            ],
+            "creatureTypes": [
+                "Phyrexian",
+                "Beast"
+            ],
+            "numericKeywords": [
+                {
+                    "keyword": "TOXIC",
+                    "n": 1
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "UNCOMMON",
+        "artist": "Denis Zhbankov",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/85ad30a1-3ecc-42ca-afe8-85df5bad9196.jpg?1783918006"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Voidwing Hybrid
 {
     "name": "Voidwing Hybrid",

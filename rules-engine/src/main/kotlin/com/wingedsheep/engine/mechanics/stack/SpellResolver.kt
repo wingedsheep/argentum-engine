@@ -172,9 +172,11 @@ internal class SpellResolver(
         val cardDef = cardComponent?.let { cardRegistry.getCard(it.name) }
         // Flashback (printed or granted — Archmage's Newt) or Harmonize (printed or granted —
         // Songcrafter Mage): a graveyard cast exiles on resolution instead of returning to the
-        // graveyard.
+        // graveyard. A spell cast *with* flashback is exiled even if a conditional flashback's
+        // condition has since lapsed (Viral Spawning), so the recorded alternative cost counts too.
         val flashbackExile = spellComponent.castFromZone == Zone.GRAVEYARD &&
-            (FlashbackGrants.effectiveFlashback(
+            (spellComponent.alternativeCost == AlternativeCostType.FLASHBACK ||
+                FlashbackGrants.effectiveFlashback(
                 state, spellId, cardDef, spellComponent.casterId, cardRegistry, predicateEvaluator
             ) != null ||
                 HarmonizeGrants.effectiveHarmonize(state, spellId, cardDef) != null)

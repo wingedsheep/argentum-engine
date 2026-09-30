@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.WardCost
@@ -460,12 +461,19 @@ sealed interface KeywordAbility {
      * The optional [additionalCost] models flashback variants that bundle a
      * non-mana cost (e.g., "Flashback—{1}{R}, Behold three Elementals.").
      * It is paid only on the flashback cast path; hand casts ignore it.
+     *
+     * The optional [condition] models a printed flashback the card has only "as long as" something
+     * holds (Viral Spawning: "Corrupted — As long as an opponent has three or more poison counters,
+     * this card has flashback {2}{G}."). It is evaluated with the card as the source and its owner
+     * as the controller whenever the graveyard cast is enumerated or paid for; a spell already cast
+     * with flashback is still exiled when it leaves the stack even if the condition has lapsed.
      */
     @SerialName("Flashback")
     @Serializable
     data class Flashback(
         val cost: ManaCost,
-        val additionalCost: AdditionalCost? = null
+        val additionalCost: AdditionalCost? = null,
+        val condition: @Serializable Condition? = null
     ) : KeywordAbility {
         override val keyword: Keyword = Keyword.FLASHBACK
         override val description: String =
@@ -1260,6 +1268,14 @@ sealed interface KeywordAbility {
          */
         fun flashback(cost: String, additionalCost: AdditionalCost): KeywordAbility =
             Flashback(ManaCost.parse(cost), additionalCost)
+
+        /**
+         * Create a Flashback the card has only while [condition] holds
+         * (e.g., Viral Spawning: "As long as an opponent has three or more poison counters, this
+         * card has flashback {2}{G}" → `flashback("{2}{G}", Conditions.Corrupted)`).
+         */
+        fun flashback(cost: String, condition: Condition): KeywordAbility =
+            Flashback(ManaCost.parse(cost), condition = condition)
 
         /**
          * Create Harmonize with mana cost from string (e.g., "Harmonize {5}{R}{R}").
