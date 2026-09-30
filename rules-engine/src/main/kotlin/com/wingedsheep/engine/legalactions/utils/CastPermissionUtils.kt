@@ -47,6 +47,7 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.RestrictSpellsCastPerTurn
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 
 /**
  * Extracted permission-checking helpers from LegalActionsCalculator: per-player cast locks, flash
@@ -691,6 +692,29 @@ class CastPermissionUtils(
         val amount = ability.xDefinedAs ?: return null
         val context = EffectContext(sourceId = sourceId, controllerId = controllerId)
         return predicateEvaluator.amounts.evaluate(state, amount, context).coerceAtLeast(0)
+    }
+
+    /**
+     * The damage an activated ability's [DividedDamageEffect] divides, as known when the ability is
+     * activated — the moment its controller announces the division (CR 601.2d). A fixed total is
+     * itself; a `dynamicTotal` is evaluated against the source with the activation's X bound, so an
+     * X the text defines "as you activate this ability" (Lukka, Bound to Ruin — `xDefinedAs` plus
+     * `dynamicTotal = XValue`, CR 107.3c) is the number offered, validated and later dealt: the
+     * definition is bound onto the stack object as its X, so the executor reads the same value.
+     * [chosenX] is the controller-announced X for an ability whose cost has one.
+     */
+    fun dividedDamageTotalAtActivation(
+        state: GameState,
+        effect: DividedDamageEffect,
+        ability: ActivatedAbility,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        chosenX: Int? = null
+    ): Int {
+        val dynamic = effect.dynamicTotal ?: return effect.totalDamage
+        val x = definedXValue(state, ability, sourceId, controllerId) ?: chosenX
+        val context = EffectContext(sourceId = sourceId, controllerId = controllerId, xValue = x)
+        return predicateEvaluator.amounts.evaluate(state, dynamic, context).coerceAtLeast(0)
     }
 
     /**

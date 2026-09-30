@@ -120,7 +120,7 @@ internal class ActivationValidator(
             ?: checkTapSymbolSummoningSickness(state, action, container, effectiveCost)
             ?: checkActivationRestrictions(state, action, ability)
             ?: checkTargets(state, action, cardComponent, effectiveCost, effectiveTargetReqs)
-            ?: checkDamageDistribution(action, ability)
+            ?: checkDamageDistribution(state, action, ability)
     }
 
     /**
@@ -606,9 +606,10 @@ internal class ActivationValidator(
      * division is chosen as the ability is activated (CR 601.2d), so it arrives on the action
      * rather than being asked for at resolution. Absence is legal — the executor then raises a
      * resolution-time DistributeDecision, which is how non-interactive controllers divide — but
-     * anything present must be a well-formed division of exactly the printed total.
+     * anything present must be a well-formed division of exactly the total as activated — the
+     * printed number, or a dynamic total evaluated now (Lukka, Bound to Ruin's defined X).
      */
-    private fun checkDamageDistribution(action: ActivateAbility, ability: ActivatedAbility): String? {
+    private fun checkDamageDistribution(state: GameState, action: ActivateAbility, ability: ActivatedAbility): String? {
         val distribution = action.damageDistribution ?: return null
         val dividedDamage = ability.effect as? DividedDamageEffect
             ?: return "This ability does not divide damage among its targets"
@@ -616,9 +617,12 @@ internal class ActivationValidator(
         if (distribution.keys != chosenTargetIds) {
             return "Damage distribution targets must match chosen targets"
         }
+        val total = castPermissionUtils.dividedDamageTotalAtActivation(
+            state, dividedDamage, ability, action.sourceId, action.playerId, chosenX = action.xValue
+        )
         val totalDistributed = distribution.values.sum()
-        if (totalDistributed != dividedDamage.totalDamage) {
-            return "Total distributed damage ($totalDistributed) must equal ${dividedDamage.totalDamage}"
+        if (totalDistributed != total) {
+            return "Total distributed damage ($totalDistributed) must equal $total"
         }
         // CR 601.2d: each target in the division must be assigned at least 1 damage.
         if (distribution.values.any { it < 1 }) {
