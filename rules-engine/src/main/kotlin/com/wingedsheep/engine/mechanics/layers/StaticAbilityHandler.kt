@@ -633,6 +633,12 @@ class StaticAbilityHandler(
      */
     private fun convertStaticAbility(ability: StaticAbility): ContinuousEffectData? {
         return when (ability) {
+            is com.wingedsheep.sdk.scripting.CanAttackAsThoughHasty -> {
+                ContinuousEffectData(
+                    modification = Modification.CanAttackAsThoughHasty,
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
             is com.wingedsheep.sdk.scripting.PreventEnchantment -> {
                 ContinuousEffectData(
                     modification = Modification.PreventEnchantment(ability.auras, ability.exceptSource),

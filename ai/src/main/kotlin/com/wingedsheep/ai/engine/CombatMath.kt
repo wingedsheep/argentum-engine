@@ -425,7 +425,8 @@ object CombatMath {
                 !projected.cantAttack(entityId) &&
                 Keyword.DEFENDER.name !in projected.getKeywords(entityId) &&
                 (state.getEntity(entityId)?.has<com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent>() != true ||
-                    Keyword.HASTE.name in projected.getKeywords(entityId))
+                    Keyword.HASTE.name in projected.getKeywords(entityId) ||
+                    projected.canAttackAsThoughHasty(entityId))
         }
     }
 

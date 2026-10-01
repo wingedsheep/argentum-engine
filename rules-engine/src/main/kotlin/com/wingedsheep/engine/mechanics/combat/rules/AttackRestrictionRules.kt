@@ -73,13 +73,14 @@ class MustBeUntappedAttackRule : AttackRestrictionRule {
 }
 
 /**
- * Cannot have summoning sickness (unless it has haste).
+ * Summoning sickness prevents attacking unless haste or an attack-only permission lifts it.
  */
 class SummoningSicknessAttackRule : AttackRestrictionRule {
     override fun check(ctx: AttackCheckContext): String? {
         val container = ctx.state.getEntity(ctx.attackerId) ?: return null
         val hasHaste = ctx.projected.hasKeyword(ctx.attackerId, Keyword.HASTE)
-        if (!hasHaste && container.has<SummoningSicknessComponent>()) {
+        if (!hasHaste && !ctx.projected.canAttackAsThoughHasty(ctx.attackerId) &&
+            container.has<SummoningSicknessComponent>()) {
             val name = container.get<CardComponent>()?.name ?: "Creature"
             return "$name has summoning sickness"
         }

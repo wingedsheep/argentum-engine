@@ -66,6 +66,7 @@ data class ProjectedValues(
     val isFaceDown: Boolean = false,
     val isSuspected: Boolean = false,
     val cantAttack: Boolean = false,
+    val canAttackAsThoughHasty: Boolean = false,
     val cantBlock: Boolean = false,
     val cantBeTurnedFaceUp: Boolean = false,
     val mustAttack: Boolean = false,
@@ -237,6 +238,8 @@ class ProjectedState(
 
     fun isSuspected(entityId: EntityId): Boolean = projectedValues[entityId]?.isSuspected == true
 
+    fun canAttackAsThoughHasty(entityId: EntityId): Boolean = projectedValues[entityId]?.canAttackAsThoughHasty == true
+
     fun cantAttack(entityId: EntityId): Boolean = projectedValues[entityId]?.cantAttack == true
 
     fun cantBlock(entityId: EntityId): Boolean = projectedValues[entityId]?.cantBlock == true
@@ -303,6 +306,7 @@ internal fun buildIntermediateProjectedState(
             isFaceDown = v.isFaceDown,
             isSuspected = v.isSuspected,
             cantAttack = v.cantAttack,
+            canAttackAsThoughHasty = v.canAttackAsThoughHasty,
             cantBlock = v.cantBlock,
             cantBeTurnedFaceUp = v.cantBeTurnedFaceUp,
             mustAttack = v.mustAttack,
