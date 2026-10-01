@@ -15,8 +15,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Counter target spell. If that spell's mana value was 3 or less, proliferate.
  *
  * "Was" is the mana value the spell had on the stack, so the comparison is made before the counter
- * moves it to the graveyard (where an X spell's X would read as 0) — the same evaluate-first shape
- * as Unravel. The rider is not "if countered this way", so a spell that can't be countered still
+ * moves it — the same evaluate-first shape as Unravel. The rider is not "if countered this way", so a spell that can't be countered still
  * lets you proliferate.
  */
 val RejectImperfection = card("Reject Imperfection") {

@@ -15,7 +15,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * When this creature enters, put up to one target instant or sorcery card from your graveyard
  * on top of your library.
  *
- * "Up to one target" is `optional = true` on the target (CR 115.2c's count shape), so the
+ * "Up to one target" is `optional = true` on the target, so the
  * trigger is legal with an empty graveyard and simply chooses nothing.
  */
 val MeldwebCurator = card("Meldweb Curator") {

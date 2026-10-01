@@ -33,6 +33,14 @@ class AspirantsAscentScenarioTest : ScenarioTestBase() {
             projected.getToughness(bears) shouldBe 5
             projected.hasKeyword(bears, Keyword.FLYING) shouldBe true
             projected.hasKeyword(bears, "TOXIC_1") shouldBe true
+
+            game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+
+            val nextTurn = game.state.projectedState
+            nextTurn.getPower(bears) shouldBe 2
+            nextTurn.getToughness(bears) shouldBe 2
+            nextTurn.hasKeyword(bears, Keyword.FLYING) shouldBe false
+            nextTurn.hasKeyword(bears, "TOXIC_1") shouldBe false
         }
     }
 }
