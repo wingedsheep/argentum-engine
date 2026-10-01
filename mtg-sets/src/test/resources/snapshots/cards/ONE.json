@@ -451,6 +451,133 @@
     ]
 }
 
+// Anoint with Affliction
+{
+    "name": "Anoint with Affliction",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target creature if it has mana value 3 or less.\nCorrupted — Exile that creature instead if its controller has three or more poison counters.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "mv<=3"
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "PlayerCounterCount",
+                                "counterType": "POISON",
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target creature"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                }
+            },
+            "then": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "destination": "Exile"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "artist": "David Astruga",
+        "flavorText": "Many vatkeepers use necrogen etchings to judge the value of their aspirants. If the wounds rot and fester, the recipient is not worth further effort.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7dc55a8-290f-4666-90ce-aa632e87c5e7.jpg?1783918052"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Apostle of Invasion
+{
+    "name": "Apostle of Invasion",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Phyrexian Angel",
+    "oracleText": "Flying\nCorrupted — As long as an opponent has three or more poison counters, this creature has double strike.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOUBLE_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "PlayerCounterCount",
+                            "counterType": "POISON"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "UNCOMMON",
+        "artist": "Marcela Bolívar",
+        "flavorText": "\"Be not afraid of the holy chorus. Join in rapturous harmony.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a973487-5def-4771-bb77-5748cbd2f469.jpg?1783918085"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Archfiend of the Dross
 {
     "name": "Archfiend of the Dross",
@@ -928,6 +1055,131 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Atraxa's Skitterfang
+{
+    "name": "Atraxa's Skitterfang",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Phyrexian Insect",
+    "oracleText": "This creature enters with three oil counters on it.\nAt the beginning of combat on your turn, you may remove an oil counter from this creature. When you do, target creature you control gains your choice of flying, vigilance, deathtouch, or lifelink until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Atraxa's Skitterfang:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "RemoveCounters",
+                        "counterType": "OIL",
+                        "count": 1,
+                        "target": "Self"
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "Modal",
+                                "modes": [
+                                    {
+                                        "effect": {
+                                            "type": "GrantKeyword",
+                                            "keyword": "FLYING",
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        },
+                                        "description": "Target creature gains flying until end of turn"
+                                    },
+                                    {
+                                        "effect": {
+                                            "type": "GrantKeyword",
+                                            "keyword": "VIGILANCE",
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        },
+                                        "description": "Target creature gains vigilance until end of turn"
+                                    },
+                                    {
+                                        "effect": {
+                                            "type": "GrantKeyword",
+                                            "keyword": "DEATHTOUCH",
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        },
+                                        "description": "Target creature gains deathtouch until end of turn"
+                                    },
+                                    {
+                                        "effect": {
+                                            "type": "GrantKeyword",
+                                            "keyword": "LIFELINK",
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        },
+                                        "description": "Target creature gains lifelink until end of turn"
+                                    }
+                                ],
+                                "countsAsModalSpell": false
+                            }
+                        ],
+                        "descriptionOverride": "Target creature you control gains your choice of flying, vigilance, deathtouch, or lifelink until end of turn."
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may remove an oil counter from Atraxa's Skitterfang. When you do, target creature you control gains your choice of flying, vigilance, deathtouch, or lifelink until end of turn."
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, you may remove an oil counter from this creature. When you do, target creature you control gains your choice of flying, vigilance, deathtouch, or lifelink until end of turn."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 3,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Billy Christian",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdedebad-f71e-4434-871e-5bbbd3c07a12.jpg?1783917994",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "You don't choose a target for Atraxa's Skitterfang's last ability at the time it triggers. Rather, a second \"reflexive\" ability triggers when you remove an oil counter this way. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "You choose which ability the target creature gets as the reflexive ability resolves. Players may not wait to see what ability you choose before deciding whether to respond to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Awaken the Sleeper
@@ -1614,6 +1866,69 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Bladed Ambassador
+{
+    "name": "Bladed Ambassador",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Phyrexian Soldier",
+    "oracleText": "This creature enters with an oil counter on it.\n{1}, Remove an oil counter from this creature: This creature gains indestructible until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bladed Ambassador:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": "Self"
+                },
+                "descriptionOverride": "{1}, Remove an oil counter from this creature: This creature gains indestructible until end of turn."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "UNCOMMON",
+        "artist": "Nino Vecia",
+        "flavorText": "\"Let those thanebound dissenters prattle about their dead god. I serve the Mother of Machines, and in her name I carve out their heresy.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0bd8d2b8-4caf-4349-9538-0dfbebf0ce1b.jpg?1783918086"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4904,6 +5219,85 @@
     ]
 }
 
+// Flensing Raptor
+{
+    "name": "Flensing Raptor",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Phyrexian Bird",
+    "oracleText": "Flying\nToxic 1 (Players dealt combat damage by this creature also get a poison counter.)\nWhen this creature enters, another target creature you control with toxic gets +1/+1 and gains flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flensing Raptor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature kw:toxic ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, another target creature you control with toxic gets +1/+1 and gains flying until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "Abz J Harding",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/134aecf0-dc48-4fb3-8c8b-4e5272077856.jpg?1783918081"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Fleshless Gladiator
 {
     "name": "Fleshless Gladiator",
@@ -6469,6 +6863,70 @@
     ]
 }
 
+// Hexgold Slash
+{
+    "name": "Hexgold Slash",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Hexgold Slash deals 2 damage to target creature. If that creature has toxic, Hexgold Slash deals 4 damage to that creature instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": "creature kw:toxic"
+                }
+            },
+            "then": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 4
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "artist": "Eli Minaya",
+        "flavorText": "\"No matter how tough they are, even Phyrexians prefer to keep their guts on the inside.\"\n—Jor Kadeen",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0ec44465-68d4-4dca-a313-7f2ab0ce2e63.jpg?1783918029"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ichor Synthesizer
 {
     "name": "Ichor Synthesizer",
@@ -6740,6 +7198,76 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Incisor Glider
+{
+    "name": "Incisor Glider",
+    "manaCost": "{1}{W}",
+    "typeLine": "Artifact Creature — Phyrexian Construct",
+    "oracleText": "Flying\nCorrupted — Whenever this creature attacks, if an opponent has three or more poison counters, creatures you control get +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Incisor Glider:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "PlayerCounterCount",
+                            "counterType": "POISON"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "Corrupted — Whenever this creature attacks, if an opponent has three or more poison counters, creatures you control get +1/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "artist": "Joe Slucher",
+        "flavorText": "\"You think it's creepy now? You should see how it eats.\"\n—Melira",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3cf4c4f-bda6-454c-991d-429c0dca0e85.jpg?1783918082"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -7032,6 +7560,75 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Infested Fleshcutter
+{
+    "name": "Infested Fleshcutter",
+    "manaCost": "{1}{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+0.\nWhenever equipped creature attacks, create a 1/1 colorless Phyrexian Mite artifact creature token with toxic 1 and \"This token can't block.\" (Players dealt combat damage by it also get a poison counter.)\nEquip {2}{W}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Infested Fleshcutter:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Phyrexian Mite"
+                },
+                "descriptionOverride": "Whenever equipped creature attacks, create a 1/1 colorless Phyrexian Mite artifact creature token with toxic 1 and \"This token can't block.\""
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Infested Fleshcutter:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{2}{W}",
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "UNCOMMON",
+        "artist": "José Parodi",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f03d6bf-cbba-4ad7-8cec-065a47f03dbe.jpg?1783918079"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -8643,6 +9240,60 @@
     ]
 }
 
+// Maze's Mantle
+{
+    "name": "Maze's Mantle",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nWhen this Aura enters, if enchanted creature has toxic, that creature gains hexproof until end of turn.\nEnchanted creature gets +2/+2.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Maze's Mantle:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "target": "EnchantedCreature"
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature kw:toxic"
+                },
+                "descriptionOverride": "When this Aura enters, if enchanted creature has toxic, that creature gains hexproof until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "artist": "L.A. Draws",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc79106b-9aa2-4add-b9ca-e3c7aafd9821.jpg?1783918013"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Meldweb Curator
 {
     "name": "Meldweb Curator",
@@ -10238,6 +10889,101 @@
     ]
 }
 
+// Necrogen Rotpriest
+{
+    "name": "Necrogen Rotpriest",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Creature — Phyrexian Zombie Cleric",
+    "oracleText": "Toxic 2 (Players dealt combat damage by this creature also get two poison counters.)\nWhenever a creature you control with toxic deals combat damage to a player, that player gets an additional poison counter.\n{1}{B}{G}: Target creature you control with toxic gains deathtouch until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 5
+    },
+    "keywords": [
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Necrogen Rotpriest:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "creature kw:toxic ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "POISON",
+                    "count": 1,
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever a creature you control with toxic deals combat damage to a player, that player gets an additional poison counter."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Necrogen Rotpriest:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature kw:toxic ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Target creature you control with toxic gains deathtouch until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Krstic",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87519b36-1d95-4020-a61d-6afb75555e3e.jpg?1783917998",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "Multiple instances of toxic are cumulative. For example, if a creature has toxic 2 and gains toxic 1 due to another effect, combat damage that creature deals to a player will cause that player to get 3 poison counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Necrosquito
 {
     "name": "Necrosquito",
@@ -11201,6 +11947,75 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Plague Nurse
+{
+    "name": "Plague Nurse",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Phyrexian Cleric",
+    "oracleText": "Toxic 2\n{2}{G}: Each other creature you control with toxic gains toxic 1 until end of turn. Activate only once each turn. (A player dealt combat damage by a creature with toxic also gets poison counters equal to that creature's total toxic value.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 2
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Plague Nurse:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:toxic ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "TOXIC_1",
+                        "target": "IterationEntity"
+                    }
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "Each other creature you control with toxic gains toxic 1 until end of turn. Activate only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "artist": "Marcela Bolívar",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e7eef9e-68ae-4743-ad89-64f6fafbe365.jpg?1783918012",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "Multiple instances of toxic are cumulative. For example, if a creature has toxic 2 and gains toxic 1 due to another effect, combat damage that creature deals to a player will cause that player to get 3 poison counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -12906,6 +13721,191 @@
     ]
 }
 
+// Sinew Dancer
+{
+    "name": "Sinew Dancer",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Phyrexian Soldier",
+    "oracleText": "{3}{W}, {T}: Tap target creature.\nCorrupted — {W}, {T}: Tap target creature. Activate only if an opponent has three or more poison counters.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sinew Dancer:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Sinew Dancer:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "GreatestAmongPlayers",
+                                "players": "EachOpponent",
+                                "inner": {
+                                    "type": "PlayerCounterCount",
+                                    "counterType": "POISON"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Campbell White",
+        "flavorText": "He spreads word of the Argent Etchings to a captive audience.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebad4fcc-4f78-48dc-b236-c78c22edc1e9.jpg?1783918073"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Skrelv's Hive
+{
+    "name": "Skrelv's Hive",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, you lose 1 life and create a 1/1 colorless Phyrexian Mite artifact creature token with toxic 1 and \"This token can't block.\"\nCorrupted — As long as an opponent has three or more poison counters, creatures you control with toxic have lifelink.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skrelv's Hive:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Phyrexian Mite"
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you lose 1 life and create a 1/1 colorless Phyrexian Mite artifact creature token with toxic 1 and \"This token can't block.\""
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "filter": {
+                        "baseFilter": "creature kw:toxic ctrl:you"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "PlayerCounterCount",
+                            "counterType": "POISON"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "RARE",
+        "artist": "Heonhwa",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffbd77ec-fc81-41d5-934f-c3dd844cb053.jpg?1783918072"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Skrelv, Defector Mite
 {
     "name": "Skrelv, Defector Mite",
@@ -13093,6 +14093,64 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Slaughter Singer
+{
+    "name": "Slaughter Singer",
+    "manaCost": "{G}{W}",
+    "typeLine": "Creature — Phyrexian Cleric",
+    "oracleText": "Toxic 2 (Players dealt combat damage by this creature also get two poison counters.)\nWhenever another creature you control with toxic attacks, it gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Slaughter Singer:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature kw:toxic ctrl:you"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever another creature you control with toxic attacks, it gets +1/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Burn",
+        "flavorText": "After giving in to the thrill of the hunt, he could never again return to the quiet of the Basilica.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a37aa46-bcf3-48a5-9f74-05e4878ad96f.jpg?1783917996"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -13338,6 +14396,53 @@
         "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2934af5-aa4f-4c88-adbd-dcd847ef43a2.jpg?1783917986"
     },
     "colorIdentityOverride": []
+}
+
+// Stinging Hivemaster
+{
+    "name": "Stinging Hivemaster",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Phyrexian Warlock",
+    "oracleText": "Toxic 1 (Players dealt combat damage by this creature also get a poison counter.)\nWhen this creature dies, create a 1/1 colorless Phyrexian Mite artifact creature token with toxic 1 and \"This token can't block.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stinging Hivemaster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Phyrexian Mite"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "artist": "Lie Setiawan",
+        "flavorText": "From within its form, a single word echoed forth: \"Devour.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdbbcbe1-5317-455e-8d71-a4e2ad0addfc.jpg?1783918039"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Surgical Skullbomb
