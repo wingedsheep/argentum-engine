@@ -580,26 +580,18 @@ class CastSpellEnumerator(
                     val drumSources = cachedSources.count { it.tapPermanentsSubCost != null }
                     (convokeCreatures.count { it.entityId !in manaSourceIds } - drumSources).coerceAtLeast(0)
                 } else 0
-                // TODO(improvise+{X}): improvise is deliberately NOT counted here, and that is a
-                // known *gap*, not correct behaviour. CR 601.2b announces X before CR 601.2f
-                // determines the total cost, and CR 702.126a bounds the taps at the generic in that
-                // total cost — so improvise does pay the X-derived generic. The Whir of Invention
-                // ruling spells it out: "if you cast [it] and choose X to be 3, the total cost is
-                // {3}{U}{U}{U}. If you tap two artifacts, you'll have to pay {1}{U}{U}{U}."
-                // Four printed cards reach this: Whir of Invention, Universal Surveillance,
-                // Saheeli's Directive, Battle at the Bridge. None of them is implemented yet, and
-                // no MSH card has improvise with {X}, so nothing in the repo is wrong today —
-                // the ceiling merely under-offers, which can never produce an unpayable action.
-                // The reason it is not fixed here is that the ceiling can't move on its own: the
-                // payment side (`AlternativePaymentHandler.applyTapForGeneric`) stops tapping once
-                // the *printed* generic runs out, so a raised ceiling would offer an X the handler
-                // then refuses to pay. Closing it means folding X into the cost the way
-                // `waterbend {X}` does and charging the leftover against the X mana the way
-                // `CastCostTotaller.paymentXValue` already does for convoke/delve/harmonize — plus lifting the client
-                // cap in `pipelinePhases.ts`. Do it with the first improvise-{X} card.
+                // Improvise (CR 702.126a) pays generic mana of the *total* cost too, X included —
+                // the Whir of Invention ruling: "if you ... choose X to be 3, the total cost is
+                // {3}{U}{U}{U}. If you tap two artifacts, you'll have to pay {1}{U}{U}{U}." The payer
+                // credits taps past the printed generic against the X mana, so each artifact raises
+                // the ceiling by one; an artifact that is itself a counted mana source is skipped.
+                val improviseAvailable = if (improviseArtifacts.isNotEmpty()) {
+                    val manaSourceIds = cachedSources.mapTo(HashSet()) { it.entityId }
+                    improviseArtifacts.count { it.entityId !in manaSourceIds }
+                } else 0
                 val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
                 val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
-                ((availableSources + delveAvailable + waterbendAvailable + convokeAvailable - fixedCost) / xSymbolCount)
+                ((availableSources + delveAvailable + waterbendAvailable + convokeAvailable + improviseAvailable - fixedCost) / xSymbolCount)
                     .coerceAtLeast(0)
             } else null
 

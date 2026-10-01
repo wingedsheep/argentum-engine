@@ -107,7 +107,7 @@ class CastFromZoneEnumerator(
         // Improvise on a cast from exile, the graveyard or the command zone — printed, or granted
         // (Archway of Innovation's "the next spell you cast this turn has improvise" applies from
         // any zone) — gets the same tap-to-help metadata as a hand cast.
-        return applyImproviseMetadata(context, result).map { offer ->
+        return applyImproviseMetadata(context, result, creditAffordability = true).map { offer ->
             val action = offer.action as? CastSpell ?: return@map offer
             val card = state.getEntity(action.cardId)?.get<CardComponent>() ?: return@map offer
             val cardDef = context.cardRegistry.getCard(card.cardDefinitionId)

@@ -1219,7 +1219,9 @@ data class GrantNextSpellAffinityEffect(
  * Archway of Innovation: "The next spell you cast this turn has improvise."
  *
  * @property keyword The cost-payment keyword the next matching spell gains.
- * @property spellFilter Which spell the rider waits for (defaults to any spell).
+ * @property spellFilter Which spell the rider waits for (defaults to any spell). Type, colour and
+ *   subtype predicates only — the granted-keyword resolver reads the printed definition and grants
+ *   nothing for any other predicate, while the cast still spends the rider.
  */
 @SerialName("GrantNextSpellKeyword")
 @Serializable

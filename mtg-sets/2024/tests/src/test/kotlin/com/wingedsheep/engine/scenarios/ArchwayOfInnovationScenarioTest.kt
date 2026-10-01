@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.scripting.AlternativePaymentChoice
 import io.kotest.assertions.withClue
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
@@ -77,6 +78,9 @@ class ArchwayOfInnovationScenarioTest : ScenarioTestBase() {
             game.resolveStack()
             game.getLifeTotal(1) shouldBe before + 4
             trinkets.all { game.state.getEntity(it)!!.has<TappedComponent>() } shouldBe true
+            withClue("the Lesson was the next spell, so it spent the rider") {
+                game.state.pendingNextSpellKeywords.shouldBeEmpty()
+            }
 
             withClue("the second Lesson is not 'the next spell' — no improvise, and no mana left for it") {
                 game.lessonAction()?.hasTapForGeneric shouldNotBe true

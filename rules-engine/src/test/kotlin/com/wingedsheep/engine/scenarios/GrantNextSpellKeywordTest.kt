@@ -231,6 +231,9 @@ class GrantNextSpellKeywordTest : ScenarioTestBase() {
             game.castPrimer()
             val action = castAction(game, 1, "Rider X Spell")!!
             action.hasTapForGeneric shouldBe true
+            withClue("the X ceiling counts the four artifacts on top of the Island's {U}") {
+                action.maxAffordableX shouldBe 4
+            }
             val artifacts = game.findAllPermanents("Rider Trinket")
             val before = game.getLifeTotal(1)
             withClue("X=4 is paid by four artifacts; the Island pays {U}") {
@@ -246,7 +249,7 @@ class GrantNextSpellKeywordTest : ScenarioTestBase() {
                 .withPlayers("P1", "P2")
                 .withCardInHand(1, "Improvise Primer")
                 .withCardInGraveyard(1, "Rider Flashbacker")
-                .withLandsOnBattlefield(1, "Island", 4)
+                .withLandsOnBattlefield(1, "Island", 1)
                 .withCardOnBattlefield(1, "Rider Trinket")
                 .withCardOnBattlefield(1, "Rider Trinket")
                 .withCardOnBattlefield(1, "Rider Trinket")
@@ -255,17 +258,17 @@ class GrantNextSpellKeywordTest : ScenarioTestBase() {
                 .build()
             game.castPrimer()
             val action = castAction(game, 1, "Rider Flashbacker", type = "CastWithFlashback")!!
-            withClue("the flashback cast surfaces the improvise taps") {
+            withClue("one Island can't pay {3}{U} alone — the artifacts make the flashback affordable") {
                 action.hasTapForGeneric shouldBe true
+                action.isAffordable shouldBe true
             }
             val artifacts = game.findAllPermanents("Rider Trinket")
             val before = game.getLifeTotal(1)
             game.improvise(action, artifacts).error shouldBe null
             game.resolveStack()
             game.getLifeTotal(1) shouldBe before + 3
-            withClue("the three artifacts paid {3}, so three of the four Islands are still untapped") {
+            withClue("the three artifacts paid {3} and the Island paid {U}") {
                 artifacts.all { game.state.getEntity(it)!!.has<TappedComponent>() } shouldBe true
-                game.findAllPermanents("Island").count { !game.state.getEntity(it)!!.has<TappedComponent>() } shouldBe 3
             }
             game.state.pendingNextSpellKeywords.shouldBeEmpty()
         }

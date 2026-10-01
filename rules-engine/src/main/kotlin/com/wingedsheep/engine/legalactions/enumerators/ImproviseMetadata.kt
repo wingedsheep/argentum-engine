@@ -30,10 +30,15 @@ import com.wingedsheep.sdk.model.EntityId
  * Also stamps [LegalAction.tapForGenericRequired] — whether the taps are *needed* or merely
  * offered. That costs one extra `canPay` per improvise-eligible cast, which is why it is
  * computed behind the two gates above (no untapped artifacts, or no improvise → no call).
+ *
+ * [creditAffordability] re-prices an unaffordable offer with the artifacts' help. The hand-cast
+ * enumerator already folds improvise into `affordable`, so only the cast-from-zone enumerator
+ * (whose per-zone affordability checks are mana-only) passes `true`.
  */
 internal fun applyImproviseMetadata(
     context: EnumerationContext,
-    actions: List<LegalAction>
+    actions: List<LegalAction>,
+    creditAffordability: Boolean = false
 ): List<LegalAction> {
     val state = context.state
     // Both lookups scan the battlefield, so memoize: the artifacts per caster, and the keyword
@@ -66,7 +71,16 @@ internal fun applyImproviseMetadata(
                 precomputedSources = context.availableManaSources
             )
         } ?: false
+        val affordableWithTaps = la.affordable || (creditAffordability && !payableWithManaAlone &&
+            la.manaCostString?.let { costString ->
+                context.costUtils.canAffordWithTapForGeneric(
+                    state, cs.playerId, ManaCost.parse(costString), artifacts,
+                    precomputedSources = context.availableManaSources,
+                    spellContext = spellPaymentContextFor(cardComponent)
+                )
+            } ?: false)
         la.copy(
+            affordable = affordableWithTaps,
             hasTapForGeneric = true,
             tapForGenericPermanents = artifacts,
             // No cap: CR 702.126a bounds the taps at the generic mana in the total cost, which
