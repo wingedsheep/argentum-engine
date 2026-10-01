@@ -80,7 +80,7 @@ class UnattachedAurasCheck(
                 val illegal = !remainsAttachment || host == null || host == entityId || host !in state.getBattlefield() ||
                     !projected.hasKeyword(entityId, com.wingedsheep.engine.mechanics.BestowCasts.ENCHANT_CREATURE) ||
                     hostLeft?.lastKnownHostId == host || !projected.isCreature(host) ||
-                    projected.hasKeyword(host, com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_ENCHANTED) ||
+                    !com.wingedsheep.engine.handlers.predicates.EnchantRestriction.hostAllowsAura(state, projected, predicateEvaluator, entityId, host) ||
                     projected.isCreature(entityId) || projected.isBattle(entityId) ||
                     hostProtectedFromAttachment(state, projected, entityId, cardComponent, host)
                 if (illegal) {
@@ -270,6 +270,8 @@ class UnattachedAurasCheck(
         auraCard: CardComponent,
         hostId: EntityId
     ): Boolean {
+        if (!com.wingedsheep.engine.handlers.predicates.EnchantRestriction.sourceRestrictionsAllowAura(
+                state, projected, predicateEvaluator, auraId, hostId)) return true
         val requirement = cardRegistry.getCard(auraCard.cardDefinitionId)?.script?.auraTarget ?: return false
         // "you" in "Enchant creature you control" is the Aura's controller, read from the
         // projection so a control-changing effect on the Aura itself is honored.

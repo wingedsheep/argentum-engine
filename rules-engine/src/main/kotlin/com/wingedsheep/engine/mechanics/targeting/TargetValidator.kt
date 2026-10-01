@@ -411,17 +411,7 @@ class TargetValidator(
         return checkProtection(state, target, sourceColors, sourceSubtypes, sourceKnown = sourceId != null && state.getEntity(sourceId) != null)
     }
 
-    /**
-     * Reject an Aura targeting a permanent that can't be enchanted (CR 303.4). No-op for
-     * non-Aura sources and for non-permanent targets.
-     *
-     * Scope note: this only guards Aura *targeting* at cast/activation time, which covers the
-     * common case (casting an Aura, or an ability that targets with an Aura on the stack). It does
-     * NOT cover effects that move/attach an existing Aura without targeting (e.g. "attach target
-     * Aura to ~", reanimate-an-Aura-attached). A card needing full coverage of the non-targeted
-     * attachment cases (CR 303.4i for entering attached, CR 303.4j for re-attaching an on-battlefield
-     * Aura) must also check [AbilityFlag.CANT_BE_ENCHANTED] at the attachment step.
-     */
+    /** Host-side enchantment prohibitions restrict Aura spells, rather than abilities of Auras. */
     private fun checkCantBeEnchanted(
         state: GameState,
         target: ChosenTarget,
@@ -430,9 +420,10 @@ class TargetValidator(
         val sourceIsAura = sourceId
             ?.let { state.getEntity(it)?.get<CardComponent>()?.typeLine?.isAura }
             ?: false
-        if (!sourceIsAura) return null
+        if (!sourceIsAura || sourceId in state.getBattlefield()) return null
         val targetId = (target as? ChosenTarget.Permanent)?.entityId ?: return null
-        return if (state.projectedState.hasKeyword(targetId, AbilityFlag.CANT_BE_ENCHANTED)) {
+        return if (!com.wingedsheep.engine.handlers.predicates.EnchantRestriction.hostAllowsAura(
+                state, state.projectedState, predicateEvaluator, sourceId, targetId)) {
             "That permanent can't be enchanted"
         } else null
     }

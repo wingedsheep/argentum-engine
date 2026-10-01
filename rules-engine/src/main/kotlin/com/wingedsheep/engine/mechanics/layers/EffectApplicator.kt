@@ -149,6 +149,9 @@ internal class EffectApplicator(
                         values.subtypes.addAll(com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES)
                     }
                 }
+                is Modification.PreventEnchantment -> {
+                    values.enchantmentRestrictions.add(ActiveEnchantmentRestriction(effect.sourceId, mod.auras, mod.exceptSource))
+                }
                 is Modification.RemoveKeyword -> {
                     values.keywords.remove(mod.keyword)
                 }

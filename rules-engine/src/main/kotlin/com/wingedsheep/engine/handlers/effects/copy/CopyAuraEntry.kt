@@ -28,7 +28,7 @@ object CopyAuraEntry {
         val projected = preview.projectedState
         return finder.findLegalTargets(preview, requirement, controller, id, ignoreTargetingRestrictions = true)
             .filter { host -> host != id &&
-                !projected.hasKeyword(host, com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_ENCHANTED) &&
+                EnchantRestriction.hostAllowsAura(preview, projected, evaluator, id, host) &&
                 !(if (host in state.turnOrder) PlayerProtectionRules.isProtectedFromSource(
                     preview, host, id, controller, evaluator)
                 else EnchantRestriction.hostProtectedFromAttachment(preview, projected, registry, id, card, host)) }

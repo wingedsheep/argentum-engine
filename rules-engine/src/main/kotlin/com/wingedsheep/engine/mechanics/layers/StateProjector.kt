@@ -437,6 +437,7 @@ class StateProjector {
                 baseToughness = v.baseToughness,
                 name = v.name,
                 keywords = v.keywords,
+                enchantmentRestrictions = v.enchantmentRestrictions.toList(),
                 colors = v.colors,
                 types = v.types,
                 subtypes = v.subtypes,
