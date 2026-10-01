@@ -43,7 +43,7 @@ val GollumPatientPlotter = card("Gollum, Patient Plotter") {
         cost = Costs.Composite(Costs.Mana("{B}"), Costs.Sacrifice(GameObjectFilter.Creature))
         activateFromZone = Zone.GRAVEYARD
         timing = TimingRule.SorcerySpeed
-        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
+        effect = Effects.ReturnToHandFromGraveyard(EffectTarget.Self)
     }
 
     metadata {
