@@ -5678,6 +5678,13 @@ object Effects {
     val AddMainPhase: Effect = com.wingedsheep.sdk.scripting.effects.AddMainPhaseEffect
 
     /**
+     * Insert a single additional beginning phase — untap, upkeep and draw — after this phase, still
+     * within the current turn (Shadow of the Second Sun). Composes with [AddCombatPhase] /
+     * [AddMainPhase]; see [com.wingedsheep.sdk.scripting.effects.AddBeginningPhaseEffect].
+     */
+    val AddBeginningPhase: Effect = com.wingedsheep.sdk.scripting.effects.AddBeginningPhaseEffect
+
+    /**
      * End the turn (CR 724.1): exile the whole stack (including this source) and any pending
      * triggers, remove creatures from combat, then skip straight to the cleanup step (discard to
      * maximum hand size, damage wears off, "until end of turn" effects end) and begin the next

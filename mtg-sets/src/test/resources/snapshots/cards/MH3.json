@@ -3673,6 +3673,53 @@
     ]
 }
 
+// Shadow of the Second Sun
+{
+    "name": "Shadow of the Second Sun",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant player\nAt the beginning of each of enchanted player's postcombat main phases, there is an additional beginning phase after this phase. (The end step happens after the added untap, upkeep, and draw steps.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shadow of the Second Sun:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "POSTCOMBAT_MAIN",
+                    "player": "EnchantedPlayer"
+                },
+                "binding": "ANY",
+                "effect": "AddBeginningPhase"
+            }
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "MYTHIC",
+        "artist": "Danny Schwartz",
+        "flavorText": "Live fully, then return to the beginning.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0da72736-574d-4d99-98ba-3a91c374cd10.jpg?1783911288",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "The additional beginning phase all happens during the current turn. Any effects that last \"until your next turn\" or similar won't expire just because they'll go through an additional beginning phase."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "After the additional beginning phase, the game proceeds to the ending phase (unless something has added even more phases)."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If multiple phases are added to the same point in your turn, the most recently created phase happens first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Six
 {
     "name": "Six",
