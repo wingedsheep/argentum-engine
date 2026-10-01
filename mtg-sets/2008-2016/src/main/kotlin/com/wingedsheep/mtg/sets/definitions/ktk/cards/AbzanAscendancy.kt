@@ -40,7 +40,7 @@ val AbzanAscendancy = card("Abzan Ascendancy") {
     }
 
     triggeredAbility {
-        trigger = Triggers.another(GameObjectFilter.Creature.youControl().copy(
+        trigger = Triggers.a(GameObjectFilter.Creature.youControl().copy(
                     cardPredicates = GameObjectFilter.Creature.cardPredicates + CardPredicate.IsNontoken
                 )).dies()
         effect = Effects.CreateToken(

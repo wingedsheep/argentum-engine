@@ -139,7 +139,7 @@
                     "from": "Battlefield",
                     "to": "Graveyard"
                 },
-                "binding": "OTHER",
+                "binding": "ANY",
                 "effect": {
                     "type": "CreateToken",
                     "power": 1,

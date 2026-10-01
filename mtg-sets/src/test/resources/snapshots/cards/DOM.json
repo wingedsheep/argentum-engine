@@ -10704,7 +10704,7 @@
                 "id": "Slimefoot, the Stowaway:1",
                 "trigger": {
                     "type": "ZoneChangeEvent",
-                    "filter": "creature Saproling ctrl:you",
+                    "filter": "permanent Saproling ctrl:you",
                     "from": "Battlefield",
                     "to": "Graveyard"
                 },

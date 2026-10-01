@@ -12185,7 +12185,7 @@
                 "id": "Laid to Rest:1",
                 "trigger": {
                     "type": "ZoneChangeEvent",
-                    "filter": "creature Human ctrl:you",
+                    "filter": "permanent Human ctrl:you",
                     "from": "Battlefield",
                     "to": "Graveyard"
                 },

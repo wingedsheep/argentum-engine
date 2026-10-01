@@ -33,7 +33,7 @@ val LaidToRest = card("Laid to Rest") {
 
     // Whenever a Human you control dies, draw a card.
     triggeredAbility {
-        trigger = Triggers.a(GameObjectFilter.Creature.youControl().withSubtype(Subtype.HUMAN)).dies()
+        trigger = Triggers.a(GameObjectFilter.Permanent.youControl().withSubtype(Subtype.HUMAN)).dies()
         effect = Effects.DrawCards(1)
         description = "Whenever a Human you control dies, draw a card."
     }
