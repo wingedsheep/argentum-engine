@@ -316,8 +316,8 @@ class TriggerProcessor(
             currentState = currentState.removeDelayedTriggers(setOf(delayedId))
         }
 
-        // Mark once-per-turn triggers as fired so they don't trigger again this turn
-        if (ability.oncePerTurn) {
+        // Count a per-turn-capped trigger's firing so it stops triggering once the cap is spent
+        if (ability.perTurnTriggerCap != null) {
             currentState = markTriggerFired(currentState, trigger.sourceId, ability.id)
         }
         // Mark "triggers only once" abilities as fired so they never trigger again while the
@@ -1583,7 +1583,7 @@ class TriggerProcessor(
         ability.copy(effect = loweredEffectBudget(ability.effect, ability.id))
 
     /**
-     * Mark a once-per-turn triggered ability as fired on its source entity.
+     * Count one firing of a per-turn-capped triggered ability on its source entity.
      */
     private fun markTriggerFired(state: GameState, sourceId: EntityId, abilityId: AbilityId): GameState {
         val entity = state.getEntity(sourceId) ?: return state

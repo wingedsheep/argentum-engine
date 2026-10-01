@@ -6133,7 +6133,7 @@ costs, and records the chosen face's name in turn history.
 
 ## 8. Triggered abilities (`Triggers.*`)
 
-`triggeredAbility { trigger; effect; target?; triggerZone?/triggerZones?; interveningIf?; triggerRestriction?; optional?; elseEffect?; checkOnNextState?; dealsDamageBeforeResolve?; controlledByTriggeringEntityController?; oncePerTurn?; effectOncePerTurn?; triggersOnce?; isBackup? }`.
+`triggeredAbility { trigger; effect; target?; triggerZone?/triggerZones?; interveningIf?; triggerRestriction?; optional?; elseEffect?; checkOnNextState?; dealsDamageBeforeResolve?; controlledByTriggeringEntityController?; oncePerTurn?; triggersPerTurn?; effectOncePerTurn?; triggersOnce?; isBackup? }`.
 
 ### Writing a trigger: subject, then verb
 
@@ -6299,6 +6299,17 @@ while that permanent stays on the battlefield — tracked by a `TriggeredAbility
 that is **not** cleared at end of turn (it lives on the entity, so re-entering the battlefield as a
 new object — a distinct game object — triggers afresh). Both caps share one detection-time filter and
 collapse simultaneous fires of the same `(source, ability)` to a single instance.
+
+**`triggersPerTurn = N` — "This ability triggers only N times each turn"** (N ≥ 2; Nadu, Winged
+Wisdom's granted "…only twice each turn"). The same trigger cap as `oncePerTurn` with a count:
+each trigger spends one, whether or not anything came of it, and simultaneous fires of the same
+`(source, ability)` collapse to the allowance left. One is
+`oncePerTurn`'s spelling, so `triggersPerTurn = 1` and setting both are rejected; the engine reads
+the two through `TriggeredAbility.perTurnTriggerCap`. **A capped ability granted by a lord static
+(`GrantTriggeredAbility` over a group) counts per granting permanent**: each granter's grant is a
+separate ability with its own allowance, so two granters give a creature two allowances, and a
+granter that leaves and returns grants a fresh one (Nadu rulings). The engine re-stamps such a
+granted ability's id per granter; uncapped grants keep the printed id.
 
 **Backup (CR 702.165) — `isBackup = true`.** "Backup N" has no bespoke effect: it is an enters trigger
 the card composes — `val c = target(TargetFilter.Creature)`, `AddCounters(PLUS_ONE_PLUS_ONE, N, c) then

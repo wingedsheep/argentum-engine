@@ -2863,6 +2863,91 @@
     ]
 }
 
+// Nadu, Winged Wisdom
+{
+    "name": "Nadu, Winged Wisdom",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Legendary Creature — Bird Wizard",
+    "oracleText": "Flying\nCreatures you control have \"Whenever this creature becomes the target of a spell or ability, reveal the top card of your library. If it's a land card, put it onto the battlefield. Otherwise, put it into your hand. This ability triggers only twice each turn.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Nadu, Winged Wisdom:1",
+                    "trigger": "BecomesTargetEvent",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "RevealCollection",
+                                "from": "gathered0",
+                                "fromZone": "Library"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered0",
+                                "filter": "land",
+                                "storeMatching": "matching2",
+                                "storeNonMatching": "rest2"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "matching2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "rest2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    },
+                    "triggersPerTurn": 2,
+                    "descriptionOverride": "Whenever this creature becomes the target of a spell or ability, reveal the top card of your library. If it's a land card, put it onto the battlefield. Otherwise, put it into your hand. This ability triggers only twice each turn."
+                },
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "RARE",
+        "artist": "Daren Bader",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94b67489-5eb0-4406-9bf3-27e50dc632eb.jpg?1790212106"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Nethergoyf
 {
     "name": "Nethergoyf",

@@ -382,7 +382,7 @@ class TriggerAbilityResolver(
                 // condition of its own).
                 if (entry.grant.filter.scope is Scope.SoulbondPair) {
                     if (SoulbondPairing.isInPairOf(state, entry.sourceEntityId, entityId)) {
-                        add(entry.grant.ability)
+                        add(perGranter(entry.grant.ability, entry.sourceEntityId))
                     }
                     continue
                 }
@@ -391,11 +391,24 @@ class TriggerAbilityResolver(
                 if (entry.grant.filter.excludeSelf && entityId == entry.sourceEntityId) continue
                 val context = PredicateContext(controllerId = entry.sourceControllerId, sourceId = entry.sourceEntityId)
                 if (predicateEvaluator.matches(state, projected, entityId, entry.grant.filter.baseFilter, context)) {
-                    add(entry.grant.ability)
+                    add(perGranter(entry.grant.ability, entry.sourceEntityId))
                 }
             }
         }
     }
+
+    /**
+     * Give a firing-capped granted ability ("This ability triggers only twice each turn") an id of
+     * its own per granting permanent. The cap trackers are keyed by `(source, AbilityId)`, and every
+     * copy of the granting card prints the same id — so without this, two Nadus' grants on one
+     * creature would share one allowance, and a Nadu that left and came back would inherit the old
+     * one's spent count. Per the Nadu, Winged Wisdom rulings each grant is a separate ability with
+     * its own count, and a new granting object grants a new ability (CR 400.7). Uncapped grants keep
+     * the printed id: nothing counts them.
+     */
+    private fun perGranter(ability: TriggeredAbility, granterId: EntityId): TriggeredAbility =
+        if (ability.perTurnTriggerCap == null && !ability.triggersOnce) ability
+        else ability.copy(id = AbilityId("granted_${granterId.value}_${ability.id.value}"))
 
     /**
      * Triggered abilities granted by Auras/Equipment attached to this entity.
