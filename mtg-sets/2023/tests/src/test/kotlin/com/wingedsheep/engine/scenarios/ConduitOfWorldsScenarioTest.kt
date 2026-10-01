@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.mtg.sets.definitions.one.cards.ConduitOfWorlds
 import com.wingedsheep.sdk.core.Phase
@@ -67,6 +68,9 @@ class ConduitOfWorldsScenarioTest : ScenarioTestBase() {
             withClue("Grizzly Bears was cast from the graveyard and resolved") {
                 game.findPermanent("Grizzly Bears").shouldNotBeNull()
                 game.isInGraveyard(1, "Grizzly Bears") shouldBe false
+            }
+            withClue("Its mana cost was paid") {
+                game.state.getBattlefield().count { game.state.getEntity(it)?.get<TappedComponent>() != null } shouldBe 3
             }
             withClue("You can't cast additional spells this turn") {
                 game.castSpellTargetingPlayer(1, "Lightning Bolt", 2).error.shouldNotBeNull()

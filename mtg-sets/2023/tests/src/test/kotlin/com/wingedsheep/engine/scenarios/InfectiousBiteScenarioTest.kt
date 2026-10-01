@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
@@ -77,7 +78,7 @@ class InfectiousBiteScenarioTest : ScenarioTestBase() {
             game.resolveStack()
 
             game.findPermanent("Hill Giant") shouldBe giant
-            game.isInGraveyard(2, "Hill Giant") shouldBe false
+            game.state.getEntity(giant)?.get<DamageComponent>()?.amount shouldBe 2
             game.findPermanent("Grizzly Bears") shouldBe bears
             poison(game, game.player2Id) shouldBe 1
         }

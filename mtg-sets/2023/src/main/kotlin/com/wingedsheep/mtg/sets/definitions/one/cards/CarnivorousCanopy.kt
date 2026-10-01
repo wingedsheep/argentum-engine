@@ -16,8 +16,8 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Destroy target artifact, enchantment, or creature with flying. If that permanent's mana value
  * was 3 or less, proliferate.
  *
- * The mana-value check reads the target's last-known information after the destroy (same shape as
- * Seedship Impact / Fading Hope), so it still applies whether the permanent died or survived.
+ * The mana-value check reads the target card after the destroy (same shape as Seedship Impact /
+ * Fading Hope), so it still applies whether the permanent died or survived.
  */
 val CarnivorousCanopy = card("Carnivorous Canopy") {
     manaCost = "{2}{G}"

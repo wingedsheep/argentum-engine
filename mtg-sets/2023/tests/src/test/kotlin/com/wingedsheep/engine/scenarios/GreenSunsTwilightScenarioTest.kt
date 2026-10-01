@@ -45,11 +45,12 @@ class GreenSunsTwilightScenarioTest : ScenarioTestBase() {
                     .withPlayers("Player", "Opponent")
                     .withCardInHand(1, "Green Sun's Twilight")
                     .withLandsOnBattlefield(1, "Forest", 3),
-                "Grizzly Bears", "Mountain", "Hill Giant"
+                "Grizzly Bears", "Mountain", "Hill Giant", "Forest"
             )
                 .withActivePlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                 .build()
+            val giant = game.findCardsInLibrary(1, "Hill Giant").single()
 
             game.cast(2)
             game.pick("Grizzly Bears")
@@ -58,8 +59,8 @@ class GreenSunsTwilightScenarioTest : ScenarioTestBase() {
             game.hasPendingDecision() shouldBe false
             game.isInHand(1, "Grizzly Bears") shouldBe true
             game.isInHand(1, "Mountain") shouldBe true
-            withClue("the unchosen card stays in the library") {
-                game.findCardsInLibrary(1, "Hill Giant").size shouldBe 1
+            withClue("the unchosen card goes under the unrevealed Forest") {
+                game.state.getLibrary(game.player1Id).last() shouldBe giant
             }
             game.isOnBattlefield("Grizzly Bears") shouldBe false
         }

@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
@@ -38,6 +39,7 @@ class ContagiousVorracScenarioTest : ScenarioTestBase() {
             .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
         if (withLandOnTop) builder.withCardInLibrary(1, "Plains")
         repeat(if (withLandOnTop) 3 else 4) { builder.withCardInLibrary(1, "Hill Giant") }
+        builder.withCardInLibrary(1, "Grizzly Bears")
         val game = builder.build()
         seed(game, game.findPermanent("Grizzly Bears")!!, 1)
         return game
@@ -82,7 +84,11 @@ class ContagiousVorracScenarioTest : ScenarioTestBase() {
             }, listOf(bears))
 
             withClue("Plains went to hand") { game.isInHand(1, "Plains") shouldBe true }
-            withClue("The other three cards stay in the library") { game.librarySize(1) shouldBe 3 }
+            withClue("The other three cards go under the unseen fifth card") {
+                game.librarySize(1) shouldBe 4
+                game.state.getEntity(game.state.getLibrary(game.player1Id).first())
+                    ?.get<CardComponent>()?.name shouldBe "Grizzly Bears"
+            }
             withClue("No proliferate prompt") { prompts shouldBe 0 }
             counters(game, bears) shouldBe 1
             game.isOnBattlefield("Contagious Vorrac") shouldBe true
@@ -96,7 +102,7 @@ class ContagiousVorracScenarioTest : ScenarioTestBase() {
             val prompts = drive(game, { emptyList() }, listOf(bears))
 
             game.isInHand(1, "Plains") shouldBe false
-            game.librarySize(1) shouldBe 4
+            game.librarySize(1) shouldBe 5
             prompts shouldBe 1
             counters(game, bears) shouldBe 2
         }
@@ -108,7 +114,7 @@ class ContagiousVorracScenarioTest : ScenarioTestBase() {
             game.castSpell(1, "Contagious Vorrac").error shouldBe null
             val prompts = drive(game, { emptyList() }, listOf(bears))
 
-            game.librarySize(1) shouldBe 4
+            game.librarySize(1) shouldBe 5
             game.handSize(1) shouldBe 0
             prompts shouldBe 1
             counters(game, bears) shouldBe 2
