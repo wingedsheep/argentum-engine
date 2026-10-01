@@ -1064,7 +1064,7 @@ object CardLinter {
             "staticAbilities", "replacementEffects", "sagaChapters", "classLevels",
         )
         val orderedSpellFields = listOf("castTimeCaptures", "additionalCosts", "selfAlternativeCost")
-        val deferredSpellFields = listOf("spellEffect", "kickerSpellEffect", "cleaveSpellEffect")
+        val deferredSpellFields = listOf("spellEffect", "kickerSpellEffect", "cleaveSpellEffect", "overloadSpellEffect")
 
         // A declared cast-time creature-type choice writes the chosen type before resolution.
         if (script["castTimeCreatureTypeChoice"]?.takeIf { it !is JsonNull } != null) {

@@ -312,6 +312,12 @@ enum class AlternativeCostType {
      */
     CLEAVE,
     /**
+     * Overload ([com.wingedsheep.sdk.scripting.KeywordAbility.Overload], CR 702.96) — hand. Pays the
+     * overload mana instead of the mana cost; the spell has no targets (CR 702.96b) and resolves with
+     * its "each" variant ([com.wingedsheep.sdk.model.CardScript.overloadSpellEffect]).
+     */
+    OVERLOAD,
+    /**
      * Miracle ([com.wingedsheep.sdk.scripting.KeywordAbility.Miracle], printed or granted) — hand,
      * legal only while the card carries an open miracle window
      * ([com.wingedsheep.engine.state.components.identity.MiracleWindowComponent]), opened when the

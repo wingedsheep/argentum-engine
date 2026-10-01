@@ -470,11 +470,25 @@ enum class Keyword(val displayName: String) {
      * explicitly ([com.wingedsheep.sdk.model.CardScript.cleaveSpellEffect] /
      * [com.wingedsheep.sdk.model.CardScript.cleaveTargetRequirements]) — a structural swap done at
      * cast time, not a cosmetic text edit, so e.g. a delayed triggered ability inside brackets is
-     * never created at all (Alchemist's Gambit ruling). Cleave never changes mana value (CR 202.3b —
+     * never created at all (Alchemist's Gambit ruling). Cleave never changes mana value (CR 118.9c —
      * mana value is always computed from the printed mana cost). Wired by the `cleave(cost) { }` DSL
      * helper on [com.wingedsheep.sdk.dsl.CardBuilder].
      */
     CLEAVE("Cleave"),
+
+    /**
+     * Overload [cost] (CR 702.96, Return to Ravnica). Two static abilities that function while a
+     * spell with overload is on the stack (CR 702.96a): "You may choose to pay [cost] rather than pay
+     * this spell's mana cost" and "If you chose to pay this spell's overload cost, change its text by
+     * replacing all instances of the word 'target' with the word 'each.'" An overloaded spell has no
+     * targets (CR 702.96b).
+     *
+     * Modelled like [CLEAVE]: an alternative cost ([com.wingedsheep.sdk.scripting.KeywordAbility.Overload])
+     * whose paid branch swaps in the "each" variant the card author writes explicitly
+     * ([com.wingedsheep.sdk.model.CardScript.overloadSpellEffect]) and drops every target
+     * requirement. Never changes mana value (CR 118.9c).
+     */
+    OVERLOAD("Overload"),
 
     /**
      * Daybound (CR 702.145, Innistrad: Midnight Hunt / Crimson Vow). Found on the **front** faces of

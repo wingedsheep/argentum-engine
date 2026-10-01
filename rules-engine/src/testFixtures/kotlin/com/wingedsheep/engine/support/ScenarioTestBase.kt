@@ -840,6 +840,22 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Cast a spell for its Overload cost (CR 702.96). An overloaded spell has no targets
+         * (CR 702.96b), so none are passed.
+         */
+        fun castSpellWithOverload(playerNumber: Int, spellName: String): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val cardId = state.getHand(playerId).find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+            return execute(CastSpell(
+                playerId, cardId,
+                useAlternativeCost = true,
+                alternativeCostType = AlternativeCostType.OVERLOAD
+            ))
+        }
+
+        /**
          * Cast a spell for its Cleave cost (CR 702.148), targeting a spell on the stack (e.g. the
          * cleaved Wash Away, which counters any spell). Mirrors [castSpellTargetingStackSpell] but
          * pays the cleave alternative cost.

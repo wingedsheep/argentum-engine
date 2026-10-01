@@ -3679,6 +3679,107 @@
     ]
 }
 
+// Dragonwing Glider
+{
+    "name": "Dragonwing Glider",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)\nEquipped creature gets +2/+2 and has flying and haste.\nEquip {3}{R}{R}",
+    "keywords": [
+        "FOR_MIRRODIN"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dragonwing Glider:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Rebel"
+                            ]
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Dragonwing Glider:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE"
+            }
+        ]
+    },
+    "equipCost": "{3}{R}{R}",
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "RARE",
+        "artist": "Andreas Zafiratos",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/5456b036-231e-4a64-b060-0709f5254664.jpg?1783918031"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Drivnod, Carnage Dominus
 {
     "name": "Drivnod, Carnage Dominus",
@@ -5173,6 +5274,97 @@
     ]
 }
 
+// Furnace Skullbomb
+{
+    "name": "Furnace Skullbomb",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, Sacrifice this artifact: Draw a card.\n{1}{R}, Sacrifice this artifact: Put two oil counters on target artifact or creature you control. Draw a card. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Furnace Skullbomb:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Furnace Skullbomb:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "OIL",
+                            "count": 2,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature|artifact ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "artist": "Matt Forsyth",
+        "flavorText": "It burns with the passion of an unbound creator.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb530f9d-cf35-48a7-8711-f74b3d9a35a7.jpg?1783917992"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Furnace Strider
 {
     "name": "Furnace Strider",
@@ -5690,6 +5882,99 @@
     ]
 }
 
+// Goldwarden's Helm
+{
+    "name": "Goldwarden's Helm",
+    "manaCost": "{2}{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)\nEquipped creature gets +0/+1.\nEquip {1}{W} ({1}{W}: Attach to target creature you control. Equip only as a sorcery.)",
+    "keywords": [
+        "FOR_MIRRODIN"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goldwarden's Helm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Rebel"
+                            ]
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Goldwarden's Helm:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{1}{W}",
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Vincent Christiaens",
+        "flavorText": "\"My mother wore this into battle against the first Phyrexians. Now I wear it in her honor.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f4057210-ef07-4496-94c8-95c3b807c23c.jpg?1783918082"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Green Sun's Twilight
 {
     "name": "Green Sun's Twilight",
@@ -5972,6 +6257,218 @@
     ]
 }
 
+// Hexgold Halberd
+{
+    "name": "Hexgold Halberd",
+    "manaCost": "{1}{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)\nDuring your turn, equipped creature has first strike and trample.\nEquip {2}{R}",
+    "keywords": [
+        "FOR_MIRRODIN"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hexgold Halberd:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Rebel"
+                            ]
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Hexgold Halberd:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE"
+                },
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE"
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "equipCost": "{2}{R}",
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "Heonhwa",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f22108ec-28f0-44d3-ba6b-3075f5f6bc65.jpg?1783918029"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Hexgold Hoverwings
+{
+    "name": "Hexgold Hoverwings",
+    "manaCost": "{3}{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)\nEquipped creature has flying.\nCreatures you control that are equipped get +1/+0.\nEquip {2}{W}",
+    "keywords": [
+        "FOR_MIRRODIN"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hexgold Hoverwings:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Rebel"
+                            ]
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Hexgold Hoverwings:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEquipped"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}{W}",
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Kai Carpenter",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c498dbf9-c68c-400c-9349-c3c3fc8efcae.jpg?1783918081"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ichor Synthesizer
 {
     "name": "Ichor Synthesizer",
@@ -6143,6 +6640,76 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Ichorplate Golem
+{
+    "name": "Ichorplate Golem",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Phyrexian Golem",
+    "oracleText": "Whenever a creature you control enters, if it has one or more oil counters on it, put an oil counter on it.\nCreatures you control with oil counters on them get +1/+1.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ichorplate Golem:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "TriggeringEntity"
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "TriggeringEntity",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "OIL"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "OIL"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Wolfe Connelly",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e555abb1-ffd4-4143-9be8-ec8a758f5c2a.jpg?1783917991"
+    }
 }
 
 // Ichorspit Basilisk
@@ -8672,6 +9239,102 @@
     ]
 }
 
+// Mirran Bardiche
+{
+    "name": "Mirran Bardiche",
+    "manaCost": "{4}{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)\nEquipped creature gets +2/+1 and has vigilance.\nEquip {3}{W} ({3}{W}: Attach to target creature you control. Equip only as a sorcery.)",
+    "keywords": [
+        "FOR_MIRRODIN"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mirran Bardiche:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Rebel"
+                            ]
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Mirran Bardiche:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            }
+        ]
+    },
+    "equipCost": "{3}{W}",
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Julian Kok Joon Wen",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/3006ea5a-5391-41eb-b0c8-092741dca2eb.jpg?1783918079"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Mirran Safehouse
 {
     "name": "Mirran Safehouse",
@@ -8858,6 +9521,220 @@
     ]
 }
 
+// Monument to Perfection
+{
+    "name": "Monument to Perfection",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}, {T}: Search your library for a basic, Sphere, or Locus land card, reveal it, put it into your hand, then shuffle.\n{3}: This artifact becomes a 9/9 Phyrexian Construct artifact creature, loses all abilities, and gains indestructible and toxic 9. Activate only if there are nine or more lands with different names among the basic, Sphere, and Locus lands you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Monument to Perfection:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                {
+                                                    "type": "Or",
+                                                    "predicates": [
+                                                        "IsBasicLand",
+                                                        {
+                                                            "type": "And",
+                                                            "predicates": [
+                                                                "IsLand",
+                                                                {
+                                                                    "type": "HasSubtype",
+                                                                    "subtype": "Sphere"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsLand",
+                                                        {
+                                                            "type": "HasSubtype",
+                                                            "subtype": "Locus"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            },
+            {
+                "id": "Monument to Perfection:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveAllAbilities",
+                            "target": "Self",
+                            "duration": "Permanent"
+                        },
+                        {
+                            "type": "BecomeCreature",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 9
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 9
+                            },
+                            "keywords": [
+                                "INDESTRUCTIBLE"
+                            ],
+                            "creatureTypes": [
+                                "Phyrexian",
+                                "Construct"
+                            ],
+                            "duration": "Permanent"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TOXIC_9",
+                            "target": "Self",
+                            "duration": "Permanent"
+                        }
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                {
+                                                    "type": "Or",
+                                                    "predicates": [
+                                                        "IsBasicLand",
+                                                        {
+                                                            "type": "And",
+                                                            "predicates": [
+                                                                "IsLand",
+                                                                {
+                                                                    "type": "HasSubtype",
+                                                                    "subtype": "Sphere"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsLand",
+                                                        {
+                                                            "type": "HasSubtype",
+                                                            "subtype": "Locus"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "aggregation": "DISTINCT_NAMES"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 9
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab892e7b-6797-4ede-ab5d-d9d0fa488c80.jpg?1783917987",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "Monument to Perfection's last ability lasts indefinitely."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Because the last ability causes Monument to Perfection to lose all the abilities, activating it multiple times before the first activation resolves does not result in it having multiple instances of toxic 9."
+            }
+        ]
+    }
+}
+
 // Myr Convert
 {
     "name": "Myr Convert",
@@ -8906,6 +9783,64 @@
         "rarity": "UNCOMMON",
         "artist": "José Parodi",
         "imageUri": "https://cards.scryfall.io/normal/front/9/d/9df0adcf-7ad0-4d70-8dcd-28f69471495b.jpg?1783917989"
+    }
+}
+
+// Myr Custodian
+{
+    "name": "Myr Custodian",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Myr",
+    "oracleText": "When this creature enters, scry 2. Then each opponent may scry 1. (To scry X, a player looks at the top X cards of their library, then puts any number of them on the bottom and the rest on top in any order.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Myr Custodian:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 2
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "Scry",
+                                    "count": 1
+                                },
+                                "decisionMaker": {
+                                    "type": "PlayerRef",
+                                    "player": "You"
+                                },
+                                "descriptionOverride": "Scry 1?"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "artist": "Mark Behm",
+        "flavorText": "\"Myr will go where the work is. We always have. We always will.\"\n—Urtet, Remnant of Memnarch",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/56bfdd21-4d46-4ec2-ba25-f16b6993f1a8.jpg?1783917988"
     }
 }
 
@@ -9593,6 +10528,91 @@
     "startingLoyalty": 7,
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Norn's Wellspring
+{
+    "name": "Norn's Wellspring",
+    "manaCost": "{1}{W}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a creature you control dies, scry 1 and put an oil counter on this artifact.\n{1}, {T}, Remove two oil counters from this artifact: Draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Norn's Wellspring:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "OIL",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Norn's Wellspring:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{1}, {T}, Remove two oil counters from this artifact: Draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Jonas De Ro",
+        "flavorText": "\"Drown, so you may breathe again.\"\n—Atraxa",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/eeebc0ab-89fb-47d5-a20f-8f1fe5e3c149.jpg?1783918076"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -10504,6 +11524,65 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Prosthetic Injector
+{
+    "name": "Prosthetic Injector",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +0/+2 and has toxic 1. (Players dealt combat damage by equipped creature also get a poison counter.)\nEquip {1}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Prosthetic Injector:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TOXIC_1"
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "UNCOMMON",
+        "artist": "Zezhou Chen",
+        "flavorText": "Why carry a subject to a surgical lab when you can bring the surgical lab to them?",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75a1beec-bafe-4243-b91e-040a88fb0e95.jpg?1783917987"
+    }
 }
 
 // Quicksilver Fisher
@@ -12130,6 +13209,137 @@
     "colorIdentityOverride": []
 }
 
+// Staff of Compleation
+{
+    "name": "Staff of Compleation",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}, Pay 1 life: Destroy target permanent you own.\n{T}, Pay 2 life: Add one mana of any color.\n{T}, Pay 3 life: Proliferate.\n{T}, Pay 4 life: Draw a card.\n{5}: Untap this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Staff of Compleation:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent own:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Pay 1 life: Destroy target permanent you own."
+            },
+            {
+                "id": "Staff of Compleation:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Staff of Compleation:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "effect": "Proliferate",
+                "descriptionOverride": "{T}, Pay 3 life: Proliferate."
+            },
+            {
+                "id": "Staff of Compleation:4",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 4
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{T}, Pay 4 life: Draw a card."
+            },
+            {
+                "id": "Staff of Compleation:5",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self",
+                    "tap": false
+                },
+                "descriptionOverride": "{5}: Untap this artifact."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "MYTHIC",
+        "artist": "Igor Krstic",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2934af5-aa4f-4c88-adbd-dcd847ef43a2.jpg?1783917986"
+    },
+    "colorIdentityOverride": []
+}
+
 // Surgical Skullbomb
 {
     "name": "Surgical Skullbomb",
@@ -12242,6 +13452,213 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Sylvok Battle-Chair
+{
+    "name": "Sylvok Battle-Chair",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)\nEquipped creature gets +4/+4 and has trample.\nEquip {5}{G}{G}",
+    "keywords": [
+        "FOR_MIRRODIN"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sylvok Battle-Chair:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Rebel"
+                            ]
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sylvok Battle-Chair:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 4,
+                "toughnessBonus": 4
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            }
+        ]
+    },
+    "equipCost": "{5}{G}{G}",
+    "metadata": {
+        "collectorNumber": "184",
+        "rarity": "UNCOMMON",
+        "artist": "Alexander Mokhov",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71c1a1d0-5616-42f8-a59c-42c1ccd48d26.jpg?1783918011"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Tablet of Compleation
+{
+    "name": "Tablet of Compleation",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Put an oil counter on this artifact.\n{T}: Add {C}. Activate only if this artifact has two or more oil counters on it.\n{1}, {T}: Draw a card. Activate only if this artifact has five or more oil counters on it.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tablet of Compleation:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Put an oil counter on this artifact."
+            },
+            {
+                "id": "Tablet of Compleation:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "OIL"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    }
+                ],
+                "isManaAbility": true,
+                "descriptionOverride": "Add {C}."
+            },
+            {
+                "id": "Tablet of Compleation:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "OIL"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "245",
+        "rarity": "RARE",
+        "artist": "Martin de Diego Sádaba",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/9747e4b0-fcf9-4f1d-b990-2a3e461adfee.jpg?1783917984"
+    },
+    "colorIdentityOverride": []
 }
 
 // Tainted Observer
@@ -15190,6 +16607,70 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Zenith Chronicler
+{
+    "name": "Zenith Chronicler",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Phyrexian Construct",
+    "oracleText": "Whenever a player casts their first multicolored spell each turn, each other player draws a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zenith Chronicler:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 1,
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsMulticolored"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Not",
+                                "condition": {
+                                    "type": "TriggeringPlayerIs",
+                                    "player": "You"
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever a player casts their first multicolored spell each turn, each other player draws a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "246",
+        "rarity": "RARE",
+        "artist": "Johann Bodin",
+        "flavorText": "It watches through the never-ending day, motionless save for the unsettling, twitching dance it performs as each sun reaches its apex.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/1431fe83-7dc7-4c40-8d66-6525560e4323.jpg?1783917984"
+    }
 }
 
 // Zopandrel, Hunger Dominus

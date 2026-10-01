@@ -126,6 +126,7 @@ object CastProvenance {
         AlternativeCostType.WEB_SLINGING -> "web-slinging"
         AlternativeCostType.IMPENDING -> "impending"
         AlternativeCostType.CLEAVE -> "cleave"
+        AlternativeCostType.OVERLOAD -> "overload"
         AlternativeCostType.MIRACLE -> "miracle"
         // Not an alternative cost the opponent could look up as a keyword — CR 712.11b calls it
         // choosing which face you are casting, and the cost paid is that face's own mana cost.
