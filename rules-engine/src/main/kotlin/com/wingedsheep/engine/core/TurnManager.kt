@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.player.ExtraPhaseKind
 import com.wingedsheep.engine.state.components.player.InAdditionalCombatPhaseComponent
 import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalUpkeepStepComponent
+import com.wingedsheep.engine.state.components.player.InAdditionalBeginningPhaseComponent
 import com.wingedsheep.engine.state.components.player.AdditionalEndStepsComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalEndStepComponent
 import com.wingedsheep.engine.state.components.player.BendsThisTurnComponent
@@ -271,6 +272,7 @@ class TurnManager(
             val (step, phase) = when (next.kind) {
                 ExtraPhaseKind.COMBAT -> Step.BEGIN_COMBAT to Phase.COMBAT
                 ExtraPhaseKind.MAIN -> Step.POSTCOMBAT_MAIN to Phase.POSTCOMBAT_MAIN
+                ExtraPhaseKind.BEGINNING -> Step.UNTAP to Phase.BEGINNING
             }
 
             // CR 500.11 — an inserted phase whose kind the active player is skipping every
@@ -284,28 +286,106 @@ class TurnManager(
                 continue
             }
 
-            redirectedState = when (next.kind) {
-                // Copy the entry's attacker restriction onto the marker so the declare-attackers
-                // legality check (AdditionalCombatPhaseAttackerRule) can enforce it for the
-                // duration of this inserted phase. `null` yields an ordinary unrestricted combat.
-                ExtraPhaseKind.COMBAT -> redirectedState.updateEntity(activePlayer) {
-                    it.with(InAdditionalCombatPhaseComponent(next.attackerRestriction))
-                }
-                ExtraPhaseKind.MAIN -> redirectedState.updateEntity(activePlayer) {
-                    it.without<InAdditionalCombatPhaseComponent>()
+            val events = mutableListOf<GameEvent>()
+
+            // A combat phase that ends here is over, whatever phase follows — even another combat
+            // phase (CR 511.3): remove every creature from combat and end "until end of combat"
+            // effects, as entering the natural postcombat main phase does.
+            if (current.step == Step.END_COMBAT) {
+                val closed = closeCombatPhase(redirectedState)
+                if (closed.outcome !is Outcome.Done) return closed
+                redirectedState = closed.newState
+                events.addAll(closed.events)
+            }
+
+            redirectedState = redirectedState.updateEntity(activePlayer) { container ->
+                val left = container.without<InAdditionalCombatPhaseComponent>()
+                    .without<InAdditionalBeginningPhaseComponent>()
+                when (next.kind) {
+                    // Copy the entry's attacker restriction onto the marker so the declare-attackers
+                    // legality check (AdditionalCombatPhaseAttackerRule) can enforce it for the
+                    // duration of this inserted phase. `null` yields an ordinary unrestricted combat.
+                    ExtraPhaseKind.COMBAT -> left.with(InAdditionalCombatPhaseComponent(next.attackerRestriction))
+                    ExtraPhaseKind.MAIN -> left
+                    ExtraPhaseKind.BEGINNING -> left.with(InAdditionalBeginningPhaseComponent)
                 }
             }
 
-            redirectedState = redirectedState
-                .copy(step = step, phase = phase, priorityPassedBy = emptySet())
-                .withPriority(activePlayer)
+            redirectedState = redirectedState.copy(step = step, phase = phase, priorityPassedBy = emptySet())
+            events += PhaseChangedEvent(phase)
+            events += StepChangedEvent(step)
 
-            val events = mutableListOf<GameEvent>(
-                PhaseChangedEvent(phase),
-                StepChangedEvent(step)
-            )
-            return ExecutionResult.success(redirectedState, events)
+            if (next.kind == ExtraPhaseKind.BEGINNING) {
+                return runInsertedUntapStep(redirectedState.copy(priorityPlayerId = null), activePlayer, events)
+            }
+            return ExecutionResult.success(redirectedState.withPriority(activePlayer), events)
         }
+    }
+
+    /**
+     * The untap step of an inserted beginning phase ([ExtraPhaseKind.BEGINNING]). It is a real untap
+     * step — permanents phase and untap, "doesn't untap during its controller's next untap step"
+     * effects are satisfied by it — but not a new turn, so "until your next turn" effects stay. No
+     * player gets priority; the game moves straight on to the upkeep step.
+     */
+    private fun runInsertedUntapStep(
+        state: GameState,
+        activePlayer: EntityId,
+        events: List<GameEvent>
+    ): ExecutionResult {
+        val skippers = untapStepSkippers(state, activePlayer)
+        val untapResult = beginningPhaseManager.performUntapStep(state)
+        if (untapResult.error != null) return untapResult
+        fun afterUntap(s: GameState) = consumeUntapStepSkips(
+            cleanupPhaseManager.expireAffectedControllersNextUntapEffects(s, activePlayer, skippers),
+            skippers
+        )
+        if (untapResult.outcome is Outcome.Paused) {
+            val consumed = untapResult.copy(state = afterUntap(untapResult.state))
+            return parkRestOfTurn(consumed, state, AdvanceStepContinuation, events + untapResult.events)
+        }
+        val afterUntapStep = advanceStep(afterUntap(untapResult.newState))
+        return afterUntapStep.copy(events = events + untapResult.events + afterUntapStep.events)
+    }
+
+    /**
+     * The combat phase has ended: remove every creature from combat and drop "this combat" delayed
+     * triggers (Goblin Flotilla). Deferred from the end of combat step so end-of-combat abilities
+     * resolve while their attacking targets are still legal.
+     */
+    private fun closeCombatPhase(state: GameState): ExecutionResult {
+        val endCombatResult = combatManager.endCombat(state)
+        if (endCombatResult.outcome !is Outcome.Done) return endCombatResult
+        val newState = endCombatResult.newState.copy(
+            delayedTriggers = endCombatResult.newState.delayedTriggers.filter {
+                it.expiry !is com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry.EndOfCombat
+            }
+        )
+        return ExecutionResult.success(newState, endCombatResult.events)
+    }
+
+    /**
+     * Leave an inserted phase whose queue is exhausted for the end step — the turn never falls back
+     * into a main phase it didn't add. Clears the inserted-phase markers.
+     */
+    private fun proceedToEndStepAfterInsertedPhase(state: GameState, activePlayer: EntityId): ExecutionResult {
+        val events = mutableListOf<GameEvent>()
+        var redirectedState = state
+        if (state.step == Step.END_COMBAT) {
+            val closed = closeCombatPhase(redirectedState)
+            if (closed.outcome !is Outcome.Done) return closed
+            redirectedState = closed.newState
+            events.addAll(closed.events)
+        }
+        redirectedState = redirectedState
+            .updateEntity(activePlayer) {
+                it.without<InAdditionalCombatPhaseComponent>().without<InAdditionalBeginningPhaseComponent>()
+            }
+            .copy(step = Step.END, phase = Phase.ENDING, priorityPassedBy = emptySet())
+        redirectedState = cleanupPhaseManager.performNextEndStepExpiry(redirectedState)
+        events += PhaseChangedEvent(Phase.ENDING)
+        events += StepChangedEvent(Step.END)
+        return ExecutionResult.success(redirectedState.withPriority(activePlayer), events)
     }
 
     /**
@@ -402,18 +482,19 @@ class TurnManager(
         ) {
             drainAdditionalPhase(state, activePlayer)?.let { return it }
 
-            // Queue exhausted after the last inserted combat phase: clear the marker and end the
-            // extra-phase progression at the end step (never a postcombat main).
-            var redirectedState = state
-                .updateEntity(activePlayer) { it.without<InAdditionalCombatPhaseComponent>() }
-                .copy(step = Step.END, phase = Phase.ENDING, priorityPassedBy = emptySet())
-            redirectedState = cleanupPhaseManager.performNextEndStepExpiry(redirectedState)
-            val events = mutableListOf<GameEvent>(
-                PhaseChangedEvent(Phase.ENDING),
-                StepChangedEvent(Step.END)
-            )
-            redirectedState = redirectedState.withPriority(activePlayer)
-            return ExecutionResult.success(redirectedState, events)
+            // Queue exhausted after the last inserted combat phase: end the extra-phase
+            // progression at the end step (never a postcombat main).
+            return proceedToEndStepAfterInsertedPhase(state, activePlayer)
+        }
+
+        // Leaving the draw step of an *inserted* beginning phase (Shadow of the Second Sun). Like an
+        // inserted combat phase it must not fall through into the step that normally follows — a
+        // precombat main phase — but drains the queue, or proceeds to the end step.
+        if (currentStep == Step.DRAW &&
+            state.getEntity(activePlayer)?.has<InAdditionalBeginningPhaseComponent>() == true
+        ) {
+            drainAdditionalPhase(state, activePlayer)?.let { return it }
+            return proceedToEndStepAfterInsertedPhase(state, activePlayer)
         }
 
         // Check for additional phases queued after the postcombat main phase (Aggravated Assault,
@@ -610,18 +691,10 @@ class TurnManager(
                 // The combat phase has now ended: remove every creature from combat (clear
                 // attacking/blocking and related components). Deferred from the end of combat step
                 // so end-of-combat abilities resolve while their attacking targets are still legal.
-                val endCombatResult = combatManager.endCombat(newState)
+                val endCombatResult = closeCombatPhase(newState)
                 if (endCombatResult.outcome !is Outcome.Done) return endCombatResult
                 newState = endCombatResult.newState
                 events.addAll(endCombatResult.events)
-
-                // "This combat" delayed triggers (Goblin Flotilla) end here too — the same moment
-                // the combat phase is over for everything else.
-                newState = newState.copy(
-                    delayedTriggers = newState.delayedTriggers.filter {
-                        it.expiry !is com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry.EndOfCombat
-                    }
-                )
 
                 newState = newState.withPriority(activePlayer)
             }

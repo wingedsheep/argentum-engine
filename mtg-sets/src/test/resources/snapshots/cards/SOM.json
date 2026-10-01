@@ -3680,6 +3680,43 @@
     ]
 }
 
+// Thrummingbird
+{
+    "name": "Thrummingbird",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Phyrexian Bird Horror",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thrummingbird:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "UNCOMMON",
+        "artist": "Efrem Palacios",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc2dd336-e457-49a1-88ae-c35f0c846e99.jpg?1783941736"
+    }
+}
+
 // Tower of Calamities
 {
     "name": "Tower of Calamities",

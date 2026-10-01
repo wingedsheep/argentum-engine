@@ -3085,12 +3085,23 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   additional combat phase followed by an additional main phase" (Aggravated Assault, All-Out
   Assault); the combat atom alone adds *no* trailing main phase. Implemented as an ordered
   `AdditionalPhasesComponent(phases: List<QueuedPhase>)` queue on the active player (each `QueuedPhase`
-  is a `COMBAT` / `MAIN` kind plus, for a combat phase, an optional attacker-restriction filter),
-  drained one at a time by `TurnManager.advanceStep` after the postcombat main phase and, for an
-  inserted combat phase, again at its end-of-combat step (marked by `InAdditionalCombatPhaseComponent`)
-  so a combat-only extra phase proceeds straight to the end step instead of granting an unwanted main
-  phase. Engine simplification: all queued phases are inserted after the postcombat main phase
-  regardless of when the effect resolved.
+  is a `COMBAT` / `MAIN` / `BEGINNING` kind plus, for a combat phase, an optional attacker-restriction
+  filter), drained one at a time by `TurnManager.advanceStep` after the postcombat main phase and, for
+  an inserted combat or beginning phase, again as it ends (marked by `InAdditionalCombatPhaseComponent`
+  / `InAdditionalBeginningPhaseComponent`) so an inserted phase proceeds straight to the next queued
+  phase or the end step instead of granting an unwanted main phase. Queue order follows CR 500.8 —
+  the most recently created phase happens first — while phases one effect creates together (the
+  combat-then-main composition) keep that effect's order. Engine simplification: all queued phases are
+  inserted after the postcombat main phase regardless of when the effect resolved.
+- `Effects.AddBeginningPhase` — the third atomic extra-phase effect: "there is an additional beginning
+  phase after this phase" (Shadow of the Second Sun). Queues one `BEGINNING` phase: a real untap step
+  (permanents phase and untap; "doesn't untap during its controller's next untap step" is satisfied by
+  it), upkeep step (upkeep triggers fire) and draw step, all within the same turn — "until your next
+  turn" effects don't end — followed by the next queued phase or the end step, never a precombat main
+  phase. Composes with `AddCombatPhase` / `AddMainPhase`. Pair with
+  `Triggers.player(Player.EnchantedPlayer).beginningOf(Step.POSTCOMBAT_MAIN)` for "at the beginning of
+  enchanted player's postcombat main phase" — a step trigger keyed to the player the source Aura
+  enchants.
 - `Effects.AddCombatPhaseRestrictedTo(attackerRestriction: GameObjectFilter)` — the same atomic extra
   combat phase, but **only creatures matching `attackerRestriction` may be declared as attackers
   during that inserted phase** (CR 508.1c; Bumi, Unleashed: "there is an additional combat phase. Only

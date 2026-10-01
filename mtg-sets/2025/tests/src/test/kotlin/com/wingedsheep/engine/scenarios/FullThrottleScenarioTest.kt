@@ -3,7 +3,6 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.player.AdditionalPhasesComponent
 import com.wingedsheep.engine.state.components.player.ExtraPhaseKind
-import com.wingedsheep.engine.state.components.player.QueuedPhase
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.dft.cards.FullThrottle
@@ -53,10 +52,8 @@ class FullThrottleScenarioTest : FunSpec({
         driver.castSpell(attacker, fullThrottle).outcome shouldBe Outcome.Done
         driver.resolveStack()
 
-        driver.state.getEntity(attacker)?.get<AdditionalPhasesComponent>() shouldBe
-            AdditionalPhasesComponent(
-                listOf(QueuedPhase(ExtraPhaseKind.COMBAT), QueuedPhase(ExtraPhaseKind.COMBAT))
-            )
+        driver.state.getEntity(attacker)?.get<AdditionalPhasesComponent>()?.phases.orEmpty().map { it.kind } shouldBe
+            listOf(ExtraPhaseKind.COMBAT, ExtraPhaseKind.COMBAT)
         driver.state.delayedTriggers.single().repeatAtEachMatchingStep shouldBe true
 
         // Natural combat: attack and remain tapped through the rest of this combat.
