@@ -1,3 +1,131 @@
+// Amped Raptor
+{
+    "name": "Amped Raptor",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "First strike\nWhen this creature enters, you get {E}{E} (two energy counters). Then if you cast it from your hand, exile cards from the top of your library until you exile a nonland card. You may cast that card by paying an amount of {E} equal to its mana value rather than paying its mana cost.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Amped Raptor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "ENERGY",
+                            "count": 2,
+                            "target": "Controller"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": "WasCastFromHand"
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherUntilMatch",
+                                        "filter": "nonland",
+                                        "storeMatch": "matched1",
+                                        "storeRevealed": "revealed1"
+                                    },
+                                    {
+                                        "type": "RevealCollection",
+                                        "from": "revealed1"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "revealed1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.WhenCondition",
+                                            "condition": {
+                                                "type": "Compare",
+                                                "left": {
+                                                    "type": "PlayerCounterCount",
+                                                    "counterType": "ENERGY"
+                                                },
+                                                "operator": "GTE",
+                                                "right": {
+                                                    "type": "StoredCardManaValue",
+                                                    "collectionName": "matched1"
+                                                }
+                                            }
+                                        },
+                                        "then": {
+                                            "type": "Gated",
+                                            "gate": "Gate.MayDecide",
+                                            "then": {
+                                                "type": "CastFromCollectionWithoutPayingCost",
+                                                "from": "matched1",
+                                                "alternativeCost": {
+                                                    "type": "AdditionalAtom",
+                                                    "atom": {
+                                                        "type": "AtomPayPlayerCounters",
+                                                        "counterType": "ENERGY",
+                                                        "amount": {
+                                                            "type": "EntityProperty",
+                                                            "entity": "Self",
+                                                            "numericProperty": "ManaValue"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Konstad",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1ac0e78b-0fdd-44f9-8b7b-c4f28a32782e.jpg?1783911274",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Any land cards exiled with Amped Raptor's triggered ability will remain in exile. If you choose not to cast the exiled nonland card (either because you don't have enough {E} or you just don't want to), that card will remain in exile as well."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "You choose whether or not to cast the exiled nonland card as Amped Raptor's triggered ability resolves. If you do, you do so as part of the resolution of that ability. You can't wait to cast it later in the turn. Timing restrictions based on the card's type are ignored."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If you cast a spell for another cost \"rather than paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the spell has any mandatory additional costs, those must be paid to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Arcbound Condor
 {
     "name": "Arcbound Condor",

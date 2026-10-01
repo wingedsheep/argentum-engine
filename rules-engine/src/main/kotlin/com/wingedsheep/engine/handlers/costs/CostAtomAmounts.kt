@@ -4,6 +4,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -38,15 +39,26 @@ object CostAtomAmounts {
      *   ward payment, an affordability probe run before targets are chosen. A target-derived amount
      *   then reads 0, which is why [dependsOnTargets] exists for the callers that must not treat
      *   that as the final price.
+     * @param sourceId the spell the cost is paid for (`CastSpell.cardId`). Prices the "equal to its
+     *   mana value" amount ([CostAtom.PayPlayerCounters.SOURCE_MANA_VALUE]); without one — every
+     *   activated-ability site — that amount can't be priced and is **unpayable** ([UNPRICEABLE])
+     *   rather than free.
      */
     fun evaluate(
         state: GameState,
         amount: DynamicAmount,
         xValue: Int? = null,
         targets: List<ChosenTarget> = emptyList(),
+        sourceId: EntityId? = null,
     ): Int = when (amount) {
         is DynamicAmount.Fixed -> amount.amount
         is DynamicAmount.XValue -> xValue ?: 0
+        // "An amount equal to its mana value" (Amped Raptor). A card's mana value is intrinsic
+        // (CR 202.3) — read off the base CardComponent like every other mana-value read; X counts
+        // as 0 off the stack, and a spell cast "rather than paying its mana cost" has X = 0 anyway
+        // (CR 107.3b).
+        CostAtom.PayPlayerCounters.SOURCE_MANA_VALUE ->
+            sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.manaValue } ?: UNPRICEABLE
         is DynamicAmount.ContextProperty -> when (amount.key) {
             ContextPropertyKey.TARGETS_TOTAL_MANA_VALUE -> totalManaValueOf(state, targets)
             // Every other context key reads a trigger payload or a resolution pipeline, neither of
@@ -61,6 +73,13 @@ object CostAtomAmounts {
      * enumerator uses to publish a *deferred* cost rather than a wrong one, and an affordability
      * check uses to withhold judgement instead of failing closed on a price it hasn't got yet.
      */
+    /**
+     * The price of a source-dependent amount evaluated with no source to read. Large enough that no
+     * player holds that many counters (so every affordability check fails closed), small enough that
+     * summing a handful of them can't overflow.
+     */
+    const val UNPRICEABLE: Int = 1_000_000
+
     fun dependsOnTargets(amount: DynamicAmount): Boolean =
         amount is DynamicAmount.ContextProperty &&
             amount.key == ContextPropertyKey.TARGETS_TOTAL_MANA_VALUE
