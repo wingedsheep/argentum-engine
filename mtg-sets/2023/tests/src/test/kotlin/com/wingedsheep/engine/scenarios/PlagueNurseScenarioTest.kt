@@ -76,7 +76,7 @@ class PlagueNurseScenarioTest : ScenarioTestBase() {
             val before = game.state.projectedState.getKeywords(rat)
             game.execute(ActivateAbility(game.player1Id, nurse, abilityId)).error shouldBe null
             game.resolveStack()
-            game.state.projectedState.getKeywords(rat) shouldNotBe before
+            game.state.projectedState.hasKeyword(rat, "TOXIC_2") shouldBe true
 
             game.passUntilPhase(Phase.ENDING, Step.CLEANUP)
             game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)

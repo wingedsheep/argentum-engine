@@ -79,6 +79,9 @@ class BladedAmbassadorScenarioTest : FunSpec({
 
         doomBlade(driver, ambassador)
         driver.findPermanent(driver.player1, "Bladed Ambassador") shouldBe ambassador
+
+        driver.passPriorityUntil(Step.UPKEEP)
+        driver.state.projectedState.hasKeyword(ambassador, Keyword.INDESTRUCTIBLE) shouldBe false
     }
 
     test("control: without activating, it is destroyed") {
