@@ -37,6 +37,13 @@ data class CrossZoneSubtypeGrant(
 /**
  * Projected values for an entity after all effects are applied.
  */
+data class ActiveEnchantmentRestriction(
+    val sourceId: EntityId,
+    val auras: com.wingedsheep.sdk.scripting.GameObjectFilter,
+    val exceptSource: Boolean,
+    val survivesSourceAbilityRemoval: Boolean = false
+)
+
 data class ProjectedValues(
     val power: Int? = null,
     val toughness: Int? = null,
@@ -51,6 +58,7 @@ data class ProjectedValues(
     val baseToughness: Int? = null,
     val name: String? = null,
     val keywords: Set<String> = emptySet(),
+    val enchantmentRestrictions: List<ActiveEnchantmentRestriction> = emptyList(),
     val colors: Set<String> = emptySet(),
     val types: Set<String> = emptySet(),
     val subtypes: Set<String> = emptySet(),
@@ -287,6 +295,7 @@ internal fun buildIntermediateProjectedState(
             basePower = v.basePower,
             baseToughness = v.baseToughness,
             keywords = v.keywords.toSet(),
+            enchantmentRestrictions = v.enchantmentRestrictions.toList(),
             colors = v.colors.toSet(),
             types = v.types.toSet(),
             subtypes = v.subtypes.toSet(),

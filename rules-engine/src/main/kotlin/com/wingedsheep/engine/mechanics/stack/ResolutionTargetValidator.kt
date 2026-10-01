@@ -211,6 +211,10 @@ internal class ResolutionTargetValidator(
     ): Boolean {
         // Permanent is valid if still on battlefield
         if (target.entityId !in state.getBattlefield()) return false
+        if (targetingSourceType == TargetingSourceType.SPELL && sourceId != null &&
+            state.getEntity(sourceId)?.get<CardComponent>()?.isAura == true &&
+            !com.wingedsheep.engine.handlers.predicates.EnchantRestriction.hostAllowsAura(
+                state, projected, predicateEvaluator, sourceId, target.entityId)) return false
 
         // ...and if it's still the same object. A permanent blinked in response
         // (Personify, Cloudshift) reuses its entity id here, but it returned as a new

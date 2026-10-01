@@ -18,7 +18,10 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithAdditionalCostComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
+import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
+import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.engine.state.permissions.MayPlayPermission
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.engine.state.permissions.removeMayPlayPermission
@@ -96,6 +99,16 @@ class CastFromCollectionWithoutPayingCostExecutor(
             return EffectResult.success(state)
         }
 
+        // "By paying [cost] rather than paying its mana cost": a cost the caster can't pay means the
+        // cast can't be made (CR 601.2h), so nothing is offered and the card stays where it is. The
+        // cast handler charges the cost authoritatively; this only avoids starting a doomed cast.
+        val alternativeCost = effect.alternativeCost
+        if (alternativeCost != null &&
+            !PlayerCounterPayment.canAffordSpell(state, controllerId, listOf(alternativeCost), cardId)
+        ) {
+            return EffectResult.success(state)
+        }
+
         // Check targeting *before* granting: a grant made ahead of a cast that never happens
         // would follow the card out of exile and stay live until end-of-turn cleanup.
         val prep = prepareTargetSelection(
@@ -121,6 +134,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
             castTransformed = castTransformed,
             insteadOfGraveyard = effect.insteadOfGraveyard,
             faceIndex = faceIndex,
+            alternativeCost = alternativeCost,
         )
 
         if (prep is TargetPrep.NeedsTargets) {
@@ -218,9 +232,18 @@ class CastFromCollectionWithoutPayingCostExecutor(
             castTransformed: Boolean = false,
             insteadOfGraveyard: AfterResolveDestination? = null,
             faceIndex: Int? = null,
+            alternativeCost: AdditionalCost? = null,
         ): Pair<EntityId, GameState> {
             var stamped = if (!withoutPayingCost) state else state.updateEntity(cardId) { container ->
                 container.with(PlayWithoutPayingCostComponent(controllerId = controllerId))
+            }
+            // "By paying [cost] rather than paying its mana cost": the mana cost is waived above and
+            // the substitute is owed through the same runtime-cost stamp Cruelclaw's discard uses, so
+            // CastSpellHandler validates and pays it with the spell's other additional costs.
+            if (alternativeCost != null) {
+                stamped = stamped.updateEntity(cardId) { container ->
+                    container.with(PlayWithAdditionalCostComponent(controllerId, listOf(alternativeCost)))
+                }
             }
             // The cast-this-way rider rides the card, not the permission, so it survives the move
             // onto the stack and is still there when StackResolver picks the spell's destination.
@@ -255,6 +278,8 @@ class CastFromCollectionWithoutPayingCostExecutor(
                     // a card still sitting in exile or a graveyard: the next time that card was
                     // cast by any means it would silently skip the graveyard.
                     .without<AfterResolveDestinationComponent>()
+                    // Nor its substitute cost, which would otherwise be owed by a later cast.
+                    .without<PlayWithAdditionalCostComponent>()
             }
         }
 

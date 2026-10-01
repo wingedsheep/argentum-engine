@@ -93,7 +93,7 @@ object SpellCosts {
      * visited even after one fails, so the offer is complete either way.
      */
     fun enumerateAll(env: SpellCostEnumeration, costs: List<AdditionalCost>, offer: SpellCostOffer): Boolean {
-        var payable = com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment.canAffordSpell(env.state, env.playerId, costs)
+        var payable = com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment.canAffordSpell(env.state, env.playerId, costs, env.castCardId)
         for (cost in costs.flatMap { if (it is AdditionalCost.Composite) it.steps else listOf(it) }) {
             if (!enumerate(env, cost, offer)) payable = false
         }

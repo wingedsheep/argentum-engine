@@ -22,21 +22,27 @@ object PlayerCounterPayment {
     }
 
     /** Reserve the combined fixed payments, including repeated atoms of the same type. */
-    fun canAffordAbility(state: GameState, payer: EntityId, cost: AbilityCost): Boolean =
-        canAfford(state, payer, abilityAtoms(cost))
+    fun canAffordAbility(state: GameState, payer: EntityId, cost: AbilityCost, sourceId: EntityId? = null): Boolean =
+        canAfford(state, payer, abilityAtoms(cost), sourceId)
 
-    fun canAffordSpell(state: GameState, payer: EntityId, costs: List<AdditionalCost>): Boolean =
-        canAfford(state, payer, spellAtoms(costs))
+    /** [spellId] is the card being cast — what prices an "equal to its mana value" payment. */
+    fun canAffordSpell(state: GameState, payer: EntityId, costs: List<AdditionalCost>, spellId: EntityId? = null): Boolean =
+        canAfford(state, payer, spellAtoms(costs), spellId)
 
     private fun spellAtoms(costs: List<AdditionalCost>): List<CostAtom.PayPlayerCounters> =
         SpellCosts.flattenComposites(costs).mapNotNull {
             (it as? AdditionalCost.Atom)?.atom as? CostAtom.PayPlayerCounters
         }
 
-    private fun canAfford(state: GameState, payer: EntityId, atoms: List<CostAtom.PayPlayerCounters>): Boolean =
+    private fun canAfford(
+        state: GameState,
+        payer: EntityId,
+        atoms: List<CostAtom.PayPlayerCounters>,
+        sourceId: EntityId?,
+    ): Boolean =
         atoms.groupBy { it.counterType }.all { (type, payments) ->
             available(state, payer, type) >= payments.sumOf {
-                CostAtomAmounts.evaluate(state, it.amount)
+                CostAtomAmounts.evaluate(state, it.amount, sourceId = sourceId)
             }
         }
 

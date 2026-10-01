@@ -4392,6 +4392,24 @@ object Effects {
         storeCastTo: String? = null,
     ): Effect = CastFromCollection(from.key, storeCastTo, insteadOfGraveyard, caster)
 
+    /**
+     * "Cast that card by paying [cost] rather than paying its mana cost" — during this effect's
+     * resolution, like [CastFromCollectionWithoutPayingCost], but owing [cost] in place of the mana
+     * cost (an alternative cost, CR 118.9). Amped Raptor: `CastFromCollectionByPaying(card,
+     * Costs.additional.PayPlayerCounters(CounterType.ENERGY, DynamicAmounts.sourceManaValue()))` —
+     * "an amount of {E} equal to its mana value", priced off the spell being cast. Nothing is cast
+     * when the caster can't afford [cost]; wrap in [May] for the "you may" wording.
+     */
+    fun CastFromCollectionByPaying(
+        from: CollectionSlot,
+        cost: com.wingedsheep.sdk.scripting.AdditionalCost,
+        storeCastTo: String? = null,
+    ): Effect = CastFromCollectionWithoutPayingCostEffect(
+        from = from.key,
+        storeCastTo = storeCastTo,
+        alternativeCost = cost,
+    )
+
     /** Play (land or spell) a card from [from] without paying its mana cost. */
     fun PlayFromCollectionWithoutPayingCost(from: CollectionSlot): Effect =
         PlayFromCollectionWithoutPayingCost(from.key)
