@@ -4744,7 +4744,8 @@ spell {
   graveyard", "another target nonland permanent", "one or two target creatures"). A prompt that
   reads wrong is fixed in that renderer, never by naming the target.
 - `kickerTarget(filter | requirement)` / `cleaveTarget(filter | requirement)` declare the alternate
-  branch's targets the same way.
+  branch's targets the same way. (`overloadEffect` has no target counterpart — an overloaded spell
+  never targets, CR 702.96b.)
 - `FacadeBoundaryTest` rejects the old spellings in card definitions: a string-named
   `target("…", …)`, the long form `target(TargetObject(…))` the filter overloads cover, and a
   zero-argument `TargetPlayer()` / `AnyTarget()` / … where a `Targets` preset exists.
@@ -10777,6 +10778,21 @@ composite abilities).
   alongside the normal cast so the player explicitly picks one (CR 118.9a). When the cleave cost
   carries {X} (Lantern Flare), the cleave action also carries `hasXCost`/`maxAffordableX` so the
   client prompts for X, just like an {X} in a printed cost.
+- `Overload(cost)` (`KeywordAbility.overload("{cost}")`) — Overload {cost} (CR 702.96): "You may choose
+  to pay [cost] rather than pay this spell's mana cost" **and** "If you chose to pay this spell's overload
+  cost, change its text by replacing all instances of the word 'target' with the word 'each.'" Modelled
+  exactly like cleave — an alternative cost (`AlternativeCostType.OVERLOAD`) whose text change is a
+  structural swap — except that the overloaded spell has **no targets at all** (CR 702.96b): the card
+  declares its printed targeted `effect` plus an `overloadEffect` (in `spell { }`, the `CardScript`
+  field `overloadSpellEffect`) written with "each" — a `ForEachInGroup` over the target filter's group,
+  never a `ContextTarget`. Casting for overload drops every target requirement, so the cast is offered
+  even when the printed cast has no legal target and reaches hexproof/protected objects;
+  `CastValidator` rejects an overloaded `CastSpell` that names targets. Overload never changes mana
+  value (CR 202.3b). The stack text shows the overloaded effect.
+  - **Fangs of Kalonia** ({1}{G}, Overload {4}{G}{G}) — base `AddCounters(+1/+1, 1, target) then
+    DoubleCounters(+1/+1, target)`; `overloadEffect` runs the same two steps as two
+    `ForEachInGroup(AllCreaturesYouControl, …)` passes, so every creature gets its counter before any
+    doubling.
 - `Afflict(n)` — defender loses N when this becomes blocked.
 - `Crew(n)` (`KeywordAbility.crew(n, onceEachTurn = false)` / `Numeric(Keyword.CREW, n, onceEachTurn)`) —
   Crew N (CR 702.122): tap any number of untapped creatures you control with total power N or greater to

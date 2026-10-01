@@ -1158,6 +1158,28 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Overload
+    // =========================================================================
+
+    /**
+     * Overload [cost] (CR 702.96). "You may choose to pay [cost] rather than pay this spell's mana
+     * cost" and "If you chose to pay this spell's overload cost, change its text by replacing all
+     * instances of the word 'target' with the word 'each.'" (CR 702.96a)
+     *
+     * An alternative cost whose text change is modelled *structurally*, like [Cleave]: the card
+     * author supplies the "each" variant as
+     * [com.wingedsheep.sdk.model.CardScript.overloadSpellEffect] (`overloadEffect` in `spell { }`).
+     * Casting for overload swaps that effect in and the spell has no targets at all (CR 702.96b), so
+     * it reaches objects that couldn't have been targeted (hexproof, protection).
+     */
+    @SerialName("Overload")
+    @Serializable
+    data class Overload(val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.OVERLOAD
+        override val description: String = "Overload $cost"
+    }
+
+    // =========================================================================
     // Devour
     // =========================================================================
 
@@ -1531,6 +1553,13 @@ sealed interface KeywordAbility {
          * `cleaveTarget(...)` (mirroring how kicker declares `kickerEffect` / `kickerTarget`).
          */
         fun cleave(cost: String): KeywordAbility = Cleave(ManaCost.parse(cost))
+
+        /**
+         * Create Overload with an overload mana cost (CR 702.96). Declared on the card via
+         * `keywordAbility(KeywordAbility.overload("{cost}"))`; the "each" variant is supplied inside
+         * the card's `spell { }` block via `overloadEffect`.
+         */
+        fun overload(cost: String): KeywordAbility = Overload(ManaCost.parse(cost))
 
         /**
          * Create Conspire keyword ability.

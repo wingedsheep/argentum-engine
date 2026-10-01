@@ -552,6 +552,9 @@ class CastSpellHandler(
             cardDef.script.kickerTargetRequirements
         } else if (isCleaveCast(action, cardDef) && cardDef.script.cleaveTargetRequirements.isNotEmpty()) {
             cardDef.script.cleaveTargetRequirements
+        } else if (isOverloadCast(action, cardDef)) {
+            // Overload (CR 702.96b): the overloaded spell doesn't target.
+            emptyList()
         } else {
             (faceScriptForTargets ?: cardDef.script).targetRequirements
         }
@@ -635,6 +638,7 @@ class CastSpellHandler(
             wasEvoked = marks.wasEvoked,
             wasImpending = marks.wasImpending,
             wasCleaved = marks.wasCleaved,
+            wasOverloaded = marks.wasOverloaded,
             wasSneaked = returned.wasSneaked,
             sneakAttackDefenderId = returned.sneakAttackDefenderId,
             wasWebSlung = returned.wasWebSlung,

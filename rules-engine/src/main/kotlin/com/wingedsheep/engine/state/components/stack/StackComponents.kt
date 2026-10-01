@@ -104,6 +104,7 @@ data class SpellOnStackComponent(
     val wasDashed: Boolean = false,  // For dash (CR 702.109) - permanent gains haste, returns to hand at next end step
     val wasEvoked: Boolean = false,  // For evoke - permanent is sacrificed on ETB
     val wasImpending: Boolean = false,  // For impending - permanent enters with time counters and isn't a creature until they're gone
+    val wasOverloaded: Boolean = false,  // For overload (CR 702.96) - spell has no targets and resolves with its "each" variant
     val wasCleaved: Boolean = false,  // For cleave (CR 702.148) - spell resolves with its brackets-removed effect/target variant
     /** For sneak (CR 702.190) - permanent spell enters tapped and attacking; the flag is readable via SneakCostWasPaid. */
     val wasSneaked: Boolean = false,

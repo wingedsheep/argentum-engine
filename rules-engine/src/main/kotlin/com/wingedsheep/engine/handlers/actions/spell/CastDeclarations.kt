@@ -32,6 +32,16 @@ internal fun isCleaveCast(action: CastSpell, cardDef: com.wingedsheep.sdk.model.
         cardDef.keywordAbilities.any { it is KeywordAbility.Cleave }
 
 /**
+ * True if this cast is paying the card's overload cost (CR 702.96). Like cleave, an alternative cost
+ * chosen by [AlternativeCostType.OVERLOAD]. When true the spell has no targets (CR 702.96b) and
+ * resolves with its "each" variant (`overloadSpellEffect`).
+ */
+internal fun isOverloadCast(action: CastSpell, cardDef: com.wingedsheep.sdk.model.CardDefinition): Boolean =
+    action.useAlternativeCost &&
+        action.altAllows(AlternativeCostType.OVERLOAD) &&
+        cardDef.keywordAbilities.any { it is KeywordAbility.Overload }
+
+/**
  * The card's optional-additional-cost keywords matching the slot this cast declared (CR 601.2b) —
  * empty when the cast declared none, or when the card has no keyword for the declared slot (which
  * `validate` turns into a rejection). A card can carry two entries for one slot (a mana kicker

@@ -52,6 +52,7 @@ internal class AlternativeCostMarks(
     val wasEvoked: Boolean,
     val wasImpending: Boolean,
     val wasCleaved: Boolean,
+    val wasOverloaded: Boolean,
     val wasMayhem: Boolean,
 )
 
@@ -109,6 +110,8 @@ internal class CastRecords(
             // Cleave (CR 702.148): the spell resolves with its brackets-removed effect/target
             // variant instead of its printed one.
             wasCleaved = hasKeyword(AlternativeCostType.CLEAVE) { it is KeywordAbility.Cleave },
+            // Overload (CR 702.96): the spell resolves untargeted, with its "each" variant.
+            wasOverloaded = hasKeyword(AlternativeCostType.OVERLOAD) { it is KeywordAbility.Overload },
             wasMayhem = wasMayhem,
         )
     }

@@ -189,6 +189,9 @@ internal class NonPermanentSpellResolver(
             // editing text — so e.g. a bracketed delayed-trigger clause is never created.
             spellComponent.wasCleaved && cardComponent != null ->
                 resolvedCardDef?.script?.cleaveSpellEffect ?: cardComponent.spellEffect
+            // Overload (CR 702.96a): "target" reads "each" — the author-written untargeted variant.
+            spellComponent.wasOverloaded && cardComponent != null ->
+                resolvedCardDef?.script?.overloadSpellEffect ?: cardComponent.spellEffect
             else -> cardComponent?.spellEffect
         }
         val rawSpellEffect = baseSpellEffect
