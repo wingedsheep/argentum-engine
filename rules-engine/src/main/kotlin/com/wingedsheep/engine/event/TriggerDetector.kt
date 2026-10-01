@@ -1005,6 +1005,41 @@ class TriggerDetector(
                     continue
                 }
 
+                // "Whenever a creature blocks this turn, its controller gets a poison counter"
+                // (Noxious Assault). The filter-scoped, per-blocker block delayed trigger fans out one
+                // trigger per matching declared blocker so `TriggeringEntity` names each blocker —
+                // the same split the battlefield-resident ANY-binding block trigger makes (CR 603.2c).
+                // The batch form ("one or more creatures block") falls through to the single trigger.
+                if (specEvent is com.wingedsheep.sdk.scripting.EventPattern.BlockEvent && !specEvent.batch &&
+                    event is com.wingedsheep.engine.core.BlockersDeclaredEvent
+                ) {
+                    for (blockerId in event.blockers.keys) {
+                        if (!delayedBlockerMatches(specEvent, blockerId, delayed.controllerId, delayed.sourceId, state)) continue
+                        if (delayed.fireOnce && delayed.id in firedOnceIds) continue
+                        if (delayed.fireOnce) firedOnceIds.add(delayed.id)
+                        triggers.add(
+                            PendingTrigger(
+                                ability = TriggeredAbility.create(
+                                    id = AbilityId("delayed_${delayed.id}"),
+                                    trigger = spec.event,
+                                    binding = spec.binding,
+                                    effect = delayed.effect,
+                                    targetRequirement = delayed.targetRequirement,
+                                    additionalTargetRequirements = delayed.additionalTargetRequirements
+                                ),
+                                sourceId = delayed.sourceId,
+                                objectReferences = referencesFor(blockerId),
+                                sourceName = delayed.sourceName,
+                                controllerId = delayed.controllerId,
+                                triggerContext = TriggerContext(triggeringEntityId = blockerId),
+                                consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null,
+                                carriedPipeline = delayed.carriedPipelineFor(state)
+                            )
+                        )
+                    }
+                    continue
+                }
+
                 // "…whenever this creature blocks or becomes blocked by a creature this combat, that
                 // creature gains first strike" (Goblin Flotilla). Like the battlefield-resident
                 // form, this fans out one trigger per combat partner so `TriggeringEntity` names
@@ -1077,6 +1112,21 @@ class TriggerDetector(
                 )
             }
         }
+    }
+
+    /** Does [blockerId] satisfy a filter-scoped block delayed trigger's blocker filter? */
+    private fun delayedBlockerMatches(
+        spec: com.wingedsheep.sdk.scripting.EventPattern.BlockEvent,
+        blockerId: EntityId,
+        controllerId: EntityId,
+        sourceId: EntityId,
+        state: GameState
+    ): Boolean {
+        val filter = spec.filter ?: return true
+        return predicateEvaluator.matches(
+            state, state.projectedState, blockerId, filter,
+            PredicateContext(controllerId = controllerId, sourceId = sourceId)
+        )
     }
 
     /**
@@ -1181,6 +1231,15 @@ class TriggerDetector(
                     com.wingedsheep.sdk.scripting.ControlChangeDirection.GAINED ->
                         event.newControllerId == controllerId
                 }
+            }
+            // "Whenever a creature blocks this turn" (Noxious Assault). Filter-scoped only — a
+            // watched creature has its own SELF `blocks()` trigger and no printed rider needs it —
+            // and the attacker-side axes are SELF-only (`Triggers.blocks` rejects them elsewhere).
+            // Which blockers it fires for is decided by the per-blocker fan-out above.
+            is com.wingedsheep.sdk.scripting.EventPattern.BlockEvent -> {
+                if (event !is com.wingedsheep.engine.core.BlockersDeclaredEvent) return false
+                if (watchedEntityId != null) return false
+                event.blockers.keys.any { delayedBlockerMatches(specEvent, it, controllerId, sourceId, state) }
             }
             // Goblin Flotilla's "this combat" rider. Entity-scoped: the watched creature must be
             // in combat with somebody; which partners it fired for is decided by the fan-out above.

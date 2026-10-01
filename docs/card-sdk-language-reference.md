@@ -7719,6 +7719,13 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
     type **and** controller predicates are honored — it fires only for *your* creatures, not every
     permanent that enters. (`YouAttackEvent` / `AttackEvent` / `CreaturesAttackYouEvent` /
     `CreaturesAttackYourOpponentEvent` are always filter-scoped this way.)
+    A filter-scoped **per-blocker** block trigger — `trigger = Triggers.a(filter).blocks()` — fans
+    out one trigger per matching declared blocker, with that blocker as the triggering entity, the
+    same split a battlefield-resident ANY-binding `blocks()` makes: "whenever a creature blocks this
+    turn, **its controller** gets a poison counter" is
+    `Effects.AddCounters(CounterType.POISON, 1, EffectTarget.ControllerOfTriggeringEntity)` (**Noxious
+    Assault**). The batch spelling `Triggers.oneOrMore(filter).block()` fires once per declaration
+    with no triggering entity. A `watchedTarget` is not supported on a block trigger.
   - `fireOnce = true` makes it a **one-shot**: it's consumed the first time it fires, then gone —
     "when you **next** [event] this turn". Combine with `trigger = Triggers.you.attacks()` for the
     common "when you next attack this turn, …" template (All-Out Assault: untap each creature you

@@ -5634,6 +5634,68 @@
     ]
 }
 
+// Noxious Assault
+{
+    "name": "Noxious Assault",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Creatures you control get +2/+2 until end of turn. Whenever a creature blocks this turn, its controller gets a poison counter.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "POISON",
+                        "count": 1,
+                        "target": "ControllerOfTriggeringEntity"
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "BlockEvent",
+                            "filter": "creature"
+                        },
+                        "binding": "ANY"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "UNCOMMON",
+        "artist": "Billy Christian",
+        "flavorText": "Even as they brought the beast down, they could feel its poison working into their blood, altering their bodies, and filling their minds with the thrill of the eternal hunt.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/9649de6c-a9f7-4f0a-8bf7-cacaea60ed54.jpg?1783918012"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Offer Immortality
 {
     "name": "Offer Immortality",
