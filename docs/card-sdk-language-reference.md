@@ -8421,7 +8421,9 @@ staticAbility {
   restrictions (tapped, defender, can't attack) still apply. Server legal attacker lists and declaration
   validation share the same permission; existing battlefield attack selection consumes those lists.
   No new keyword, decision, badge, or client protocol is needed. The summoning-sickness badge remains
-  accurate for restricted tap/untap abilities.
+  accurate for restricted tap/untap abilities. The existing runtime-grant store has no timestamps:
+  a holder that has lost all abilities suppresses its runtime-granted permission even if the grant
+  resolved later. Printed external permissions, including Instill Energy, do not share that limit.
 
 - `CanBlockAsThoughUntapped(filter = GroupFilter.source())` — creatures matching `filter` can block
   as though they were untapped, lifting only CR 509.1a's "untapped creatures" requirement. Masako

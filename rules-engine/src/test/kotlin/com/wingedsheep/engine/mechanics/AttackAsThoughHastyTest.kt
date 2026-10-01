@@ -43,6 +43,11 @@ class AttackAsThoughHastyTest : FunSpec({
         staticAbility { ability = CanAttackAsThoughHasty(
             GroupFilter(GameObjectFilter.Creature.youControl().powerAtMost(1))) }
     }
+    val untappedHumanBanner = card("Untapped Human Permission Banner") {
+        manaCost = "{1}"; typeLine = "Artifact"
+        staticAbility { ability = CanAttackAsThoughHasty(
+            GroupFilter(GameObjectFilter.Creature.withSubtype("Human").untapped())) }
+    }
     val conditionalBanner = card("Untapped Permission Banner") {
         manaCost = "{1}"; typeLine = "Artifact"
         staticAbility { ability = ConditionalStaticAbility(
@@ -58,7 +63,7 @@ class AttackAsThoughHastyTest : FunSpec({
         spell { val t = target(TargetFilter.Permanent); effect = Effects.RemoveAllAbilities(t) }
     }
     fun driver(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(runner, wall, hasteControl, banner, smallBanner, conditionalBanner, temporaryGrant, mute))
+        registerCards(TestCards.all + listOf(runner, wall, hasteControl, banner, smallBanner, untappedHumanBanner, conditionalBanner, temporaryGrant, mute))
         initMirrorMatch(Deck.of("Forest" to 40))
         passPriorityUntil(Step.PRECOMBAT_MAIN)
         while (activePlayer != player1) { bothPass(); passPriorityUntil(Step.PRECOMBAT_MAIN) }
@@ -171,6 +176,18 @@ class AttackAsThoughHastyTest : FunSpec({
         val restored = json.decodeFromString<GameState>(json.encodeToString(d.state))
         restored.projectedState.canAttackAsThoughHasty(id) shouldBe true
         restored.projectedState.hasKeyword(id, Keyword.HASTE) shouldBe false
+    }
+    test("composed subtype and state filters preserve every predicate") {
+        val d = driver()
+        val human = d.putCreatureOnBattlefield(d.player1, runner.name)
+        val otherType = d.putCreatureOnBattlefield(d.player1, wall.name)
+        d.putPermanentOnBattlefield(d.player1, untappedHumanBanner.name)
+        d.state.projectedState.canAttackAsThoughHasty(human) shouldBe true
+        d.state.projectedState.canAttackAsThoughHasty(otherType) shouldBe false
+        d.tapPermanent(human)
+        d.state.projectedState.canAttackAsThoughHasty(human) shouldBe false
+        d.untapPermanent(human)
+        d.state.projectedState.canAttackAsThoughHasty(human) shouldBe true
     }
     test("numeric filters see final projected power") {
         val d = driver(); val id = d.putCreatureOnBattlefield(d.player1, runner.name)

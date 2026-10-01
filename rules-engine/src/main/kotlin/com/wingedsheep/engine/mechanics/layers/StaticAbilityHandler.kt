@@ -636,7 +636,11 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.CanAttackAsThoughHasty -> {
                 ContinuousEffectData(
                     modification = Modification.CanAttackAsThoughHasty,
-                    affectsFilter = convertGroupFilter(ability.filter)
+                    affectsFilter = if (ability.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield) {
+                        AffectsFilter.Generic(ability.filter)
+                    } else {
+                        convertGroupFilter(ability.filter)
+                    }
                 )
             }
             is com.wingedsheep.sdk.scripting.PreventEnchantment -> {
