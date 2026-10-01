@@ -794,4 +794,11 @@ class StepsTest : StringSpec({
         roundTrips("You may have target opponent sacrifice a creature of their choice.")
         roundTrips("Target opponent sacrifices a creature of their choice.")
     }
+
+    "the Ring tempts you is a whole sentence with the controller as the tempted player" {
+        fragment("The Ring tempts you.") shouldBe
+            CardFragment(script = CardScript(spellEffect = Effects.TheRingTemptsYou()))
+        roundTrips("The Ring tempts you.")
+        roundTrips("When ~ enters, the Ring tempts you.")
+    }
 })
