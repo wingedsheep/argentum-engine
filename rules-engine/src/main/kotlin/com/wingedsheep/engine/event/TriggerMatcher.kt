@@ -2245,6 +2245,8 @@ class TriggerMatcher(
             val entity = state.getEntity(entityId) ?: return false
             entity.has<FaceDownComponent>()
         }
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasManaAbility ->
+            predicateEvaluator.matchesStatePredicate(state, entityId, predicate, projected = state.projectedState)
         // Transformed permanent (CR 701.27g) — the same live read as PredicateEvaluator: back face
         // up and on the battlefield (a projection entry; a back-face-up spell has none).
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsTransformed ->

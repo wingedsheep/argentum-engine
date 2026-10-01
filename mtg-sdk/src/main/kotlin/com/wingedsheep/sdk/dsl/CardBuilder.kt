@@ -962,6 +962,7 @@ class CardBuilder(private val name: String) {
             kickerSpellEffect = spellBuilder?.kickerEffect,
             cleaveTargetRequirements = spellBuilder?.cleaveTargetRequirements ?: emptyList(),
             cleaveSpellEffect = spellBuilder?.cleaveEffect,
+            overloadSpellEffect = spellBuilder?.overloadEffect,
             classLevels = classLevelsList.toList(),
             sagaChapters = sagaChaptersList.toList(),
             selfExileOnResolve = spellBuilder?.exilesOnResolve ?: false,
@@ -1192,6 +1193,15 @@ class SpellBuilder(private val declaredTargets: TargetList = TargetList()) : Tar
      * (mirrors how kicker uses [kickerEffect]).
      */
     var cleaveEffect: Effect? = null
+
+    /**
+     * Effect used when this spell is cast for its overload cost (CR 702.96) — the [effect] with
+     * "target" replaced by "each". Declare the keyword with
+     * `keywordAbility(KeywordAbility.overload("{cost}"))`. The overloaded spell has no targets
+     * (CR 702.96b), so this effect reads groups (`ForEachInGroup`, `GroupFilter`), never
+     * `ContextTarget`s.
+     */
+    var overloadEffect: Effect? = null
 
     /**
      * Alternate target used when this spell is cast for its cleave cost. When set, the cleaved

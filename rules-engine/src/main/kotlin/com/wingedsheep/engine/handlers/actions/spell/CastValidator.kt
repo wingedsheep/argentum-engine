@@ -759,6 +759,11 @@ internal class CastValidator(
             // Cleave (CR 702.148): removing bracketed text can change the legal target set (e.g.
             // Fierce Retribution's "target [attacking] creature" → "target creature").
             cardDef.script.cleaveTargetRequirements
+        } else if (isOverloadCast(action, cardDef)) {
+            // Overload (CR 702.96b): "target" became "each", so the spell takes no targets — and a
+            // client-supplied target list on an overloaded cast is malformed, not ignorable.
+            if (action.targets.isNotEmpty()) return "An overloaded spell has no targets"
+            emptyList()
         } else {
             effectiveScript.targetRequirements
         }
@@ -805,6 +810,8 @@ internal class CastValidator(
             cardDef.script.kickerSpellEffect
         } else if (cardDef != null && isCleaveCast(action, cardDef) && cardDef.script.cleaveSpellEffect != null) {
             cardDef.script.cleaveSpellEffect
+        } else if (cardDef != null && isOverloadCast(action, cardDef) && cardDef.script.overloadSpellEffect != null) {
+            cardDef.script.overloadSpellEffect
         } else {
             cardDef?.script?.spellEffect
         }

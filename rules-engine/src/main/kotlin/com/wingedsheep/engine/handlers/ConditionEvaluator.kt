@@ -230,13 +230,15 @@ class ConditionEvaluator(
 
     /**
      * Evaluate a condition at resolution time, when a full [EffectContext] is available.
+     * Uses [projected] when supplied, otherwise the state's cached projection.
      * Thin wrapper over the dual-mode [evaluate] below.
      */
     fun evaluate(
         state: GameState,
         condition: Condition,
-        context: EffectContext
-    ): Boolean = evaluate(state, condition, Resolution(context))
+        context: EffectContext,
+        projected: ProjectedState? = null,
+    ): Boolean = evaluate(state, condition, Resolution(context, projected))
 
     /**
      * The count-shaped reading of [condition] — how many things it counts right now against how
@@ -547,7 +549,7 @@ class ConditionEvaluator(
                 val bearer = sourceId?.let { state.getEntity(it)?.get<RingBearerComponent>() }
                 bearer != null && controllerId != null &&
                     bearer.ownerId == controllerId &&
-                    state.projectedState.getController(sourceId) == controllerId
+                    ctx.projectedStateFor(state).getController(sourceId) == controllerId
             }
 
             // CR 701.54a: intervening-if for "Whenever the Ring tempts you" payoffs that only
@@ -564,7 +566,7 @@ class ConditionEvaluator(
                     val bearerId = state.getBattlefield().firstOrNull { id ->
                         val bearer = state.getEntity(id)?.get<RingBearerComponent>() ?: return@firstOrNull false
                         bearer.ownerId == controllerId &&
-                            state.projectedState.getController(id) == controllerId
+                            ctx.projectedStateFor(state).getController(id) == controllerId
                     }
                     bearerId != null && bearerId != sourceId
                 }
@@ -964,8 +966,9 @@ class ConditionEvaluator(
             is Resolution -> ctx.effectContext
             is Projection -> syntheticEffectContext(state, ctx) ?: return false
         }
-        val left = amounts.evaluate(state, condition.left, effectCtx)
-        val right = amounts.evaluate(state, condition.right, effectCtx)
+        val projected = (ctx as? Resolution)?.projected
+        val left = amounts.evaluate(state, condition.left, effectCtx, projected)
+        val right = amounts.evaluate(state, condition.right, effectCtx, projected)
         return compareAmounts(left, condition.operator, right)
     }
 
@@ -984,7 +987,7 @@ class ConditionEvaluator(
             is Resolution -> ctx.effectContext
             is Projection -> syntheticEffectContext(state, ctx) ?: return false
         }
-        val value = amounts.evaluate(state, condition.amount, effectCtx)
+        val value = amounts.evaluate(state, condition.amount, effectCtx, (ctx as? Resolution)?.projected)
         return when (val property = condition.property) {
             NumberProperty.Prime -> isPrime(value)
             NumberProperty.Even -> value % 2 == 0

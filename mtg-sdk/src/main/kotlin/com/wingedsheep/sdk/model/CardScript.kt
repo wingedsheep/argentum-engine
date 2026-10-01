@@ -261,6 +261,13 @@ data class CardScript(
     val cleaveSpellEffect: Effect? = null,
 
     /**
+     * Spell effect used when this spell is cast for its overload cost (CR 702.96) — the printed
+     * effect with every "target" read as "each", written out by the card author. An overloaded spell
+     * has no target requirements at all (CR 702.96b), so this effect must not read chosen targets.
+     */
+    val overloadSpellEffect: Effect? = null,
+
+    /**
      * Class level abilities (for Class enchantments).
      * Level 1 abilities use the base CardScript fields (triggeredAbilities, staticAbilities, etc.).
      * Levels 2+ are stored here with their level-up costs.

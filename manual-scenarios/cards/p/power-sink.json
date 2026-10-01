@@ -1,0 +1,64 @@
+{
+  "player1Name": "Power Sink caster",
+  "player2Name": "Spell caster",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Power Sink"
+    ],
+    "battlefield": [
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      }
+    ],
+    "library": [
+      "Island",
+      "Island"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Grizzly Bears"
+    ],
+    "battlefield": [
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [
+    "PRECOMBAT_MAIN"
+  ],
+  "player2OpponentStopAtSteps": []
+}

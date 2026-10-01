@@ -428,6 +428,10 @@ internal class CastCostTotaller(
         AlternativeCostType.CLEAVE to {
             cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Cleave>().firstOrNull()?.let { priced(it.cost) }
         },
+        // Overload (CR 702.96 — an alternative cost; the "each" variant is swapped in at resolution).
+        AlternativeCostType.OVERLOAD to {
+            cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Overload>().firstOrNull()?.let { priced(it.cost) }
+        },
         // Miracle (CR 702.94 — printed or granted in hand, window-gated). The window component is
         // present only when the card was drawn as the first card this turn; without it, the miracle
         // alternative cost is unavailable.

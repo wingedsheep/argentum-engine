@@ -452,6 +452,13 @@ class CastSpellEnumerator(
                 context.manaSolver.canPay(state, playerId, cleaveMana, precomputedSources = cachedSources)
             } else false
 
+            // Overload (CR 702.96) — likewise its own legal action below (untargeted).
+            val overloadAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Overload>().firstOrNull()
+            val canAffordOverload = if (overloadAbility != null) {
+                val overloadMana = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, overloadAbility.cost, playerId)
+                context.manaSolver.canPay(state, playerId, overloadMana, precomputedSources = cachedSources)
+            } else false
+
             // Check blight path affordability (base cost without the extra mana, but needs a creature)
             val canAffordBlightPath = if (blightOrPayCost != null && offer.blightCreatures.isNotEmpty()) {
                 context.manaSolver.canPay(state, playerId, blightBaseCost, spellContext = spellContext, precomputedSources = cachedSources)
@@ -470,7 +477,7 @@ class CastSpellEnumerator(
             // spell affordable for {0} when its gates are open. Emitted by its own branch below;
             // don't continue out before reaching it.
             val canAffordFreeCast = context.freeCastPermissionFor(cardId)
-            if (!canAfford && !canAffordAlternative && !canAffordSelfAlternative && !canAffordEvoke && !canAffordImpending && !canAffordCleave && !canAffordBlightPath && !canAffordOrPayPath && !canAffordFreeCast) {
+            if (!canAfford && !canAffordAlternative && !canAffordSelfAlternative && !canAffordEvoke && !canAffordImpending && !canAffordCleave && !canAffordOverload && !canAffordBlightPath && !canAffordOrPayPath && !canAffordFreeCast) {
                 // The primary face can't be paid for by any path. Normally we skip it entirely.
                 // But if this is an Adventure/Omen/modal-DFC card whose *secondary* face is
                 // affordable, surface a grayed-out placeholder for the primary face so the
@@ -1389,6 +1396,9 @@ class CastSpellEnumerator(
 
         // --- Cleave (CR 702.148) ---
         enumerateCleave(context, hand, result)
+
+        // --- Overload (CR 702.96) ---
+        enumerateOverload(context, hand, result)
 
         // --- Conspire ---
         enumerateConspire(context, hand, result)
@@ -2326,6 +2336,42 @@ class CastSpellEnumerator(
         context: EnumerationContext,
         hand: List<EntityId>,
         result: MutableList<LegalAction>
+    ) = enumerateTextChangingAlternativeCost(
+        context, hand, result, AlternativeCostType.CLEAVE, "Cleave",
+        costOf = { def -> def.keywordAbilities.filterIsInstance<KeywordAbility.Cleave>().firstOrNull()?.cost },
+        targetRequirementsOf = { def ->
+            def.script.cleaveTargetRequirements.ifEmpty { def.script.targetRequirements }
+        },
+    )
+
+    /**
+     * Enumerates the overload cast (CR 702.96): the same alternative-cost pass as [enumerateCleave],
+     * but "target" becomes "each", so the overloaded spell has no target requirements at all
+     * (CR 702.96b) — it is castable even when nothing could legally be targeted.
+     */
+    private fun enumerateOverload(
+        context: EnumerationContext,
+        hand: List<EntityId>,
+        result: MutableList<LegalAction>
+    ) = enumerateTextChangingAlternativeCost(
+        context, hand, result, AlternativeCostType.OVERLOAD, "Overload",
+        costOf = { def -> def.keywordAbilities.filterIsInstance<KeywordAbility.Overload>().firstOrNull()?.cost },
+        targetRequirementsOf = { emptyList() },
+    )
+
+    /**
+     * One pass over [hand] for a keyword alternative cost whose payment changes the spell's text and
+     * therefore its target set (cleave, overload): emits a `CastWithAlternativeCost` action tagged
+     * [type], priced at [costOf] and targeted by [targetRequirementsOf] (plus any Aura target).
+     */
+    private fun enumerateTextChangingAlternativeCost(
+        context: EnumerationContext,
+        hand: List<EntityId>,
+        result: MutableList<LegalAction>,
+        type: AlternativeCostType,
+        label: String,
+        costOf: (com.wingedsheep.sdk.model.CardDefinition) -> com.wingedsheep.sdk.core.ManaCost?,
+        targetRequirementsOf: (com.wingedsheep.sdk.model.CardDefinition) -> List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
     ) {
         val state = context.state
         val playerId = context.playerId
@@ -2336,9 +2382,9 @@ class CastSpellEnumerator(
             if (context.cantCastSpell(cardId)) continue
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
-            val cleaveAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Cleave>().firstOrNull() ?: continue
+            val variantCost = costOf(cardDef) ?: continue
 
-            // Timing — cleave doesn't change when the spell can be cast; instants keep flash timing,
+            // Timing — the alternative cost doesn't change when the spell can be cast; instants keep flash timing,
             // sorceries stay sorcery-speed.
             val isInstant = cardComponent.typeLine.isInstant
             val grantedFlash = cardDef.keywords.contains(Keyword.FLASH) || context.castPermissionUtils.hasGrantedFlash(state, cardId)
@@ -2348,13 +2394,13 @@ class CastSpellEnumerator(
             val castRestrictions = cardDef.script.castRestrictions
             if (castRestrictions.isNotEmpty() && !context.legality.castRestrictionsMet(state, playerId, castRestrictions)) continue
 
-            // Cleave mana cost (CR 202.3b — mana value is still computed from the printed cost, not
-            // the cleave cost; only affordability uses this).
-            val cleaveCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, cleaveAbility.cost, playerId)
-            val canAffordCleave = context.manaSolver.canPay(state, playerId, cleaveCost, precomputedSources = context.availableManaSources)
-            val cleaveCostString = cleaveCost.toString()
-            val cleaveAutoTapPreview = if (context.skipAutoTapPreview) null else {
-                context.manaSolver.solve(state, playerId, cleaveCost, precomputedSources = context.availableManaSources)
+            // Alternative mana cost (CR 118.9c — mana value is still computed from the printed cost,
+            // not this one; only affordability uses it).
+            val altCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, variantCost, playerId)
+            val canAffordVariant = context.manaSolver.canPay(state, playerId, altCost, precomputedSources = context.availableManaSources)
+            val variantCostString = altCost.toString()
+            val variantAutoTapPreview = if (context.skipAutoTapPreview) null else {
+                context.manaSolver.solve(state, playerId, altCost, precomputedSources = context.availableManaSources)
                     ?.sources?.map { it.entityId }
             }
 
@@ -2364,25 +2410,20 @@ class CastSpellEnumerator(
             // printed X-cost path does (available mana minus the fixed portion, divided by the X
             // symbol count). `action.xValue` then flows through validation → payment → resolution
             // unchanged, so the resolving effect's `DynamicAmount.XValue` reads the chosen X.
-            val cleaveHasX = cleaveCost.hasX
-            val cleaveMaxAffordableX: Int? = if (cleaveHasX) {
-                val spellContext = spellPaymentContextFor(cardComponent).copy(hasXInCost = cleaveCost.hasX)
+            val variantHasX = altCost.hasX
+            val variantMaxAffordableX: Int? = if (variantHasX) {
+                val spellContext = spellPaymentContextFor(cardComponent).copy(hasXInCost = altCost.hasX)
                 val availableSources = context.manaSolver.getAvailableManaCount(
                     state, playerId, precomputedSources = context.availableManaSources, spellContext = spellContext
                 )
-                val fixedCost = cleaveCost.cmc  // X contributes 0 to CMC
-                val xSymbolCount = cleaveCost.xCount.coerceAtLeast(1)
+                val fixedCost = altCost.cmc  // X contributes 0 to CMC
+                val xSymbolCount = altCost.xCount.coerceAtLeast(1)
                 ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
             } else null
 
-            // Target requirements for the brackets-removed variant.
-            val cleaveBaseReqs = if (cardDef.script.cleaveTargetRequirements.isNotEmpty()) {
-                cardDef.script.cleaveTargetRequirements
-            } else {
-                cardDef.script.targetRequirements
-            }
+            // Target requirements for the text-changed variant.
             val targetReqs = buildList {
-                addAll(cleaveBaseReqs)
+                addAll(targetRequirementsOf(cardDef))
                 cardDef.script.castAuraTarget?.let { add(it) }
             }
 
@@ -2399,42 +2440,42 @@ class CastSpellEnumerator(
                     val autoSelectedTarget = ChosenTarget.Player(firstReqInfo.validTargets.first())
                     result.add(LegalAction(
                         actionType = "CastWithAlternativeCost",
-                        description = "Cleave ${cardComponent.name} ($cleaveCostString)",
-                        action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true, alternativeCostType = AlternativeCostType.CLEAVE),
-                        affordable = canAffordCleave,
-                        manaCostString = cleaveCostString,
-                        hasXCost = cleaveHasX,
-                        maxAffordableX = cleaveMaxAffordableX,
-                        autoTapPreview = cleaveAutoTapPreview
+                        description = "$label ${cardComponent.name} ($variantCostString)",
+                        action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true, alternativeCostType = type),
+                        affordable = canAffordVariant,
+                        manaCostString = variantCostString,
+                        hasXCost = variantHasX,
+                        maxAffordableX = variantMaxAffordableX,
+                        autoTapPreview = variantAutoTapPreview
                     ))
                 } else {
                     result.add(LegalAction(
                         actionType = "CastWithAlternativeCost",
-                        description = "Cleave ${cardComponent.name} ($cleaveCostString)",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.CLEAVE),
+                        description = "$label ${cardComponent.name} ($variantCostString)",
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = type),
                         validTargets = firstReqInfo.validTargets,
                         requiresTargets = true,
                         targetCount = firstReqInfo.maxTargets,
                         minTargets = firstReq.effectiveMinCount,
                         targetDescription = firstReq.description,
                         targetRequirements = targetReqInfos.surfacedRequirements(),
-                        affordable = canAffordCleave,
-                        manaCostString = cleaveCostString,
-                        hasXCost = cleaveHasX,
-                        maxAffordableX = cleaveMaxAffordableX,
-                        autoTapPreview = cleaveAutoTapPreview
+                        affordable = canAffordVariant,
+                        manaCostString = variantCostString,
+                        hasXCost = variantHasX,
+                        maxAffordableX = variantMaxAffordableX,
+                        autoTapPreview = variantAutoTapPreview
                     ))
                 }
             } else {
                 result.add(LegalAction(
                     actionType = "CastWithAlternativeCost",
-                    description = "Cleave ${cardComponent.name} ($cleaveCostString)",
-                    action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.CLEAVE),
-                    affordable = canAffordCleave,
-                    manaCostString = cleaveCostString,
-                    hasXCost = cleaveHasX,
-                    maxAffordableX = cleaveMaxAffordableX,
-                    autoTapPreview = cleaveAutoTapPreview
+                    description = "$label ${cardComponent.name} ($variantCostString)",
+                    action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = type),
+                    affordable = canAffordVariant,
+                    manaCostString = variantCostString,
+                    hasXCost = variantHasX,
+                    maxAffordableX = variantMaxAffordableX,
+                    autoTapPreview = variantAutoTapPreview
                 ))
             }
         }
