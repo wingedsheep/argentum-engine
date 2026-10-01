@@ -1,0 +1,16 @@
+{
+  "player1Name": "Attacker", "player2Name": "Defender",
+  "player1": {
+    "lifeTotal": 20, "hand": [],
+    "battlefield": [{"name": "Grizzly Bears"}, {"name": "Grizzly Bears"}, {"name": "Suntail Hawk"}],
+    "graveyard": [], "library": ["Forest", "Forest", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20, "hand": ["Blaze of Glory"],
+    "battlefield": [{"name": "Wall of Stone"}, {"name": "Plains"}],
+    "graveyard": [], "library": ["Plains", "Plains", "Plains"]
+  },
+  "phase": "COMBAT", "step": "BEGIN_COMBAT", "activePlayer": 1, "priorityPlayer": 2,
+  "player1StopAtSteps": ["DECLARE_ATTACKERS"], "player2StopAtSteps": ["DECLARE_BLOCKERS"],
+  "player1OpponentStopAtSteps": [], "player2OpponentStopAtSteps": ["BEGIN_COMBAT", "DECLARE_ATTACKERS"]
+}

@@ -375,6 +375,80 @@
     ]
 }
 
+// Blaze of Glory
+{
+    "name": "Blaze of Glory",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Cast this spell only during combat before blockers are declared.\nTarget creature defending player controls can block any number of creatures this turn. It blocks each attacking creature this turn if able.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantStaticAbility",
+                    "ability": "CanBlockAnyNumber",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantStaticAbility",
+                    "ability": "MustBlockEachAttacker",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": "ControlledByDefendingPlayer"
+                    }
+                },
+                "id": "t0"
+            }
+        ],
+        "castRestrictions": [
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": {
+                    "type": "IsInStep",
+                    "steps": [
+                        "BEGIN_COMBAT",
+                        "DECLARE_ATTACKERS"
+                    ],
+                    "yoursOnly": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "RARE",
+        "artist": "Richard Thomas",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98fba951-c5bb-497c-9292-ce1b2a1e1247.jpg?1783948716",
+        "rulings": [
+            {
+                "date": "2013-09-20",
+                "text": "If a turn has multiple combat phases, this spell can be cast during any of them as long as it's before the beginning of that phase's Declare Blockers Step."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Does not allow a tapped creature to block, or allow a creature to block any creatures it would not normally be able to block."
+            }
+        ]
+    }
+}
+
 // Blue Elemental Blast
 {
     "name": "Blue Elemental Blast",
