@@ -408,7 +408,7 @@ internal class CastCostTotaller(
         // and the creature is still on the battlefield here: it is sacrificed only as the total cost
         // is paid (CR 601.2h), which execute() does after mana payment.
         AlternativeCostType.EMERGE to {
-            EmergeCasts.printedEmerge(cardDef)?.let {
+            EmergeCasts.effectiveEmerge(state, cardId, cardDef, playerId, cardRegistry, predicateEvaluator)?.let {
                 EmergeCasts.reduceForSacrifice(
                     priced(it.cost), state, action.additionalCostPayment?.sacrificedPermanents?.firstOrNull()
                 )

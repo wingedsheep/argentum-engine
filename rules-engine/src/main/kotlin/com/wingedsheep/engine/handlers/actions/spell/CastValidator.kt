@@ -533,7 +533,7 @@ internal class CastValidator(
         // chosen creature also fixes the generic reduction, so the total cost is priced against
         // exactly this selection.
         val emerge = if (action.useAlternativeCost && action.altAllows(AlternativeCostType.EMERGE)) {
-            EmergeCasts.printedEmerge(cardDef)
+            EmergeCasts.effectiveEmerge(state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator)
         } else null
         if (emerge != null) {
             val sacrificed = action.additionalCostPayment?.sacrificedPermanents ?: emptyList()

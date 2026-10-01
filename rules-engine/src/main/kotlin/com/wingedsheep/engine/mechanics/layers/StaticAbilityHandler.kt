@@ -133,6 +133,7 @@ import com.wingedsheep.sdk.scripting.GrantKeywordToOwnSpells
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.GrantWarpToCardsInHand
+import com.wingedsheep.sdk.scripting.GrantEmergeToOwnSpells
 import com.wingedsheep.sdk.scripting.GrantMiracleToCardsInHand
 import com.wingedsheep.sdk.scripting.GraveyardCardsHaveFlashback
 import com.wingedsheep.sdk.scripting.LookAtFaceDownCreatures
@@ -1027,6 +1028,7 @@ class StaticAbilityHandler(
             is GrantFlashToSpellType,
             is GrantMayCastFromLinkedExile,
             is GrantWarpToCardsInHand,
+            is GrantEmergeToOwnSpells,
             is GrantMiracleToCardsInHand,
             is MayCastFromGraveyard,
             is GraveyardCardsHaveFlashback,

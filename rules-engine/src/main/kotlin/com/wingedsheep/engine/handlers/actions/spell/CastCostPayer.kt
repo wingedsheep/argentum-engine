@@ -312,7 +312,9 @@ internal class CastCostPayer(
     private fun payEmergeSacrifice(ledger: SpellCostLedger, cardDef: CardDefinition?) {
         val action = ledger.action
         if (!action.useAlternativeCost || !action.altAllows(AlternativeCostType.EMERGE) ||
-            cardDef == null || EmergeCasts.printedEmerge(cardDef) == null
+            EmergeCasts.effectiveEmerge(
+                ledger.state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator
+            ) == null
         ) return
         val emergeSacrifice = action.additionalCostPayment?.sacrificedPermanents?.firstOrNull() ?: return
         if (ledger.state.getEntity(emergeSacrifice) == null) return

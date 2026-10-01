@@ -9472,6 +9472,13 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `CastFromZoneEnumerator.enumerateIntrinsicZoneCast` via the same `AdditionalCostData` /
   `buildLinkedExileAdditionalCostInfo` plumbing used for linked-exile grants (including a
   `DiscardCard` rendering with `validDiscardTargets`).
+- `GrantEmergeToOwnSpells(spellFilter = Creature)` — spells the controller casts matching `spellFilter` have emerge
+  (CR 702.119) with an emerge cost **equal to the spell's own mana cost** (Herigast, Erupting Nullkite: "Each creature
+  spell you cast has emerge. The emerge cost is equal to its mana cost."). Read through `EmergeCasts.effectiveEmerge`,
+  so it behaves exactly like a printed `Emerge`: same `AlternativeCostType.EMERGE` action, same per-candidate generic
+  reduction, same post-mana sacrifice. A printed emerge on the spell wins over the grant. The grant is read as the cast
+  is proposed and validated, so the granter itself may be the creature sacrificed (Herigast's ruling). Only the
+  granter's controller benefits; offered from the hand, where the emerge enumerator looks.
 - `GrantWarpToCardsInHand(filter, cost)` — cards in the controller's hand matching `filter` gain
   warp (CR 702.185) with mana cost `cost`. Behaves identically to a printed warp keyword: surfaces a
   "Cast (Warp)" legal action, marks `wasWarped` on resolution, and the post-resolution permanent is
@@ -11095,8 +11102,8 @@ composite abilities).
   action that errors on submission. `CastSpellHandler` prices the cast against the creature actually chosen and
   sacrifices it **after** the mana payment: CR 601.2f–g activate mana abilities before CR 601.2h pays the total cost, so
   the creature may legally be tapped for mana toward its own emerge cost before it dies. The chosen creature rides
-  `CastSpell.additionalCostPayment.sacrificedPermanents`, exactly as Sneak's bounce rides `bouncedPermanents`. Printed
-  only — no card grants emerge. **Emerge from [quality]** (CR 702.119b, Crabomination's "emerge from artifact") is
+  `CastSpell.additionalCostPayment.sacrificedPermanents`, exactly as Sneak's bounce rides `bouncedPermanents`. Printed,
+  or granted by `GrantEmergeToOwnSpells` (below) — every read site goes through `EmergeCasts.effectiveEmerge`. **Emerge from [quality]** (CR 702.119b, Crabomination's "emerge from artifact") is
   `emerge("{5}{B}{B}", from = GameObjectFilter.Artifact)`: `from` replaces "a creature" as the sacrifice filter
   (`KeywordAbility.Emerge.sacrificeFilter`, matched against projected state by `EmergeCasts.sacrificeCandidates`) for
   the enumerator's candidate list *and* the cast validator, and renders as "Emerge from artifact {cost}". Null is plain

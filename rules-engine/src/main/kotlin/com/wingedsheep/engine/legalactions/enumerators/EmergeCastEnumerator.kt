@@ -49,7 +49,9 @@ class EmergeCastEnumerator : ActionEnumerator {
             if (context.cantCastSpell(cardId)) continue
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
-            val emerge = EmergeCasts.printedEmerge(cardDef) ?: continue
+            val emerge = EmergeCasts.effectiveEmerge(
+                state, cardId, cardDef, playerId, context.cardRegistry, context.predicateEvaluator
+            ) ?: continue
             // "Emerge from [quality]" (CR 702.119b) narrows the pool per card.
             val candidates = EmergeCasts.sacrificeCandidates(state, playerId, emerge, context.predicateEvaluator)
             if (candidates.isEmpty()) continue
