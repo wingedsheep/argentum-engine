@@ -46,6 +46,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import kotlin.math.max
 import kotlin.math.min
+import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 
 private val BASIC_LAND_SUBTYPES: Set<String> = setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
 
@@ -542,8 +543,15 @@ class DynamicAmountEvaluator(
                 // projected P/T is null, so the final resolveNumericProperty yields base
                 // characteristics anyway — this replaces the former per-reference
                 // `useProjected = false` branches (Ghitu Fire-Eater, Heart-Piercer Manticore, …).
+                val staleSource = amount.entity == EffectTarget.Self &&
+                    if (context.objectReferences.captured) {
+                        !context.objectReferences.isCurrent(context.objectReferences.source, state)
+                    } else {
+                        context.sourceBattlefieldTimestamp != null && context.sourceBattlefieldTimestamp !=
+                            state.getEntity(entityId)?.get<BattlefieldEntryTimestampComponent>()?.timestamp
+                    }
                 if (lkiPolicyFor(amount.entity) == LkiPolicy.LIVE_THEN_LKI &&
-                    entityId !in state.getBattlefield()
+                    (entityId !in state.getBattlefield() || staleSource)
                 ) {
                     // A reference-specific capture (the cost-paid snapshot) wins; otherwise the
                     // departed object's own battlefield-exit snapshot, which the entity carries until
@@ -552,8 +560,14 @@ class DynamicAmountEvaluator(
                     val snapshot = context.lkiSnapshotFor(amount.entity, entityId)
                         ?: state.getEntity(entityId)?.get<LastKnownPermanentComponent>()?.snapshot
                     when (val property = amount.numericProperty) {
-                        is EntityNumericProperty.Power -> snapshot?.power?.let { return it }
-                        is EntityNumericProperty.Toughness -> snapshot?.toughness?.let { return it }
+                        is EntityNumericProperty.Power -> {
+                            if (snapshot?.typeLine?.isCreature == false) return 0
+                            snapshot?.power?.let { return it }
+                        }
+                        is EntityNumericProperty.Toughness -> {
+                            if (snapshot?.typeLine?.isCreature == false) return 0
+                            snapshot?.toughness?.let { return it }
+                        }
                         is EntityNumericProperty.CounterCount -> snapshot?.let {
                             return property.counterType?.let { type -> it.counters[type] ?: 0 } ?: it.totalCounters
                         }
@@ -1647,6 +1661,7 @@ class DynamicAmountEvaluator(
         }
         if (useProjected) {
             val projection = resolveProjection(state, explicitProjected)
+            if (entityId in state.getBattlefield() && !projection.isCreature(entityId)) return 0
             val projectedValue = if (isPower) projection.getPower(entityId) else projection.getToughness(entityId)
             if (projectedValue != null) return projectedValue
         }

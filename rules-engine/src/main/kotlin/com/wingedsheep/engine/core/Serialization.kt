@@ -377,6 +377,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DamagePreventionContinuation::class)
         subclass(DeflectDamageSourceChoiceContinuation::class)
         subclass(PreventDamageFromChosenSourceContinuation::class)
+        subclass(RedirectDamageSourceContinuation::class)
         subclass(CombatOptionalRedirectContinuation::class)
         subclass(OptionalRedirectEffectContinuation::class)
         subclass(ChooseColorThenContinuation::class)

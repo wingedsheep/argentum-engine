@@ -86,6 +86,7 @@ internal class AbilityResolver(
                 triggeringPlayerId = abilityComponent.triggerContext?.triggeringPlayerId,
                 targetEntryStamps = targetsComponent.targetEntryStamps,
                 storedCollections = abilityComponent.carriedPipeline?.storedCollections ?: emptyMap(),
+                resolution = context,
             )
             if (validTargets.isEmpty()) {
                 // Fizzle - remove ability entity
@@ -149,7 +150,10 @@ internal class AbilityResolver(
                 sourceId = abilityComponent.sourceId,
                 xValue = abilityComponent.xValue,
                 targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY,
-                targetEntryStamps = targetsComponent.targetEntryStamps
+                targetEntryStamps = targetsComponent.targetEntryStamps,
+                sourceBattlefieldTimestamp = abilityComponent.sourceBattlefieldTimestamp,
+                objectReferences = abilityComponent.objectReferences,
+                lastKnownSourceSnapshot = abilityComponent.lastKnownSourceSnapshot,
             )
             if (validTargets.isEmpty()) {
                 return abilityFizzled(

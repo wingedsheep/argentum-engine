@@ -1230,6 +1230,7 @@ serialized shape; the facade for each is:
 | `PlayAdditionalLandsEffect` | `Effects.PlayAdditionalLands` |
 | `RedirectCombatDamageToControllerEffect` | `Effects.RedirectCombatDamageToController` |
 | `RedirectNextDamageEffect` | `Effects.RedirectNextDamage` |
+| `RedirectDamageFromChosenSourceEffect` | `Effects.RedirectDamageFromChosenSource` |
 | `ReflectCombatDamageEffect` | `Effects.ReflectCombatDamage` |
 | `ReflexiveTriggerEffect` | `Effects.ReflexiveTrigger` |
 | `RegenerateEffect` | `Effects.Regenerate` |
@@ -2971,13 +2972,25 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   - **Life.** `gainLifeFromColors` — gain that much life whenever damage from a source of those colours is prevented (Samite Ministration). `gainLifeFromPrevented` — "you gain life equal to the damage prevented this way", honoured by the source-side `Matching` + `FromTarget` shield (Chant of Vitu-Ghazi) and by the amount shield on one target (Candles' Glow = `PreventDamage(target = t, amount = Fixed(3), gainLifeFromPrevented = true)`), one gain per damage event — a combat damage step is one event, so everything a controller's shields prevent in it is one gain. The life goes to the shield's controller, not the protected recipient.
   - **`stillDealt`** (maps to `preventDamage = false`) — the damage is dealt in full but the shield is still spent and `onPrevented` still fires with the captured amount: Eye for an Eye's "instead that source deals that much damage to you and ~ deals that much to that source's controller".
   - **Prevent-and-react (`onPrevented`)** — instead of a bespoke reaction type, the chosen-source shield runs **any composed effect** when it fires, as a real triggered ability on the stack ("When damage is prevented this way, …", CR-faithful — opponents get priority and can respond). Mechanically: on resolution the shield is created **and** a linked event-based delayed triggered ability (`CreateDelayedTriggerEffect`-style) whose `effect` is `onPrevented`; when the shield prevents an instance it emits an internal `DamagePreventedEvent` that fires only that delayed trigger (matched by id). Inside the trigger the prevented amount is `DynamicAmounts.preventedDamage()` ("that much"/"that many") and the prevented source's controller is `EffectTarget.ControllerOfTriggeringEntity` ("that source's controller") — the same pair Tephraderm uses. So Deflecting Palm's `onPrevented` = `DealDamage(ControllerOfTriggeringEntity, preventedDamage())`; New Way Forward's = `Composite(DealDamage(ControllerOfTriggeringEntity, preventedDamage()), DrawCards(preventedDamage()))`. Because the payoff is a normal stack ability, it may be interactive (targets, replacements) like any other. The same reaction hangs off a targeted source with `direction = FromTarget`: Awe Strike = `PreventDamage(target = creature, direction = FromTarget, nextInstanceOnly = true, onPrevented = GainLife(preventedDamage()))`. That source shield honours `combatOnly`, `duration`, and **`toPlayersOnly`** — only damage the source would deal to a *player* is prevented; damage to a creature, planeswalker or battle (or, with `combatOnly`, noncombat damage) is dealt and leaves the shield up. Ria Ivor, Bane of Bladehold = `PreventDamage(target = creature, direction = FromTarget, combatOnly = true, toPlayersOnly = true, nextInstanceOnly = true, onPrevented = CreatePhyrexianMite(preventedDamage()), duration = EndOfCombat)` ("the next time target creature would deal combat damage to one or more players this combat"). `toPlayersOnly` on any other shape is rejected at resolution.
+- `Effects.RedirectDamageFromChosenSource(protectedTarget, redirectTo, duration = EndOfTurn)` — choose a
+  damage source during resolution, then redirect its next damage instance to the captured recipient.
+  Both recipients may be players, creatures, planeswalkers or battles. Source choice is not targeting:
+  shroud/protection do not restrict it, and the source need not be able to deal damage. The existing
+  battlefield/multi-zone selector handles current objects; distinct labelled choices handle departed
+  objects referred to by pending abilities, replacement shields or delayed triggers. The shield retains
+  rules-object identities, survives its creating source leaving, expires with its duration, and is used
+  only by positive damage from the chosen source to the protected object. A chosen permanent spell also
+  covers the permanent it normally becomes; later blink/recast visits are different sources. Departed
+  ability sources carry their original identity through noncombat damage. Redirection retains damage
+  source, combat status and unpreventability; an absent/invalid recipient leaves the shield unused.
+  Jade Monolith and Beacon of Destiny.
 - `RedirectNextDamageEffect(protectedTargets, redirectTo, amount, scope)` — redirection shield (CR 614.9):
   while active, damage that would be dealt to any of `protectedTargets` this turn is dealt to `redirectTo`
   instead. Installed as a `Duration.EndOfTurn` floating effect and checked during damage resolution.
   `amount` caps the redirected damage (`null` = redirect all). **`scope` decides when an unlimited shield is
   used up** (a capacity shield, `amount != null`, is always used up once its capacity hits 0 — CR 615.7):
-  - `RedirectScope.NEXT_INSTANCE` (default) — one source's instance, then gone. "The next time a source of
-    your choice would deal damage to you…" (Beacon of Destiny).
+  - `RedirectScope.NEXT_INSTANCE` (default) — one source's damage instance, then gone.
+    Source selection uses `RedirectDamageFromChosenSourceEffect` instead.
   - `RedirectScope.NEXT_BATCH` — every instance dealt in the next *simultaneous moment*, then gone. Because
     all combat damage is dealt simultaneously (CR 510.2), this redirects a whole combat damage step — every
     attacker hitting the protected player/creature — not just the first. "The next time damage would be dealt
@@ -5327,6 +5340,16 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `.powerGreaterThanEntity(ref)` — power strictly greater than a referenced entity's projected power. Used by
   Éowyn, Fearless Knight ("exile target creature an opponent controls with greater power") — combine
   with `EffectTarget.Self` to express "greater power than the ability's source".
+- `.compareNumericProperty(property, operator, amount)` — compares a candidate's `CardNumericProperty`
+  (`POWER`, `TOUGHNESS`, `MANA_VALUE`, or total `COUNTERS`) with any `DynamicAmount`, using any
+  `ComparisonOperator`. Reads the supplied projection on both sides; a noncreature permanent has
+  no P/T and cannot match a P/T comparison. A referenced noncreature permanent's undefined P/T
+  evaluates to zero, including its departure snapshot; a noncreature card outside the battlefield
+  retains printed P/T (for example, a Vehicle). For Stone Giant use `TOUGHNESS`, `LT`, and
+  `EntityProperty(Self, Power)`. Checks at target selection and again at resolution; a departed
+  activated-ability source uses its frozen departure snapshot, including after a blink. An
+  unbound dynamic reference follows normal amount semantics (zero). These context-dependent predicates
+  do not match historical cast records or standalone trigger/snapshot filters without a value context.
 - `.powerAtMostEntity(ref)` / `.powerLessThanEntity(ref)` — power ≤ (resp. **strictly** <) a referenced
   entity's projected power; inverses of `.powerGreaterThanEntity`. `powerAtMostEntity` backs Old Man of
   the Sea ("power less than or equal to this creature's power"); `powerLessThanEntity` backs "a creature
@@ -8285,13 +8308,23 @@ staticAbility {
     during each other player's untap step" — Bender's Waterskin). Guarded on the source still being tapped,
     so it never double-untaps / double-consumes a stun counter alongside the broad/filtered variants.
 - `UntapLimitPerStep(filter, max)` — global untap-count cap, "Players can't untap more than `max` `filter`
-  during their untap steps" (Damping Field — `filter = GameObjectFilter.Artifact`, `max = 1`). Read by
-  `BeginningPhaseManager` for **every** player's untap step regardless of who controls the source: when a
-  player has more matching permanents that would untap than the cap allows, the engine raises the same
-  keep-tapped decision used by `MAY_NOT_UNTAP` with `minSelections = (matching − max)`, so the player keeps
-  the excess tapped and chooses which one untaps. Multiple copies do not stack to a stricter cap unless one
-  names a smaller `max` (most restrictive per filter wins). Inert when the player has `≤ max` matching
-  permanents tapped.
+  permanents during their untap steps" (Damping Field: artifacts, one). Compose with a static
+  `condition = Conditions.SourceIsUntapped` for Winter Orb (lands, one); conditions and caps are
+  evaluated before the simultaneous untap, so a tapped Orb untapping alongside lands does not
+  restrict that action. Printed abilities respect face-down state, ability removal, phasing,
+  copy identity, unlocked Room faces and text changes. Composite/conditional statics and duration-gated
+  runtime grants also work; external grants are not text-changed. Runtime grants share the engine's
+  existing suppression by `hasLostAllAbilities` rather than ordering grants against removal timestamps.
+  Filters use the shared predicate evaluator and projected characteristics, with "you" relative to
+  the source's projected controller. Each player's cap is separate on a shared team turn.
+  Affected players choose permanents to **keep tapped** through the existing battlefield selection
+  decision. Keeping all tapped is legal. Duplicate caps do not add; overlapping caps reuse kept
+  permanents and each constraint is validated on submission. The minimum selection count is a safe
+  lower bound (the largest individual excess), so disjoint caps can require more than that displayed
+  minimum; an insufficient selection is rejected with the applicable cap's message. The strategic AI
+  satisfies every stored cap rather than selecting only this lower bound. Untaps outside
+  the active player's untap step, including Seedborn Muse's other-player untaps, are unrestricted.
+
 - `MustAttack(filter = source(), playersOnly = false)` — matching creatures attack each combat if able
   (Valley Dasher, Grand Melee). `playersOnly = true` is "attacks **a player** each combat if able": attacking
   a planeswalker or battle is rejected while some player is a legal defender for it. Grant it for a

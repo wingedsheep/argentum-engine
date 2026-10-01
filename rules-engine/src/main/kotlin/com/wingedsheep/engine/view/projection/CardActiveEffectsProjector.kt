@@ -384,7 +384,9 @@ internal class CardActiveEffectsProjector(
             ClientCardEffect(
                 effectId = "redirect_next_damage",
                 name = "Redirect $amountText",
-                description = "The next $amountText damage that would be dealt to this is redirected",
+                description = modification.chosenSource?.let {
+                    "The next damage from ${it.name} that would be dealt to this is redirected"
+                } ?: "The next $amountText damage that would be dealt to this is redirected",
                 icon = "redirect"
             )
         }

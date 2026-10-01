@@ -723,6 +723,11 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       // During a hijack of the opponent's turn, treat it as "my turn" so the active-player
       // controls (combat declaration, sorcery-speed plays) light up for the driving client.
       (youAreHijacking != null && gameState.activePlayerId === youAreHijacking))
+  // CR 800.4j: a player who leaves the game during their own turn leaves it running with no active
+  // player. It stays their turn — the seat after them only inherits its priority windows. A shared
+  // team turn (CR 805.4) is still carried by a surviving teammate, so it never runs orphaned.
+  const activeSeat = gameState.players.find((p) => p.playerId === gameState.activePlayerId)
+  const activeSeatLeft = isMulti && !sharedTurnTeamGame && activeSeat?.hasLost === true
   // Multiplayer: how far off your next turn is, in living seats — "You're next" / "You in 2". The
   // rail lists the table in turn order, but counting chips is the player's job today. Two-Headed
   // Giant takes one shared turn per team (CR 805.4), where a per-seat count would mislead, so none
@@ -1293,11 +1298,13 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
           hasPriority={hasPriority}
           priorityMode={priorityMode}
           // Name the active seat in a pod: "Opponent's Turn" says nothing at a four-seat table.
-          // While responding the strip keeps saying so — the name is on the rail's turn ring.
-          activePlayerName={spectatorMode || (isMulti && !isMyTurn && priorityMode !== 'responding')
-            ? gameState.players.find(p => p.playerId === gameState.activePlayerId)?.name
+          // While responding the strip keeps saying so — the name is on the rail's turn ring —
+          // except in a departed player's turn, which has no ring and no one to respond to.
+          activePlayerName={spectatorMode || (isMulti && !isMyTurn && (priorityMode !== 'responding' || activeSeatLeft))
+            ? activeSeat?.name
             : undefined
           }
+          activePlayerLeft={activeSeatLeft}
           turnQueueHint={turnQueueHint}
           activeSide={
             spectatorMode

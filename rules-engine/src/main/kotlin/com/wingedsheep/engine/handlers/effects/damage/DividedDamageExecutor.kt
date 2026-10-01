@@ -80,7 +80,7 @@ class DividedDamageExecutor(
 
             for ((targetId, amount) in distribution) {
                 if (amount <= 0 || targetId !in stillLegal) continue
-                val result = dealDamageToTarget(zones, currentState, targetId, amount, context.sourceId)
+                val result = dealDamageToTarget(zones, currentState, targetId, amount, context.sourceId, damageSourceRef = context.objectReferences.origin ?: context.sourceId?.let(state::objectRef))
                 if (result.outcome !is Outcome.Done) {
                     return result
                 }
@@ -102,7 +102,7 @@ class DividedDamageExecutor(
                 context
             )
             if (pause != null) return pause
-            return dealDamageToTarget(zones, readyState, targets.first(), total, context.sourceId)
+            return dealDamageToTarget(zones, readyState, targets.first(), total, context.sourceId, damageSourceRef = context.objectReferences.origin ?: context.sourceId?.let(state::objectRef))
         }
         return createDistributionDecision(state, effect, context, targets, total)
     }

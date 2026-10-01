@@ -49,6 +49,9 @@ class DealDamagePerEntityInZoneExecutor(private val zones: ZoneTransitionService
             context.sourceId
         }
 
+        val damageSourceRef = if (damageSourceTarget == null) context.objectReferences.origin
+            ?: sourceId?.let(state::objectRef) else sourceId?.let(state::objectRef)
+
         // For PlayerRef targets, resolve to potentially multiple players
         if (effect.target is EffectTarget.PlayerRef) {
             val playerIds = context.resolvePlayerTargets(effect.target, state)
@@ -66,7 +69,7 @@ class DealDamagePerEntityInZoneExecutor(private val zones: ZoneTransitionService
             var newState = readyState
             val events = mutableListOf<EngineGameEvent>()
             for (playerId in playerIds) {
-                val result = dealDamageToTarget(zones, newState, playerId, totalDamage, sourceId, cantBePrevented = false)
+                val result = dealDamageToTarget(zones, newState, playerId, totalDamage, sourceId, cantBePrevented = false, damageSourceRef = damageSourceRef)
                 newState = result.newState
                 events.addAll(result.events)
             }
@@ -85,6 +88,6 @@ class DealDamagePerEntityInZoneExecutor(private val zones: ZoneTransitionService
         )
         if (pause != null) return pause
 
-        return dealDamageToTarget(zones, readyState, targetId, totalDamage, sourceId, cantBePrevented = false)
+        return dealDamageToTarget(zones, readyState, targetId, totalDamage, sourceId, cantBePrevented = false, damageSourceRef = damageSourceRef)
     }
 }

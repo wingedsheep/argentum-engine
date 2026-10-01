@@ -147,6 +147,12 @@ describe('turnQueueHintFor', () => {
     expect(turnQueueHintFor(withTomb, entityId('a'), entityId('c'))).toBe("You're next")
   })
 
+  it('counts from an active player who left the game mid-turn (CR 800.4j)', () => {
+    const activeGone = [seat('a', true), seat('b'), seat('c'), seat('d')]
+    expect(turnQueueHintFor(activeGone, entityId('a'), entityId('b'))).toBe("You're next")
+    expect(turnQueueHintFor(activeGone, entityId('a'), entityId('d'))).toBe('You in 3')
+  })
+
   it('says nothing on your own turn, for an eliminated viewer, or for an unknown seat', () => {
     expect(turnQueueHintFor(table, entityId('a'), entityId('a'))).toBeUndefined()
     expect(turnQueueHintFor([seat('a'), seat('b', true), seat('c')], entityId('a'), entityId('b'))).toBeUndefined()

@@ -36,7 +36,7 @@ import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.PayManaCostEffect
-import com.wingedsheep.sdk.scripting.effects.RedirectNextDamageEffect
+import com.wingedsheep.sdk.scripting.effects.RedirectDamageFromChosenSourceEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -782,8 +782,8 @@ object Steps {
         // take is redirected to the source.
         run {
             val script = CardScript(
-                spellEffect = RedirectNextDamageEffect(
-                    protectedTargets = listOf(EffectTarget.Controller),
+                spellEffect = RedirectDamageFromChosenSourceEffect(
+                    protectedTarget = EffectTarget.Controller,
                     redirectTo = EffectTarget.Self,
                 )
             )

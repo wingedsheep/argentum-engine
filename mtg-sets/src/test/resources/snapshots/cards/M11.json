@@ -623,12 +623,12 @@
                         "zone": "Library",
                         "filter": "basicland"
                     },
-                    "storeAs": "searchable",
+                    "storeAs": "gathered0",
                     "search": true
                 },
                 {
                     "type": "SelectFromCollection",
-                    "from": "searchable",
+                    "from": "gathered0",
                     "selection": {
                         "type": "ChooseUpTo",
                         "count": {
@@ -636,19 +636,45 @@
                             "amount": 2
                         }
                     },
-                    "storeSelected": "found"
+                    "storeSelected": "selected1",
+                    "prompt": "Search your library for up to two basic land cards"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "selected1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "storeRemainder": "remainder2",
+                    "prompt": "Choose which basic land enters the battlefield tapped; the other goes to your hand.",
+                    "selectedLabel": "Onto the battlefield tapped",
+                    "remainderLabel": "Into your hand"
                 },
                 {
                     "type": "MoveCollection",
-                    "from": "found",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder2",
                     "destination": {
                         "type": "ToZone",
                         "zone": "Hand"
                     },
                     "revealed": true
                 },
-                "ShuffleLibrary",
-                "EmitLibrarySearchedEvent"
+                "ShuffleLibrary"
             ]
         }
     },

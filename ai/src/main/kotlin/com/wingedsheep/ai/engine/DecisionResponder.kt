@@ -208,6 +208,23 @@ class DecisionResponder(
             return CardsSelectedResponse(decision.id, options)
         }
 
+        val untapChoice = (state.peekContinuation() as? Suspension)?.takeIf {
+            it.question.id == decision.id
+        }?.answer as? UntapChoiceContinuation
+        if (untapChoice != null && untapChoice.untapLimits.isNotEmpty()) {
+            // Start with a legal keep set, then release valuable permanents while every cap holds.
+            // The displayed minimum is only a lower bound when restrictions overlap or are disjoint.
+            val keep = options.toMutableSet()
+            val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
+            for (id in ranked) {
+                keep.remove(id)
+                if (untapChoice.untapLimits.any { limit ->
+                        limit.matchingPermanents.count { it !in keep } > limit.max
+                    }) keep.add(id)
+            }
+            return CardsSelectedResponse(decision.id, options.filter { it in keep })
+        }
+
         // A `minTotalManaValue` floor (collect evidence N, CR 701.59a) is a *sum* gate, so none of
         // the count-based branches below can satisfy it — taking `min` cheap cards submits an
         // illegal selection the validator rejects, and taking zero silently declines an optional

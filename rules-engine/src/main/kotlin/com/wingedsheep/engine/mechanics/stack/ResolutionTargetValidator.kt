@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.*
+import com.wingedsheep.engine.handlers.ObjectReferenceEnvironment
 
 /**
  * The CR 608.2b target re-check a spell or ability makes as it resolves: every target is checked
@@ -64,13 +65,21 @@ internal class ResolutionTargetValidator(
          * "power <= the amassed Army's power" needs this to resolve the referenced entity, or every
          * target wrongly fails re-validation as unresolvable.
          */
-        storedCollections: Map<String, List<EntityId>> = emptyMap()
+        storedCollections: Map<String, List<EntityId>> = emptyMap(),
+        sourceBattlefieldTimestamp: Long? = null,
+        objectReferences: ObjectReferenceEnvironment =
+            ObjectReferenceEnvironment(),
+        lastKnownSourceSnapshot: EntitySnapshot? = null,
+        resolution: EffectContext? = null,
     ): List<ChosenTarget> {
         // Always project state for shroud/hexproof checks (Rule 702.18, 702.11)
         val projected = state.projectedState
-        val predicateContext = PredicateContext(
+        val predicateContext = (resolution?.let { PredicateContext.fromEffectContext(it) } ?: PredicateContext(
             controllerId = controllerId,
             sourceId = sourceId,
+            sourceBattlefieldTimestamp = sourceBattlefieldTimestamp,
+            objectReferences = objectReferences,
+            lastKnownSourceSnapshot = lastKnownSourceSnapshot,
             xValue = xValue,
             triggeringEntityId = triggeringEntityId,
             triggeringPlayerId = triggeringPlayerId,
@@ -79,6 +88,10 @@ internal class ResolutionTargetValidator(
             // A filter bound to an earlier named target ("target creature that player controls",
             // Ravager of the Fells) re-checks against the same choice at resolution.
             namedTargets = EffectContext.buildNamedTargets(targetRequirements, targets),
+        )).copy(
+            targets = targets,
+            namedTargets = (resolution?.pipeline?.namedTargets ?: emptyMap()) +
+                EffectContext.buildNamedTargets(targetRequirements, targets),
         )
 
         val individuallyLegal = targets.indices.filter { index ->

@@ -223,6 +223,9 @@ data class EntitySnapshot(
      * [com.wingedsheep.engine.event.ConditionalSelfGrants].
      */
     val conditionalSelfGrantIds: List<com.wingedsheep.sdk.scripting.AbilityId> = emptyList(),
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val objectRef: com.wingedsheep.engine.state.ObjectRef? = null,
 ) : EntityView {
     companion object {
         /**
@@ -235,6 +238,8 @@ data class EntitySnapshot(
             val projected = state.projectedState
             return EntitySnapshot(
                 entityId = entityId,
+                objectRef = state.objectRef(entityId),
+                wasFaceDown = state.getEntity(entityId)?.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() == true,
                 battlefieldEntryTimestamp = state.getEntity(entityId)
                     ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()?.timestamp,
                 power = projected.getPower(entityId),
@@ -264,9 +269,13 @@ private fun countersOf(state: GameState, entityId: EntityId): Map<CounterType, I
 fun captureEntitySnapshots(
     ids: List<EntityId>,
     projected: ProjectedState,
+    state: GameState? = null,
 ): List<EntitySnapshot> = ids.map { id ->
     EntitySnapshot(
         entityId = id,
+        objectRef = state?.objectRef(id),
+        wasFaceDown = state?.getEntity(id)?.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() == true,
+        name = state?.getEntity(id)?.get<CardComponent>()?.name,
         power = projected.getPower(id),
         toughness = projected.getToughness(id),
         subtypes = projected.getSubtypes(id),
@@ -288,7 +297,7 @@ fun captureEntitySnapshots(
 fun captureEntitySnapshots(
     ids: List<EntityId>,
     state: GameState,
-): List<EntitySnapshot> = captureEntitySnapshots(ids, state.projectedState).map { snapshot ->
+): List<EntitySnapshot> = captureEntitySnapshots(ids, state.projectedState, state).map { snapshot ->
     val container = state.getEntity(snapshot.entityId)
     snapshot.copy(
         battlefieldEntryTimestamp = container

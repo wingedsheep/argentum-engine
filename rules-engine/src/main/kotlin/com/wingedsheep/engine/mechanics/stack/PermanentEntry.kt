@@ -138,6 +138,20 @@ internal class PermanentEntry(
         newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
             .place(newState, controllerId, spellId)
 
+        val spellRef = state.objectRef(spellId)
+        val permanentRef = newState.objectRef(spellId)
+        if (spellRef != null && permanentRef != null) {
+            newState = newState.copy(floatingEffects = newState.floatingEffects.map { floating ->
+                val mod = floating.effect.modification as? SerializableModification.RedirectNextDamage
+                val chosen = mod?.chosenSource
+                if (chosen?.permanentSpell == true && chosen.reference == spellRef) {
+                    floating.copy(effect = floating.effect.copy(modification = mod.copy(
+                        chosenSource = chosen.copy(reference = permanentRef, permanentSpell = false)
+                    )))
+                } else floating
+            })
+        }
+
         newState = applyGlobalEntersTapped(newState, spellId, spellComponent, cardDef, controllerId)
         newState = enterSneakAttacking(newState, spellId, spellComponent, controllerId)
         addCastFaceDoorUnlockedEvents(newState, spellId, cardComponent, controllerId, counterEvents)

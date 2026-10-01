@@ -239,7 +239,7 @@ internal object SacrificeForCostReductionCostKind : SpellCostKind<AdditionalCost
 
     override fun pay(ledger: SpellCostLedger, cost: AdditionalCost.SacrificeCreaturesForCostReduction): String? {
         val sacrificed = ledger.payment.sacrificedPermanents
-        ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(sacrificed, ledger.state.projectedState))
+        ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(sacrificed, ledger.state.projectedState, ledger.state))
         for (permId in sacrificed) {
             if (ledger.state.getEntity(permId) == null) continue
             ledger.sacrifice(permId)
@@ -589,7 +589,7 @@ internal object ChooseEntityCostKind : SpellCostKind<AdditionalCost.ChooseEntity
                 val battlefieldChosen = chosen.filter { it in ledger.state.getBattlefield() }
                 if (battlefieldChosen.isNotEmpty()) {
                     ledger.chosenEntitySnapshots.addAll(
-                        captureEntitySnapshots(battlefieldChosen, ledger.state.projectedState)
+                        captureEntitySnapshots(battlefieldChosen, ledger.state.projectedState, ledger.state)
                     )
                 }
             }

@@ -135,7 +135,7 @@ class ExileFromTopRepeatingExecutor(private val zones: ZoneTransitionService) : 
             val totalDamage = cardsToHand * effect.damagePerCard
             val damageResult = DamageUtils.dealDamageToTarget(
                 zones,
-                currentState, controllerId, totalDamage, sourceId
+                currentState, controllerId, totalDamage, sourceId, damageSourceRef = context.objectReferences.origin ?: sourceId?.let(state::objectRef)
             )
             currentState = damageResult.state
             allEvents.addAll(damageResult.events)

@@ -960,6 +960,21 @@ data class GameState(
      * team-aware replacement for `activePlayerId == playerId` at every turn-ownership / sorcery-speed
      * gate. In a non-team game the active team is just the active player, so this reduces to equality.
      */
+    /**
+     * True while the current turn belongs to a side that has entirely left the game. CR 800.4j: such
+     * a turn continues to its completion without an active player, and whenever the active player
+     * would receive priority the next player in turn order receives it instead — but the turn is
+     * still the departed player's, not the next player's. Under shared team turns (CR 805.4) a
+     * surviving teammate keeps the turn alive, so this is false while one remains.
+     */
+    val isActiveSideGone: Boolean
+        get() {
+            val active = activePlayerId ?: return false
+            return sharedTurnTeam(active).all {
+                getEntity(it)?.has<com.wingedsheep.engine.state.components.player.PlayerLostComponent>() == true
+            }
+        }
+
     fun isActiveTurnFor(playerId: EntityId): Boolean {
         val active = activePlayerId ?: return false
         // Only a shared-team-turns format (CR 805.5a) lets a teammate share turn ownership; in Team

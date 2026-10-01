@@ -1,0 +1,56 @@
+{
+  "player1Name": "Beacon",
+  "player2Name": "Damage sources",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Beacon of Destiny"
+      },
+      {
+        "name": "Plains"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Lightning Bolt",
+      "Lightning Bolt"
+    ],
+    "battlefield": [
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Hill Giant",
+        "summoningSickness": false
+      }
+    ],
+    "library": [
+      "Mountain",
+      "Mountain"
+    ]
+  },
+  "activePlayer": 2,
+  "phase": "PRECOMBAT_MAIN",
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [
+    "PRECOMBAT_MAIN"
+  ],
+  "player2StopAtSteps": [
+    "DECLARE_ATTACKERS"
+  ],
+  "player1OpponentStopAtSteps": [
+    "PRECOMBAT_MAIN"
+  ],
+  "player2OpponentStopAtSteps": []
+}

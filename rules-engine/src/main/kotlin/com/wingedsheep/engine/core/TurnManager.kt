@@ -81,7 +81,7 @@ class TurnManager(
 
     val cleanupPhaseManager = CleanupPhaseManager(cardRegistry, decisionHandler, conditionEvaluator = zones.predicateEvaluator.conditions)
     val drawPhaseManager = DrawPhaseManager(cardRegistry, decisionHandler, effectExecutor, replacementProcessor, amountEvaluator = zones.predicateEvaluator.amounts)
-    val beginningPhaseManager = BeginningPhaseManager(cardRegistry, decisionHandler, cleanupPhaseManager)
+    val beginningPhaseManager = BeginningPhaseManager(cardRegistry, decisionHandler, cleanupPhaseManager, zones.predicateEvaluator)
 
     // ── Delegate methods for external callers ──
 

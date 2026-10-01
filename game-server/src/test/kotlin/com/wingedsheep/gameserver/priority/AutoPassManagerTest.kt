@@ -96,6 +96,12 @@ class AutoPassManagerTest : FunSpec({
         // Set up turnOrder for blocker detection
         val defender = defendingPlayerId ?: if (activePlayerId == player1) player2 else player1
         every { state.turnOrder } returns listOf(activePlayerId, defender)
+        // The button-label lookahead walks the turn order; two players alternate.
+        every { state.getNextTeam(player1) } returns player2
+        every { state.getNextTeam(player2) } returns player1
+        every { state.sharedTurnTeam(player1) } returns listOf(player1)
+        every { state.sharedTurnTeam(player2) } returns listOf(player2)
+        every { state.isActiveSideGone } returns false
 
         // Mock BlockersDeclaredThisCombatComponent on defender if blockers have been declared
         if (blockersHaveBeenDeclared) {
@@ -986,6 +992,70 @@ class AutoPassManagerTest : FunSpec({
             )
 
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
+        }
+    }
+
+    context("getNextStopPoint - multiplayer turn order") {
+        val player3 = EntityId.generate()
+
+        /** A three-seat pod in turn order player1 → player2 → player3, [gone] having left the game. */
+        fun podState(active: EntityId, priority: EntityId, step: Step, gone: EntityId? = null): GameState {
+            val state = mockk<GameState>(relaxed = true)
+            val seats = listOf(player1, player2, player3)
+            val living = seats.filter { it != gone }
+            every { state.priorityPlayerId } returns priority
+            every { state.activePlayerId } returns active
+            for (seat in seats) {
+                every { state.isActiveTurnFor(seat) } returns (seat == active)
+                every { state.sharedTurnTeam(seat) } returns listOf(seat)
+                every { state.getNextTeam(seat) } returns
+                    (1..seats.size).map { seats[(seats.indexOf(seat) + it) % seats.size] }.first { it in living }
+            }
+            every { state.isActiveSideGone } returns (active == gone)
+            every { state.turnOrder } returns seats
+            every { state.step } returns step
+            every { state.phase } returns step.phase
+            every { state.stack } returns emptyList()
+            every { state.pendingDecision } returns null
+            return state
+        }
+
+        test("from my end step the next turn is an opponent's, not mine") {
+            // Stopping in player2's turn: the turn after mine is never mine in a pod.
+            val state = podState(active = player1, priority = player1, step = Step.END)
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "To opponent's turn"
+        }
+
+        test("an opponent's end step leading into another opponent's turn reads 'Pass'") {
+            // player2's end step, viewed by player1: next comes player3's turn, not player1's.
+            val state = podState(active = player2, priority = player1, step = Step.END)
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "Pass"
+        }
+
+        test("the seat before mine passing into my turn reads 'To my turn'") {
+            val state = podState(active = player3, priority = player1, step = Step.END)
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "To my turn"
+        }
+
+        test("without stops on opponents' turns the lookahead walks every seat back to my main") {
+            val state = podState(active = player1, priority = player1, step = Step.END)
+            autoPassManager.getNextStopPoint(state, player1, false) shouldBe "Pass to Main"
+        }
+
+        test("a departed player's turn skips its main phase but keeps its end step (CR 800.4j)") {
+            // player1 left mid-turn; player2 inherits the priority windows of player1's turn.
+            val state = podState(active = player1, priority = player2, step = Step.PRECOMBAT_MAIN, gone = player1)
+            autoPassManager.getNextStopPoint(state, player2, true) shouldBe "Pass"
+            // From that end step the next turn is player2's own.
+            val atEnd = podState(active = player1, priority = player2, step = Step.END, gone = player1)
+            autoPassManager.getNextStopPoint(atEnd, player2, true) shouldBe "To my turn"
+        }
+
+        test("a departed player's main phase is auto-passed even with responses (CR 800.4j)") {
+            val state = podState(active = player1, priority = player2, step = Step.PRECOMBAT_MAIN, gone = player1)
+            autoPassManager.shouldAutoPass(state, player2, listOf(passPriorityAction(player2), instantSpellAction(player2))) shouldBe true
+            val atEnd = podState(active = player1, priority = player2, step = Step.END, gone = player1)
+            autoPassManager.shouldAutoPass(atEnd, player2, listOf(passPriorityAction(player2), instantSpellAction(player2))) shouldBe false
         }
     }
 

@@ -386,7 +386,8 @@ export function useIsSharedLifeTeamGame(): boolean {
 /**
  * Multiplayer: how far off the viewer's next turn is, counted in living seats around the turn
  * order (`players` is the server's turn order) — "You're next" / "You in 2". Undefined on the
- * viewer's own turn and when either seat is unknown or out. Callers skip it for shared-turn team
+ * viewer's own turn and when either seat is unknown or the viewer is out. The active seat may be
+ * out (CR 800.4j). Callers skip it for shared-turn team
  * games (CR 805.4), where a per-seat count would mislead.
  */
 export function turnQueueHintFor(
@@ -395,12 +396,20 @@ export function turnQueueHintFor(
   viewerId: EntityId | null | undefined,
 ): string | undefined {
   if (!activePlayerId || !viewerId) return undefined
-  const living = players.filter((p) => !p.hasLost)
-  const from = living.findIndex((p) => p.playerId === activePlayerId)
-  const to = living.findIndex((p) => p.playerId === viewerId)
-  if (from < 0 || to < 0) return undefined
-  const distance = (to - from + living.length) % living.length
-  if (distance === 0) return undefined
+  const seat = players.findIndex((p) => p.playerId === activePlayerId)
+  const to = players.findIndex((p) => p.playerId === viewerId)
+  if (seat < 0 || to < 0 || players[to]!.hasLost) return undefined
+  // Walk the turn order from the active seat, counting living seats. The active seat itself may
+  // already be out — CR 800.4j: a player who leaves mid-turn leaves the turn running — and the
+  // walk still counts from it, so the seat after them reads "You're next".
+  let distance = 0
+  for (let i = 1; i <= players.length; i++) {
+    const p = players[(seat + i) % players.length]!
+    if (p.hasLost) continue
+    distance++
+    if (p.playerId === viewerId) break
+  }
+  if (players[seat]!.playerId === viewerId) return undefined
   return distance === 1 ? "You're next" : `You in ${distance}`
 }
 

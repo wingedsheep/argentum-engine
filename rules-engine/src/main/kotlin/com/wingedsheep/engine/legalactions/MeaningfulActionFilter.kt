@@ -156,6 +156,12 @@ object MeaningfulActionFilter {
         Step.BEGIN_COMBAT, Step.COMBAT_DAMAGE, Step.CLEANUP,
     )
 
+    /**
+     * Steps of a turn whose player has left the game (CR 800.4j) that pass without asking, on top
+     * of the usual opponent's-turn compression: with no active player, nothing happens in them.
+     */
+    val ORPHANED_TURN_SILENT_STEPS = setOf(Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+
     // ─────────────────────────────────────────────────────────────────────────
     // Rule 1: the meaningful-action filter
     // ─────────────────────────────────────────────────────────────────────────
@@ -290,6 +296,14 @@ object MeaningfulActionFilter {
             meaningfulActions.any { it.isInstantSpeedResponse() }
         ) {
             return AutoPassVerdict(false, "STOP: Declare blockers step (have instant-speed responses)")
+        }
+
+        // CR 800.4j: the turn of a player who has left the game runs out with nobody taking it. The
+        // next seat inherits the active player's priority windows, but the main phases hold
+        // nothing to answer — stopping there reads as if the turn had already passed to them. Their
+        // own stop overrides (above) still apply, and the end step keeps its usual window.
+        if (state.isActiveSideGone && state.step in ORPHANED_TURN_SILENT_STEPS) {
+            return PASS_ORPHANED_TURN
         }
 
         // On the opponent's declare attackers, pass if they didn't attack — nothing to respond to.
@@ -532,6 +546,8 @@ object MeaningfulActionFilter {
     private val STOP_NO_PRIORITY = AutoPassVerdict(false, "STOP: Player does not hold priority")
     private val STOP_PENDING_DECISION = AutoPassVerdict(false, "STOP: A decision is pending")
     private val PASS_NOTHING_MEANINGFUL = AutoPassVerdict(true, "AUTO-PASS: No meaningful actions available")
+    private val PASS_ORPHANED_TURN =
+        AutoPassVerdict(true, "AUTO-PASS: Main phase of a turn whose player has left the game (CR 800.4j)")
     private val PASS_NO_ATTACKERS_DECLARED =
         AutoPassVerdict(true, "AUTO-PASS: Opponent's declare attackers (no attackers declared)")
     private val PASS_OWN_STACK_ITEM = AutoPassVerdict(true, "AUTO-PASS: Own spell/ability on top of stack")

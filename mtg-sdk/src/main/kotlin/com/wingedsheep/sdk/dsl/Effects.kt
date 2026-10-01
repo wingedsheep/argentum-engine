@@ -5875,6 +5875,15 @@ object Effects {
             duration = duration
         )
 
+    /** Choose the source during resolution, independently of the ability's targets. */
+    fun RedirectDamageFromChosenSource(
+        protectedTarget: EffectTarget,
+        redirectTo: EffectTarget,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = com.wingedsheep.sdk.scripting.effects.RedirectDamageFromChosenSourceEffect(
+        protectedTarget, redirectTo, duration
+    )
+
     /**
      * Redirect damage that would be dealt to [protectedTargets] to [redirectTo] instead — the next
      * [amount] (or the next instance when null) under [scope] (Zealous Inquisitor, Glarecaster).

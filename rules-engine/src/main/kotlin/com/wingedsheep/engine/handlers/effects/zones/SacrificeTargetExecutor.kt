@@ -90,7 +90,7 @@ class SacrificeTargetExecutor(private val zones: ZoneTransitionService) : Effect
         // "sacrifice it. If you do, you gain life equal to its toughness" — can read its
         // P/T via DynamicAmount.Sacrificed. Composite executors thread this snapshot into
         // the next sub-effect's context.
-        val snapshot = captureEntitySnapshots(listOf(targetId), state.projectedState)
+        val snapshot = captureEntitySnapshots(listOf(targetId), state.projectedState, state)
 
         // Track Food sacrifice before zone transition
         var newState = ZoneTransitionService.trackPermanentSacrifice(state, listOf(targetId), controllerId)

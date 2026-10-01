@@ -130,11 +130,19 @@ class AutoPassManager(
             return "End Turn"
         }
 
-        // Simulate advancing through steps to find where we'll stop
+        // Simulate advancing through steps to find where we'll stop. The turn walks the real turn
+        // order (CR 805.4: team by team, skipping seats that have left the game) — in a pod the turn
+        // after this one is usually someone else's, not ours, so "the turn changed" must never be
+        // read as "it's my turn now".
         var step = currentStep
+        var turnPlayer = state.activePlayerId
         var onMyTurn = isMyTurn
+        // The current turn's player may have left the game (CR 800.4j); only that turn runs orphaned.
+        var orphanedTurn = state.isActiveSideGone
+        var crossedIntoLaterTurn = false
+        // Long enough to walk every other seat's turn and reach our own.
+        val maxIterations = Step.entries.size * (state.turnOrder.size + 1)
         var iterations = 0
-        val maxIterations = 20 // Prevent infinite loops
 
         while (iterations < maxIterations) {
             iterations++
@@ -144,7 +152,10 @@ class AutoPassManager(
             val turnChanged = nextStep == Step.UNTAP && step == Step.CLEANUP
 
             if (turnChanged) {
-                onMyTurn = !onMyTurn
+                turnPlayer = turnPlayer?.let(state::getNextTeam)
+                onMyTurn = turnPlayer != null && state.sharedTurnTeam(turnPlayer).contains(playerId)
+                orphanedTurn = false
+                crossedIntoLaterTurn = true
             }
             step = nextStep
 
@@ -154,8 +165,8 @@ class AutoPassManager(
             }
 
             // Check if we'd stop at this step
-            if (wouldStopAtStep(step, onMyTurn, hasMeaningfulActions, myTurnStops, opponentTurnStops, stopsMode)) {
-                return formatStopPoint(step, onMyTurn, isMyTurn)
+            if (wouldStopAtStep(step, onMyTurn, hasMeaningfulActions, myTurnStops, opponentTurnStops, stopsMode, orphanedTurn)) {
+                return formatStopPoint(step, onMyTurn, isMyTurn, turnChanged = crossedIntoLaterTurn)
             }
         }
 
@@ -165,10 +176,13 @@ class AutoPassManager(
     /**
      * Determines if the player would stop at a given step (assuming no stack and no pending decision).
      */
-    private fun wouldStopAtStep(step: Step, isMyTurn: Boolean, hasMeaningfulActions: Boolean, myTurnStops: Set<Step> = emptySet(), opponentTurnStops: Set<Step> = emptySet(), stopsMode: Boolean = false): Boolean {
+    private fun wouldStopAtStep(step: Step, isMyTurn: Boolean, hasMeaningfulActions: Boolean, myTurnStops: Set<Step> = emptySet(), opponentTurnStops: Set<Step> = emptySet(), stopsMode: Boolean = false, orphanedTurn: Boolean = false): Boolean {
         // Check per-step stop overrides first
         val relevantStops = if (isMyTurn) myTurnStops else opponentTurnStops
         if (step in relevantStops) return true
+
+        // A departed player's turn passes its main phases (CR 800.4j; see MeaningfulActionFilter).
+        if (orphanedTurn && step in MeaningfulActionFilter.ORPHANED_TURN_SILENT_STEPS) return false
 
         // Stops mode: stop at combat damage when being attacked (opponent's turn)
         if (stopsMode && !isMyTurn && (step == Step.COMBAT_DAMAGE || step == Step.FIRST_STRIKE_COMBAT_DAMAGE)) {
@@ -223,9 +237,10 @@ class AutoPassManager(
     /**
      * Format the stop point as a complete button label.
      */
-    private fun formatStopPoint(step: Step, willBeMyTurn: Boolean, currentlyMyTurn: Boolean): String {
-        // If the turn is changing, show "To my turn" or "To opponent's turn"
-        if (willBeMyTurn != currentlyMyTurn) {
+    private fun formatStopPoint(step: Step, willBeMyTurn: Boolean, currentlyMyTurn: Boolean, turnChanged: Boolean): String {
+        // If the stop is on a later turn that changes whose turn it is for us, say so. Between two
+        // opponents' turns the plain "Pass" below still fits — we're only yielding.
+        if (turnChanged && willBeMyTurn != currentlyMyTurn) {
             return if (willBeMyTurn) "To my turn" else "To opponent's turn"
         }
 

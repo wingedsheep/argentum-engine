@@ -41,6 +41,7 @@ internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? 
     is DistributeDamageContinuation -> objectReferences
     is DeflectDamageSourceChoiceContinuation -> objectReferences
     is PreventDamageFromChosenSourceContinuation -> objectReferences
+    is RedirectDamageSourceContinuation -> objectReferences
     is OptionalRedirectEffectContinuation -> effectContext.objectReferences
     is EachPlayerDiscardsOrLoseLifeContinuation -> objectReferences
     is DrawUpToContinuation -> objectReferences
@@ -155,6 +156,7 @@ internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnviro
     is DistributeDamageContinuation -> copy(objectReferences = refs)
     is DeflectDamageSourceChoiceContinuation -> copy(objectReferences = refs)
     is PreventDamageFromChosenSourceContinuation -> copy(objectReferences = refs)
+    is RedirectDamageSourceContinuation -> copy(objectReferences = refs)
     is OptionalRedirectEffectContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
     is EachPlayerDiscardsOrLoseLifeContinuation -> copy(objectReferences = refs)
     is DrawUpToContinuation -> copy(objectReferences = refs)

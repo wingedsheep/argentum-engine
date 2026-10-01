@@ -2,6 +2,7 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.predicates.receivedCounterThisTurn
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
@@ -27,7 +28,6 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.UntapDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.UntapFilteredDuringOtherUntapSteps
-import com.wingedsheep.sdk.scripting.UntapLimitPerStep
 import com.wingedsheep.sdk.scripting.UntapSelfDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -39,7 +39,8 @@ import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 class BeginningPhaseManager(
     private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
     private val decisionHandler: DecisionHandler,
-    private val cleanupPhaseManager: CleanupPhaseManager
+    private val cleanupPhaseManager: CleanupPhaseManager,
+    private val predicateEvaluator: PredicateEvaluator
 ) {
 
     /**
@@ -163,18 +164,14 @@ class BeginningPhaseManager(
             projected.hasKeyword(entityId, AbilityFlag.MAY_NOT_UNTAP)
         }
 
-        // Untap-count restrictions (Damping Field — "can't untap more than one artifact"). A
-        // global restriction: gather every active UntapLimitPerStep regardless of controller, and
-        // for each work out which would-untap permanents match its filter. When more match than the
-        // cap allows, the active player must keep the excess tapped (their choice which).
-        val untapLimits = activeUntapLimits(newState).mapNotNull { (filter, max) ->
-            val matching = permanentsAfterCantUntap.filter { entityId ->
-                val container = newState.getEntity(entityId) ?: return@filter false
-                matchesFilterForUntap(newState, projected, entityId, container, filter)
-            }
-            if (matching.size > max) UntapLimitChoice(matching, max) else null
-        }
-        val forcedKeepCount = untapLimits.sumOf { it.matchingPermanents.size - it.max }
+        // Freeze restrictions before the simultaneous untap: a tapped conditional source may
+        // untap alongside everything else without retroactively restricting that same action.
+        val untapLimits = untapLimitChoices(
+            newState, cardRegistry, predicateEvaluator, permanentsAfterCantUntap
+        )
+        // Overlapping caps share kept permanents. A sum can exceed the whole option pool;
+        // this lower bound stays reachable, and the resumer validates every cap separately.
+        val forcedKeepCount = untapLimits.maxOfOrNull { it.matchingPermanents.size - it.max } ?: 0
 
         // Raise a single "keep tapped" decision when the player has any choice to make: optional
         // MAY_NOT_UNTAP permanents and/or a forced keep from an untap-count cap. The option pool is
@@ -432,32 +429,7 @@ class BeginningPhaseManager(
         return ExecutionResult.success(newState, events)
     }
 
-    /**
-     * Check if an entity matches a GameObjectFilter for untap-during-other-untap-step abilities.
-     * Uses projected state for type checks and base state for counters.
-     */
-    /**
-     * Collect the active untap-count caps (`UntapLimitPerStep`, e.g. Damping Field) as
-     * `(filter, max)` pairs. The restriction is global, so every battlefield permanent's static
-     * abilities are scanned regardless of controller. When two restrictions share a filter the
-     * most restrictive (smallest [UntapLimitPerStep.max]) wins; distinct filters are kept separate.
-     */
-    private fun activeUntapLimits(
-        state: GameState
-    ): List<Pair<GameObjectFilter, Int>> {
-        val byFilter = LinkedHashMap<GameObjectFilter, Int>()
-        for (permanentId in state.getBattlefield()) {
-            val card = state.getEntity(permanentId)?.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            for (ability in cardDef.script.staticAbilities) {
-                if (ability is UntapLimitPerStep) {
-                    byFilter.merge(ability.filter, ability.max, ::minOf)
-                }
-            }
-        }
-        return byFilter.map { (filter, max) -> filter to max }
-    }
-
+    /** Match a filter for untap-during-other-untap-step abilities. */
     private fun matchesFilterForUntap(
         state: GameState,
         projected: ProjectedState,

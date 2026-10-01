@@ -12,6 +12,12 @@ interface StepStripProps {
   priorityMode: PriorityMode
   activePlayerName?: string | undefined
   /**
+   * Multiplayer: the active player has left the game mid-turn. CR 800.4j — the turn runs to
+   * completion with no active player, so it is still theirs (not the next seat's, even though
+   * that seat now gets the active player's priority windows).
+   */
+  activePlayerLeft?: boolean | undefined
+  /**
    * Multiplayer: where the viewer sits in the turn order relative to the active player —
    * "You're next" / "You in 2". Rendered after the status text; absent on your own turn.
    */
@@ -103,6 +109,7 @@ export function StepStrip({
   hasPriority,
   priorityMode,
   activePlayerName,
+  activePlayerLeft = false,
   turnQueueHint,
   activeSide,
   stopOverrides,
@@ -120,7 +127,9 @@ export function StepStrip({
   const currentStepIndex = STEP_ORDER.indexOf(step)
 
   const statusText = activePlayerName
-    ? `${activePlayerName}'s Turn`
+    ? activePlayerLeft
+      ? `Ending ${activePlayerName}'s Turn`
+      : `${activePlayerName}'s Turn`
     : priorityMode === 'ownTurn'
     ? 'Your Turn'
     : priorityMode === 'responding'

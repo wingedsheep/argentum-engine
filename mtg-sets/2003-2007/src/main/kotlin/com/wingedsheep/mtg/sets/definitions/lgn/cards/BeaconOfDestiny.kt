@@ -24,8 +24,8 @@ val BeaconOfDestiny = card("Beacon of Destiny") {
 
     activatedAbility {
         cost = Costs.Tap
-        effect = Effects.RedirectNextDamage(
-            protectedTargets = listOf(EffectTarget.Controller),
+        effect = Effects.RedirectDamageFromChosenSource(
+            protectedTarget = EffectTarget.Controller,
             redirectTo = EffectTarget.Self
         )
     }

@@ -67,6 +67,15 @@ fun GameState.createFloatingEffect(
     id: EntityId
 ): ActiveFloatingEffect {
     val sourceName = context.sourceId?.let { getEntity(it)?.get<CardComponent>()?.name }
+    val damageSourceId = when (modification) {
+        is SerializableModification.PreventNextDamage -> modification.onlyFromSource
+        is SerializableModification.PreventAllDamageFromSource -> modification.damageSourceId
+        is SerializableModification.PreventNextDamageInstanceFromSource -> modification.damageSourceId
+        is SerializableModification.PreventNextDamageFromSourceShield -> modification.damageSourceId
+        else -> null
+    }
+    val referredIds = if (damageSourceId == null) affectedEntities else affectedEntities + damageSourceId
+    val referencedObjects = referredIds.mapNotNull(::objectRef)
     return ActiveFloatingEffect(
         id = id,
         effect = FloatingEffectData(
@@ -84,6 +93,7 @@ fun GameState.createFloatingEffect(
         timestamp = timestamp,
         // "Until the end of your next turn" never includes the turn it was created on — not even
         // when that is the controller's own turn — so the floor is always the next turn number.
+        referencedObjects = referencedObjects,
         expiresAfterTurn = if (duration is Duration.EndOfYourNextTurn) turnNumber + 1 else null
     )
 }

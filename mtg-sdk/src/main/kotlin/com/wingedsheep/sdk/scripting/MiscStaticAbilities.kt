@@ -1373,6 +1373,11 @@ data class UntapLimitPerStep(
 ) : StaticAbility {
     override val description: String =
         "Players can't untap more than $max ${filter.description} during their untap steps"
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }
 
 /**
