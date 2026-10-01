@@ -1815,6 +1815,102 @@
     ]
 }
 
+// Herigast, Erupting Nullkite
+{
+    "name": "Herigast, Erupting Nullkite",
+    "manaCost": "{9}",
+    "typeLine": "Legendary Creature — Eldrazi Dragon",
+    "oracleText": "Emerge {6}{R}{R} (You may cast this spell by sacrificing a creature and paying the emerge cost reduced by that creature's mana value.)\nWhen you cast this spell, you may exile your hand. If you do, draw three cards.\nFlying\nEach creature spell you cast has emerge. The emerge cost is equal to its mana cost.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "EMERGE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Emerge",
+            "cost": "{6}{R}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Herigast, Erupting Nullkite:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Exile your hand and draw three cards?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When you cast this spell, you may exile your hand. If you do, draw three cards."
+            }
+        ],
+        "staticAbilities": [
+            "GrantEmergeToOwnSpells"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "MYTHIC",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7baf9549-1869-4bd3-a52a-2f0b30ba0b16.jpg?1783911309",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "You may choose to exile your hand even if you have no cards in hand. If you do, you'll still draw three cards."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a spell has more than one emerge cost, you may choose to pay it for any one of those emerge costs."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Once you begin to cast a spell using an emerge ability granted by Herigast, losing control of Herigast won't affect it. You can finish casting it as normal. For example, you can choose to sacrifice Herigast as you choose to pay a creature spell's emerge cost from an emerge ability granted by Herigast itself."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Herigast's triggered ability will resolve before Herigast does. If Herigast is countered or otherwise leaves the stack in response to its triggered ability, the triggered ability will still resolve as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Invert Polarity
 {
     "name": "Invert Polarity",
