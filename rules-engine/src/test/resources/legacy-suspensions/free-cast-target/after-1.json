@@ -371,6 +371,7 @@
     "pendingSpellCopies": [],
     "pendingUncounterableSpells": [],
     "pendingNextSpellAffinities": [],
+    "pendingNextSpellKeywords": [],
     "pendingFreeCastSpells": [],
     "turnSpellCostReductions": [],
     "spellWarpedThisTurn": false,

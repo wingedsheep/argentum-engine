@@ -84,6 +84,7 @@ class GrantedKeywordResolver(
         keyword: Keyword,
         spellId: EntityId? = null
     ): EntityId? {
+        findNextSpellRider(state, playerId, cardDef, keyword)?.let { return it }
         val spellZone by lazy(LazyThreadSafetyMode.NONE) { castZone(state, spellId) }
         for (permanentId in state.getBattlefield()) {
             val container = state.getEntity(permanentId) ?: continue
@@ -116,7 +117,7 @@ class GrantedKeywordResolver(
         keyword: Keyword,
         spellId: EntityId? = null
     ): Int {
-        var count = 0
+        var count = state.pendingNextSpellKeywords.count { riderApplies(it, playerId, cardDef, keyword) }
         val spellZone by lazy(LazyThreadSafetyMode.NONE) { castZone(state, spellId) }
         for (permanentId in state.getBattlefield()) {
             val container = state.getEntity(permanentId) ?: continue
@@ -135,6 +136,30 @@ class GrantedKeywordResolver(
         }
         return count
     }
+
+    /**
+     * A pending "the next spell you cast this turn has [keyword]" rider (Archway of Innovation)
+     * waiting on [playerId]'s next spell matching [cardDef]. The rider lives on the state rather
+     * than on a permanent, so it applies whatever happened to its source and from whichever zone
+     * the spell is cast; the cast consumes it in
+     * [com.wingedsheep.engine.handlers.actions.spell.CastTriggers]. Returns the rider's source.
+     */
+    private fun findNextSpellRider(
+        state: GameState,
+        playerId: EntityId,
+        cardDef: CardDefinition,
+        keyword: Keyword
+    ): EntityId? = state.pendingNextSpellKeywords
+        .firstOrNull { riderApplies(it, playerId, cardDef, keyword) }
+        ?.sourceId
+
+    private fun riderApplies(
+        rider: com.wingedsheep.engine.state.PendingNextSpellKeyword,
+        playerId: EntityId,
+        cardDef: CardDefinition,
+        keyword: Keyword
+    ): Boolean = rider.controllerId == playerId && rider.keyword == keyword &&
+        matchesSpellFilter(rider.spellFilter, cardDef)
 
     /** [castZone] is only consulted by a zone-scoped grant, so the zone scan stays off the common path. */
     private inline fun grantApplies(grant: GrantKeywordToOwnSpells, cardDef: CardDefinition, castZone: () -> Zone?): Boolean =

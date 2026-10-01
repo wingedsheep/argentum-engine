@@ -607,6 +607,28 @@ internal class PlayerActiveEffectsProjector(
             )
         }
 
+        // Check for pending "next spell has improvise / convoke / delve" riders (Archway of
+        // Innovation) — one badge per keyword, so the player sees the grant is still waiting.
+        state.pendingNextSpellKeywords
+            .filter { it.controllerId == playerId }
+            .groupBy { it.keyword }
+            .forEach { (keyword, riders) ->
+                val sourceName = riders.map { it.sourceName }.distinct().joinToString(", ")
+                val filterDesc = if (riders.any { it.spellFilter == GameObjectFilter.Any }) {
+                    ""
+                } else {
+                    riders.map { it.spellFilter.description }.distinct().joinToString("/") + " "
+                }
+                effects.add(
+                    ClientPlayerEffect(
+                        effectId = "pending_next_spell_keyword_${keyword.name.lowercase()}",
+                        name = keyword.displayName,
+                        description = "Your next ${filterDesc}spell has ${keyword.displayName.lowercase()} ($sourceName)",
+                        icon = "granted-ability"
+                    )
+                )
+            }
+
         // Check for pending "next spell can be cast without paying its mana cost" riders
         // (e.g. World War Hulk I) — the player needs to see the free cast is still available.
         val pendingFreeCasts = state.pendingFreeCastSpells.filter { it.controllerId == playerId }

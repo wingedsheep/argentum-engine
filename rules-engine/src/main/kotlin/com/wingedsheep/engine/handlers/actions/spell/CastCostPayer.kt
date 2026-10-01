@@ -291,7 +291,8 @@ internal class CastCostPayer(
             alternativePayment != null && alternativePayment.tapForGenericPermanents.isNotEmpty()
         ) {
             val result = alternativePaymentHandler.applyImproviseForSpell(
-                ledger.state, cost, alternativePayment, action.playerId, cardDef, action.cardId
+                ledger.state, cost, alternativePayment, action.playerId, cardDef, action.cardId,
+                xGeneric = (action.xValue ?: 0) * cost.xCount
             )
             cost = result.reducedCost
             ledger.state = result.newState

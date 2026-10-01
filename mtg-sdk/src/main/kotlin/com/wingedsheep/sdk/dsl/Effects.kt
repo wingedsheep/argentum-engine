@@ -5097,6 +5097,16 @@ object Effects {
     ): Effect = com.wingedsheep.sdk.scripting.effects.GrantNextSpellAffinityEffect(spellFilter, forType)
 
     /**
+     * Grant the next [spellFilter] spell you cast this turn a cost-payment [keyword] — improvise,
+     * convoke or delve (Archway of Innovation: "The next spell you cast this turn has improvise.").
+     * The rider is consumed by the next matching cast.
+     */
+    fun GrantNextSpellKeyword(
+        keyword: com.wingedsheep.sdk.core.Keyword,
+        spellFilter: GameObjectFilter = GameObjectFilter.Any
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantNextSpellKeywordEffect(keyword, spellFilter)
+
+    /**
      * "Spells you cast this turn that match [spellFilter] cost {X} less to cast, where X is
      * [amount]" (Will, Scion of Peace / Rowan, Scion of War); with
      * `duration = Duration.UntilYourNextTurn`, "until your next turn, … spells you cast cost {X}

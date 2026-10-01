@@ -509,6 +509,8 @@ internal class CastCostTotaller(
             // graveyard permission.
             harmonizeAllowed = payment.harmonizeCreature != null &&
                 zoneResolver.hasHarmonizePermission(state, action.playerId, action.cardId),
+            // Improvise taps pay the announced X too, unless a waterbend cost claims them.
+            improviseAllowed = spellWaterbendAmount(cardDef, action) == 0,
         )
         val leftover = (reduction - totalCost.genericAmount).coerceAtLeast(0)
         if (leftover == 0) return xValue

@@ -315,6 +315,7 @@ internal class CastTriggers(
         var newState = afterCopies
         newState = consumeUncounterableRiders(newState, spell)
         newState = consumeAffinityRiders(newState, spell)
+        newState = consumeKeywordRiders(newState, spell)
         newState = consumeFreeCastRiders(newState, spell)
         return ExecutionResult.success(newState, events + copyEvents)
     }
@@ -391,6 +392,18 @@ internal class CastTriggers(
         val matching = state.pendingNextSpellAffinities.filter { spellMatchesRider(state, spell, it.controllerId, it.sourceId, it.spellFilter) }
         if (matching.isEmpty()) return state
         return state.copy(pendingNextSpellAffinities = state.pendingNextSpellAffinities.filter { it !in matching })
+    }
+
+    /**
+     * "Next spell has improvise" riders (Archway of Innovation). The granted-keyword resolver
+     * already reported the keyword while the spell was being cast; consuming them here means only
+     * the *next* matching spell has it — and, like the affinity rider, a matching spell spends the
+     * rider whether or not it used the keyword.
+     */
+    private fun consumeKeywordRiders(state: GameState, spell: CastSpellOnStack): GameState {
+        val matching = state.pendingNextSpellKeywords.filter { spellMatchesRider(state, spell, it.controllerId, it.sourceId, it.spellFilter) }
+        if (matching.isEmpty()) return state
+        return state.copy(pendingNextSpellKeywords = state.pendingNextSpellKeywords.filter { it !in matching })
     }
 
     /**

@@ -133,6 +133,8 @@ class TurnManager(
             // "Next spell this turn has affinity" riders are turn-scoped — an unused grant (you
             // attacked with Don & Raph but cast no matching spell) must not leak into a later turn.
             pendingNextSpellAffinities = emptyList(),
+            // "The next spell you cast this turn has improvise" riders (Archway of Innovation) too.
+            pendingNextSpellKeywords = emptyList(),
             // "The next matching spell you cast this turn can be cast without paying its mana cost"
             // riders (World War Hulk I) are turn-scoped too — an unused free cast must not leak
             // into a later turn.

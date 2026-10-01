@@ -201,6 +201,14 @@ data class GameState(
     val pendingNextSpellAffinities: List<PendingNextSpellAffinity> = emptyList(),
 
     /**
+     * Pending "the next matching spell you cast this turn has [keyword]" riders (Archway of
+     * Innovation's improvise). Read by
+     * [com.wingedsheep.engine.mechanics.mana.GrantedKeywordResolver] and consumed by the next
+     * matching cast.
+     */
+    val pendingNextSpellKeywords: List<PendingNextSpellKeyword> = emptyList(),
+
+    /**
      * Pending "the next matching spell you cast this turn can be cast without paying its mana cost"
      * riders (World War Hulk I). Read by
      * [com.wingedsheep.engine.mechanics.mana.CostCalculator.hasFreeCastPermission] and consumed by

@@ -1206,6 +1206,53 @@ data class GrantNextSpellAffinityEffect(
 }
 
 /**
+ * Grant the next [spellFilter] spell the controller casts this turn [keyword] — the same one-shot
+ * pending-rider shape as [GrantNextSpellAffinityEffect], for a keyword that changes how the spell's
+ * cost is paid. The matched spell has [keyword] while it is being cast (so the cast offers the
+ * keyword's payment), and the cast consumes the rider whether or not the keyword was used.
+ *
+ * Only the cost-payment keywords the engine reads through its granted-keyword resolver are
+ * accepted — [com.wingedsheep.sdk.core.Keyword.IMPROVISE], [com.wingedsheep.sdk.core.Keyword.CONVOKE]
+ * and [com.wingedsheep.sdk.core.Keyword.DELVE]; anything else is rejected at construction rather
+ * than silently granting a keyword nothing reads.
+ *
+ * Archway of Innovation: "The next spell you cast this turn has improvise."
+ *
+ * @property keyword The cost-payment keyword the next matching spell gains.
+ * @property spellFilter Which spell the rider waits for (defaults to any spell).
+ */
+@SerialName("GrantNextSpellKeyword")
+@Serializable
+data class GrantNextSpellKeywordEffect(
+    val keyword: com.wingedsheep.sdk.core.Keyword,
+    val spellFilter: GameObjectFilter = GameObjectFilter.Any
+) : Effect {
+    init {
+        require(keyword in SUPPORTED_KEYWORDS) {
+            "GrantNextSpellKeywordEffect supports $SUPPORTED_KEYWORDS, not $keyword"
+        }
+    }
+
+    override val description: String = buildString {
+        append("The next ")
+        if (spellFilter != GameObjectFilter.Any) append("${spellFilter.description} ")
+        append("spell you cast this turn has ${keyword.displayName.lowercase()}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect =
+        copy(spellFilter = spellFilter.applyTextReplacement(replacer))
+
+    companion object {
+        /** The cost-payment keywords a spell can be granted while it is being cast. */
+        val SUPPORTED_KEYWORDS: Set<com.wingedsheep.sdk.core.Keyword> = setOf(
+            com.wingedsheep.sdk.core.Keyword.IMPROVISE,
+            com.wingedsheep.sdk.core.Keyword.CONVOKE,
+            com.wingedsheep.sdk.core.Keyword.DELVE,
+        )
+    }
+}
+
+/**
  * "Spells you cast [duration] that match [spellFilter] cost {X} less to cast" — a duration-bounded,
  * controller-scoped generic cost reduction installed when this effect resolves.
  *

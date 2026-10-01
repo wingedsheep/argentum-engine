@@ -514,6 +514,7 @@ class AlternativePaymentHandler(
         cardDef: CardDefinition,
         cardId: EntityId?,
         harmonizeAllowed: Boolean = true,
+        improviseAllowed: Boolean = false,
     ): Int {
         if (payment.isEmpty) return 0
         val projected = state.projectedState
@@ -546,6 +547,17 @@ class AlternativePaymentHandler(
             harmonizeCreature !in payment.convokedCreatures && tappableCreature(harmonizeCreature)
         ) {
             total += (projected.getPower(harmonizeCreature) ?: 0).coerceAtLeast(0)
+        }
+
+        // Improvise (CR 702.126a) — only when no waterbend cost claims the same taps.
+        if (improviseAllowed && payment.tapForGenericPermanents.isNotEmpty() &&
+            effectivelyHasKeyword(state, playerId, cardDef, Keyword.IMPROVISE, cardId)
+        ) {
+            total += payment.tapForGenericPermanents.distinct().count { entityId ->
+                entityId in battlefield && state.getEntity(entityId)?.has<TappedComponent>() == false &&
+                    TapForGeneric.IMPROVISE.matches(projected, entityId) &&
+                    projected.getController(entityId) == playerId
+            }
         }
 
         return total
@@ -660,6 +672,12 @@ class AlternativePaymentHandler(
      * Ignored unless the spell effectively has improvise (printed, or granted to it by a
      * permanent such as Ironheart, Clever Champion) — so a stale or forged choice can't tap
      * artifacts for a spell that never had the keyword.
+     *
+     * [xGeneric] is the announced {X} mana in the total cost (X times the X symbols): it is generic
+     * mana too (CR 107.3), so up to that many further artifacts may be tapped once [cost]'s generic
+     * is covered. Those taps don't touch [cost] — the caller charges X through
+     * [com.wingedsheep.engine.handlers.actions.spell.CastCostTotaller.paymentXValue], which counts
+     * them via [genericReductionForSpell].
      */
     fun applyImproviseForSpell(
         state: GameState,
@@ -667,12 +685,13 @@ class AlternativePaymentHandler(
         payment: AlternativePaymentChoice,
         playerId: EntityId,
         cardDef: CardDefinition,
-        cardId: EntityId?
+        cardId: EntityId?,
+        xGeneric: Int = 0
     ): AlternativePaymentResult {
         if (!effectivelyHasKeyword(state, playerId, cardDef, Keyword.IMPROVISE, cardId)) {
             return AlternativePaymentResult(cost, state, emptyList())
         }
-        return applyTapForGeneric(state, cost, payment, playerId, TapForGeneric.IMPROVISE)
+        return applyTapForGeneric(state, cost, payment, playerId, TapForGeneric.IMPROVISE, xOverflow = xGeneric)
     }
 
     /**
@@ -755,7 +774,8 @@ class AlternativePaymentHandler(
         payment: AlternativePaymentChoice,
         playerId: EntityId,
         eligibility: TapForGeneric,
-        maxGenericReduction: Int = Int.MAX_VALUE
+        maxGenericReduction: Int = Int.MAX_VALUE,
+        xOverflow: Int = 0
     ): AlternativePaymentResult {
         if (payment.tapForGenericPermanents.isEmpty() || maxGenericReduction <= 0) {
             return AlternativePaymentResult(cost, state, emptyList())
@@ -764,6 +784,7 @@ class AlternativePaymentHandler(
         var currentState = state
         var reducedCost = cost
         var applied = 0
+        var overflowed = 0
         val events = mutableListOf<GameEvent>()
 
         val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
@@ -775,7 +796,9 @@ class AlternativePaymentHandler(
             // Bound by the generic mana in the cost (CR 702.126a / waterbend: "for each generic
             // mana in that cost") and, for a spell-level waterbend cost, by its amount N.
             if (applied >= maxGenericReduction) break
-            if (reducedCost.genericAmount <= 0) break
+            // Past the cost's generic, a tap can still pay the announced {X} ([xOverflow]).
+            val paysX = reducedCost.genericAmount <= 0
+            if (paysX && overflowed >= xOverflow) break
             if (permanentId !in currentState.getZone(battlefieldZone)) continue
             val container = currentState.getEntity(permanentId) ?: continue
             // Card-backed permanents only, mirroring the eligibility scan in
@@ -792,8 +815,12 @@ class AlternativePaymentHandler(
             val (tappedState, tapEvent) = tap(currentState, permanentId)
             currentState = tappedState
             tapEvent?.let(events::add)
-            reducedCost = reduceGenericCost(reducedCost, 1)
-            applied++
+            if (paysX) {
+                overflowed++
+            } else {
+                reducedCost = reduceGenericCost(reducedCost, 1)
+                applied++
+            }
         }
 
         return AlternativePaymentResult(reducedCost, currentState, events)
