@@ -311,6 +311,7 @@ class StateProjector {
 
         // === Layers 5-6 (Color + Ability) ===
         for (effect in postTypeEffects) {
+            if (effect.modification is Modification.CanAttackAsThoughHasty) continue
             // CR 613.6: a prohibition belonging to an effect begun in an earlier layer
             // keeps applying even when the source loses the ability during Layer 6.
             val startedBeforeAbility = effect.groupId?.let { groupId ->
@@ -433,6 +434,56 @@ class StateProjector {
         // Growth, Aggressive Urge), and lord-style anthems alike.
         applyAffectedPowerAtMostSourceGate(state, projectedValues)
 
+        // Attack-as-though permissions modify the rules after characteristics are established.
+        // Removing the recipient's abilities cannot remove an external permission; removing the
+        // source's ability does. Re-resolve filters against final characteristics (including P/T).
+        for (rawEffect in sortedEffects) {
+            if (rawEffect.modification !is Modification.CanAttackAsThoughHasty) continue
+            if (rawEffect.fromStaticAbility && projectedValues[rawEffect.sourceId]?.let {
+                    it.lostAllAbilities || it.isFaceDown
+                } == true) continue
+            val effect = applyControllerGate(rawEffect, projectedValues)
+            val affected = effect.affectsFilter?.let {
+                filterResolver.resolveAffectedEntities(state, effect.sourceId, it, projectedValues)
+            } ?: effect.affectedEntities
+            effectApplicator.applyEffect(effect.copy(affectedEntities = affected), state, projectedValues)
+        }
+
+        // Runtime-granted statics use the holder as their source and retain existing duration gates.
+        fun applyGrantedAttackPermission(ability: com.wingedsheep.sdk.scripting.StaticAbility, holder: EntityId) {
+            when (ability) {
+                is com.wingedsheep.sdk.scripting.CanAttackAsThoughHasty -> {
+                    val filter = when (val scope = ability.filter.scope) {
+                        is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self -> AffectsFilter.Self
+                        is com.wingedsheep.sdk.scripting.filters.unified.Scope.AttachedTo -> AffectsFilter.AttachedPermanent
+                        is com.wingedsheep.sdk.scripting.filters.unified.Scope.SoulbondPair -> AffectsFilter.SoulbondPair
+                        is com.wingedsheep.sdk.scripting.filters.unified.Scope.Specific -> AffectsFilter.SpecificEntities(setOf(scope.entityId))
+                        is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield -> AffectsFilter.Generic(ability.filter)
+                    }
+                    for (id in filterResolver.resolveAffectedEntities(state, holder, filter, projectedValues)) {
+                        projectedValues[id]?.canAttackAsThoughHasty = true
+                    }
+                }
+                is com.wingedsheep.sdk.scripting.ConditionalStaticAbility -> {
+                    val context = com.wingedsheep.engine.handlers.ConditionEvaluationContext.Projection(
+                        holder, projectedValues[holder], projectedValues)
+                    if (conditionEvaluator.evaluate(state, ability.condition, context)) {
+                        applyGrantedAttackPermission(ability.ability, holder)
+                    }
+                }
+                is com.wingedsheep.sdk.scripting.CompositeStaticAbility ->
+                    ability.abilities.forEach { applyGrantedAttackPermission(it, holder) }
+                else -> Unit
+            }
+        }
+        for (grant in state.grantedStaticAbilities) {
+            val holder = projectedValues[grant.entityId] ?: continue
+            if (holder.lostAllAbilities) continue
+            if (!com.wingedsheep.engine.mechanics.durations.GrantDurationGate.holds(
+                    state, grant.entityId, grant.sourceId, grant.duration)) continue
+            applyGrantedAttackPermission(grant.ability, grant.entityId)
+        }
+
         // Transfer the locally owned sets into the final projection. No later step mutates them;
         // intermediate projections still copy their sets because subsequent layers can change them.
         val finalValues = projectedValues.mapValues { (_, v) ->
@@ -451,6 +502,7 @@ class StateProjector {
                 isFaceDown = v.isFaceDown,
                 isSuspected = v.isSuspected,
                 cantAttack = v.cantAttack,
+                canAttackAsThoughHasty = v.canAttackAsThoughHasty,
                 cantBlock = v.cantBlock,
                 cantBeTurnedFaceUp = v.cantBeTurnedFaceUp,
                 mustAttack = v.mustAttack,

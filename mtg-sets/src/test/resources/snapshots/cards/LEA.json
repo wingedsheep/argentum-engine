@@ -2519,6 +2519,76 @@
     "colorIdentityOverride": []
 }
 
+// Instill Energy
+{
+    "name": "Instill Energy",
+    "manaCost": "{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can attack as though it had haste.\n{0}: Untap enchanted creature. Activate only during your turn and only once each turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Instill Energy:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{0}"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature",
+                    "tap": false
+                },
+                "restrictions": [
+                    "OnlyDuringYourTurn",
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "Untap enchanted creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CanAttackAsThoughHasty",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "UNCOMMON",
+        "artist": "Dameon Willich",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5bd38716-874c-4e3c-a315-837839a6258c.jpg?1783948676",
+        "rulings": [
+            {
+                "date": "2005-08-01",
+                "text": "Any Auras (or other effects) which are on the creature that would cause it to not be untapped (or have a cost to be untapped) during untap step do not in any way hinder or imply a cost to use this card's ability to untap once during the turn."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If attached to an opponent's creature, you can untap their creature during your turn."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Instill Energy's untap ability will not untap the creature until it resolves. This means other spells and abilities can be used before it actually becomes untapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Invisibility
 {
     "name": "Invisibility",

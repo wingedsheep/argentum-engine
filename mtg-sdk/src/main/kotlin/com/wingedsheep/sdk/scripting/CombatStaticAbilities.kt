@@ -651,3 +651,21 @@ data class BlockerCountLimit(
     override val description: String =
         "No more than $maxBlockers creature${if (maxBlockers == 1) "" else "s"} can block each combat"
 }
+
+/**
+ * Creatures matching [filter] can attack as though they had haste. This rule permission
+ * does not grant haste or allow activation of abilities with tap or untap symbol costs.
+ * Use [ConditionalStaticAbility] for a conditional permission and `Effects.GrantStaticAbility`
+ * for a duration-bound permission.
+ */
+@SerialName("CanAttackAsThoughHasty")
+@Serializable
+data class CanAttackAsThoughHasty(
+    val filter: GroupFilter = GroupFilter.source()
+) : StaticAbility {
+    override val description: String = "${filter.description} can attack as though they had haste"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}

@@ -8411,6 +8411,21 @@ staticAbility {
   declaration by `DefenderBypass` (shared by `DefenderAttackRule` and the client's "Can attack
   despite defender" badge), never through projection. The turn-scoped, granted counterpart is
   `Effects.CanAttackDespiteDefenderThisTurn`.
+
+- `CanAttackAsThoughHasty(filter = GroupFilter.source())` lets matching creatures attack despite
+  summoning sickness, without granting `Keyword.HASTE`. Use `GroupFilter.attachedCreature()` for
+  Instill Energy. Tap/untap symbol activation costs remain subject to summoning sickness. This is a
+  rule permission, evaluated after characteristic projection: removing the recipient's abilities
+  preserves an external permission, while removing the granting source's ability suspends it.
+  Filters read final projected characteristics and controllers. Compose with `ConditionalStaticAbility`
+  for conditions, or `Effects.GrantStaticAbility` for duration-bound permissions. Existing attack
+  restrictions (tapped, defender, can't attack) still apply. Server legal attacker lists and declaration
+  validation share the same permission; existing battlefield attack selection consumes those lists.
+  No new keyword, decision, badge, or client protocol is needed. The summoning-sickness badge remains
+  accurate for restricted tap/untap abilities. The existing runtime-grant store has no timestamps:
+  a holder that has lost all abilities suppresses its runtime-granted permission even if the grant
+  resolved later. Printed external permissions, including Instill Energy, do not share that limit.
+
 - `CanBlockAsThoughUntapped(filter = GroupFilter.source())` — creatures matching `filter` can block
   as though they were untapped, lifting only CR 509.1a's "untapped creatures" requirement. Masako
   the Humorless's "Tapped creatures you control can block as though they were untapped" is

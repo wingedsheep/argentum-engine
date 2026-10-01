@@ -379,6 +379,9 @@ internal class EffectApplicator(
                         }
                     }
                 }
+                is Modification.CanAttackAsThoughHasty -> {
+                    values.canAttackAsThoughHasty = true
+                }
                 is Modification.SetCantAttack -> {
                     values.cantAttack = true
                 }
