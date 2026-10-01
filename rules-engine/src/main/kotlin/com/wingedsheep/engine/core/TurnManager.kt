@@ -288,9 +288,10 @@ class TurnManager(
 
             val events = mutableListOf<GameEvent>()
 
-            // A combat phase that ends here into anything but another combat phase is over: remove
-            // every creature from combat, as entering the natural postcombat main phase does.
-            if (current.step == Step.END_COMBAT && next.kind != ExtraPhaseKind.COMBAT) {
+            // A combat phase that ends here is over, whatever phase follows — even another combat
+            // phase (CR 511.3): remove every creature from combat and end "until end of combat"
+            // effects, as entering the natural postcombat main phase does.
+            if (current.step == Step.END_COMBAT) {
                 val closed = closeCombatPhase(redirectedState)
                 if (closed.outcome !is Outcome.Done) return closed
                 redirectedState = closed.newState

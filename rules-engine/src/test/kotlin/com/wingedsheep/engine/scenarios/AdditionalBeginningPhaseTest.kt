@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.StepChangedEvent
+import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.player.AdditionalPhasesComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalBeginningPhaseComponent
@@ -184,5 +185,24 @@ class AdditionalBeginningPhaseTest : FunSpec({
         driver.state.phase shouldBe com.wingedsheep.sdk.core.Phase.BEGINNING
         driver.state.getEntity(bear)?.has<AttackingComponent>() shouldBe false
         driver.isTapped(bear) shouldBe false // and it untapped in the inserted untap step
+    }
+
+    test("an inserted combat phase that ends into another combat phase removes creatures from combat") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val opponent = driver.getOpponent(player)
+        val bear = driver.putCreatureOnBattlefield(player, "Centaur Courser")
+        driver.removeSummoningSickness(bear)
+        driver.castInPostcombatMain(player, "Extra Battle Test", "Extra Battle Test")
+
+        driver.bothPass() // leave the natural postcombat main → first inserted combat
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(player, listOf(bear), opponent)
+        driver.passPriorityUntil(Step.END_COMBAT)
+        driver.bothPass() // → the second inserted combat
+
+        driver.currentStep shouldBe Step.BEGIN_COMBAT
+        driver.state.getEntity(bear)?.has<AttackingComponent>() shouldBe false
+        driver.state.getEntity(player)?.has<AttackersDeclaredThisCombatComponent>() shouldBe false
     }
 })
