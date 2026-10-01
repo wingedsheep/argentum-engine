@@ -615,10 +615,12 @@ class ManaSolver(
             val best = colors.mapNotNull { color ->
                 findBestSourceForColor(remainingSources, color, handRequirements, availableSourcesByColor, spellContext)
                     ?.let { it to color }
-            }.minByOrNull { (source, color) ->
-                calculateTapPriority(source, handRequirements, availableSourcesByColor) +
-                    painPenalty(source, source.colorPainCost[color] ?: 0)
-            }
+            }.minWithOrNull(compareBy<Pair<ManaSource, Color>>(
+                // Prefer native colors before spending substitutes that another pip may need.
+                { (_, color) -> color !in required },
+                { (source, color) -> calculateTapPriority(source, handRequirements, availableSourcesByColor) +
+                    painPenalty(source, source.colorPainCost[color] ?: 0) }
+            ))
             if (best != null) {
                 val (source, color) = best
                 manaProduced[source.entityId] = ManaProduction(color = color, amount = source.amountFor(color))
@@ -637,8 +639,88 @@ class ManaSolver(
             }
         }
 
+        // Single-unit sources admit a bounded bipartite matching. Reserving by accepted-color
+        // count alone is insufficient when two permissions share only some actual sources.
+        // Sources with activation costs or extra production retain the accounting path below.
+        data class PlannedPip(val source: ManaSource, val color: Color?)
+        val plannedPips = mutableMapOf<Int, PlannedPip>()
+        val strictColors = paymentSymbols.flatMap { symbol ->
+            when (symbol) {
+                is ManaSymbol.Colored -> payableColors(listOf(symbol.color))
+                is ManaSymbol.Phyrexian -> payableColors(listOf(symbol.color))
+                is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> payableColors(listOf(symbol.color1, symbol.color2))
+                else -> emptyList()
+            }
+        }.toSet()
+        val needsColorless = paymentSymbols.any { it is ManaSymbol.Colorless }
+        val matchingSources = if (spendingColors.isEmpty()) emptyList() else availableSources.filter { source ->
+            val relevant = source.availableColorsFor(spellContext).any { it in strictColors } ||
+                (needsColorless && source.producesColorless)
+            relevant && source.bonusManaPerTap == 0 && source.bonusManaColorlessPerTap == 0 &&
+                source.colorActivationManaCost.values.all { it == 0 } &&
+                source.producesColors.all { source.amountFor(it) == 1 } &&
+                (!source.producesColorless || source.amountFor(null) == 1)
+        }
+        val useSourceMatching = spendingColors.isNotEmpty()
+        if (useSourceMatching) {
+            val choices = paymentSymbols.map { symbol ->
+                val required = when (symbol) {
+                    is ManaSymbol.Colored -> listOf(symbol.color)
+                    is ManaSymbol.Phyrexian -> listOf(symbol.color)
+                    is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> listOf(symbol.color1, symbol.color2)
+                    else -> emptyList()
+                }
+                val allowed = payableColors(required)
+                matchingSources.flatMap { source ->
+                    if (symbol is ManaSymbol.Colorless) {
+                        if (source.producesColorless) listOf(PlannedPip(source, null)) else emptyList()
+                    } else source.availableColorsFor(spellContext).filter { it in allowed }
+                        .map { PlannedPip(source, it) }
+                }.sortedWith(compareBy<PlannedPip>(
+                    { it.color != null && it.color !in required },
+                    { calculateTapPriority(it.source, handRequirements, availableSourcesByColor) +
+                        painPenalty(it.source, if (it.color == null) it.source.colorlessPainCost else it.source.colorPainCost[it.color] ?: 0) }
+                ))
+            }
+            val occupied = mutableMapOf<EntityId, Int>()
+            fun assign(pip: Int, visited: MutableSet<EntityId>): Boolean {
+                for (choice in choices[pip]) {
+                    if (!visited.add(choice.source.entityId)) continue
+                    val previous = occupied[choice.source.entityId]
+                    if (previous == null || assign(previous, visited)) {
+                        occupied[choice.source.entityId] = pip
+                        plannedPips[pip] = choice
+                        return true
+                    }
+                }
+                return false
+            }
+            val strict = paymentSymbols.indices.filter { index ->
+                when (paymentSymbols[index]) {
+                    is ManaSymbol.Colored, is ManaSymbol.Phyrexian,
+                    is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian, is ManaSymbol.Colorless -> true
+                    else -> false
+                }
+            }
+            for (pip in strict.sortedBy { choices[it].size }) {
+                if (!assign(pip, mutableSetOf())) {
+                    // Complex production may cover the shortfall; use the existing accounting
+                    // path with no partial reservations rather than rejecting a payable cost.
+                    plannedPips.clear()
+                    break
+                }
+            }
+        }
+
         // 1. Pay colored costs first (most constrained)
-        for (symbol in paymentSymbols) {
+        for ((symbolIndex, symbol) in paymentSymbols.withIndex()) {
+            val planned = plannedPips[symbolIndex]
+            if (planned != null) {
+                manaProduced[planned.source.entityId] = if (planned.color == null)
+                    ManaProduction(colorless = 1) else ManaProduction(color = planned.color)
+                useSource(planned.source, planned.color)
+                continue
+            }
             when (symbol) {
                 is ManaSymbol.Colored -> {
                     if (spendingColors.isNotEmpty()) {

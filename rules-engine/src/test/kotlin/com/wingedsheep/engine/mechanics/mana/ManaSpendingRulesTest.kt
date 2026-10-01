@@ -56,10 +56,10 @@ class ManaSpendingRulesTest : ScenarioTestBase() {
         test("mono-hybrid fallback cannot consume mana reserved for later strict pips") {
             val result = ManaPool(white = 1, colorless = 1, spendingColors = spending)
                 .payPartial(cost("{2/U}{W}"))
-            result.remainingCost shouldBe cost("{1}")
+            result.remainingCost shouldBe cost("{2/U}")
             result.manaSpent.white shouldBe 1
-            result.manaSpent.colorless shouldBe 1
-            result.newPool.colorless shouldBe 0
+            result.manaSpent.colorless shouldBe 0
+            result.newPool.colorless shouldBe 1
             ManaPool(white = 1, colorless = 2, spendingColors = spending)
                 .canPay(cost("{2/U}{W}")) shouldBe true
         }
@@ -97,15 +97,83 @@ class ManaSpendingRulesTest : ScenarioTestBase() {
             solution.manaProduced.values.all { it.color == Color.WHITE } shouldBe true
             services.manaSolver.canPay(game.state, game.player2Id, cost("{R}")) shouldBe false
         }
-        test("mono-hybrid generic alternative can split between floating mana and a land") {
-            val game = board()
+        test("partial mono-hybrid payment preserves the colored alternative for a land") {
+            val game = scenario().withPlayers().withCardOnBattlefield(1, "Test Spending Permission")
+                .withLandsOnBattlefield(1, "Plains", 1).build()
             game.state = game.state.updateEntity(game.player1Id) {
                 it.with(com.wingedsheep.engine.state.components.player.ManaPoolComponent(colorless = 1))
             }
-            services.manaSolver.canPay(game.state, game.player1Id, cost("{2/U}")) shouldBe true
-            val partial = ManaPool(colorless = 1, spendingColors = spending).payPartial(cost("{2/U}"))
-            partial.remainingCost shouldBe cost("{1}")
+            services.manaSolver.canPay(game.state, game.player1Id, cost("{2/R}{1}")) shouldBe true
+            val partial = ManaPool(colorless = 1, spendingColors = spending).payPartial(cost("{2/R}{1}"))
+            partial.remainingCost shouldBe cost("{2/R}")
             partial.manaSpent.colorless shouldBe 1
+        }
+        test("partial payment does not select the wrong mono-hybrid generic alternative") {
+            val game = scenario().withPlayers().withCardOnBattlefield(1, "Test Spending Permission")
+                .withLandsOnBattlefield(1, "Plains", 1).withLandsOnBattlefield(1, "Island", 1).build()
+            game.state = game.state.updateEntity(game.player1Id) {
+                it.with(com.wingedsheep.engine.state.components.player.ManaPoolComponent(colorless = 2))
+            }
+            val partial = ManaPool(colorless = 2, spendingColors = spending).payPartial(cost("{2/R}{2/U}"))
+            partial.remainingCost shouldBe cost("{2/R}{2/U}")
+            partial.newPool.colorless shouldBe 2
+            services.manaSolver.canPay(game.state, game.player1Id, cost("{2/R}{2/U}")) shouldBe true
+        }
+        test("complete pool payment can use generic mono-hybrid alternatives") {
+            val available = ManaPool(colorless = 3, spendingColors = spending)
+            available.canPay(cost("{2/R}{1}")) shouldBe true
+            available.pay(cost("{2/R}{1}"))?.colorless shouldBe 0
+            available.payPartial(cost("{2/R}{1}")).remainingCost.isEmpty() shouldBe true
+            val game = scenario().withPlayers().withCardOnBattlefield(1, "Test Spending Permission").build()
+            game.state = game.state.updateEntity(game.player1Id) {
+                it.with(com.wingedsheep.engine.state.components.player.ManaPoolComponent(colorless = 3))
+            }
+            services.manaSolver.canPay(game.state, game.player1Id, cost("{2/R}{1}")) shouldBe true
+            ManaPool(colorless = 1, spendingColors = spending).canPay(cost("{2/R}")) shouldBe false
+        }
+        cardRegistry.register(card("Test Red Hybrid Spell") {
+            manaCost = "{R}{W/G}"; typeLine = "Sorcery"
+        })
+        test("solver preserves substitute white for a hybrid when native red is available") {
+            val game = scenario().withPlayers().withCardOnBattlefield(1, "Test Spending Permission")
+                .withLandsOnBattlefield(1, "Plains", 1).withLandsOnBattlefield(1, "Mountain", 1)
+                .withCardInHand(1, "Test Red Hybrid Spell").build()
+            val solution = services.manaSolver.solve(game.state, game.player1Id, cost("{R}{W/G}"))!!
+            solution.manaProduced.values.map { it.color }.toSet() shouldBe setOf(Color.RED, Color.WHITE)
+            services.manaSolver.canPay(game.state, game.player1Id, cost("{R}{W/G}")) shouldBe true
+        }
+        cardRegistry.register(card("Test Overlapping Spending") {
+            manaCost = "{0}"; typeLine = "Artifact"
+            staticAbility { ability = SpendManaAsColor(Color.WHITE, Color.RED) }
+            staticAbility { ability = SpendManaAsColor(Color.GREEN, Color.RED) }
+            staticAbility { ability = SpendManaAsColor(Color.WHITE, Color.BLUE) }
+            staticAbility { ability = SpendManaAsColor(Color.BLACK, Color.BLUE) }
+        })
+        test("solver matches overlapping permissions to distinct actual sources") {
+            val game = scenario().withPlayers().withCardOnBattlefield(1, "Test Overlapping Spending")
+                .withLandsOnBattlefield(1, "Plains", 1).withLandsOnBattlefield(1, "Forest", 1).build()
+            for (value in listOf("{R}{U}", "{U}{R}")) {
+                val solution = services.manaSolver.solve(game.state, game.player1Id, cost(value))!!
+                solution.manaProduced.values.map { it.color }.toSet() shouldBe setOf(Color.WHITE, Color.GREEN)
+                services.manaSolver.canPay(game.state, game.player1Id, cost(value)) shouldBe true
+            }
+        }
+        test("irrelevant multi-mana source does not disable overlapping color matching") {
+            val game = scenario().withPlayers().withCardOnBattlefield(1, "Test Overlapping Spending")
+                .withLandsOnBattlefield(1, "Plains", 1).withLandsOnBattlefield(1, "Forest", 1)
+                .withCardOnBattlefield(1, "Sol Ring").build()
+            for (value in listOf("{R}{U}", "{U}{R}", "{R}{U}{2}")) {
+                val solution = services.manaSolver.solve(game.state, game.player1Id, cost(value))!!
+                solution.manaProduced.values.mapNotNull { it.color }.toSet() shouldBe setOf(Color.WHITE, Color.GREEN)
+                services.manaSolver.canPay(game.state, game.player1Id, cost(value)) shouldBe true
+            }
+        }
+        test("source matching falls back when strict pips need complex production") {
+            val game = scenario().withPlayers().withCardOnBattlefield(1, "Test Spending Permission")
+                .withLandsOnBattlefield(1, "Plains", 1).withCardOnBattlefield(1, "Sol Ring").build()
+            val solution = services.manaSolver.solve(game.state, game.player1Id, cost("{R}{C}{C}"))!!
+            solution.sources.size shouldBe 2
+            services.manaSolver.canPay(game.state, game.player1Id, cost("{R}{C}{C}")) shouldBe true
         }
         test("permission follows projected controller") {
             val game = board()

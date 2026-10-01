@@ -8858,6 +8858,8 @@ staticAbility {
   `GrantStaticAbility` permissions (including grants to players) use their normal gates and durations.
   Payment and affordability use the same rule for spells, abilities, special actions and resolution
   payments. The server sends `ClientPlayer.manaPaymentColors` for the existing payment readouts.
+  Existing auto-payment limits remain: generic mono-hybrid alternatives split across floating
+  mana and sources, and greedy planning for sources with multiple mana, bonuses or activation costs.
   New Assay grammar vocabulary; no Oracle grammar band is introduced here.
 
 - `SpendAnyManaTypeForActivatedAbilities(filter, substituteColor = null)` — relaxes the mana portion

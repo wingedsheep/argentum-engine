@@ -426,7 +426,7 @@ data class ManaPool(
      */
     fun canPay(cost: ManaCost, spellContext: SpellPaymentContext? = null): Boolean {
         if (spendingColors.isNotEmpty()) {
-            return payPartialWithSpending(cost, spellContext).remainingCost.symbols.all { it is ManaSymbol.X }
+            return payPartialWithSpending(cost, spellContext, allowMonoHybridGeneric = true).remainingCost.symbols.all { it is ManaSymbol.X }
         }
         var remaining = this
 
@@ -510,7 +510,7 @@ data class ManaPool(
      */
     fun pay(cost: ManaCost, spellContext: SpellPaymentContext? = null): ManaPool? {
         if (spendingColors.isNotEmpty()) {
-            val partial = payPartialWithSpending(cost, spellContext)
+            val partial = payPartialWithSpending(cost, spellContext, allowMonoHybridGeneric = true)
             return partial.newPool.takeIf { partial.remainingCost.symbols.all { it is ManaSymbol.X } }
         }
         if (!canPay(cost, spellContext)) return null
@@ -599,6 +599,10 @@ data class ManaPool(
      */
     fun payPartial(cost: ManaCost, spellContext: SpellPaymentContext? = null): PartialPaymentResult {
         if (spendingColors.isNotEmpty()) {
+            if (cost.symbols.any { it is ManaSymbol.MonocolorHybrid }) {
+                val full = payPartialWithSpending(cost, spellContext, allowMonoHybridGeneric = true)
+                if (full.remainingCost.symbols.all { it is ManaSymbol.X }) return full
+            }
             return payPartialWithSpending(cost, spellContext)
         }
         var remaining = this
@@ -751,7 +755,11 @@ data class ManaPool(
      * Augmenting paths reserve inflexible pips even when flexible ones appear first in the cost.
      * Unpaid pips keep their ORIGINAL symbols, so a later land/payment pass retains every option.
      */
-    private fun payPartialWithSpending(cost: ManaCost, context: SpellPaymentContext?): PartialPaymentResult {
+    private fun payPartialWithSpending(
+        cost: ManaCost,
+        context: SpellPaymentContext?,
+        allowMonoHybridGeneric: Boolean = false
+    ): PartialPaymentResult {
         val symbols = cost.symbols.filter { it !is ManaSymbol.Generic && it !is ManaSymbol.X }
         fun options(symbol: ManaSymbol): List<Color?> {
             fun colors(color: Color): List<Color> = listOf(color) + spendingColors[color].orEmpty().filter { it != color }
@@ -804,28 +812,30 @@ data class ManaPool(
                 spent = if (color == null) spent.addColorless() else spent.add(color)
             }
         }
-        // Spend every reserved colored unit before considering generic fallback.
-        for (i in symbols.indices.filter { !matched[it] }) {
-            if (symbols[i] is ManaSymbol.MonocolorHybrid) {
-                val fallback = ManaCost(listOf(ManaSymbol.Generic((symbols[i] as ManaSymbol.MonocolorHybrid).generic)))
-                val paid = pool.payPartial(fallback, context)
-                if (paid.manaSpent.total > 0) {
-                    // Committing any generic mana selects this alternative; later sources pay
-                    // its unpaid generic balance rather than paying the colored half again.
-                    pool = paid.newPool
-                    spent = Color.entries.fold(spent) { acc, color -> acc.add(color, paid.manaSpent.get(color)) }
-                        .addColorless(paid.manaSpent.colorless)
-                    unpaid.addAll(paid.remainingCost.symbols)
-                } else unpaid.add(symbols[i])
-            } else unpaid.add(symbols[i])
-        }
         val genericPartial = pool.payPartial(ManaCost(listOf(ManaSymbol.Generic(generic))), context)
+        pool = genericPartial.newPool
         val genericSpent = genericPartial.manaSpent
         spent = Color.entries.fold(spent) { acc, color -> acc.add(color, genericSpent.get(color)) }
             .addColorless(genericSpent.colorless)
         unpaid.addAll(genericPartial.remainingCost.symbols)
+        for (i in symbols.indices.filter { !matched[it] }) {
+            val symbol = symbols[i]
+            // Partial payment must preserve the colored alternative for the later source pass.
+            // Full-pool payment can select generic once that entire alternative is available.
+            if (allowMonoHybridGeneric && symbol is ManaSymbol.MonocolorHybrid) {
+                val fallback = ManaCost(listOf(ManaSymbol.Generic(symbol.generic)))
+                val paid = pool.payPartial(fallback, context)
+                if (paid.remainingCost.isEmpty()) {
+                    pool = paid.newPool
+                    spent = Color.entries.fold(spent) { acc, color -> acc.add(color, paid.manaSpent.get(color)) }
+                        .addColorless(paid.manaSpent.colorless)
+                    continue
+                }
+            }
+            unpaid.add(symbol)
+        }
         unpaid.addAll(cost.symbols.filterIsInstance<ManaSymbol.X>())
-        return PartialPaymentResult(genericPartial.newPool.copy(spendingColors = spendingColors), ManaCost(unpaid), spent)
+        return PartialPaymentResult(pool.copy(spendingColors = spendingColors), ManaCost(unpaid), spent)
     }
 
     /**

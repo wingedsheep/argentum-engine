@@ -103,4 +103,26 @@ describe('server-supplied mana payment colors', () => {
     const coverage = computeCoverage(['R'], emptyPool, ['white'] as never, [plains], 0, { R: ['R', 'W'] })
     expect(coverage[0]?.pending).toBe(true)
   })
+  it('reserves a flexible source for a strict pip before using white as red', () => {
+    const dual = source('dual', ['WHITE', 'BLUE'])
+    const plains = source('plains', ['WHITE'])
+    const coverage = computeCoverage(['U', 'R'], emptyPool, ['dual', 'plains'] as never,
+      [dual, plains], 0, { R: ['R', 'W'] })
+    expect(coverage.map((pip) => pip.pending)).toEqual([true, true])
+  })
+  it('backtracks floating mana when a selected source covers only the other pip', () => {
+    const plains = source('plains', ['WHITE'])
+    const coverage = computeCoverage(['W/U', 'U/B'], pool({ blue: 1 }), ['plains'] as never, [plains])
+    expect(coverage.map((pip) => pip.floating || pip.pending)).toEqual([true, true])
+  })
+
+  it('covers a large mixed selection with flexible sources and white substitution', () => {
+    const duals = Array.from({ length: 12 }, (_, index) => source(`dual-${index}`, ['WHITE', 'BLUE']))
+    const plains = Array.from({ length: 12 }, (_, index) => source(`plains-${index}`, ['WHITE']))
+    const sources = [...duals, ...plains]
+    const coverage = computeCoverage(Array.from({ length: 12 }, () => ['U', 'R']).flat(), emptyPool,
+      sources.map((item) => item.entityId), sources, 0, { R: ['R', 'W'] })
+    expect(coverage.every((pip) => pip.pending)).toBe(true)
+  })
+
 })

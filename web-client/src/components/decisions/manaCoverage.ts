@@ -24,8 +24,8 @@ export interface PipCoverage {
  * Works out which pips of the cost are already covered, and by what.
  *
  * Floating mana is applied first (it is real, and the resumers spend the pool before tapping
- * anything), then the selected sources. Mirrors the engine's solver well enough for a UI readout —
- * the server still re-solves on submit. Skips X (variable). `extraGeneric` folds in non-mana
+ * anything), then the selected sources. Alternate assignments keep a flexible source from blocking a
+ * strict pip; the server still validates the payment on submit. Skips X (variable). `extraGeneric` folds in non-mana
  * payment: each tapped Waterbend permanent pays {1} generic.
  */
 const COLOR_OR_COLORLESS = new Set(['W', 'U', 'B', 'R', 'G', 'C'])
@@ -52,82 +52,120 @@ export function computeCoverage(
   costSymbols: readonly string[],
   pool: ClientManaPool | null,
   selectedIds: readonly EntityId[],
-  availableSources: readonly ManaSourceOption[],
+  availableSources: readonly Pick<ManaSourceOption, 'entityId' | 'producesColors' | 'manaAmount'>[],
   extraGeneric = 0,
   acceptedColors: Readonly<Record<string, readonly string[]>> = {},
 ): PipCoverage[] {
   const pips: PipCoverage[] = costSymbols.map((symbol) => ({ symbol, floating: false, pending: false }))
-
   const optionsFor = (symbol: string) =>
     [...new Set(pipColorOptions(symbol).flatMap((color) => acceptedColors[color] ?? [color]))]
-  // The readout keeps printed pip order; assign strict pips first using server-supplied options.
-  const assignmentPips = [...pips].sort((a, b) => optionsFor(a.symbol).length - optionsFor(b.symbol).length)
+  const coloredIndices = pips.map((_, index) => index)
+    .filter((index) => optionsFor(pips[index]!.symbol).length > 0)
+    .sort((a, b) => optionsFor(pips[a]!.symbol).length - optionsFor(pips[b]!.symbol).length)
 
-  const floatingByColor: Record<string, number> = {
-    W: pool?.white ?? 0,
-    U: pool?.blue ?? 0,
-    B: pool?.black ?? 0,
-    R: pool?.red ?? 0,
-    G: pool?.green ?? 0,
-    C: pool?.colorless ?? 0,
+  // A multi-mana source chooses one actual color for its whole activation. Keep its units
+  // together so the readout cannot spend one Lotus as both blue and white.
+  interface Resource {
+    colors: readonly string[]
+    remaining: number
+    floating: boolean
+    chosenColor?: string | undefined
   }
-
-  // Pass 1 — floating mana against coloured pips it exactly matches.
-  for (const pip of assignmentPips) {
-    const paidWith = optionsFor(pip.symbol).find((color) => (floatingByColor[color] ?? 0) > 0)
-    if (paidWith !== undefined) {
-      floatingByColor[paidWith] = (floatingByColor[paidWith] ?? 0) - 1
-      pip.floating = true
-    }
-  }
-
-  // Pass 2 — selected sources against the coloured pips still open. A source that adds more
-  // than one mana (Gilded Lotus: "three mana of any one color") covers up to that many pips of
-  // one colour it produces — the colour that pays the most — and carries the rest into the
-  // generic pass. `manaAmount` is the server's number, the same one the cast path's
-  // `ManaSourceInfo` sends; without it a Lotus counted as one pip and Pay stayed dead on a cost
-  // the server would have accepted.
-  const sourceById = new Map(availableSources.map((s) => [s.entityId, s]))
-  let spareFromSources = 0
-  const openPipsPayableBy = (color: string) =>
-    assignmentPips.filter((pip) => !pip.floating && !pip.pending && optionsFor(pip.symbol).includes(color))
+  const resources: Resource[] = Object.entries({
+    W: pool?.white ?? 0, U: pool?.blue ?? 0, B: pool?.black ?? 0,
+    R: pool?.red ?? 0, G: pool?.green ?? 0, C: pool?.colorless ?? 0,
+  }).filter(([, amount]) => amount > 0)
+    .map(([color, amount]) => ({ colors: [color], remaining: amount, floating: true }))
+  const sourceById = new Map(availableSources.map((source) => [source.entityId, source]))
   for (const id of selectedIds) {
     const source = sourceById.get(id)
     if (!source) continue
-    const amount = source.manaAmount ?? 1
-    const colors = (source.producesColors ?? []).map(toPip)
-    let best: { color: string; count: number } | undefined
-    for (const color of colors) {
-      const count = Math.min(amount, openPipsPayableBy(color).length)
-      if (count > 0 && (!best || count > best.count)) best = { color, count }
+    resources.push({
+      colors: source.producesColors.map(toPip),
+      remaining: source.manaAmount ?? 1,
+      floating: false,
+    })
+  }
+
+  let best = pips.map((pip) => ({ ...pip }))
+  let bestScore = -1
+  const payableCount = pips.filter((pip) => pip.symbol !== 'X').length
+  const seen = new Set<string>()
+  // This is a display estimate, not the server's payment solver. Bound unusual source/color
+  // combinations so a payment readout cannot stall rendering; keep the best partial assignment.
+  const searchBudget = 10_000
+  let searchedStates = 0
+  const resourceKey = (resource: Resource) =>
+    `${resource.floating}:${resource.chosenColor ?? resource.colors.join('/')}:${resource.remaining}`
+
+  function finishGeneric() {
+    const candidate = pips.map((pip) => ({ ...pip }))
+    let floating = resources.filter((resource) => resource.floating)
+      .reduce((sum, resource) => sum + resource.remaining, 0)
+    let pending = extraGeneric + resources.filter((resource) => !resource.floating)
+      .reduce((sum, resource) => sum + resource.remaining, 0)
+    const genericIndices = candidate.map((_, index) => index)
+      .filter((index) => !candidate[index]!.floating && !candidate[index]!.pending &&
+        pipGenericAmount(candidate[index]!.symbol) !== null)
+      .sort((a, b) => pipGenericAmount(candidate[a]!.symbol)! - pipGenericAmount(candidate[b]!.symbol)!)
+    for (const index of genericIndices) {
+      const amount = pipGenericAmount(candidate[index]!.symbol)!
+      if (floating >= amount) {
+        floating -= amount
+        candidate[index]!.floating = true
+      } else if (floating + pending >= amount) {
+        pending -= amount - floating
+        floating = 0
+        candidate[index]!.pending = true
+      }
     }
-    if (best) {
-      for (const pip of openPipsPayableBy(best.color).slice(0, best.count)) pip.pending = true
-      spareFromSources += amount - best.count
-    } else {
-      spareFromSources += amount
+    const score = candidate.filter((pip) => pip.floating || pip.pending).length
+    if (score > bestScore) {
+      bestScore = score
+      best = candidate
     }
   }
 
-  // Pass 3 — whatever is left (leftover floating, mana from sources that matched no coloured pip
-  // or had some to spare, Waterbend taps) pays generic pips, cheapest first.
-  let leftoverFloating = Object.values(floatingByColor).reduce((a, b) => a + b, 0)
-  let leftoverPending = spareFromSources + extraGeneric
-  for (const pip of assignmentPips) {
-    if (pip.floating || pip.pending) continue
-    const amount = pipGenericAmount(pip.symbol)
-    if (amount === null) continue
-    if (leftoverFloating >= amount) {
-      leftoverFloating -= amount
-      pip.floating = true
-    } else if (leftoverFloating + leftoverPending >= amount) {
-      leftoverPending -= amount - leftoverFloating
-      leftoverFloating = 0
-      pip.pending = true
+  function assign(position: number): boolean {
+    if (++searchedStates > searchBudget) return false
+    if (position === coloredIndices.length) {
+      finishGeneric()
+      return bestScore === payableCount
     }
+    const coverageKey = pips.map((pip) => pip.floating ? 'f' : pip.pending ? 'p' : '-').join('')
+    const stateKey = `${position}|${coverageKey}|${resources.map(resourceKey).sort().join('|')}`
+    if (seen.has(stateKey)) return false
+    seen.add(stateKey)
+    const pip = pips[coloredIndices[position]!]!
+    const options = optionsFor(pip.symbol)
+    const tried = new Set<string>()
+    for (const resource of resources) {
+      if (resource.remaining === 0) continue
+      const key = resourceKey(resource)
+      if (tried.has(key)) continue
+      tried.add(key)
+      const colors = resource.chosenColor ? [resource.chosenColor] : resource.colors
+      for (const color of colors) {
+        if (!options.includes(color)) continue
+        const previousColor = resource.chosenColor
+        resource.chosenColor = color
+        resource.remaining--
+        pip.floating = resource.floating
+        pip.pending = !resource.floating
+        const complete = assign(position + 1)
+        resource.remaining++
+        resource.chosenColor = previousColor
+        pip.floating = false
+        pip.pending = false
+        if (complete) return true
+      }
+    }
+    // Leave a pip uncovered for the partial readout, or pay a hybrid's generic half later.
+    return assign(position + 1)
   }
 
-  return pips
+  assign(0)
+  return best
 }
 
 /** X is chosen elsewhere, so an X pip never blocks the Pay button. */
