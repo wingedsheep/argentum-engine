@@ -1,0 +1,68 @@
+{
+  "player1Name": "Sanctuary",
+  "player2Name": "Attackers",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Island Sanctuary"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Disenchant"
+    ],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Wind Drake"
+      },
+      {
+        "name": "River Boa"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains"
+    ]
+  },
+  "phase": "BEGINNING",
+  "step": "UPKEEP",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "DRAW"
+  ],
+  "player2StopAtSteps": [
+    "DECLARE_ATTACKERS"
+  ],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}
