@@ -6369,6 +6369,72 @@
     ]
 }
 
+// Graaz, Unstoppable Juggernaut
+{
+    "name": "Graaz, Unstoppable Juggernaut",
+    "manaCost": "{8}",
+    "typeLine": "Legendary Artifact Creature — Juggernaut",
+    "oracleText": "Juggernauts you control attack each combat if able.\nJuggernauts you control can't be blocked by Walls.\nOther creatures you control have base power and toughness 5/3 and are Juggernauts in addition to their other creature types.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MustAttack",
+                "filter": {
+                    "baseFilter": "creature Juggernaut ctrl:you"
+                }
+            },
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasSubtype",
+                            "subtype": "Wall"
+                        }
+                    ]
+                },
+                "filter": {
+                    "baseFilter": "creature Juggernaut ctrl:you"
+                }
+            },
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 5,
+                "toughness": 3,
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Juggernaut",
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "RARE",
+        "artist": "Néstor Ossandón Leal",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0e73b63-17cc-4dca-abd6-728b74bc37a8.jpg?1783917991",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "If Graaz loses its abilities for some reason, then Juggernauts you control will not have to attack each combat and will be able to be blocked by Walls. However, due to how continuous effects are applied in layers, other creatures you control will continue to be 5/3 Juggernauts in addition to their other types."
+            }
+        ]
+    }
+}
+
 // Green Sun's Twilight
 {
     "name": "Green Sun's Twilight",
@@ -7882,6 +7948,104 @@
     ]
 }
 
+// Jor Kadeen, First Goldwarden
+{
+    "name": "Jor Kadeen, First Goldwarden",
+    "manaCost": "{R}{W}",
+    "typeLine": "Legendary Creature — Human Rebel",
+    "oracleText": "Trample\nWhenever Jor Kadeen attacks, it gets +X/+X until end of turn, where X is the number of equipped creatures you control. Then if Jor Kadeen's power is 4 or greater, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jor Kadeen, First Goldwarden:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsEquipped"
+                                    ]
+                                }
+                            },
+                            "toughnessModifier": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsEquipped"
+                                    ]
+                                }
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "Power"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "RARE",
+        "artist": "Jeremy Wilson",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7e4d8f7-874d-4b2a-ad23-afab479784ea.jpg?1783918001",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "The value of X is determined only once, as the triggered ability resolves. If the number of equipped creatures you control changes after that time, it won't change the bonus granted."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Kaito, Dancing Shadow
 {
     "name": "Kaito, Dancing Shadow",
@@ -8179,6 +8343,208 @@
     }
 }
 
+// Kaya, Intangible Slayer
+{
+    "name": "Kaya, Intangible Slayer",
+    "manaCost": "{3}{W}{W}{B}{B}",
+    "typeLine": "Legendary Planeswalker — Kaya",
+    "oracleText": "Hexproof\n+2: Each opponent loses 3 life and you gain 3 life.\n0: You draw two cards. Then each opponent may scry 1.\n−3: Exile target creature or enchantment. If it wasn't an Aura, create a token that's a copy of it, except it's a 1/1 white Spirit creature with flying in addition to its other types.",
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kaya, Intangible Slayer:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Kaya, Intangible Slayer:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "Scry",
+                                    "count": 1
+                                },
+                                "decisionMaker": {
+                                    "type": "PlayerRef",
+                                    "player": "You"
+                                },
+                                "descriptionOverride": "Scry 1?"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Kaya, Intangible Slayer:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Aura"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Exile"
+                            },
+                            {
+                                "type": "CreateTokenCopyOfTarget",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "overridePower": 1,
+                                "overrideToughness": 1,
+                                "addedKeywords": [
+                                    "FLYING"
+                                ],
+                                "overrideColors": [
+                                    "WHITE"
+                                ],
+                                "addedSubtypes": [
+                                    "Spirit"
+                                ],
+                                "addCardTypes": [
+                                    "CREATURE"
+                                ]
+                            }
+                        ]
+                    },
+                    "otherwise": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Exile"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature|enchantment"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "RARE",
+        "artist": "Marta Nael",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/6865b8c7-b260-48e8-a905-64cbf06b7e57.jpg?1783918001",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "For the middle loyalty ability, each opponent in turn order chooses whether or not to scry. Those who do (likely all of them) look at the top card of their library at the same time, then they decide in turn order where their card goes. Each opponent will know the choices of previous players in turn order before making their own choices."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Except for the listed exceptions, the token copies exactly what was printed on the original permanent and nothing else (unless that permanent is copying something else or it is a token; see below). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, and so on."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If the copied creature has {X} in its mana cost, X is 0."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If the copied creature is a token, the new token that's created copies the original characteristics of that token as stated by the effect that created that token, with the exceptions noted above."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Kaya's last ability checks to see whether the permanent was an Aura when it last existed on the battlefield, not whether it is an Aura card in exile. For example, if an enchantment creature with the bestow ability (an ability that allows a creature card to be cast as an Aura instead) is an Aura and the target of Kaya's last ability, the ability will not create a copy of it."
+            }
+        ]
+    },
+    "startingLoyalty": 6,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Kemba, Kha Enduring
 {
     "name": "Kemba, Kha Enduring",
@@ -8268,6 +8634,154 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Kethek, Crucible Goliath
+{
+    "name": "Kethek, Crucible Goliath",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Legendary Creature — Phyrexian Beast",
+    "oracleText": "At the beginning of your end step, you may sacrifice another creature. If you do, reveal cards from the top of your library until you reveal a nonlegendary creature card with lesser mana value, put it onto the battlefield, then put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kethek, Crucible Goliath:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature",
+                                "player": "You",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may sacrifice another creature",
+                            "selectedLabel": "Sacrifice",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected1",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Sacrifice"
+                                    },
+                                    {
+                                        "type": "GatherUntilMatch",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsCreature",
+                                                "IsNonlegendary",
+                                                {
+                                                    "type": "ManaValueAtMostDynamic",
+                                                    "amount": {
+                                                        "type": "Subtract",
+                                                        "left": {
+                                                            "type": "EntityProperty",
+                                                            "entity": "SacrificedAsCost",
+                                                            "numericProperty": "ManaValue"
+                                                        },
+                                                        "right": {
+                                                            "type": "Fixed",
+                                                            "amount": 1
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "storeMatch": "matched4",
+                                        "storeRevealed": "revealed4"
+                                    },
+                                    {
+                                        "type": "RevealCollection",
+                                        "from": "revealed4",
+                                        "fromZone": "Library",
+                                        "toZone": "Battlefield"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "matched4",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        }
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "revealed4",
+                                        "collectionFilter": {
+                                            "type": "ExcludeOtherCollection",
+                                            "otherCollectionName": "matched4"
+                                        },
+                                        "storeMatching": "matching7"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "matching7",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Bottom"
+                                        },
+                                        "order": "Random"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your end step, you may sacrifice another creature. If you do, reveal cards from the top of your library until you reveal a nonlegendary creature card with lesser mana value, put it onto the battlefield, then put the rest on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/4152a5a8-e5a1-46b0-8f75-b9ac341da474.jpg?1783918000",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "If a creature on the battlefield has an {X} in its mana cost, X is 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -10021,6 +10535,79 @@
                 "text": "If an activated ability of a land card in a graveyard references the card it's printed on by name, treat Mirran Safehouse's version of that ability as though it referenced Mirran Safehouse by name instead."
             }
         ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Mirrex
+{
+    "name": "Mirrex",
+    "manaCost": "",
+    "typeLine": "Land — Sphere",
+    "oracleText": "{T}: Add {C}.\n{T}: Add one mana of any color. Activate only if this land entered this turn.\n{3}, {T}: Create a 1/1 colorless Phyrexian Mite artifact creature token with toxic 1 and \"This token can't block.\" (Players dealt combat damage by it also get a poison counter.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mirrex:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Mirrex:2",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "EnteredThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isManaAbility": true
+            },
+            {
+                "id": "Mirrex:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Phyrexian Mite"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "254",
+        "rarity": "RARE",
+        "artist": "Adam Burn",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54a702cd-ca49-4570-b47e-8b090452a3c3.jpg?1783917980"
     },
     "colorIdentityOverride": []
 }
@@ -11874,6 +12461,73 @@
     ]
 }
 
+// Phyrexian Atlas
+{
+    "name": "Phyrexian Atlas",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add one mana of any color.\nCorrupted — Whenever this artifact becomes tapped, each opponent who has three or more poison counters loses 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Phyrexian Atlas:2",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "PlayerCounterCount",
+                                    "counterType": "POISON"
+                                },
+                                "operator": "GTE",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "You"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Phyrexian Atlas:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "artist": "Septian Fajrianto",
+        "flavorText": "Since conquering Mirrodin, Phyrexian engineers have worked tirelessly to transform the plane's original two layers into a more fitting array of nine.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5adb509-6ad3-4838-925d-1cafa926b83a.jpg?1783917988"
+    }
+}
+
 // Phyrexian Vindicator
 {
     "name": "Phyrexian Vindicator",
@@ -13554,6 +14208,148 @@
     }
 }
 
+// Serum-Core Chimera
+{
+    "name": "Serum-Core Chimera",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Creature — Phyrexian Chimera",
+    "oracleText": "Flying\nWhenever you cast a noncreature spell, put an oil counter on this creature.\nRemove three oil counters from this creature: Draw a card. Then you may discard a nonland card. When you discard a card this way, this creature deals 3 damage to target creature or planeswalker. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Serum-Core Chimera:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cast a noncreature spell, put an oil counter on this creature."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Serum-Core Chimera:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "OIL",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "ReflexiveTrigger",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand",
+                                            "filter": "nonland"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            },
+                            "reflexiveEffect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "damageSource": "Self"
+                            },
+                            "reflexiveTargetRequirements": [
+                                {
+                                    "type": "TargetCreatureOrPlaneswalker",
+                                    "id": "t0"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Remove three oil counters from this creature: Draw a card. Then you may discard a nonland card. When you discard a card this way, this creature deals 3 damage to target creature or planeswalker. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "UNCOMMON",
+        "artist": "Johan Grenier",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31147651-9a5e-4329-923b-e464f67135e9.jpg?1783917997",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "You don't choose a target for Serum-Core Chimera's last ability at the time you activate it. Rather, a second \"reflexive\" ability triggers when you discard a card this way. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Sheoldred's Edict
 {
     "name": "Sheoldred's Edict",
@@ -14213,6 +15009,85 @@
     ]
 }
 
+// Solphim, Mayhem Dominus
+{
+    "name": "Solphim, Mayhem Dominus",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Creature — Phyrexian Horror",
+    "oracleText": "If a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals double that damage to that player or permanent instead.\n{1}{R/P}{R/P}, Discard two cards: Put an indestructible counter on Solphim. ({R/P} can be paid with either {R} or 2 life.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Solphim, Mayhem Dominus:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R/P}{R/P}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "count": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "INDESTRUCTIBLE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{1}{R/P}{R/P}, Discard two cards: Put an indestructible counter on Solphim."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "DoubleDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "EachOpponent"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "permanent ctrl:opponent"
+                            }
+                        ]
+                    },
+                    "source": {
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "damageType": "DamageNonCombat"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "MYTHIC",
+        "artist": "Chris Cold",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3a0c7f3-7fb9-43de-a9af-96532c31e5ed.jpg?1783918023"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Soulless Jailer
 {
     "name": "Soulless Jailer",
@@ -14557,6 +15432,129 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Sword of Forge and Frontier
+{
+    "name": "Sword of Forge and Frontier",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+2 and has protection from red and from green.\nWhenever equipped creature deals combat damage to a player, exile the top two cards of your library. You may play those cards this turn. You may play an additional land this turn.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sword of Forge and Frontier:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled"
+                        },
+                        {
+                            "type": "PlayAdditionalLands",
+                            "count": 1
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sword of Forge and Frontier:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantProtection",
+                "color": "RED"
+            },
+            {
+                "type": "GrantProtection",
+                "color": "GREEN"
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "244",
+        "rarity": "MYTHIC",
+        "artist": "Scott Murphy",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2daa3621-8a2c-4b4b-87ac-f981192a0567.jpg?1783917985",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "You must follow all normal timing rules for a card you play using Sword of Forge and Frontier's second ability and, if it's a spell, you must pay its costs to cast it."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "The effect that allows you to play an additional land that turn is cumulative with other effects that do so, including itself. If the second ability triggers multiple times in the same turn, perhaps because there were multiple combats, you will be able to play that many additional lands."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If the equipped creature somehow deals combat damage to a player on an opponent's turn, the second ability will trigger. You'll be able to cast cards you exile if timing rules allow (so, instants, mostly), but you won't be able to play a land that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Sylvok Battle-Chair
@@ -15503,6 +16501,127 @@
     ]
 }
 
+// The Filigree Sylex
+{
+    "name": "The Filigree Sylex",
+    "manaCost": "{2}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "{T}: Put an oil counter on The Filigree Sylex.\n{T}, Sacrifice The Filigree Sylex: Destroy each nonland permanent with mana value equal to the number of oil counters on The Filigree Sylex.\n{T}, Remove ten oil counters from among permanents you control and sacrifice The Filigree Sylex: It deals 10 damage to any target.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Filigree Sylex:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{T}: Put an oil counter on The Filigree Sylex."
+            },
+            {
+                "id": "The Filigree Sylex:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsNonland",
+                                        "IsPermanent",
+                                        {
+                                            "type": "ManaValueEqualsDynamic",
+                                            "amount": {
+                                                "type": "LastKnownSourceCounters",
+                                                "counterType": "OIL"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}, Sacrifice The Filigree Sylex: Destroy each nonland permanent with mana value equal to the number of oil counters on The Filigree Sylex."
+            },
+            {
+                "id": "The Filigree Sylex:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 10
+                                }
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 10
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": "Self"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Remove ten oil counters from among permanents you control and sacrifice The Filigree Sylex: It deals 10 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "RARE",
+        "artist": "Leanna Crossan",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e0958a1-1bac-48be-888d-f7573f409a9b.jpg?1783917992",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "If a permanent has {X} in its mana cost, X is 0 when determining its mana value."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // The Hunter Maze
 {
     "name": "The Hunter Maze",
@@ -15558,6 +16677,283 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// The Monumental Facade
+{
+    "name": "The Monumental Facade",
+    "manaCost": "",
+    "typeLine": "Land — Sphere",
+    "oracleText": "This land enters with two oil counters on it.\n{T}: Add {C}.\n{T}, Remove an oil counter from this land: Put an oil counter on target artifact or creature you control. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Monumental Facade:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "The Monumental Facade:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature|artifact ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 2,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "255",
+        "rarity": "RARE",
+        "artist": "Bruce Brenneise",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6785057-0d06-4f91-b45f-c05f7c4e2b19.jpg?1783917980"
+    }
+}
+
+// The Mycosynth Gardens
+{
+    "name": "The Mycosynth Gardens",
+    "manaCost": "",
+    "typeLine": "Land — Sphere",
+    "oracleText": "{T}: Add {C}.\n{1}, {T}: Add one mana of any color.\n{X}, {T}: This land becomes a copy of target nontoken artifact you control with mana value X.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Mycosynth Gardens:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "The Mycosynth Gardens:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "The Mycosynth Gardens:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "EachPermanentBecomesCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "affected": "Self"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsArtifact",
+                                    "IsNontoken",
+                                    "ManaValueEqualsX"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{X}, {T}: This land becomes a copy of target nontoken artifact you control with mana value X."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "256",
+        "rarity": "RARE",
+        "artist": "Andrew Mar",
+        "flavorText": "As the Invasion Tree grew, its branches pierced through the world's silent core.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a931463-25f6-4e31-95b4-bb4a9388009b.jpg?1783917979",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "The Mycosynth Gardens copies exactly what was printed on the original artifact and nothing else (unless that permanent is copying something else). It doesn't copy whether that artifact is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, and so on."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If the copied artifact is copying something else, then The Mycosynth Gardens becomes a copy of whatever that artifact copied."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If the copied artifact has {X} in its mana cost, X is 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// The Seedcore
+{
+    "name": "The Seedcore",
+    "manaCost": "",
+    "typeLine": "Land — Sphere",
+    "oracleText": "{T}: Add {C}.\n{T}: Add one mana of any color. Spend this mana only to cast Phyrexian creature spells.\nCorrupted — {T}: Target 1/1 creature gets +2/+1 until end of turn. Activate only if an opponent has three or more poison counters.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Seedcore:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "The Seedcore:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "restriction": {
+                        "type": "SubtypeSpellsOrAbilitiesOnly",
+                        "subtype": "Phyrexian",
+                        "creatureOnly": true
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "The Seedcore:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature pow=1 tou>=1 tou<=1"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "GreatestAmongPlayers",
+                                "players": "EachOpponent",
+                                "inner": {
+                                    "type": "PlayerCounterCount",
+                                    "counterType": "POISON"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "259",
+        "rarity": "RARE",
+        "artist": "Kasia 'Kafis' Zielińska",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29c91aad-bf33-448e-b122-65940fb2e33b.jpg?1783917980"
+    },
+    "colorIdentityOverride": []
 }
 
 // The Surgical Bay
@@ -16941,6 +18337,122 @@
         "artist": "Mike Jordana",
         "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd9df44a-a0ab-435f-914c-aa11cd88f4ec.jpg?1783918006"
     }
+}
+
+// Venser, Corpse Puppet
+{
+    "name": "Venser, Corpse Puppet",
+    "manaCost": "{U}{B}",
+    "typeLine": "Legendary Creature — Phyrexian Zombie Wizard",
+    "oracleText": "Lifelink, toxic 1\nWhenever you proliferate, choose one —\n• If you don't control a creature named The Hollow Sentinel, create The Hollow Sentinel, a legendary 3/3 colorless Phyrexian Golem artifact creature token.\n• Target artifact creature you control gains flying and lifelink until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "LIFELINK",
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Venser, Corpse Puppet:1",
+                "trigger": "ProliferatedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "Exists",
+                                        "player": "You",
+                                        "zone": "Battlefield",
+                                        "filter": "creature name:The Hollow Sentinel",
+                                        "negate": true
+                                    }
+                                },
+                                "then": {
+                                    "type": "CreateToken",
+                                    "power": 3,
+                                    "toughness": 3,
+                                    "colors": [],
+                                    "creatureTypes": [
+                                        "Phyrexian",
+                                        "Golem"
+                                    ],
+                                    "name": "The Hollow Sentinel",
+                                    "imageUri": "https://cards.scryfall.io/normal/front/5/4/54e0cbfa-a7f9-49a6-9bca-4a08f5b8da93.jpg?1783918167",
+                                    "legendary": true,
+                                    "artifactToken": true
+                                }
+                            },
+                            "description": "Create The Hollow Sentinel if you don't control it"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "FLYING",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "LIFELINK",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "artifact creature ctrl:you"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Target artifact creature you control gains flying and lifelink until end of turn"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b5b94b8-0420-40f2-b989-39cb43cff916.jpg?1783917995",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "An ability that triggers \"Whenever you proliferate\" triggers even if you chose no permanents or players while doing so."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
 }
 
 // Vindictive Flamestoker
