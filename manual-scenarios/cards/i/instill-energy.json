@@ -1,0 +1,72 @@
+{
+  "player1Name": "Energy",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Instill Energy",
+      "Disenchant"
+    ],
+    "battlefield": [
+      {
+        "name": "Llanowar Elves",
+        "summoningSickness": true
+      },
+      {
+        "name": "Grizzly Bears",
+        "summoningSickness": true
+      },
+      {
+        "name": "Instill Energy",
+        "attachedTo": "Grizzly Bears"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Grizzly Bears",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Serra Angel",
+        "tapped": true
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Grizzly Bears",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "DECLARE_ATTACKERS",
+    "DECLARE_BLOCKERS"
+  ],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [
+    "UPKEEP",
+    "PRECOMBAT_MAIN"
+  ],
+  "player2OpponentStopAtSteps": []
+}
