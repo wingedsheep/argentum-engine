@@ -626,6 +626,123 @@
     ]
 }
 
+// Awaken the Sleeper
+{
+    "name": "Awaken the Sleeper",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap that creature. It gains haste until end of turn. If it's equipped, you may destroy all Equipment attached to that creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsEquipped"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayDecide",
+                            "prompt": "Destroy all Equipment attached to that creature?"
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "AttachedToTarget",
+                                        "host": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        },
+                                        "filter": "artifact Equipment"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "ForEach",
+                                    "space": {
+                                        "type": "IterationSpace.Collection",
+                                        "collection": "gathered0"
+                                    },
+                                    "body": {
+                                        "type": "MoveToZone",
+                                        "target": "IterationEntity",
+                                        "destination": "Graveyard",
+                                        "byDestruction": true
+                                    }
+                                }
+                            ],
+                            "descriptionOverride": "Destroy all Equipment attached to that creature."
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"Without faith in each other, we truly would have nothing left. Isn't that right, Malach? ...Malach?\"\n—Darven, Mirran rebel, last words",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b92f866-2522-4f2a-a5ca-7d01ad79b927.jpg?1783918036"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Barbed Batterfist
 {
     "name": "Barbed Batterfist",
@@ -1607,6 +1724,88 @@
     ]
 }
 
+// Cacophony Scamp
+{
+    "name": "Cacophony Scamp",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Phyrexian Goblin Warrior",
+    "oracleText": "Whenever this creature deals combat damage to a player, you may sacrifice it. If you do, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)\nWhen this creature dies, it deals damage equal to its power to any target.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cacophony Scamp:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "SacrificeTarget",
+                                "target": "Self"
+                            },
+                            "successCriterion": "SuccessCriterion.PermanentsSacrificed"
+                        },
+                        "then": "Proliferate"
+                    },
+                    "descriptionOverride": "Whenever this creature deals combat damage to a player, you may sacrifice it. If you do, proliferate."
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, you may sacrifice it. If you do, proliferate."
+            },
+            {
+                "id": "Cacophony Scamp:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature dies, it deals damage equal to its power to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/3553dcef-7b99-49d5-b071-06b894696952.jpg?1783918034",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "You choose whether to sacrifice Cacophony Scamp as its first ability resolves. No player may respond between the time you sacrifice it and the time you proliferate."
+            }
+        ]
+    }
+}
+
 // Cankerbloom
 {
     "name": "Cankerbloom",
@@ -1697,6 +1896,161 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Capricious Hellraiser
+{
+    "name": "Capricious Hellraiser",
+    "manaCost": "{3}{R}{R}{R}",
+    "typeLine": "Creature — Phyrexian Dragon",
+    "oracleText": "This spell costs {3} less to cast if you have nine or more cards in your graveyard.\nFlying\nWhen this creature enters, exile three cards at random from your graveyard. Choose a noncreature, nonland card from among them and copy it. You may cast the copy without paying its mana cost.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Capricious Hellraiser:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "selected1",
+                            "filter": "noncreature nonland",
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching3",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected4",
+                            "prompt": "Choose a noncreature, nonland card to copy"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected4",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "CopyCollectionIntoCollection",
+                                        "from": "selected4",
+                                        "storeAs": "copies6"
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": "Gate.MayDecide",
+                                        "then": {
+                                            "type": "CastFromCollectionWithoutPayingCost",
+                                            "from": "copies6"
+                                        },
+                                        "descriptionOverride": "You may cast the copy without paying its mana cost."
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, exile three cards at random from your graveyard. Choose a noncreature, nonland card from among them and copy it. You may cast the copy without paying its mana cost."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 3
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard"
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 9
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "MYTHIC",
+        "artist": "Durion",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23afca1a-62a8-497f-994f-ceb479d020ba.jpg?1783918033",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "The three cards you exile are chosen at random from among all cards in your graveyard. If all three cards you exile this way are creature and/or land cards, you won't be able to choose one of them to copy and cast. Capricious, indeed."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "You cast the copy while the ability is resolving and still on the stack. You can't wait to cast it later in the turn."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If the spell you cast has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If you don't want to cast the copy, you can choose not to; the copy ceases to exist the next time state-based actions are checked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1819,6 +2173,51 @@
         "WHITE",
         "BLUE"
     ]
+}
+
+// Chimney Rabble
+{
+    "name": "Chimney Rabble",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Phyrexian Goblin Warrior",
+    "oracleText": "Haste\nWhen this creature enters, create a 1/1 red Phyrexian Goblin creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chimney Rabble:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Phyrexian",
+                        "Goblin"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/6/3663e79b-2bf9-44af-a638-c0ad9067d8d4.jpg?1783918169"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "artist": "Alexander Mokhov",
+        "flavorText": "\"They're violent, headstrong, and wildly unpredictable. It should be amusing to see how Norn's vaunted tactics try to cope with them.\"\n—Urabrask",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/5668699d-8df8-426b-a04a-99cfe55e570b.jpg?1783918032"
+    }
 }
 
 // Chittering Skitterling
@@ -3447,6 +3846,78 @@
     ]
 }
 
+// Furnace Punisher
+{
+    "name": "Furnace Punisher",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Phyrexian Warrior",
+    "oracleText": "Menace\nAt the beginning of each player's upkeep, this creature deals 2 damage to that player unless they control two or more basic lands.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Furnace Punisher:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "TriggeringPlayer",
+                                    "filter": "basicland"
+                                },
+                                "operator": "GTE",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "TriggeringPlayer"
+                        }
+                    }
+                },
+                "descriptionOverride": "At the beginning of each player's upkeep, this creature deals 2 damage to that player unless they control two or more basic lands."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Lauren K. Cannon",
+        "flavorText": "She marks her favorite creations with a searing brand, leaving all others to be consumed by the furnace.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65e5fc08-7a04-4bba-81ba-990889cae96a.jpg?1783918030"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Geth, Thane of Contracts
 {
     "name": "Geth, Thane of Contracts",
@@ -3529,6 +4000,84 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Gleeful Demolition
+{
+    "name": "Gleeful Demolition",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target artifact. If you controlled that artifact, create three 1/1 red Phyrexian Goblin creature tokens.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "filter": "ctrl:you",
+                    "storeMatching": "matching1",
+                    "storeNonMatching": "rest1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy",
+                    "storeMovedAs": "moved2"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "matching1",
+                    "ifNotEmpty": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Phyrexian",
+                            "Goblin"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/3/6/3663e79b-2bf9-44af-a638-c0ad9067d8d4.jpg?1783918169"
+                    }
+                }
+            ],
+            "descriptionOverride": "Destroy target artifact. If you controlled that artifact, create three 1/1 red Phyrexian Goblin creature tokens."
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "UNCOMMON",
+        "artist": "Tuan Duong Chu",
+        "flavorText": "Urabrask encourages creativity in all its forms, even the destructive ones. Especially the destructive ones.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3e4efa6-5783-4a51-99c6-116d1a8f01cf.jpg?1783918030"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3939,6 +4488,53 @@
         "flavorText": "\"Does anyone else hear that horrible crunching sound?\"\n—Jace",
         "imageUri": "https://cards.scryfall.io/normal/front/2/8/28f48394-c6aa-4453-954a-68195d9bd6ea.jpg?1783918045"
     }
+}
+
+// Hazardous Blast
+{
+    "name": "Hazardous Blast",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Hazardous Blast deals 1 damage to each creature your opponents control. Creatures your opponents control can't block this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "CantBlockGroup",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "artist": "Zoltan Boros",
+        "flavorText": "The Machine Orthodoxy finds strength in numbers. The Quiet Furnace finds that amusing.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/0380a4c9-a5d3-465f-8584-e546b54f91e0.jpg?1783918030"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Ichormoon Gauntlet
@@ -4694,6 +5290,152 @@
     ]
 }
 
+// Koth, Fire of Resistance
+{
+    "name": "Koth, Fire of Resistance",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Koth",
+    "oracleText": "+2: Search your library for a basic Mountain card, reveal it, put it into your hand, then shuffle.\n−3: Koth deals damage to target creature equal to the number of Mountains you control.\n−7: You get an emblem with \"Whenever a Mountain you control enters, this emblem deals 4 damage to any target.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Koth, Fire of Resistance:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland Mountain"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Search your library for a basic Mountain card, reveal it, put it into your hand, then shuffle."
+            },
+            {
+                "id": "Koth, Fire of Resistance:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Mountain"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Koth deals damage to target creature equal to the number of Mountains you control."
+            },
+            {
+                "id": "Koth, Fire of Resistance:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Koth, Fire of Resistance:3",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "filter": "land Mountain ctrl:you",
+                            "to": "Battlefield"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        "targetRequirement": {
+                            "type": "AnyTarget",
+                            "id": "t1"
+                        },
+                        "descriptionOverride": "Whenever a Mountain you control enters, this emblem deals 4 damage to any target."
+                    },
+                    "descriptionOverride": "Whenever a Mountain you control enters, this emblem deals 4 damage to any target."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Whenever a Mountain you control enters, this emblem deals 4 damage to any target.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "RARE",
+        "artist": "Eric Wilkerson",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/6528e012-4091-4722-b706-c51772676167.jpg?1783918027",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "Koth's emblem is colorless. Notably, this means that protection from red won't stop a permanent or player from being the target of the emblem's ability, nor will it prevent the damage being dealt. Replacement effects that care about damage from a red source don't apply to it."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lattice-Blade Mantis
 {
     "name": "Lattice-Blade Mantis",
@@ -5445,6 +6187,73 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Molten Rebuke
+{
+    "name": "Molten Rebuke",
+    "manaCost": "{4}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one or both —\n• Molten Rebuke deals 5 damage to target creature or planeswalker.\n• Destroy target Equipment.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetCreatureOrPlaneswalker",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Molten Rebuke deals 5 damage to target creature or planeswalker"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact Equipment"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Destroy target Equipment"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "artist": "Eli Minaya",
+        "flavorText": "\"Perhaps this will show the Orthodoxy what we think of their attempts at indoctrination.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2e3291b-de5c-4a10-9915-2cd2d84a815c.jpg?1783918027"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Myr Convert
@@ -6517,6 +7326,38 @@
     ]
 }
 
+// Oxidda Finisher
+{
+    "name": "Oxidda Finisher",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Ogre Rebel",
+    "oracleText": "Affinity for Equipment (This spell costs {1} less to cast for each Equipment you control.)\nTrample",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE",
+        "AFFINITY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "AffinityForSubtype",
+            "forSubtype": "Equipment"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "UNCOMMON",
+        "artist": "Vladimir Krisetskiy",
+        "flavorText": "Popular wisdom says that Phyrexians don't feel fear. But popular wisdom has never tried to hold a bridge against an angry ogre.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/7177431e-5cc4-4ecd-8848-f51903289072.jpg?1783918025"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Paladin of Predation
 {
     "name": "Paladin of Predation",
@@ -6866,6 +7707,160 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Rebel Salvo
+{
+    "name": "Rebel Salvo",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Affinity for Equipment (This spell costs {1} less to cast for each Equipment you control.)\nRebel Salvo deals 5 damage to target creature or planeswalker. That permanent loses indestructible until end of turn.",
+    "keywords": [
+        "AFFINITY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "AffinityForSubtype",
+            "forSubtype": "Equipment"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "RemoveKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "UNCOMMON",
+        "artist": "Khurrum",
+        "flavorText": "\"That Great Work of yours is looking pretty fragile, Urabrask!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd37d1b1-70ce-466e-890d-36be82433035.jpg?1783918025"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Red Sun's Twilight
+{
+    "name": "Red Sun's Twilight",
+    "manaCost": "{X}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy up to X target artifacts. If X is 5 or more, for each artifact destroyed this way, create a token that's a copy of it. Those tokens gain haste. Exile them at the beginning of the next end step.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy",
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": "XValue",
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Collection",
+                            "collection": "moved1"
+                        },
+                        "body": {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": "IterationEntity",
+                            "addedKeywords": [
+                                "HASTE"
+                            ],
+                            "exileAtStep": "END"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "artifact"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "RARE",
+        "artist": "Julian Kok Joon Wen",
+        "flavorText": "\"Where once there was apathy, Urabrask brought passion, and the Great Work truly began.\"\n—Monument inscription",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7cac1827-69af-469d-b88c-fb9f2f33866a.jpg?1783918024",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "If X is 5 or more and any of the target artifacts become illegal, you create a token only for each of the artifacts that is still a legal target."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Each token gains haste after it has been created. If something copies one of these tokens, the copy won't have haste, and you won't exile it at the beginning of the next end step."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If the copied artifact is a token, the token that's created copies the original characteristics of that token as stated by the effect that created the token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -7448,6 +8443,83 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Shrapnel Slinger
+{
+    "name": "Shrapnel Slinger",
+    "manaCost": "{1}{R}",
+    "typeLine": "Artifact Creature — Phyrexian Beast",
+    "oracleText": "When this creature enters, you may sacrifice a creature. When you do, destroy target artifact an opponent controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shrapnel Slinger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "storeAs": "target0"
+                            },
+                            {
+                                "type": "SacrificeTarget",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "target0"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact ctrl:opponent"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may sacrifice a creature. When you do, destroy target artifact an opponent controls."
+                },
+                "descriptionOverride": "When this creature enters, you may sacrifice a creature. When you do, destroy target artifact an opponent controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "artist": "Joseph Meehan",
+        "flavorText": "\"They may have unlimited mites, but that just means we have unlimited ammunition.\"\n—Urabrask",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6147bdc-4e02-48be-9ab9-c212f70d9194.jpg?1783918025"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
