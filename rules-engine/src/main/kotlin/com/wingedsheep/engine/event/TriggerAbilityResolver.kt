@@ -34,8 +34,6 @@ import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.WardCost
 import com.wingedsheep.sdk.scripting.effects.WardCounterEffect
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
-import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
-import com.wingedsheep.sdk.scripting.predicates.evaluateWith
 
 /**
  * Resolves triggered abilities for entities by checking the AbilityRegistry,
@@ -93,7 +91,7 @@ class TriggerAbilityResolver(
         // (e.g., Hunter Sliver granting provoke to all Slivers)
         // The index includes every battlefield/soulbond provider this scan can use.
         val staticGrantedAbilities = if (statics.triggerGrantProviders.isEmpty()) emptyList()
-            else getStaticGrantedTriggeredAbilities(entityId, state)
+            else getStaticGrantedFromProviders(entityId, state, statics.triggerGrantProviders)
         val attachedGrantedAbilities = getAttachedGrantedTriggeredAbilities(entityId, state, statics)
         // "This creature has '<triggered ability>' [as long as …]" — a Scope.Self GrantTriggeredAbility
         // on the permanent's own definition, optionally gated by a ConditionalStaticAbility.
@@ -215,72 +213,6 @@ class TriggerAbilityResolver(
         } else {
             emptyList()
         }
-
-    /**
-     * Get triggered abilities granted by static abilities on battlefield permanents.
-     * E.g., Hunter Sliver grants provoke to all Sliver creatures via
-     * GrantTriggeredAbility.
-     *
-     * Scans all battlefield permanents for this static ability type, checks if the
-     * target entity matches the filter using its projected card data.
-     */
-    private fun getStaticGrantedTriggeredAbilities(entityId: EntityId, state: GameState): List<TriggeredAbility> {
-        val registry = cardRegistry
-        val targetContainer = state.getEntity(entityId) ?: return emptyList()
-        val targetCard = targetContainer.get<CardComponent>() ?: return emptyList()
-        val projected = state.projectedState
-        val targetControllerId = projected.getController(entityId)
-
-        val result = mutableListOf<TriggeredAbility>()
-
-        for (permanentId in state.getBattlefield()) {
-            val container = state.getEntity(permanentId) ?: continue
-            val card = container.get<CardComponent>() ?: continue
-            // Skip face-down permanents — they have no abilities
-            if (container.has<FaceDownComponent>()) continue
-
-            val sourceControllerId = projected.getController(permanentId) ?: continue
-
-            val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
-            for (ability in cardDef.staticAbilities) {
-                if (ability !is GrantTriggeredAbility) continue
-                // Mirrors the fast provider path: the soulbond-pair scope carries its own
-                // membership test and skips the filter/controller checks below.
-                if (ability.filter.scope is Scope.SoulbondPair) {
-                    if (SoulbondPairing.isInPairOf(state, permanentId, entityId)) result.add(ability.ability)
-                    continue
-                }
-                if (ability.filter.scope !is Scope.Battlefield) continue
-
-                // Check if the target entity matches the filter's card predicates
-                val filter = ability.filter.baseFilter
-                val matchesAll = filter.cardPredicates.all { predicate ->
-                    when (predicate) {
-                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
-                            targetCard.typeLine.isCreature
-                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                            projected.hasSubtype(entityId, predicate.subtype.value)
-                        else -> true
-                    }
-                }
-                if (!matchesAll) continue
-
-                // Check controller predicate relative to the source permanent's controller
-                val controllerMatch = filter.controllerPredicate?.evaluateWith { leaf ->
-                    when (leaf) {
-                        is ControllerPredicate.ControlledByYou -> targetControllerId == sourceControllerId
-                        is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != sourceControllerId
-                        else -> null // leaf kinds this fast path can't evaluate don't constrain
-                    }
-                } ?: true
-                if (controllerMatch) {
-                    result.add(ability.ability)
-                }
-            }
-        }
-
-        return result
-    }
 
     /**
      * Variant of getTriggeredAbilities that uses pre-computed grant providers
@@ -425,23 +357,28 @@ class TriggerAbilityResolver(
     }
 
     /**
-     * Fast lookup of static-granted triggered abilities using pre-computed providers.
+     * Static-granted triggered abilities ("other blue creatures you control have '…'") from the
+     * pre-computed battlefield providers. Both lookup paths read the same provider list.
+     *
+     * The grant's filter is evaluated in full by [PredicateEvaluator.matches] against the projected
+     * state, with the granting permanent as "you" and the source — so a colour, card-type or any
+     * other predicate constrains the grant exactly as it does the layer system's projection of the
+     * same filter. (This used to hand-match only creature/subtype and let every other predicate
+     * through, so Unctus's "other blue creatures" reached every creature its controller had.)
      */
     private fun getStaticGrantedFromProviders(
         entityId: EntityId,
         state: GameState,
         grantProviders: List<TriggerIndex.GrantProviderEntry>
     ): List<TriggeredAbility> {
-        val targetContainer = state.getEntity(entityId) ?: return emptyList()
-        val targetCard = targetContainer.get<CardComponent>() ?: return emptyList()
+        if (state.getEntity(entityId)?.has<CardComponent>() != true) return emptyList()
         val projected = state.projectedState
-        val targetControllerId = projected.getController(entityId)
 
         return buildList {
             for (entry in grantProviders) {
                 // CR 702.95b's "both creatures" — the scope IS the membership test, so it replaces
-                // the filter/controller checks below rather than adding to them (an unpaired source
-                // reaches nobody, which is what makes "as long as this creature is paired" need no
+                // the filter check below rather than adding to it (an unpaired source reaches
+                // nobody, which is what makes "as long as this creature is paired" need no
                 // condition of its own).
                 if (entry.grant.filter.scope is Scope.SoulbondPair) {
                     if (SoulbondPairing.isInPairOf(state, entry.sourceEntityId, entityId)) {
@@ -450,31 +387,12 @@ class TriggerAbilityResolver(
                     continue
                 }
                 // "Other creatures you control have …" — the granting permanent must not grant
-                // the ability to itself. The slow path honors excludeSelf; the fast provider
-                // path previously omitted it, so the source double-triggered (e.g. Bria,
-                // Riptide Rogue got prowess twice).
+                // the ability to itself (Bria, Riptide Rogue once got prowess twice).
                 if (entry.grant.filter.excludeSelf && entityId == entry.sourceEntityId) continue
-                val filter = entry.grant.filter.baseFilter
-                val matchesAll = filter.cardPredicates.all { predicate ->
-                    when (predicate) {
-                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
-                            targetCard.typeLine.isCreature
-                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                            projected.hasSubtype(entityId, predicate.subtype.value)
-                        else -> true
-                    }
+                val context = PredicateContext(controllerId = entry.sourceControllerId, sourceId = entry.sourceEntityId)
+                if (predicateEvaluator.matches(state, projected, entityId, entry.grant.filter.baseFilter, context)) {
+                    add(entry.grant.ability)
                 }
-                if (!matchesAll) continue
-
-                // Check controller predicate relative to the source permanent's controller
-                val controllerMatch = filter.controllerPredicate?.evaluateWith { leaf ->
-                    when (leaf) {
-                        is ControllerPredicate.ControlledByYou -> targetControllerId == entry.sourceControllerId
-                        is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != entry.sourceControllerId
-                        else -> null // leaf kinds this fast path can't evaluate don't constrain
-                    }
-                } ?: true
-                if (controllerMatch) add(entry.grant.ability)
             }
         }
     }
@@ -577,7 +495,7 @@ class TriggerAbilityResolver(
      * holds, evaluated with this permanent as the source. Fire Nation Cadets uses this to carry
      * [firebendingAttackTrigger] only while a Lesson card is in its controller's graveyard.
      *
-     * Unlike [getStaticGrantedTriggeredAbilities] (battlefield-scoped lord/sliver grants) and
+     * Unlike [getStaticGrantedFromProviders] (battlefield-scoped lord/sliver grants) and
      * [getAttachedGrantedTriggeredAbilities] (Aura/Equipment grants), this reads the source's own
      * static abilities and toggles with the condition each time triggers are computed, so the grant
      * appears and disappears live as the condition changes.
@@ -673,7 +591,6 @@ class TriggerAbilityResolver(
         val targetContainer = state.getEntity(entityId) ?: return result
         if (!targetContainer.has<CardComponent>()) return result
         val projected = state.projectedState
-        val targetControllerId = projected.getController(entityId)
 
         // Check suppression before generating any ward triggers — suppresses both intrinsic
         // and granted ward (Nowhere to Run: "Ward abilities of those creatures don't trigger.")
@@ -704,38 +621,10 @@ class TriggerAbilityResolver(
             val permanentId = provider.sourceId
             val sourceControllerId = provider.sourceControllerId
 
-            // Use the generic filter resolver to check if entity matches
-            val filter = ability.filter.baseFilter
-            val matchesAll = filter.cardPredicates.all { predicate ->
-                when (predicate) {
-                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
-                        projected.isCreature(entityId)
-                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent -> true // On battlefield = permanent
-                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                        projected.hasSubtype(entityId, predicate.subtype.value)
-                    else -> true
-                }
-            }
-            if (!matchesAll) continue
-
-            // Check state predicates
-            val matchesState = filter.statePredicates.all { predicate ->
-                predicateEvaluator.matchesStatePredicate(state, entityId, predicate)
-            }
-            if (!matchesState) continue
-
-            // Check controller predicate
-            val controllerMatch = filter.controllerPredicate?.evaluateWith { leaf ->
-                when (leaf) {
-                    is ControllerPredicate.ControlledByYou -> targetControllerId == sourceControllerId
-                    is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != sourceControllerId
-                    else -> null // leaf kinds this fast path can't evaluate don't constrain
-                }
-            } ?: true
-            if (!controllerMatch) continue
-
-            // Check excludeSelf
             if (ability.filter.excludeSelf && entityId == permanentId) continue
+            // The full filter, read off projected state — same evaluation as the trigger grants.
+            val context = PredicateContext(controllerId = sourceControllerId, sourceId = permanentId)
+            if (!predicateEvaluator.matches(state, projected, entityId, ability.filter.baseFilter, context)) continue
 
             result.add(createWardTriggeredAbility(ability.cost, "granted_${permanentId.value}"))
         }

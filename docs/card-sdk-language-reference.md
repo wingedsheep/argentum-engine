@@ -7948,6 +7948,14 @@ staticAbility {
   the chosen type" — grants the landwalk keyword matching the source's `ChosenLandTypeComponent`
   (Plains→Plainswalk, Island→Islandwalk, …) at projection time. Chosen-value counterpart to
   `GrantKeyword`; pair with `EntersWithChoice(ChoiceType.BASIC_LAND_TYPE)`. (Traveler's Cloak)
+- `GrantTriggeredAbility(ability, filter)` — "[filter] have '<triggered ability>'". On a battlefield-scoped
+  `GroupFilter` it is the lord shape — Unctus, Grand Metatect's "Other blue creatures you control have 'Whenever
+  this creature becomes tapped, draw a card, then discard a card'" is `GrantTriggeredAbility(<becomesTapped → loot>,
+  GroupFilter(GameObjectFilter.Creature.withColor(Color.BLUE).youControl(), excludeSelf = true))`. The filter is
+  evaluated in full by `PredicateEvaluator.matches` on projected state, with the granting permanent as "you", so any
+  colour, type, counter or state predicate gates the grant, and a creature turned blue mid-turn gains it. Battlefield
+  grants (this and `GrantWard`) share that one evaluation; `Scope.AttachedTo` and `Scope.SoulbondPair` are their
+  own membership tests (see Tandem Lookout below).
 - `GrantWard(cost, filter = attachedCreature())` — "[filter] have ward [cost]" (CR 702.21). The static
   counterpart of the printed `KeywordAbility.Ward`: use this one to hand ward to *other* permanents —
   an Aura/Equipment's "enchanted/equipped creature has ward {N}" (Lavaspur Boots, the Royal Role token)

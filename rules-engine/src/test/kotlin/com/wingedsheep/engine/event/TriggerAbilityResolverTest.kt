@@ -6,6 +6,11 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.sdk.core.ManaCost
+import io.kotest.matchers.collections.shouldContain
+import com.wingedsheep.sdk.scripting.effects.WardCost
+import com.wingedsheep.sdk.scripting.GrantWard
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.model.CardDefinition
@@ -71,4 +76,46 @@ class TriggerAbilityResolverTest : FunSpec({
             listOf(TriggerIndex.GrantProviderEntry(grant, owner, providerId)),
         ) shouldBe expected
     }
+
+    test("static grants evaluate their whole filter: a colour predicate gates both the trigger and the ward") {
+        val owner = EntityId.of("owner")
+        val blueId = EntityId.of("blue")
+        val greenId = EntityId.of("green")
+        val providerId = EntityId.of("provider")
+        val static = TriggeredAbility(
+            AbilityId("loot"), Triggers.self.becomesTapped().event,
+            effect = LoseLifeEffect(1, EffectTarget.PlayerRef(Player.You)),
+        )
+        val blueCreatures = GroupFilter(GameObjectFilter.Creature.withColor(Color.BLUE).youControl(), excludeSelf = true)
+        val grant = GrantTriggeredAbility(static, blueCreatures)
+        val ward = GrantWard(WardCost.Mana("{2}"), blueCreatures)
+        val blue = CardDefinition.creature("Blue Target", ManaCost.parse("{U}"), subtypes = emptySet(), power = 1, toughness = 1)
+        val green = CardDefinition.creature("Green Target", ManaCost.parse("{G}"), subtypes = emptySet(), power = 1, toughness = 1)
+        // Blue itself, so excludeSelf is what keeps it off its own grant.
+        val provider = CardDefinition.creature("Blue Provider", ManaCost.parse("{U}"), subtypes = emptySet(), power = 1, toughness = 1,
+            script = CardScript(staticAbilities = listOf(grant, ward)))
+        val registry = CardRegistry().apply { register(listOf(blue, green, provider)) }
+        val resolver = TriggerAbilityResolver(registry, AbilityRegistry(), predicateEvaluator = PredicateEvaluator(cardRegistry = registry))
+        val state = GameState(
+            entities = mapOf(
+                blueId to CardEntityFactory.create(blue, owner),
+                greenId to CardEntityFactory.create(green, owner),
+                providerId to CardEntityFactory.create(provider, owner),
+            ),
+            zones = mapOf(ZoneKey(owner, Zone.BATTLEFIELD) to listOf(blueId, greenId, providerId)),
+        )
+        val providers = listOf(TriggerIndex.GrantProviderEntry(grant, owner, providerId))
+        fun ids(list: List<TriggeredAbility>) = list.map { it.id }.filter { it == static.id }
+
+        resolver.getTriggeredAbilities(blueId, blue.name, state).map { it.id } shouldContain static.id
+        resolver.getTriggeredAbilitiesWithProviders(blueId, blue.name, state, providers).map { it.id } shouldContain static.id
+        resolver.getWardTriggeredAbilities(blueId, blue.name, state).size shouldBe 1
+
+        for ((id, name) in listOf(greenId to green.name, providerId to provider.name)) {
+            ids(resolver.getTriggeredAbilities(id, name, state)) shouldBe emptyList()
+            ids(resolver.getTriggeredAbilitiesWithProviders(id, name, state, providers)) shouldBe emptyList()
+            resolver.getWardTriggeredAbilities(id, name, state) shouldBe emptyList()
+        }
+    }
 })
+
