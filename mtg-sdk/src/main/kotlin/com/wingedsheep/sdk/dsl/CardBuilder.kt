@@ -1598,6 +1598,10 @@ class TriggeredAbilityBuilder(private val declaredTargets: TargetList = TargetLi
      * only once each turn"). A *trigger* cap — later matching events don't trigger at all. For the
      * "Do this only once each turn" rider use [effectOncePerTurn] instead. */
     var oncePerTurn: Boolean = false
+    /** "This ability triggers only N times each turn" for N ≥ 2 (Nadu's "only twice each turn") —
+     * the [oncePerTurn] trigger cap with a count. See
+     * [com.wingedsheep.sdk.scripting.TriggeredAbility.triggersPerTurn]. */
+    var triggersPerTurn: Int? = null
     /** When true, this ability carries the "Do this only once each turn" rider: per CR 603.2h it
      * triggers on every matching event while its controller has not yet taken the indicated action
      * that turn, and stops triggering once they have. Declining an optional instance does not spend
@@ -1667,6 +1671,7 @@ class TriggeredAbilityBuilder(private val declaredTargets: TargetList = TargetLi
             triggerRestriction = triggerRestriction,
             controlledByTriggeringEntityController = controlledByTriggeringEntityController,
             oncePerTurn = oncePerTurn,
+            triggersPerTurn = triggersPerTurn,
             effectOncePerTurn = effectOncePerTurn,
             triggersOnce = triggersOnce,
             isBackup = isBackup,

@@ -816,6 +816,39 @@ SDK findings** — two spellings of one meaning, left as they are:
 - **Jagged-Scar Archers** — names `damageSource = Self` explicitly; no `damageSource` means the same
   thing, and Spikeshot Goblin writes it that way.
 
+## The artifact creature token band
+
+The tenth loop band, tail keys `artifact creature token …` and `artifact creature token.`: "create a
+1/1 colorless Thopter **artifact** creature token with flying". **126 lines** over two keys; the probe
+(` artifact creature token` → ` creature token`) finished 29 + 35 whole cards over the corpus. It
+delivered **29 hand-written cards read whole (7,302 → 7,331)** — the two keys reach many of the same
+cards, so the summed probe double-counts.
+
+### A slot over the noun, not a row per kind
+
+`CreateTokenEffect` carries the token's extra card types as two booleans, `artifactToken` and
+`enchantmentToken`, and the printed word sits *inside* the noun phrase, in front of "creature". So it
+is one slot, `{kind} token(s)`, over three constants — "creature", "artifact creature", "enchantment
+creature" — with disjoint values. It crosses the count, the tapped entry, the keyword rider and the
+"for each" tally without touching any of them, where a row per kind would have tripled every
+`createToken` instantiation. Both booleans set is printed once in Oracle ("enchantment artifact
+creature token"), in the opposite order to a type line's, so no row spells it and it declines.
+
+### What the differential found
+
+Differential **6,922 compared / 58 divergent → 6,949 / 59**. Six new divergences: five **card bugs,
+fixed** (only their goldens moved), and one standing finding.
+
+- **Gravpack Monoist**, **Sami, Ship's Engineer** — set the token's `name` to "Robot". CR 111.4: a
+  token whose ability doesn't name it is named for its subtypes plus the word "Token", which is what
+  `CreateTokenExecutor` derives when `name` is unset.
+- **Pentavus** ("Sacrifice a Pentavite"), **Spider-Slayer, Hatred Honed** ("deals damage to a
+  Spider") — the bare tribal noun names permanents; both cards wrote creatures.
+- **Baxter Stockman** — "target artifact creature you control" listed its predicates as creature,
+  artifact; `GameObjectFilter.ArtifactCreature` is the facade, and the order is part of the value.
+- **Gadget Technician** (standing) — "When this creature enters or is turned face up" is two
+  abilities in the grammar and one `AnyOf` trigger on the card; the entry band's two-spelling finding.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

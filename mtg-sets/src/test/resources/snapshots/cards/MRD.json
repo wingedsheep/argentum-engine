@@ -9746,7 +9746,7 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomSacrifice",
-                                "filter": "creature Pentavite"
+                                "filter": "permanent Pentavite"
                             }
                         }
                     ]

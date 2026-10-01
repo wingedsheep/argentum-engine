@@ -1430,6 +1430,7 @@ is PermanentsSacrificedEvent -> {
             is PriorityChangedEvent,
             is ManaSpentEvent,
             is ManaPoolChangedEvent,
+            is StaticAbilityGrantedEvent,
             is BlockerDeclarationPolicyChangedEvent,
             is TextChangedEvent,
             is LandTappedForManaEvent,

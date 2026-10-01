@@ -17,6 +17,12 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CantAttackUnless
 import com.wingedsheep.sdk.scripting.CantBeAttackedBy
 import com.wingedsheep.sdk.scripting.CantBeAttackedWhileAttached
+import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.CompositeStaticAbility
+import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
+import com.wingedsheep.engine.state.components.identity.RoomFaceStatics
+import com.wingedsheep.engine.state.components.identity.TextChanges
 
 // =========================================================================
 // Per-creature attack restrictions (AttackRestrictionRule)
@@ -245,27 +251,49 @@ class CantBeAttackedByDefenderRule(
         if (ctx.state.getEntity(defenderId)?.has<LifeTotalComponent>() != true) return null
         val defendingPlayer = defenderId
 
+        fun checkAbility(ability: StaticAbility, source: EntityId): String? {
+            return when (ability) {
+                is ConditionalStaticAbility -> {
+                    if (predicateEvaluator.conditions.evaluate(ctx.state, ability.condition,
+                            EffectContext(sourceId = source, controllerId = defendingPlayer))) {
+                        checkAbility(ability.ability, source)
+                    } else null
+                }
+                is CompositeStaticAbility ->
+                    ability.abilities.firstNotNullOfOrNull { checkAbility(it, source) }
+                is CantBeAttackedBy -> {
+                    if (predicateEvaluator.matches(ctx.state, ctx.projected, ctx.attackerId,
+                            ability.attackerFilter,
+                            PredicateContext(controllerId = defendingPlayer, sourceId = source))) {
+                        val name = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                        "$name can't attack: ${ability.description}"
+                    } else null
+                }
+                else -> null
+            }
+        }
+
         val defenderPermanents = ctx.projected.getBattlefieldControlledBy(defendingPlayer)
         for (permId in defenderPermanents) {
             val container = ctx.state.getEntity(permId) ?: continue
-            if (container.has<FaceDownComponent>()) continue
+            if (container.has<FaceDownComponent>() || ctx.projected.hasLostAllAbilities(permId)) continue
             val cardComponent = container.get<CardComponent>() ?: continue
             val cardDef = ctx.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
-            for (ability in cardDef.staticAbilities) {
-                if (ability is CantBeAttackedBy) {
-                    val matches = predicateEvaluator.matches(
-                        ctx.state,
-                        ctx.projected,
-                        ctx.attackerId,
-                        ability.attackerFilter,
-                        PredicateContext(controllerId = defendingPlayer, sourceId = permId)
-                    )
-                    if (matches) {
-                        val attackerName = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
-                        return "$attackerName can't attack: ${ability.description}"
-                    }
-                }
+            val text = TextChanges.of(ctx.state, permId)
+            for (ability in RoomFaceStatics.activeStaticAbilities(container, cardDef)) {
+                checkAbility(if (text == null) ability else ability.applyTextReplacement(text), permId)
+                    ?.let { return it }
             }
+        }
+        // A player-held grant changes the rules of combat, not an object's characteristics.
+        // Recheck its filter for every attacker, including creatures entering after it resolved.
+        for (grant in ctx.state.grantedStaticAbilities) {
+            val holder = grant.entityId
+            if (holder != defendingPlayer && holder !in defenderPermanents) continue
+            if (holder != defendingPlayer && ctx.projected.hasLostAllAbilities(holder)) continue
+            if (!GrantDurationGate.holds(
+                    ctx.state, holder, grant.sourceId, grant.duration)) continue
+            checkAbility(grant.ability, holder)?.let { return it }
         }
         return null
     }

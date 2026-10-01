@@ -10618,7 +10618,7 @@
                     "type": "DealsDamageEvent",
                     "recipient": {
                         "type": "RecipientObject",
-                        "filter": "creature Spider"
+                        "filter": "permanent Spider"
                     }
                 },
                 "effect": {

@@ -64,6 +64,43 @@ class TokensTest : StringSpec({
         roundTrips("Create a 1/1 colorless Sliver creature token.")
     }
 
+    // Ornithopter-makers and Glimmers — the card types in front of "creature" are one slot, crossing
+    // the count, the tapped entry and the keyword rider.
+    "an artifact or enchantment creature token is a slot over the noun" {
+        fragment("Create a 1/1 colorless Thopter artifact creature token with flying.").script.spellEffect shouldBe
+            Effects.CreateToken(
+                power = 1,
+                toughness = 1,
+                creatureTypes = setOf("Thopter"),
+                keywords = setOf(Keyword.FLYING),
+                artifactToken = true,
+            )
+        (fragment("Create a 1/1 white Glimmer enchantment creature token.").script.spellEffect as CreateTokenEffect)
+            .enchantmentToken shouldBe true
+
+        roundTrips("Create a 1/1 colorless Thopter artifact creature token with flying.")
+        roundTrips("Create two 1/1 colorless Servo artifact creature tokens.")
+        roundTrips("Create a tapped 2/2 colorless Robot artifact creature token.")
+        roundTrips("Create a 1/1 white Glimmer enchantment creature token.")
+    }
+
+    // Both kinds at once is printed once in Oracle, in the order opposite to the type line's — no
+    // row spells it, so it refuses to print rather than guess.
+    "an artifact enchantment creature token refuses to print" {
+        val both = CardFragment(
+            script = CardScript(
+                spellEffect = Effects.CreateToken(
+                    power = 1,
+                    toughness = 1,
+                    creatureTypes = setOf("Thopter"),
+                    artifactToken = true,
+                    enchantmentToken = true,
+                ),
+            ),
+        )
+        Grammar.abilityLine.printLine(both) shouldBe null
+    }
+
     // The sets have no order; the printer imposes WUBRG and [Keyword]'s own, so a card that built
     // them the other way round still prints the sentence Oracle prints.
     "colour and keyword sets print in the order Oracle prints them" {

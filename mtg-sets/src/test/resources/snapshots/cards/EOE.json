@@ -6508,7 +6508,6 @@
                     "creatureTypes": [
                         "Robot"
                     ],
-                    "name": "Robot",
                     "imageUri": "https://cards.scryfall.io/normal/front/c/4/c46f9a07-005c-44b7-8057-b2f00b274dd6.jpg?1756281130",
                     "tapped": true,
                     "artifactToken": true
@@ -12762,7 +12761,6 @@
                     "creatureTypes": [
                         "Robot"
                     ],
-                    "name": "Robot",
                     "imageUri": "https://cards.scryfall.io/normal/front/c/4/c46f9a07-005c-44b7-8057-b2f00b274dd6.jpg?1756281130",
                     "tapped": true,
                     "artifactToken": true

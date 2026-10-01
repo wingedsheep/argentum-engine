@@ -470,6 +470,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.ManaAddedEvent,
             is com.wingedsheep.engine.core.ManaSpentEvent,
             is com.wingedsheep.engine.core.ManaPoolChangedEvent,
+            is com.wingedsheep.engine.core.StaticAbilityGrantedEvent,
             is com.wingedsheep.engine.core.BlockerDeclarationPolicyChangedEvent,
             is com.wingedsheep.engine.core.TextChangedEvent,
             is com.wingedsheep.engine.core.MaximumHandSizeReducedEvent,

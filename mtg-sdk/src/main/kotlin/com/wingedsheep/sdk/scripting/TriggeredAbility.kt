@@ -114,6 +114,15 @@ data class TriggeredAbility(
      * "Do this only once each turn", use [effectOncePerTurn]. */
     val oncePerTurn: Boolean = false,
     /**
+     * "This ability triggers only **N times** each turn" for N of two or more (Nadu, Winged
+     * Wisdom's granted "triggers only twice each turn"). The same trigger cap as [oncePerTurn] —
+     * spent by each trigger whether or not anything came of it, tracked per (source permanent,
+     * ability) and cleared in cleanup — with a count instead of a single use. One is
+     * [oncePerTurn]'s spelling, so this rejects anything below two; read the cap through
+     * [perTurnTriggerCap], which folds the two together.
+     */
+    val triggersPerTurn: Int? = null,
+    /**
      * When true, this ability carries the printed rider "*Do this only once each turn*" (Jennifer
      * Walters // The Sensational She-Hulk, Baron Strucker, HYDRA Overlord).
      *
@@ -168,6 +177,20 @@ data class TriggeredAbility(
     /** Optional human-readable description that overrides the auto-generated one. */
     val descriptionOverride: String? = null
 ) : TextReplaceable<TriggeredAbility> {
+    init {
+        require(triggersPerTurn == null || triggersPerTurn >= 2) {
+            "triggersPerTurn must be at least 2 — \"triggers only once each turn\" is oncePerTurn = true"
+        }
+        require(triggersPerTurn == null || !oncePerTurn) {
+            "A triggered ability sets either oncePerTurn or triggersPerTurn, not both"
+        }
+    }
+
+    /** How many times this ability may trigger each turn — 1 for [oncePerTurn], [triggersPerTurn]
+     * otherwise, null when uncapped. */
+    val perTurnTriggerCap: Int?
+        get() = if (oncePerTurn) 1 else triggersPerTurn
+
     /**
      * Every condition checked *when the trigger event occurs* — both kinds, since CR 603.2 and
      * CR 603.4 agree on the first check and differ only on whether there is a second one. This is
@@ -256,6 +279,7 @@ data class TriggeredAbility(
             triggerRestriction: Condition? = null,
             controlledByTriggeringEntityController: Boolean = false,
             oncePerTurn: Boolean = false,
+            triggersPerTurn: Int? = null,
             effectOncePerTurn: Boolean = false,
             triggersOnce: Boolean = false,
             isBackup: Boolean = false,
@@ -275,6 +299,7 @@ data class TriggeredAbility(
                 triggerRestriction = triggerRestriction,
                 controlledByTriggeringEntityController = controlledByTriggeringEntityController,
                 oncePerTurn = oncePerTurn,
+                triggersPerTurn = triggersPerTurn,
                 effectOncePerTurn = effectOncePerTurn,
                 triggersOnce = triggersOnce,
                 isBackup = isBackup,
@@ -296,6 +321,7 @@ data class TriggeredAbility(
             triggerRestriction: Condition? = null,
             controlledByTriggeringEntityController: Boolean = false,
             oncePerTurn: Boolean = false,
+            triggersPerTurn: Int? = null,
             effectOncePerTurn: Boolean = false,
             triggersOnce: Boolean = false,
             isBackup: Boolean = false,
@@ -313,6 +339,7 @@ data class TriggeredAbility(
             triggerRestriction = triggerRestriction,
             controlledByTriggeringEntityController = controlledByTriggeringEntityController,
             oncePerTurn = oncePerTurn,
+            triggersPerTurn = triggersPerTurn,
             effectOncePerTurn = effectOncePerTurn,
             triggersOnce = triggersOnce,
             isBackup = isBackup,

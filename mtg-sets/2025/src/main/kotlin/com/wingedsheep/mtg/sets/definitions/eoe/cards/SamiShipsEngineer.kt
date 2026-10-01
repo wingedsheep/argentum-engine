@@ -37,7 +37,6 @@ val SamiShipsEngineer = card("Sami, Ship's Engineer") {
             2
         )
         effect = Effects.CreateToken(
-            name = "Robot",
             power = 2,
             toughness = 2,
             colors = emptySet(),

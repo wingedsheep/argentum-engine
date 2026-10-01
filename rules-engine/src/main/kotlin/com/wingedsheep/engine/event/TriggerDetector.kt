@@ -516,45 +516,51 @@ class TriggerDetector(
     }
 
     /**
-     * Filter [triggers] for "this ability triggers only once each turn" (`oncePerTurn`) abilities.
+     * Filter [triggers] for the per-turn trigger caps — "this ability triggers only once each turn"
+     * (`oncePerTurn`) and "…only N times each turn" (`triggersPerTurn`, Nadu) — and the lifetime
+     * "triggers only once" cap (`triggersOnce`).
      *
      * Two cuts, in order:
-     *  1. Drop any oncePerTurn trigger whose source has already fired that ability id this turn
+     *  1. Drop any capped trigger whose source has already used up that ability id's allowance
      *     (tracked by [TriggeredAbilityFiredThisTurnComponent], stamped when the trigger is put on
      *     the stack — `TriggerProcessor.processSingleTrigger` — not when it resolves).
-     *  2. Within this single detection pass, keep only the *first* trigger per
-     *     `(sourceId, abilityId)` for oncePerTurn abilities. The fired-this-turn tracker is only
-     *     written once a detected trigger reaches the processor, so a single multi-subject event
-     *     (e.g. a player discarding two cards, which fires a per-card "whenever a player discards"
-     *     trigger twice) would otherwise queue two instances from one pass before either is
-     *     processed and stamps the tracker. This
-     *     dedupe enforces the "only once each turn" cap for batch-style triggers — e.g. Hostile
-     *     Investigator investigating once even when several cards are discarded at once.
+     *  2. Within this single detection pass, keep only as many triggers per `(sourceId, abilityId)`
+     *     as the allowance has left. The fired-this-turn tracker is only written once a detected
+     *     trigger reaches the processor, so a single multi-subject event (e.g. a player discarding
+     *     two cards, which fires a per-card "whenever a player discards" trigger twice) would
+     *     otherwise queue every instance from one pass before any is processed and stamps the
+     *     tracker. This dedupe enforces the cap for batch-style triggers — e.g. Hostile
+     *     Investigator investigating once even when several cards are discarded at once, and a
+     *     creature with Nadu's ability targeted by three objects at once triggering only twice.
      *
-     * Non-oncePerTurn triggers are never deduped (two lord bonuses, two prowess fires, etc. must
-     * all survive).
+     * Uncapped triggers are never deduped (two lord bonuses, two prowess fires, etc. must all
+     * survive).
      */
     private fun capOncePerTurnTriggers(
         state: GameState,
         triggers: List<PendingTrigger>
     ): List<PendingTrigger> {
-        val seenCapped = HashSet<Pair<EntityId, com.wingedsheep.sdk.scripting.AbilityId>>()
+        val queued = HashMap<Pair<EntityId, com.wingedsheep.sdk.scripting.AbilityId>, Int>()
         return triggers.filter { trigger ->
             val ability = trigger.ability
-            // Same capping logic for "once each turn" (per-turn tracker) and "triggers only once"
-            // (lifetime tracker): drop if already fired, then collapse simultaneous fires.
-            if (!ability.oncePerTurn && !ability.triggersOnce) return@filter true
+            val perTurnCap = ability.perTurnTriggerCap
+            if (perTurnCap == null && !ability.triggersOnce) return@filter true
             val entity = state.getEntity(trigger.sourceId)
-            if (ability.oncePerTurn) {
-                val tracker = entity?.get<TriggeredAbilityFiredThisTurnComponent>()
-                if (tracker != null && tracker.hasFired(ability.id)) return@filter false
-            }
+            // The allowance left this turn (per-turn caps) or ever (lifetime cap) before this pass.
+            var allowance = perTurnCap?.let { cap ->
+                cap - (entity?.get<TriggeredAbilityFiredThisTurnComponent>()?.timesFired(ability.id) ?: 0)
+            } ?: 1
             if (ability.triggersOnce) {
                 val everTracker = entity?.get<TriggeredAbilityFiredEverComponent>()
                 if (everTracker != null && everTracker.hasFired(ability.id)) return@filter false
+                allowance = minOf(allowance, 1)
             }
-            // Collapse simultaneous fires of the same ability from the same source.
-            seenCapped.add(trigger.sourceId to ability.id)
+            // Collapse simultaneous fires of the same ability from the same source down to it.
+            val key = trigger.sourceId to ability.id
+            val already = queued.getOrDefault(key, 0)
+            if (already >= allowance) return@filter false
+            queued[key] = already + 1
+            true
         }
     }
 

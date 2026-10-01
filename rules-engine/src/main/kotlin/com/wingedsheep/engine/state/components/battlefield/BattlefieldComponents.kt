@@ -756,18 +756,19 @@ data class ChosenModesThisTurnComponent(
 }
 
 /**
- * Tracks which triggered abilities have fired this turn for "once each turn" restrictions.
- * Used for cards like Scavenger's Talent: "This ability triggers only once each turn."
+ * Counts how many times each capped triggered ability has fired this turn, for the per-turn trigger
+ * caps — "This ability triggers only once each turn" (Scavenger's Talent, `oncePerTurn`) and "…only
+ * twice each turn" (Nadu, Winged Wisdom, `triggersPerTurn`).
  * Cleared at end of turn by CleanupPhaseManager.
  */
 @Serializable
 data class TriggeredAbilityFiredThisTurnComponent(
-    val abilityIds: Set<AbilityId> = emptySet()
+    val counts: Map<AbilityId, Int> = emptyMap()
 ) : Component {
     fun withFired(abilityId: AbilityId): TriggeredAbilityFiredThisTurnComponent =
-        copy(abilityIds = abilityIds + abilityId)
+        copy(counts = counts + (abilityId to timesFired(abilityId) + 1))
 
-    fun hasFired(abilityId: AbilityId): Boolean = abilityId in abilityIds
+    fun timesFired(abilityId: AbilityId): Int = counts[abilityId] ?: 0
 }
 
 /**

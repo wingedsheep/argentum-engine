@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.abilities
 
+import com.wingedsheep.engine.core.StaticAbilityGrantedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.event.GrantedStaticAbility
 import com.wingedsheep.engine.handlers.EffectContext
@@ -50,7 +51,8 @@ class GrantStaticAbilityExecutor : EffectExecutor<GrantStaticAbilityEffect> {
                         sourceId = context.sourceId,
                         controllerId = context.controllerId
                     )
-                )
+                ),
+                listOf(StaticAbilityGrantedEvent(targetId))
             )
         }
 
@@ -81,6 +83,6 @@ class GrantStaticAbilityExecutor : EffectExecutor<GrantStaticAbilityEffect> {
             grantedStaticAbilities = state.grantedStaticAbilities + grant
         )
 
-        return EffectResult.success(newState)
+        return EffectResult.success(newState, listOf(StaticAbilityGrantedEvent(targetId)))
     }
 }

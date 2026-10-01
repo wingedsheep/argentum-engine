@@ -27,7 +27,6 @@ val GravpackMonoist = card("Gravpack Monoist") {
     triggeredAbility {
         trigger = Triggers.self.dies()
         effect = Effects.CreateToken(
-            name = "Robot",
             power = 2,
             toughness = 2,
             colors = setOf(),
