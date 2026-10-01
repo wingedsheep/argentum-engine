@@ -1,0 +1,52 @@
+{
+  "player1Name": "Urza",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Lightning Bolt"
+    ],
+    "battlefield": [
+      {
+        "name": "Sunglasses of Urza"
+      },
+      {
+        "name": "Shivan Dragon"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      }
+    ],
+    "library": [
+      "Plains",
+      "Plains"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Shatter"
+    ],
+    "battlefield": [
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      }
+    ],
+    "library": [
+      "Mountain",
+      "Mountain"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "PRECOMBAT_MAIN"
+  ]
+}

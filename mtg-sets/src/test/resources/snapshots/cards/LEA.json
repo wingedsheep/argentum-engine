@@ -4857,6 +4857,29 @@
     ]
 }
 
+// Sunglasses of Urza
+{
+    "name": "Sunglasses of Urza",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "You may spend white mana as though it were red mana.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SpendManaAsColor",
+                "fromColor": "WHITE",
+                "toColor": "RED"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "271",
+        "rarity": "RARE",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0d433a4-76c0-4f27-836d-4c0c13a511fb.jpg?1783948661"
+    }
+}
+
 // Swords to Plowshares
 {
     "name": "Swords to Plowshares",
