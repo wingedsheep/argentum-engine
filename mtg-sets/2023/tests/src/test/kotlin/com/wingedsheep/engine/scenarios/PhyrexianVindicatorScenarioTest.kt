@@ -64,5 +64,33 @@ class PhyrexianVindicatorScenarioTest : ScenarioTestBase() {
             game.getLifeTotal(2) shouldBe 20
             game.findPermanent("Phyrexian Vindicator") shouldNotBe null
         }
+
+        test("combat damage from a blocked attacker is prevented and redirected by the Vindicator's controller") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Phyrexian Vindicator")
+                .withCardOnBattlefield(2, "Hill Giant")
+                .withActivePlayer(2)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val vindicator = game.findPermanent("Phyrexian Vindicator")!!
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+            game.declareAttackers(mapOf("Hill Giant" to 1)).error shouldBe null
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+            game.declareBlockers(mapOf("Phyrexian Vindicator" to listOf("Hill Giant"))).error shouldBe null
+            game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
+
+            // The Giant took 5 from the Vindicator and died; the Vindicator's 3 was prevented and
+            // its controller (Player, not the active Opponent) targets the redirect.
+            game.isInGraveyard(2, "Hill Giant") shouldBe true
+            val sel = game.selectTargets(listOf(game.player2Id))
+            withClue("select: ${sel.error}") { sel.error shouldBe null }
+            game.resolveStack()
+
+            game.getLifeTotal(2) shouldBe 17
+            game.getLifeTotal(1) shouldBe 20
+            (game.state.getEntity(vindicator)?.get<DamageComponent>()?.amount ?: 0) shouldBe 0
+        }
     }
 }

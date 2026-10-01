@@ -90,6 +90,29 @@ class PlanarDisruptionScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
                 game.state.projectedState.cantAttack(thopter) shouldBe true
             }
+
+            test("locks a noncreature artifact's activated abilities") {
+                val game = scenario()
+                    .withPlayers("P1", "P2")
+                    .withCardInHand(1, "Planar Disruption")
+                    .withLandsOnBattlefield(1, "Plains", 4)
+                    .withCardOnBattlefield(1, "Millstone")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val millstone = game.findPermanent("Millstone")!!
+                fun canActivate() = game.getLegalActions(1).any {
+                    val a = it.action
+                    a is ActivateAbility && a.sourceId == millstone
+                }
+                withClue("Millstone is activatable before the Aura") { canActivate() shouldBe true }
+
+                game.castSpell(1, "Planar Disruption", millstone).error shouldBe null
+                game.resolveStack()
+
+                canActivate() shouldBe false
+            }
         }
     }
 }

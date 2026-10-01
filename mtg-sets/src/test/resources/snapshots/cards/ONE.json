@@ -131,7 +131,8 @@
                             "type": "BoundVariable",
                             "name": "t1"
                         },
-                        "destination": "Battlefield"
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
                     },
                     "targetRequirements": [
                         {
@@ -11942,7 +11943,8 @@
                                         "type": "BoundVariable",
                                         "name": "t0"
                                     },
-                                    "destination": "Battlefield"
+                                    "destination": "Battlefield",
+                                    "fromZone": "Exile"
                                 },
                                 "fireOnPlayer": {
                                     "type": "PlayerRef",

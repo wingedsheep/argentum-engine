@@ -37,7 +37,7 @@ val AgainstAllOdds = card("Against All Odds") {
                         zone = Zone.GRAVEYARD,
                     )
                 )
-                effect = Effects.PutOntoBattlefield(t)
+                effect = Effects.PutOntoBattlefieldFromGraveyard(t)
             }
         }
     }

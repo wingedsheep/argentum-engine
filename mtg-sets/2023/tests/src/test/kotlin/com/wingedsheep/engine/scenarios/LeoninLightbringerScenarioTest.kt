@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
@@ -26,6 +27,7 @@ class LeoninLightbringerScenarioTest : ScenarioTestBase() {
                 val projected = game.state.projectedState
                 projected.getPower(cat) shouldBe 3
                 projected.getToughness(cat) shouldBe 2
+                projected.hasKeyword(cat, Keyword.WARD) shouldBe true
             }
 
             test("equipped, it is a 4/3") {

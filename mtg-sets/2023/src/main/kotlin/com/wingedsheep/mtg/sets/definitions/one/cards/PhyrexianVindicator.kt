@@ -14,8 +14,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetOther
 /**
  * Phyrexian Vindicator — Phyrexia: All Will Be One #27.
  *
- * A static [PreventDamage] replacement on itself (CR 615) whose rest is a reflexive triggered
- * ability (CR 603.12): "When damage is prevented this way" goes on the stack after the prevention,
+ * A static [PreventDamage] replacement on itself (CR 615) whose rest — taking place right after
+ * the prevention (CR 615.5) — is a reflexive triggered ability: "When damage is prevented this way" goes on the stack after the prevention,
  * with its "any other target" chosen then, and deals the amount that application prevented
  * ([DynamicAmounts.preventedDamage], inherited by the reflexive trigger). Damage that can't be
  * prevented is dealt, nothing is prevented, and the reflexive trigger never fires.

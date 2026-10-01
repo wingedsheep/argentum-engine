@@ -70,20 +70,23 @@ class CreatePredefinedTokenExecutor(
             amountEvaluator.evaluate(state, dyn, context).coerceAtLeast(0)
         } ?: effect.count
 
-        // Check for token creation replacement effects (e.g., Mirrormind Crown)
-        val replacementResult = TokenCreationReplacementHelper.checkReplacement(
-            state, effect, context, baseTokenCount, tokenControllerId, cardRegistry, staticAbilityHandler,
-            predicateEvaluator = amountEvaluator.predicates
-        )
-        if (replacementResult != null) return replacementResult
-
         // Token-count replacements (Doubling Season, Mondrak, Glory Dominus) apply to predefined
         // tokens exactly as to CreateTokenEffect tokens — before any substitution gets a look,
         // the same order CreateTokenExecutor uses.
-        val tokenCount = TokenCreationReplacementHelper.applyCountReplacements(
-            state, tokenControllerId, baseTokenCount,
+        val tokenCount = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(
+            TokenCreationReplacementHelper.applyCountReplacements(
+                state, tokenControllerId, baseTokenCount,
+                predicateEvaluator = amountEvaluator.predicates
+            ),
+            "predefined tokens"
+        )
+
+        // Check for token creation replacement effects (e.g., Mirrormind Crown)
+        val replacementResult = TokenCreationReplacementHelper.checkReplacement(
+            state, effect, context, tokenCount, tokenControllerId, cardRegistry, staticAbilityHandler,
             predicateEvaluator = amountEvaluator.predicates
         )
+        if (replacementResult != null) return replacementResult
 
         // "If one or more artifact tokens would be created under your control, that many 5/5 red
         // Dragon creature tokens with flying are created instead" (Draconic Visitor). Treasure,
@@ -102,7 +105,7 @@ class CreatePredefinedTokenExecutor(
             ?.let { substitute ->
                 return substituteExecutor.createSubstituteTokens(
                     state, substitute, context,
-                    com.wingedsheep.engine.core.GameLimits.cappedTokenCount(tokenCount, "predefined tokens"),
+                    tokenCount,
                     tokenControllerId
                 )
             }
@@ -128,7 +131,7 @@ class CreatePredefinedTokenExecutor(
         var newState = state
         val createdTokenIds = mutableListOf<EntityId>()
 
-        repeat(com.wingedsheep.engine.core.GameLimits.cappedTokenCount(tokenCount, "predefined tokens")) { indexInBatch ->
+        repeat(tokenCount) { indexInBatch ->
             val resolvedImageUri = resolvedImageUris[indexInBatch % resolvedImageUris.size]
             val (tokenId, stateWithId) = newState.newEntity()
             newState = stateWithId

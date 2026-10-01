@@ -48,7 +48,6 @@ class TheEternalWandererScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
                     .build()
                 val wanderer = game.findPermanent("The Eternal Wanderer")!!
-                seedLoyalty(game, wanderer, 5)
                 val bears = game.findPermanent("Grizzly Bears")!!
                 val lions = game.findPermanent("Savannah Lions")!!
 
@@ -77,7 +76,6 @@ class TheEternalWandererScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
                 val wanderer = game.findPermanent("The Eternal Wanderer")!!
-                seedLoyalty(game, wanderer, 5)
                 val bears = game.findPermanent("Grizzly Bears")!!
 
                 game.execute(
@@ -114,7 +112,6 @@ class TheEternalWandererScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
                 val wanderer = game.findPermanent("The Eternal Wanderer")!!
-                seedLoyalty(game, wanderer, 5)
                 val bears = game.findPermanent("Grizzly Bears")!!
 
                 game.execute(
@@ -139,7 +136,6 @@ class TheEternalWandererScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
                 val wanderer = game.findPermanent("The Eternal Wanderer")!!
-                seedLoyalty(game, wanderer, 5)
 
                 game.execute(ActivateAbility(game.player1Id, wanderer, exileAbility)).error shouldBe null
                 game.resolveStack()
@@ -156,7 +152,6 @@ class TheEternalWandererScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
                 val wanderer = game.findPermanent("The Eternal Wanderer")!!
-                seedLoyalty(game, wanderer, 5)
 
                 game.execute(ActivateAbility(game.player1Id, wanderer, samuraiAbility)).error shouldBe null
                 game.resolveStack()
@@ -185,7 +180,6 @@ class TheEternalWandererScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
                 val wanderer = game.findPermanent("The Eternal Wanderer")!!
-                seedLoyalty(game, wanderer, 5)
                 val lions = game.findPermanent("Savannah Lions")!!
                 val goblin = game.findPermanent("Raging Goblin")!!
 
@@ -218,10 +212,4 @@ class TheEternalWandererScenarioTest : ScenarioTestBase() {
     private fun loyalty(game: TestGame, id: EntityId): Int =
         game.state.getEntity(id)?.get<CountersComponent>()?.getCount(CounterType.LOYALTY) ?: 0
 
-    private fun seedLoyalty(game: TestGame, id: EntityId, amount: Int) {
-        // The scenario builder skips the "enters with its starting loyalty" step, so seed it.
-        game.state = game.state.updateEntity(id) { c ->
-            c.with(CountersComponent().withAdded(CounterType.LOYALTY, amount))
-        }
-    }
 }
