@@ -4030,6 +4030,103 @@
     ]
 }
 
+// Power Sink
+{
+    "name": "Power Sink",
+    "manaCost": "{X}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {X}. If that player doesn't, they tap all lands with mana abilities they control and lose all unspent mana.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": {
+                    "type": "ControllerOf",
+                    "targetDescription": "target spell"
+                }
+            },
+            "body": {
+                "type": "Gated",
+                "gate": {
+                    "type": "Gate.MayPay",
+                    "cost": {
+                        "type": "PayDynamicManaCost",
+                        "amount": "XValue"
+                    }
+                },
+                "then": {
+                    "type": "Composite",
+                    "effects": []
+                },
+                "otherwise": {
+                    "type": "Composite",
+                    "effects": [
+                        "Counter",
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "ControlledPermanents",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsLand"
+                                            ],
+                                            "statePredicates": [
+                                                "HasManaAbility"
+                                            ]
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "TapUntapCollection",
+                                    "collectionName": "gathered0"
+                                }
+                            ]
+                        },
+                        "LoseUnspentMana"
+                    ]
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Richard Thomas",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b342dd3-09b9-4108-bf12-a65d4cef4eb9.jpg?1783948703",
+        "rulings": [
+            {
+                "date": "2010-03-01",
+                "text": "Only lands that actually have mana abilities will get tapped. This includes basic lands and lands with mana abilities printed on them, as well as lands which have been granted a mana ability by some effect."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Does not increase the mana cost of the spell. It just requires a separate expenditure in order for it to succeed."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "When this spell resolves, you either pay X mana or let your lands become tapped. The lands that become tapped are not “tapped for mana”. If you choose to pay, you may pay the X mana using whatever mana abilities you want to use."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Prodigal Sorcerer
 {
     "name": "Prodigal Sorcerer",
