@@ -113,8 +113,17 @@ class MiglozMazeCrusherScenarioTest : FunSpec({
         val driver = newDriver()
         val migloz = driver.putCreatureOnBattlefield(driver.player1, "Migloz, Maze Crusher")
         driver.addComponent(migloz, CountersComponent(mapOf(CounterType.OIL to 2)))
+        val enchantment = driver.putPermanentOnBattlefield(driver.player2, "Test Enchantment")
         driver.giveMana(driver.player1, Color.GREEN, 3)
-        driver.submitExpectFailure(ActivateAbility(playerId = driver.player1, sourceId = migloz, abilityId = destroyId))
+        driver.submitExpectFailure(
+            ActivateAbility(
+                playerId = driver.player1,
+                sourceId = migloz,
+                abilityId = destroyId,
+                targets = listOf(ChosenTarget.Permanent(enchantment)),
+            )
+        )
         oil(driver, migloz) shouldBe 2
+        driver.findPermanent(driver.player2, "Test Enchantment") shouldBe enchantment
     }
 })

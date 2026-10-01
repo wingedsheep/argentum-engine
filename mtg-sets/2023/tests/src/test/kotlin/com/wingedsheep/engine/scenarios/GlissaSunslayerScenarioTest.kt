@@ -105,15 +105,15 @@ class GlissaSunslayerScenarioTest : ScenarioTestBase() {
             }
         }
 
-        test("deathtouch and first strike: a bigger blocker dies before dealing damage") {
-            val game = board(2 to "Hill Giant")
+        test("deathtouch and first strike: a 6/4 blocker dies before dealing damage") {
+            val game = board(2 to "Craw Wurm")
             game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
             game.declareAttackers(mapOf("Glissa Sunslayer" to 2)).error shouldBe null
             game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
-            game.declareBlockers(mapOf("Hill Giant" to listOf("Glissa Sunslayer"))).error shouldBe null
+            game.declareBlockers(mapOf("Craw Wurm" to listOf("Glissa Sunslayer"))).error shouldBe null
             game.passUntilPhase(Phase.COMBAT, Step.END_COMBAT)
 
-            game.isOnBattlefield("Hill Giant") shouldBe false
+            game.isOnBattlefield("Craw Wurm") shouldBe false
             game.isOnBattlefield("Glissa Sunslayer") shouldBe true
             withClue("a blocked Glissa deals no damage to the player, so no trigger") {
                 game.getLifeTotal(2) shouldBe 20

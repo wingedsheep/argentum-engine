@@ -5,6 +5,7 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.mtg.sets.definitions.one.cards.ZopandrelHungerDominus
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
@@ -115,6 +116,7 @@ class ZopandrelHungerDominusScenarioTest : ScenarioTestBase() {
             game.resolveStack()
 
             game.state.getEntity(zop)?.get<CountersComponent>()?.getCount(CounterType.INDESTRUCTIBLE) shouldBe 1
+            game.state.projectedState.hasKeyword(zop, Keyword.INDESTRUCTIBLE) shouldBe true
             game.isInGraveyard(1, "Grizzly Bears") shouldBe true
             game.isInGraveyard(1, "Hill Giant") shouldBe true
         }

@@ -1,8 +1,11 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.lea.cards.ProdigalSorcerer
 import com.wingedsheep.mtg.sets.definitions.one.cards.VeneratedRotpriest
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
@@ -27,6 +30,7 @@ class VeneratedRotpriestScenarioTest : FunSpec({
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
         driver.registerCard(VeneratedRotpriest)
+        driver.registerCard(ProdigalSorcerer)
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -106,5 +110,28 @@ class VeneratedRotpriestScenarioTest : FunSpec({
         driver.bothPass()
         driver.poison(opp) shouldBe 0
         driver.poison(me) shouldBe 0
+    }
+
+    test("an activated ability targeting your creature does not trigger it") {
+        val driver = newDriver()
+        val me = driver.player1
+        val opp = driver.player2
+        driver.putCreatureOnBattlefield(me, "Venerated Rotpriest")
+        val courser = driver.putCreatureOnBattlefield(me, "Centaur Courser")
+        val sorcerer = driver.putCreatureOnBattlefield(me, "Prodigal Sorcerer")
+        driver.removeSummoningSickness(sorcerer)
+
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = me,
+                sourceId = sorcerer,
+                abilityId = ProdigalSorcerer.activatedAbilities.first().id,
+                targets = listOf(ChosenTarget.Permanent(courser)),
+            )
+        )
+        driver.pendingDecision shouldBe null
+
+        driver.bothPass()
+        driver.poison(opp) shouldBe 0
     }
 })
