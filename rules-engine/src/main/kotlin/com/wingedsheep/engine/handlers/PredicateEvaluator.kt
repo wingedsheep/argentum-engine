@@ -1026,10 +1026,14 @@ class PredicateEvaluator(
 
             is CardPredicate.CompareNumericProperty -> {
                 val value = when (predicate.property) {
-                    CardNumericProperty.POWER ->
+                    CardNumericProperty.POWER -> {
+                        if (entityId in state.getBattlefield() && "CREATURE" !in types) return false
                         projectedValues?.power ?: card.baseStats?.basePower ?: return false
-                    CardNumericProperty.TOUGHNESS ->
+                    }
+                    CardNumericProperty.TOUGHNESS -> {
+                        if (entityId in state.getBattlefield() && "CREATURE" !in types) return false
                         projectedValues?.toughness ?: card.baseStats?.baseToughness ?: return false
+                    }
                     CardNumericProperty.MANA_VALUE ->
                         if (projectedValues?.isFaceDown == true) 0 else card.manaValue
                     CardNumericProperty.COUNTERS ->

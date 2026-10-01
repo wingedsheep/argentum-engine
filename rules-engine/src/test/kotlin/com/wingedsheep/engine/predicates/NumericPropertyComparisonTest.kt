@@ -51,8 +51,8 @@ class NumericPropertyComparisonTest : ScenarioTestBase() {
             val bear = game.findPermanent("Grizzly Bears")!!
             val giant = game.findPermanent("Hill Giant")!!
             val projection = ProjectedState(game.state, mapOf(
-                bear to ProjectedValues(power = 1, toughness = 5),
-                giant to ProjectedValues(power = 6, toughness = 1),
+                bear to ProjectedValues(power = 1, toughness = 5, types = setOf("CREATURE")),
+                giant to ProjectedValues(power = 6, toughness = 1, types = setOf("CREATURE")),
             ))
             val filter = GameObjectFilter.Any.compareNumericProperty(CardNumericProperty.TOUGHNESS, ComparisonOperator.LT,
                 DynamicAmount.EntityProperty(EffectTarget.Self, EntityNumericProperty.Power))
@@ -86,6 +86,34 @@ class NumericPropertyComparisonTest : ScenarioTestBase() {
             evaluator.matches(game.state, game.state.projectedState, game.findPermanent("Forest")!!,
                 filter, PredicateContext(game.player1Id)) shouldBe false
         }
+        test("a creature made noncreature cannot match either P/T comparison") {
+            val game = board()
+            val bear = game.findPermanent("Grizzly Bears")!!
+            val projection = ProjectedState(game.state, mapOf(
+                bear to ProjectedValues(power = 2, toughness = 2, types = setOf("LAND")),
+            ))
+            for (property in listOf(CardNumericProperty.POWER, CardNumericProperty.TOUGHNESS)) {
+                val filter = GameObjectFilter.Any.compareNumericProperty(property,
+                    ComparisonOperator.GT, DynamicAmount.Fixed(0))
+                evaluator.matches(game.state, projection, bear, filter,
+                    PredicateContext(game.player1Id)) shouldBe false
+            }
+        }
+        test("a noncreature card outside the battlefield still has its printed P/T") {
+            val game = board()
+            val cardId = game.findPermanent("Grizzly Bears")!!
+            game.state = game.state.updateEntity(cardId) {
+                val card = it.get<com.wingedsheep.engine.state.components.identity.CardComponent>()!!
+                it.with(card.copy(typeLine = com.wingedsheep.sdk.core.TypeLine.artifact()))
+            }
+            game.state = game.zones.moveToZone(game.state, cardId, com.wingedsheep.sdk.core.Zone.GRAVEYARD).state
+            for (property in listOf(CardNumericProperty.POWER, CardNumericProperty.TOUGHNESS)) {
+                val filter = GameObjectFilter.Any.compareNumericProperty(property,
+                    ComparisonOperator.EQ, DynamicAmount.Fixed(2))
+                evaluator.matches(game.state, game.state.projectedState, cardId, filter,
+                    PredicateContext(game.player1Id)) shouldBe true
+            }
+        }
         test("mana value and counters compare with composed amounts") {
             val game = board()
             val bear = game.findPermanent("Grizzly Bears")!!
@@ -101,8 +129,8 @@ class NumericPropertyComparisonTest : ScenarioTestBase() {
             val game = board()
             val bear = game.findPermanent("Grizzly Bears")!!
             val giant = game.findPermanent("Hill Giant")!!
-            val projection = ProjectedState(game.state, mapOf(bear to ProjectedValues(power = -2, toughness = 2),
-                giant to ProjectedValues(power = -1, toughness = 3)))
+            val projection = ProjectedState(game.state, mapOf(bear to ProjectedValues(power = -2, toughness = 2, types = setOf("CREATURE")),
+                giant to ProjectedValues(power = -1, toughness = 3, types = setOf("CREATURE"))))
             val filter = GameObjectFilter.Any.compareNumericProperty(CardNumericProperty.POWER, ComparisonOperator.LT,
                 DynamicAmount.EntityProperty(EffectTarget.ContextTarget(0), EntityNumericProperty.Power))
             val context = PredicateContext(game.player1Id, targets = listOf(

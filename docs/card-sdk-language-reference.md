@@ -5341,8 +5341,10 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   with `EffectTarget.Self` to express "greater power than the ability's source".
 - `.compareNumericProperty(property, operator, amount)` — compares a candidate's `CardNumericProperty`
   (`POWER`, `TOUGHNESS`, `MANA_VALUE`, or total `COUNTERS`) with any `DynamicAmount`, using any
-  `ComparisonOperator`. Reads the supplied projection on both sides; a noncreature without P/T does
-  not match a P/T comparison. For Stone Giant use `TOUGHNESS`, `LT`, and
+  `ComparisonOperator`. Reads the supplied projection on both sides; a noncreature permanent has
+  no P/T and cannot match a P/T comparison. A referenced noncreature permanent's undefined P/T
+  evaluates to zero, including its departure snapshot; a noncreature card outside the battlefield
+  retains printed P/T (for example, a Vehicle). For Stone Giant use `TOUGHNESS`, `LT`, and
   `EntityProperty(Self, Power)`. Checks at target selection and again at resolution; a departed
   activated-ability source uses its frozen departure snapshot, including after a blink. An
   unbound dynamic reference follows normal amount semantics (zero). These context-dependent predicates

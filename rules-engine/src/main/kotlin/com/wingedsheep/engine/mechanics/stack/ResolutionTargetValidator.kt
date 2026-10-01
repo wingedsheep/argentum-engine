@@ -74,13 +74,12 @@ internal class ResolutionTargetValidator(
     ): List<ChosenTarget> {
         // Always project state for shroud/hexproof checks (Rule 702.18, 702.11)
         val projected = state.projectedState
-        val predicateContext = PredicateContext(
+        val predicateContext = (resolution?.let { PredicateContext.fromEffectContext(it) } ?: PredicateContext(
             controllerId = controllerId,
             sourceId = sourceId,
             sourceBattlefieldTimestamp = sourceBattlefieldTimestamp,
             objectReferences = objectReferences,
             lastKnownSourceSnapshot = lastKnownSourceSnapshot,
-            resolution = resolution,
             xValue = xValue,
             triggeringEntityId = triggeringEntityId,
             triggeringPlayerId = triggeringPlayerId,
@@ -89,6 +88,10 @@ internal class ResolutionTargetValidator(
             // A filter bound to an earlier named target ("target creature that player controls",
             // Ravager of the Fells) re-checks against the same choice at resolution.
             namedTargets = EffectContext.buildNamedTargets(targetRequirements, targets),
+        )).copy(
+            targets = targets,
+            namedTargets = (resolution?.pipeline?.namedTargets ?: emptyMap()) +
+                EffectContext.buildNamedTargets(targetRequirements, targets),
         )
 
         val individuallyLegal = targets.indices.filter { index ->

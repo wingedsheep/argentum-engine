@@ -1,8 +1,12 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.TargetFinder
+import com.wingedsheep.engine.mechanics.layers.Layer
+import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -12,6 +16,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.Duration
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
@@ -79,6 +84,28 @@ class StoneGiantScenarioTest : ScenarioTestBase() {
             counters(game, "Stone Giant", CounterType.MINUS_ONE_MINUS_ONE, 1)
             game.resolveStack()
             game.state.delayedTriggers.size shouldBe 0
+        }
+        for (departed in listOf(false, true)) {
+            test("a source made noncreature has no power when ${if (departed) "departed" else "still on the battlefield"}") {
+                val game = board()
+                val source = game.findPermanent("Stone Giant")!!
+                val bear = game.findPermanent("Grizzly Bears")!!
+                activate(game).error shouldBe null
+                game.state = game.state.addFloatingEffect(
+                    layer = Layer.TYPE,
+                    modification = SerializableModification.SetCardTypes(setOf("LAND")),
+                    affectedEntities = setOf(source),
+                    duration = Duration.EndOfTurn,
+                    context = EffectContext(sourceId = source, controllerId = game.player1Id),
+                )
+                game.state.projectedState.isCreature(source) shouldBe false
+                if (departed) {
+                    game.state = game.zones.moveToZone(game.state, source, Zone.GRAVEYARD).state
+                }
+                game.resolveStack()
+                game.state.projectedState.hasKeyword(bear, Keyword.FLYING) shouldBe false
+                game.state.delayedTriggers.size shouldBe 0
+            }
         }
         test("a Giant with increased power can throw itself") {
             val game = board()
