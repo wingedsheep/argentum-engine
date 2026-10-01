@@ -439,7 +439,17 @@ data class MulliganStateComponent(
  * "an additional combat phase followed by an additional main phase" (Aggravated Assault).
  */
 @Serializable
-enum class ExtraPhaseKind { COMBAT, MAIN }
+enum class ExtraPhaseKind {
+    COMBAT,
+    MAIN,
+
+    /**
+     * A full beginning phase — untap, upkeep and draw steps (CR 501.1) — inserted into the current
+     * turn (Shadow of the Second Sun). It is not a new turn: "until your next turn" effects don't
+     * end, and the turn proceeds to whatever follows the inserted phase, never a precombat main.
+     */
+    BEGINNING
+}
 
 /**
  * One entry in the additional-phase queue ([AdditionalPhasesComponent]): a phase [kind] plus, for a
@@ -449,25 +459,38 @@ enum class ExtraPhaseKind { COMBAT, MAIN }
  * an unrestricted combat phase can be queued together without any lockstep bookkeeping. MAIN entries
  * never carry a restriction (`null`).
  *
- * @param kind Whether this entry inserts a combat phase or a postcombat main phase.
+ * @param kind Which phase this entry inserts.
  * @param attackerRestriction For a COMBAT entry, the "only these can attack" filter, or `null` for
  *   the ordinary "any creature can attack" combat phase.
+ * @param createdBy The source of the effect that created this phase, and [createdAt] the game
+ *   timestamp it resolved at. Together they identify one *creation*: CR 500.8 runs the most recently
+ *   created phase first, while phases one effect creates together ("an additional combat phase
+ *   followed by an additional main phase") keep the order that effect gave them.
  */
 @Serializable
 data class QueuedPhase(
     val kind: ExtraPhaseKind,
-    val attackerRestriction: GameObjectFilter? = null
-)
+    val attackerRestriction: GameObjectFilter? = null,
+    val createdBy: EntityId? = null,
+    val createdAt: Long = 0
+) {
+    fun sameCreationAs(other: QueuedPhase): Boolean =
+        createdBy == other.createdBy && createdAt == other.createdAt
+}
 
 /**
  * Component tracking the queue of additional phases to be inserted into the current turn, in the
  * order they should occur (CR 500.8). When the postcombat main phase would advance to the end step,
  * if this component exists the game drains the queue one entry at a time — redirecting to a fresh
- * combat phase ([ExtraPhaseKind.COMBAT]) or postcombat main phase ([ExtraPhaseKind.MAIN]).
+ * combat phase ([ExtraPhaseKind.COMBAT]), postcombat main phase ([ExtraPhaseKind.MAIN]) or
+ * beginning phase ([ExtraPhaseKind.BEGINNING]).
  *
- * Built atomically: [com.wingedsheep.sdk.scripting.effects.AddCombatPhaseEffect] appends a COMBAT
- * entry, [com.wingedsheep.sdk.scripting.effects.AddMainPhaseEffect] appends a MAIN entry. Composing
- * the two (Aggravated Assault, All-Out Assault) yields `[COMBAT, MAIN]`; the combat atom alone
+ * Built atomically: [com.wingedsheep.sdk.scripting.effects.AddCombatPhaseEffect] queues a COMBAT
+ * entry, [com.wingedsheep.sdk.scripting.effects.AddMainPhaseEffect] a MAIN entry and
+ * [com.wingedsheep.sdk.scripting.effects.AddBeginningPhaseEffect] a BEGINNING entry. The most
+ * recently created phases go to the front of the queue (CR 500.8), but entries one effect creates
+ * together stay in that effect's order ([QueuedPhase.sameCreationAs]). Composing combat and main
+ * (Aggravated Assault, All-Out Assault) yields `[COMBAT, MAIN]`; the combat atom alone
  * (Great Train Heist, Raph & Leo, Éomer, Fear of Missing Out) yields `[COMBAT]` and adds no main.
  * A COMBAT entry may carry an attacker restriction (Bumi, Unleashed) — see [QueuedPhase].
  *
@@ -525,6 +548,15 @@ data class AdditionalUpkeepStepsComponent(
  */
 @Serializable
 data object InAdditionalUpkeepStepComponent : Component
+
+/**
+ * Marker placed on the active player while the game is inside an *inserted* beginning phase
+ * ([ExtraPhaseKind.BEGINNING]). Its draw step must not fall through into a precombat main phase:
+ * advancing out of it drains the extra-phase queue instead, or proceeds to the end step when the
+ * queue is empty. Consumed by that advance, and swept at end-of-turn cleanup.
+ */
+@Serializable
+data object InAdditionalBeginningPhaseComponent : Component
 
 /**
  * Component tracking additional end steps to be inserted into the current turn (Y'shtola Rhul).

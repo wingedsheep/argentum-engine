@@ -13,18 +13,26 @@ import com.wingedsheep.sdk.scripting.effects.AddCombatPhaseEffect
 import kotlin.reflect.KClass
 
 /**
- * Append a [kind] phase (optionally carrying an [attackerRestriction] for a COMBAT phase) to the
- * active player's [AdditionalPhasesComponent] queue (CR 500.8). The queue is drained by the
- * TurnManager after the postcombat main phase. Shared by [AddCombatPhaseExecutor] and
- * [AddMainPhaseExecutor] so the two atoms stay a single append.
+ * Queue a [kind] phase (optionally carrying an [attackerRestriction] for a COMBAT phase) on the
+ * active player's [AdditionalPhasesComponent] (CR 500.8). The queue is drained by the TurnManager
+ * after the postcombat main phase. Shared by every add-a-phase executor so they stay one insertion.
+ *
+ * CR 500.8: when several phases are added at the same point, the most recently created one happens
+ * first — so a new creation goes to the *front* of the queue. Phases one effect creates in sequence
+ * ("an additional combat phase followed by an additional main phase") are one creation, identified
+ * by [context]'s source and the current timestamp, and keep their order: the new entry goes after
+ * the leading run of entries from that same creation.
  */
 internal fun GameState.queueAdditionalPhase(
     player: EntityId,
     kind: ExtraPhaseKind,
+    context: EffectContext,
     attackerRestriction: GameObjectFilter? = null
 ): GameState {
-    val existing = getEntity(player)?.get<AdditionalPhasesComponent>()
-    val newPhases = (existing?.phases ?: emptyList()) + QueuedPhase(kind, attackerRestriction)
+    val existing = getEntity(player)?.get<AdditionalPhasesComponent>()?.phases.orEmpty()
+    val entry = QueuedPhase(kind, attackerRestriction, createdBy = context.sourceId, createdAt = timestamp)
+    val insertAt = existing.indexOfFirst { !it.sameCreationAs(entry) }.let { if (it < 0) existing.size else it }
+    val newPhases = existing.take(insertAt) + entry + existing.drop(insertAt)
     return updateEntity(player) { it.with(AdditionalPhasesComponent(newPhases)) }
 }
 
@@ -46,7 +54,7 @@ class AddCombatPhaseExecutor : EffectExecutor<AddCombatPhaseEffect> {
         val activePlayer = state.activePlayerId
             ?: return EffectResult.error(state, "No active player for AddCombatPhaseEffect")
         return EffectResult.success(
-            state.queueAdditionalPhase(activePlayer, ExtraPhaseKind.COMBAT, effect.attackerRestriction)
+            state.queueAdditionalPhase(activePlayer, ExtraPhaseKind.COMBAT, context, effect.attackerRestriction)
         )
     }
 }

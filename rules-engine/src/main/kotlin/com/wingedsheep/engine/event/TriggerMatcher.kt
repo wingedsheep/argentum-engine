@@ -1686,7 +1686,8 @@ class TriggerMatcher(
      * it entered (`ChoiceSlot.OPPONENT`, via [com.wingedsheep.sdk.scripting.EntersWithChoice]) —
      * The Rack: "at the beginning of the chosen player's upkeep". The trigger fires only on that
      * player's step; without [sourceId] (or before a choice is recorded) it can't resolve and
-     * doesn't fire, rather than firing on every player's step.
+     * doesn't fire, rather than firing on every player's step. [Player.EnchantedPlayer] keys it to
+     * the player the source Aura enchants, the same way.
      */
     fun matchesPlayerForStep(
         player: Player,
@@ -1701,6 +1702,15 @@ class TriggerMatcher(
             Player.ChosenOpponent -> {
                 val chosen = sourceId?.let { state.getEntity(it)?.chosenOpponent() } ?: return false
                 state.isActiveTurnFor(chosen)
+            }
+            // "At the beginning of enchanted player's [step]" (Shadow of the Second Sun) — the
+            // player this Aura is attached to. Not attached to a player: the trigger can't fire.
+            Player.EnchantedPlayer -> {
+                val enchanted = sourceId
+                    ?.let { state.getEntity(it)?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()?.targetId }
+                    ?.takeIf { it in state.turnOrder }
+                    ?: return false
+                state.isActiveTurnFor(enchanted)
             }
             else -> true
         }

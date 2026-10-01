@@ -26,6 +26,6 @@ class AddMainPhaseExecutor : EffectExecutor<AddMainPhaseEffect> {
     ): EffectResult {
         val activePlayer = state.activePlayerId
             ?: return EffectResult.error(state, "No active player for AddMainPhaseEffect")
-        return EffectResult.success(state.queueAdditionalPhase(activePlayer, ExtraPhaseKind.MAIN))
+        return EffectResult.success(state.queueAdditionalPhase(activePlayer, ExtraPhaseKind.MAIN, context))
     }
 }

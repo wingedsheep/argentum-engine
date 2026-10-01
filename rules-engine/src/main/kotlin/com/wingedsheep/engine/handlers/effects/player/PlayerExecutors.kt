@@ -42,6 +42,7 @@ class PlayerExecutors(
         AddAdditionalEndStepsExecutor(amountEvaluator = zones.predicateEvaluator.amounts),
         AddCombatPhaseExecutor(),
         AddMainPhaseExecutor(),
+        AddBeginningPhaseExecutor(),
         AnyPlayerMayPayExecutor(executeEffect = effectExecutor, predicateEvaluator = zones.predicateEvaluator),
         CantActivateLoyaltyAbilitiesExecutor(),
         CantCastSpellsExecutor(),

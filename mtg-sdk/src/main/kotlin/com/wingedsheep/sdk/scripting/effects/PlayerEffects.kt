@@ -215,6 +215,23 @@ data object AddMainPhaseEffect : Effect {
 }
 
 /**
+ * Insert a single additional beginning phase into the current turn — untap, upkeep and draw steps
+ * (CR 501.1) — after this phase (Shadow of the Second Sun). Like [AddCombatPhaseEffect] and
+ * [AddMainPhaseEffect] it is one queued phase, and the three compose in any order.
+ *
+ * The inserted phase is part of the same turn: the active player untaps, "at the beginning of your
+ * upkeep" abilities trigger, and they draw for the draw step, but "until your next turn" effects
+ * don't end. After it the turn proceeds to whatever follows the phase it was added after — the
+ * ending phase unless another phase was queued — never a precombat main phase.
+ */
+@SerialName("AddBeginningPhase")
+@Serializable
+data object AddBeginningPhaseEffect : Effect {
+    override val description: String =
+        "There is an additional beginning phase after this phase"
+}
+
+/**
  * Give the controller additional upkeep steps after the current phase
  * (Obeka, Splitter of Seconds: "you get that many additional upkeep steps after this phase").
  *
