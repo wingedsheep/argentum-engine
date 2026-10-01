@@ -91,6 +91,16 @@ class PrimalPrayersScenarioTest : FunSpec({
         d.energy() shouldBe 2
     }
 
+    test("a noncreature spell with mana value 3 or less is not covered") {
+        val d = driver()
+        d.putPermanentOnBattlefield(d.player1, "Primal Prayers")
+        d.giveEnergy(2)
+        val growth = d.putCardInHand(d.player1, "Giant Growth")
+
+        d.castsOf(growth).filter { it.actionType == "CastWithAlternativeCost" }.shouldBeEmpty()
+        d.energy() shouldBe 2
+    }
+
     test("without energy there is no energy cast, and no instant-speed cast at all") {
         val d = driver()
         d.putPermanentOnBattlefield(d.player1, "Primal Prayers")
