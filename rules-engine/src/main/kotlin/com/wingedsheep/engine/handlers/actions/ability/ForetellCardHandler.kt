@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
@@ -119,7 +120,7 @@ class ForetellCardHandler(
             red = poolComponent.red,
             green = poolComponent.green,
             colorless = poolComponent.colorless
-        )
+        ).withSpendingColors(currentState, action.playerId)
         val partialResult = pool.payPartial(setupCost)
         val poolAfterPayment = partialResult.newPool
         val remainingCost = partialResult.remainingCost

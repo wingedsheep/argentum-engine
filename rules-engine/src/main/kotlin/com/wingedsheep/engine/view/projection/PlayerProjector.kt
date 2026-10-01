@@ -71,6 +71,8 @@ internal class PlayerProjector(
             hasLost = hasLost,
             // Mana pool is public information in MTG - show for all players
             manaPool = container?.get<ManaPoolComponent>()?.let(::manaPool),
+            manaPaymentColors = com.wingedsheep.engine.mechanics.mana.ManaSpendingRules.colors(state, playerId)
+                .mapKeys { it.key.symbol.toString() }.mapValues { (_, colors) -> colors.map { it.symbol.toString() } },
             activeEffects = activeEffects.project(state, playerId, container),
             commanderDamage = commanderDamage(state, playerId),
             // CR 702.179 — public information, and 0 for the overwhelming majority of games.

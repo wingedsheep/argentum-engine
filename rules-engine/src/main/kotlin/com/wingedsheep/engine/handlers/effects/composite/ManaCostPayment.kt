@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
@@ -41,7 +42,7 @@ fun payManaCostFromPool(
         manaPoolComponent.red,
         manaPoolComponent.green,
         manaPoolComponent.colorless
-    )
+    ).withSpendingColors(state, player)
 
     val partialResult = manaPool.payPartial(cost)
     val remainingCost = partialResult.remainingCost
@@ -120,7 +121,7 @@ fun canAutoPayManaCost(
         manaPoolComponent.red,
         manaPoolComponent.green,
         manaPoolComponent.colorless
-    )
+    ).withSpendingColors(state, player)
 
     val remainingCost = manaPool.payPartial(cost).remainingCost
     if (remainingCost.isEmpty()) return true

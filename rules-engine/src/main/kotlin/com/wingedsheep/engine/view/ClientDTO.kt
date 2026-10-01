@@ -845,6 +845,9 @@ data class ClientPlayer(
     /** Mana in mana pool (only visible for own player) */
     val manaPool: ClientManaPool?,
 
+    /** Server-authoritative accepted actual mana colors, keyed by required pip symbol. */
+    val manaPaymentColors: Map<String, List<String>> = emptyMap(),
+
     /** Active effects on this player (e.g., "Skip Combat" from False Peace) */
     val activeEffects: List<ClientPlayerEffect> = emptyList(),
 

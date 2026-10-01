@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.continuations
 import com.wingedsheep.sdk.dsl.Patterns
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
@@ -146,7 +147,7 @@ class ManaPaymentContinuationResumer(
             val manaPool = ManaPool(
                 manaPoolComponent.white, manaPoolComponent.blue, manaPoolComponent.black,
                 manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless
-            )
+            ).withSpendingColors(state, playerId)
             val partialResult = manaPool.payPartial(continuation.manaCost)
 
             if (partialResult.remainingCost.isEmpty()) {
@@ -705,7 +706,7 @@ class ManaPaymentContinuationResumer(
         val manaPool = ManaPool(
             manaPoolComponent.white, manaPoolComponent.blue, manaPoolComponent.black,
             manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless
-        )
+        ).withSpendingColors(currentState, playerId)
 
         val partialResult = manaPool.payPartial(effectiveCost)
         val remainingCost = partialResult.remainingCost
@@ -971,7 +972,7 @@ class ManaPaymentContinuationResumer(
         val manaPool = ManaPool(
             manaPoolComponent.white, manaPoolComponent.blue, manaPoolComponent.black,
             manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless
-        )
+        ).withSpendingColors(state, playerId)
         val partialResult = manaPool.payPartial(continuation.manaCost)
 
         if (partialResult.remainingCost.isEmpty()) {
@@ -1102,7 +1103,7 @@ class ManaPaymentContinuationResumer(
         val manaPool = ManaPool(
             manaPoolComponent.white, manaPoolComponent.blue, manaPoolComponent.black,
             manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless
-        )
+        ).withSpendingColors(currentState, playerId)
 
         val partialResult = manaPool.payPartial(effectiveCost)
         val remainingCost = partialResult.remainingCost
@@ -1269,7 +1270,7 @@ class ManaPaymentContinuationResumer(
             manaPoolComponent.red,
             manaPoolComponent.green,
             manaPoolComponent.colorless
-        )
+        ).withSpendingColors(state, playerId)
 
         // Create a ManaCost of {X} generic mana
         val xCost = com.wingedsheep.sdk.core.ManaCost(
@@ -1364,7 +1365,7 @@ class ManaPaymentContinuationResumer(
             manaPoolComponent.red,
             manaPoolComponent.green,
             manaPoolComponent.colorless
-        )
+        ).withSpendingColors(state, playerId)
 
         // Try to pay from floating mana first
         val partialResult = manaPool.payPartial(continuation.manaCost)
@@ -1685,7 +1686,7 @@ class ManaPaymentContinuationResumer(
         var pool = ManaPool(
             poolComponent.white, poolComponent.blue, poolComponent.black,
             poolComponent.red, poolComponent.green, poolComponent.colorless
-        )
+        ).withSpendingColors(currentState, continuation.payingPlayerId)
         pool = if (sourceOption.producesColors.isNotEmpty()) {
             pool.add(sourceOption.producesColors.first())
         } else if (sourceOption.producesColorless) {

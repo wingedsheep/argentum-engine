@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.state.components.identity
 
 import com.wingedsheep.engine.state.Component
+import com.wingedsheep.engine.state.components.battlefield.ManaSpendingGrant
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
@@ -107,6 +108,8 @@ data class CardComponent(
     val manaValueOverride: Int? = null,
     /** Rules text added by copy effects; copied and restored with the identity, not a layer-six grant. */
     val copyTriggeredAbilities: List<com.wingedsheep.sdk.scripting.TriggeredAbility> = emptyList(),
+    /** Copiable spending-rule abilities, baked from the active printed statics on entry/unlock. */
+    val manaSpendingGrants: List<ManaSpendingGrant> = emptyList(),
 ) : Component {
     // Convenience accessors
     val isCreature: Boolean get() = typeLine.isCreature

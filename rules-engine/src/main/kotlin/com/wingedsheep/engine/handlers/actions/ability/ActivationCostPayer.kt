@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CardsDiscardedEvent
@@ -119,7 +120,7 @@ internal class ActivationCostPayer(
             manaBySubtype = poolComponent.manaBySubtype,
             manaBySource = poolComponent.manaBySource,
             manaByCardType = poolComponent.manaByCardType
-        )
+        ).withSpendingColors(state, action.playerId)
 
         // For an VariablePermanents cost, X is the exiled permanents' total mana value (computed at
         // announcement); otherwise it's the action's chosen X. Identical to `action.xValue ?: 0` for

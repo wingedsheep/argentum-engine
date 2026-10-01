@@ -8846,6 +8846,20 @@ staticAbility {
   gainer. The dynamic, copy-from-other-permanents sibling of `GrantActivatedAbility`. Mana abilities
   are excluded unless `includeManaAbilities = true`. (Sharkey, Tyrant of the Shire — "Sharkey has all
   activated abilities of lands your opponents control except mana abilities")
+- `SpendManaAsColor(fromColor, toColor)` — the controller may spend mana of one color as though it were
+  another for **any** mana payment (Sunglasses of Urza: `WHITE` → `RED`). This is directional:
+  white remains usable for white or generic costs, while red gains no permission to pay white.
+  Colored, hybrid, monocolored hybrid, and Phyrexian mana halves accept the substitution; `{C}`
+  and actual-color spending restrictions (including color-restricted X) remain unchanged.
+  The cost, mana produced, actual colors spent, restrictions, riders and source provenance stay
+  unchanged. Matching reserves strict pips before flexible ones without enumerating subsets.
+  Independent permissions compose transitively. Printed permissions follow projected control,
+  text changes, ability removal and phasing; conditional/composite statics and runtime
+  `GrantStaticAbility` permissions (including grants to players) use their normal gates and durations.
+  Payment and affordability use the same rule for spells, abilities, special actions and resolution
+  payments. The server sends `ClientPlayer.manaPaymentColors` for the existing payment readouts.
+  New Assay grammar vocabulary; no Oracle grammar band is introduced here.
+
 - `SpendAnyManaTypeForActivatedAbilities(filter, substituteColor = null)` — relaxes the mana portion
   of the activated-ability costs of permanents matching `filter` (a `GroupFilter`; use
   `GroupFilter.source()` for "this permanent's abilities") per CR 118.14 / 609.4b. Non-mana cost

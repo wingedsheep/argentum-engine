@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.core.ExecutionResult
@@ -131,7 +132,7 @@ class SuspendCardFromHandHandler(
                 red = poolComponent.red,
                 green = poolComponent.green,
                 colorless = poolComponent.colorless
-            )
+            ).withSpendingColors(state, action.playerId)
             val remainingCost = pool.payPartial(suspend.cost).remainingCost
             if (!remainingCost.isEmpty()) {
                 val chosenSet = chosenSources.toSet()
@@ -170,7 +171,7 @@ class SuspendCardFromHandHandler(
             red = poolComponent.red,
             green = poolComponent.green,
             colorless = poolComponent.colorless
-        )
+        ).withSpendingColors(state, action.playerId)
         val partialResult = pool.payPartial(suspend.cost)
         val poolAfterPayment = partialResult.newPool
         val remainingCost = partialResult.remainingCost

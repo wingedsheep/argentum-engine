@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.core.ActivateAbility
@@ -190,7 +191,7 @@ class ActivateAbilityHandler(
             if (mana != null && !ManaPaymentWindow.floatingManaCovers(state, action.playerId, mana)) {
                 val pool = state.getEntity(action.playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
                 val remaining = ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless,
-                    restrictedMana = pool.restrictedMana).payPartial(mana, paymentContext).remainingCost
+                    restrictedMana = pool.restrictedMana).withSpendingColors(state, action.playerId).payPartial(mana, paymentContext).remainingCost
                 val excluded = if (activation.effectiveCost.hasTapCost()) setOf(action.sourceId) else emptySet()
                 if (manaSolver.solve(state, action.playerId, remaining, excludeSources = excluded, spellContext = paymentContext) == null) {
                     return state.suspendForDecision(
@@ -538,7 +539,7 @@ class ActivateAbilityHandler(
                 manaBySubtype = repeatPoolComponent.manaBySubtype,
                 manaBySource = repeatPoolComponent.manaBySource,
                 manaByCardType = repeatPoolComponent.manaByCardType
-            )
+            ).withSpendingColors(currentState, action.playerId)
 
             // Auto-tap for mana cost
             if (manaCost != null) {

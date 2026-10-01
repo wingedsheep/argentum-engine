@@ -639,6 +639,11 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
     // from the pool before tapping sources (CastPaymentProcessor.autoPay), so the
     // confirmation panel needs to credit it too. Without this, a player who taps
     // a Plains pre-cast sees "0/1" white owed even though their pool already has it.
+    const acceptedColors = viewingPlayer?.manaPaymentColors ?? {}
+    const optionsFor = (pip: string): readonly string[] =>
+      [...new Set(pip.split('/').flatMap((color) => acceptedColors[color] ?? [color]))]
+    const requirementOrder = Object.keys(remainingColorReqs)
+      .sort((a, b) => optionsFor(a).length - optionsFor(b).length)
     const floatingPool = viewingPlayer?.manaPool
     if (floatingPool) {
       const poolByPip: Record<string, number> = {
@@ -655,12 +660,13 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         const pip = entry.color ?? 'C'
         if (pip in poolByPip) poolByPip[pip]!++
       }
-      // Spend exact-color pool first against colored pips
-      for (const pip of Object.keys(poolByPip)) {
-        while ((poolByPip[pip] ?? 0) > 0 && (remainingColorReqs[pip] ?? 0) > 0) {
-          remainingColorReqs[pip]!--
-          colorSatisfied[pip] = (colorSatisfied[pip] ?? 0) + 1
-          poolByPip[pip]!--
+      for (const required of requirementOrder) {
+        while ((remainingColorReqs[required] ?? 0) > 0) {
+          const actual = optionsFor(required).find((color) => (poolByPip[color] ?? 0) > 0)
+          if (!actual) break
+          remainingColorReqs[required]!--
+          colorSatisfied[required] = (colorSatisfied[required] ?? 0) + 1
+          poolByPip[actual]!--
           satisfied++
         }
       }
@@ -675,25 +681,21 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       }
     }
 
-    for (const source of sortedSources) {
-      // Try to assign to a colored requirement this source can pay
-      let assigned = false
-      for (const color of source.colors) {
-        if ((remainingColorReqs[color] ?? 0) > 0) {
-          remainingColorReqs[color]!--
-          colorSatisfied[color] = (colorSatisfied[color] ?? 0) + 1
-          satisfied++
-          assigned = true
-          break
-        }
-      }
-      // If no colored requirement matched, assign to generic
-      if (!assigned && remainingGeneric > 0) {
-        remainingGeneric--
-        colorSatisfied['1'] = (colorSatisfied['1'] ?? 0) + 1
+    const unusedSources = [...sortedSources]
+    for (const required of requirementOrder) {
+      while ((remainingColorReqs[required] ?? 0) > 0) {
+        const index = unusedSources.findIndex((source) =>
+          source.colors.some((actual) => optionsFor(required).includes(actual)))
+        if (index < 0) break
+        unusedSources.splice(index, 1)
+        remainingColorReqs[required]!--
+        colorSatisfied[required] = (colorSatisfied[required] ?? 0) + 1
         satisfied++
       }
     }
+    const genericPaid = Math.min(remainingGeneric, unusedSources.length)
+    colorSatisfied['1'] = (colorSatisfied['1'] ?? 0) + genericPaid
+    satisfied += genericPaid
 
     // Build per-color requirement counts for display
     const colorRequired: Record<string, number> = {}
@@ -710,7 +712,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
     })
 
     return { satisfied, total, entries, colorSatisfied }
-  }, [manaSelectionState, viewingPlayer?.manaPool])
+  }, [manaSelectionState, viewingPlayer?.manaPool, viewingPlayer?.manaPaymentColors])
 
   // ⚠ Every hook must sit ABOVE this line. This is the component's only early return, and it fires
   // whenever the store has no game state yet — which is exactly how a replay or spectator surface

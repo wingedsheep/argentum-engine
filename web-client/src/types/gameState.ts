@@ -678,6 +678,8 @@ export interface ClientPlayer {
   readonly landsPlayedThisTurn: number
   readonly hasLost: boolean
   readonly manaPool?: ClientManaPool
+  /** Server-supplied actual colors accepted for each required pip. */
+  readonly manaPaymentColors?: Readonly<Record<string, readonly string[]>>
   readonly activeEffects?: readonly ClientPlayerEffect[]
   /**
    * Per-commander combat damage dealt to this player (CR 903.10a). Empty outside Commander format.

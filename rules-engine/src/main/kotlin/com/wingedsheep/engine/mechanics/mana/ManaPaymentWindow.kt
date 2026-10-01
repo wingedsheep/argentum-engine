@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.mana
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.Suspension
 import com.wingedsheep.engine.core.restoreSuspension
 import com.wingedsheep.engine.core.ExecutionResult
@@ -230,7 +231,7 @@ object ManaPaymentWindow {
         val pool = state.getEntity(playerId)
             ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
             ?: return cost
-        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless, restrictedMana = pool.restrictedMana)
+        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless, restrictedMana = pool.restrictedMana).withSpendingColors(state, playerId)
             .payPartial(cost, spellContext).remainingCost
     }
 
@@ -358,7 +359,7 @@ object ManaPaymentWindow {
         val pool = state.getEntity(playerId)
             ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
             ?: return false
-        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless)
+        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless).withSpendingColors(state, playerId)
             .payPartial(cost)
             .remainingCost
             .isEmpty()
@@ -374,7 +375,7 @@ object ManaPaymentWindow {
         val pool = state.getEntity(decision.playerId)
             ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
             ?: return cost
-        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless)
+        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless).withSpendingColors(state, decision.playerId)
             .payPartial(cost)
             .remainingCost
     }

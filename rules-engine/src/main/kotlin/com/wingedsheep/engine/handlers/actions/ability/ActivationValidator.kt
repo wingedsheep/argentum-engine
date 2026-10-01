@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.mechanics.mana.BorrowedManaAbilities
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.ActivateAbility
@@ -653,7 +654,7 @@ internal class ActivationValidator(
             green = poolComponent.green,
             colorless = poolComponent.colorless,
             restrictedMana = poolComponent.restrictedMana,
-        )
+        ).withSpendingColors(state, playerId)
         return when (cost) {
             is AbilityCost.Atom -> {
                 val mana = cost.manaCostOrNull

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.LifeChangeReason
@@ -585,7 +586,7 @@ internal class CastCostPayer(
             green = poolComponent.green,
             colorless = poolComponent.colorless,
             restrictedMana = poolComponent.restrictedMana
-        )
+        ).withSpendingColors(state, playerId)
     }
 }
 

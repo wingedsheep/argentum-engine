@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.room
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.DoorUnlockedEvent
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.core.ExecutionResult
@@ -110,7 +111,7 @@ class UnlockRoomDoorHandler(
                     green = poolComponent.green,
                     colorless = poolComponent.colorless,
                     restrictedMana = poolComponent.restrictedMana
-                )
+                ).withSpendingColors(state, action.playerId)
                 if (!costHandler.canPayManaCost(pool, cost, unlockContext)) {
                     return "Insufficient mana in pool to unlock ${face.name}"
                 }
@@ -163,7 +164,7 @@ class UnlockRoomDoorHandler(
                     green = poolComponent.green,
                     colorless = poolComponent.colorless,
                     restrictedMana = poolComponent.restrictedMana
-                )
+                ).withSpendingColors(currentState, action.playerId)
                 val newPool = costHandler.payManaCost(pool, cost, unlockContext)
                     ?: return ExecutionResult.error(currentState, "Insufficient mana in pool")
                 currentState = currentState.updateEntity(action.playerId) { c ->
@@ -203,7 +204,7 @@ class UnlockRoomDoorHandler(
                     green = poolComponent.green,
                     colorless = poolComponent.colorless,
                     restrictedMana = poolComponent.restrictedMana
-                )
+                ).withSpendingColors(currentState, action.playerId)
                 val partialResult = pool.payPartial(cost, unlockContext)
                 val poolAfterPayment = partialResult.newPool
                 val remainingCost = partialResult.remainingCost

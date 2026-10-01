@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.continuations
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.AttackTaxManaSelectionContinuation
 import com.wingedsheep.engine.core.BlockTaxManaSelectionContinuation
 import com.wingedsheep.engine.core.DecisionResponse
@@ -165,7 +166,7 @@ class CombatTaxContinuationResumer(
         var pool = ManaPool(
             poolComponent.white, poolComponent.blue, poolComponent.black,
             poolComponent.red, poolComponent.green, poolComponent.colorless,
-        )
+        ).withSpendingColors(state, playerId)
 
         val partial = pool.payPartial(manaCost)
         var remainingCost = partial.remainingCost

@@ -1,5 +1,8 @@
 package com.wingedsheep.engine.mechanics.layers
 
+import com.wingedsheep.sdk.scripting.SpendManaAsColor
+import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.engine.state.components.battlefield.ManaSpendingGrant
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.components.battlefield.CantBeBlockedWhilePropertyAtMostComponent
@@ -40,7 +43,6 @@ import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.conditions.Compare
-import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
 import com.wingedsheep.sdk.scripting.EquipAbilitiesAtInstantSpeed
 import com.wingedsheep.sdk.scripting.FreeFirstEquipEachTurn
@@ -241,6 +243,23 @@ class StaticAbilityHandler(
         // RoomFaceStatics is what lets a Room face's continuous statics project once its door is
         // unlocked; the component is re-baked on later unlocks by RoomDoorUnlocker.
         val allStaticAbilities = RoomFaceStatics.activeStaticAbilities(container, cardDefinition)
+
+        val spending = mutableListOf<ManaSpendingGrant>()
+        fun collectSpending(ability: StaticAbility, conditions: List<Condition> = emptyList()) {
+            when (ability) {
+                is SpendManaAsColor -> spending.add(
+                    ManaSpendingGrant(ability, conditions)
+                )
+                is ConditionalStaticAbility -> collectSpending(ability.ability, conditions + ability.condition)
+                is CompositeStaticAbility -> ability.abilities.forEach { collectSpending(it, conditions) }
+                else -> Unit
+            }
+        }
+        allStaticAbilities.forEach { collectSpending(it) }
+        val card = result.get<CardComponent>()
+        if (card != null && card.manaSpendingGrants != spending) {
+            result = result.with(card.copy(manaSpendingGrants = spending.toList()))
+        }
 
         // Convert static abilities to continuous effect data, tagging each ability's effects with
         // a shared group id when it touches more than one layer (CR 613.6 — see toGroupedEffectData).
@@ -1023,6 +1042,7 @@ class StaticAbilityHandler(
             is CastSpellTypesFromTopOfLibrary,
             is com.wingedsheep.sdk.scripting.SpendAnyManaTypeForSpells,
             is com.wingedsheep.sdk.scripting.PayLifeForColoredMana,
+            is SpendManaAsColor,
             is GrantAdditionalLandDrop,
             is GrantFlashToSpellType,
             is GrantMayCastFromLinkedExile,

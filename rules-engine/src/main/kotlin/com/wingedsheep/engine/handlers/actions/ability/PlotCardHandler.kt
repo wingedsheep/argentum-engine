@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.CardPlottedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
@@ -154,7 +155,7 @@ class PlotCardHandler(
             red = poolComponent.red,
             green = poolComponent.green,
             colorless = poolComponent.colorless
-        )
+        ).withSpendingColors(state, action.playerId)
         val partialResult = pool.payPartial(plotCost)
         val poolAfterPayment = partialResult.newPool
         val remainingCost = partialResult.remainingCost

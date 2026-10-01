@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.morph
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
@@ -145,7 +146,7 @@ class TurnFaceUpHandler(
                             green = poolComponent.green,
                             colorless = poolComponent.colorless,
                             restrictedMana = poolComponent.restrictedMana
-                        )
+                        ).withSpendingColors(state, action.playerId)
                         if (!costHandler.canPayManaCost(pool, withXResolved(manaCost, xValue), faceUpContext)) {
                             return "Insufficient mana in pool to turn this creature face up"
                         }
@@ -228,7 +229,7 @@ class TurnFaceUpHandler(
                             green = poolComponent.green,
                             colorless = poolComponent.colorless,
                             restrictedMana = poolComponent.restrictedMana
-                        )
+                        ).withSpendingColors(currentState, action.playerId)
 
                         val newPool = costHandler.payManaCost(pool, withXResolved(manaCost, xValue), faceUpContext)
                             ?: return ExecutionResult.error(currentState, "Insufficient mana in pool")
@@ -273,7 +274,7 @@ class TurnFaceUpHandler(
                             green = poolComponent.green,
                             colorless = poolComponent.colorless,
                             restrictedMana = poolComponent.restrictedMana
-                        )
+                        ).withSpendingColors(currentState, action.playerId)
 
                         val partialResult = pool.payPartial(manaCost, faceUpContext)
                         var poolAfterPayment = partialResult.newPool

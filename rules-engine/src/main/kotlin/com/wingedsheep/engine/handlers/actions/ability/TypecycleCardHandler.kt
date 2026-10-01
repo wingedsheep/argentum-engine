@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.actions.ability
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.sdk.dsl.Patterns
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.CardCycledEvent
 import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.ExecutionResult
@@ -123,7 +124,7 @@ class TypecycleCardHandler(
             red = poolComponent.red,
             green = poolComponent.green,
             colorless = poolComponent.colorless
-        )
+        ).withSpendingColors(currentState, action.playerId)
 
         val partialResult = pool.payPartial(variant.cost)
         val poolAfterPayment = partialResult.newPool

@@ -89,3 +89,18 @@ describe('computeCoverage', () => {
     expect(coverage[0]!.pending).toBe(false)
   })
 })
+
+describe('server-supplied mana payment colors', () => {
+  it('credits white mana for red without duplicating the unit for white', () => {
+    const accepted = { R: ['R', 'W'] }
+    const coverage = computeCoverage(['R', 'W'], pool({ white: 1 }), [], [], 0, accepted)
+    expect(coverage[0]?.floating).toBe(false)
+    expect(coverage[1]?.floating).toBe(true)
+    expect(computeCoverage(['R'], pool({ white: 1 }), [], [], 0, accepted)[0]?.floating).toBe(true)
+  })
+  it('uses a selected white source for a red pip', () => {
+    const plains = source('white', ['WHITE'], 1)
+    const coverage = computeCoverage(['R'], emptyPool, ['white'] as never, [plains], 0, { R: ['R', 'W'] })
+    expect(coverage[0]?.pending).toBe(true)
+  })
+})

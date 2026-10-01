@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.cost
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.CardsDiscardedEvent
@@ -531,7 +532,7 @@ class CostPaymentService(private val services: EngineServices) {
         val pool = ManaPool(
             poolComponent.white, poolComponent.blue, poolComponent.black,
             poolComponent.red, poolComponent.green, poolComponent.colorless
-        )
+        ).withSpendingColors(state, payerId)
 
         // Spend floating mana first, then tap sources for the remainder.
         val partial = pool.payPartial(manaCost)

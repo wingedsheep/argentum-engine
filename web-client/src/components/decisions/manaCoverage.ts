@@ -54,8 +54,14 @@ export function computeCoverage(
   selectedIds: readonly EntityId[],
   availableSources: readonly ManaSourceOption[],
   extraGeneric = 0,
+  acceptedColors: Readonly<Record<string, readonly string[]>> = {},
 ): PipCoverage[] {
   const pips: PipCoverage[] = costSymbols.map((symbol) => ({ symbol, floating: false, pending: false }))
+
+  const optionsFor = (symbol: string) =>
+    [...new Set(pipColorOptions(symbol).flatMap((color) => acceptedColors[color] ?? [color]))]
+  // The readout keeps printed pip order; assign strict pips first using server-supplied options.
+  const assignmentPips = [...pips].sort((a, b) => optionsFor(a.symbol).length - optionsFor(b.symbol).length)
 
   const floatingByColor: Record<string, number> = {
     W: pool?.white ?? 0,
@@ -67,8 +73,8 @@ export function computeCoverage(
   }
 
   // Pass 1 — floating mana against coloured pips it exactly matches.
-  for (const pip of pips) {
-    const paidWith = pipColorOptions(pip.symbol).find((color) => (floatingByColor[color] ?? 0) > 0)
+  for (const pip of assignmentPips) {
+    const paidWith = optionsFor(pip.symbol).find((color) => (floatingByColor[color] ?? 0) > 0)
     if (paidWith !== undefined) {
       floatingByColor[paidWith] = (floatingByColor[paidWith] ?? 0) - 1
       pip.floating = true
@@ -84,7 +90,7 @@ export function computeCoverage(
   const sourceById = new Map(availableSources.map((s) => [s.entityId, s]))
   let spareFromSources = 0
   const openPipsPayableBy = (color: string) =>
-    pips.filter((pip) => !pip.floating && !pip.pending && pipColorOptions(pip.symbol).includes(color))
+    assignmentPips.filter((pip) => !pip.floating && !pip.pending && optionsFor(pip.symbol).includes(color))
   for (const id of selectedIds) {
     const source = sourceById.get(id)
     if (!source) continue
@@ -107,7 +113,7 @@ export function computeCoverage(
   // or had some to spare, Waterbend taps) pays generic pips, cheapest first.
   let leftoverFloating = Object.values(floatingByColor).reduce((a, b) => a + b, 0)
   let leftoverPending = spareFromSources + extraGeneric
-  for (const pip of pips) {
+  for (const pip of assignmentPips) {
     if (pip.floating || pip.pending) continue
     const amount = pipGenericAmount(pip.symbol)
     if (amount === null) continue

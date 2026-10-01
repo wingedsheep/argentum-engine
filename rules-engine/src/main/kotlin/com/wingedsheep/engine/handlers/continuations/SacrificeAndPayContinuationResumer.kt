@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.continuations
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
 import com.wingedsheep.engine.handlers.effects.zones.ForceExileMultiZoneExecutor
@@ -723,7 +724,7 @@ class SacrificeAndPayContinuationResumer(
             manaPoolComponent.red,
             manaPoolComponent.green,
             manaPoolComponent.colorless
-        )
+        ).withSpendingColors(state, playerId)
 
         val currentPool = manaPool
         var currentState = state

@@ -798,3 +798,10 @@ replay up to the requested frame (so no full `GameState` is stored per frame). T
 A snapshot is exact but **not editable** in the card-search builder; the builder's own name-based
 `?s=` share remains for authoring/editing. The engine `GameState` is (de)serialized with
 `persistenceJson` (`allowStructuredMapKeys` — `zones` is keyed by `ZoneKey`).
+
+### Mana spending permissions
+
+`ClientPlayer.manaPaymentColors` is an optional map from required pip symbols to accepted actual
+mana colors, computed by the engine. For Sunglasses of Urza it includes `"R": ["R", "W"]`.
+The existing mana readouts consume these server-provided options; mana source/pool colors and printed
+costs remain unchanged. The field defaults to empty and is public information.

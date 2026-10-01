@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
+import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
@@ -181,7 +182,7 @@ class CastPaymentProcessor(
     ): PaymentResult {
         val poolComponent = state.getEntity(playerId)?.get<ManaPoolComponent>()
             ?: ManaPoolComponent()
-        val pool = toManaPool(poolComponent)
+        val pool = toManaPool(poolComponent).withSpendingColors(state, playerId)
 
         // Pay base cost first
         var poolAfterPayment = costHandler.payManaCost(pool, cost, spellContext)
@@ -319,7 +320,7 @@ class CastPaymentProcessor(
         // Use floating mana first
         val poolComponent = state.getEntity(playerId)?.get<ManaPoolComponent>()
             ?: ManaPoolComponent()
-        val pool = toManaPool(poolComponent)
+        val pool = toManaPool(poolComponent).withSpendingColors(state, playerId)
 
         val partialResult = pool.payPartial(cost, spellContext)
         var poolAfterPayment = partialResult.newPool

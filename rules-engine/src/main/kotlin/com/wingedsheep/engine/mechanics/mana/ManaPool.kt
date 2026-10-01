@@ -262,7 +262,9 @@ data class ManaPool(
      */
     val manaBySubtype: Map<com.wingedsheep.sdk.core.Subtype, Int> = emptyMap(),
     val manaBySource: Map<com.wingedsheep.sdk.model.EntityId, Int> = emptyMap(),
-    val manaByCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap()
+    val manaByCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap(),
+    /** Ephemeral payment configuration, never stored in the player's mana component. */
+    val spendingColors: Map<Color, Set<Color>> = emptyMap()
 ) {
     /**
      * Get amount of mana for a specific color.
@@ -423,6 +425,9 @@ data class ManaPool(
      * When [spellContext] is provided, eligible restricted mana is considered (spent first).
      */
     fun canPay(cost: ManaCost, spellContext: SpellPaymentContext? = null): Boolean {
+        if (spendingColors.isNotEmpty()) {
+            return payPartialWithSpending(cost, spellContext).remainingCost.symbols.all { it is ManaSymbol.X }
+        }
         var remaining = this
 
         // First, pay colored costs — try restricted mana first, then unrestricted
@@ -504,6 +509,10 @@ data class ManaPool(
      * When [spellContext] is provided, eligible restricted mana is spent first.
      */
     fun pay(cost: ManaCost, spellContext: SpellPaymentContext? = null): ManaPool? {
+        if (spendingColors.isNotEmpty()) {
+            val partial = payPartialWithSpending(cost, spellContext)
+            return partial.newPool.takeIf { partial.remainingCost.symbols.all { it is ManaSymbol.X } }
+        }
         if (!canPay(cost, spellContext)) return null
 
         var remaining = this
@@ -589,6 +598,9 @@ data class ManaPool(
      * When [spellContext] is provided, eligible restricted mana is spent first.
      */
     fun payPartial(cost: ManaCost, spellContext: SpellPaymentContext? = null): PartialPaymentResult {
+        if (spendingColors.isNotEmpty()) {
+            return payPartialWithSpending(cost, spellContext)
+        }
         var remaining = this
         val unpaidSymbols = mutableListOf<ManaSymbol>()
 
@@ -733,6 +745,87 @@ data class ManaPool(
                 colorless = colorlessSpent
             )
         )
+    }
+
+    /** Maximum matching of colored pips to actual mana colors; no subset enumeration.
+     * Augmenting paths reserve inflexible pips even when flexible ones appear first in the cost.
+     * Unpaid pips keep their ORIGINAL symbols, so a later land/payment pass retains every option.
+     */
+    private fun payPartialWithSpending(cost: ManaCost, context: SpellPaymentContext?): PartialPaymentResult {
+        val symbols = cost.symbols.filter { it !is ManaSymbol.Generic && it !is ManaSymbol.X }
+        fun options(symbol: ManaSymbol): List<Color?> {
+            fun colors(color: Color): List<Color> = listOf(color) + spendingColors[color].orEmpty().filter { it != color }
+            return when (symbol) {
+                is ManaSymbol.Colored -> colors(symbol.color)
+                is ManaSymbol.Phyrexian -> colors(symbol.color)
+                is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> (colors(symbol.color1) + colors(symbol.color2)).distinct()
+                is ManaSymbol.MonocolorHybrid -> colors(symbol.color)
+                is ManaSymbol.Colorless -> listOf(null)
+                else -> emptyList()
+            }
+        }
+        val choices = symbols.map(::options)
+        val assigned = arrayOfNulls<Color>(symbols.size)
+        val matched = BooleanArray(symbols.size)
+        val capacities = (Color.entries.map { it as Color? } + null).associateWith { color ->
+            val plain = if (color == null) colorless else get(color)
+            plain + if (context == null) 0 else getEligibleRestrictedCount(color, context)
+        }
+        val occupants = capacities.keys.associateWith { mutableListOf<Int>() }
+        fun augment(pip: Int, visited: MutableSet<Color?>): Boolean {
+            for (color in choices[pip]) {
+                if (!visited.add(color)) continue
+                val used = occupants.getValue(color)
+                if (used.size < capacities.getValue(color)) {
+                    used.add(pip); assigned[pip] = color; matched[pip] = true
+                    return true
+                }
+                for (other in used.toList()) {
+                    if (augment(other, visited)) {
+                        used.remove(other); used.add(pip); assigned[pip] = color; matched[pip] = true
+                        return true
+                    }
+                }
+            }
+            return false
+        }
+        // A mono-hybrid can use generic instead; give strict pips first claim to colored mana.
+        val strictPips = symbols.indices.filter { symbols[it] !is ManaSymbol.MonocolorHybrid }
+            .sortedBy { choices[it].size }
+        for (i in strictPips + symbols.indices.filter { symbols[it] is ManaSymbol.MonocolorHybrid }) augment(i, mutableSetOf())
+        var pool = copy(spendingColors = emptyMap())
+        var spent = EMPTY
+        val unpaid = mutableListOf<ManaSymbol>()
+        val generic = cost.genericAmount
+        for (i in symbols.indices) {
+            if (matched[i]) {
+                val color = assigned[i]
+                pool = if (color == null) pool.trySpendColorless(context)!! else pool.trySpendColored(color, context)!!
+                spent = if (color == null) spent.addColorless() else spent.add(color)
+            }
+        }
+        // Spend every reserved colored unit before considering generic fallback.
+        for (i in symbols.indices.filter { !matched[it] }) {
+            if (symbols[i] is ManaSymbol.MonocolorHybrid) {
+                val fallback = ManaCost(listOf(ManaSymbol.Generic((symbols[i] as ManaSymbol.MonocolorHybrid).generic)))
+                val paid = pool.payPartial(fallback, context)
+                if (paid.manaSpent.total > 0) {
+                    // Committing any generic mana selects this alternative; later sources pay
+                    // its unpaid generic balance rather than paying the colored half again.
+                    pool = paid.newPool
+                    spent = Color.entries.fold(spent) { acc, color -> acc.add(color, paid.manaSpent.get(color)) }
+                        .addColorless(paid.manaSpent.colorless)
+                    unpaid.addAll(paid.remainingCost.symbols)
+                } else unpaid.add(symbols[i])
+            } else unpaid.add(symbols[i])
+        }
+        val genericPartial = pool.payPartial(ManaCost(listOf(ManaSymbol.Generic(generic))), context)
+        val genericSpent = genericPartial.manaSpent
+        spent = Color.entries.fold(spent) { acc, color -> acc.add(color, genericSpent.get(color)) }
+            .addColorless(genericSpent.colorless)
+        unpaid.addAll(genericPartial.remainingCost.symbols)
+        unpaid.addAll(cost.symbols.filterIsInstance<ManaSymbol.X>())
+        return PartialPaymentResult(genericPartial.newPool.copy(spendingColors = spendingColors), ManaCost(unpaid), spent)
     }
 
     /**
