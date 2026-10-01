@@ -4,8 +4,10 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -44,6 +46,25 @@ class StaffOfCompleationScenarioTest : ScenarioTestBase() {
         game.state.getEntity(id)?.has<TappedComponent>() == true
 
     init {
+        test("pay 2 life: adds one mana of the chosen color without using the stack") {
+            val game = board()
+            val staff = game.findPermanent("Staff of Compleation")!!
+
+            game.execute(
+                ActivateAbility(
+                    playerId = game.player1Id, sourceId = staff, abilityId = abilityId(1),
+                    manaColorChoice = Color.BLACK
+                )
+            ).error shouldBe null
+
+            game.state.stack.size shouldBe 0
+            game.getLifeTotal(1) shouldBe 18
+            isTapped(game, staff) shouldBe true
+            val pool = game.state.getEntity(game.player1Id)?.get<ManaPoolComponent>()!!
+            pool.black shouldBe 1
+            pool.white + pool.blue + pool.red + pool.green shouldBe 0
+        }
+
         test("pay 1 life: destroys a permanent you own") {
             val game = board()
             val staff = game.findPermanent("Staff of Compleation")!!

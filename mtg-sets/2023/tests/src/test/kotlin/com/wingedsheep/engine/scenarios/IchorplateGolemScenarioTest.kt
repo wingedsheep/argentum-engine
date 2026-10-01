@@ -66,14 +66,23 @@ class IchorplateGolemScenarioTest : FunSpec({
         driver.state.projectedState.getToughness(bears) shouldBe 2
     }
 
-    test("an opponent's creature with oil counters is neither triggered on nor pumped") {
+    test("an opponent's creature entering with oil counters is neither triggered on nor pumped") {
         val driver = newDriver()
         driver.putCreatureOnBattlefield(driver.player1, "Ichorplate Golem")
-        val theirs = driver.putCreatureOnBattlefield(driver.player2, "Grizzly Bears")
-        driver.addComponent(theirs, CountersComponent(mapOf(CounterType.OIL to 1)))
+        driver.passPriorityUntil(Step.END)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.state.activePlayerId shouldBe driver.player2
 
-        driver.state.projectedState.getPower(theirs) shouldBe 2
-        driver.state.projectedState.getToughness(theirs) shouldBe 2
+        val p2 = driver.player2
+        val raptor = driver.putCardInHand(p2, "Gitaxian Raptor")
+        driver.giveMana(p2, Color.BLUE, 3)
+        driver.castSpell(p2, raptor).error shouldBe null
+        driver.bothPass() // Raptor resolves, enters with three oil counters
+
+        driver.stackSize shouldBe 0
+        oil(driver, raptor) shouldBe 3
+        driver.state.projectedState.getPower(raptor) shouldBe 1
+        driver.state.projectedState.getToughness(raptor) shouldBe 4
     }
 
     test("a creature you control that gains an oil counter later is pumped") {

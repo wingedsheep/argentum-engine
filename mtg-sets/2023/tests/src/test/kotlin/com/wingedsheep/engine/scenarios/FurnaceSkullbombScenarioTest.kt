@@ -104,5 +104,9 @@ class FurnaceSkullbombScenarioTest : FunSpec({
             )
         )
         oil(driver, courser) shouldBe 0
+
+        // Same window, the unrestricted draw ability is fine — the rejection was the timing rule.
+        driver.submitSuccess(ActivateAbility(playerId = driver.player1, sourceId = bomb, abilityId = drawAbility))
+        driver.getGraveyardCardNames(driver.player1) shouldContain "Furnace Skullbomb"
     }
 })

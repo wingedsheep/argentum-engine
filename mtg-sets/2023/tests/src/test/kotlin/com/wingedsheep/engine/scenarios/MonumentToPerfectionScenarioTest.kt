@@ -45,13 +45,14 @@ class MonumentToPerfectionScenarioTest : ScenarioTestBase() {
         .withLandsOnBattlefield(1, "Cloudpost", 1)
 
     init {
-        test("{3}, {T} finds a basic or Locus land but not other lands") {
+        test("{3}, {T} finds a basic, Sphere or Locus land but not other lands") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")
                 .withCardOnBattlefield(1, "Monument to Perfection")
                 .withLandsOnBattlefield(1, "Plains", 3)
                 .withCardInLibrary(1, "Forest")
                 .withCardInLibrary(1, "Cloudpost")
+                .withCardInLibrary(1, "The Dross Pits")
                 .withCardInLibrary(1, "Grizzly Bears")
                 .withActivePlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
@@ -60,6 +61,7 @@ class MonumentToPerfectionScenarioTest : ScenarioTestBase() {
             val monument = game.findPermanent("Monument to Perfection")!!
             val forest = game.findCardsInLibrary(1, "Forest").single()
             val cloudpost = game.findCardsInLibrary(1, "Cloudpost").single()
+            val drossPits = game.findCardsInLibrary(1, "The Dross Pits").single()
 
             game.execute(
                 ActivateAbility(playerId = game.player1Id, sourceId = monument, abilityId = searchAbility.id)
@@ -68,8 +70,8 @@ class MonumentToPerfectionScenarioTest : ScenarioTestBase() {
 
             val decision = game.state.pendingDecision
             decision.shouldBeInstanceOf<SelectCardsDecision>()
-            withClue("basic Forest and Locus Cloudpost are searchable; Grizzly Bears isn't") {
-                decision.options shouldContainExactlyInAnyOrder listOf(forest, cloudpost)
+            withClue("basic Forest, Sphere Dross Pits and Locus Cloudpost are searchable; Grizzly Bears isn't") {
+                decision.options shouldContainExactlyInAnyOrder listOf(forest, drossPits, cloudpost)
             }
             game.selectCards(listOf(cloudpost))
             game.resolveStack()
