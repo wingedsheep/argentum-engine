@@ -35,8 +35,10 @@ import com.wingedsheep.sdk.scripting.effects.WardCost
  *   a [KeywordAbility]. There is nothing here to parse *into*.
  * - `Equip {N}` (621 cards) — equip is a field on `CardDefinition` (`equipCost`), likewise not a
  *   [KeywordAbility]. Two keyword abilities of the same shape, modelled two different ways.
- * - `Partner`, `Infect`, `Fuse`, `Exalted`, `Myriad`, `Melee`, `Skulk` — no [Keyword]
+ * - `Partner`, `Infect`, `Fuse`, `Myriad`, `Melee`, `Skulk` — no [Keyword]
  *   enum constant exists, so the capability genuinely is not in the SDK yet.
+ * - `Exalted` — the SDK has it (engine-live `Keyword.EXALTED`), but it isn't in this grammar's
+ *   allowlist yet.
  *
  * That list is the fineness report's top declines, and it is exactly the backlog signal the design
  * promises: "can Argentum express this?" collapses into "did it parse?".
