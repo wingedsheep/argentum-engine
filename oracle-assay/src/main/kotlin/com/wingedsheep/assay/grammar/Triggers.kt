@@ -114,8 +114,10 @@ object Triggers {
         surface: String,
         spec: TriggerSpec,
         effect: Phrase<CardScript> = Steps.step,
+        alsoSpelled: List<String> = emptyList(),
     ): Prefix = Prefix(
         phrase(surface, name = surface) {
+            alsoSpelled.forEach { alsoSpelled(it, "$it (alternate spelling)") }
             build { spec }
             match { if (it == spec) bind() else null }
         },
@@ -329,13 +331,17 @@ object Triggers {
         surface: String,
         name: String,
         noun: Phrase<GameObjectFilter>,
+        alsoSpelled: List<String> = emptyList(),
         spec: (GameObjectFilter) -> TriggerSpec,
     ): Prefix =
         // [Steps.triggeredStep], not [Steps.step]: this trigger's event mentions an object of its
         // own, so "it" in the effect clause is that object rather than the source. See the
         // third-anaphor section on [SelfSteps]; the differential caught Tattered Ratter reading
         // "Whenever a Rat you control becomes blocked, it gets +2/+0" as pumping the *Ratter*.
-        slottedTriggerRule(surface, name, noun, Steps.triggeredStep, { triggeredFilter(it.event) }, spec)
+        slottedTriggerRule(
+            surface, name, noun, Steps.triggeredStep, { triggeredFilter(it.event) }, spec,
+            alsoSpelled = alsoSpelled,
+        )
 
     /**
      * [filteredTriggerRule]'s shape, with the slot's *type* and the event's reader as parameters.
@@ -364,8 +370,10 @@ object Triggers {
         // step triggers slot a `TriggerSpec` under `{when}`, and calling that "filter" would leave
         // every template in the file lying about what it holds.
         slotName: String = "filter",
+        alsoSpelled: List<String> = emptyList(),
     ): Prefix = Prefix(
         phrase(surface, name = name) {
+            alsoSpelled.forEach { alsoSpelled(it, "$it (alternate spelling)") }
             slot(slotName, noun)
             build { spec(it.value(slotName)) }
             match { triggerSpec ->
@@ -742,7 +750,15 @@ object Triggers {
 
     private val eventPrefixes: List<Prefix> = listOf(
         triggerRule("when ${Normalizer.SELF} enters", SdkTriggers.self.enters()),
-        triggerRule("when ${Normalizer.SELF} dies", SdkTriggers.self.dies()),
+        // CR 700.4 defines "dies" as "is put into a graveyard from the battlefield", and Oracle
+        // still prints the long form wherever the object is not a creature — Nutrient Block, Spine
+        // of Ish Sah, the Wellspring cycle. One event (`Triggers.self.dies()` documents both
+        // wordings), so the long form is a second spelling and "dies" is the one that prints.
+        triggerRule(
+            "when ${Normalizer.SELF} dies",
+            SdkTriggers.self.dies(),
+            alsoSpelled = listOf("when ${Normalizer.SELF} is put into a graveyard from the battlefield"),
+        ),
         triggerRule("when ${Normalizer.SELF} leaves the battlefield", SdkTriggers.self.leaves()),
         triggerRule("whenever ${Normalizer.SELF} attacks", SdkTriggers.self.attacks()),
         triggerRule("whenever ${Normalizer.SELF} blocks", SdkTriggers.self.blocks()),
@@ -893,6 +909,22 @@ object Triggers {
             "whenever the source or another permanent enters",
             Filters.filter,
         ) { SdkTriggers.a(it).enters() },
+        // "Whenever a creature you control dies, …" — Blood Artist's sibling rows, and the per-object
+        // reading (CR 603.2c): three creatures dying together give three triggers. The batch
+        // ("whenever one or more creatures you control die") is [batchPrefixes]' to write. The pair
+        // differs only in whether the source counts, which is the printed word "another" and so a row
+        // rather than a slot — the same split as the enters pair above. The long form CR 700.4
+        // defines "dies" by is how Oracle spells it for noncreatures (Ashiok's Reaper's "an
+        // enchantment you control", Krenko's "an artifact"); hand-written cards write both with
+        // `.dies()`, so it is a second spelling of the one event and "dies" prints.
+        filteredTriggerRule(
+            "whenever {filter} dies", "whenever a permanent dies", Filters.indefinite,
+            alsoSpelled = listOf("whenever {filter} is put into a graveyard from the battlefield"),
+        ) { SdkTriggers.a(it).dies() },
+        filteredTriggerRule(
+            "whenever another {filter} dies", "whenever another permanent dies", Filters.filter,
+            alsoSpelled = listOf("whenever another {filter} is put into a graveyard from the battlefield"),
+        ) { SdkTriggers.another(it).dies() },
         filteredTriggerRule(
             "whenever {filter} becomes blocked", "whenever a creature becomes blocked", Filters.indefinite,
         ) { SdkTriggers.a(it).becomesBlocked() },

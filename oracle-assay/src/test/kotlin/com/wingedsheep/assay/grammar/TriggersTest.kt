@@ -331,6 +331,41 @@ class TriggersTest : StringSpec({
     }
 
     // ---------------------------------------------------------------------------------------
+    // Filtered dies triggers, and the long form CR 700.4 defines "dies" by
+    // ---------------------------------------------------------------------------------------
+
+    // Ashiok's Reaper, Krenko, Ygra: every hand-written card in the family writes `.dies()` on a
+    // filtered subject, and "another" is the `another` subject rather than a filter layer.
+    "a filtered dies trigger is the a/another subject the goldens write" {
+        ability("Whenever a creature you control dies, draw a card.").trigger shouldBe
+            SdkTriggers.a(GameObjectFilter.Creature.youControl()).dies().event
+        val other = ability("Whenever another creature you control dies, draw a card.")
+        other.trigger shouldBe SdkTriggers.another(GameObjectFilter.Creature.youControl()).dies().event
+        other.binding shouldBe SdkTriggers.another(GameObjectFilter.Creature.youControl()).dies().binding
+        listOf(
+            "Whenever a creature you control dies, draw a card.",
+            "Whenever another creature you control dies, draw a card.",
+            "Whenever a nontoken creature you control dies, draw a card.",
+            "Whenever a creature an opponent controls dies, you gain 1 life.",
+        ).forEach { roundTrips(it) }
+    }
+
+    // One event, two wordings (`Triggers.self.dies()` documents both), so the long form parses to
+    // the same model and "dies" is what prints — Nutrient Block, Ashiok's Reaper.
+    "the long form of dies is a second spelling of the same event" {
+        fragment("When ~ is put into a graveyard from the battlefield, draw a card.") shouldBe
+            fragment("When ~ dies, draw a card.")
+        fragment("Whenever an enchantment you control is put into a graveyard from the battlefield, draw a card.") shouldBe
+            fragment("Whenever an enchantment you control dies, draw a card.")
+        fragment("Whenever another artifact you control is put into a graveyard from the battlefield, draw a card.") shouldBe
+            fragment("Whenever another artifact you control dies, draw a card.")
+
+        Grammar.abilityLine.printLine(
+            fragment("When ~ is put into a graveyard from the battlefield, draw a card.")
+        ) shouldBe "When ~ dies, draw a card."
+    }
+
+    // ---------------------------------------------------------------------------------------
     // Compound self-triggers — the pairs Oracle joins with "or"
     // ---------------------------------------------------------------------------------------
 
