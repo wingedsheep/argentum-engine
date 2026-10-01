@@ -1309,6 +1309,17 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   that number even if the creature that set it is gone. Cap the targets with the *board* amount
   (`dynamicMaxCount = <amount>`, not `XValue`, which enumeration treats as a player-chosen X).
 
+  **A spell's X pinned by its additional cost** (Nahiri's Sacrifice: "As an additional cost to cast
+  this spell, sacrifice an artifact or creature with mana value X. … deals X damage divided as you
+  choose among any number of target creatures") has no `{X}` in its mana cost. Write the cost's filter
+  with `.manaValueEqualsX()` (`Costs.additional.SacrificePermanent((Artifact or Creature).manaValueEqualsX())`),
+  and read X with `DynamicAmounts.xValue()` for both `dynamicTotal` and the target cap
+  (`dynamicMaxCount`). The engine offers **one cast per mana value the caster could sacrifice**, each
+  with its `CastSpell.xValue` fixed, the sacrifice picker narrowed to that mana value, and the total
+  and target cap resolved — picking the offer *is* announcing X (CR 107.3a). The validator re-checks
+  the sacrificed permanent against the announced X (an unannounced X is 0) and the division against
+  the X-derived total.
+
   **Always cap the target count at the total.** Each chosen target must be assigned at least 1 damage
   (CR 601.2d), so a requirement that lets the player pick more targets than there is damage leaves them
   with no legal division to submit. Pass `dynamicMaxCount` alongside `unlimited` — a

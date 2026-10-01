@@ -125,8 +125,11 @@ internal object SacrificeCostKind : SpellCostKind<CostAtom.Sacrifice> {
             if (permId !in state.getBattlefield()) {
                 return "Sacrificed permanent is not on the battlefield: $permId"
             }
-            // Use unified filter with projected state
-            val context = PredicateContext(controllerId = check.playerId)
+            // Use unified filter with projected state. An additional cost with an X has that X
+            // announced with the spell (CR 107.3a; unannounced is 0), so "sacrifice an artifact or
+            // creature with mana value X" (Nahiri's Sacrifice) only accepts a permanent of the X
+            // the spell carries to resolution.
+            val context = PredicateContext(controllerId = check.playerId, xValue = check.action.xValue ?: 0)
             if (!check.predicateEvaluator.matches(state, projected, permId, cost.filter, context)) {
                 return "${permCard.name} doesn't match the required filter: $filterDesc"
             }

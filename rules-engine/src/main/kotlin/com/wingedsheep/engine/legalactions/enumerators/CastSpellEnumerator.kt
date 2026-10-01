@@ -644,7 +644,16 @@ class CastSpellEnumerator(
             val spellEffect = cardDef.script.spellEffect
             val dividedDamageEffect = spellEffect as? DividedDamageEffect
             val requiresDamageDistribution = dividedDamageEffect != null
-            val totalDamageToDistribute = dividedDamageEffect?.totalDamage
+            // A board-derived `dynamicTotal` is known now; one that reads X is re-priced per offer
+            // once X is fixed ([expandSacrificeDefinedX]).
+            val totalDamageToDistribute = dividedDamageEffect?.let { effect ->
+                effect.dynamicTotal?.let { amount ->
+                    context.predicateEvaluator.amounts.evaluate(
+                        state, amount,
+                        com.wingedsheep.engine.handlers.EffectContext(sourceId = cardId, controllerId = playerId)
+                    ).coerceAtLeast(0)
+                } ?: effect.totalDamage
+            }
             val minDamagePerTarget = if (dividedDamageEffect != null) 1 else null
 
             // Compute alternative cost info for this spell (Jodah-style GrantAlternativeCastingCost).
@@ -1399,7 +1408,10 @@ class CastSpellEnumerator(
             context,
             applyImproviseMetadata(
                 context,
-                applySpellWaterbendMetadata(context, expandChoiceAdditionalCosts(context, result))
+                applySpellWaterbendMetadata(
+                    context,
+                    expandSacrificeDefinedX(context, expandChoiceAdditionalCosts(context, result))
+                )
             )
         )
     }
@@ -1564,6 +1576,76 @@ class CastSpellEnumerator(
                         cs.copy(additionalCostChoices = cs.additionalCostChoices + (slot to index))
                     } ?: cs,
                     additionalCostInfo = info
+                ))
+            }
+        }
+        return out
+    }
+
+    /**
+     * Post-process: a spell whose additional sacrifice cost is pinned to X — "As an additional cost
+     * to cast this spell, sacrifice an artifact or creature with mana value X" (Nahiri's Sacrifice)
+     * — with no `{X}` in its mana cost. X is announced with the spell (CR 107.3a) and the only
+     * values worth announcing are the mana values of the permanents that could pay, so each cast is
+     * fanned out into **one offer per distinct payable mana value**: the offer carries that X on its
+     * [CastSpell.xValue], narrows the sacrifice picker to the permanents of exactly that mana value,
+     * and fixes everything X drives — the divided-damage total (CR 601.2d, announced right after
+     * targets) and an X-driven target cap. The client never chooses X itself; picking the offer is
+     * choosing X. The validator re-checks the sacrifice against the announced X.
+     */
+    private fun expandSacrificeDefinedX(
+        context: EnumerationContext,
+        actions: List<LegalAction>
+    ): List<LegalAction> {
+        val state = context.state
+        val out = mutableListOf<LegalAction>()
+        for (la in actions) {
+            val cs = la.action as? CastSpell
+            val sacInfo = la.additionalCostInfo?.takeIf { it.costType == "SacrificePermanent" }
+            val cardDef = if (cs != null && sacInfo != null && cs.xValue == null) {
+                state.getEntity(cs.cardId)?.get<CardComponent>()?.name?.let { context.cardRegistry.getCard(it) }
+            } else null
+            val sacCost = cardDef?.takeIf { !it.manaCost.hasX }?.script?.additionalCosts
+                ?.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.Sacrifice }
+                ?.takeIf { TargetEnumerationUtils.filterUsesManaValueEqualsX(it.filter) }
+            if (cs == null || sacInfo == null || cardDef == null || sacCost == null) {
+                out.add(la)
+                continue
+            }
+            val projected = state.projectedState
+            val candidates = sacInfo.validSacrificeTargets
+            val xValues = (candidates.mapNotNull { state.getEntity(it)?.get<CardComponent>()?.manaValue } + 0)
+                .distinct().sorted()
+            val divided = (if (cs.faceIndex != null) null else cardDef.script.spellEffect) as? DividedDamageEffect
+            for (x in xValues) {
+                val predicateContext = PredicateContext(controllerId = cs.playerId, xValue = x)
+                val payers = candidates.filter {
+                    context.predicateEvaluator.matches(state, projected, it, sacCost.filter, predicateContext)
+                }
+                if (payers.size < sacCost.count) continue
+                val total = divided?.let { effect ->
+                    effect.dynamicTotal?.let { amount ->
+                        context.predicateEvaluator.amounts.evaluate(
+                            state, amount,
+                            com.wingedsheep.engine.handlers.EffectContext(sourceId = cs.cardId, controllerId = cs.playerId, xValue = x)
+                        ).coerceAtLeast(0)
+                    } ?: effect.totalDamage
+                }
+                val requirements = la.targetRequirements?.map { info ->
+                    if (info.xConstrainsCount) info.copy(maxTargets = minOf(info.validTargets.size, x), xConstrainsCount = false)
+                    else info
+                }
+                val capped = la.xConstrainsTargetCount
+                val validTargetCount = la.validTargets?.size ?: la.targetCount
+                out.add(la.copy(
+                    description = "${la.description} (X=$x)",
+                    action = cs.copy(xValue = x),
+                    additionalCostInfo = sacInfo.copy(validSacrificeTargets = payers),
+                    totalDamageToDistribute = total ?: la.totalDamageToDistribute,
+                    targetRequirements = requirements,
+                    targetCount = if (capped) minOf(validTargetCount, x) else la.targetCount,
+                    minTargets = if (capped) minOf(la.minTargets, x) else la.minTargets,
+                    xConstrainsTargetCount = false,
                 ))
             }
         }
