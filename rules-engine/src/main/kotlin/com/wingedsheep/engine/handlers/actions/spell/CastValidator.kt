@@ -526,22 +526,23 @@ internal class CastValidator(
             }
         }
 
-        // Emerge (CR 702.119a/c): the player must sacrifice exactly one creature they control as the
+        // Emerge (CR 702.119a-c): the player must sacrifice exactly one creature (or, for "emerge from
+        // [quality]", one permanent of that quality) they control as the
         // non-mana portion of the alternative cost, chosen as they choose to pay the emerge cost
         // (CR 601.2b). Timing is the spell's normal timing — emerge grants no extra permission. The
         // chosen creature also fixes the generic reduction, so the total cost is priced against
         // exactly this selection.
-        val castingForEmerge = action.useAlternativeCost &&
-            action.altAllows(AlternativeCostType.EMERGE) &&
-            cardDef != null &&
-            EmergeCasts.printedEmerge(cardDef) != null
-        if (castingForEmerge) {
+        val emerge = if (action.useAlternativeCost && action.altAllows(AlternativeCostType.EMERGE)) {
+            EmergeCasts.printedEmerge(cardDef)
+        } else null
+        if (emerge != null) {
             val sacrificed = action.additionalCostPayment?.sacrificedPermanents ?: emptyList()
             if (sacrificed.size != 1) {
-                return "Emerge requires sacrificing exactly one creature you control"
+                return "Emerge requires sacrificing exactly one permanent you control"
             }
-            if (sacrificed.first() !in EmergeCasts.sacrificeCandidates(state, action.playerId)) {
-                return "The permanent chosen for emerge is not a creature you control"
+            // "Emerge from [quality]" (CR 702.119b) narrows what may be sacrificed.
+            if (sacrificed.first() !in EmergeCasts.sacrificeCandidates(state, action.playerId, emerge, predicateEvaluator)) {
+                return "The permanent chosen for emerge can't be sacrificed to pay its emerge cost"
             }
         }
         return null

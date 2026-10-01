@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.mechanics
 
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.ManaCost
@@ -39,13 +41,22 @@ object EmergeCasts {
         cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.Emerge>()?.firstOrNull()
 
     /**
-     * Creatures [playerId] controls that could be sacrificed to pay an emerge cost (CR 702.119a —
-     * "sacrificing a creature", with no further restriction; tapped and summoning-sick creatures
-     * qualify). Read through projected state so animated lands and type-changing effects count.
+     * Permanents [playerId] controls that could be sacrificed to pay [emerge] — creatures for plain
+     * emerge (CR 702.119a), or permanents of the named quality for "emerge from [quality]"
+     * (CR 702.119b). No further restriction: tapped and summoning-sick permanents qualify. Read
+     * through projected state so animated lands and type-changing effects count.
      */
-    fun sacrificeCandidates(state: GameState, playerId: EntityId): List<EntityId> {
+    fun sacrificeCandidates(
+        state: GameState,
+        playerId: EntityId,
+        emerge: KeywordAbility.Emerge,
+        predicateEvaluator: PredicateEvaluator
+    ): List<EntityId> {
         val projected = state.projectedState
-        return projected.getBattlefieldControlledBy(playerId).filter { projected.isCreature(it) }
+        val context = PredicateContext(controllerId = playerId)
+        return projected.getBattlefieldControlledBy(playerId).filter {
+            predicateEvaluator.matches(state, projected, it, emerge.sacrificeFilter, context)
+        }
     }
 
     /**

@@ -11081,7 +11081,7 @@ composite abilities).
   wraps the ability in a `ConditionalStaticAbility`, and `WebSlinging` matches the bare type
   without unwrapping it — so the grant never applies rather than applying conditionally. Teach
   that read site to unwrap first; `FlashTypeGrants.activeGrant` is the worked example.
-- `Emerge(cost)` — `card { emerge("{cost}") }` builder helper (CR 702.119, Eldritch Moon). A **hand** alternative
+- `Emerge(cost, from = null)` — `card { emerge("{cost}") }` builder helper (CR 702.119, Eldritch Moon). A **hand** alternative
   cost that bundles a sacrifice *and* a cost reduction derived from it: *"You may cast this spell by paying [cost] and
   sacrificing a creature rather than paying its mana cost"* plus *"if you chose to pay this spell's emerge cost, its
   total cost is reduced by an amount of **generic** mana equal to the sacrificed creature's mana value."* Generic-only,
@@ -11096,7 +11096,11 @@ composite abilities).
   sacrifices it **after** the mana payment: CR 601.2f–g activate mana abilities before CR 601.2h pays the total cost, so
   the creature may legally be tapped for mana toward its own emerge cost before it dies. The chosen creature rides
   `CastSpell.additionalCostPayment.sacrificedPermanents`, exactly as Sneak's bounce rides `bouncedPermanents`. Printed
-  only — no card grants emerge. Because emerge is the one cost whose *mana* half depends on which permanent pays its
+  only — no card grants emerge. **Emerge from [quality]** (CR 702.119b, Crabomination's "emerge from artifact") is
+  `emerge("{5}{B}{B}", from = GameObjectFilter.Artifact)`: `from` replaces "a creature" as the sacrifice filter
+  (`KeywordAbility.Emerge.sacrificeFilter`, matched against projected state by `EmergeCasts.sacrificeCandidates`) for
+  the enumerator's candidate list *and* the cast validator, and renders as "Emerge from artifact {cost}". Null is plain
+  emerge. Because emerge is the one cost whose *mana* half depends on which permanent pays its
   *non-mana* half, the enumerator also sends `AdditionalCostData.costAfterSacrifice` — the surviving mana cost per
   candidate — so the client can show `{5}{U} → {2}{U}` live as the player picks and price manual mana-source selection
   off the chosen entry. The client never re-derives the reduction: the generic-only clamp is a rule, and rules stay

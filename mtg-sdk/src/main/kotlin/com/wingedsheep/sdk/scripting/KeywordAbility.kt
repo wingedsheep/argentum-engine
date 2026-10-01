@@ -924,15 +924,26 @@ sealed interface KeywordAbility {
      *    off the *generic* portion only, so it can never reduce a colored pip and any excess is
      *    simply wasted.
      *
+     * [from] is the "emerge from [quality]" variant (CR 702.119b, Crabomination's "emerge from
+     * artifact"): the sacrificed permanent must match it instead of being a creature. Null is plain
+     * emerge — "sacrificing a creature".
+     *
      * The sacrifice rides `CastSpell.additionalCostPayment.sacrificedPermanents`, exactly like
      * [Sneak]'s bounce rides `bouncedPermanents`. Attach via the `emerge("{cost}")` DSL helper on
      * [com.wingedsheep.sdk.dsl.CardBuilder].
      */
     @SerialName("Emerge")
     @Serializable
-    data class Emerge(val cost: ManaCost) : KeywordAbility {
+    data class Emerge(
+        val cost: ManaCost,
+        val from: GameObjectFilter? = null
+    ) : KeywordAbility {
         override val keyword: Keyword = Keyword.EMERGE
-        override val description: String = "Emerge $cost"
+        override val description: String =
+            if (from == null) "Emerge $cost" else "Emerge from ${from.description.lowercase()} $cost"
+
+        /** What may be sacrificed to pay this emerge cost (CR 702.119a/b). */
+        val sacrificeFilter: GameObjectFilter get() = from ?: GameObjectFilter.Creature
     }
 
     // =========================================================================
@@ -1478,7 +1489,8 @@ sealed interface KeywordAbility {
          * Create Emerge with mana cost from string (CR 702.119). Prefer the `emerge(cost)` DSL
          * helper on [com.wingedsheep.sdk.dsl.CardBuilder].
          */
-        fun emerge(cost: String): KeywordAbility = Emerge(ManaCost.parse(cost))
+        fun emerge(cost: String, from: GameObjectFilter? = null): KeywordAbility =
+            Emerge(ManaCost.parse(cost), from)
 
         /**
          * Create Sneak with mana cost from string. Prefer the `sneak(cost)` DSL helper on
