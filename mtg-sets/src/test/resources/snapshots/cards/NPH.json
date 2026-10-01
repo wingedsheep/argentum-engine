@@ -340,3 +340,50 @@
         "imageUri": "https://cards.scryfall.io/normal/front/9/5/953610f6-ea96-4e71-969f-50ecac09c091.jpg?1722108794"
     }
 }
+
+// Volt Charge
+{
+    "name": "Volt Charge",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Volt Charge deals 3 damage to any target. Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "Proliferate"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Jana Schirmer & Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa88011c-a19d-4faa-8da6-86b9980cd571.jpg?1783941304",
+        "rulings": [
+            {
+                "date": "2011-06-01",
+                "text": "If the permanent or player is an illegal target when Volt Charge tries to resolve, it won't resolve and none of its effects will happen. You won't proliferate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}

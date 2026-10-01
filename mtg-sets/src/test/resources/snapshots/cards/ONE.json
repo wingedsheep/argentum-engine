@@ -1047,6 +1047,65 @@
     ]
 }
 
+// Axiom Engraver
+{
+    "name": "Axiom Engraver",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Phyrexian Wizard",
+    "oracleText": "This creature enters with two oil counters on it.\n{T}, Remove an oil counter from this creature, Discard a card: Draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Axiom Engraver:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "self": true
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{T}, Remove an oil counter from this creature, Discard a card: Draw a card."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 2,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Pavel Kolomeyets",
+        "flavorText": "\"I will not rest until the truth of Phyrexia is inscribed across the Multiverse.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9b3b785-396e-4240-bfa3-58ab53497686.jpg?1783918036"
+    }
+}
+
 // Barbed Batterfist
 {
     "name": "Barbed Batterfist",
@@ -2565,6 +2624,113 @@
     ]
 }
 
+// Charforger
+{
+    "name": "Charforger",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Creature — Phyrexian Beast",
+    "oracleText": "When this creature enters, create a 1/1 red Phyrexian Goblin creature token.\nWhenever another creature or artifact you control is put into a graveyard from the battlefield, put an oil counter on this creature.\nRemove three oil counters from this creature: Exile the top card of your library. You may play that card this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Charforger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Phyrexian",
+                        "Goblin"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/6/3663e79b-2bf9-44af-a638-c0ad9067d8d4.jpg?1783918169"
+                }
+            },
+            {
+                "id": "Charforger:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature|artifact ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Charforger:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "OIL",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45db6b46-c4b4-4684-8a49-53a64ffc82f2.jpg?1783918003"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Charge of the Mites
 {
     "name": "Charge of the Mites",
@@ -2867,6 +3033,73 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Cinderslash Ravager
+{
+    "name": "Cinderslash Ravager",
+    "manaCost": "{4}{R}{G}",
+    "typeLine": "Creature — Phyrexian Warrior",
+    "oracleText": "This spell costs {1} less to cast for each permanent you control with oil counters on it.\nVigilance\nWhen this creature enters, it deals 1 damage to each creature your opponents control.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cinderslash Ravager:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "PermanentsWithCounterYouControl",
+                        "filter": "permanent",
+                        "counterType": "OIL"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "UNCOMMON",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/eee24300-fff8-4405-9629-9f62b4a839ef.jpg?1783918003"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -4296,6 +4529,86 @@
     ]
 }
 
+// Exuberant Fuseling
+{
+    "name": "Exuberant Fuseling",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Phyrexian Goblin Warrior",
+    "oracleText": "Trample\nThis creature gets +1/+0 for each oil counter on it.\nWhen this creature enters and whenever another creature or artifact you control is put into a graveyard from the battlefield, put an oil counter on this creature.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Exuberant Fuseling:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "When this creature enters, put an oil counter on this creature."
+            },
+            {
+                "id": "Exuberant Fuseling:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature|artifact ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever another creature or artifact you control is put into a graveyard from the battlefield, put an oil counter on this creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "OIL"
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Billy Christian",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6e8d7b9-ff5e-48ae-9e38-d2b6a45b119b.jpg?1783918031"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Eye of Malcator
 {
     "name": "Eye of Malcator",
@@ -4660,6 +4973,134 @@
     ]
 }
 
+// Forgehammer Centurion
+{
+    "name": "Forgehammer Centurion",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Phyrexian Warrior",
+    "oracleText": "Whenever another creature or artifact you control is put into a graveyard from the battlefield, put an oil counter on this creature.\nWhenever this creature attacks, you may remove two oil counters from it. When you do, target creature can't block this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Forgehammer Centurion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature|artifact ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Forgehammer Centurion:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "RemoveCounters",
+                        "counterType": "OIL",
+                        "count": 2,
+                        "target": "Self"
+                    },
+                    "reflexiveEffect": {
+                        "type": "CantBlockTargetCreatures",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may remove two oil counters from Forgehammer Centurion. When you do, target creature can't block this turn."
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may remove two oil counters from it. When you do, target creature can't block this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Vladimir Krisetskiy",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4c2c914-e9a7-450b-88d9-8885fe0f6643.jpg?1783918031"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Free from Flesh
+{
+    "name": "Free from Flesh",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 until end of turn. Put two oil counters on it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "artist": "Isis",
+        "flavorText": "He finally understood that phyresis was not an ending, but a new, perfect beginning.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c83600d-ea4d-4219-8dbb-34c4215a2005.jpg?1783918031"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Furnace Punisher
 {
     "name": "Furnace Punisher",
@@ -4726,6 +5167,68 @@
         "artist": "Lauren K. Cannon",
         "flavorText": "She marks her favorite creations with a searing brand, leaving all others to be consumed by the furnace.",
         "imageUri": "https://cards.scryfall.io/normal/front/6/5/65e5fc08-7a04-4bba-81ba-990889cae96a.jpg?1783918030"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Furnace Strider
+{
+    "name": "Furnace Strider",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Phyrexian Beast",
+    "oracleText": "This creature enters with two oil counters on it.\nRemove an oil counter from this creature: Target creature you control gains haste until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Furnace Strider:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "OIL",
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Remove an oil counter from this creature: Target creature you control gains haste until end of turn."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 2,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "artist": "Denis Zhbankov",
+        "flavorText": "With the Quiet Furnace closed to all other factions, Urabrask's smiths were free to build anything their creativity demanded.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa625ab0-1e79-4497-a5da-98fe1abfd024.jpg?1783918030"
     },
     "colorIdentityOverride": [
         "RED"
@@ -6862,6 +7365,60 @@
     ]
 }
 
+// Kuldotha Cackler
+{
+    "name": "Kuldotha Cackler",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Phyrexian Hyena",
+    "oracleText": "Trample\nWhenever this creature attacks, it gets +X/+0 until end of turn, where X is the number of permanents you control with oil counters on them.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kuldotha Cackler:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPermanent"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "HasCounter",
+                                    "counterType": "OIL"
+                                }
+                            ]
+                        }
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever this creature attacks, it gets +X/+0 until end of turn, where X is the number of permanents you control with oil counters on them."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "artist": "Maxime Minard",
+        "flavorText": "You would laugh too if you just burned through a tyrranax's stomach.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7155c42-a824-4bbe-9f7a-fa01e7625fd6.jpg?1783918028"
+    }
+}
+
 // Lattice-Blade Mantis
 {
     "name": "Lattice-Blade Mantis",
@@ -7141,6 +7698,111 @@
     "colorIdentityOverride": [
         "RED",
         "GREEN"
+    ]
+}
+
+// Magmatic Sprinter
+{
+    "name": "Magmatic Sprinter",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Phyrexian Warrior",
+    "oracleText": "Haste\nWhen this creature enters, put two oil counters on target artifact or creature you control.\nAt the beginning of your end step, return this creature to its owner's hand unless you remove two oil counters from it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Magmatic Sprinter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|artifact ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Magmatic Sprinter:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "OIL"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayDecide",
+                            "prompt": "Remove two oil counters from Magmatic Sprinter? (If you don't, return it to its owner's hand.)"
+                        },
+                        "then": {
+                            "type": "RemoveCounters",
+                            "counterType": "OIL",
+                            "count": 2,
+                            "target": "Self"
+                        },
+                        "otherwise": {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Hand"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Hand"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, return this creature to its owner's hand unless you remove two oil counters from it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "UNCOMMON",
+        "artist": "Samuel Araya",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e6af42f-35ec-432f-9879-2a0fb938a9f6.jpg?1783918028"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -10711,6 +11373,80 @@
     ]
 }
 
+// Sawblade Scamp
+{
+    "name": "Sawblade Scamp",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Phyrexian Beast",
+    "oracleText": "Haste\nWhenever you cast a noncreature spell, put an oil counter on this creature.\n{T}, Remove an oil counter from this creature: It deals 1 damage to each opponent.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sawblade Scamp:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sawblade Scamp:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "{T}, Remove an oil counter from this creature: It deals 1 damage to each opponent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "artist": "Helge C. Balzer",
+        "flavorText": "Sometimes the Great Work requires destruction to allow for more efficient reconstruction.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f04c2e5-9100-439a-9aa4-28d388518e4a.jpg?1783918025"
+    }
+}
+
 // Scheming Aspirant
 {
     "name": "Scheming Aspirant",
@@ -11278,6 +12014,65 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Slobad, Iron Goblin
+{
+    "name": "Slobad, Iron Goblin",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Phyrexian Goblin Artificer",
+    "oracleText": "{T}, Sacrifice an artifact: Add an amount of {R} equal to the sacrificed artifact's mana value. Spend this mana only to cast artifact spells or activate abilities of artifacts.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Slobad, Iron Goblin:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "SacrificedAsCost",
+                        "numericProperty": "ManaValue"
+                    },
+                    "restriction": {
+                        "type": "CardTypeSpellsOrAbilitiesOnly",
+                        "cardType": "ARTIFACT",
+                        "allowAbilities": true
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}, Sacrifice an artifact: Add an amount of {R} equal to the sacrificed artifact's mana value. Spend this mana only to cast artifact spells or activate abilities of artifacts."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "RARE",
+        "artist": "Chris Seaman",
+        "flavorText": "Once he fought to save Mirrodin. Now he fights to remake it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b7dadf0-7323-403e-b353-33c121bdb0db.jpg?1783918024"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -13151,6 +13946,128 @@
     }
 }
 
+// Urabrask's Anointer
+{
+    "name": "Urabrask's Anointer",
+    "manaCost": "{3}{R}",
+    "typeLine": "Artifact Creature — Phyrexian Wizard",
+    "oracleText": "When this creature enters, it deals X damage to any target, where X is the number of permanents you control with oil counters on them.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Urabrask's Anointer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPermanent"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "HasCounter",
+                                    "counterType": "OIL"
+                                }
+                            ]
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron J. Riley",
+        "flavorText": "\"You were so eager to spy on my work, I assume you'll appreciate a hands-on demonstration.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3ef034f-37e5-4baa-a7a9-5fd0de792535.jpg?1783918022"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Urabrask's Forge
+{
+    "name": "Urabrask's Forge",
+    "manaCost": "{2}{R}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of combat on your turn, put an oil counter on this artifact, then create an X/1 red Phyrexian Horror creature token with trample and haste, where X is the number of oil counters on this artifact. Sacrifice that token at the beginning of the next end step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Urabrask's Forge:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "OIL",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 0,
+                            "toughness": 1,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Phyrexian",
+                                "Horror"
+                            ],
+                            "keywords": [
+                                "TRAMPLE",
+                                "HASTE"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/d/a/da13c90f-9ed2-4262-88e2-17daa294537b.jpg?1783918169",
+                            "dynamicPower": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "OIL"
+                                }
+                            },
+                            "sacrificeAtStep": "END"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68f9f9d8-9ea0-4608-a79c-a09a87918186.jpg?1783918022"
+    }
+}
+
 // Vanish into Eternity
 {
     "name": "Vanish into Eternity",
@@ -13501,6 +14418,102 @@
         "rarity": "UNCOMMON",
         "artist": "Mike Jordana",
         "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd9df44a-a0ab-435f-914c-aa11cd88f4ec.jpg?1783918006"
+    }
+}
+
+// Vindictive Flamestoker
+{
+    "name": "Vindictive Flamestoker",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Phyrexian Wizard",
+    "oracleText": "Whenever you cast a noncreature spell, put an oil counter on this creature.\n{6}{R}, Sacrifice this creature: Discard your hand, then draw four cards. This ability costs {1} less to activate for each oil counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vindictive Flamestoker:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Vindictive Flamestoker:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{6}{R}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "discardedHand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discardedHand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    ]
+                },
+                "genericCostReduction": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "OIL"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "RARE",
+        "artist": "Xavier Ribeiro",
+        "flavorText": "Her faith burns hot enough to sear away the flesh of the heretic.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f67e7a16-ff30-4fb9-9fcb-6561eec50caf.jpg?1783918021"
     }
 }
 
