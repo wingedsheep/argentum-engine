@@ -136,8 +136,8 @@ class AIPlayer(
                         val legalActions = simulator.getLegalActions(current, playerId)
                         val blockerAction = legalActions.find { it.actionType == "DeclareBlockers" }
                         val mandatory = blockerAction?.mandatoryBlockerAssignments ?: emptyMap()
-                        val blockerMap = mandatory.mapValues { (_, targets) ->
-                            if (targets.isNotEmpty()) listOf(targets.first()) else emptyList()
+                        val blockerMap = mandatory.mapValues { (blocker, targets) ->
+                            targets.take(blockerAction?.blockerMaxBlockCounts?.get(blocker) ?: 1)
                         }
                         DeclareBlockers(playerId, blockerMap)
                     }

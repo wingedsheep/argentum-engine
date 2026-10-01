@@ -50,6 +50,13 @@ sealed interface ControllerPredicate {
         override val description: String = "the active player controls"
     }
 
+    /** Any defending player during combat, relative to the active player and attack mode. */
+    @SerialName("ControlledByDefendingPlayer")
+    @Serializable
+    data object ControlledByDefendingPlayer : ControllerPredicate {
+        override val description: String = "defending player controls"
+    }
+
     /** Controlled by the targeted opponent */
     @SerialName("ControlledByTargetOpponent")
     @Serializable

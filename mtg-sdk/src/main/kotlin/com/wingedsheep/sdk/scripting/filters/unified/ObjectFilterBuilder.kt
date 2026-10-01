@@ -1045,6 +1045,8 @@ interface ObjectFilterBuilder<out Self> {
     /** Must be controlled by the active player (the player whose turn it is) */
     fun controlledByActivePlayer() = withControllerPredicate(ControllerPredicate.ControlledByActivePlayer)
 
+    fun defendingPlayerControls() = withControllerPredicate(ControllerPredicate.ControlledByDefendingPlayer)
+
     /** Must be controlled by the target opponent */
     fun targetOpponentControls() = withControllerPredicate(ControllerPredicate.ControlledByTargetOpponent)
 

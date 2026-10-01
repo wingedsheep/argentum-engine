@@ -185,7 +185,7 @@ class CombatAdvisor(
         val mandatoryBlockerIds = mutableSetOf<EntityId>()
         for ((blockerId, mustBlockAttackers) in mandatory) {
             if (mustBlockAttackers.isNotEmpty()) {
-                mandatoryMap[blockerId] = listOf(mustBlockAttackers.first())
+                mandatoryMap[blockerId] = mustBlockAttackers.take(legalAction.blockerMaxBlockCounts?.get(blockerId) ?: 1)
                 mandatoryBlockerIds.add(blockerId)
             }
         }

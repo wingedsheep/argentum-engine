@@ -8352,6 +8352,33 @@ staticAbility {
   duration with `Effects.GrantStaticAbility(MustAttack(playersOnly = true), creature, Duration.UntilYourNextTurn)`
   (Nahiri, the Unforgiving) — a granted static's `UntilYourNextTurn` ends at the start of the *granting*
   player's next turn, even when an opponent controls the creature.
+
+### Floating multi-block rules
+
+`Effects.GrantStaticAbility(CanBlockAnyNumber(), target, duration)` gives a blocker unlimited
+capacity. Printed, attached, battlefield, conditional/composite, and duration-gated runtime
+statics use the same post-projection query for declaration validation and the server's
+`blockerMaxBlockCounts` UI hints. Group filters read current projected characteristics.
+
+`MustBlockEachAttacker(filter = GroupFilter.source())` creates a separate blocking requirement
+for each attacker. It composes with unlimited capacity; by itself it does not increase capacity.
+When this rule is active, declaration validation maximizes these requirements together with
+ordinary must-block, Lure, provoke, and must-be-blocked demands, subject to evasion, menace,
+co-blocker restrictions, per-attacker limits and global blocker-count caps. Blocking costs remain
+voluntary. Conflicting requirements allow any equally maximal legal declaration. The legal-action
+hint supplies one complete legal plan, including companions needed to block menace; clients and
+AI must retain all assignments permitted by the server's capacity hint.
+
+`GameObjectFilter.Creature.defendingPlayerControls()` uses
+`ControllerPredicate.ControlledByDefendingPlayer`: the combat's defending seats, relative to the
+active player and attack mode, including beginning of combat before attacks are declared. This
+is independent of the spell's caster. Outside combat it matches nothing. It differs from the
+attacker-source reference `Player.DefendingPlayer`, which resolves one specific player's identity.
+
+Blaze of Glory composes an `IsInStep(BEGIN_COMBAT, DECLARE_ATTACKERS, yoursOnly = false)` casting
+gate with a defending-player creature target and the two end-of-turn grants. It cannot be cast
+in the declare-blockers step, even before the turn-based block action has completed.
+
 - `MustBlock(filter = source())` — matching creatures must block each combat if able (Grand Melee).
 - `MustBeBlocked(allCreatures = false, filter = null)` — static: a creature must be blocked while
   active — "if able" (≥1 blocker, default) or by **all** able blockers (`allCreatures = true`,
