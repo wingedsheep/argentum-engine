@@ -9574,7 +9574,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   sites were collapsible into a single owner, `FlashTypeGrants`: with one implementation behind both,
   teaching *it* to unwrap fixes every gated flash grant at once and none of them can drift. Fold the
   gate into the type only where no such shared owner exists.
-- `GrantAlternativeCastingCost(cost, additionalCosts = emptyList())` — a battlefield permission to
+- `GrantAlternativeCastingCost(cost, additionalCosts = emptyList(), spellFilter = Any, asThoughFlash = false)` — a battlefield permission to
   substitute a different cost for a spell's mana cost (CR 118.9a): "You may pay {W}{U}{B}{R}{G}
   rather than pay the mana cost for spells you cast" (**Jodah, Archmage Eternal**; Leyline of
   Mutation). Scanned on demand by `CostCalculator.findAlternativeCastingCosts` over the caster's
@@ -9606,7 +9606,22 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   another alternative cost, but additional costs still apply (including a *second* collect evidence,
   which triggers "whenever you collect evidence" twice); X in the replaced mana cost is 0; and it
   stamps **no** `ChoiceSlot`, so it does not satisfy a spell's own linked "if evidence was collected"
-  clause (`Conditions.WasEvidenceCollected`). Only the first grant found is offered.
+  clause (`Conditions.WasEvidenceCollected`). Only the first grant covering the spell is offered,
+  and the enumerator, the cost totaller, the additional-cost payer and the timing check all read
+  that same grant through `CostCalculator.findAlternativeCastingCosts(state, caster, spellCardDef)`.
+
+  `spellFilter` narrows which spells the grant covers (matched against the printed card
+  definition, the granting permanent as predicate source), and `asThoughFlash = true` is the
+  "If you cast a spell this way, you may cast it as though it had flash" rider. The flash belongs
+  to the granted-cost cast alone: when the spell has no other timing permission, the hand
+  enumerator offers *only* the `GRANTED` cast for it (every other variant of that card is pruned),
+  and `CastValidator.validateTiming` waives sorcery timing only for an explicit
+  `alternativeCostType = GRANTED` cast whose grant carries the rider. **Primal Prayers** ("You may
+  cast creature spells with mana value 3 or less by paying {E} rather than paying their mana costs.
+  If you cast a spell this way, you may cast it as though it had flash.") is
+  `GrantAlternativeCastingCost("{0}", listOf(Costs.additional.PayPlayerCounters(CounterType.ENERGY, 1)),
+  spellFilter = GameObjectFilter.Creature.manaValueAtMost(3), asThoughFlash = true)`. Like every
+  granted alternative cost it is offered for casts from hand only.
 - `MayCastWithoutPayingManaCost(controllerOnly = false, firstSpellOfTurnOnly = false, spellFilter = Any, oncePerTurn = false, fromExileOnly = false, fromHandOnly = false)` — a
   battlefield permission to cast a spell without paying its mana cost (CR 118.9). Composable
   gates: `controllerOnly = true` restricts the benefit to the source's controller ("you" wording);

@@ -73,7 +73,7 @@ class CastAdditionalCosts(
             // kinds — which is also what makes it validate and surface a picker like every other
             // selection cost.
             if (action.altAllows(AlternativeCostType.GRANTED)) {
-                costCalculator.findAlternativeCastingCosts(state, action.playerId)
+                costCalculator.findAlternativeCastingCosts(state, action.playerId, cardDef)
                     .firstOrNull()?.let { addAll(it.additionalCosts) }
             }
             // Flashback's bundled additional cost (e.g., Behold three Elementals)

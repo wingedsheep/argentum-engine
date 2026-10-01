@@ -461,7 +461,16 @@ internal class CastValidator(
         // A flash-timing kicker unlocks instant-speed casting when paid — whether the optional cost
         // is mana (Ghitu Fire) or a non-mana cost like Behold (Molten Exhale).
         val flashTimingKicker = declaredOptionalCosts(action, cardDef).any { it.grantsFlashTiming }
-        if (!grantedFlash && !mayPlayFlash && !flashTimingKicker && !isCastingForSneak(state, action, cardDef) &&
+        // A battlefield-granted alternative cost whose cast carries flash (Primal Prayers: "If you
+        // cast a spell this way, you may cast it as though it had flash"). Reads the same grant the
+        // totaller charges, so the timing and the price can't come from two different grants. Needs
+        // the explicit `GRANTED` choice: an untyped legacy alt cast could be priced by another
+        // alternative cost and must not borrow this one's timing.
+        val grantedAltCostFlash = action.useAlternativeCost && cardDef != null &&
+            action.alternativeCostType == AlternativeCostType.GRANTED &&
+            costCalculator.findAlternativeCastingCosts(state, action.playerId, cardDef).firstOrNull()?.asThoughFlash == true
+        if (!grantedFlash && !mayPlayFlash && !flashTimingKicker && !grantedAltCostFlash &&
+            !isCastingForSneak(state, action, cardDef) &&
             !turnManager.canPlaySorcerySpeed(state, action.playerId)
         ) {
             return "You can only cast sorcery-speed spells during your main phase with an empty stack"

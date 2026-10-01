@@ -1557,12 +1557,39 @@ class CostCalculator(
      */
     data class AlternativeCastingCostGrant(
         val manaCost: ManaCost,
-        val additionalCosts: List<AdditionalCost> = emptyList()
+        val additionalCosts: List<AdditionalCost> = emptyList(),
+        val sourceId: EntityId? = null,
+        val spellFilter: GameObjectFilter = GameObjectFilter.Any,
+        val asThoughFlash: Boolean = false
     )
+
+    /**
+     * Whether [grant] covers a spell with definition [spellCardDef] (Primal Prayers: "creature
+     * spells with mana value 3 or less"). Matched against the printed definition, like
+     * [hasFreeCastPermission]'s `spellFilter`, with the granting permanent as the predicate source.
+     */
+    fun alternativeCastingCostCovers(
+        state: GameState,
+        grant: AlternativeCastingCostGrant,
+        spellCardDef: CardDefinition
+    ): Boolean = grant.spellFilter == GameObjectFilter.Any ||
+        matchesCardDefinition(spellCardDef, grant.spellFilter, grant.sourceId, state, state.projectedState)
+
+    /**
+     * The alternative casting costs that cover [spellCardDef] specifically — every read site that
+     * prices or pays a `GRANTED` cast goes through this, so they all pick the same grant.
+     */
+    fun findAlternativeCastingCosts(
+        state: GameState,
+        casterId: EntityId,
+        spellCardDef: CardDefinition
+    ): List<AlternativeCastingCostGrant> =
+        findAlternativeCastingCosts(state, casterId).filter { alternativeCastingCostCovers(state, it, spellCardDef) }
 
     /**
      * Find alternative casting costs available to the caster from battlefield permanents.
      * Scans permanents controlled by the caster for GrantAlternativeCastingCost abilities.
+     * Unfiltered: callers pricing a specific spell use the overload taking its definition.
      *
      * @return List of alternative cost grants available (may be empty)
      */
@@ -1579,7 +1606,10 @@ class CostCalculator(
                     costs.add(
                         AlternativeCastingCostGrant(
                             manaCost = ManaCost.parse(ability.cost),
-                            additionalCosts = ability.additionalCosts
+                            additionalCosts = ability.additionalCosts,
+                            sourceId = entityId,
+                            spellFilter = ability.spellFilter,
+                            asThoughFlash = ability.asThoughFlash
                         )
                     )
                 }

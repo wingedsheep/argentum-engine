@@ -2487,6 +2487,76 @@
     ]
 }
 
+// Primal Prayers
+{
+    "name": "Primal Prayers",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, you get {E}{E} (two energy counters).\nYou may cast creature spells with mana value 3 or less by paying {E} rather than paying their mana costs. If you cast a spell this way, you may cast it as though it had flash.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Primal Prayers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantAlternativeCastingCost",
+                "cost": "{0}",
+                "additionalCosts": [
+                    {
+                        "type": "AdditionalAtom",
+                        "atom": {
+                            "type": "AtomPayPlayerCounters",
+                            "counterType": "ENERGY"
+                        }
+                    }
+                ],
+                "spellFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "ManaValueAtMost",
+                            "max": 3
+                        }
+                    ]
+                },
+                "asThoughFlash": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "RARE",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "When Gaea speaks, all of nature falls silent.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4eda3db-b47d-4f1e-a93d-e2ea747d935c.jpg?1783911257",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If a spell you cast this way has {X} in its mana cost, you must choose 0 as the value of X when casting it."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If you cast a spell for another cost \"rather than paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the spell has any mandatory additional costs, those must be paid to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ral, Monsoon Mage
 {
     "name": "Ral, Monsoon Mage",
