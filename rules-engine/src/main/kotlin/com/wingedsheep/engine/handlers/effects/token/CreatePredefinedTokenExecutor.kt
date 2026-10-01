@@ -66,16 +66,24 @@ class CreatePredefinedTokenExecutor(
         // Evaluate dynamic count if set (e.g. Lobelia's "X = the exiled card's power"),
         // otherwise use the fixed count. Coerced to >= 0 — a negative count would be a
         // bug elsewhere, but clamping defends against odd dynamic-amount edge cases.
-        val tokenCount = effect.dynamicCount?.let { dyn ->
+        val baseTokenCount = effect.dynamicCount?.let { dyn ->
             amountEvaluator.evaluate(state, dyn, context).coerceAtLeast(0)
         } ?: effect.count
 
         // Check for token creation replacement effects (e.g., Mirrormind Crown)
         val replacementResult = TokenCreationReplacementHelper.checkReplacement(
-            state, effect, context, tokenCount, tokenControllerId, cardRegistry, staticAbilityHandler,
+            state, effect, context, baseTokenCount, tokenControllerId, cardRegistry, staticAbilityHandler,
             predicateEvaluator = amountEvaluator.predicates
         )
         if (replacementResult != null) return replacementResult
+
+        // Token-count replacements (Doubling Season, Mondrak, Glory Dominus) apply to predefined
+        // tokens exactly as to CreateTokenEffect tokens — before any substitution gets a look,
+        // the same order CreateTokenExecutor uses.
+        val tokenCount = TokenCreationReplacementHelper.applyCountReplacements(
+            state, tokenControllerId, baseTokenCount,
+            predicateEvaluator = amountEvaluator.predicates
+        )
 
         // "If one or more artifact tokens would be created under your control, that many 5/5 red
         // Dragon creature tokens with flying are created instead" (Draconic Visitor). Treasure,
