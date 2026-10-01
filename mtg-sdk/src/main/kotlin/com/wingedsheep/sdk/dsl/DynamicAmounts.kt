@@ -279,6 +279,9 @@ object DynamicAmounts {
         fun totalCounters(counterType: CounterType): DynamicAmount =
             DynamicAmount.AggregateBattlefield(player, filter, Aggregation.SUM, excludeSelf = excludeSelf, counterType = counterType)
 
+        /** The total number of counters of every kind on the matched permanents (Hydra Trainer). */
+        fun totalCounters(): DynamicAmount = aggregate(Aggregation.SUM, CardNumericProperty.COUNTERS)
+
         /**
          * The number of distinct values of [property] (power / toughness / mana value) among the
          * matched permanents — e.g. `distinctValues(POWER)` for "the number of different powers

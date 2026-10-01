@@ -1418,6 +1418,7 @@ class DynamicAmountEvaluator(
                     ?: state.getEntity(entityId)?.get<CardComponent>()?.baseStats?.baseToughness
                     ?: 0
             }
+            CardNumericProperty.COUNTERS -> counterCountOf(state, entityId, counterType = null)
         }
     }
 

@@ -455,6 +455,16 @@ class ObjectTriggerSubject internal constructor(
         return spec(ChampionedEvent)
     }
 
+    /**
+     * "When you do" after "you may exert this creature as it attacks" (CR 701.43d) — pair with the
+     * [com.wingedsheep.sdk.scripting.ExertAsItAttacks] static it is linked to (CR 607.2h).
+     */
+    fun exertedAsItAttacks(): TriggerSpec {
+        unfiltered("exertedAsItAttacks")
+        only("exertedAsItAttacks", TriggerBinding.SELF)
+        return spec(ExertedAsItAttacksEvent)
+    }
+
     /** "crews a Vehicle" — the Vehicle is `EffectTarget.TriggeringEntity`. */
     fun crews(): TriggerSpec {
         unfiltered("crews")

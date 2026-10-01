@@ -449,8 +449,9 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   actually prevented an untap (2024-06-07 ruling), unlike a stun counter which is only consumed
   when it does. Exposed client-side as `ClientCard.isExerted`. Distinct from the "you may exert
   [this] as it attacks" attack-cost template (701.43d) — that's a separate optional-cost-to-attack
-  shape, not an ability cost; only the cost-component shape is implemented so far. First user: Arena
-  of Glory (MH3) — `Costs.Composite(Costs.Mana("{R}"), Costs.Tap, Costs.Exert)`.
+  shape, not an ability cost. First user: Arena
+  of Glory (MH3) — `Costs.Composite(Costs.Mana("{R}"), Costs.Tap, Costs.Exert)`. The attack-cost
+  shape is `ExertAsItAttacks` (§ combat statics).
 - `Costs.Mana("{2}{U}")` — pay the given mana cost (string or `ManaCost`).
 - `Costs.PayLife(amount)` — pay N life.
 - `Costs.PayXLife` — pay X life, where X is the value chosen for the ability's `{X}` mana cost
@@ -7628,6 +7629,10 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   live count, because several removals can land in one batch (two attackers damaging the same battle)
   and the live count would make every one of them look like the last. Backs the intrinsic Siege
   defeat ability (`Sieges.defeatAbility`, CR 310.12b).
+- `EventPattern.ExertedAsItAttacksEvent` (facade: `Triggers.self.exertedAsItAttacks()`, SELF only) — the
+  "When you do" after "you may exert this creature as it attacks" (CR 701.43d), linked to the
+  `ExertAsItAttacks` static (CR 607.2h). Matches an `ExertedEvent` for the source with `asItAttacks`
+  set, so exerting it to pay `Costs.Exert` doesn't fire it. Hydra Trainer.
 - `EventPattern.TrainedEvent` (facade: `Triggers.self.trains()`) — "when this creature trains"
   (CR 702.149c: "a resolving training ability puts one or more
   +1/+1 counters on this creature"). A `data object` (no parameters); the trainer identity is selected by the ability's
@@ -8568,6 +8573,15 @@ staticAbility {
   *creature* — two Leviathans owe two Islands each, asked one at a time so each choice is made
   knowing the last. The sacrifice runs through `ForceSacrificeExecutor.sacrificePermanents`, so it
   emits `PermanentsSacrificedEvent` and fires dies triggers rather than being a silent zone move.
+- `ExertAsItAttacks` — "You may exert this creature as it attacks" (CR 701.43d): an **optional**
+  cost to attack (CR 508.1g). After any mandatory attack cost (tax, sacrifice) is settled,
+  `AttackPhaseManager.commitAttackDeclaration` pauses with one `SelectCardsDecision` (battlefield
+  selection, min 0) over the declared attackers carrying it; the chosen ones get `ExertedComponent`
+  (CR 701.43a — they won't untap during the controller's next untap step) and an `ExertedEvent` with
+  `asItAttacks = true`. Choosing none still attacks. An already-exerted creature is still offered
+  (CR 701.43b). Face-down creatures and ones that lost all abilities aren't. Pair the "When you do, …"
+  paragraph with `Triggers.self.exertedAsItAttacks()` — the trigger linked to it (CR 607.2h), which an
+  exert paid through `Costs.Exert` never fires. Hydra Trainer (MH3).
 - `CantAttackUnlessCoAttacker(coAttackerFilter, filter = source)` — "This creature can't attack
   unless [a creature matching coAttackerFilter] also attacks" (Scarred Puma). Unlike
   `CantAttackUnless` (which is defender-relative), this depends on the whole proposed attacker
@@ -12562,7 +12576,8 @@ forbids `DynamicAmount.X` in card definitions.
   non-pipeline effect stored), `count(player, zone, filter)`, `battlefield(player, filter,
   excludeSelf).count() / sumPower() / sumToughness() / sumManaValue() / maxPower() / maxToughness() /
   maxManaValue() / minToughness() / distinctValues(p) / distinctNames() / distinctColors() /
-  distinctTypes() / totalCounters(type)`, `zone(player, zone, filter).count() / distinctTypes() / …`,
+  distinctTypes() / totalCounters(type) / totalCounters()` (no type = every kind of counter,
+  `CardNumericProperty.COUNTERS` — Hydra Trainer's "the number of counters on permanents you control"), `zone(player, zone, filter).count() / distinctTypes() / …`,
   `lifeTotal(player)`, `yourLifeTotal()`, `startingLifeTotal(player)`, `playerCount(scope)`,
   `countPlayersWith(scope, condition)`, `greatestAmongPlayers(inner, players)`, `totalManaSpent()`,
   `manaSpentOnX(color)`, `manaSpentFromSubtype(subtype)`, `unspentMana(player)`,

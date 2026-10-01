@@ -401,7 +401,7 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
      * stack multiple skips (they all expire at that same untap step). Used as a component of an
      * activated ability's cost — e.g. Arena of Glory's "{R}, {T}, Exert this land: ...". Distinct
      * from the "you may exert [this] as it attacks" attack-cost template (701.43d), which is a
-     * separate optional-cost-to-attack shape, not an ability cost.
+     * separate optional-cost-to-attack shape ([com.wingedsheep.sdk.scripting.ExertAsItAttacks]), not an ability cost.
      */
     @SerialName("CostExert")
     @Serializable

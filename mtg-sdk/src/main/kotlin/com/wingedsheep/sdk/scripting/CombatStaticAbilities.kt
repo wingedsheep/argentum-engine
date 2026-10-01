@@ -272,6 +272,29 @@ data class AssignUnblockedCombatDamageToDefendingCreature(
  * Unlike [CantAttackOrBlockUnlessPay] this has no blocking half: the printed line is attack-only,
  * and a blocking sibling would need its own pause in the blocker step.
  */
+/**
+ * "You may exert this creature as it attacks." (CR 701.43d) — an *optional* cost to attack
+ * (CR 508.1g): as attackers are declared, the controller chooses whether to exert each declared
+ * attacker carrying it. Exerting (CR 701.43a) means the creature won't untap during its
+ * controller's next untap step; a creature can be exerted even if it was already exerted
+ * (CR 701.43b), and the choice is still offered.
+ *
+ * The "When you do, …" paragraph printed with it is a triggered ability linked to this static
+ * (CR 607.2h): author it as `Triggers.self.exertedAsItAttacks()`. That trigger fires only for an
+ * exert chosen through this ability, never for an exert paid as an activated ability's cost
+ * (`Costs.Exert`).
+ *
+ * Read off the card definition like [CantAttackUnlessSacrifice]; a face-down creature or one that
+ * has lost all abilities isn't offered the choice.
+ *
+ * Hydra Trainer (MH3).
+ */
+@SerialName("ExertAsItAttacks")
+@Serializable
+data object ExertAsItAttacks : StaticAbility {
+    override val description: String = "You may exert this creature as it attacks"
+}
+
 @SerialName("CantAttackUnlessSacrifice")
 @Serializable
 data class CantAttackUnlessSacrifice(

@@ -1253,7 +1253,13 @@ data class TappedEvent(
 @SerialName("ExertedEvent")
 data class ExertedEvent(
     val entityId: EntityId,
-    val entityName: String
+    val entityName: String,
+    /**
+     * True when the exert was chosen as an optional cost to attack ("you may exert this creature
+     * as it attacks", CR 701.43d / 508.1g) — the only exert that fires the linked "when you do"
+     * trigger (CR 607.2h). False for an exert paid as an activated ability's cost.
+     */
+    val asItAttacks: Boolean = false,
 ) : GameEvent
 
 /**

@@ -365,6 +365,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ConvertCountersToTokensContinuation::class)
         subclass(AttackTaxManaSelectionContinuation::class)
         subclass(AttackSacrificeSelectionContinuation::class)
+        subclass(AttackExertSelectionContinuation::class)
         subclass(BlockTaxManaSelectionContinuation::class)
         subclass(DamageAssignmentContinuation::class)
         subclass(BlockerPilesContinuation::class)
