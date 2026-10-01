@@ -127,6 +127,12 @@ internal class CastCostPayer(
         playForFree: Boolean,
     ): CastPaymentOutcome {
         val action = ledger.action
+        // Fixed before any cost is paid: a granted emerge must survive the granter leaving or
+        // changing control during payment (Herigast's ruling).
+        val isEmergeCast = action.useAlternativeCost && action.altAllows(AlternativeCostType.EMERGE) &&
+            EmergeCasts.effectiveEmerge(
+                ledger.state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator
+            ) != null
         payAdditionalCosts(ledger, owedCosts)?.let { return CastPaymentOutcome.Failed(it) }
         payConspire(ledger)
         payCasualty(ledger)
@@ -162,7 +168,7 @@ internal class CastCostPayer(
         ledger.state = paymentResult.state
         ledger.events.addAll(paymentResult.events)
 
-        payEmergeSacrifice(ledger, cardDef)
+        if (isEmergeCast) payEmergeSacrifice(ledger)
         val manaSpent = recordManaSpent(ledger, paymentResult)
 
         // Forage from a graveyard via MayCastCreaturesFromGraveyardWithForageComponent (e.g.,
@@ -309,13 +315,8 @@ internal class CastCostPayer(
      * tapped for mana toward its own emerge cost before it dies. Its mana value was already taken
      * off the generic portion of the total cost while it was on the battlefield.
      */
-    private fun payEmergeSacrifice(ledger: SpellCostLedger, cardDef: CardDefinition?) {
+    private fun payEmergeSacrifice(ledger: SpellCostLedger) {
         val action = ledger.action
-        if (!action.useAlternativeCost || !action.altAllows(AlternativeCostType.EMERGE) ||
-            EmergeCasts.effectiveEmerge(
-                ledger.state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator
-            ) == null
-        ) return
         val emergeSacrifice = action.additionalCostPayment?.sacrificedPermanents?.firstOrNull() ?: return
         if (ledger.state.getEntity(emergeSacrifice) == null) return
         // The [GameState] overload: besides last-known P/T it freezes the creature's *name*, which is
