@@ -470,7 +470,7 @@ enum class Keyword(val displayName: String) {
      * explicitly ([com.wingedsheep.sdk.model.CardScript.cleaveSpellEffect] /
      * [com.wingedsheep.sdk.model.CardScript.cleaveTargetRequirements]) — a structural swap done at
      * cast time, not a cosmetic text edit, so e.g. a delayed triggered ability inside brackets is
-     * never created at all (Alchemist's Gambit ruling). Cleave never changes mana value (CR 202.3b —
+     * never created at all (Alchemist's Gambit ruling). Cleave never changes mana value (CR 118.9c —
      * mana value is always computed from the printed mana cost). Wired by the `cleave(cost) { }` DSL
      * helper on [com.wingedsheep.sdk.dsl.CardBuilder].
      */
@@ -486,7 +486,7 @@ enum class Keyword(val displayName: String) {
      * Modelled like [CLEAVE]: an alternative cost ([com.wingedsheep.sdk.scripting.KeywordAbility.Overload])
      * whose paid branch swaps in the "each" variant the card author writes explicitly
      * ([com.wingedsheep.sdk.model.CardScript.overloadSpellEffect]) and drops every target
-     * requirement. Never changes mana value (CR 202.3b).
+     * requirement. Never changes mana value (CR 118.9c).
      */
     OVERLOAD("Overload"),
 

@@ -2394,7 +2394,7 @@ class CastSpellEnumerator(
             val castRestrictions = cardDef.script.castRestrictions
             if (castRestrictions.isNotEmpty() && !context.legality.castRestrictionsMet(state, playerId, castRestrictions)) continue
 
-            // Alternative mana cost (CR 202.3b — mana value is still computed from the printed cost,
+            // Alternative mana cost (CR 118.9c — mana value is still computed from the printed cost,
             // not this one; only affordability uses it).
             val altCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, variantCost, playerId)
             val canAffordVariant = context.manaSolver.canPay(state, playerId, altCost, precomputedSources = context.availableManaSources)

@@ -1145,7 +1145,7 @@ sealed interface KeywordAbility {
      * [com.wingedsheep.sdk.model.CardScript.cleaveTargetRequirements] (mirroring how kicker supplies
      * an alternate effect/target tree). Casting for cleave swaps in that variant at cast time, so a
      * clause inside brackets that would create a delayed triggered ability is never created at all
-     * (Alchemist's Gambit ruling). The cleave cost never changes the spell's mana value (CR 202.3b).
+     * (Alchemist's Gambit ruling). The cleave cost never changes the spell's mana value (CR 118.9c).
      *
      * Wired by the `cleave(cost) { }` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder], which
      * attaches this keyword ability and captures the brackets-removed effect/targets.

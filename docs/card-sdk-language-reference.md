@@ -10821,7 +10821,7 @@ composite abilities).
   never a `ContextTarget`. Casting for overload drops every target requirement, so the cast is offered
   even when the printed cast has no legal target and reaches hexproof/protected objects;
   `CastValidator` rejects an overloaded `CastSpell` that names targets. Overload never changes mana
-  value (CR 202.3b). The stack text shows the overloaded effect.
+  value (CR 118.9c). The stack text shows the overloaded effect.
   - **Fangs of Kalonia** ({1}{G}, Overload {4}{G}{G}) — base `AddCounters(+1/+1, 1, target) then
     DoubleCounters(+1/+1, target)`; `overloadEffect` runs the same two steps as two
     `ForEachInGroup(AllCreaturesYouControl, …)` passes, so every creature gets its counter before any

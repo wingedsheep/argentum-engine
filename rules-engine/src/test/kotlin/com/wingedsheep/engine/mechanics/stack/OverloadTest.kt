@@ -32,7 +32,7 @@ import io.kotest.matchers.shouldNotBe
  *   resolves with its "each" text.
  * - CR 702.96b: an overloaded spell has no targets, so it is castable when nothing could be
  *   targeted and it affects objects that couldn't have been targeted (hexproof).
- * - CR 202.3b: paying an alternative cost doesn't change the spell's mana value.
+ * - CR 118.9c: paying an alternative cost doesn't change the spell's mana value.
  * - Without the overload cost, the spell is the ordinary single-target spell.
  */
 class OverloadTest : FunSpec({
