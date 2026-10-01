@@ -203,11 +203,13 @@ object Library {
         canonicalForm: Boolean = true,
         destination: SearchDestination,
         reveal: Boolean = false,
+        entersTapped: Boolean = false,
     ): Phrase<CardScript> {
         fun scriptFor(filter: GameObjectFilter) = CardScript(
             spellEffect = Patterns.Library.searchLibrary(
                 filter = filter,
                 destination = destination,
+                entersTapped = entersTapped,
                 reveal = reveal,
             )
         )
@@ -426,6 +428,23 @@ object Library {
             "search your library for a card to the battlefield (pronoun)",
             canonicalForm = false,
             destination = SearchDestination.BATTLEFIELD,
+        ),
+        // The tapped fetch — Evolving Wilds, Rampant Growth — is the same recipe with
+        // `entersTapped`. Here the pronoun is the majority printing (Oracle prints "put it onto the
+        // battlefield tapped" about five times as often as "put that card …"), so it is canonical
+        // and "that card" is the alternate, the reverse of the untapped pair above.
+        search(
+            "search your library for {filter}, put it onto the battlefield tapped, then shuffle",
+            "search your library for a card to the battlefield tapped",
+            destination = SearchDestination.BATTLEFIELD,
+            entersTapped = true,
+        ),
+        search(
+            "search your library for {filter}, put that card onto the battlefield tapped, then shuffle",
+            "search your library for a card to the battlefield tapped (that card)",
+            canonicalForm = false,
+            destination = SearchDestination.BATTLEFIELD,
+            entersTapped = true,
         ),
         search(
             "search your library for {filter}, reveal it, then shuffle and put that card on top",

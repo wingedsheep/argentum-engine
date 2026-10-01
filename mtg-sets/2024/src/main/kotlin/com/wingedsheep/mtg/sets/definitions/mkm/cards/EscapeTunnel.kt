@@ -32,7 +32,6 @@ val EscapeTunnel = card("Escape Tunnel") {
             count = 1,
             destination = SearchDestination.BATTLEFIELD,
             entersTapped = true,
-            reveal = true,
             shuffleAfter = true
         )
         manaAbility = false

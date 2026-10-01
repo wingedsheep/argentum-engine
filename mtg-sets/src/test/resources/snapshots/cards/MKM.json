@@ -8005,8 +8005,7 @@
                                 "type": "ToZone",
                                 "zone": "Battlefield",
                                 "placement": "Tapped"
-                            },
-                            "revealed": true
+                            }
                         },
                         "ShuffleLibrary",
                         "EmitLibrarySearchedEvent"
