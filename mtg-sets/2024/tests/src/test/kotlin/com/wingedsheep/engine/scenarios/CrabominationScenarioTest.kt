@@ -137,6 +137,7 @@ class CrabominationScenarioTest : ScenarioTestBase() {
                 .withCardOnBattlefield(1, "Jalum Tome")
                 .withLandsOnBattlefield(1, "Swamp", 4)
                 .withCardInLibrary(2, "Grizzly Bears")
+                .withCardInLibrary(2, "Centaur Courser")
                 .withCardInHand(2, "Lightning Bolt")
                 .withActivePlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
@@ -148,7 +149,9 @@ class CrabominationScenarioTest : ScenarioTestBase() {
             game.selectCards(emptyList()).error shouldBe null
             game.resolveStack()
             game.state.pendingDecision shouldBe null
-            game.isInExile(2, "Grizzly Bears") shouldBe true
+            // Only the top library card goes — the rest of the library is untouched.
+            game.librarySize(2) shouldBe 1
+            game.state.getExile(game.player2Id).size shouldBe 2
             game.isInExile(2, "Lightning Bolt") shouldBe true
         }
     }
