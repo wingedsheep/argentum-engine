@@ -6081,6 +6081,43 @@
     ]
 }
 
+// Winter Orb
+{
+    "name": "Winter Orb",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "As long as this artifact is untapped, players can't untap more than one land during their untap steps.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "UntapLimitPerStep",
+                    "filter": "land",
+                    "max": 1
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "untapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "275",
+        "rarity": "RARE",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/9359f60c-9a27-4e53-b35b-964a121a6fba.jpg?1783948660",
+        "rulings": [
+            {
+                "date": "2016-06-08",
+                "text": "All permanents untap during a player’s untap step at once. If Winter Orb is tapped as your untap step begins, your lands will all untap."
+            }
+        ]
+    }
+}
+
 // Wrath of God
 {
     "name": "Wrath of God",
