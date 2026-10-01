@@ -690,6 +690,82 @@
     ]
 }
 
+// Atmosphere Surgeon
+{
+    "name": "Atmosphere Surgeon",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Phyrexian Wizard",
+    "oracleText": "Whenever you cast a noncreature spell, put an oil counter on this creature.\nRemove an oil counter from this creature: Target creature gains flying until end of turn. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Atmosphere Surgeon:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Atmosphere Surgeon:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "OIL",
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Remove an oil counter from this creature: Target creature gains flying until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "flavorText": "It is Jin-Gitaxias's deepest exasperation that any part of his domain still requires maintenance.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c66988ca-29d5-45ea-8d68-c8e0e4c3ffb1.jpg?1783918069"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Awaken the Sleeper
 {
     "name": "Awaken the Sleeper",
@@ -3059,6 +3135,62 @@
     ]
 }
 
+// Distorted Curiosity
+{
+    "name": "Distorted Curiosity",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Corrupted — This spell costs {2} less to cast if an opponent has three or more poison counters.\nDraw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        },
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "players": "EachOpponent",
+                            "inner": {
+                                "type": "PlayerCounterCount",
+                                "counterType": "POISON"
+                            }
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Free will was an illusion so perfect it fooled even me. I know better now.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f932ddd3-beb4-4dc8-8c15-e1c9c2276986.jpg?1783918068"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Drivnod, Carnage Dominus
 {
     "name": "Drivnod, Carnage Dominus",
@@ -4136,6 +4268,96 @@
     ]
 }
 
+// Font of Progress
+{
+    "name": "Font of Progress",
+    "manaCost": "{U}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters with two oil counters on it.\n{3}, {T}: Target player mills X cards, where X is the number of oil counters on this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Font of Progress:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": {
+                                        "type": "CounterCount",
+                                        "counterType": "OIL"
+                                    }
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{3}, {T}: Target player mills X cards, where X is the number of oil counters on this artifact."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 2,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron J. Riley",
+        "flavorText": "\"Drink deeply of the truth, and become *compleat*.\"\n—Tamiyo",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/272c9888-ef13-4d47-a4bc-f5239b357a1b.jpg?1783918065"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Furnace Punisher
 {
     "name": "Furnace Punisher",
@@ -4349,6 +4571,66 @@
         "flavorText": "An inconsistency in a routine vivisection sparked a revelation about the inner workings of the Orthodoxy's centurions.",
         "imageUri": "https://cards.scryfall.io/normal/front/6/3/63517062-77da-4b60-aa24-f91553a81bed.jpg?1783918064"
     }
+}
+
+// Gitaxian Raptor
+{
+    "name": "Gitaxian Raptor",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Phyrexian Bird",
+    "oracleText": "Flying\nThis creature enters with three oil counters on it.\nRemove an oil counter from this creature: This creature gets +1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gitaxian Raptor:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "OIL",
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Remove an oil counter from this creature: This creature gets +1/-1 until end of turn."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 3,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "artist": "Maxime Minard",
+        "flavorText": "Bored with the ruins of Lumengrid, it migrated to the ruins of the Mephidross.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f5e95f8-c04d-405f-bba4-e83a8f6bf463.jpg?1783918064"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Gleeful Demolition
@@ -4885,6 +5167,96 @@
     ]
 }
 
+// Ichor Synthesizer
+{
+    "name": "Ichor Synthesizer",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Phyrexian Wizard",
+    "oracleText": "Whenever you cast a noncreature spell, put an oil counter on this creature.\nAs long as this creature has four or more oil counters on it, it gets +2/+0 and can't be blocked.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ichor Synthesizer:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "OIL"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBeBlocked",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "OIL"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Sam Wolfe Connelly",
+        "flavorText": "\"I've isolated the chirality of the glistening oil, so there will be no wasted precursors.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f516ee6-8f7b-40b2-82e5-9c4ea3e0a355.jpg?1783918063"
+    }
+}
+
 // Ichormoon Gauntlet
 {
     "name": "Ichormoon Gauntlet",
@@ -5194,6 +5566,224 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Jace, the Perfected Mind
+{
+    "name": "Jace, the Perfected Mind",
+    "manaCost": "{2}{U}{U/P}",
+    "typeLine": "Legendary Planeswalker — Jace",
+    "oracleText": "Compleated ({U/P} can be paid with {U} or 2 life. If life was paid, this planeswalker enters with two fewer loyalty counters.)\n+1: Until your next turn, up to one target creature gets -3/-0.\n−2: Target player mills three cards. Then if a graveyard has twenty or more cards in it, you draw three cards. Otherwise, you draw a card.\n−X: Target player mills three times X cards.",
+    "keywords": [
+        "COMPLEATED"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jace, the Perfected Mind:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilYourNextTurn"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Jace, the Perfected Mind:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "CountPlayersWith",
+                                        "scope": "Each",
+                                        "condition": {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "Count",
+                                                "player": "You",
+                                                "zone": "Graveyard"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 20
+                                            }
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "otherwise": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Jace, the Perfected Mind:3",
+                "cost": "CostLoyaltyX",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Multiply",
+                                    "amount": "XValue",
+                                    "multiplier": 3
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t2"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Target player mills three times X cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64e6a8d1-ae75-45bd-af62-9a622620cb5c.jpg?1783918061",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "Jace's second loyalty ability doesn't care which player's graveyard has twenty or more cards in it. It could be the target player's or another player's."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "A Phyrexian mana symbol contributes 1 toward the mana value of a card, even if life is paid for it. Specifically, Jace's mana value is always 4."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "The compleated ability looks only at whether a player chose to pay 2 life for a Phyrexian mana symbol as they were casting the spell. If a player paid life for some other reason while casting the spell, that will not reduce the number of loyalty counters the planeswalker enters the battlefield with."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Other replacement effects that would change the number of loyalty counters Jace enters with will apply as normal."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6329,6 +6919,69 @@
     ]
 }
 
+// Meldweb Strider
+{
+    "name": "Meldweb Strider",
+    "manaCost": "{4}{U}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Vigilance\nThis Vehicle enters with an oil counter on it.\nRemove an oil counter from this Vehicle: It becomes an artifact creature until end of turn.\nCrew 3 (Tap any number of creatures you control with total power 3 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 3
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Meldweb Strider:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "OIL",
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                },
+                "descriptionOverride": "This Vehicle becomes an artifact creature until end of turn."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "Julian Kok Joon Wen",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5efd9b5-05e5-440f-b28c-658e461cf644.jpg?1783918061"
+    }
+}
+
 // Melira, the Living Cure
 {
     "name": "Melira, the Living Cure",
@@ -6388,6 +7041,126 @@
         "artist": "Miranda Meeks",
         "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1329ad9-5989-4920-b17b-943b9b4a0cd9.jpg?1783917999"
     }
+}
+
+// Mercurial Spelldancer
+{
+    "name": "Mercurial Spelldancer",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Phyrexian Rogue",
+    "oracleText": "This creature can't be blocked.\nWhenever you cast a noncreature spell, put an oil counter on this creature.\nWhenever this creature deals combat damage to a player, you may remove two oil counters from it. If you do, when you next cast an instant or sorcery spell this turn, copy that spell. You may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mercurial Spelldancer:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Mercurial Spelldancer:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "OIL"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "RemoveCounters",
+                                    "counterType": "OIL",
+                                    "count": 2,
+                                    "target": "Self"
+                                },
+                                {
+                                    "type": "CreateDelayedTrigger",
+                                    "effect": {
+                                        "type": "CopyTargetSpell",
+                                        "target": "TriggeringEntity"
+                                    },
+                                    "trigger": {
+                                        "event": {
+                                            "type": "SpellCastEvent",
+                                            "spellFilter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "Or",
+                                                        "predicates": [
+                                                            "IsInstant",
+                                                            "IsSorcery"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "binding": "ANY"
+                                    },
+                                    "fireOnce": true
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "Remove two oil counters to copy the next instant or sorcery you cast this turn?"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "CantBeBlocked"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Marcela Bolívar",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf28c75d-1fb3-44cc-b651-5b2830e22add.jpg?1783918060"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Mesmerizing Dose
@@ -6596,6 +7369,67 @@
     "colorIdentityOverride": [
         "RED",
         "GREEN"
+    ]
+}
+
+// Mindsplice Apparatus
+{
+    "name": "Mindsplice Apparatus",
+    "manaCost": "{3}{U}",
+    "typeLine": "Artifact",
+    "oracleText": "Flash\nAt the beginning of your upkeep, put an oil counter on this artifact.\nInstant and sorcery spells you cast cost {1} less to cast for each oil counter on this artifact.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mindsplice Apparatus:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "instant|sorcery"
+                },
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": {
+                                "type": "CounterCount",
+                                "counterType": "OIL"
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "RARE",
+        "artist": "Ovidio Cartagena",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f4ad1cb-4bbb-4485-b322-0b003f06d034.jpg?1783918059"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -9087,6 +9921,92 @@
     ]
 }
 
+// Serum Sovereign
+{
+    "name": "Serum Sovereign",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Phyrexian Sphinx",
+    "oracleText": "Flying\nWhenever you cast a noncreature spell, put an oil counter on this creature.\n{U}, Remove an oil counter from this creature: Draw a card, then scry 2.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Serum Sovereign:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Serum Sovereign:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Scry",
+                            "count": 2
+                        }
+                    ]
+                },
+                "descriptionOverride": "{U}, Remove an oil counter from this creature: Draw a card, then scry 2."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "405",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "flavorText": "A thousand riddles, each with a single answer: \"The glory of Phyrexia.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/70d562aa-8b49-40a3-a5c1-3af8afa98edc.jpg?1783917920"
+    }
+}
+
 // Sheoldred's Edict
 {
     "name": "Sheoldred's Edict",
@@ -9663,6 +10583,70 @@
         "artist": "Johann Bodin",
         "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9cba67a-b714-49b0-9797-24aca283f162.jpg?1783917996"
     }
+}
+
+// Tamiyo's Immobilizer
+{
+    "name": "Tamiyo's Immobilizer",
+    "manaCost": "{3}{U}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters with four oil counters on it.\n{T}, Remove an oil counter from this artifact: Tap target artifact or creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tamiyo's Immobilizer:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Remove an oil counter from this artifact: Tap target artifact or creature."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 4,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "UNCOMMON",
+        "artist": "Daren Bader",
+        "flavorText": "Visitors to the Surgical Bay often become permanent residents.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/daa20112-2955-439d-8802-3a228ba0832e.jpg?1783918057"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Tamiyo's Logbook
@@ -10394,6 +11378,86 @@
         "rarity": "UNCOMMON",
         "artist": "Xavier Ribeiro",
         "imageUri": "https://cards.scryfall.io/normal/front/f/9/f912c4ec-08e9-4524-a2ba-98f6dfabdc18.jpg?1783918055"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Trawler Drake
+{
+    "name": "Trawler Drake",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Phyrexian Drake",
+    "oracleText": "Flying\nThis creature enters with an oil counter on it.\nThis creature gets +1/+1 for each oil counter on it.\nWhenever you cast a noncreature spell, put an oil counter on this creature.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Trawler Drake:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cast a noncreature spell, put an oil counter on this creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "OIL"
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "OIL"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f442442d-2e5d-4913-82d8-bab2f31541f8.jpg?1783918055"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -11216,6 +12280,35 @@
     ]
 }
 
+// Vivisurgeon's Insight
+{
+    "name": "Vivisurgeon's Insight",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw three cards. Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "Proliferate"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "artist": "Adam Burn",
+        "flavorText": "\"Experimental Log 290: Leaving the subject's pain receptors active appears to yield an unprecedented combination of incoherence and hyperawareness.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd244359-781e-4e1d-946d-243664f40c7c.jpg?1783918053"
+    }
+}
+
 // Voidwing Hybrid
 {
     "name": "Voidwing Hybrid",
@@ -11616,6 +12709,59 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Watchful Blisterzoa
+{
+    "name": "Watchful Blisterzoa",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Phyrexian Jellyfish",
+    "oracleText": "Flying\nThis creature enters with an oil counter on it.\nWhen this creature dies, draw cards equal to the number of oil counters on it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Watchful Blisterzoa:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "LastKnownSourceCounters",
+                        "counterType": "OIL"
+                    }
+                },
+                "descriptionOverride": "When this creature dies, draw cards equal to the number of oil counters on it."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Cold",
+        "flavorText": "After a series of ambushes, Uulbrek demanded a sentry with no blind spots.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a895f63f-3c59-4249-9346-55ef489944fc.jpg?1783918053"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
