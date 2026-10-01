@@ -1215,6 +1215,53 @@
     ]
 }
 
+// Bladegraft Aspirant
+{
+    "name": "Bladegraft Aspirant",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Phyrexian Warrior",
+    "oracleText": "Menace\nEquipment spells you cast cost {1} less to cast.\nActivated abilities of Equipment you control that target this creature cost {1} less to activate.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "Equipment"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            },
+            {
+                "type": "ReduceActivatedAbilityCost",
+                "filter": {
+                    "baseFilter": "artifact Equipment ctrl:you"
+                },
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "onlyIfTargetIsSource": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "artist": "Valera Lutfullina",
+        "flavorText": "\"To dance to the music of Juex, leap like the flickering flame and hit like the hammer.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d6cf933-73fe-4e79-8d0b-29dc0f18b25d.jpg?1783918035"
+    }
+}
+
 // Bladehold War-Whip
 {
     "name": "Bladehold War-Whip",

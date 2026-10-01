@@ -9245,6 +9245,15 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Creature.youControl(), excludeSelf = true), DynamicAmount.Fixed(3), powerUpOnly = true)`.
   It stacks with power-up's own reduction, which is applied first (CR 601.2f lets multiple reductions
   apply in any order).
+  `onlyIfTargetIsSource = true` narrows it to activations that **target the static's own source** —
+  Bladegraft Aspirant: "Activated abilities of Equipment you control that target this creature cost
+  {1} less to activate" →
+  `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT).youControl()), DynamicAmounts.fixed(1), onlyIfTargetIsSource = true)`.
+  Targets are chosen before the total cost is determined (CR 601.2c → 601.2f), so the handler
+  prices it against the chosen targets exactly; the enumerator, running before targets exist,
+  offers it optimistically for any *targeted* ability while the source is a creature (an untargeted
+  ability is never reduced). It covers every activated ability of a matching source, equip
+  included — `ReduceEquipCost.onlyIfTargetIsSource` is the equip-only sibling keyed on the player.
 - `IncreaseActivatedAbilityCost(filter, amount)` — the taxing mirror of
   `ReduceActivatedAbilityCost`: activated abilities of sources matching `filter` cost `amount`
   generic mana **more** to activate. The two are summed into a single net delta before either is

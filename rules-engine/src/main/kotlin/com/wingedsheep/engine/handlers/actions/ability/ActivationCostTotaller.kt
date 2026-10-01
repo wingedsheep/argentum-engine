@@ -66,7 +66,7 @@ internal class ActivationCostTotaller(
         )
         val costAfterAbilityReduction = castPermissionUtils.applyActivatedAbilityCostReduction(
             costAfterGenericReduction, state, action.sourceId, ability.isExhaust, ability.isPowerUp,
-            ability.isManaAbility
+            ability.isManaAbility, chosenTargetIds = action.targets.filterIsInstance<ChosenTarget.Permanent>().map { it.entityId }
         )
         val costAfterEquipReduction = castPermissionUtils.applyEquipCostReduction(
             costAfterAbilityReduction, ability, state, action.playerId, equipTargetIdForCost,

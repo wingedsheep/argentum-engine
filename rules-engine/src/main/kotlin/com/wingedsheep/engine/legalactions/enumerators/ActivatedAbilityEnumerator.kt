@@ -173,7 +173,10 @@ class ActivatedAbilityEnumerator(
                         context.castPermissionUtils.applyEquipCostReduction(
                             context.castPermissionUtils.applyActivatedAbilityCostReduction(
                                 AbilityCostReduction.apply(costWithDefinedX, ability, state, entityId, playerId, context.targetUtils, predicateEvaluator = predicateEvaluator),
-                                state, entityId, ability.isExhaust, ability.isPowerUp, ability.isManaAbility
+                                state, entityId, ability.isExhaust, ability.isPowerUp, ability.isManaAbility,
+                                // Targets are chosen after this offer; a targeted ability is priced
+                                // optimistically for a "that target this creature" reduction.
+                                chosenTargetIds = if (ability.targetRequirements.isEmpty()) emptyList() else null
                             ),
                             ability, state, playerId, abilitySourceId = entityId
                         ),
