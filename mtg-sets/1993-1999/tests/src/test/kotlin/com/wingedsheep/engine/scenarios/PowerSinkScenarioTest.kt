@@ -89,6 +89,25 @@ class PowerSinkScenarioTest : ScenarioTestBase() {
             game.resolveStack()
             game.getLifeTotal(2) shouldBe 23
         }
+        test("payment can activate untapped land and artifact mana sources") {
+            val game = scenario().withPlayers().withCardInHand(1, "Power Sink")
+                .withLandsOnBattlefield(1, "Island", 8).withCardInHand(2, "Sink test spell")
+                .withCardOnBattlefield(2, "Sink colorless land").withCardOnBattlefield(2, "Sink mana artifact")
+                .withCardOnBattlefield(2, "Forest").withActivePlayer(2).build()
+            game.castSpell(2, "Sink test spell").error shouldBe null
+            game.passPriority().error shouldBe null
+            game.state = game.state.updateEntity(game.player2Id) { it.with(ManaPoolComponent()) }
+            cast(game, 3)
+            game.state.pendingDecision.shouldBeInstanceOf<YesNoDecision>().playerId shouldBe game.player2Id
+            game.answerYesNo(true).error shouldBe null
+            tapped(game, "Forest") shouldBe true
+            tapped(game, "Sink colorless land") shouldBe true
+            tapped(game, "Sink mana artifact") shouldBe true
+            game.state.getEntity(game.player2Id)!!.get<ManaPoolComponent>()!!.total shouldBe 0
+            game.resolveStack().forEach { it.error shouldBe null }
+            game.getLifeTotal(2) shouldBe 23
+        }
+
         test("a land granted a mana ability is tapped by the decline branch") {
             val game = scenario().withPlayers().withCardInHand(1, "Power Sink")
                 .withLandsOnBattlefield(1, "Island", 8).withCardInHand(2, "Sink test spell")

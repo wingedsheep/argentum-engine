@@ -5608,7 +5608,8 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   presence, including projected basic land types, active printed abilities, triggered mana
   abilities, and runtime/static/emblem grants. Costs, tapped state, activation prohibitions,
   and whether the ability currently produces mana do not affect presence. Hidden printed
-  abilities, phased-out permanents, and removed own abilities do not count. Requires the
+  abilities, phased-out permanents, and removed own abilities do not count. Projected basic
+  land types can grant intrinsic mana abilities even to face-down permanents. Requires the
   registry-backed engine evaluator; registry-free layer filters and historical snapshots
   fail closed, so use this predicate for live targeting, gathering, and resolution queries.
   Power Sink composes a payer-rebinding player loop and optional payment gate; its decline

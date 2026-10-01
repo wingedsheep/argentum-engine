@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.legalactions.utils
 
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -1219,7 +1220,8 @@ class CastPermissionUtils(
      */
     fun getStaticGrantedAbilitiesWithGranter(
         entityId: EntityId,
-        state: GameState
+        state: GameState,
+        projected: ProjectedState = state.projectedState,
     ): List<StaticGrantedAbility> {
         if (state.getEntity(entityId) == null) return emptyList()
 
@@ -1240,11 +1242,11 @@ class CastPermissionUtils(
                 // GrantActivatedAbility and the grant is silently dropped. Skip when the gate is false.
                 val ability = when (rawAbility) {
                     is com.wingedsheep.sdk.scripting.ConditionalStaticAbility -> {
-                        val granterController = state.projectedState.getController(permanentId)
+                        val granterController = projected.getController(permanentId)
                             ?: container.get<ControllerComponent>()?.playerId
                             ?: continue
                         val ctx = EffectContext(sourceId = permanentId, controllerId = granterController)
-                        if (!conditionEvaluator.evaluate(state, rawAbility.condition, ctx)) continue
+                        if (!conditionEvaluator.evaluate(state, rawAbility.condition, ctx, projected)) continue
                         rawAbility.ability
                     }
                     else -> rawAbility
@@ -1260,11 +1262,11 @@ class CastPermissionUtils(
                 // AbilityId so duplicate donors don't collapse and each gets its own once-per-turn
                 // budget (see donorCardsActivatedAbilities).
                 if (ability is com.wingedsheep.sdk.scripting.HasAllActivatedAbilitiesOfCards) {
-                    val receives = donorGrantReaches(state, permanentId, entityId, ability, predicateEvaluator)
+                    val receives = donorGrantReaches(state, permanentId, entityId, ability, predicateEvaluator, projected)
                     if (receives) {
                         for (granted in donorCardsActivatedAbilities(
                             state, permanentId, cardRegistry, predicateEvaluator,
-                            ability.donors, ability.cardFilter, ability.oncePerTurnEach
+                            ability.donors, ability.cardFilter, ability.oncePerTurnEach, projected
                         )) {
                             result.add(StaticGrantedAbility(granted, entityId))
                         }
@@ -1286,10 +1288,10 @@ class CastPermissionUtils(
                 when (val scope = ability.filter.scope) {
                     is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield -> {
                         if (ability.filter.excludeSelf && permanentId == entityId) continue
-                        val granterController = state.projectedState.getController(permanentId) ?: continue
+                        val granterController = projected.getController(permanentId) ?: continue
                         val matches = predicateEvaluator.matches(
                             state,
-                            state.projectedState,
+                            projected,
                             entityId,
                             ability.filter.baseFilter,
                             PredicateContext(controllerId = granterController, sourceId = permanentId)
@@ -1327,11 +1329,11 @@ class CastPermissionUtils(
         // Granted GrantActivatedAbility statics (CR 611): a permanent that was itself *granted* an
         // ability-granting static — e.g. Roar of the Fifth People chapter II. Shared with
         // ActivateAbilityHandler so the enumerator and the handler never drift.
-        result.addAll(getGrantedStaticGrantActivatedAbilities(entityId, state))
+        result.addAll(getGrantedStaticGrantActivatedAbilities(entityId, state, projected))
 
         // GainActivatedAbilitiesOfPermanents (Sharkey, Tyrant of the Shire): permanents matching
         // [grantedTo] gain copies of the activated abilities of permanents matching [sourceFilter].
-        result.addAll(getGainedAbilitiesOfPermanents(entityId, state))
+        result.addAll(getGainedAbilitiesOfPermanents(entityId, state, projected))
 
         // Multiple granters can hand the same ability to a permanent — e.g., two Brightcap
         // Badgers each grant Saproling tokens "{T}: Add {G}." The cards share a CardDefinition
@@ -1355,7 +1357,8 @@ class CastPermissionUtils(
      */
     fun getGrantedStaticGrantActivatedAbilities(
         entityId: EntityId,
-        state: GameState
+        state: GameState,
+        projected: ProjectedState = state.projectedState,
     ): List<StaticGrantedAbility> {
         val result = mutableListOf<StaticGrantedAbility>()
         for (grantedStatic in state.grantedStaticAbilities) {
@@ -1367,10 +1370,10 @@ class CastPermissionUtils(
             when (val scope = grantAbility.filter.scope) {
                 is Scope.Battlefield -> {
                     if (grantAbility.filter.excludeSelf && granterId == entityId) continue
-                    val granterController = state.projectedState.getController(granterId) ?: continue
+                    val granterController = projected.getController(granterId) ?: continue
                     val matches = predicateEvaluator.matches(
                         state,
-                        state.projectedState,
+                        projected,
                         entityId,
                         grantAbility.filter.baseFilter,
                         PredicateContext(controllerId = granterController, sourceId = granterId)
@@ -1409,9 +1412,9 @@ class CastPermissionUtils(
      */
     fun getGainedAbilitiesOfPermanents(
         entityId: EntityId,
-        state: GameState
+        state: GameState,
+        projected: ProjectedState = state.projectedState,
     ): List<StaticGrantedAbility> {
-        val projected = state.projectedState
         val result = mutableListOf<StaticGrantedAbility>()
 
         for (granterId in state.getBattlefield()) {
@@ -1652,6 +1655,7 @@ class CastPermissionUtils(
     fun getEmblemGrantedActivatedAbilities(
         entityId: EntityId,
         state: GameState,
+        projected: ProjectedState = state.projectedState,
     ): List<ActivatedAbility> = state.entities.flatMap { (emblemId, emblemContainer) ->
         val grant = emblemContainer.get<EmblemActivatedAbilityComponent>()
             ?: return@flatMap emptyList()
@@ -1659,7 +1663,7 @@ class CastPermissionUtils(
             ?: return@flatMap emptyList()
         val matches = predicateEvaluator.matches(
             state,
-            state.projectedState,
+            projected,
             entityId,
             grant.filter.baseFilter,
             PredicateContext(controllerId = controllerId, sourceId = emblemId),
@@ -1687,7 +1691,8 @@ fun donorGrantReaches(
     granterId: EntityId,
     receiverId: EntityId,
     ability: com.wingedsheep.sdk.scripting.HasAllActivatedAbilitiesOfCards,
-    predicateEvaluator: com.wingedsheep.engine.handlers.PredicateEvaluator
+    predicateEvaluator: com.wingedsheep.engine.handlers.PredicateEvaluator,
+    projected: ProjectedState = state.projectedState,
 ): Boolean = when (val scope = ability.receivedBy.scope) {
     is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self -> granterId == receiverId
     is com.wingedsheep.sdk.scripting.filters.unified.Scope.Specific -> scope.entityId == receiverId
@@ -1698,9 +1703,9 @@ fun donorGrantReaches(
     is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield -> {
         if (ability.receivedBy.excludeSelf && granterId == receiverId) false
         else {
-            val granterController = state.projectedState.getController(granterId)
+            val granterController = projected.getController(granterId)
             granterController != null && predicateEvaluator.matches(
-                state, state.projectedState, receiverId, ability.receivedBy.baseFilter,
+                state, projected, receiverId, ability.receivedBy.baseFilter,
                 PredicateContext(controllerId = granterController, sourceId = granterId)
             )
         }
@@ -1749,12 +1754,13 @@ fun donorCardsActivatedAbilities(
     predicateEvaluator: com.wingedsheep.engine.handlers.PredicateEvaluator,
     donors: com.wingedsheep.sdk.scripting.DonorCards,
     cardFilter: com.wingedsheep.sdk.scripting.GameObjectFilter,
-    oncePerTurnEach: Boolean = false
+    oncePerTurnEach: Boolean = false,
+    projected: ProjectedState = state.projectedState,
 ): List<com.wingedsheep.sdk.scripting.ActivatedAbility> {
     // Projected controller (with the base component as fallback) — "your graveyard" follows the
     // granting permanent's *current* controller, so a stolen Thranduil reads its new controller's
     // graveyard, and it is also the context a non-trivial cardFilter is evaluated against.
-    val controllerId = state.projectedState.getController(sourceId)
+    val controllerId = projected.getController(sourceId)
         ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
     val donorIds = when (donors) {
         com.wingedsheep.sdk.scripting.DonorCards.LINKED_EXILE -> state.getEntity(sourceId)
@@ -1771,7 +1777,7 @@ fun donorCardsActivatedAbilities(
     return donorIds.flatMap { donorId ->
         val card = state.getEntity(donorId)?.get<CardComponent>() ?: return@flatMap emptyList()
         if (!unfiltered && !predicateEvaluator.matches(
-                state, state.projectedState, donorId, cardFilter,
+                state, projected, donorId, cardFilter,
                 PredicateContext(controllerId = controllerId!!, sourceId = sourceId)
             )
         ) return@flatMap emptyList()

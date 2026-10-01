@@ -31,7 +31,7 @@ object ManaAbilityPresence {
         val card = container.get<CardComponent>() ?: return false
         val faceDown = container.has<FaceDownComponent>()
         val removed = projected.hasLostAllAbilities(entityId)
-        val intrinsic = !faceDown && projected.hasType(entityId, "LAND") &&
+        val intrinsic = projected.hasType(entityId, "LAND") &&
             projected.getSubtypes(entityId).any { it in basicLandTypes }
         if (intrinsic && (!removed || projected.hasBasicLandTypesSetByEffect(entityId))) return true
 
@@ -62,10 +62,10 @@ object ManaAbilityPresence {
 
         val nested = predicates.duringManaAbilityQuery(entityId)
         val permissions = CastPermissionUtils(registry, nested, nested.conditions)
-        return permissions.getStaticGrantedAbilitiesWithGranter(entityId, state).any {
+        return permissions.getStaticGrantedAbilitiesWithGranter(entityId, state, projected).any {
             it.ability.isManaAbility && it.ability.activateFromZone == Zone.BATTLEFIELD &&
                 !projected.hasLostAllAbilities(it.granterId)
-        } || permissions.getEmblemGrantedActivatedAbilities(entityId, state).any {
+        } || permissions.getEmblemGrantedActivatedAbilities(entityId, state, projected).any {
             it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD
         }
     }
