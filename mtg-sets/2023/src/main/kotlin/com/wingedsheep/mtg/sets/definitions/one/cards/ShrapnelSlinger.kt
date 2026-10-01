@@ -35,7 +35,8 @@ val ShrapnelSlinger = card("Shrapnel Slinger") {
         effect = Effects.ReflexiveTrigger(
             action = Effects.Pipeline {
                 val toSacrifice = selectTarget(
-                    TargetObject(filter = TargetFilter.Creature.youControl())
+                    TargetObject(filter = TargetFilter.Creature.youControl()),
+                    nonTargeting = true,
                 )
                 run(Effects.SacrificeTarget(toSacrifice.asTarget))
             },

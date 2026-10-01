@@ -8477,7 +8477,8 @@
                                         "baseFilter": "creature ctrl:you"
                                     }
                                 },
-                                "storeAs": "target0"
+                                "storeAs": "target0",
+                                "nonTargeting": true
                             },
                             {
                                 "type": "SacrificeTarget",

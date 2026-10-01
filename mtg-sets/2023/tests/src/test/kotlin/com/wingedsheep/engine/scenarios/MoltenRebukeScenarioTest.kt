@@ -49,25 +49,25 @@ class MoltenRebukeScenarioTest : FunSpec({
         ).error
     }
 
-    test("both modes — 5 damage kills a creature and the Equipment is destroyed") {
+    test("both modes — 5 damage kills a 5-toughness creature and the Equipment is destroyed") {
         val driver = createDriver()
         val me = driver.activePlayer!!
         val opp = driver.getOpponent(me)
 
-        val courser = driver.putCreatureOnBattlefield(opp, "Centaur Courser")
+        val forceOfNature = driver.putCreatureOnBattlefield(opp, "Force of Nature")
         val fist = driver.putPermanentOnBattlefield(opp, "Barbed Batterfist")
 
         driver.cast(
             me,
             modes = listOf(0, 1),
             modeTargets = listOf(
-                listOf(ChosenTarget.Permanent(courser)),
+                listOf(ChosenTarget.Permanent(forceOfNature)),
                 listOf(ChosenTarget.Permanent(fist)),
             ),
         ) shouldBe null
         driver.bothPass()
 
-        driver.findPermanent(opp, "Centaur Courser") shouldBe null
+        driver.findPermanent(opp, "Force of Nature") shouldBe null
         driver.findPermanent(opp, "Barbed Batterfist") shouldBe null
     }
 

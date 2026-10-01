@@ -1,11 +1,13 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Capricious Hellraiser (ONE #125) — {3}{R}{R}{R} 4/4 flying Phyrexian Dragon.
@@ -48,6 +50,40 @@ class CapriciousHellraiserScenarioTest : ScenarioTestBase() {
                     exileNames(game).sorted() shouldBe listOf("Forest", "Grizzly Bears", "Shock")
                 }
                 game.isOnBattlefield("Capricious Hellraiser") shouldBe true
+            }
+
+            test("with two eligible cards the player chooses which one to copy") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Capricious Hellraiser")
+                    .withLandsOnBattlefield(1, "Mountain", 6)
+                    .withCardInGraveyard(1, "Shock")
+                    .withCardInGraveyard(1, "Lightning Bolt")
+                    .withCardInGraveyard(1, "Forest")
+                    .withCardInLibrary(1, "Mountain")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Capricious Hellraiser").error shouldBe null
+                game.resolveStack()
+
+                val decision = game.getPendingDecision()
+                decision.shouldBeInstanceOf<SelectCardsDecision>()
+                decision.options.size shouldBe 2
+                val bolt = decision.options.single {
+                    game.state.getEntity(it)?.get<CardComponent>()?.name == "Lightning Bolt"
+                }
+                game.selectCards(listOf(bolt))
+                game.answerYesNo(true)
+                game.selectTargets(listOf(game.player2Id))
+                game.resolveStack()
+
+                withClue("The chosen Lightning Bolt is copied, not the Shock") {
+                    game.getLifeTotal(2) shouldBe 17
+                }
+                exileNames(game).sorted() shouldBe listOf("Forest", "Lightning Bolt", "Shock")
             }
 
             test("declining the cast leaves only the exiled originals") {

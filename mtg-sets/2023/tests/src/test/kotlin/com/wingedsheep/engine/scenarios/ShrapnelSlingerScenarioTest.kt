@@ -48,9 +48,9 @@ class ShrapnelSlingerScenarioTest : FunSpec({
         val slinger = castSlinger(driver, me)
 
         driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
-        driver.submitYesNo(me, true)
-        driver.submitTargetSelection(me, listOf(fodder))
-        driver.submitTargetSelection(me, listOf(oppArtifact))
+        driver.submitYesNo(me, true).error shouldBe null
+        driver.submitTargetSelection(me, listOf(fodder)).error shouldBe null
+        driver.submitTargetSelection(me, listOf(oppArtifact)).error shouldBe null
         driver.bothPass()
 
         driver.getGraveyard(me).contains(fodder) shouldBe true
@@ -68,9 +68,10 @@ class ShrapnelSlingerScenarioTest : FunSpec({
         val slinger = castSlinger(driver, me)
 
         driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
-        driver.submitYesNo(me, true)
-        driver.submitTargetSelection(me, listOf(slinger))
-        driver.submitTargetSelection(me, listOf(oppArtifact))
+        driver.submitYesNo(me, true).error shouldBe null
+        // The Slinger is the only creature, so the sacrifice choice auto-picks it.
+        driver.getGraveyard(me).contains(slinger) shouldBe true
+        driver.submitTargetSelection(me, listOf(oppArtifact)).error shouldBe null
         driver.bothPass()
 
         driver.getGraveyard(me).contains(slinger) shouldBe true
@@ -88,7 +89,7 @@ class ShrapnelSlingerScenarioTest : FunSpec({
         castSlinger(driver, me)
 
         driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
-        driver.submitYesNo(me, false)
+        driver.submitYesNo(me, false).error shouldBe null
 
         driver.state.getBattlefield(me).contains(fodder) shouldBe true
         driver.state.getBattlefield(opp).contains(oppArtifact) shouldBe true

@@ -38,5 +38,20 @@ class HazardousBlastScenarioTest : ScenarioTestBase() {
             game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
             game.declareBlockers(mapOf("Hill Giant" to listOf("Grizzly Bears"))).error shouldNotBe null
         }
+
+        test("control: without the spell the same block is legal") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(2, "Hill Giant")
+                .withCardOnBattlefield(1, "Grizzly Bears", summoningSickness = false)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+            game.declareAttackers(mapOf("Grizzly Bears" to 2)).error shouldBe null
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+            game.declareBlockers(mapOf("Hill Giant" to listOf("Grizzly Bears"))).error shouldBe null
+        }
     }
 }

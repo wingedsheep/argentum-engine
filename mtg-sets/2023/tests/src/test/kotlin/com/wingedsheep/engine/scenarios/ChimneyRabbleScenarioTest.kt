@@ -27,7 +27,10 @@ class ChimneyRabbleScenarioTest : ScenarioTestBase() {
             val rabble = game.findPermanent("Chimney Rabble")
             (rabble != null) shouldBe true
             game.state.projectedState.hasKeyword(rabble!!, Keyword.HASTE) shouldBe true
-            game.findPermanents("Phyrexian Goblin Token").size shouldBe 1
+            val token = game.findPermanents("Phyrexian Goblin Token").single()
+            game.state.projectedState.getPower(token) shouldBe 1
+            game.state.projectedState.getToughness(token) shouldBe 1
+            game.state.projectedState.getColors(token) shouldBe setOf("RED")
         }
     }
 }
