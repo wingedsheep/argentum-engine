@@ -718,6 +718,30 @@ Differential **6,836 compared / 55 divergent → 6,862 / 55**. The one new diver
 bug, fixed**: Escape Tunnel searched with `reveal = true`, showing the fetched land to every player
 though its Oracle text reveals nothing. Only its golden moved.
 
+## The graveyard exile-cost band
+
+The seventh loop band, keyed on the tail family `from your graveyard: …` (**68 lines over 33 whole
+cards** by the prefix probe, over the whole corpus). It delivered **17 hand-written cards read whole
+(7,240 → 7,257)** — the Renew cycle, Cobbled Lancer, Bramble Wurm, Seasoned Cryomancer and their kin.
+
+### One cost value, two printings, and the zone decides
+
+"{3}{U}, Exile this card from your graveyard: Draw a card." is `AbilityCost.ExileSelf` in every golden
+— the same value the battlefield's "Exile ~" builds — with `activateFromZone = GRAVEYARD` on the
+ability. The SDK keeps the zone on the ability and not on the cost, so the two printings cannot be two
+rows of `Costs`: one value with two surfaces is printing left to alternation order. CR 113.6m makes the
+zone a consequence of the cost ("an ability whose cost … specifies that it moves the object it's on
+out of a particular zone functions only in that zone"), so `Costs.fromGraveyard` reads the trailing
+exile and `Activated`'s cost slot carries the zone it names beside the cost, onto the field the
+recursion band already derives from a self-moving *effect*. Printing chooses the graveyard spelling
+only when the ability works from the graveyard **and** its last cost exiles it; `abilityFor`'s
+reconstruction checks the choice, so nothing else can borrow the spelling.
+
+### What the differential found
+
+Differential **6,862 compared / 56 divergent → 6,878 / 56**. No new divergence: all sixteen newly
+compared cards agree with their goldens.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
