@@ -235,7 +235,7 @@ internal class CastCostPayer(
      */
     private fun payCasualty(ledger: SpellCostLedger) {
         val permId = ledger.action.casualtyCreature ?: return
-        ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(listOf(permId), ledger.state.projectedState))
+        ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(listOf(permId), ledger.state.projectedState, ledger.state))
         if (ledger.state.getEntity(permId) != null) {
             ledger.sacrifice(permId)
         }

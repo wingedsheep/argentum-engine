@@ -334,10 +334,8 @@
                 "id": "Beacon of Destiny:1",
                 "cost": "CostTap",
                 "effect": {
-                    "type": "RedirectNextDamage",
-                    "protectedTargets": [
-                        "Controller"
-                    ],
+                    "type": "RedirectDamageFromChosenSource",
+                    "protectedTarget": "Controller",
                     "redirectTo": "Self"
                 }
             }

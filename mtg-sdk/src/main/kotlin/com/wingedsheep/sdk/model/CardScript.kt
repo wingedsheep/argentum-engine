@@ -386,6 +386,21 @@ data class CardScript(
     val mayStartOnBattlefield: Boolean = false,
 
     /**
+     * "You may reveal this card from your opening hand. If you do, …" (CR 103.6b). When non-null
+     * the card carries that opening-hand action: in the same post-mulligan walk as
+     * [mayStartOnBattlefield], its owner is asked whether to reveal it, and a "yes" reveals the card
+     * and runs this effect with the card as source and its owner as controller. The payoff is
+     * almost always a delayed trigger (CR 603.7a — created "as a result of a static ability that
+     * allows a player to take an action"), e.g. Devourer of Destiny's
+     * `Effects.CreateDelayedTrigger(step = UPKEEP, fireOnPlayer = PlayerRef(You)) { … }` for
+     * "at the beginning of your first upkeep" — the trigger is created before turn 1, so its next
+     * matching step *is* the first one.
+     *
+     * Wired via the `revealFromOpeningHand(effect)` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder].
+     */
+    val openingHandReveal: Effect? = null,
+
+    /**
      * "As you cast this spell" condition captures (CR 601.2i). Each is a named condition the engine
      * evaluates the moment this spell finishes being cast; the names whose condition was true are
      * frozen onto the spell on the stack and read back at resolution via

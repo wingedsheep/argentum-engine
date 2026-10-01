@@ -2909,6 +2909,18 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * "When you do" after "you may exert this creature as it attacks" (CR 701.43d) — the triggered
+     * ability linked to [com.wingedsheep.sdk.scripting.ExertAsItAttacks] (CR 607.2h). SELF-only:
+     * it fires for the ability's own source, and only when the exert was chosen as an optional
+     * attack cost, never when the permanent was exerted to pay an activated ability's cost.
+     */
+    @SerialName("ExertedAsItAttacksEvent")
+    @Serializable
+    data object ExertedAsItAttacksEvent : EventPattern {
+        override val description: String = "you exert this creature as it attacks"
+    }
+
+    /**
      * When a permanent is championed with this permanent (CR 702.72c) — "a permanent is
      * 'championed' by another permanent if the latter exiles the former as the direct result of a
      * champion ability." Mistbind Clique's "When a Faerie is championed with this creature, tap all

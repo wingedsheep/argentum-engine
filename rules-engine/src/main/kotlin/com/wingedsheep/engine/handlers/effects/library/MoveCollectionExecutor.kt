@@ -1079,7 +1079,7 @@ class MoveCollectionExecutor(
         // creature's power." Snapshots are taken from the pre-move projected state since the
         // permanents have already left the battlefield by now. Mirrors the cost-sacrifice path.
         val sacrificedSnapshots = if (moveType == MoveType.Sacrifice && cards.isNotEmpty()) {
-            captureEntitySnapshots(cards, state.projectedState)
+            captureEntitySnapshots(cards, state.projectedState, state)
         } else {
             emptyList()
         }

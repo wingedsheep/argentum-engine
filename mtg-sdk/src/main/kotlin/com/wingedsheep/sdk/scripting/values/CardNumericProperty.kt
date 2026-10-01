@@ -10,7 +10,12 @@ import kotlinx.serialization.Serializable
 enum class CardNumericProperty(val description: String) {
     MANA_VALUE("mana value"),
     POWER("power"),
-    TOUGHNESS("toughness")
+    TOUGHNESS("toughness"),
+    /**
+     * Counters of every kind on the permanent — "the number of counters on permanents you control"
+     * (Hydra Trainer). A single kind is [DynamicAmount.AggregateBattlefield.counterType] instead.
+     */
+    COUNTERS("counters")
 }
 
 /**

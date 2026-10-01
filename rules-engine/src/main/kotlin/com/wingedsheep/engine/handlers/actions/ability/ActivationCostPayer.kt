@@ -480,11 +480,11 @@ internal class ActivationCostPayer(
             .orEmpty()
         val sacrificeTargetIds = chosenSacrifices + forcedSacrifices + sacrificeAllTargets +
             (action.costPayment?.variableCostPermanents ?: emptyList())
-        val sacrificedSnapshots = captureEntitySnapshots(sacrificeTargetIds, state.projectedState)
+        val sacrificedSnapshots = captureEntitySnapshots(sacrificeTargetIds, state.projectedState, state)
 
         // Mirror sacrifice snapshots for tapped-as-cost permanents — they may leave the
         // battlefield in response while the ability is on the stack.
-        val tappedSnapshots = captureEntitySnapshots(firstTapSlice, state.projectedState)
+        val tappedSnapshots = captureEntitySnapshots(firstTapSlice, state.projectedState, state)
 
         val movesSource = effectiveCost.exilesOrSacrificesSelf()
 

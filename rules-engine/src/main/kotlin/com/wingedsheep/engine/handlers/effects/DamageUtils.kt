@@ -208,7 +208,8 @@ object DamageUtils {
          * lethal (CR 120.4a) is dealt to that creature's controller instead (Gandalf's Sanction:
          * "Excess damage is dealt to that creature's controller instead.").
          */
-        excessToController: Boolean = false
+        excessToController: Boolean = false,
+        damageSourceRef: com.wingedsheep.engine.state.ObjectRef? = sourceId?.let(state::objectRef)
     ): EffectResult {
         if (amount <= 0) return EffectResult.success(state)
 
@@ -223,15 +224,15 @@ object DamageUtils {
             if (state.getEntity(targetId)?.has<DamageUnpreventableThisTurnComponent>() == true) {
                 Triple(state, null, 0)
             } else {
-                checkDamageRedirection(state, targetId, amount, sourceId = sourceId)
+                checkDamageRedirection(state, targetId, amount, sourceId = sourceId, damageSourceRef = damageSourceRef)
             }
         if (redirectTargetId != null) {
-            val redirectResult = dealDamageToTarget(zones, redirectState, redirectTargetId, redirectAmount, sourceId, cantBePrevented, isCombatDamage, appliedRedirects)
+            val redirectResult = dealDamageToTarget(zones, redirectState, redirectTargetId, redirectAmount, sourceId, cantBePrevented, isCombatDamage, appliedRedirects, damageSourceRef = damageSourceRef)
             val remainingDamage = amount - redirectAmount
             return if (remainingDamage > 0) {
                 // Partial redirection — deal remaining damage to original target
                 val afterRedirect = redirectResult.state
-                val remainingResult = dealDamageToTarget(zones, afterRedirect, targetId, remainingDamage, sourceId, cantBePrevented, isCombatDamage, appliedRedirects)
+                val remainingResult = dealDamageToTarget(zones, afterRedirect, targetId, remainingDamage, sourceId, cantBePrevented, isCombatDamage, appliedRedirects, damageSourceRef = damageSourceRef)
                 EffectResult.success(remainingResult.state, redirectResult.events + remainingResult.events)
             } else {
                 redirectResult
@@ -247,7 +248,7 @@ object DamageUtils {
             if (staticRedirectTo != null && staticRedirectSource != null) {
                 return dealDamageToTarget(
                     zones, state, staticRedirectTo, amount, sourceId, cantBePrevented, isCombatDamage,
-                    appliedRedirects + staticRedirectSource
+                    appliedRedirects + staticRedirectSource, damageSourceRef = damageSourceRef
                 )
             }
         }
@@ -672,7 +673,7 @@ object DamageUtils {
             val excessResult = dealDamageToTarget(
                 zones, newState, targetControllerId, creatureExcessDamage, sourceId,
                 cantBePrevented = cantBePrevented, isCombatDamage = isCombatDamage,
-                appliedRedirects = appliedRedirects, excessToController = false
+                appliedRedirects = appliedRedirects, excessToController = false, damageSourceRef = damageSourceRef
             )
             newState = excessResult.state
             events.addAll(excessResult.events)
@@ -1664,13 +1665,18 @@ object DamageUtils {
         targetId: EntityId,
         damageAmount: Int,
         inBatch: Boolean = false,
-        sourceId: EntityId? = null
+        sourceId: EntityId? = null,
+        damageSourceRef: com.wingedsheep.engine.state.ObjectRef? = sourceId?.let(state::objectRef),
+        chosenSourcesOnly: Boolean = false
     ): Triple<GameState, EntityId?, Int> {
+        if (damageAmount <= 0) return Triple(state, null, 0)
         var workingState = state
         var shieldIndex = -1
         for ((index, effect) in state.floatingEffects.withIndex()) {
             val modification = effect.effect.modification
             if (modification !is SerializableModification.RedirectNextDamage) continue
+            if (chosenSourcesOnly && modification.chosenSource == null) continue
+            if (modification.chosenSource != null && modification.chosenSource.reference != damageSourceRef) continue
             if (!OptionalDamageRedirect.redirectShieldCovers(workingState, effect, modification, targetId)) continue
             if (!modification.optional) {
                 shieldIndex = index

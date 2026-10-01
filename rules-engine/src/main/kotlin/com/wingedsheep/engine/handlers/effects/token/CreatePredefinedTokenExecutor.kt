@@ -66,9 +66,20 @@ class CreatePredefinedTokenExecutor(
         // Evaluate dynamic count if set (e.g. Lobelia's "X = the exiled card's power"),
         // otherwise use the fixed count. Coerced to >= 0 — a negative count would be a
         // bug elsewhere, but clamping defends against odd dynamic-amount edge cases.
-        val tokenCount = effect.dynamicCount?.let { dyn ->
+        val baseTokenCount = effect.dynamicCount?.let { dyn ->
             amountEvaluator.evaluate(state, dyn, context).coerceAtLeast(0)
         } ?: effect.count
+
+        // Token-count replacements (Doubling Season, Mondrak, Glory Dominus) apply to predefined
+        // tokens exactly as to CreateTokenEffect tokens — before any substitution gets a look,
+        // the same order CreateTokenExecutor uses.
+        val tokenCount = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(
+            TokenCreationReplacementHelper.applyCountReplacements(
+                state, tokenControllerId, baseTokenCount,
+                predicateEvaluator = amountEvaluator.predicates
+            ),
+            "predefined tokens"
+        )
 
         // Check for token creation replacement effects (e.g., Mirrormind Crown)
         val replacementResult = TokenCreationReplacementHelper.checkReplacement(
@@ -94,7 +105,7 @@ class CreatePredefinedTokenExecutor(
             ?.let { substitute ->
                 return substituteExecutor.createSubstituteTokens(
                     state, substitute, context,
-                    com.wingedsheep.engine.core.GameLimits.cappedTokenCount(tokenCount, "predefined tokens"),
+                    tokenCount,
                     tokenControllerId
                 )
             }
@@ -120,7 +131,7 @@ class CreatePredefinedTokenExecutor(
         var newState = state
         val createdTokenIds = mutableListOf<EntityId>()
 
-        repeat(com.wingedsheep.engine.core.GameLimits.cappedTokenCount(tokenCount, "predefined tokens")) { indexInBatch ->
+        repeat(tokenCount) { indexInBatch ->
             val resolvedImageUri = resolvedImageUris[indexInBatch % resolvedImageUris.size]
             val (tokenId, stateWithId) = newState.newEntity()
             newState = stateWithId

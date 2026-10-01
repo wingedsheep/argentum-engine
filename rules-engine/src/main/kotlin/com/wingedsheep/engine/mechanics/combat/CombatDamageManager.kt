@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.attachmentIdsOf
 import com.wingedsheep.engine.state.components.stack.captureLastKnown
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.DamageUnpreventableThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.DealtCombatDamageToPlayersThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
@@ -299,9 +300,12 @@ internal class CombatDamageManager(
         val proposedAssignments = proposeDamageAssignments(state, projected, firstStrike)
 
         // Phase 2: Modify
-        var finalAssignments = proposedAssignments
+        // Chosen-source redirection changes the recipient before recipient-specific protection,
+        // prevention and amplification are evaluated. Final marking would bypass those effects.
+        val (redirectedState, redirectedAssignments) = redirectChosenSourceAssignments(state, proposedAssignments)
+        var finalAssignments = redirectedAssignments
         for (modifier in damageModifiers) {
-            finalAssignments = modifier.modify(state, projected, finalAssignments)
+            finalAssignments = modifier.modify(redirectedState, projected, finalAssignments)
         }
 
         // Pre-check: the "you may" of an optional redirection shield (Blood of the Martyr). Asked off
@@ -310,12 +314,13 @@ internal class CombatDamageManager(
         // computations over `state`, so re-running the step after each answer re-derives exactly the
         // same assignments; nothing has been applied yet that the re-run would repeat.
         val redirectChoice = OptionalDamageRedirect.check(
-            state,
+            redirectedState,
             finalAssignments.map { OptionalDamageRedirect.Instance(it.sourceId, it.targetId, it.amount) }
         )
         var newState = when (redirectChoice) {
             is OptionalDamageRedirect.Check.Ask -> {
-                return redirectChoice.state.suspendForDecision(
+                // Retargeting is re-derived on resume, so only commit the answers while paused.
+                return state.copy(optionalDamageRedirectChoices = redirectChoice.state.optionalDamageRedirectChoices).suspendForDecision(
                     question = redirectChoice.question,
                     answer = CombatOptionalRedirectContinuation(
                         choiceKey = redirectChoice.choiceKey,
@@ -928,6 +933,27 @@ internal class CombatDamageManager(
     // =========================================================================
     // Phase 3: Apply Damage Assignments
     // =========================================================================
+
+    private fun redirectChosenSourceAssignments(
+        state: GameState,
+        assignments: List<CombatDamageAssignment>
+    ): Pair<GameState, List<CombatDamageAssignment>> {
+        var workingState = state
+        val redirected = assignments.map { assignment ->
+            var current = assignment
+            while (workingState.getEntity(current.targetId)?.has<DamageUnpreventableThisTurnComponent>() != true) {
+                val (next, target, amount) = DamageUtils.checkDamageRedirection(
+                    workingState, current.targetId, current.amount, inBatch = true,
+                    sourceId = current.sourceId, chosenSourcesOnly = true
+                )
+                workingState = next
+                if (target == null) break
+                current = current.copy(targetId = target, amount = amount)
+            }
+            current
+        }
+        return workingState to redirected
+    }
 
     private fun applySingleAssignment(
         state: GameState,

@@ -1349,6 +1349,119 @@
     ]
 }
 
+// Devourer of Destiny
+{
+    "name": "Devourer of Destiny",
+    "manaCost": "{5}{C}{C}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "You may reveal this card from your opening hand. If you do, at the beginning of your first upkeep, look at the top four cards of your library. You may put one of those cards back on top of your library. Exile the rest.\nWhen you cast this spell, exile target permanent that's one or more colors.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Devourer of Destiny:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsPermanent",
+                                "IsColored"
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "openingHandReveal": {
+            "type": "CreateDelayedTrigger",
+            "step": "UPKEEP",
+            "effect": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "TopOfLibrary",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        },
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "gathered0",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "selected1",
+                        "storeRemainder": "remainder1",
+                        "prompt": "You may put one of those cards back on top of your library",
+                        "selectedLabel": "Put on top",
+                        "remainderLabel": "Exile"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "selected1",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Library",
+                            "placement": "Top"
+                        }
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "remainder1",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Exile"
+                        }
+                    }
+                ]
+            },
+            "fireOnPlayer": {
+                "type": "PlayerRef",
+                "player": "You"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Raph Lomotan",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/560debcd-feb4-4534-991e-a7aa1cca2409.jpg",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If you reveal more than one Devourer of Destiny from your opening hand, you'll put that many triggered abilities on the stack at the beginning of your first upkeep. As a result, you'll look at the top four cards of your library, put up to one back on top, and exile the rest once for each Devour of Destiny you revealed."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Devourer of Destiny's last triggered ability will resolve before Devourer of Destiny does. If Devourer of Destiny is countered or otherwise leaves the stack in response to that triggered ability, the triggered ability will still resolve as normal."
+            }
+        ]
+    }
+}
+
 // Dog Umbra
 {
     "name": "Dog Umbra",
@@ -2099,6 +2212,103 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Hydra Trainer
+{
+    "name": "Hydra Trainer",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "You may exert this creature as it attacks. When you do, target creature gets +X/+X until end of turn, where X is the number of counters on permanents you control. (An exerted creature won't untap during your next untap step.)\n{2}{G}: Adapt 2. (If this creature has no +1/+1 counters on it, put two +1/+1 counters on it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hydra Trainer:1",
+                "trigger": "ExertedAsItAttacksEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "aggregation": "SUM",
+                        "property": "COUNTERS"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "aggregation": "SUM",
+                        "property": "COUNTERS"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Hydra Trainer:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        {
+                                            "type": "HasCounter",
+                                            "counterType": "PLUS_ONE_PLUS_ONE"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": "Self"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d28ae5c-eec3-445a-81d6-42bf9789afce.jpg?1783911259"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

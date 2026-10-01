@@ -113,6 +113,14 @@ object OptionalDamageRedirect {
         mod: SerializableModification.RedirectNextDamage,
         targetId: EntityId
     ): Boolean {
+        if (mod.chosenSource != null) {
+            if (mod.protectedRef != null && !state.isCurrentObject(mod.protectedRef)) return false
+            if (mod.redirectToRef != null && !state.isCurrentObject(mod.redirectToRef)) return false
+            val projected = state.projectedState
+            fun validRecipient(id: EntityId): Boolean = id in state.turnOrder ||
+                (id in state.getBattlefield() && (projected.isCreature(id) || projected.isPlaneswalker(id) || projected.isBattle(id)))
+            if (!validRecipient(targetId) || !validRecipient(mod.redirectToId)) return false
+        }
         val recipient = state.getEntity(mod.redirectToId) ?: return false
         if (!recipient.has<PlayerComponent>() && mod.redirectToId !in state.getBattlefield()) return false
         return if (mod.creaturesOnly) {

@@ -387,6 +387,12 @@ class CardBuilder(private val name: String) {
     var mayStartOnBattlefield: Boolean = false
 
     /**
+     * Opening-hand reveal payoff ("You may reveal this card from your opening hand. If you do, …").
+     * Set via the [revealFromOpeningHand] DSL helper rather than by hand.
+     */
+    var openingHandReveal: Effect? = null
+
+    /**
      * Meld-result marker (CR 701.42). Set on the permanent two meld cards combine into —
      * Chittering Host, Brisela, Voice of Nightmares, Hanweir, the Writhing Township — never on the
      * meld parts, which are ordinary cards. A flagged card is defined for the corpus but kept out
@@ -965,6 +971,7 @@ class CardBuilder(private val name: String) {
             selfAlternativeCost = selfAlternativeCost,
             xManaRestriction = spellBuilder?.xManaRestriction ?: emptySet(),
             mayStartOnBattlefield = mayStartOnBattlefield,
+            openingHandReveal = openingHandReveal,
             castTimeCaptures = spellBuilder?.castTimeCaptures ?: emptyList()
         )
 

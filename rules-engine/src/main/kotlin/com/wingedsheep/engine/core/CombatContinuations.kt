@@ -205,6 +205,20 @@ data class OptionalRedirectEffectContinuation(
     val effectContext: com.wingedsheep.engine.handlers.EffectContext
 ) : AnswerContinuation
 
+/** Captured recipients and source choices survive the resolution-time source decision. */
+@Serializable
+data class RedirectDamageSourceContinuation(
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val protectedId: EntityId,
+    val protectedRef: com.wingedsheep.engine.state.ObjectRef?,
+    val redirectToId: EntityId,
+    val redirectToRef: com.wingedsheep.engine.state.ObjectRef?,
+    val duration: com.wingedsheep.sdk.scripting.Duration,
+    val choices: List<com.wingedsheep.engine.handlers.effects.combat.ChosenDamageSource>,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment()
+) : AnswerContinuation
+
 @Serializable
 data class BlockerPilesContinuation(
     val blockingPlayer: EntityId,

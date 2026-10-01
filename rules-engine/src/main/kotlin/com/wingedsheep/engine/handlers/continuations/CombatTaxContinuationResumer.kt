@@ -48,6 +48,9 @@ class CombatTaxContinuationResumer(
         resumer(com.wingedsheep.engine.core.AttackSacrificeSelectionContinuation::class) { state, continuation, response, _ ->
             resumeAttackSacrificeSelection(state, continuation, response)
         },
+        resumer(com.wingedsheep.engine.core.AttackExertSelectionContinuation::class) { state, continuation, response, _ ->
+            resumeAttackExertSelection(state, continuation, response)
+        },
     )
 
     /**
@@ -99,6 +102,28 @@ class CombatTaxContinuationResumer(
             projected = sacrificeResult.state.projectedState,
             taxEvents = sacrificeResult.events.toList(),
             bands = continuation.bands,
+        )
+    }
+
+    /** Commit the declaration with the attackers the player chose to exert (CR 701.43d). */
+    private fun resumeAttackExertSelection(
+        state: GameState,
+        continuation: com.wingedsheep.engine.core.AttackExertSelectionContinuation,
+        response: DecisionResponse,
+    ): ExecutionResult {
+        if (response !is com.wingedsheep.engine.core.CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for exert")
+        }
+        // The decision's own validation already rejects anything outside the offered attackers.
+        val chosen = response.selectedCards.toSet()
+        return services.combatManager.attackPhase.finishAttackDeclaration(
+            state = state,
+            attackingPlayer = continuation.attackingPlayer,
+            attackers = continuation.attackers,
+            projected = state.projectedState,
+            taxEvents = emptyList(),
+            bands = continuation.bands,
+            exerted = chosen,
         )
     }
 

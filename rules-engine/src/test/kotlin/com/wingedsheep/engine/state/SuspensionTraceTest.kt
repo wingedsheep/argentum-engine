@@ -103,9 +103,11 @@ class SuspensionTraceTest : ScenarioTestBase() {
     /**
      * Preserve the captured state and payload identities; normalize routing and omit control history,
      * which postdates this trace and is verified by ControlHistoryTest and scenario tests.
+     * Source-choice target references also postdate the trace; ChosenSourceDamageRedirectionTest
+     * independently verifies their capture, retention after departure and serialization.
      */
     private fun normalizeRouting(value: JsonElement, root: Boolean = false): JsonElement = when (value) {
-        is JsonObject -> JsonObject((if (root) value - "controlAtTurnStart" else value).mapValues { (key, child) ->
+        is JsonObject -> JsonObject(((if (root) value - "controlAtTurnStart" else value) - "targetObjectRefs" - "referencedObjects").mapValues { (key, child) ->
             when {
                 root && key == "nextRoutingId" -> JsonPrimitive(0)
                 key == "question" && "answer" in value -> {

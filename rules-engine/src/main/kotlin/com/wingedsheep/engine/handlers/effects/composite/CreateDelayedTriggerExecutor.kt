@@ -91,13 +91,14 @@ class CreateDelayedTriggerExecutor(
         // For step-based delayed triggers that restrict to a specific player's turn (e.g.
         // Nafs Asp's "at the beginning of their next draw step"): resolve the player target
         // now, while the trigger context still knows who it is, and bake the entity id in.
-        // resolvePlayerTarget covers PlayerRef shapes; the generic resolveTarget fallback
+        // The state-aware resolvePlayerTarget covers PlayerRef shapes, relational ones like
+        // OwnerOf included (The Eternal Wanderer); the generic resolveTarget fallback
         // covers pre-baked SpecificEntity/TriggeringEntity ids. Either way, the resolved id
         // must point at a player — anything else (e.g. SpecificEntity(creatureId)) would
         // never match state.activePlayerId and the trigger would silently never fire, so we
         // fail loudly at scheduling time instead.
         val fireOnPlayerId = effect.fireOnPlayer?.let { target ->
-            val resolved = context.resolvePlayerTarget(target) ?: context.resolveTarget(target)
+            val resolved = context.resolvePlayerTarget(target, state) ?: context.resolveTarget(target)
                 ?: return EffectResult.error(state, "CreateDelayedTrigger fireOnPlayer did not resolve: $target")
             if (resolved !in state.turnOrder) {
                 return EffectResult.error(

@@ -61,6 +61,25 @@ data class AttackSacrificeSelectionContinuation(
     val bands: List<Set<EntityId>> = emptyList(),
 ) : AnswerContinuation
 
+/**
+ * Resume after the attacking player chooses which declared attackers to exert as they attack — the
+ * optional attack cost of [com.wingedsheep.sdk.scripting.ExertAsItAttacks] (CR 701.43d, 508.1g).
+ * Every mandatory attack cost has already been paid; the resumer stamps the declaration with the
+ * chosen attackers exerted. Choosing none is a legal answer and attacks without exerting.
+ *
+ * @property attackingPlayer Player who declared the attack.
+ * @property attackers The full declared [attacker → defender] map, replayed on commit.
+ * @property exertable The attackers offered the choice.
+ * @property bands Validated band groupings, carried through to the commit.
+ */
+@Serializable
+data class AttackExertSelectionContinuation(
+    val attackingPlayer: EntityId,
+    val attackers: Map<EntityId, EntityId>,
+    val exertable: List<EntityId>,
+    val bands: List<Set<EntityId>> = emptyList(),
+) : AnswerContinuation
+
 /** One still-unpaid sacrifice cost in an [AttackSacrificeSelectionContinuation]'s queue. */
 @Serializable
 data class PendingAttackSacrifice(

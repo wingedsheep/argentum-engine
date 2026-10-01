@@ -205,7 +205,7 @@ class ForceSacrificeExecutor(
         // (Rise of the Witch-king's "if you sacrificed a creature this way…", Nasty End-style
         // "was legendary?" gates). Mirrors SacrificeExecutor's capture path.
         val snapshots = if (permanentIds.isNotEmpty()) {
-            captureEntitySnapshots(permanentIds, newState.projectedState)
+            captureEntitySnapshots(permanentIds, newState.projectedState, newState)
         } else {
             emptyList()
         }

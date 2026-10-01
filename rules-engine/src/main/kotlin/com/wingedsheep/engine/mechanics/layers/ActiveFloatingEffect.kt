@@ -65,7 +65,11 @@ data class ActiveFloatingEffect(
      * [Duration.EndOfYourNextTurn] (see its KDoc for the rationale); `null` for every other
      * duration, which has its own expiry hook.
      */
-    val expiresAfterTurn: Int? = null
+    val expiresAfterTurn: Int? = null,
+    /** Objects referred to by this effect, captured before later zone changes. Used for source choices. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val referencedObjects: List<com.wingedsheep.engine.state.ObjectRef> = emptyList()
 )
 
 /**
@@ -509,7 +513,10 @@ sealed interface SerializableModification {
          * unanswered instance is treated as **declined**, so a damage path that hasn't run the
          * choice pre-pass never redirects on the controller's behalf.
          */
-        val optional: Boolean = false
+        val optional: Boolean = false,
+        val chosenSource: com.wingedsheep.engine.handlers.effects.combat.ChosenDamageSource? = null,
+        val protectedRef: com.wingedsheep.engine.state.ObjectRef? = null,
+        val redirectToRef: com.wingedsheep.engine.state.ObjectRef? = null
     ) : SerializableModification
 
     /**

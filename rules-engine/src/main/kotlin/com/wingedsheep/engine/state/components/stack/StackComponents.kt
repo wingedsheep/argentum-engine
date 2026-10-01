@@ -471,7 +471,10 @@ data class AbilityOnStackComponent(
 data class TargetsComponent(
     val targets: List<ChosenTarget>,
     val targetRequirements: List<TargetRequirement> = emptyList(),
-    val targetEntryStamps: Map<EntityId, Long> = emptyMap()
+    val targetEntryStamps: Map<EntityId, Long> = emptyMap(),
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val targetObjectRefs: Map<EntityId, com.wingedsheep.engine.state.ObjectRef> = emptyMap()
 ) : Component {
 
     companion object {
@@ -501,7 +504,16 @@ data class TargetsComponent(
             targetRequirements = targetRequirements,
             targetEntryStamps = targets.filterIsInstance<ChosenTarget.Permanent>()
                 .filter { it.entityId in state.getBattlefield() }
-                .associate { it.entityId to entryStamp(state, it.entityId) }
+                .associate { it.entityId to entryStamp(state, it.entityId) },
+            targetObjectRefs = targets.mapNotNull { target ->
+                val id = when (target) {
+                    is ChosenTarget.Permanent -> target.entityId
+                    is ChosenTarget.Spell -> target.spellEntityId
+                    is ChosenTarget.Card -> target.cardId
+                    is ChosenTarget.Player -> null
+                }
+                id?.let { state.objectRef(it) }?.let { it.entityId to it }
+            }.toMap()
         )
 
         /**

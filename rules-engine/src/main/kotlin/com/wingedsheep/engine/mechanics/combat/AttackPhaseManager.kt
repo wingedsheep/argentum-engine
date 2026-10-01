@@ -28,6 +28,8 @@ import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AttackerCountLimit
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
+import com.wingedsheep.sdk.scripting.ExertAsItAttacks
+import com.wingedsheep.engine.state.components.battlefield.ExertedComponent
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.engine.mechanics.battle.Battles
@@ -201,7 +203,73 @@ internal class AttackPhaseManager(
         taxEvents: List<com.wingedsheep.engine.core.GameEvent>,
         bands: List<Set<EntityId>> = emptyList()
     ): ExecutionResult {
+        // Optional costs to attack (CR 508.1g): "you may exert this creature as it attacks"
+        // (CR 701.43d). Asked after any mandatory attack cost is settled — exert never interacts
+        // with mana or sacrifices, and a cancelled tax then never leaves a stray exert prompt. No
+        // player gets priority in between, so the order is unobservable.
+        val exertable = attackers.keys.filter { canExertAsItAttacks(state, projected, it) }
+        if (exertable.isNotEmpty()) {
+            return state.suspendForDecision(
+                question = { decisionId ->
+                    SelectCardsDecision(
+                        id = decisionId,
+                        playerId = attackingPlayer,
+                        prompt = "Choose attackers to exert (they won't untap during your next untap step)",
+                        context = DecisionContext(phase = DecisionPhase.COMBAT),
+                        options = exertable,
+                        minSelections = 0,
+                        maxSelections = exertable.size,
+                        useTargetingUI = true,
+                    )
+                },
+                answer = AttackExertSelectionContinuation(
+                    attackingPlayer = attackingPlayer,
+                    attackers = attackers,
+                    exertable = exertable,
+                    bands = bands,
+                ),
+                events = taxEvents,
+            )
+        }
+        return finishAttackDeclaration(state, attackingPlayer, attackers, projected, taxEvents, bands, exerted = emptySet())
+    }
+
+    /**
+     * Whether [attackerId] carries [ExertAsItAttacks]. Read off the card definition like
+     * [AttackSacrificeCosts.requirementFor]; a face-down creature (CR 708.2) or one that has lost
+     * all abilities has no such option.
+     */
+    private fun canExertAsItAttacks(state: GameState, projected: ProjectedState, attackerId: EntityId): Boolean {
+        val container = state.getEntity(attackerId) ?: return false
+        if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(attackerId)) return false
+        val cardDef = container.get<CardComponent>()?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: return false
+        return cardDef.staticAbilities.any { it is ExertAsItAttacks }
+    }
+
+    /**
+     * Stamp the declaration once every attack cost, mandatory and optional, has been chosen and
+     * paid. [exerted] are the attackers the player chose to exert as they attack (CR 701.43d);
+     * each is exerted even if already exerted (CR 701.43b) and emits an [ExertedEvent] with
+     * `asItAttacks`, which fires its linked "when you do" trigger (CR 607.2h).
+     */
+    internal fun finishAttackDeclaration(
+        state: GameState,
+        attackingPlayer: EntityId,
+        attackers: Map<EntityId, EntityId>,
+        projected: ProjectedState,
+        taxEvents: List<com.wingedsheep.engine.core.GameEvent>,
+        bands: List<Set<EntityId>>,
+        exerted: Set<EntityId>,
+    ): ExecutionResult {
         var newState = state
+        val exertEvents = exerted.map { attackerId ->
+            newState = newState.updateEntity(attackerId) { it.with(ExertedComponent) }
+            ExertedEvent(
+                attackerId,
+                state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature",
+                asItAttacks = true,
+            )
+        }
         // Assign each band a shared id, then map every banded attacker to it (CR 702.22).
         val bandIdByAttacker: Map<EntityId, String> = buildMap {
             for (band in bands) {
@@ -292,7 +360,7 @@ internal class AttackPhaseManager(
         val attackerNames = attackers.keys.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" }
         return ExecutionResult.success(
             newState,
-            taxEvents + tapEvents + listOf(
+            taxEvents + exertEvents + tapEvents + listOf(
                 AttackersDeclaredEvent(
                     attackers.keys.toList(),
                     attackerNames,

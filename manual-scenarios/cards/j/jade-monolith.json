@@ -1,0 +1,63 @@
+{
+  "player1Name": "Jade Monolith",
+  "player2Name": "Damage sources",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Jade Monolith"
+      },
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Lightning Bolt",
+      "Lightning Bolt"
+    ],
+    "battlefield": [
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Hill Giant",
+        "summoningSickness": false
+      }
+    ],
+    "library": [
+      "Mountain",
+      "Mountain"
+    ]
+  },
+  "activePlayer": 2,
+  "phase": "PRECOMBAT_MAIN",
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [
+    "DECLARE_BLOCKERS"
+  ],
+  "player2StopAtSteps": [
+    "DECLARE_ATTACKERS"
+  ],
+  "player1OpponentStopAtSteps": [
+    "PRECOMBAT_MAIN",
+    "DECLARE_BLOCKERS"
+  ],
+  "player2OpponentStopAtSteps": []
+}

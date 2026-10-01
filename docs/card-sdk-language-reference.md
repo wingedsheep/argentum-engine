@@ -183,6 +183,15 @@ section; do not let SDK additions land without a corresponding doc update.
   bottoming resolve, the engine walks each player in turn order from the active player and presents a yes/no
   decision per such card in their opening hand; a "yes" routes the card to the battlefield through the standard
   zone-change pipeline before the first turn begins, a "no" leaves it in hand.
+- `revealFromOpeningHand(effect)` — "You may reveal this card from your opening hand. If you do, …" (CR 103.6b).
+  Sets `CardScript.openingHandReveal`. Offered in the same post-mulligan walk as `mayBeginGameOnBattlefield()`
+  (starting player first, then each other player in turn order; one yes/no per card). A "yes" emits a
+  `CardsRevealedEvent`, leaves the card in hand, and runs `effect` with the card as source and its owner as
+  controller. The payoff is normally a delayed trigger (CR 603.7a lets a player action create one): Devourer of
+  Destiny's "at the beginning of your first upkeep, …" is
+  `Effects.CreateDelayedTrigger(step = Step.UPKEEP, fireOnPlayer = EffectTarget.PlayerRef(Player.You), effect = …)`
+  — created before turn 1, so the controller's next upkeep is their first. Omit `fireOnPlayer` for "the first
+  upkeep" (whoever's turn it is). Each revealed copy creates its own trigger.
 
 ### Battles (CR 310)
 
@@ -440,8 +449,9 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   actually prevented an untap (2024-06-07 ruling), unlike a stun counter which is only consumed
   when it does. Exposed client-side as `ClientCard.isExerted`. Distinct from the "you may exert
   [this] as it attacks" attack-cost template (701.43d) — that's a separate optional-cost-to-attack
-  shape, not an ability cost; only the cost-component shape is implemented so far. First user: Arena
-  of Glory (MH3) — `Costs.Composite(Costs.Mana("{R}"), Costs.Tap, Costs.Exert)`.
+  shape, not an ability cost. First user: Arena
+  of Glory (MH3) — `Costs.Composite(Costs.Mana("{R}"), Costs.Tap, Costs.Exert)`. The attack-cost
+  shape is `ExertAsItAttacks` (§ combat statics).
 - `Costs.Mana("{2}{U}")` — pay the given mana cost (string or `ManaCost`).
 - `Costs.PayLife(amount)` — pay N life.
 - `Costs.PayXLife` — pay X life, where X is the value chosen for the ability's `{X}` mana cost
@@ -1220,6 +1230,7 @@ serialized shape; the facade for each is:
 | `PlayAdditionalLandsEffect` | `Effects.PlayAdditionalLands` |
 | `RedirectCombatDamageToControllerEffect` | `Effects.RedirectCombatDamageToController` |
 | `RedirectNextDamageEffect` | `Effects.RedirectNextDamage` |
+| `RedirectDamageFromChosenSourceEffect` | `Effects.RedirectDamageFromChosenSource` |
 | `ReflectCombatDamageEffect` | `Effects.ReflectCombatDamage` |
 | `ReflexiveTriggerEffect` | `Effects.ReflexiveTrigger` |
 | `RegenerateEffect` | `Effects.Regenerate` |
@@ -2961,13 +2972,25 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   - **Life.** `gainLifeFromColors` — gain that much life whenever damage from a source of those colours is prevented (Samite Ministration). `gainLifeFromPrevented` — "you gain life equal to the damage prevented this way", honoured by the source-side `Matching` + `FromTarget` shield (Chant of Vitu-Ghazi) and by the amount shield on one target (Candles' Glow = `PreventDamage(target = t, amount = Fixed(3), gainLifeFromPrevented = true)`), one gain per damage event — a combat damage step is one event, so everything a controller's shields prevent in it is one gain. The life goes to the shield's controller, not the protected recipient.
   - **`stillDealt`** (maps to `preventDamage = false`) — the damage is dealt in full but the shield is still spent and `onPrevented` still fires with the captured amount: Eye for an Eye's "instead that source deals that much damage to you and ~ deals that much to that source's controller".
   - **Prevent-and-react (`onPrevented`)** — instead of a bespoke reaction type, the chosen-source shield runs **any composed effect** when it fires, as a real triggered ability on the stack ("When damage is prevented this way, …", CR-faithful — opponents get priority and can respond). Mechanically: on resolution the shield is created **and** a linked event-based delayed triggered ability (`CreateDelayedTriggerEffect`-style) whose `effect` is `onPrevented`; when the shield prevents an instance it emits an internal `DamagePreventedEvent` that fires only that delayed trigger (matched by id). Inside the trigger the prevented amount is `DynamicAmounts.preventedDamage()` ("that much"/"that many") and the prevented source's controller is `EffectTarget.ControllerOfTriggeringEntity` ("that source's controller") — the same pair Tephraderm uses. So Deflecting Palm's `onPrevented` = `DealDamage(ControllerOfTriggeringEntity, preventedDamage())`; New Way Forward's = `Composite(DealDamage(ControllerOfTriggeringEntity, preventedDamage()), DrawCards(preventedDamage()))`. Because the payoff is a normal stack ability, it may be interactive (targets, replacements) like any other. The same reaction hangs off a targeted source with `direction = FromTarget`: Awe Strike = `PreventDamage(target = creature, direction = FromTarget, nextInstanceOnly = true, onPrevented = GainLife(preventedDamage()))`. That source shield honours `combatOnly`, `duration`, and **`toPlayersOnly`** — only damage the source would deal to a *player* is prevented; damage to a creature, planeswalker or battle (or, with `combatOnly`, noncombat damage) is dealt and leaves the shield up. Ria Ivor, Bane of Bladehold = `PreventDamage(target = creature, direction = FromTarget, combatOnly = true, toPlayersOnly = true, nextInstanceOnly = true, onPrevented = CreatePhyrexianMite(preventedDamage()), duration = EndOfCombat)` ("the next time target creature would deal combat damage to one or more players this combat"). `toPlayersOnly` on any other shape is rejected at resolution.
+- `Effects.RedirectDamageFromChosenSource(protectedTarget, redirectTo, duration = EndOfTurn)` — choose a
+  damage source during resolution, then redirect its next damage instance to the captured recipient.
+  Both recipients may be players, creatures, planeswalkers or battles. Source choice is not targeting:
+  shroud/protection do not restrict it, and the source need not be able to deal damage. The existing
+  battlefield/multi-zone selector handles current objects; distinct labelled choices handle departed
+  objects referred to by pending abilities, replacement shields or delayed triggers. The shield retains
+  rules-object identities, survives its creating source leaving, expires with its duration, and is used
+  only by positive damage from the chosen source to the protected object. A chosen permanent spell also
+  covers the permanent it normally becomes; later blink/recast visits are different sources. Departed
+  ability sources carry their original identity through noncombat damage. Redirection retains damage
+  source, combat status and unpreventability; an absent/invalid recipient leaves the shield unused.
+  Jade Monolith and Beacon of Destiny.
 - `RedirectNextDamageEffect(protectedTargets, redirectTo, amount, scope)` — redirection shield (CR 614.9):
   while active, damage that would be dealt to any of `protectedTargets` this turn is dealt to `redirectTo`
   instead. Installed as a `Duration.EndOfTurn` floating effect and checked during damage resolution.
   `amount` caps the redirected damage (`null` = redirect all). **`scope` decides when an unlimited shield is
   used up** (a capacity shield, `amount != null`, is always used up once its capacity hits 0 — CR 615.7):
-  - `RedirectScope.NEXT_INSTANCE` (default) — one source's instance, then gone. "The next time a source of
-    your choice would deal damage to you…" (Beacon of Destiny).
+  - `RedirectScope.NEXT_INSTANCE` (default) — one source's damage instance, then gone.
+    Source selection uses `RedirectDamageFromChosenSourceEffect` instead.
   - `RedirectScope.NEXT_BATCH` — every instance dealt in the next *simultaneous moment*, then gone. Because
     all combat damage is dealt simultaneously (CR 510.2), this redirects a whole combat damage step — every
     attacker hitting the protected player/creature — not just the first. "The next time damage would be dealt
@@ -7619,6 +7642,10 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   live count, because several removals can land in one batch (two attackers damaging the same battle)
   and the live count would make every one of them look like the last. Backs the intrinsic Siege
   defeat ability (`Sieges.defeatAbility`, CR 310.12b).
+- `EventPattern.ExertedAsItAttacksEvent` (facade: `Triggers.self.exertedAsItAttacks()`, SELF only) — the
+  "When you do" after "you may exert this creature as it attacks" (CR 701.43d), linked to the
+  `ExertAsItAttacks` static (CR 607.2h). Matches an `ExertedEvent` for the source with `asItAttacks`
+  set, so exerting it to pay `Costs.Exert` doesn't fire it. Hydra Trainer.
 - `EventPattern.TrainedEvent` (facade: `Triggers.self.trains()`) — "when this creature trains"
   (CR 702.149c: "a resolving training ability puts one or more
   +1/+1 counters on this creature"). A `data object` (no parameters); the trainer identity is selected by the ability's
@@ -8569,6 +8596,15 @@ staticAbility {
   *creature* — two Leviathans owe two Islands each, asked one at a time so each choice is made
   knowing the last. The sacrifice runs through `ForceSacrificeExecutor.sacrificePermanents`, so it
   emits `PermanentsSacrificedEvent` and fires dies triggers rather than being a silent zone move.
+- `ExertAsItAttacks` — "You may exert this creature as it attacks" (CR 701.43d): an **optional**
+  cost to attack (CR 508.1g). After any mandatory attack cost (tax, sacrifice) is settled,
+  `AttackPhaseManager.commitAttackDeclaration` pauses with one `SelectCardsDecision` (battlefield
+  selection, min 0) over the declared attackers carrying it; the chosen ones get `ExertedComponent`
+  (CR 701.43a — they won't untap during the controller's next untap step) and an `ExertedEvent` with
+  `asItAttacks = true`. Choosing none still attacks. An already-exerted creature is still offered
+  (CR 701.43b). Face-down creatures and ones that lost all abilities aren't. Pair the "When you do, …"
+  paragraph with `Triggers.self.exertedAsItAttacks()` — the trigger linked to it (CR 607.2h), which an
+  exert paid through `Costs.Exert` never fires. Hydra Trainer (MH3).
 - `CantAttackUnlessCoAttacker(coAttackerFilter, filter = source)` — "This creature can't attack
   unless [a creature matching coAttackerFilter] also attacks" (Scarred Puma). Unlike
   `CantAttackUnless` (which is defender-relative), this depends on the whole proposed attacker
@@ -12563,7 +12599,8 @@ forbids `DynamicAmount.X` in card definitions.
   non-pipeline effect stored), `count(player, zone, filter)`, `battlefield(player, filter,
   excludeSelf).count() / sumPower() / sumToughness() / sumManaValue() / maxPower() / maxToughness() /
   maxManaValue() / minToughness() / distinctValues(p) / distinctNames() / distinctColors() /
-  distinctTypes() / totalCounters(type)`, `zone(player, zone, filter).count() / distinctTypes() / …`,
+  distinctTypes() / totalCounters(type) / totalCounters()` (no type = every kind of counter,
+  `CardNumericProperty.COUNTERS` — Hydra Trainer's "the number of counters on permanents you control"), `zone(player, zone, filter).count() / distinctTypes() / …`,
   `lifeTotal(player)`, `yourLifeTotal()`, `startingLifeTotal(player)`, `playerCount(scope)`,
   `countPlayersWith(scope, condition)`, `greatestAmongPlayers(inner, players)`, `totalManaSpent()`,
   `manaSpentOnX(color)`, `manaSpentFromSubtype(subtype)`, `unspentMana(player)`,

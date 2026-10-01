@@ -2682,6 +2682,51 @@
     ]
 }
 
+// Jade Monolith
+{
+    "name": "Jade Monolith",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}: The next time a source of your choice would deal damage to target creature this turn, that source deals that damage to you instead.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jade Monolith:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "RedirectDamageFromChosenSource",
+                    "protectedTarget": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "redirectTo": "Controller"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "252",
+        "rarity": "RARE",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a77e0f1-449d-4a7d-9fa0-ba7598f7a73a.jpg?1783948665"
+    }
+}
+
 // Jayemdae Tome
 {
     "name": "Jayemdae Tome",

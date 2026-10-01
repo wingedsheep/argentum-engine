@@ -556,7 +556,7 @@ class ActivateAbilityHandler(
             // mana as before. Snapshot the creature before it's tapped (Rule 113.7a) so
             // DynamicAmount.StationCharge reads its power off this instance's own snapshot.
             val repeatTapSlice = if (payment.isTapBatch) listOf(action.costPayment!!.tappedPermanents[i - 1]) else emptyList()
-            val repeatTapSnapshots = captureEntitySnapshots(repeatTapSlice, currentState.projectedState)
+            val repeatTapSnapshots = captureEntitySnapshots(repeatTapSlice, currentState.projectedState, currentState)
 
             // Pay the cost
             val repeatCostResult = costHandler.payAbilityCost(
