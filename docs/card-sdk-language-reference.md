@@ -10503,6 +10503,12 @@ composite abilities).
   bushido (`Effects.GrantBushido(n, target, duration)`, Sensei Golden-Tail) floats `BUSHIDO_<n>` and adds
   one more trigger for its N; repeated grants sum into one `BUSHIDO_<total>` string, so they trigger once
   for the total rather than once each.
+- `Keyword.EXALTED` — **engine-live.** Declare it and nothing else: `keywords(Keyword.EXALTED)`. The engine
+  supplies the CR 702.83a trigger from [`Exalted`](../mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/Exalted.kt)
+  — `Triggers.a(Creature.youControl()).attacks(setOf(AttackPredicate.Alone))`, effect
+  `ModifyStats(1, 1, TriggeringEntity)` — gated on the projected keyword (lost with all abilities). One trigger
+  per instance: the printed keyword plus one per exalted counter (see Counters); a static grant of the bare
+  keyword counts as one instance, because projection can't count repeated grants.
 - `Rampage(n)` — +N/+N for each blocker past the first. Display-only; wire the behavior with the
   `card { rampage(n) }` builder helper, which adds this keyword ability plus a "becomes blocked"
   triggered ability granting `+n/+n × (blockers − 1)` until end of turn (mirrors `prowess()`).
@@ -14743,6 +14749,11 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
   (`reach`: Sagu Pummeler's renew payoff puts a reach counter on a creature. `vigilance`: Aragorn, Company Leader.
   `double strike`: Mai, Jaded Edge's exhaust ability. `haste` / `menace`: Super-Adaptoid, which copies keywords
   off another creature as counters.)
+- **Exalted counters** (`CounterType.EXALTED`, CR 122.1b) — a keyword counter in `KEYWORD_COUNTER_MAP` like the
+  above, but exalted is a *triggered* keyword, so **each counter is its own instance** (Emissary of Soulfire's
+  ruling) and `TriggerAbilityResolver` derives one exalted trigger per counter on top of a printed one; the
+  counter's instances survive "loses all abilities". Emissary of Soulfire:
+  `Costs.PayPlayerCounters(ENERGY, 2)` → `AddCounters(CounterType.EXALTED, 1, creature)`.
 - **Ability counters beyond single keywords** — `decayed` (`CounterType.DECAYED`, CR 702.147a, Tarkir: Dragonstorm) grants
   the whole **Decayed** ability (a "can't block" static **and** an attack-triggered end-of-combat sacrifice) to any
   creature that bears one. `StateProjector` projects the `DECAYED` keyword + `cantBlock = true` (initial pass and the

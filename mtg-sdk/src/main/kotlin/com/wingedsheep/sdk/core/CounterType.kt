@@ -138,6 +138,14 @@ value class CounterType(val name: String) {
          * gains menace for as long as it has one. Wired through `StateProjector.KEYWORD_COUNTER_MAP`.
          */
         val MENACE = CounterType("MENACE")
+
+        /**
+         * Exalted counter (MH3 — Emissary of Soulfire). Keyword counter (CR 122.1b / 613.1f): the
+         * permanent has exalted for as long as it has one, and **each** exalted counter is a separate
+         * instance of exalted that triggers on its own. Wired through `StateProjector.KEYWORD_COUNTER_MAP`
+         * for the keyword and `TriggerAbilityResolver` for the per-counter triggers.
+         */
+        val EXALTED = CounterType("EXALTED")
         val STASH = CounterType("STASH")
 
         /**
@@ -674,6 +682,7 @@ value class CounterType(val name: String) {
             REACH,
             HASTE,
             MENACE,
+            EXALTED,
             STASH,
             CROAK,
             BLIGHT,

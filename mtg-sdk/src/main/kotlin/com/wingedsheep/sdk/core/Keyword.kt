@@ -40,6 +40,12 @@ enum class Keyword(val displayName: String) {
     FLANKING("Flanking"),
 
     /**
+     * Exalted (CR 702.83) — engine-live: the "attacks alone" pump is derived from the projected
+     * keyword, one trigger per instance. See [com.wingedsheep.sdk.scripting.Exalted].
+     */
+    EXALTED("Exalted"),
+
+    /**
      * Banding (CR 702.22). As they declare attackers, a player may group one or more
      * attacking creatures with banding plus up to one without banding into a "band"
      * (CR 702.22c). A band attacks the same defender and is blocked as a group.

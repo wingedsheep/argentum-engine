@@ -140,6 +140,10 @@ class TriggerAbilityResolver(
         // `BUSHIDO_<n>` (Sensei Golden-Tail) adds one more trigger for its N.
         val bushidoAbilities = getBushidoTriggeredAbilities(entityId, cardDefinitionId, state)
 
+        // Exalted (CR 702.83) — one "attacks alone" pump per instance: the printed keyword plus
+        // one per exalted counter (CR 122.1b).
+        val exaltedAbilities = getExaltedTriggeredAbilities(entityId, cardDefinitionId, state)
+
         val allGranted = buildList {
             addAll(grantedAbilities)
             addAll(staticGrantedAbilities)
@@ -155,6 +159,7 @@ class TriggerAbilityResolver(
             addAll(fabricateAbilities)
             addAll(renownAbilities)
             addAll(bushidoAbilities)
+            addAll(exaltedAbilities)
         }
         val copyAbilities = if (state.projectedState.hasLostAllAbilities(entityId)) emptyList()
             else state.getEntity(entityId)?.get<CardComponent>()?.copyTriggeredAbilities.orEmpty()
@@ -370,6 +375,10 @@ class TriggerAbilityResolver(
         // `BUSHIDO_<n>` (Sensei Golden-Tail) adds one more trigger for its N.
         val bushidoAbilities = getBushidoTriggeredAbilities(entityId, cardDefinitionId, state)
 
+        // Exalted (CR 702.83) — one "attacks alone" pump per instance: the printed keyword plus
+        // one per exalted counter (CR 122.1b).
+        val exaltedAbilities = getExaltedTriggeredAbilities(entityId, cardDefinitionId, state)
+
         val allGranted = buildList {
             addAll(grantedAbilities)
             addAll(staticGrantedAbilities)
@@ -385,6 +394,7 @@ class TriggerAbilityResolver(
             addAll(fabricateAbilities)
             addAll(renownAbilities)
             addAll(bushidoAbilities)
+            addAll(exaltedAbilities)
         }
         val copyAbilities = if (state.projectedState.hasLostAllAbilities(entityId)) emptyList()
             else state.getEntity(entityId)?.get<CardComponent>()?.copyTriggeredAbilities.orEmpty()
@@ -930,6 +940,29 @@ class TriggerAbilityResolver(
         val grantedN = keywords.sumOf { if (it.startsWith(prefix)) it.removePrefix(prefix).toIntOrNull() ?: 0 else 0 }
         return if (grantedN > 0) printed + com.wingedsheep.sdk.scripting.Bushido.trigger(grantedN, granted = true)
         else printed
+    }
+
+    /**
+     * Exalted (CR 702.83) as the keyword-derived triggered ability it is — see
+     * [com.wingedsheep.sdk.scripting.Exalted]. Gated on the projected keyword; the instance count
+     * is the printed keyword (unless all abilities are lost) plus one per exalted counter, and at
+     * least one when the keyword is present only through a static grant.
+     */
+    private fun getExaltedTriggeredAbilities(
+        entityId: EntityId,
+        cardDefinitionId: String,
+        state: GameState,
+    ): List<TriggeredAbility> {
+        val projected = state.projectedState
+        if (!projected.hasKeyword(entityId, com.wingedsheep.sdk.core.Keyword.EXALTED)) return emptyList()
+        val counters = state.getEntity(entityId)
+            ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+            ?.getCount(com.wingedsheep.sdk.core.CounterType.EXALTED) ?: 0
+        val printed = if (!projected.hasLostAllAbilities(entityId) &&
+            cardRegistry.getCard(cardDefinitionId)?.keywords?.contains(com.wingedsheep.sdk.core.Keyword.EXALTED) == true
+        ) 1 else 0
+        val instances = maxOf(printed + counters, 1)
+        return List(instances) { com.wingedsheep.sdk.scripting.Exalted.trigger(it) }
     }
 
     private fun createWardTriggeredAbility(cost: WardCost, source: String): TriggeredAbility {
