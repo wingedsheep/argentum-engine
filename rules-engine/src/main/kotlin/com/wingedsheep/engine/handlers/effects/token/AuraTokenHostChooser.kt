@@ -11,12 +11,16 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.copiableCardComponent
+import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
+import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 
 /**
- * Raises the "what does this Aura token enchant?" choice (CR 303.4h).
+ * Raises the "what does this Aura token enchant?" choice (CR 303.4f).
  *
  * A token copy of an Aura is put onto the battlefield without being cast, so it never targets.
  * Instead its controller chooses what it enchants as it enters, restricted to objects the copied
@@ -49,7 +53,7 @@ internal object AuraTokenHostChooser {
     ): EffectResult {
         if (remaining <= 0) return EffectResult.success(state)
 
-        val hosts = legalHosts(state, auraDefinitionId, controllerId, cardRegistry, targetFinder = targetFinder)
+        val hosts = legalHosts(state, effect, context, auraDefinitionId, controllerId, cardRegistry, targetFinder = targetFinder)
         if (hosts.isEmpty()) {
             // Nothing legal to enchant — the Aura token can't enter (CR 303.4g), and neither can
             // any of the ones still owed, since they would all copy the same Aura.
@@ -95,6 +99,8 @@ internal object AuraTokenHostChooser {
      */
     private fun legalHosts(
         state: GameState,
+        effect: CreateTokenCopyOfTargetEffect,
+        context: EffectContext,
         auraDefinitionId: String,
         controllerId: EntityId,
         cardRegistry: CardRegistry?,
@@ -102,11 +108,17 @@ internal object AuraTokenHostChooser {
     ): List<EntityId> {
         val auraTarget = cardRegistry?.getCard(auraDefinitionId)?.script?.auraTarget
             ?: return emptyList()
+        val originalId = context.resolveTarget(effect.target, state) ?: return emptyList()
+        val original = state.getEntity(originalId)?.copiableCardComponent() ?: return emptyList()
+        val prospective = CopyExceptionApplier.apply(original, effect.copyExceptions).copy(ownerId = controllerId)
+        // A copy is a different object: it never inherits the original Aura's source exception.
+        val (previewId, allocated) = state.newEntity()
+        val preview = allocated.withEntity(previewId, ComponentContainer.of(prospective, ControllerComponent(controllerId)))
         return targetFinder.findLegalTargets(
-            state = state,
+            state = preview,
             requirement = auraTarget,
             controllerId = controllerId,
-            sourceId = null,
+            sourceId = previewId,
             ignoreTargetingRestrictions = true,
         )
     }

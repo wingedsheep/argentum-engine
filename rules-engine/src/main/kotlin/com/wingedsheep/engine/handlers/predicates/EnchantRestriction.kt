@@ -60,7 +60,7 @@ object EnchantRestriction {
         hostId: EntityId,
         controllerId: EntityId
     ): Boolean {
-        if (projected.hasKeyword(hostId, com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_ENCHANTED)) return false
+        if (!hostAllowsAura(state, projected, predicateEvaluator, auraId, hostId)) return false
         val requirement = if (state.getEntity(auraId)?.has<com.wingedsheep.engine.mechanics.BestowedComponent>() == true) {
             if (!projected.hasKeyword(auraId, com.wingedsheep.engine.mechanics.BestowCasts.ENCHANT_CREATURE)) return false
             com.wingedsheep.engine.mechanics.BestowCasts.enchantCreature
@@ -69,6 +69,39 @@ object EnchantRestriction {
             return false
         }
         return !hostProtectedFromAttachment(state, projected, cardRegistry, auraId, auraCard, hostId)
+    }
+
+    /** Host-side prohibitions, shared by targeting, entry, reattachment, and state-based actions. */
+    fun hostAllowsAura(
+        state: GameState,
+        projected: ProjectedState,
+        predicateEvaluator: PredicateEvaluator,
+        auraId: EntityId,
+        hostId: EntityId
+    ): Boolean {
+        if (projected.hasKeyword(hostId, com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_ENCHANTED)) return false
+        return sourceRestrictionsAllowAura(state, projected, predicateEvaluator, auraId, hostId)
+    }
+
+    /** Source-aware restrictions apply to existing attachments as well as new ones. */
+    fun sourceRestrictionsAllowAura(
+        state: GameState,
+        projected: ProjectedState,
+        predicateEvaluator: PredicateEvaluator,
+        auraId: EntityId,
+        hostId: EntityId
+    ): Boolean {
+        return projected.getProjectedValues(hostId)?.enchantmentRestrictions.orEmpty().none { restriction ->
+            if (!restriction.survivesSourceAbilityRemoval && projected.hasLostAllAbilities(restriction.sourceId)) false
+            else if (restriction.exceptSource && restriction.sourceId == auraId) false
+            else {
+                val controller = projected.getController(restriction.sourceId)
+                    ?: state.getEntity(restriction.sourceId)?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
+                    ?: return@none false
+                predicateEvaluator.matches(state, projected, auraId, restriction.auras,
+                    PredicateContext(controllerId = controller, sourceId = restriction.sourceId))
+            }
+        }
     }
 
     /**

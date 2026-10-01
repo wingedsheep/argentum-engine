@@ -752,6 +752,11 @@ sealed interface Modification {
         override val sublayer get() = Sublayer.MODIFICATIONS
     }
 
+    @Serializable
+    data class PreventEnchantment(val auras: GameObjectFilter, val exceptSource: Boolean) : Modification {
+        override val layer get() = Layer.ABILITY
+    }
+
     // --- No-op ---
 
     /** No-op modification for effects that don't modify projected state (e.g., combat restrictions) */
@@ -772,6 +777,7 @@ internal data class MutableProjectedValues(
     var baseToughness: Int? = null,
     var name: String? = null,
     val keywords: MutableSet<String> = mutableSetOf(),
+    val enchantmentRestrictions: MutableList<ActiveEnchantmentRestriction> = mutableListOf(),
     val colors: MutableSet<String> = mutableSetOf(),
     val types: MutableSet<String> = mutableSetOf(),
     val subtypes: MutableSet<String> = mutableSetOf(),

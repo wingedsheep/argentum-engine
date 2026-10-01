@@ -1,0 +1,77 @@
+{
+  "player1Name": "Consecrator",
+  "player2Name": "Land destruction",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Consecrate Land",
+      "Consecrate Land",
+      "Disenchant"
+    ],
+    "battlefield": [
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Fertile Ground",
+        "attachedTo": "Forest"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Plains",
+      "Forest",
+      "Plains"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Sinkhole",
+      "Disenchant",
+      "Fertile Ground"
+    ],
+    "battlefield": [
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Forest"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Swamp",
+      "Plains",
+      "Mountain"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

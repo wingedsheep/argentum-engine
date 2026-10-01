@@ -310,6 +310,13 @@ class TargetFinder(
             container.get<CardComponent>() ?: return@filter false
             val entityController = container.get<ControllerComponent>()?.playerId
 
+            if (sourceId != null &&
+                (ignoreTargetingRestrictions || targetingSourceType == TargetingSourceType.SPELL ||
+                    (targetingSourceType == TargetingSourceType.ANY && sourceId !in state.getBattlefield())) &&
+                state.getEntity(sourceId)?.get<CardComponent>()?.isAura == true &&
+                !com.wingedsheep.engine.handlers.predicates.EnchantRestriction.hostAllowsAura(
+                    state, projected, predicateEvaluator, sourceId, entityId)) return@filter false
+
             if (!ignoreTargetingRestrictions) {
                 // Check hexproof/shroud
                 if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != controllerId) {

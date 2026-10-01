@@ -834,6 +834,55 @@
     ]
 }
 
+// Consecrate Land
+{
+    "name": "Consecrate Land",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land has indestructible and can't be enchanted by other Auras.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "INDESTRUCTIBLE"
+            },
+            {
+                "type": "PreventEnchantment",
+                "exceptSource": true,
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Jeff A. Menges",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2379f78-c03f-447f-b3c9-10a918d556e9.jpg?1783948716",
+        "rulings": [
+            {
+                "date": "2006-09-25",
+                "text": "If Consecrate Land enters attached to a land that's enchanted by other Auras, those Auras are put into their owners' graveyards."
+            },
+            {
+                "date": "2005-04-01",
+                "text": "The land can be targeted by land-destroying spells and the spell will resolve, but the land will simply not be destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Conservator
 {
     "name": "Conservator",

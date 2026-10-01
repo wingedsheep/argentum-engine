@@ -9786,6 +9786,25 @@ concerns — the `ClientStateTransformer` reveals the top card for `PlayFromTopO
 
 ---
 
+
+### Host-side Aura prohibitions
+
+`PreventEnchantment(auras = GameObjectFilter.Enchantment.withSubtype("Aura"), exceptSource = false,
+filter = GroupFilter.source())` prevents matching Auras from enchanting the affected permanents.
+The Aura filter is evaluated against projected characteristics on the battlefield and printed
+characteristics elsewhere; controller predicates use the prohibition source's projected controller.
+`exceptSource = true` exempts only that individual granting permanent, never another copy with the
+same name. Multiple prohibitions all apply. The restriction is recorded during projection and evaluated after characteristics are determined.
+Removing the granting source's abilities disables a standalone prohibition; a composite effect
+that began in an earlier layer continues applying. Removing the host's abilities does not lift
+another source's prohibition.
+Conditional statics and source phasing are respected. Targeting, resolution, non-targeted entry,
+reattachment and attachment state-based actions consult the same host-side restriction.
+
+For Consecrate Land, combine `GrantKeyword(Keyword.INDESTRUCTIBLE, GroupFilter.attachedCreature())`
+with `PreventEnchantment(exceptSource = true, filter = GroupFilter.attachedCreature())`.
+`attachedCreature()` scopes to the attached permanent, including lands.
+
 ## 10. Activated abilities
 
 ```kotlin
