@@ -72,7 +72,7 @@ val Pentavus = card("Pentavus") {
     activatedAbility {
         cost = Costs.Composite(
             Costs.Mana("{1}"),
-            Costs.Sacrifice(GameObjectFilter.Creature.withSubtype("Pentavite"))
+            Costs.Sacrifice(GameObjectFilter.Permanent.withSubtype("Pentavite"))
         )
         effect = Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
         description = "{1}, Sacrifice a Pentavite: Put a +1/+1 counter on this creature."

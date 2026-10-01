@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.core.Step
 
 /**
@@ -46,14 +45,7 @@ val BaxterStockman = card("Baxter Stockman") {
     triggeredAbility {
         trigger = Triggers.you.beginningOf(Step.BEGIN_COMBAT)
         val creature = target(
-            TargetFilter(
-                GameObjectFilter(
-                    cardPredicates = listOf(
-                        CardPredicate.IsCreature,
-                        CardPredicate.IsArtifact,
-                    )
-                ).youControl()
-            ),
+            TargetFilter(GameObjectFilter.ArtifactCreature.youControl()),
         )
         effect = Effects.ModifyStats(3, 0, creature) then
             Effects.GrantKeyword(Keyword.FIRST_STRIKE, creature, Duration.EndOfTurn) then

@@ -35,7 +35,7 @@ val SpiderSlayerHatredHoned = card("Spider-Slayer, Hatred Honed") {
     // Whenever Spider-Slayer deals damage to a Spider, destroy that creature.
     triggeredAbility {
         trigger = Triggers.self.dealsDamage(Recipient.Object(
-                GameObjectFilter.Creature.withAnySubtype("Spider")
+                GameObjectFilter.Permanent.withAnySubtype("Spider")
             ))
         effect = Effects.Destroy(EffectTarget.TriggeringEntity)
     }
