@@ -26,7 +26,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * The discount is a battlefield-sourced [SpellCostTarget.YouCast] modifier whose amount reads the
  * artifact's own oil counters at cast time ([CostReductionSource.Dynamic] over
- * [DynamicAmounts.countersOnSelf]). Only generic mana is reduced (CR 601.2f).
+ * [DynamicAmounts.countersOnSelf]). Only generic mana is reduced (CR 118.7a).
  */
 val MindspliceApparatus = card("Mindsplice Apparatus") {
     manaCost = "{3}{U}"

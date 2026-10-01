@@ -84,7 +84,7 @@ class MercurialSpelldancerScenarioTest : ScenarioTestBase() {
             game.oil(dancer) shouldBe 1
         }
 
-        test("removing two oil counters copies the next instant or sorcery only") {
+        test("removing two oil counters copies only the next instant or sorcery (one-shot)") {
             val game = board()
             val dancer = game.findPermanent("Mercurial Spelldancer")!!
             game.setOil(dancer, 2)

@@ -58,6 +58,25 @@ class JaceThePerfectedMindScenarioTest : ScenarioTestBase() {
             game.state.projectedState.getToughness(bears) shouldBe 2
         }
 
+        test("+1's -3/-0 lasts through the opponent's turn and ends on your next turn") {
+            val (game, jace) = board()
+            val bears = game.findPermanent("Grizzly Bears")!!
+            game.execute(
+                ActivateAbility(game.player1Id, jace, plusOne, targets = listOf(ChosenTarget.Permanent(bears)))
+            ).error shouldBe null
+            game.resolveStack()
+
+            game.passUntilPhase(Phase.ENDING, Step.END)
+            game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            game.state.activePlayerId shouldBe game.player2Id
+            game.state.projectedState.getPower(bears) shouldBe -1
+
+            game.passUntilPhase(Phase.ENDING, Step.END)
+            game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            game.state.activePlayerId shouldBe game.player1Id
+            game.state.projectedState.getPower(bears) shouldBe 2
+        }
+
         test("+1 may be activated with no target") {
             val (game, jace) = board()
             game.execute(ActivateAbility(game.player1Id, jace, plusOne)).error shouldBe null
