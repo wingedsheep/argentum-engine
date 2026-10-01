@@ -445,7 +445,7 @@ internal class CastCostTotaller(
         // is priced here; the grant's non-mana half (Conspiracy Unraveler's "collect evidence 10") is
         // paid with the other additional costs.
         AlternativeCostType.GRANTED to {
-            costCalculator.findAlternativeCastingCosts(state, playerId).firstOrNull()?.let { priced(it.manaCost) }
+            costCalculator.findAlternativeCastingCosts(state, playerId, cardDef).firstOrNull()?.let { priced(it.manaCost) }
         },
     )
 

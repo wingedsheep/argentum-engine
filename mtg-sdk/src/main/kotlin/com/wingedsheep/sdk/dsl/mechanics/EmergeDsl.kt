@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Add Emerge [cost] (Eldritch Moon, CR 702.119).
@@ -14,7 +15,10 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
  * enumerator offers the cast at the spell's normal timing while a creature the caster controls
  * makes the reduced cost affordable, and the cast handler charges the reduced emerge mana and
  * sacrifices the chosen creature as part of paying the total cost.
+ *
+ * Pass [from] for the "emerge from [quality]" variant (CR 702.119b) — Crabomination's
+ * `emerge("{5}{B}{B}", from = GameObjectFilter.Artifact)` sacrifices an artifact instead.
  */
-fun CardBuilder.emerge(cost: String) {
-    keywordAbilityList.add(KeywordAbility.emerge(cost))
+fun CardBuilder.emerge(cost: String, from: GameObjectFilter? = null) {
+    keywordAbilityList.add(KeywordAbility.emerge(cost, from))
 }

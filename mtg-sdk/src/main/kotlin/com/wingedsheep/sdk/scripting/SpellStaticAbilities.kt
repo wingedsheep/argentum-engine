@@ -132,25 +132,47 @@ data class GrantCantBeCountered(
  * `cost = "{0}"` standing in for the absent mana half (the same `{0}` idiom Fireblast and Force of
  * Vigor use for their own alternative costs).
  *
+ * The grant can be narrowed to the spells it covers and can carry its own timing permission:
+ * Primal Prayers' "You may cast creature spells with mana value 3 or less by paying {E} rather than
+ * paying their mana costs. If you cast a spell this way, you may cast it as though it had flash." is
+ * `GrantAlternativeCastingCost("{0}", listOf(PayPlayerCounters(ENERGY, 1)),
+ * spellFilter = Creature.manaValueAtMost(3), asThoughFlash = true)`. The flash belongs to *this*
+ * cost — the same creature cast for its mana cost is still sorcery-speed — so it is not a
+ * [GrantFlashToSpellType].
+ *
  * @property cost The alternative mana cost string (e.g., "{W}{U}{B}{R}{G}"), `"{0}"` when the
  *   substituted cost is entirely non-mana.
  * @property additionalCosts The non-mana half, paid alongside [cost] whenever this grant is the
  *   alternative cost the caster chose. Gated on `AlternativeCostType.GRANTED` at payment time so a
  *   different alternative cost never drags these in.
+ * @property spellFilter Which spells the grant covers, matched against the card being cast
+ *   (default every spell).
+ * @property asThoughFlash A spell cast by paying this cost may be cast as though it had flash
+ *   (CR 702.8). Only the granted-cost cast gains the timing; other ways of casting the card don't.
  */
 @SerialName("GrantAlternativeCastingCost")
 @Serializable
 data class GrantAlternativeCastingCost(
     val cost: String,
-    val additionalCosts: List<AdditionalCost> = emptyList()
+    val additionalCosts: List<AdditionalCost> = emptyList(),
+    val spellFilter: GameObjectFilter = GameObjectFilter.Any,
+    val asThoughFlash: Boolean = false
 ) : StaticAbility {
-    override val description: String =
-        "You may ${describePayment()} rather than pay the mana cost for spells you cast"
+    override val description: String = buildString {
+        if (spellFilter == GameObjectFilter.Any) {
+            append("You may ${describePayment()} rather than pay the mana cost for spells you cast")
+        } else {
+            append("You may cast ${spellFilter.description} spells by ${describePayment().replaceFirst("pay ", "paying ")} ")
+            append("rather than paying their mana costs")
+        }
+        if (asThoughFlash) append(". If you cast a spell this way, you may cast it as though it had flash")
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
-        if (additionalCosts.isEmpty()) return this
         val newCosts = additionalCosts.map { it.applyTextReplacement(replacer) }
-        return if (newCosts == additionalCosts) this else copy(additionalCosts = newCosts)
+        val newFilter = spellFilter.applyTextReplacement(replacer)
+        return if (newCosts == additionalCosts && newFilter == spellFilter) this
+        else copy(additionalCosts = newCosts, spellFilter = newFilter)
     }
 
     /**

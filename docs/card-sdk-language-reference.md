@@ -9588,7 +9588,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   sites were collapsible into a single owner, `FlashTypeGrants`: with one implementation behind both,
   teaching *it* to unwrap fixes every gated flash grant at once and none of them can drift. Fold the
   gate into the type only where no such shared owner exists.
-- `GrantAlternativeCastingCost(cost, additionalCosts = emptyList())` — a battlefield permission to
+- `GrantAlternativeCastingCost(cost, additionalCosts = emptyList(), spellFilter = Any, asThoughFlash = false)` — a battlefield permission to
   substitute a different cost for a spell's mana cost (CR 118.9a): "You may pay {W}{U}{B}{R}{G}
   rather than pay the mana cost for spells you cast" (**Jodah, Archmage Eternal**; Leyline of
   Mutation). Scanned on demand by `CostCalculator.findAlternativeCastingCosts` over the caster's
@@ -9620,7 +9620,22 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   another alternative cost, but additional costs still apply (including a *second* collect evidence,
   which triggers "whenever you collect evidence" twice); X in the replaced mana cost is 0; and it
   stamps **no** `ChoiceSlot`, so it does not satisfy a spell's own linked "if evidence was collected"
-  clause (`Conditions.WasEvidenceCollected`). Only the first grant found is offered.
+  clause (`Conditions.WasEvidenceCollected`). Only the first grant covering the spell is offered,
+  and the enumerator, the cost totaller, the additional-cost payer and the timing check all read
+  that same grant through `CostCalculator.findAlternativeCastingCosts(state, caster, spellCardDef)`.
+
+  `spellFilter` narrows which spells the grant covers (matched against the printed card
+  definition, the granting permanent as predicate source), and `asThoughFlash = true` is the
+  "If you cast a spell this way, you may cast it as though it had flash" rider. The flash belongs
+  to the granted-cost cast alone: when the spell has no other timing permission, the hand
+  enumerator offers *only* the `GRANTED` cast for it (every other variant of that card is pruned),
+  and `CastValidator.validateTiming` waives sorcery timing only for an explicit
+  `alternativeCostType = GRANTED` cast whose grant carries the rider. **Primal Prayers** ("You may
+  cast creature spells with mana value 3 or less by paying {E} rather than paying their mana costs.
+  If you cast a spell this way, you may cast it as though it had flash.") is
+  `GrantAlternativeCastingCost("{0}", listOf(Costs.additional.PayPlayerCounters(CounterType.ENERGY, 1)),
+  spellFilter = GameObjectFilter.Creature.manaValueAtMost(3), asThoughFlash = true)`. Like every
+  granted alternative cost it is offered for casts from hand only.
 - `MayCastWithoutPayingManaCost(controllerOnly = false, firstSpellOfTurnOnly = false, spellFilter = Any, oncePerTurn = false, fromExileOnly = false, fromHandOnly = false)` — a
   battlefield permission to cast a spell without paying its mana cost (CR 118.9). Composable
   gates: `controllerOnly = true` restricts the benefit to the source's controller ("you" wording);
@@ -11080,7 +11095,7 @@ composite abilities).
   wraps the ability in a `ConditionalStaticAbility`, and `WebSlinging` matches the bare type
   without unwrapping it — so the grant never applies rather than applying conditionally. Teach
   that read site to unwrap first; `FlashTypeGrants.activeGrant` is the worked example.
-- `Emerge(cost)` — `card { emerge("{cost}") }` builder helper (CR 702.119, Eldritch Moon). A **hand** alternative
+- `Emerge(cost, from = null)` — `card { emerge("{cost}") }` builder helper (CR 702.119, Eldritch Moon). A **hand** alternative
   cost that bundles a sacrifice *and* a cost reduction derived from it: *"You may cast this spell by paying [cost] and
   sacrificing a creature rather than paying its mana cost"* plus *"if you chose to pay this spell's emerge cost, its
   total cost is reduced by an amount of **generic** mana equal to the sacrificed creature's mana value."* Generic-only,
@@ -11095,7 +11110,11 @@ composite abilities).
   sacrifices it **after** the mana payment: CR 601.2f–g activate mana abilities before CR 601.2h pays the total cost, so
   the creature may legally be tapped for mana toward its own emerge cost before it dies. The chosen creature rides
   `CastSpell.additionalCostPayment.sacrificedPermanents`, exactly as Sneak's bounce rides `bouncedPermanents`. Printed
-  only — no card grants emerge. Because emerge is the one cost whose *mana* half depends on which permanent pays its
+  only — no card grants emerge. **Emerge from [quality]** (CR 702.119b, Crabomination's "emerge from artifact") is
+  `emerge("{5}{B}{B}", from = GameObjectFilter.Artifact)`: `from` replaces "a creature" as the sacrifice filter
+  (`KeywordAbility.Emerge.sacrificeFilter`, matched against projected state by `EmergeCasts.sacrificeCandidates`) for
+  the enumerator's candidate list *and* the cast validator, and renders as "Emerge from artifact {cost}". Null is plain
+  emerge. Because emerge is the one cost whose *mana* half depends on which permanent pays its
   *non-mana* half, the enumerator also sends `AdditionalCostData.costAfterSacrifice` — the surviving mana cost per
   candidate — so the client can show `{5}{U} → {2}{U}` live as the player picks and price manual mana-source selection
   off the chosen entry. The client never re-derives the reduction: the generic-only clamp is a rule, and rules stay

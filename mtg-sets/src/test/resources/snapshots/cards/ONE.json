@@ -3228,6 +3228,69 @@
     ]
 }
 
+// Ezuri, Stalker of Spheres
+{
+    "name": "Ezuri, Stalker of Spheres",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Legendary Creature — Phyrexian Elf Warrior",
+    "oracleText": "When Ezuri enters, you may pay {3}. If you do, proliferate twice.\nWhenever you proliferate, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ezuri, Stalker of Spheres:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{3}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            "Proliferate",
+                            "Proliferate"
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "Ezuri, Stalker of Spheres:2",
+                "trigger": "ProliferatedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "RARE",
+        "artist": "Fariba Khamseh",
+        "flavorText": "\"Ah, my old friends. Have you decided at last to stop clinging to the past and join me in the grand pursuit of perfection?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d38961ce-0257-412f-acec-c5c9886061f8.jpg?1783918001"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Feed the Infection
 {
     "name": "Feed the Infection",
@@ -3466,6 +3529,125 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Glissa Sunslayer
+{
+    "name": "Glissa Sunslayer",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Legendary Creature — Phyrexian Zombie Elf",
+    "oracleText": "First strike, deathtouch\nWhenever Glissa Sunslayer deals combat damage to a player, choose one —\n• You draw a card and lose 1 life.\n• Destroy target enchantment.\n• Remove up to three counters from target permanent.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Glissa Sunslayer:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": "Controller"
+                                    }
+                                ]
+                            },
+                            "description": "You draw a card and lose 1 life"
+                        },
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "enchantment"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Destroy target enchantment"
+                        },
+                        {
+                            "effect": {
+                                "type": "RemoveAnyNumberOfCounters",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "maxTotal": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "permanent"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Remove up to three counters from target permanent"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "RARE",
+        "artist": "Krharts",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2bf633e-0470-4b87-99ed-5ad1683b0954.jpg?1783918001",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "For the third mode, you choose which counters to remove as the ability resolves. You may remove any three (or fewer) counters, even if the permanent has multiple kinds of counters on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -3867,6 +4049,73 @@
         "collectorNumber": "170",
         "artist": "Joe Slucher",
         "imageUri": "https://cards.scryfall.io/normal/front/0/9/0955b64f-6721-4fa6-b161-cae404cb5b9f.jpg?1783918014"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Incubation Sac
+{
+    "name": "Incubation Sac",
+    "manaCost": "{G}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters with three oil counters on it.\n{4}, {T}, Remove an oil counter from this artifact: Create a 3/3 colorless Phyrexian Golem artifact creature token. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Incubation Sac:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Phyrexian",
+                        "Golem"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/3/63ace2fa-8cfb-4641-a05c-d12830378e03.jpg?1783918166",
+                    "artifactToken": true
+                },
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 3,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "UNCOMMON",
+        "artist": "Tony Foti",
+        "flavorText": "\"This one needs a bit longer to ripen.\"\n—Glissa Sunslayer",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6b36e23-a414-400c-a3a5-e23883e866d3.jpg?1783918015"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -4445,6 +4694,79 @@
     ]
 }
 
+// Lattice-Blade Mantis
+{
+    "name": "Lattice-Blade Mantis",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Phyrexian Insect",
+    "oracleText": "This creature enters with two oil counters on it.\nWhenever this creature attacks, you may remove an oil counter from it. If you do, untap it and it gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lattice-Blade Mantis:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "RemoveCounters",
+                                "counterType": "OIL",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            "successCriterion": "SuccessCriterion.CountersRemoved"
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "TapUntap",
+                                    "target": "Self",
+                                    "tap": false
+                                },
+                                {
+                                    "type": "ModifyStats",
+                                    "powerModifier": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "toughnessModifier": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "target": "Self"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 2,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "artist": "Durion",
+        "flavorText": "\"Urabrask doesn't think big enough.\"\n—Glissa Sunslayer",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7427def-c4b2-475a-8dc9-7e89409d9abb.jpg?1783918014"
+    }
+}
+
 // Lukka, Bound to Ruin
 {
     "name": "Lukka, Bound to Ruin",
@@ -4925,6 +5247,165 @@
         "artist": "Miranda Meeks",
         "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1329ad9-5989-4920-b17b-943b9b4a0cd9.jpg?1783917999"
     }
+}
+
+// Migloz, Maze Crusher
+{
+    "name": "Migloz, Maze Crusher",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Legendary Creature — Phyrexian Beast",
+    "oracleText": "Migloz enters with five oil counters on it.\n{1}, Remove an oil counter from Migloz: It gains vigilance and menace until end of turn.\n{2}, Remove two oil counters from Migloz: It gets +2/+2 until end of turn.\n{3}, Remove three oil counters from Migloz: Destroy target artifact or enchantment.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Migloz, Maze Crusher:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "VIGILANCE",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "MENACE",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}, Remove an oil counter from Migloz: It gains vigilance and menace until end of turn."
+            },
+            {
+                "id": "Migloz, Maze Crusher:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{2}, Remove two oil counters from Migloz: It gets +2/+2 until end of turn."
+            },
+            {
+                "id": "Migloz, Maze Crusher:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|enchantment"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{3}, Remove three oil counters from Migloz: Destroy target artifact or enchantment."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 5,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "RARE",
+        "artist": "Zezhou Chen",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1171899-07d8-4e60-a79b-f162f59dc3ce.jpg?1783917999"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
 }
 
 // Mirran Safehouse
@@ -6163,6 +6644,88 @@
     ]
 }
 
+// Predation Steward
+{
+    "name": "Predation Steward",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Phyrexian Elf Warrior",
+    "oracleText": "This creature enters with two oil counters on it.\n{2}{G}, {T}, Remove an oil counter from this creature: Target creature gets +2/+2 until end of turn. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Predation Steward:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "OIL",
+                "count": 2,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "artist": "Aaron J. Riley",
+        "flavorText": "\"Best we move on. That gurgling means it's feeding time.\"\n—Melira",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/419fab07-f921-4eff-91e2-1974ae121077.jpg?1783918011"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Quicksilver Fisher
 {
     "name": "Quicksilver Fisher",
@@ -6606,6 +7169,77 @@
         "artist": "José Parodi",
         "imageUri": "https://cards.scryfall.io/normal/front/1/e/1ec8f984-5ed4-4b34-8b2a-a113cbba001d.jpg?1783917986"
     }
+}
+
+// Rustvine Cultivator
+{
+    "name": "Rustvine Cultivator",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Phyrexian Elf Druid",
+    "oracleText": "{T}: Put an oil counter on this creature.\n{T}, Remove an oil counter from this creature: Untap target land.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rustvine Cultivator:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "OIL",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{T}: Put an oil counter on this creature."
+            },
+            {
+                "id": "Rustvine Cultivator:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "OIL",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Remove an oil counter from this creature: Untap target land."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "artist": "Lauren K. Cannon",
+        "flavorText": "\"All elves aspire to be part of nature. Only Phyrexia can truly grant that wish.\"\n—Glissa Sunslayer",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b71fd8f-e688-4210-bc5b-a3f19b5b3497.jpg?1783918010"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Ruthless Predation
@@ -7175,6 +7809,59 @@
     ]
 }
 
+// Tainted Observer
+{
+    "name": "Tainted Observer",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Phyrexian Bird",
+    "oracleText": "Flying\nToxic 1 (Players dealt combat damage by this creature also get a poison counter.)\nWhenever another creature you control enters, you may pay {2}. If you do, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tainted Observer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}"
+                        }
+                    },
+                    "then": "Proliferate"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9cba67a-b714-49b0-9797-24aca283f162.jpg?1783917996"
+    }
+}
+
 // Tekuthal, Inquiry Dominus
 {
     "name": "Tekuthal, Inquiry Dominus",
@@ -7628,6 +8315,74 @@
     ]
 }
 
+// Thirsting Roots
+{
+    "name": "Thirsting Roots",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Search your library for a basic land card, reveal it, put it into your hand, then shuffle.\n• Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    },
+                    "description": "Search your library for a basic land card, reveal it, put it into your hand, then shuffle"
+                },
+                {
+                    "effect": "Proliferate",
+                    "description": "Proliferate"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "artist": "WolfSkullJack",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75a4a340-453b-471a-82ba-48ebf20b271a.jpg?1783918010"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Thrun, Breaker of Silence
 {
     "name": "Thrun, Breaker of Silence",
@@ -7751,6 +8506,247 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Tyvar's Stand
+{
+    "name": "Tyvar's Stand",
+    "manaCost": "{X}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gets +X/+X and gains hexproof and indestructible until end of turn. (It can't be the target of spells or abilities your opponents control. Damage and effects that say \"destroy\" don't destroy it.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": "XValue",
+                    "toughnessModifier": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"When they write songs about this battle, I will make sure your name is forgotten, devil.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7b362a5-382a-4016-b4f2-aa7b683354c4.jpg?1783918008"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Tyvar, Jubilant Brawler
+{
+    "name": "Tyvar, Jubilant Brawler",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Legendary Planeswalker — Tyvar",
+    "oracleText": "You may activate abilities of creatures you control as though those creatures had haste.\n+1: Untap up to one target creature.\n−2: Mill three cards, then you may return a creature card with mana value 2 or less from your graveyard to the battlefield.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tyvar, Jubilant Brawler:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Tyvar, Jubilant Brawler:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        },
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "creature mv<=2"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "You may return a creature card with mana value 2 or less to the battlefield",
+                            "selectedLabel": "Return to the battlefield",
+                            "remainderLabel": "Leave in graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "MAY_ACTIVATE_ABILITIES_AS_THOUGH_HASTY",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66605fe1-9a20-4c95-b53e-1249cedb978b.jpg?1783917995",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "Tyvar's first ability doesn't grant haste to any creatures, nor does it allow you to attack with creatures as though they had haste. However, you will be able to activate abilities with {T} in their activation costs as soon as creatures with such abilities come under your control."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "For Tyvar's last ability, you may return any creature card with mana value 2 or less from your graveyard to the battlefield, even if it wasn't one of the three cards milled as the ability resolved."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Unnatural Restoration
+{
+    "name": "Unnatural Restoration",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target permanent card from your graveyard to your hand. Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "Proliferate"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "UNCOMMON",
+        "artist": "Jeremy Wilson",
+        "flavorText": "\"If you don't reassemble me immediately, the Mother of Machines will notice my absence, and this entire layer will face her wrath!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d4e6a91-59cc-4f7f-af25-16acabdafb1a.jpg?1783918006"
+    }
 }
 
 // Vanish into Eternity
@@ -7995,6 +8991,115 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Venerated Rotpriest
+{
+    "name": "Venerated Rotpriest",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Phyrexian Druid",
+    "oracleText": "Toxic 1 (Players dealt combat damage by this creature also get a poison counter.)\nWhenever a creature you control becomes the target of a spell, target opponent gets a poison counter.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Venerated Rotpriest:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "creature ctrl:you",
+                    "spellsOnly": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "POISON",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever a creature you control becomes the target of a spell, target opponent gets a poison counter."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "RARE",
+        "artist": "Brian Valeza",
+        "flavorText": "\"This was once a peaceful spring, but I wouldn't advise taking a sip.\"\n—Melira",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1b032e3-14e3-48ba-ab8a-d2b4f8d31a7d.jpg?1783918006"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Venomous Brutalizer
+{
+    "name": "Venomous Brutalizer",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Phyrexian Knight",
+    "oracleText": "Toxic 3 (Players dealt combat damage by this creature also get three poison counters.)\nWhen this creature enters, you may pay {1}{G}. If you do, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Venomous Brutalizer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}{G}"
+                        }
+                    },
+                    "then": "Proliferate"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Jordana",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd9df44a-a0ab-435f-914c-aa11cd88f4ec.jpg?1783918006"
+    }
 }
 
 // Viral Spawning
@@ -8508,5 +9613,114 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Zopandrel, Hunger Dominus
+{
+    "name": "Zopandrel, Hunger Dominus",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Legendary Creature — Phyrexian Horror",
+    "oracleText": "Reach\nAt the beginning of each combat, double the power and toughness of each creature you control until end of turn.\n{G/P}{G/P}, Sacrifice two other creatures: Put an indestructible counter on Zopandrel. ({G/P} can be paid with either {G} or 2 life.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zopandrel, Hunger Dominus:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "EntityProperty",
+                            "entity": "IterationEntity",
+                            "numericProperty": "Power"
+                        },
+                        "toughnessModifier": {
+                            "type": "EntityProperty",
+                            "entity": "IterationEntity",
+                            "numericProperty": "Toughness"
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "At the beginning of each combat, double the power and toughness of each creature you control until end of turn."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Zopandrel, Hunger Dominus:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G/P}{G/P}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsSource"
+                                        }
+                                    ]
+                                },
+                                "count": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "INDESTRUCTIBLE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{G/P}{G/P}, Sacrifice two other creatures: Put an indestructible counter on Zopandrel."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "MYTHIC",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb419d9d-e06f-48c8-a4f8-a57f9be39e50.jpg?1783918004",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "If an effect instructs you to \"double\" a creature's power, that creature gets +X/+0, where X is its power as that effect begins to apply. Similarly, a creature whose toughness is doubled gets +0/+X, where X is its toughness as the effect begins to apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }

@@ -102,8 +102,24 @@ class CastSpellEnumerator(
         // casts (those are enumerated by CastFromZoneEnumerator / ZoneActivatedAbilityEnumerator).
         if (context.cantPlayCardsFromHand) return result
 
+        // A card whose only legal cast right now is a flash-carrying granted alternative cost
+        // (Primal Prayers) runs the whole primary-face path below, and everything that path added
+        // other than the granted-cost cast is pruned once the card is done: those casts have no
+        // timing permission of their own.
+        var grantedAltFlashOnly: Pair<EntityId, Int>? = null
+        fun pruneGrantedAltFlashOnly() {
+            val (_, fromIndex) = grantedAltFlashOnly ?: return
+            val added = result.subList(fromIndex, result.size)
+            added.removeAll { legal ->
+                val cast = legal.action as? CastSpell
+                cast == null || !cast.useAlternativeCost || cast.alternativeCostType != AlternativeCostType.GRANTED
+            }
+            grantedAltFlashOnly = null
+        }
+
         // --- Normal spell casting ---
         for (cardId in hand) {
+            pruneGrantedAltFlashOnly()
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
             if (cardComponent.typeLine.isLand) {
                 // A land's primary characteristics are *played*, not cast (PlayLandEnumerator
@@ -222,7 +238,15 @@ class CastSpellEnumerator(
             val isInstant = cardComponent.typeLine.isInstant
             val hasFlash = cardDef.keywords.contains(Keyword.FLASH)
             val grantedFlash = hasFlash || context.castPermissionUtils.hasGrantedFlash(state, cardId)
-            if (!isInstant && !grantedFlash && !context.canPlaySorcerySpeed) continue
+            // The granted alternative cost that would price this card (the first covering grant —
+            // the one the cast handler charges). Its flash rider times only its own cast.
+            val coveringAltGrant = context.alternativeCastingCosts.firstOrNull { grant ->
+                context.costCalculator.alternativeCastingCostCovers(state, grant, cardDef)
+            }
+            if (!isInstant && !grantedFlash && !context.canPlaySorcerySpeed) {
+                if (coveringAltGrant?.asThoughFlash != true) continue
+                grantedAltFlashOnly = cardId to result.size
+            }
 
             // Check additional cost payability — each cost kind contributes its candidates to one
             // combined offer and says whether it can be paid.
@@ -372,7 +396,7 @@ class CastSpellEnumerator(
             // Conspiracy Unraveler's "collect evidence 10" in the grant's non-mana half). Both
             // halves of the grant must be payable — a `{0}` mana half is trivially affordable, so
             // the non-mana half is the whole gate for a purely non-mana grant.
-            val grantedAltCost = context.alternativeCastingCosts.firstOrNull { grant ->
+            val grantedAltCost = coveringAltGrant?.takeIf { grant ->
                 val altEffective = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, grant.manaCost, playerId)
                 context.manaSolver.canPay(state, playerId, altEffective, precomputedSources = cachedSources) &&
                     grant.additionalCosts.all { cost ->
@@ -1354,6 +1378,7 @@ class CastSpellEnumerator(
                 }
             }
         }
+        pruneGrantedAltFlashOnly()
 
         // --- Kicker ---
         enumerateKicker(context, hand, result)
