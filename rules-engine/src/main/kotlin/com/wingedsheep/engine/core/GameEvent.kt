@@ -2303,3 +2303,8 @@ data class PlayerActionTakenEvent(val playerId: EntityId, val description: Strin
 @Serializable
 @SerialName("BlockerDeclarationPolicyChangedEvent")
 data object BlockerDeclarationPolicyChangedEvent : GameEvent
+
+/** A duration-bounded static ability was installed; legal actions may have changed. */
+@Serializable
+@SerialName("StaticAbilityGrantedEvent")
+data class StaticAbilityGrantedEvent(val entityId: EntityId) : GameEvent

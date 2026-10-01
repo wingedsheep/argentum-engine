@@ -2247,6 +2247,10 @@ object Conditions {
     fun IsInPhase(vararg phases: Phase, yoursOnly: Boolean = true): ConditionInterface =
         IsInPhaseCondition(phases.toList(), yoursOnly)
 
+    /** If the current step matches, optionally restricted to the controller's turn. */
+    fun IsInStep(vararg steps: com.wingedsheep.sdk.core.Step, yoursOnly: Boolean = true): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.IsInStep(steps.toList(), yoursOnly)
+
     /**
      * If it's your main phase (either precombat or postcombat main, on your turn).
      * Used for cards like Dose of Dawnglow.
