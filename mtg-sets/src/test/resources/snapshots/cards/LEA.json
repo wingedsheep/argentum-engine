@@ -4985,6 +4985,103 @@
     ]
 }
 
+// Stone Giant
+{
+    "name": "Stone Giant",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "{T}: Target creature you control with toughness less than this creature's power gains flying until end of turn. Destroy that creature at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Stone Giant:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": "TriggeringEntity",
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            "watchedTarget": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "expiry": "DelayedTriggerExpiry.Never",
+                            "fireOnce": true
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "TOUGHNESS",
+                                        "operator": "LT",
+                                        "amount": {
+                                            "type": "EntityProperty",
+                                            "entity": "Self",
+                                            "numericProperty": "Power"
+                                        }
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "UNCOMMON",
+        "artist": "Dameon Willich",
+        "flavorText": "What goes up, must come down.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7ffaedb9-25f8-4304-9085-e12505b93312.jpg?1783948681",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "If Stone Giant’s ability is activated during a turn’s end step, the delayed triggered ability won’t trigger until the beginning of the next turn’s end step. The targeted creature will be destroyed at that time."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "When the delayed triggered ability resolves, the targeted creature is destroyed, even if it’s no longer a creature, no longer under your control, or no longer has toughness less than Stone Giant’s power at that time."
+            },
+            {
+                "date": "2008-08-01",
+                "text": "If the Giant’s power and/or toughness change so that its toughness is less than its power, you can have the ability target the Giant itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Stone Rain
 {
     "name": "Stone Rain",
