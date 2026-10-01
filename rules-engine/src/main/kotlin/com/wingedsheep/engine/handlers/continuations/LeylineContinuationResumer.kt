@@ -1,13 +1,16 @@
 package com.wingedsheep.engine.handlers.continuations
 
+import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.LeylineDecisionContinuation
 import com.wingedsheep.engine.core.LeylinePhaseContinuation
+import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
 import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
@@ -19,6 +22,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CardNamePool
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
+import com.wingedsheep.sdk.scripting.effects.Effect
 
 /**
  * Resumes [LeylineDecisionContinuation] frames: the per-card yes/no walk through every
@@ -77,6 +81,11 @@ class LeylineContinuationResumer(
             newState = newState.updateEntity(continuation.playerId) { container ->
                 container.with(updated)
             }
+        }
+
+        val revealEffect = openingHandRevealOf(newState, continuation.leylineCardId)
+        if (response.choice && revealEffect != null) {
+            return revealFromOpeningHand(newState, continuation, revealEffect, checkForMore)
         }
 
         if (response.choice) {
@@ -151,6 +160,52 @@ class LeylineContinuationResumer(
                 services.cardRegistry.cardNamesIn(firstChoice.cardNamePool).toList()
             } else emptyList(),
         )
+    }
+
+    /** The card's opening-hand reveal payoff, or null when its opening-hand action is a leyline start. */
+    private fun openingHandRevealOf(state: GameState, cardId: EntityId): Effect? {
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
+        val script = services.cardRegistry.getCard(cardComponent.cardDefinitionId)?.script ?: return null
+        return script.openingHandReveal?.takeUnless { script.mayStartOnBattlefield }
+    }
+
+    /**
+     * "You may reveal this card from your opening hand. If you do, …" (CR 103.6b): reveal the card
+     * to every player — it stays in hand — then run the card's payoff with the card as source and
+     * its owner as controller. The payoff is normally a delayed trigger, which CR 603.7a lets a
+     * player action create.
+     *
+     * A [LeylinePhaseContinuation] is parked beneath the payoff so that, should it ever pause for a
+     * decision, the opening-hand walk resumes once it finishes; when it completes synchronously
+     * the park is popped again and the walk continues inline.
+     */
+    private fun revealFromOpeningHand(
+        state: GameState,
+        continuation: LeylineDecisionContinuation,
+        effect: Effect,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        val card = state.getEntity(continuation.leylineCardId)?.get<CardComponent>()
+        val revealed = CardsRevealedEvent(
+            revealingPlayerId = continuation.playerId,
+            cardIds = listOf(continuation.leylineCardId),
+            cardNames = listOf(continuation.cardName),
+            imageUris = listOf(card?.imageUri),
+            source = continuation.cardName,
+            revealToSelf = false
+        )
+        val context = EffectContext(
+            sourceId = continuation.leylineCardId,
+            controllerId = continuation.playerId
+        )
+        val result = services.effectExecutorRegistry
+            .execute(state.pushContinuation(LeylinePhaseContinuation), effect, context)
+            .toExecutionResult()
+        val events = listOf<GameEvent>(revealed) + result.events
+        if (result.outcome is Outcome.Paused) return result.copy(events = events)
+        if (result.outcome is Outcome.Rejected) return result
+        val (_, unparked) = result.state.popContinuation()
+        return continueLeylinePhase(unparked, events, checkForMore)
     }
 
     /**

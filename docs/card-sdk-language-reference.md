@@ -183,6 +183,15 @@ section; do not let SDK additions land without a corresponding doc update.
   bottoming resolve, the engine walks each player in turn order from the active player and presents a yes/no
   decision per such card in their opening hand; a "yes" routes the card to the battlefield through the standard
   zone-change pipeline before the first turn begins, a "no" leaves it in hand.
+- `revealFromOpeningHand(effect)` — "You may reveal this card from your opening hand. If you do, …" (CR 103.6b).
+  Sets `CardScript.openingHandReveal`. Offered in the same post-mulligan walk as `mayBeginGameOnBattlefield()`
+  (starting player first, then each other player in turn order; one yes/no per card). A "yes" emits a
+  `CardsRevealedEvent`, leaves the card in hand, and runs `effect` with the card as source and its owner as
+  controller. The payoff is normally a delayed trigger (CR 603.7a lets a player action create one): Devourer of
+  Destiny's "at the beginning of your first upkeep, …" is
+  `Effects.CreateDelayedTrigger(step = Step.UPKEEP, fireOnPlayer = EffectTarget.PlayerRef(Player.You), effect = …)`
+  — created before turn 1, so the controller's next upkeep is their first. Omit `fireOnPlayer` for "the first
+  upkeep" (whoever's turn it is). Each revealed copy creates its own trigger.
 
 ### Battles (CR 310)
 
