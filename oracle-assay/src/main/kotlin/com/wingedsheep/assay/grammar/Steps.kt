@@ -4,6 +4,7 @@ import com.wingedsheep.assay.normalize.Normalizer
 import com.wingedsheep.assay.syntax.Phrase
 import com.wingedsheep.assay.syntax.alternate
 import com.wingedsheep.assay.syntax.bind
+import com.wingedsheep.assay.syntax.constant
 import com.wingedsheep.assay.syntax.oneOf
 import com.wingedsheep.assay.syntax.phrase
 import com.wingedsheep.assay.syntax.separated
@@ -606,6 +607,57 @@ object Steps {
     )
 
     /**
+     * **Whom a damage sentence can name**, when the recipient is a fixed phrase rather than a filtered
+     * noun — "any target", "target player", "each opponent".
+     *
+     * A table because two sentence families read it: the counted verb ([countedSteps], "~ deals 3
+     * damage to any target") and the characteristic one ([damageByProperty], "~ deals damage equal
+     * to its power to any target"). They differ in the amount and in who deals the damage, never in
+     * the recipient, so the recipient is written once and each row carries its whole script.
+     *
+     * Each row is its own sentence rather than a player slot because the `EffectTarget` shapes differ
+     * — "each opponent" and "that player" name a player the model already knows, so they declare no
+     * requirement, while the targeted rows do — and a slot spanning both would let a rule print a
+     * targeted clause without its requirement. "That player" is the one whose step triggered
+     * (Lavaborn Muse); "target opponent or planeswalker" is the modern redirection wording and a
+     * requirement type of its own rather than a filter.
+     */
+    private class DamageRecipient(
+        val words: String,
+        val name: String,
+        val recipient: EffectTarget,
+        val requirement: TargetRequirement?,
+    ) {
+        /** The whole script: [amount] dealt to this recipient, by [damageSource] when it isn't the source. */
+        fun script(amount: DynamicAmount, damageSource: EffectTarget? = null) = CardScript(
+            spellEffect = Effects.DealDamage(amount, recipient, damageSource),
+            targetRequirements = listOfNotNull(requirement),
+        )
+    }
+
+    private val damageRecipients: List<DamageRecipient> = listOf(
+        DamageRecipient("any target", "deals damage to any target", Targets.bound(), Targets.any()),
+        DamageRecipient(
+            "that player", "deals damage to the triggering player",
+            EffectTarget.PlayerRef(Player.TriggeringPlayer), null,
+        ),
+        DamageRecipient("target player", "deals damage to target player", Targets.bound(), Targets.player()),
+        DamageRecipient("target opponent", "deals damage to target opponent", Targets.bound(), Targets.opponent()),
+        DamageRecipient(
+            "each opponent", "deals damage to each opponent",
+            EffectTarget.PlayerRef(Player.EachOpponent), null,
+        ),
+        DamageRecipient(
+            "target opponent or planeswalker", "deals damage to target opponent or planeswalker",
+            Targets.bound(), Targets.opponentOrPlaneswalker(),
+        ),
+        DamageRecipient(
+            "target player or planeswalker", "deals damage to target player or planeswalker",
+            Targets.bound(), Targets.playerOrPlaneswalker(),
+        ),
+    )
+
+    /**
      * The counted verbs. Those whose amount Oracle also spells as an "equal to …" clause are
      * [countedStepPair]s, so both printed forms come from one call site and one reconstruction;
      * scry and surveil are not, because their SDK count is an `Int` and no card writes them any way
@@ -640,106 +692,16 @@ object Steps {
                 count = { (it as? SurveilEffect)?.count },
             ),
         ),
-        countedStepPair(
-            "{self} deals {n} damage to any target",
-            "{self} deals damage to any target equal to {amount}",
-            "deals damage to any target",
-            script = {
-                CardScript(
-                    spellEffect = Effects.DealDamage(it, Targets.bound()),
-                    targetRequirements = listOf(Targets.any()),
-                )
-            },
-            amount = ::damageDealtAmount,
-            leading = "{self} deals damage equal to {amount} to any target",
-        ),
-        // Lavaborn Muse. "That player" is the one whose step triggered, which the model names
-        // directly — so unlike "target player" this clause declares no requirement at all.
-        countedStepPair(
-            "{self} deals {n} damage to that player",
-            "{self} deals damage to that player equal to {amount}",
-            "deals damage to the triggering player",
-            script = {
-                CardScript(
-                    spellEffect = Effects.DealDamage(it, EffectTarget.PlayerRef(Player.TriggeringPlayer))
-                )
-            },
-            amount = ::damageDealtAmount,
-            leading = "{self} deals damage equal to {amount} to that player",
-        ),
-        countedStepPair(
-            "{self} deals {n} damage to target player",
-            "{self} deals damage to target player equal to {amount}",
-            "deals damage to target player",
-            script = {
-                CardScript(
-                    spellEffect = Effects.DealDamage(it, Targets.bound()),
-                    targetRequirements = listOf(Targets.player()),
-                )
-            },
-            amount = ::damageDealtAmount,
-            leading = "{self} deals damage equal to {amount} to target player",
-        ),
-        countedStepPair(
-            "{self} deals {n} damage to target opponent",
-            "{self} deals damage to target opponent equal to {amount}",
-            "deals damage to target opponent",
-            script = {
-                CardScript(
-                    spellEffect = Effects.DealDamage(it, Targets.bound()),
-                    targetRequirements = listOf(Targets.opponent()),
-                )
-            },
-            amount = ::damageDealtAmount,
-            leading = "{self} deals damage equal to {amount} to target opponent",
-        ),
-        // "~ deals 2 damage to each opponent." — a recipient the model *names* rather than targets,
-        // so the clause declares no requirement, exactly as "that player" above does. It is a row
-        // beside the targeted ones rather than a player slot inside them for [countedSteps]' reason:
-        // "each opponent" and "target opponent" are separate printed sentences over separate
-        // `EffectTarget` shapes, and a slot spanning both would let the rule print a targeted clause
-        // without its requirement.
-        countedStepPair(
-            "{self} deals {n} damage to each opponent",
-            "{self} deals damage to each opponent equal to {amount}",
-            "deals damage to each opponent",
-            script = {
-                CardScript(
-                    spellEffect = Effects.DealDamage(it, EffectTarget.PlayerRef(Player.EachOpponent))
-                )
-            },
-            amount = ::damageDealtAmount,
-            leading = "{self} deals damage equal to {amount} to each opponent",
-        ),
-        // "Target opponent or planeswalker" is the modern redirection wording, and it is a
-        // requirement type of its own rather than a filter — so it is a row beside "target player"
-        // rather than a case inside it.
-        countedStepPair(
-            "{self} deals {n} damage to target opponent or planeswalker",
-            "{self} deals damage to target opponent or planeswalker equal to {amount}",
-            "deals damage to target opponent or planeswalker",
-            script = {
-                CardScript(
-                    spellEffect = Effects.DealDamage(it, Targets.bound()),
-                    targetRequirements = listOf(Targets.opponentOrPlaneswalker()),
-                )
-            },
-            amount = ::damageDealtAmount,
-            leading = "{self} deals damage equal to {amount} to target opponent or planeswalker",
-        ),
-        countedStepPair(
-            "{self} deals {n} damage to target player or planeswalker",
-            "{self} deals damage to target player or planeswalker equal to {amount}",
-            "deals damage to target player or planeswalker",
-            script = {
-                CardScript(
-                    spellEffect = Effects.DealDamage(it, Targets.bound()),
-                    targetRequirements = listOf(Targets.playerOrPlaneswalker()),
-                )
-            },
-            amount = ::damageDealtAmount,
-            leading = "{self} deals damage equal to {amount} to target player or planeswalker",
-        ),
+        damageRecipients.flatMap { row ->
+            countedStepPair(
+                "{self} deals {n} damage to ${row.words}",
+                "{self} deals damage to ${row.words} equal to {amount}",
+                row.name,
+                script = { row.script(it) },
+                amount = ::damageDealtAmount,
+                leading = "{self} deals damage equal to {amount} to ${row.words}",
+            )
+        },
     ).flatten()
 
     /**
@@ -2670,6 +2632,118 @@ object Steps {
         lifeByProperty(Primitives.selfNamedPossessive, EffectTarget.Self, "the named source") +
             lifeByProperty(Primitives.itsPronoun, EffectTarget.TriggeringEntity, "the triggering permanent")
 
+    // ---------------------------------------------------------------------------------------
+    // Damage equal to a characteristic of the object dealing it — the same three positions
+    // ---------------------------------------------------------------------------------------
+
+    /**
+     * "~ deals damage equal to **its** power to any target." — Spikeshot Goblin, Ghitu Fire-Eater,
+     * Heartfire Hero, Warstorm Surge: the object that deals the damage is the object whose
+     * characteristic sizes it.
+     *
+     * [lifeByProperty]'s treatment for the damage verb, and for its reason: "its" names a different
+     * object in each position, so the amount is instantiated per position rather than added to
+     * [Amounts.count]. The damage verb adds one more thing that moves with the position — **who
+     * deals the damage**. In a first clause the subject is the source, which is what
+     * `DealDamageEffect` assumes with no `damageSource`; in a filtered trigger "it" is the creature
+     * the trigger matched, so Warstorm Surge's model names it as `damageSource` as well as the
+     * amount's object. The subject and the possessive are one anaphor, so they are slotted together
+     * and the reconstruction refuses a model whose amount and dealer disagree.
+     *
+     * **"Its", not "~'s", prints.** Unlike the life sentences, the subject has already named the
+     * object, so Oracle uses the pronoun after it: "~ deals damage equal to its power" on every card
+     * this reads, and never "~'s power". The name parses as an alternate.
+     *
+     * The bite — "Target creature you control deals damage equal to its power to …", and its later
+     * clause "It deals damage equal to its power to target creature you don't control" — is *not*
+     * here: its dealer is the target, and its recipient is a second target a continuation would have
+     * to introduce. That is a sentence family of its own.
+     */
+    private fun damageByProperty(
+        subject: Phrase<Unit>,
+        possessive: Phrase<Unit>,
+        reference: EffectTarget.SingleEntity,
+        damageSource: EffectTarget?,
+        tag: String,
+    ): List<Phrase<CardScript>> {
+        val characteristic = Amounts.propertyOf(possessive, reference, tag)
+
+        /** The amount [model] deals, when it is a characteristic of [reference]. */
+        fun propertyDealt(model: CardScript): DynamicAmount? {
+            val value = damageDealtAmount(model.spellEffect ?: return null) ?: return null
+            return value.takeIf { it is DynamicAmount.EntityProperty && it.entity == reference }
+        }
+
+        val named = damageRecipients.map { row ->
+            phrase<CardScript>(
+                "{subject} deals damage equal to {amount} to ${row.words}",
+                name = "${row.name} by $tag's characteristic",
+            ) {
+                slot("subject", subject)
+                slot("amount", characteristic)
+                build { row.script(it.value("amount"), damageSource) }
+                match { model ->
+                    val value = propertyDealt(model) ?: return@match null
+                    if (model != row.script(value, damageSource)) return@match null
+                    bind("subject" to Unit, "amount" to value)
+                }
+            }
+        }
+
+        // "…to target creature with flying", "…to up to one target creature" (Legolas) — the
+        // filtered recipient, over the two singular quantifier rows [damageToTargetPermanent] takes.
+        val filtered = Targets.singularQuantifiers.map { quantifier ->
+            fun scriptFor(amount: DynamicAmount, filter: GameObjectFilter) = CardScript(
+                spellEffect = Effects.DealDamage(amount, Targets.bound(), damageSource),
+                targetRequirements = listOf(quantifier.requirement(1, filter)),
+            )
+            phrase<CardScript>(
+                quantifier.splice("{subject} deals damage equal to {amount} to {q}target {filter}"),
+                name = "deals damage to target permanent, ${quantifier.name}, by $tag's characteristic",
+            ) {
+                slot("subject", subject)
+                slot("amount", characteristic)
+                slot("filter", Filters.filter)
+                build { scriptFor(it.value("amount"), it.value("filter")) }
+                match { model ->
+                    val value = propertyDealt(model) ?: return@match null
+                    val requirement = model.targetRequirements.singleOrNull() ?: return@match null
+                    val filter = Targets.targetedFilter(requirement) ?: return@match null
+                    if (model != scriptFor(value, filter)) return@match null
+                    bind("subject" to Unit, "amount" to value, "filter" to filter)
+                }
+            }
+        }
+        return named + filtered
+    }
+
+    /** The possessive a damage sentence takes after naming the source as its subject: "its" prints. */
+    private val dealerPossessive: Phrase<Unit> = oneOf(
+        "the source's, after its subject",
+        constant("its", Unit),
+        alternate(constant("${Normalizer.SELF}'s", Unit)),
+    )
+
+    /** "~ deals damage equal to its power to any target." — the source deals it, sized by itself. */
+    private val sourceDamageByProperty: List<Phrase<CardScript>> =
+        damageByProperty(Primitives.self, dealerPossessive, EffectTarget.Self, damageSource = null, "the source")
+
+    /**
+     * "Whenever a creature you control enters, **it** deals damage equal to **its** power to any
+     * target." — the filtered-trigger reading, where both the dealer and the amount are the object
+     * the trigger matched. Only the pronoun half: the name-subject sentences there are the source's,
+     * and "~ deals damage equal to its power" inside a filtered trigger would leave "its" between the
+     * two readings.
+     */
+    private val triggeringDamageByProperty: List<Phrase<CardScript>> =
+        damageByProperty(
+            Primitives.itPronoun,
+            Primitives.itsPronoun,
+            EffectTarget.TriggeringEntity,
+            damageSource = EffectTarget.TriggeringEntity,
+            "the triggering permanent",
+        )
+
     private val nonAnaphoric: List<Phrase<CardScript>> =
         listOf(
             drawOne,
@@ -3419,11 +3493,15 @@ object Steps {
             oneOf("a spell effect line$tag", listOf(plainStep) + Modal.clauses(sentence, tag))
     }
 
-    private val sourceCascade = Cascade(SelfSteps.anaphoric + sourceLifeByProperty, tag = "")
+    private val sourceCascade =
+        Cascade(SelfSteps.anaphoric + sourceLifeByProperty + sourceDamageByProperty, tag = "")
 
     /** The cascade a filtered trigger's effect takes; see [SelfSteps.triggering]. */
     private val triggeredCascade =
-        Cascade(SelfSteps.triggering + triggeringLifeByProperty, tag = " in a filtered trigger")
+        Cascade(
+            SelfSteps.triggering + triggeringLifeByProperty + triggeringDamageByProperty,
+            tag = " in a filtered trigger",
+        )
 
     /**
      * The cascade a **damage** trigger's effect takes — the source anaphor, plus the clauses whose
@@ -3442,7 +3520,7 @@ object Steps {
      */
     private val damageCascade =
         Cascade(
-            SelfSteps.anaphoric + sourceLifeByProperty,
+            SelfSteps.anaphoric + sourceLifeByProperty + sourceDamageByProperty,
             tag = " after damage",
             positionScoped = Tokens.damageClauses,
         )

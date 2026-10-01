@@ -774,6 +774,48 @@ fixed**, and only their goldens moved:
 - **Abzan Ascendancy** — "a nontoken creature you control" was written with the `another` subject,
   which excludes the source; the text does not.
 
+## The damage-by-its-power band
+
+The ninth loop band, tail key `its power to …`: "~ deals damage equal to **its power** to any target"
+(Spikeshot Goblin), "{T}, Sacrifice ~: **It** deals damage equal to its power to any target" (Ghitu
+Fire-Eater), "When ~ dies, it deals damage equal to its power to each opponent" (Heartfire Hero), and
+the filtered-trigger form "Whenever a creature you control enters, it deals damage equal to its power
+to any target" (Warstorm Surge). **58 lines**; the prefix probe (`→ 3 damage to`) finished 32 whole
+cards, but that probe also finished the bites by reading their later "It" as the source, so the
+honest ceiling was about 21. It delivered **8 hand-written cards read whole (7,294 → 7,302)** and the
+family fell to one line; the rest of the reached cards decline elsewhere (Valiant, backup, a second
+ability).
+
+### The amount and the dealer move together
+
+The counted damage rows read `Amounts.count`, which deliberately has no "its power": "its" names a
+different object in every position, which is why `lifeByProperty` instantiates the amount per
+position. Damage is that shape with one more thing that moves — **who deals it**. In a first clause
+the subject is the source, which `DealDamageEffect` assumes with no `damageSource`; in a filtered
+trigger "it" is the matched creature, and Warstorm Surge's model names it as the dealer *and* as the
+amount's object. So `damageByProperty` slots subject and possessive together and refuses a model
+whose dealer and amount disagree. The fixed recipients ("any target", "each opponent", "that
+player", …) became one `DamageRecipient` table that the counted rows now read too, so the two
+families cannot drift on whom damage can be dealt to.
+
+After a subject that names the source, Oracle writes "its", never "~'s", so "its" prints here — the
+opposite of the life sentences, where "its" is an alternate of the name.
+
+**Not in this band: the bite.** "Target creature you control deals damage equal to its power to …"
+and its later clause "It deals damage equal to its power to target creature you don't control" put
+the dealer on a target and introduce a second target from a continuation. That is its own family.
+
+### What the differential found
+
+Differential **6,915 compared / 56 divergent → 6,922 / 58**. Two new divergences, both **standing
+SDK findings** — two spellings of one meaning, left as they are:
+
+- **Cinder Shade** — "{R}, Sacrifice ~: It deals damage equal to its power" is written
+  `EntityProperty(SacrificedAsCost, Power)`; the grammar reads `EntityProperty(Self, Power)`, which
+  the engine resolves through the last-known snapshot (Ghitu Fire-Eater writes it that way).
+- **Jagged-Scar Archers** — names `damageSource = Self` explicitly; no `damageSource` means the same
+  thing, and Spikeshot Goblin writes it that way.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
