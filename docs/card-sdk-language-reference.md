@@ -8270,13 +8270,23 @@ staticAbility {
     during each other player's untap step" — Bender's Waterskin). Guarded on the source still being tapped,
     so it never double-untaps / double-consumes a stun counter alongside the broad/filtered variants.
 - `UntapLimitPerStep(filter, max)` — global untap-count cap, "Players can't untap more than `max` `filter`
-  during their untap steps" (Damping Field — `filter = GameObjectFilter.Artifact`, `max = 1`). Read by
-  `BeginningPhaseManager` for **every** player's untap step regardless of who controls the source: when a
-  player has more matching permanents that would untap than the cap allows, the engine raises the same
-  keep-tapped decision used by `MAY_NOT_UNTAP` with `minSelections = (matching − max)`, so the player keeps
-  the excess tapped and chooses which one untaps. Multiple copies do not stack to a stricter cap unless one
-  names a smaller `max` (most restrictive per filter wins). Inert when the player has `≤ max` matching
-  permanents tapped.
+  permanents during their untap steps" (Damping Field: artifacts, one). Compose with a static
+  `condition = Conditions.SourceIsUntapped` for Winter Orb (lands, one); conditions and caps are
+  evaluated before the simultaneous untap, so a tapped Orb untapping alongside lands does not
+  restrict that action. Printed abilities respect face-down state, ability removal, phasing,
+  copy identity, unlocked Room faces and text changes. Composite/conditional statics and duration-gated
+  runtime grants also work; external grants are not text-changed. Runtime grants share the engine's
+  existing suppression by `hasLostAllAbilities` rather than ordering grants against removal timestamps.
+  Filters use the shared predicate evaluator and projected characteristics, with "you" relative to
+  the source's projected controller. Each player's cap is separate on a shared team turn.
+  Affected players choose permanents to **keep tapped** through the existing battlefield selection
+  decision. Keeping all tapped is legal. Duplicate caps do not add; overlapping caps reuse kept
+  permanents and each constraint is validated on submission. The minimum selection count is a safe
+  lower bound (the largest individual excess), so disjoint caps can require more than that displayed
+  minimum; an insufficient selection is rejected with the applicable cap's message. The strategic AI
+  satisfies every stored cap rather than selecting only this lower bound. Untaps outside
+  the active player's untap step, including Seedborn Muse's other-player untaps, are unrestricted.
+
 - `MustAttack(filter = source(), playersOnly = false)` — matching creatures attack each combat if able
   (Valley Dasher, Grand Melee). `playersOnly = true` is "attacks **a player** each combat if able": attacking
   a planeswalker or battle is rejected while some player is a legal defender for it. Grant it for a

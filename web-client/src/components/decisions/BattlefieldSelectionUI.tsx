@@ -58,13 +58,11 @@ export function BattlefieldSelectionUI({
   const handleConfirm = () => {
     if (canConfirm && decisionSelectionState) {
       submitDecision(decision.id, decisionSelectionState.selectedOptions)
-      cancelDecisionSelection(decision.id)
     }
   }
 
   const handleSkip = () => {
     submitDecision(decision.id, [])
-    cancelDecisionSelection(decision.id)
   }
 
   // Side banner (similar to ChooseTargetsDecision)

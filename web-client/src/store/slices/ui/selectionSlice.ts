@@ -590,7 +590,7 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
     }
     get().submitAction(action, decisionInteractionEpoch(action.response.decisionId))
 
-    set({ decisionSelectionState: null })
+    // Keep the selection until the server advances the decision, so rejected choices can be corrected.
   },
 
   // Mana source selection actions (pre-cast)
