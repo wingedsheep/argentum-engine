@@ -779,6 +779,10 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   `Costs.pay.PayPlayerCounters(counterType, amount: Int)` provides a fixed resolution-time payment.
   With `PayOrSuffer`, the selected payer spends counters; declining preserves the original
   effect controller and resolution values.
+  `amount` also accepts `DynamicAmounts.sourceManaValue()` on a **spell** cost — "an amount of {E}
+  equal to its mana value", priced off the spell being cast (`CastSpell.cardId`) at validation and
+  payment (Amped Raptor, via `Effects.CastFromCollectionByPaying`). An activated ability's cost has no
+  spell to price it against, so there it is unpayable rather than free.
   Resolution-only amounts are rejected rather than priced as zero. Energy is `CounterType.ENERGY`;
   the vocabulary also works for other player counters. Mana abilities with this non-mana cost use
   manual activation (the auto-tapper does not spend player counters).
@@ -1308,6 +1312,17 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   division against it, and binds it onto the stack object as the ability's X — so the executor deals
   that number even if the creature that set it is gone. Cap the targets with the *board* amount
   (`dynamicMaxCount = <amount>`, not `XValue`, which enumeration treats as a player-chosen X).
+
+  **A spell's X pinned by its additional cost** (Nahiri's Sacrifice: "As an additional cost to cast
+  this spell, sacrifice an artifact or creature with mana value X. … deals X damage divided as you
+  choose among any number of target creatures") has no `{X}` in its mana cost. Write the cost's filter
+  with `.manaValueEqualsX()` (`Costs.additional.SacrificePermanent((Artifact or Creature).manaValueEqualsX())`),
+  and read X with `DynamicAmounts.xValue()` for both `dynamicTotal` and the target cap
+  (`dynamicMaxCount`). The engine offers **one cast per mana value the caster could sacrifice**, each
+  with its `CastSpell.xValue` fixed, the sacrifice picker narrowed to that mana value, and the total
+  and target cap resolved — picking the offer *is* announcing X (CR 107.3a). The validator re-checks
+  the sacrificed permanent against the announced X (an unannounced X is 0) and the division against
+  the X-derived total.
 
   **Always cap the target count at the total.** Each chosen target must be assigned at least 1 damage
   (CR 601.2d), so a requirement that lets the player pick more targets than there is damage leaves them
@@ -2824,7 +2839,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 - `ReduceSpellCostsEffect(spellFilter, amount, duration = Duration.EndOfTurn)` (facade `Effects.ReduceSpellCosts(spellFilter, amount, duration)`) — the **repeating** counterpart of `GrantNextSpellAffinityEffect`: "spells you cast this turn that match `spellFilter` cost {X} less to cast." `amount` (a `DynamicAmount`) is evaluated **once, when this effect resolves**, and the resolved number is stored on `GameState.spellCostReductions`; every matching spell the controller casts until `duration` ends is discounted by it, and nothing is consumed by a cast. Only generic mana is reduced (CR 601.2f). `duration` is `Duration.EndOfTurn` (cleared at the turn boundary by `TurnManager.startTurn`) or `Duration.UntilYourNextTurn` ("until your next turn, instant and sorcery spells you cast cost {1} less" — it keeps discounting instants cast on opponents' turns and is removed after the controller's next untap step by `CleanupPhaseManager.expireUntilYourNextTurnEffects`); any other duration throws at construction. Because it lives on the state rather than on the source, the discount survives the source leaving the battlefield. Resolving `amount` up front is what the Scion cycle's rulings require ("the value of X is determined only once, at the time the ability resolves") — reach for a static `ModifySpellCost` instead when the reduction should track board state continuously. Used by **Will, Scion of Peace** (`DynamicAmounts.lifeGainedThisTurn()`, white and/or blue spells), **Rowan, Scion of War** (`DynamicAmounts.lifeLostThisTurn()`, black and/or red) and **Ral, Leyline Prodigy**'s +1 (`Fixed(1)`, instant/sorcery, `UntilYourNextTurn`).
 - `CopyCardIntoCollectionEffect(source, storeAs)` *(SDK-internal step; cards use `Effects.Pipeline { copyCard }` — §5.5.)* (facade `Effects.CopyCardIntoCollection(source, storeAs)`) — copy a **card in a zone** (not a spell on the stack), publishing the copy's entity id to pipeline collection `storeAs`. Per Rule 707.12 the copy is created in the card's current zone under the effect's controller and tagged as a stack-style copy, so once cast it becomes a token if it's a permanent spell and ceases to exist if it's an instant/sorcery (Rule 707.10). Pair with `CastFromCollectionWithoutPayingCostEffect(from)` (facade `Effects.CastFromCollectionWithoutPayingCost(from)`, wrap in `Effects.May` for "you may cast") to express "copy a card, then cast the copy" — e.g. **Shiko, Paragon of the Way**: `Composite(MoveToZoneEffect(target, Zone.EXILE), Effects.CopyCardIntoCollection(target, "copy"), Effects.May(Effects.CastFromCollectionWithoutPayingCost("copy")))`. A copy that is never cast is swept up by the Rule 707.10a state-based action (`PhantomCardCopiesCheck`), so no explicit cleanup step is needed. For the "you may cast it" wording that **doesn't** say "without paying its mana cost", use `Effects.CastFromCollection(from, storeCastTo?)` (`CastFromCollectionWithoutPayingCostEffect(from, payManaCost = true, storeCastTo)`): the controller pays the spell's normal cost (an {X} spell prompts for X) instead of casting for free. Pass `storeCastTo` to publish the cast card's id to that pipeline collection on a successful cast, then gate a follow-up with `Effects.IfYouDo(this, then, SuccessCriterion.CollectionNonEmpty(storeCastTo))` — e.g. **Kaervek, the Punisher**: `Composite(Move(target, EXILE), CopyCardIntoCollection(target, "copy"), Effects.May(Effects.IfYouDo(CastFromCollection("copy", storeCastTo = "cast"), LoseLife(2, Controller), SuccessCriterion.CollectionNonEmpty("cast"))))` — declining (or being unable to pay) leaves the collection empty, so no life is lost. (`storeCastTo` is reliably published for synchronous casts and target-selection casts; an {X}-cost spell cast with no targets is the one sub-case where the publish doesn't survive the X pause.) **Free-casting still pays the copied spell's non-mana additional costs** (CR 601.2f / 118.9 waive only the mana cost) — when the copy carries a printed sacrifice / discard / exile / tap additional cost, the engine resolves it during the synthesized cast: a forced single option is auto-paid, and a real choice pauses for an on-battlefield (sacrifice/tap) or overlay (discard/exile) selection; if the cost can't be paid the cast doesn't happen (e.g. Roving Actuator copying **Embrace Oblivion**'s "sacrifice an artifact or creature" still makes you sacrifice).
 - `CopyCollectionIntoCollectionEffect(from, storeAs)` *(SDK-internal step; cards use `Effects.Pipeline { copyCards }` — §5.5.)* (facade `Effects.CopyCollectionIntoCollection(from, storeAs)`) — the collection-wide sibling of `CopyCardIntoCollectionEffect`: copy **every** card in pipeline collection `from`, publishing all the copies' entity ids (in `from` order) to `storeAs`. For "copy them" over a set of cards rather than one (`CopyCardIntoCollection` overwrites its collection, so it can't accumulate across a `ForEach`). Each copy is created in its original's current zone (Rule 707.12) and tagged as a stack-style copy, so gather/exile the originals first, then copy. Pair with `Effects.CastAnyNumberFromCollection(storeAs)` for "copy them. You may cast any number of the copies" — e.g. **The Tale of Tamiyo** IV: `Composite(ForEachTargetEffect(Move(ContextTarget(0), EXILE)), GatherCards(ChosenTargets, "exiled"), CopyCollectionIntoCollection("exiled", "copies"), CastAnyNumberFromCollection("copies"))`. Copies never cast are swept by the Rule 707.10a state-based action.
-- `CastFromCollectionWithoutPayingCostEffect(from, payManaCost = false, storeCastTo = null, castTransformed = false, insteadOfGraveyard = null, caster = Chooser.Controller)` — `castTransformed = true` casts the card **transformed**, back face up (CR 712.8c), the way disturb casts a card from the graveyard: the back face supplies the spell's card types (hence its timing), its targets and `auraTarget`, its name in the prompt, and the permanent it becomes. It is carried to the cast as `MayPlayPermission.castTransformed`, so the whole ordinary cast pipeline honors it — distinct from `MayPlayPermission.castFaceIndex`, which picks an alternative *face* of a multi-face card (an Adventure, a split half) rather than turning a transforming double-faced card over. A card with **no back face** is not cast at all and stays where it is (the CR 310.12b ruling: a token or non-transforming card that became a copy of a Siege "remains in exile"). Backs `Sieges.defeatAbility` — "exile it, then you may cast it transformed without paying its mana cost".
+- `CastFromCollectionWithoutPayingCostEffect(from, payManaCost = false, storeCastTo = null, castTransformed = false, insteadOfGraveyard = null, caster = Chooser.Controller, alternativeCost = null)` — `alternativeCost` (an `AdditionalCost`, facade `Effects.CastFromCollectionByPaying(from, cost, storeCastTo?)`) is "you may cast that card **by paying [cost] rather than paying its mana cost**", still during this effect's resolution (timing ignored, nothing left castable afterwards). The mana cost is waived (so {X} is 0) and `cost` is stamped as a `PlayWithAdditionalCostComponent` for that one cast, so `CastSpellHandler` validates and charges it with the spell's own additional costs (kicker etc. still apply — it is an alternative cost, CR 118.9); a client can't skip it. The executor offers nothing when the caster can't afford it (CR 601.2h), and a cast that never initiates removes the stamp. **Amped Raptor**: `Effects.If(Conditions.CompareAmounts(DynamicAmounts.energyCount(), GTE, DynamicAmounts.manaValueOf(nonland)), Effects.May(Effects.CastFromCollectionByPaying(nonland, Costs.additional.PayPlayerCounters(CounterType.ENERGY, DynamicAmounts.sourceManaValue()))))` — the `If` only keeps the "you may" from being asked when the energy isn't there. Mutually exclusive with `payManaCost`. `castTransformed = true` casts the card **transformed**, back face up (CR 712.8c), the way disturb casts a card from the graveyard: the back face supplies the spell's card types (hence its timing), its targets and `auraTarget`, its name in the prompt, and the permanent it becomes. It is carried to the cast as `MayPlayPermission.castTransformed`, so the whole ordinary cast pipeline honors it — distinct from `MayPlayPermission.castFaceIndex`, which picks an alternative *face* of a multi-face card (an Adventure, a split half) rather than turning a transforming double-faced card over. A card with **no back face** is not cast at all and stays where it is (the CR 310.12b ruling: a token or non-transforming card that became a copy of a Siege "remains in exile"). Backs `Sieges.defeatAbility` — "exile it, then you may cast it transformed without paying its mana cost".
 
   `insteadOfGraveyard` is the **cast-this-way destination rider**: an `AfterResolveDestination`
   naming where the spell goes when it would leave the stack for its owner's graveyard — `EXILE`
@@ -9261,6 +9276,15 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Creature.youControl(), excludeSelf = true), DynamicAmount.Fixed(3), powerUpOnly = true)`.
   It stacks with power-up's own reduction, which is applied first (CR 601.2f lets multiple reductions
   apply in any order).
+  `onlyIfTargetIsSource = true` narrows it to activations that **target the static's own source** —
+  Bladegraft Aspirant: "Activated abilities of Equipment you control that target this creature cost
+  {1} less to activate" →
+  `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT).youControl()), DynamicAmounts.fixed(1), onlyIfTargetIsSource = true)`.
+  Targets are chosen before the total cost is determined (CR 601.2c → 601.2f), so the handler
+  prices it against the chosen targets exactly; the enumerator, running before targets exist,
+  offers it optimistically for any *targeted* ability while the source is a creature (an untargeted
+  ability is never reduced). It covers every activated ability of a matching source, equip
+  included — `ReduceEquipCost.onlyIfTargetIsSource` is the equip-only sibling keyed on the player.
 - `IncreaseActivatedAbilityCost(filter, amount)` — the taxing mirror of
   `ReduceActivatedAbilityCost`: activated abilities of sources matching `filter` cost `amount`
   generic mana **more** to activate. The two are summed into a single net delta before either is
@@ -9488,6 +9512,13 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `CastFromZoneEnumerator.enumerateIntrinsicZoneCast` via the same `AdditionalCostData` /
   `buildLinkedExileAdditionalCostInfo` plumbing used for linked-exile grants (including a
   `DiscardCard` rendering with `validDiscardTargets`).
+- `GrantEmergeToOwnSpells(spellFilter = Creature)` — spells the controller casts matching `spellFilter` have emerge
+  (CR 702.119) with an emerge cost **equal to the spell's own mana cost** (Herigast, Erupting Nullkite: "Each creature
+  spell you cast has emerge. The emerge cost is equal to its mana cost."). Read through `EmergeCasts.effectiveEmerge`,
+  so it behaves exactly like a printed `Emerge`: same `AlternativeCostType.EMERGE` action, same per-candidate generic
+  reduction, same post-mana sacrifice. A printed emerge on the spell wins over the grant. The grant is read as the cast
+  is proposed and validated, so the granter itself may be the creature sacrificed (Herigast's ruling). Only the
+  granter's controller benefits; offered from the hand, where the emerge enumerator looks.
 - `GrantWarpToCardsInHand(filter, cost)` — cards in the controller's hand matching `filter` gain
   warp (CR 702.185) with mana cost `cost`. Behaves identically to a printed warp keyword: surfaces a
   "Cast (Warp)" legal action, marks `wasWarped` on resolution, and the post-resolution permanent is
@@ -11128,8 +11159,8 @@ composite abilities).
   action that errors on submission. `CastSpellHandler` prices the cast against the creature actually chosen and
   sacrifices it **after** the mana payment: CR 601.2f–g activate mana abilities before CR 601.2h pays the total cost, so
   the creature may legally be tapped for mana toward its own emerge cost before it dies. The chosen creature rides
-  `CastSpell.additionalCostPayment.sacrificedPermanents`, exactly as Sneak's bounce rides `bouncedPermanents`. Printed
-  only — no card grants emerge. **Emerge from [quality]** (CR 702.119b, Crabomination's "emerge from artifact") is
+  `CastSpell.additionalCostPayment.sacrificedPermanents`, exactly as Sneak's bounce rides `bouncedPermanents`. Printed,
+  or granted by `GrantEmergeToOwnSpells` (below) — every read site goes through `EmergeCasts.effectiveEmerge`. **Emerge from [quality]** (CR 702.119b, Crabomination's "emerge from artifact") is
   `emerge("{5}{B}{B}", from = GameObjectFilter.Artifact)`: `from` replaces "a creature" as the sacrifice filter
   (`KeywordAbility.Emerge.sacrificeFilter`, matched against projected state by `EmergeCasts.sacrificeCandidates`) for
   the enumerator's candidate list *and* the cast validator, and renders as "Emerge from artifact {cost}". Null is plain

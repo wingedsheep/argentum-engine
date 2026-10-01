@@ -468,13 +468,7 @@ class TargetEnumerationUtils(
         return filter.baseFilter.cardPredicates.any { containsManaValueEqualsX(it) }
     }
 
-    private fun containsManaValueEqualsX(predicate: CardPredicate): Boolean = when (predicate) {
-        CardPredicate.ManaValueEqualsX -> true
-        is CardPredicate.And -> predicate.predicates.any { containsManaValueEqualsX(it) }
-        is CardPredicate.Or -> predicate.predicates.any { containsManaValueEqualsX(it) }
-        is CardPredicate.Not -> containsManaValueEqualsX(predicate.predicate)
-        else -> false
-    }
+    private fun containsManaValueEqualsX(predicate: CardPredicate): Boolean = Companion.containsManaValueEqualsX(predicate)
 
     /**
      * True when [requirement] is a [TargetObject] whose filter contains
@@ -522,6 +516,22 @@ class TargetEnumerationUtils(
             .isProtectedFromSource(state, playerId, sourceId, casterId, predicateEvaluator = predicateEvaluator)
 
     companion object {
+        /**
+         * True when [filter] pins a mana value to X ([CardPredicate.ManaValueEqualsX] anywhere in
+         * its predicate tree) — the shape of a cost that *defines* X, "sacrifice an artifact or
+         * creature with mana value X" (Nahiri's Sacrifice).
+         */
+        fun filterUsesManaValueEqualsX(filter: GameObjectFilter): Boolean =
+            filter.cardPredicates.any { containsManaValueEqualsX(it) }
+
+        private fun containsManaValueEqualsX(predicate: CardPredicate): Boolean = when (predicate) {
+            CardPredicate.ManaValueEqualsX -> true
+            is CardPredicate.And -> predicate.predicates.any { containsManaValueEqualsX(it) }
+            is CardPredicate.Or -> predicate.predicates.any { containsManaValueEqualsX(it) }
+            is CardPredicate.Not -> containsManaValueEqualsX(predicate.predicate)
+            else -> false
+        }
+
         /**
          * The one definition of "this player target is already decided".
          *

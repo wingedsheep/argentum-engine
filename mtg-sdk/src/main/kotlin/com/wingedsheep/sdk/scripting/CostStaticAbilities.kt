@@ -1106,6 +1106,16 @@ sealed interface UnlockCostTarget {
  * (CR 702.193) — Hulk, Gamma Goliath's "Power-up abilities of other creatures you control cost {3}
  * less to activate."
  *
+ * [onlyIfTargetIsSource] narrows it to activations that **target the static's own source** —
+ * Bladegraft Aspirant's "Activated abilities of Equipment you control that target this creature
+ * cost {1} less to activate." →
+ * `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT).youControl()), DynamicAmounts.fixed(1), onlyIfTargetIsSource = true)`.
+ * Targets are chosen before the total cost is determined (CR 601.2c before 601.2f, via CR 602.2b),
+ * so at payment the reduction is exact; at enumeration (targets not yet chosen) it is offered
+ * optimistically for any targeted ability while the source is a creature. The activated-ability
+ * sibling of [ReduceEquipCost.onlyIfTargetIsSource], which covers *equip* abilities whatever their
+ * source.
+ *
  * @property filter Which permanents' activated abilities are cheaper (matched via projected state;
  *   use [GroupFilter.attachedCreature] for an Aura's enchanted permanent, [GroupFilter.source] for
  *   "this permanent's abilities", or a battlefield filter for a group).
@@ -1113,6 +1123,7 @@ sealed interface UnlockCostTarget {
  * @property manaFloor Minimum total mana the cost may be reduced to (default 0).
  * @property exhaustOnly When true, only exhaust abilities (`ActivatedAbility.isExhaust`) are reduced.
  * @property powerUpOnly When true, only power-up abilities (`ActivatedAbility.isPowerUp`) are reduced.
+ * @property onlyIfTargetIsSource When true, only activations that target this static's source are reduced.
  */
 @SerialName("ReduceActivatedAbilityCost")
 @Serializable
@@ -1121,7 +1132,8 @@ data class ReduceActivatedAbilityCost(
     val amount: DynamicAmount,
     val manaFloor: Int = 0,
     val exhaustOnly: Boolean = false,
-    val powerUpOnly: Boolean = false
+    val powerUpOnly: Boolean = false,
+    val onlyIfTargetIsSource: Boolean = false
 ) : StaticAbility {
     override val description: String = buildString {
         val abilities = when {
@@ -1129,10 +1141,16 @@ data class ReduceActivatedAbilityCost(
             powerUpOnly -> "power-up abilities"
             else -> "activated abilities"
         }
-        append(filter.description.replaceFirstChar { it.uppercase() })
+        if (onlyIfTargetIsSource) {
+            append(abilities.replaceFirstChar { it.uppercase() })
+            append(" of ${filter.description} that target this permanent")
+        } else {
+            append(filter.description.replaceFirstChar { it.uppercase() })
+            append("'s $abilities")
+        }
         when (amount) {
-            is DynamicAmount.Fixed -> append("'s $abilities cost {${amount.amount}} less to activate")
-            else -> append("'s $abilities cost {X} less to activate, where X is ${amount.description}")
+            is DynamicAmount.Fixed -> append(" cost {${amount.amount}} less to activate")
+            else -> append(" cost {X} less to activate, where X is ${amount.description}")
         }
         if (manaFloor > 0) {
             append(". This effect can't reduce the mana in that cost to less than ")

@@ -1215,6 +1215,53 @@
     ]
 }
 
+// Bladegraft Aspirant
+{
+    "name": "Bladegraft Aspirant",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Phyrexian Warrior",
+    "oracleText": "Menace\nEquipment spells you cast cost {1} less to cast.\nActivated abilities of Equipment you control that target this creature cost {1} less to activate.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "Equipment"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            },
+            {
+                "type": "ReduceActivatedAbilityCost",
+                "filter": {
+                    "baseFilter": "artifact Equipment ctrl:you"
+                },
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "onlyIfTargetIsSource": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "artist": "Valera Lutfullina",
+        "flavorText": "\"To dance to the music of Juex, leap like the flickering flame and hit like the hammer.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d6cf933-73fe-4e79-8d0b-29dc0f18b25d.jpg?1783918035"
+    }
+}
+
 // Bladehold War-Whip
 {
     "name": "Bladehold War-Whip",
@@ -6375,6 +6422,76 @@
         "artist": "Cristi Balanescu",
         "imageUri": "https://cards.scryfall.io/normal/front/6/0/6046e50a-f4c9-4029-a589-62a19371b734.jpg?1783917989"
     }
+}
+
+// Nahiri's Sacrifice
+{
+    "name": "Nahiri's Sacrifice",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice an artifact or creature with mana value X.\nNahiri's Sacrifice deals X damage divided as you choose among any number of target creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "DividedDamage",
+            "totalDamage": 0,
+            "dynamicTotal": "XValue"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "minCount": 0,
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsArtifact",
+                                    "IsCreature"
+                                ]
+                            },
+                            "ManaValueEqualsX"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "UNCOMMON",
+        "artist": "Andrey Kuzinskiy",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98395039-1353-4fa8-b51d-c4e1cadf9263.jpg?1783918025",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "You choose the value of X, the targets, and how damage will be divided as you cast Nahiri's Sacrifice."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "You can't choose more than X targets, and each chosen target must receive at least 1 damage."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "If some of the targets of the last ability become illegal, the original division of damage still applies, but the damage that would have been dealt to illegal targets isn't dealt at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Nahiri, the Unforgiving

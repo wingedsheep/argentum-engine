@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -369,6 +370,16 @@ data class ExileLibraryUntilManaValueEffect(
  * cast from *each opponent's* graveyard by *you* (Jetsam) needs [Chooser.SourceController] to
  * name the spell's own controller instead. The default [Chooser.Controller] is the ordinary case
  * and is what every non-iterated card wants.
+ *
+ * **Paying something else instead.** Set [alternativeCost] for "you may cast that card by paying
+ * [cost] rather than paying its mana cost" — Amped Raptor's "an amount of {E} equal to its mana
+ * value" (`Costs.additional.PayPlayerCounters(ENERGY, DynamicAmounts.sourceManaValue())`, priced off
+ * the spell being cast). The mana cost is waived exactly as for the free cast (so {X} is 0, CR
+ * 107.3b) and [alternativeCost] is owed as part of the total cost (CR 118.9 — it is an alternative
+ * cost, so additional costs such as kicker still apply). The executor offers nothing when the
+ * caster can't afford it (CR 601.2h), and the cast handler charges it like any spell cost, so it
+ * can't be skipped. The cost is stamped on the card for this one cast only and removed if the cast
+ * never initiates. Mutually exclusive with [payManaCost].
  */
 @SerialName("CastFromCollectionWithoutPayingCost")
 @Serializable
@@ -395,12 +406,31 @@ data class CastFromCollectionWithoutPayingCostEffect(
     val insteadOfGraveyard: AfterResolveDestination? = null,
     /** Who casts the card. Only matters inside a per-player iteration — see the class KDoc. */
     val caster: Chooser = Chooser.Controller,
+    /** The non-mana cost paid rather than the mana cost, or null — see the class KDoc. */
+    val alternativeCost: AdditionalCost? = null,
 ) : Effect {
+    init {
+        require(alternativeCost == null || !payManaCost) {
+            "An alternative cost replaces the mana cost; it can't be combined with payManaCost"
+        }
+    }
+
     override val description: String = buildString {
         append("Cast that card")
         if (castTransformed) append(" transformed")
-        if (!payManaCost) append(" without paying its mana cost")
+        when {
+            alternativeCost != null -> append(
+                " by ${alternativeCost.description.replaceFirstChar { it.lowercaseChar() }.replaceFirst("pay ", "paying ")}" +
+                    " rather than paying its mana cost"
+            )
+            !payManaCost -> append(" without paying its mana cost")
+        }
         insteadOfGraveyard?.let { append(it.riderText) }
+    }
+
+    override fun applyTextReplacement(replacer: com.wingedsheep.sdk.scripting.text.TextReplacer): Effect {
+        val newCost = alternativeCost?.applyTextReplacement(replacer)
+        return if (newCost == alternativeCost) this else copy(alternativeCost = newCost)
     }
 }
 

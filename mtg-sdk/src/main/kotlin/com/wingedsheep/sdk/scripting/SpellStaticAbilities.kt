@@ -456,6 +456,35 @@ data class GrantWarpToCardsInHand(
 }
 
 /**
+ * Grants emerge (CR 702.119) to spells the granter's controller casts that match [spellFilter], with
+ * an emerge cost equal to **each spell's own mana cost** — Herigast, Erupting Nullkite: "Each
+ * creature spell you cast has emerge. The emerge cost is equal to its mana cost."
+ *
+ * The granted emerge is read exactly like a printed [KeywordAbility.Emerge]: the caster sacrifices
+ * a creature and pays the spell's mana cost reduced by that creature's mana value (generic portion
+ * only). Because the cost is the spell's mana cost, the only saving is the sacrifice's reduction.
+ *
+ * Read wherever emerge is cast from (the hand). A printed emerge on the spell wins over the grant.
+ * The grant is checked as the cast is proposed and validated, so the granter itself may be the
+ * creature sacrificed (Herigast's ruling: losing control of it mid-cast doesn't matter).
+ * Controller-only — the source permanent's controller is the only beneficiary.
+ *
+ * @property spellFilter Which spells gain emerge (Herigast: creature spells).
+ */
+@SerialName("GrantEmergeToOwnSpells")
+@Serializable
+data class GrantEmergeToOwnSpells(
+    val spellFilter: GameObjectFilter = GameObjectFilter.Creature
+) : StaticAbility {
+    override val description: String =
+        "Each ${spellFilter.description.lowercase()} spell you cast has emerge. The emerge cost is equal to its mana cost"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = spellFilter.applyTextReplacement(replacer)
+        return if (newFilter !== spellFilter) copy(spellFilter = newFilter) else this
+    }
+}
+
+/**
  * Grants miracle (CR 702.94) to cards in the granter's controller's hand that match [filter].
  * Models oracle text like "Each instant and sorcery card in your hand has miracle {2}."
  * (Lorehold, the Historian).

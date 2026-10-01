@@ -394,7 +394,11 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
     }
 
     /** Pay counters from the paying player, before the spell or ability resolves.
-     * Amounts are fixed, announced X, or the announced targets' total mana value.
+     * Amounts are fixed, announced X, the announced targets' total mana value, or the cost's own
+     * source's mana value ([SOURCE_MANA_VALUE] — the spell being cast: Amped Raptor's "by paying an
+     * amount of {E} equal to its mana value rather than paying its mana cost"). Every one of those
+     * is known at CR 601.2f, when the total cost is determined. [SOURCE_MANA_VALUE] is priced on
+     * spell costs only; on an activated ability's cost it is unpayable rather than free.
      * A resolution-pipeline amount is not a cost and must not silently price as zero.
      */
     @SerialName("AtomPayPlayerCounters")
@@ -406,17 +410,27 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
         init {
             require(amount is DynamicAmount.Fixed && amount.amount >= 0 ||
                 amount is DynamicAmount.XValue ||
+                amount == SOURCE_MANA_VALUE ||
                 amount == DynamicAmount.ContextProperty(
                     ContextPropertyKey.TARGETS_TOTAL_MANA_VALUE
-                )) { "Player-counter costs require a nonnegative fixed amount, X, or target mana value" }
+                )) { "Player-counter costs require a nonnegative fixed amount, X, its source's mana value, or target mana value" }
         }
-        override val description: String get() {
-            val quantity = when (amount) {
-                is DynamicAmount.Fixed -> amount.amount.toString()
-                is DynamicAmount.XValue -> "X"
-                else -> "the targets' total mana value in"
-            }
-            return "pay $quantity ${counterType.printed} counters"
+        override val description: String get() = when (amount) {
+            is DynamicAmount.Fixed -> "pay ${amount.amount} ${counterType.printed} counters"
+            is DynamicAmount.XValue -> "pay X ${counterType.printed} counters"
+            SOURCE_MANA_VALUE -> "pay an amount of ${counterType.printed} counters equal to its mana value"
+            else -> "pay the targets' total mana value in ${counterType.printed} counters"
+        }
+
+        companion object {
+            /**
+             * "Equal to its mana value" — the mana value of the spell the cost is paid for. The same
+             * value as `DynamicAmounts.sourceManaValue()`, which is how cards spell it.
+             */
+            val SOURCE_MANA_VALUE: DynamicAmount = DynamicAmount.EntityProperty(
+                com.wingedsheep.sdk.scripting.targets.EffectTarget.Self,
+                com.wingedsheep.sdk.scripting.values.EntityNumericProperty.ManaValue,
+            )
         }
     }
 

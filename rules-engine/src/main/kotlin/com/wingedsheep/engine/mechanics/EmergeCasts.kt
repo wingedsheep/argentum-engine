@@ -2,11 +2,13 @@ package com.wingedsheep.engine.mechanics
 
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.GrantEmergeToOwnSpells
 import com.wingedsheep.sdk.scripting.KeywordAbility
 
 /**
@@ -31,14 +33,51 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
  *  - Emerge grants no timing permission of its own — the spell is cast at its normal timing, which
  *    for Elder Deep-Fiend means flash.
  *
- * Like [DisturbCasts] there is no runtime-grant source: no card grants emerge to another, so a
- * printed keyword is the only input.
+ * Emerge is printed ([KeywordAbility.Emerge]) or granted by a battlefield static
+ * ([GrantEmergeToOwnSpells] — Herigast's "each creature spell you cast has emerge", priced at the
+ * spell's own mana cost). Every read site goes through [effectiveEmerge] so the two behave
+ * identically.
  */
 object EmergeCasts {
 
     /** The printed emerge keyword on [cardDef], or null when it has none. */
     fun printedEmerge(cardDef: CardDefinition?): KeywordAbility.Emerge? =
         cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.Emerge>()?.firstOrNull()
+
+    /**
+     * The emerge [cardId] has when [playerId] casts it, or null when it has none. A printed emerge
+     * wins; otherwise the first [GrantEmergeToOwnSpells] on a permanent [playerId] controls whose
+     * filter matches the card supplies a synthetic plain emerge priced at the card's mana cost.
+     *
+     * Printed-first mirrors every other printed-or-granted alternative cost ([WarpGrants],
+     * [MiracleGrants]). When both apply, the rules let the caster pick either emerge cost; the
+     * printed one is the one offered, since a printed emerge is the card's own discount.
+     */
+    fun effectiveEmerge(
+        state: GameState,
+        cardId: EntityId,
+        cardDef: CardDefinition?,
+        playerId: EntityId,
+        cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator
+    ): KeywordAbility.Emerge? {
+        printedEmerge(cardDef)?.let { return it }
+        if (cardDef == null) return null
+        val projected = state.projectedState
+        val context = PredicateContext(controllerId = playerId)
+        // Controlled view, so the grant follows whoever controls the granter (CR 109.5).
+        for (permanentId in state.controlledBattlefield(playerId)) {
+            val source = state.getEntity(permanentId)?.get<CardComponent>() ?: continue
+            val sourceDef = cardRegistry.getCard(source.cardDefinitionId) ?: continue
+            for (ability in sourceDef.script.staticAbilities) {
+                if (ability !is GrantEmergeToOwnSpells) continue
+                if (predicateEvaluator.matches(state, projected, cardId, ability.spellFilter, context)) {
+                    return KeywordAbility.Emerge(cardDef.manaCost)
+                }
+            }
+        }
+        return null
+    }
 
     /**
      * Permanents [playerId] controls that could be sacrificed to pay [emerge] — creatures for plain

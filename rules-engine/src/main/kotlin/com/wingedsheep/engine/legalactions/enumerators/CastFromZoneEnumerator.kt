@@ -111,7 +111,7 @@ class CastFromZoneEnumerator(
             val owed = costs.owedAdditionalCosts(state, action, cardDef)
             val counterMaxX = PlayerCounterPayment.spellMaxX(state, playerId, owed)
             offer.copy(
-                affordable = offer.affordable && PlayerCounterPayment.canAffordSpell(state, playerId, owed),
+                affordable = offer.affordable && PlayerCounterPayment.canAffordSpell(state, playerId, owed, action.cardId),
                 hasXCost = offer.hasXCost || counterMaxX != null,
                 maxAffordableX = listOfNotNull(offer.maxAffordableX.takeIf { offer.hasXCost }, counterMaxX).minOrNull()
             )

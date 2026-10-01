@@ -224,7 +224,7 @@ internal class CastValidator(
         validateOptionalCostKeywords(state, action, cardComponent, cardDef, source)?.let { return it }
         validateTotalCost(state, action, cardComponent, cardDef, source)?.let { return it }
         validateTargets(state, action, cardDef, source)?.let { return it }
-        validateDamageDistribution(action, cardDef)?.let { return it }
+        validateDamageDistribution(state, action, cardDef)?.let { return it }
         return validateTargetLifeTaxes(state, action)
     }
 
@@ -533,7 +533,7 @@ internal class CastValidator(
         // chosen creature also fixes the generic reduction, so the total cost is priced against
         // exactly this selection.
         val emerge = if (action.useAlternativeCost && action.altAllows(AlternativeCostType.EMERGE)) {
-            EmergeCasts.printedEmerge(cardDef)
+            EmergeCasts.effectiveEmerge(state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator)
         } else null
         if (emerge != null) {
             val sacrificed = action.additionalCostPayment?.sacrificedPermanents ?: emptyList()
@@ -796,9 +796,11 @@ internal class CastValidator(
     /**
      * A divided-damage spell aimed at more than one target (CR 601.2d): the distribution names
      * exactly the chosen targets, sums to the spell's damage, and gives each at least 1. The kicked
-     * or cleaved effect is the one divided when that variant is cast.
+     * or cleaved effect is the one divided when that variant is cast. A `dynamicTotal` is evaluated
+     * with the announced X — the same value the stack object carries to resolution — so "X damage
+     * divided …" where X is fixed by a cost (Nahiri's Sacrifice) validates against that X.
      */
-    private fun validateDamageDistribution(action: CastSpell, cardDef: CardDefinition?): String? {
+    private fun validateDamageDistribution(state: GameState, action: CastSpell, cardDef: CardDefinition?): String? {
         val spellEffect = if (action.declaredCostSlot != null && cardDef?.script?.kickerSpellEffect != null) {
             cardDef.script.kickerSpellEffect
         } else if (cardDef != null && isCleaveCast(action, cardDef) && cardDef.script.cleaveSpellEffect != null) {
@@ -812,9 +814,13 @@ internal class CastValidator(
         if (distribution.keys != action.targets.map { it.toEntityId() }.toSet()) {
             return "Damage distribution targets must match chosen targets"
         }
+        val total = spellEffect.dynamicTotal?.let { amount ->
+            val context = EffectContext(sourceId = action.cardId, controllerId = action.playerId, xValue = action.xValue)
+            predicateEvaluator.amounts.evaluate(state, amount, context).coerceAtLeast(0)
+        } ?: spellEffect.totalDamage
         val totalDistributed = distribution.values.sum()
-        if (totalDistributed != spellEffect.totalDamage) {
-            return "Total distributed damage ($totalDistributed) must equal ${spellEffect.totalDamage}"
+        if (totalDistributed != total) {
+            return "Total distributed damage ($totalDistributed) must equal $total"
         }
         // Each target gets at least 1 damage (CR 601.2d)
         val minPerTarget = 1

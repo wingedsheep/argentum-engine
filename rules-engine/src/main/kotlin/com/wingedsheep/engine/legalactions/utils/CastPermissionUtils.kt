@@ -772,6 +772,14 @@ class CastPermissionUtils(
      * additionally switches on power-up's *own* cost reduction — see
      * [applyPowerUpSelfReduction], which is pip-wise rather than generic-only and so runs as its own
      * step before the statics above. CR 601.2f lets multiple cost reductions apply in any order.
+     *
+     * [chosenTargetIds] are the activation's chosen targets, for a
+     * [ReduceActivatedAbilityCost.onlyIfTargetIsSource] static (Bladegraft Aspirant), which reduces
+     * only an activation targeting the static's own source. Targets are chosen before the total
+     * cost is determined (CR 601.2c, 601.2f), so at payment the list is exact. `null` means "this
+     * ability targets, but the targets aren't chosen yet" — enumeration — and offers the reduction
+     * optimistically while the static's source is a creature, as [equipReductionApplies] does. The
+     * default (no targets) never meets the restriction.
      */
     fun applyActivatedAbilityCostReduction(
         cost: AbilityCost,
@@ -779,13 +787,16 @@ class CastPermissionUtils(
         sourceId: EntityId?,
         isExhaustAbility: Boolean = false,
         isPowerUpAbility: Boolean = false,
-        isManaAbility: Boolean = false
+        isManaAbility: Boolean = false,
+        chosenTargetIds: List<EntityId>? = emptyList()
     ): AbilityCost {
         if (sourceId == null) return cost
         val reduced =
             if (isPowerUpAbility) applyPowerUpSelfReduction(cost, state, sourceId) else cost
         val (net, manaFloor) =
-            sumActivatedAbilityCostModifications(state, sourceId, isExhaustAbility, isPowerUpAbility, isManaAbility)
+            sumActivatedAbilityCostModifications(
+                state, sourceId, isExhaustAbility, isPowerUpAbility, isManaAbility, chosenTargetIds
+            )
         if (net == 0) return reduced
         // net > 0 reduces (floored), net < 0 taxes. A reduction can only shrink mana that is
         // already there; a tax applies to *every* activated ability, so a cost with no mana part
@@ -878,14 +889,17 @@ class CastPermissionUtils(
      *
      * An `exhaustOnly` reduction contributes nothing unless [isExhaustAbility] is set, and likewise
      * a `powerUpOnly` one unless [isPowerUpAbility] is set. An `excludeManaAbilities` *increase*
-     * contributes nothing when [isManaAbility] is set (Suppression Field).
+     * contributes nothing when [isManaAbility] is set (Suppression Field). An
+     * `onlyIfTargetIsSource` reduction contributes only when [chosenTargetIds] include the static's
+     * own source (see [applyActivatedAbilityCostReduction] for the `null` enumeration case).
      */
     private fun sumActivatedAbilityCostModifications(
         state: GameState,
         sourceId: EntityId,
         isExhaustAbility: Boolean,
         isPowerUpAbility: Boolean,
-        isManaAbility: Boolean
+        isManaAbility: Boolean,
+        chosenTargetIds: List<EntityId>?
     ): Pair<Int, Int> {
         var net = 0
         var floor = 0
@@ -899,6 +913,11 @@ class CastPermissionUtils(
                     is com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost -> {
                         if (ability.exhaustOnly && !isExhaustAbility) continue
                         if (ability.powerUpOnly && !isPowerUpAbility) continue
+                        if (ability.onlyIfTargetIsSource) {
+                            val targetsSource = chosenTargetIds?.contains(entityId)
+                                ?: state.projectedState.isCreature(entityId)
+                            if (!targetsSource) continue
+                        }
                         if (!activatedAbilityReductionApplies(state, entityId, ability.filter, sourceId)) continue
                         val owner = controllerId ?: continue
                         net += evaluator.evaluate(

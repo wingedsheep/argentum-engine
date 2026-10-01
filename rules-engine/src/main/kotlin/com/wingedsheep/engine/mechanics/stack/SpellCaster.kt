@@ -469,6 +469,9 @@ internal class SpellCaster(
             }
             updated = updated.without<com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent>()
             updated = updated.without<com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent>()
+            // A runtime substitute/additional cost (Cruelclaw's discard, Amped Raptor's energy) was
+            // owed by this cast and has been paid; it must not be owed again by a later one.
+            updated = updated.without<com.wingedsheep.engine.state.components.identity.PlayWithAdditionalCostComponent>()
             // The madness offer (CR 702.35a) is spent the moment the card is cast; drop the marker
             // with the fixed madness cost it published so the two never outlive each other.
             updated = updated.without<com.wingedsheep.engine.state.components.identity.MadnessExiledComponent>()
