@@ -46,6 +46,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import kotlin.math.max
 import kotlin.math.min
+import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 
 private val BASIC_LAND_SUBTYPES: Set<String> = setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
 
@@ -542,8 +543,15 @@ class DynamicAmountEvaluator(
                 // projected P/T is null, so the final resolveNumericProperty yields base
                 // characteristics anyway — this replaces the former per-reference
                 // `useProjected = false` branches (Ghitu Fire-Eater, Heart-Piercer Manticore, …).
+                val staleSource = amount.entity == EffectTarget.Self &&
+                    if (context.objectReferences.captured) {
+                        !context.objectReferences.isCurrent(context.objectReferences.source, state)
+                    } else {
+                        context.sourceBattlefieldTimestamp != null && context.sourceBattlefieldTimestamp !=
+                            state.getEntity(entityId)?.get<BattlefieldEntryTimestampComponent>()?.timestamp
+                    }
                 if (lkiPolicyFor(amount.entity) == LkiPolicy.LIVE_THEN_LKI &&
-                    entityId !in state.getBattlefield()
+                    (entityId !in state.getBattlefield() || staleSource)
                 ) {
                     // A reference-specific capture (the cost-paid snapshot) wins; otherwise the
                     // departed object's own battlefield-exit snapshot, which the entity carries until

@@ -13,6 +13,8 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
+import com.wingedsheep.sdk.scripting.values.CardNumericProperty
 
 /**
  * Predicates for matching card properties (static characteristics).
@@ -887,6 +889,21 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     data class PowerAtMostEntity(val reference: EffectTarget.SingleEntity) : CardPredicate {
         override val description: String = "with power less than or equal to ${reference.description}"
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
+    /** Compares this object's numeric property with a late-bound amount (including another entity's property). */
+    @SerialName("CompareNumericProperty")
+    @Serializable
+    data class CompareNumericProperty(
+        val property: CardNumericProperty,
+        val operator: ComparisonOperator,
+        val amount: DynamicAmount,
+    ) : CardPredicate {
+        override val description: String = "with ${property.description} ${operator.phrase} ${amount.description}"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
+            val replaced = amount.applyTextReplacement(replacer)
+            return if (replaced !== amount) copy(amount = replaced) else this
+        }
     }
 
     /**

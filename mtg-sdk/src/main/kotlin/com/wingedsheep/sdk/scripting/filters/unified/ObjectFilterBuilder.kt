@@ -11,6 +11,8 @@ import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
+import com.wingedsheep.sdk.scripting.values.CardNumericProperty
 
 /**
  * The one fluent builder surface for narrowing an object filter — "tapped", "you control",
@@ -261,6 +263,13 @@ interface ObjectFilterBuilder<out Self> {
     fun basePowerOrToughness(value: Int) = withCardPredicate(
         CardPredicate.Or(listOf(CardPredicate.BasePowerEquals(value), CardPredicate.BaseToughnessEquals(value)))
     )
+
+    /** Compares a candidate's numeric property with any late-bound amount. */
+    fun compareNumericProperty(
+        property: CardNumericProperty,
+        operator: ComparisonOperator,
+        amount: DynamicAmount,
+    ) = withCardPredicate(CardPredicate.CompareNumericProperty(property, operator, amount))
 
     /** Power at most */
     fun powerAtMost(max: Int) = withCardPredicate(CardPredicate.PowerAtMost(max))

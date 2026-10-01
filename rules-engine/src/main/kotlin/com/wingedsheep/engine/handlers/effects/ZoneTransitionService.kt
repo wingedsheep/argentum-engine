@@ -68,6 +68,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.engine.event.ConditionalSelfGrants
 import com.wingedsheep.engine.state.components.battlefield.withCastChoice
+import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 
 
 /**
@@ -647,6 +648,20 @@ class ZoneTransitionService(
             val preStripLinkedExile = newState.getEntity(entityId)
                 ?.get<com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent>()
             val departedTimestamp = lastKnownSnapshot?.battlefieldEntryTimestamp
+            if (lastKnownSnapshot != null) {
+                for (stackId in newState.stack) {
+                    val ability = newState.getEntity(stackId)
+                        ?.get<ActivatedAbilityOnStackComponent>()
+                        ?: continue
+                    if (ability.sourceId == entityId && ability.lastKnownSourceSnapshot == null &&
+                        ability.sourceBattlefieldTimestamp == departedTimestamp
+                    ) {
+                        newState = newState.updateEntity(stackId) {
+                            it.with(ability.copy(lastKnownSourceSnapshot = lastKnownSnapshot))
+                        }
+                    }
+                }
+            }
             if (departedTimestamp != null && !preStripLinkedExile?.exiledIds.isNullOrEmpty()) {
                 newState = newState.copy(departedLinkedExile = newState.departedLinkedExile +
                     (departedTimestamp to preStripLinkedExile.exiledIds))

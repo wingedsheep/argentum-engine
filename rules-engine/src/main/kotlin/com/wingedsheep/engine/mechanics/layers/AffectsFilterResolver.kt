@@ -360,6 +360,7 @@ internal class AffectsFilterResolver(
                 // Relational to another permanent (Konda's Banner's "creatures that share a color /
                 // a creature type with equipped creature"): evaluated against the intermediate
                 // projection, so the reference's layer-4/5 types and colors are the ones seen here.
+                is CardPredicate.CompareNumericProperty,
                 is CardPredicate.SharesColorWith,
                 is CardPredicate.SharesCreatureTypeWith -> relationalEvaluator.matchesCardPredicate(
                     state, relationalProjection, entityId, predicate, relationalContext
@@ -990,6 +991,7 @@ internal class AffectsFilterResolver(
         is CardPredicate.PowerAtMostEntity -> false
         is CardPredicate.CouldEnchant -> false
         is CardPredicate.PowerLessThanEntity -> false
+        is CardPredicate.CompareNumericProperty -> false
         CardPredicate.PowerGreaterThanBase -> {
             // Self-relative: projected power vs the object's own printed base power.
             val basePower = card.baseStats?.basePower

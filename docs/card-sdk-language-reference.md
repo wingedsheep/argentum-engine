@@ -5339,6 +5339,14 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `.powerGreaterThanEntity(ref)` — power strictly greater than a referenced entity's projected power. Used by
   Éowyn, Fearless Knight ("exile target creature an opponent controls with greater power") — combine
   with `EffectTarget.Self` to express "greater power than the ability's source".
+- `.compareNumericProperty(property, operator, amount)` — compares a candidate's `CardNumericProperty`
+  (`POWER`, `TOUGHNESS`, `MANA_VALUE`, or total `COUNTERS`) with any `DynamicAmount`, using any
+  `ComparisonOperator`. Reads the supplied projection on both sides; a noncreature without P/T does
+  not match a P/T comparison. For Stone Giant use `TOUGHNESS`, `LT`, and
+  `EntityProperty(Self, Power)`. Checks at target selection and again at resolution; a departed
+  activated-ability source uses its frozen departure snapshot, including after a blink. An
+  unbound dynamic reference follows normal amount semantics (zero). These context-dependent predicates
+  do not match historical cast records or standalone trigger/snapshot filters without a value context.
 - `.powerAtMostEntity(ref)` / `.powerLessThanEntity(ref)` — power ≤ (resp. **strictly** <) a referenced
   entity's projected power; inverses of `.powerGreaterThanEntity`. `powerAtMostEntity` backs Old Man of
   the Sea ("power less than or equal to this creature's power"); `powerLessThanEntity` backs "a creature

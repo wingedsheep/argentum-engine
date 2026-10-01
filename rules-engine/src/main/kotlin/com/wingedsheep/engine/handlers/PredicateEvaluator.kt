@@ -69,6 +69,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.engine.state.CastSpellRecord
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
+import com.wingedsheep.sdk.scripting.values.CardNumericProperty
 
 /**
  * Evaluates the new unified predicates and filters against game state.
@@ -417,6 +418,7 @@ class PredicateEvaluator(
             is CardPredicate.BaseToughnessEquals,
             is CardPredicate.PowerGreaterThanEntity,
             is CardPredicate.PowerLessThanEntity,
+            is CardPredicate.CompareNumericProperty,
             is CardPredicate.PowerOrToughnessAtLeast,
             is CardPredicate.PowerOrToughnessAtMost,
             is CardPredicate.SharesCardTypeWith,
@@ -1020,6 +1022,22 @@ class PredicateEvaluator(
                 val power = projectedValues?.power ?: card.baseStats?.basePower ?: 0
                 val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
                 toughness > power
+            }
+
+            is CardPredicate.CompareNumericProperty -> {
+                val value = when (predicate.property) {
+                    CardNumericProperty.POWER ->
+                        projectedValues?.power ?: card.baseStats?.basePower ?: return false
+                    CardNumericProperty.TOUGHNESS ->
+                        projectedValues?.toughness ?: card.baseStats?.baseToughness ?: return false
+                    CardNumericProperty.MANA_VALUE ->
+                        if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                    CardNumericProperty.COUNTERS ->
+                        container.get<CountersComponent>()?.counters?.values?.sum() ?: 0
+                }
+                val effectContext = context?.toEffectContext() ?: return false
+                val amount = amounts.evaluate(state, predicate.amount, effectContext, projected)
+                compareAmounts(value, predicate.operator, amount)
             }
 
             is CardPredicate.PowerGreaterThanEntity -> {
@@ -2474,6 +2492,7 @@ class PredicateEvaluator(
             is CardPredicate.CouldEnchant,
             is CardPredicate.PowerAtMostEntity,
             is CardPredicate.PowerLessThanEntity,
+            is CardPredicate.CompareNumericProperty,
             CardPredicate.PowerGreaterThanBase,
             is CardPredicate.BasePowerEquals,
             is CardPredicate.BaseToughnessEquals,
@@ -2632,9 +2651,8 @@ data class PredicateContext(
      * source-relative [DynamicAmount] cap resolves against the characteristics the source last had
      * (CR 608.2h / 113.7a) instead of falling through to its base characteristics.
      *
-     * Null while the source is still on the battlefield — the evaluator's LKI branch only engages
-     * for an entity that is not in `state.getBattlefield()`, so a live source keeps reading
-     * projected state and a stale snapshot could not shadow it either way.
+     * A live source reads projection. Once its captured object identity has departed, the
+     * snapshot wins even if the same card has returned as a new battlefield object.
      */
     val lastKnownSourceSnapshot: EntitySnapshot? = null,
     /**

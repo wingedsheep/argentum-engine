@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.*
+import com.wingedsheep.engine.handlers.ObjectReferenceEnvironment
 
 /**
  * The CR 608.2b target re-check a spell or ability makes as it resolves: every target is checked
@@ -64,13 +65,22 @@ internal class ResolutionTargetValidator(
          * "power <= the amassed Army's power" needs this to resolve the referenced entity, or every
          * target wrongly fails re-validation as unresolvable.
          */
-        storedCollections: Map<String, List<EntityId>> = emptyMap()
+        storedCollections: Map<String, List<EntityId>> = emptyMap(),
+        sourceBattlefieldTimestamp: Long? = null,
+        objectReferences: ObjectReferenceEnvironment =
+            ObjectReferenceEnvironment(),
+        lastKnownSourceSnapshot: EntitySnapshot? = null,
+        resolution: EffectContext? = null,
     ): List<ChosenTarget> {
         // Always project state for shroud/hexproof checks (Rule 702.18, 702.11)
         val projected = state.projectedState
         val predicateContext = PredicateContext(
             controllerId = controllerId,
             sourceId = sourceId,
+            sourceBattlefieldTimestamp = sourceBattlefieldTimestamp,
+            objectReferences = objectReferences,
+            lastKnownSourceSnapshot = lastKnownSourceSnapshot,
+            resolution = resolution,
             xValue = xValue,
             triggeringEntityId = triggeringEntityId,
             triggeringPlayerId = triggeringPlayerId,
