@@ -5604,6 +5604,15 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `.nontoken()` / `.token()` — token vs printed.
 - `.monocolored()` — restrict to monocolored objects (exactly one color, CR 105.2); colorless objects don't match. ("for each color among monocolored permanents you control" — Tarnation Vista.)
 - `.exactlyColors(n)` / `.notExactlyColors(n)` — objects that are (or aren't) exactly `n` colors (CR 105.2; `CardPredicate.HasExactlyColors(n)`). Colorless is zero colors, so it passes `notExactlyColors(2)`. ("a spell that's exactly two colors" — Guildpact Paragon; "target nonland permanent an opponent controls that isn't exactly two colors" — Invasion of Ravnica.) For one color prefer `.monocolored()`.
+- `.withManaAbility()` — `StatePredicate.HasManaAbility`: current battlefield mana-ability
+  presence, including projected basic land types, active printed abilities, triggered mana
+  abilities, and runtime/static/emblem grants. Costs, tapped state, activation prohibitions,
+  and whether the ability currently produces mana do not affect presence. Hidden printed
+  abilities, phased-out permanents, and removed own abilities do not count. Requires the
+  registry-backed engine evaluator; registry-free layer filters and historical snapshots
+  fail closed, so use this predicate for live targeting, gathering, and resolution queries.
+  Power Sink composes a payer-rebinding player loop and optional payment gate; its decline
+  branch counters, taps `Land.withManaAbility()`, and loses the payer's unspent mana.
 - `.faceDown()` — face-down state.
 - `.transformed()` — a **transformed permanent** (CR 701.27g): back face up on the battlefield. "Each transformed permanent you control" (Mutagen Connoisseur), "other transformed permanents you control have …" (Gargantuan Slabhorn). Not `Filters.DoubleFaced` — that is the *card*, true in every zone and of a front-face werewolf too.
 - `.withMorph()` — has a morph *procedure*: the printed keyword (`HasMorphAbilityComponent`, any

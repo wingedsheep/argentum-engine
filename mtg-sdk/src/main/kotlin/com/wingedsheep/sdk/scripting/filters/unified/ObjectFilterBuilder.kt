@@ -64,6 +64,9 @@ interface ObjectFilterBuilder<out Self> {
     fun notExactlyColors(count: Int) =
         withCardPredicate(CardPredicate.Not(CardPredicate.HasExactlyColors(count)))
 
+    /** Match a permanent's current mana abilities, including intrinsic and granted abilities. */
+    fun withManaAbility() = withStatePredicate(StatePredicate.HasManaAbility)
+
     /** Add a subtype requirement */
     fun withSubtype(subtype: Subtype) = withCardPredicate(CardPredicate.HasSubtype(subtype))
 

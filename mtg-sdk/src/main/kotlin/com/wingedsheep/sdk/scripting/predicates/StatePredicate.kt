@@ -32,6 +32,13 @@ sealed interface StatePredicate {
     @Serializable
     sealed interface History : StatePredicate
 
+    /** A battlefield permanent currently has a mana ability, whether or not it can be activated. */
+    @SerialName("HasManaAbility")
+    @Serializable
+    data object HasManaAbility : Entity {
+        override val description: String = "with a mana ability"
+    }
+
     // =============================================================================
     // Tap State (Entity)
     // =============================================================================

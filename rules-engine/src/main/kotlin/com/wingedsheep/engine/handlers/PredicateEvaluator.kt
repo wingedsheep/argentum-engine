@@ -88,8 +88,12 @@ class PredicateEvaluator(
      * engine to ask (the layer projection behind [GameState.projectedState]) should build. Everything
      * in the engine graph shares [com.wingedsheep.engine.core.EngineServices.predicateEvaluator].
      */
-    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry?
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry?,
+    private val manaAbilityQueries: Set<EntityId> = emptySet(),
 ) {
+
+    internal fun duringManaAbilityQuery(entityId: EntityId): PredicateEvaluator =
+        PredicateEvaluator(cardRegistry, manaAbilityQueries + entityId)
 
     /**
      * The condition evaluator over this predicate evaluator. Predicates, conditions and dynamic
@@ -1658,6 +1662,11 @@ class PredicateEvaluator(
         return when (predicate) {
             // Zone. Deliberately a *live* read with no last-known fallback — this predicate exists
             // to cancel the fallbacks the combat predicates below carry.
+            StatePredicate.HasManaAbility -> if (entityId in manaAbilityQueries) false else cardRegistry?.let {
+                com.wingedsheep.engine.mechanics.mana.ManaAbilityPresence.hasAbility(
+                    state, projected, entityId, it, this
+                )
+            } ?: false
             StatePredicate.IsOnBattlefield -> entityId in state.getBattlefield()
             // The object's current zone — a resolving spell still reads STACK until it has finished
             // resolving, which is when a spell deals its damage.
