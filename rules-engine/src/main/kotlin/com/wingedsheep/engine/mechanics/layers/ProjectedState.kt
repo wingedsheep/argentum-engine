@@ -40,7 +40,8 @@ data class CrossZoneSubtypeGrant(
 data class ActiveEnchantmentRestriction(
     val sourceId: EntityId,
     val auras: com.wingedsheep.sdk.scripting.GameObjectFilter,
-    val exceptSource: Boolean
+    val exceptSource: Boolean,
+    val survivesSourceAbilityRemoval: Boolean = false
 )
 
 data class ProjectedValues(

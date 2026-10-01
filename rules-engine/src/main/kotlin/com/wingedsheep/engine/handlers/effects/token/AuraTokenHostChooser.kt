@@ -20,7 +20,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 
 /**
- * Raises the "what does this Aura token enchant?" choice (CR 303.4h).
+ * Raises the "what does this Aura token enchant?" choice (CR 303.4f).
  *
  * A token copy of an Aura is put onto the battlefield without being cast, so it never targets.
  * Instead its controller chooses what it enchants as it enters, restricted to objects the copied

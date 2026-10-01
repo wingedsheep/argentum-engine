@@ -60,7 +60,8 @@ internal class EffectApplicator(
     fun applyEffect(
         effect: ContinuousEffect,
         state: GameState,
-        projectedValues: MutableMap<EntityId, MutableProjectedValues>
+        projectedValues: MutableMap<EntityId, MutableProjectedValues>,
+        restrictionSurvivesSourceAbilityRemoval: Boolean = false
     ) {
         val sourceCondition = effect.sourceCondition
         if (sourceCondition != null) {
@@ -150,7 +151,9 @@ internal class EffectApplicator(
                     }
                 }
                 is Modification.PreventEnchantment -> {
-                    values.enchantmentRestrictions.add(ActiveEnchantmentRestriction(effect.sourceId, mod.auras, mod.exceptSource))
+                    values.enchantmentRestrictions.add(ActiveEnchantmentRestriction(
+                        effect.sourceId, mod.auras, mod.exceptSource, restrictionSurvivesSourceAbilityRemoval
+                    ))
                 }
                 is Modification.RemoveKeyword -> {
                     values.keywords.remove(mod.keyword)

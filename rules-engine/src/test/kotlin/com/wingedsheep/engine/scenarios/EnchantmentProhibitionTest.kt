@@ -7,6 +7,9 @@ import kotlinx.serialization.json.Json
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.TargetsResponse
 import com.wingedsheep.engine.handlers.TargetFinder
+import com.wingedsheep.engine.handlers.TargetingSourceType
+import com.wingedsheep.engine.mechanics.targeting.TargetValidator
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachmentMover
 import com.wingedsheep.engine.handlers.predicates.EnchantRestriction
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -74,6 +77,24 @@ class EnchantmentProhibitionTest : ScenarioTestBase() {
             val id = g.state.getHand(g.player1Id).first { g.state.getEntity(it)?.get<CardComponent>()?.name == red.name }
             EnchantRestriction.hostAllowsAura(g.state, g.state.projectedState, services.predicateEvaluator, id, host) shouldBe false
         }
+        test("abilities of an Aura outside the battlefield can target a prohibited host") {
+            val g = board().withCardInGraveyard(1, red.name).build()
+            val host = g.findPermanent("Grizzly Bears")!!
+            val aura = g.state.getZone(g.player1Id, Zone.GRAVEYARD).first {
+                g.state.getEntity(it)?.get<CardComponent>()?.name == red.name
+            }
+            val requirement = TargetObject(filter = TargetFilter.Creature)
+            val finder = TargetFinder(services.predicateEvaluator)
+            val validator = TargetValidator(services.predicateEvaluator)
+            for (sourceType in listOf(TargetingSourceType.ACTIVATED_ABILITY, TargetingSourceType.TRIGGERED_ABILITY)) {
+                (host in finder.findLegalTargets(g.state, requirement, g.player1Id, aura,
+                    targetingSourceType = sourceType)) shouldBe true
+                validator.validateTargets(g.state, listOf(ChosenTarget.Permanent(host)), listOf(requirement),
+                    g.player1Id, sourceId = aura, targetingSourceType = sourceType) shouldBe null
+            }
+            (validator.validateTargets(g.state, listOf(ChosenTarget.Permanent(host)), listOf(requirement),
+                g.player1Id, sourceId = aura, targetingSourceType = TargetingSourceType.SPELL) != null) shouldBe true
+        }
         test("non-targeted Aura entry cannot choose a prohibited host") {
             val g = board().withCardInGraveyard(1, red.name).withCardInHand(1, returner.name).build()
             val forbidden = g.findPermanent("Grizzly Bears")!!
@@ -114,6 +135,35 @@ class EnchantmentProhibitionTest : ScenarioTestBase() {
             g.resolveStack()
             val id = g.state.getHand(g.player1Id).first { g.state.getEntity(it)?.get<CardComponent>()?.name == red.name }
             EnchantRestriction.hostAllowsAura(g.state, g.state.projectedState, services.predicateEvaluator, id, host) shouldBe false
+        }
+        test("a composite prohibition begun in an earlier layer survives source ability removal") {
+            val composite = card("Composite Aura Shield") {
+                manaCost = "{W}"; typeLine = "Enchantment — Aura"
+                auraTarget = TargetObject(filter = TargetFilter.Creature)
+                staticAbility { ability = CompositeStaticAbility(listOf(
+                    GrantColor(Color.BLUE, GroupFilter.attachedCreature()),
+                    PreventEnchantment(exceptSource = true, filter = GroupFilter.attachedCreature())
+                )) }
+            }
+            cardRegistry.register(composite)
+            val g = scenario().withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardAttachedTo(1, composite.name, "Grizzly Bears")
+                .withCardInHand(1, red.name).withCardInHand(1, mute.name)
+                .withLandsOnBattlefield(1, "Plains", 1)
+                .withLandsOnBattlefield(1, "Mountain", 1).withActivePlayer(1).build()
+            val source = g.findPermanent(composite.name)!!
+            val host = g.findPermanent("Grizzly Bears")!!
+            g.castSpell(1, mute.name, source).error shouldBe null
+            g.resolveStack()
+            g.state.projectedState.hasLostAllAbilities(source) shouldBe true
+            g.state.projectedState.hasColor(host, Color.BLUE) shouldBe true
+            val aura = g.state.getHand(g.player1Id).first {
+                g.state.getEntity(it)?.get<CardComponent>()?.name == red.name
+            }
+            EnchantRestriction.hostAllowsAura(g.state, g.state.projectedState,
+                services.predicateEvaluator, aura, host) shouldBe false
+            (g.castSpell(1, red.name, host).error != null) shouldBe true
         }
         test("battlefield Aura filters see projected colors rather than printed colors") {
             val painter = card("Paint Test Aura") {

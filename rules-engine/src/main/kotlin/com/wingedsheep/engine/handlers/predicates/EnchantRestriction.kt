@@ -92,7 +92,7 @@ object EnchantRestriction {
         hostId: EntityId
     ): Boolean {
         return projected.getProjectedValues(hostId)?.enchantmentRestrictions.orEmpty().none { restriction ->
-            if (projected.hasLostAllAbilities(restriction.sourceId)) false
+            if (!restriction.survivesSourceAbilityRemoval && projected.hasLostAllAbilities(restriction.sourceId)) false
             else if (restriction.exceptSource && restriction.sourceId == auraId) false
             else {
                 val controller = projected.getController(restriction.sourceId)

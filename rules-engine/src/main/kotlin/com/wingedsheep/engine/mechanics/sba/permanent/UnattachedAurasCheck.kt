@@ -251,12 +251,12 @@ class UnattachedAurasCheck(
     }
 
     /**
-     * True when [hostId] no longer satisfies the Aura's printed "Enchant …" restriction (CR 303.4c).
+     * True when [hostId] fails the Aura's enchant restriction or a source-bound prohibition.
      *
      * Only the requirement's *filter* is re-evaluated — not full targeting legality. An attached
      * Aura isn't re-targeted, so hexproof/shroud/"can't be the target of" gained after the fact
-     * don't dislodge it (CR 702.11b); protection is the one quality that does, and
-     * [hostProtectedFromAttachment] handles it separately.
+     * don't dislodge it. Host-side enchantment prohibitions do apply;
+     * [hostProtectedFromAttachment] handles protection separately.
      *
      * Deliberately fails *open* — an Aura we can't judge (printing not in the registry, an
      * "enchant player" requirement, a filter scoped to a zone other than the battlefield) is left

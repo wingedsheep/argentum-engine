@@ -311,7 +311,13 @@ class StateProjector {
 
         // === Layers 5-6 (Color + Ability) ===
         for (effect in postTypeEffects) {
-            effectApplicator.applyEffect(effect, state, projectedValues)
+            // CR 613.6: a prohibition belonging to an effect begun in an earlier layer
+            // keeps applying even when the source loses the ability during Layer 6.
+            val startedBeforeAbility = effect.groupId?.let { groupId ->
+                (groupFirstLayer[effect.sourceId to groupId]?.ordinal ?: Int.MAX_VALUE) < Layer.ABILITY.ordinal
+            } ?: false
+            effectApplicator.applyEffect(effect, state, projectedValues,
+                restrictionSurvivesSourceAbilityRemoval = startedBeforeAbility)
         }
 
         // Rule 122.1b: re-apply keyword counters after Layer 6.

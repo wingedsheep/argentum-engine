@@ -404,7 +404,7 @@ class TargetValidator(
 
         // "Can't be enchanted" (CR 303.4): an Aura can't legally target a permanent with the
         // CANT_BE_ENCHANTED restriction (Guardian Beast). Only applies when the source is an Aura.
-        val cantBeEnchantedError = checkCantBeEnchanted(state, target, sourceId)
+        val cantBeEnchantedError = checkCantBeEnchanted(state, target, sourceId, targetingSourceType)
         if (cantBeEnchantedError != null) return cantBeEnchantedError
 
         // Check protection from color and creature subtype (Rule 702.16)
@@ -415,8 +415,10 @@ class TargetValidator(
     private fun checkCantBeEnchanted(
         state: GameState,
         target: ChosenTarget,
-        sourceId: EntityId?
+        sourceId: EntityId?,
+        targetingSourceType: TargetingSourceType
     ): String? {
+        if (targetingSourceType != TargetingSourceType.SPELL) return null
         val sourceIsAura = sourceId
             ?.let { state.getEntity(it)?.get<CardComponent>()?.typeLine?.isAura }
             ?: false
