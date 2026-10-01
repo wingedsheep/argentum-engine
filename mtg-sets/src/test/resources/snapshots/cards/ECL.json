@@ -1669,7 +1669,7 @@
                 "id": "Boggart Cursecrafter:1",
                 "trigger": {
                     "type": "ZoneChangeEvent",
-                    "filter": "creature Goblin ctrl:you",
+                    "filter": "permanent Goblin ctrl:you",
                     "from": "Battlefield",
                     "to": "Graveyard"
                 },

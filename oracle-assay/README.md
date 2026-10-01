@@ -742,6 +742,38 @@ reconstruction checks the choice, so nothing else can borrow the spelling.
 Differential **6,862 compared / 56 divergent → 6,878 / 56**. No new divergence: all sixteen newly
 compared cards agree with their goldens.
 
+## The filtered dies band
+
+The eighth loop band. Its family never ranked as one: "Whenever a creature you control dies, …" is
+read up to the verb and declines there, so the tail ranking splits it by whatever follows the comma —
+`dies, put a …`, `dies, you may …`, `dies, create a …` and 54 more, **265 lines** in all, none of them
+in the top forty. Summed, the prefix probe (`dies,` → `enters,`) finished **75 whole cards** over the
+whole corpus, and the long-form self trigger `When ~ is …` another 32. It delivered **30 hand-written
+cards read whole (7,261 → 7,291)**.
+
+### Two rows, one per subject, and the long form is a spelling
+
+`Triggers.a(filter).dies()` and `Triggers.another(filter).dies()` are what every hand-written card in
+the family writes, and they split on the printed word "another" exactly as the enters pair does, so
+they are two `filteredTriggerRule` rows beside it. CR 700.4 defines *dies* as "is put into a graveyard
+from the battlefield", and Oracle still prints the long form wherever the object is not a creature —
+Nutrient Block, Ashiok's Reaper's "an enchantment you control", Krenko's "an artifact". The SDK's own
+`dies()` documents both wordings as one event, so the long form is an `alsoSpelled` surface on the
+self row and both filtered rows, and "dies" is what prints — the precedent the enters-or-dies
+contraction set for Ichor Wellspring.
+
+### What the differential found
+
+Differential **6,882 compared / 56 divergent → 6,912 / 56**. Four new divergences, all **card bugs,
+fixed**, and only their goldens moved:
+
+- **Slimefoot, the Stowaway**, **Boggart Cursecrafter**, **Laid to Rest** — "a Saproling / another
+  Goblin / a Human you control dies" is the bare tribal noun, which names *permanents*; the cards
+  watched creatures only. CR 700.4 does not restrict "dies" to creatures, so a Kindred permanent of the
+  type dying is the difference.
+- **Abzan Ascendancy** — "a nontoken creature you control" was written with the `another` subject,
+  which excludes the source; the text does not.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

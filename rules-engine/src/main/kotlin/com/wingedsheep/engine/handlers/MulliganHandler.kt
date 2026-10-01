@@ -322,8 +322,9 @@ class MulliganHandler(
 
     /**
      * Populate each player's [MulliganStateComponent.pendingLeylineCardIds] by scanning
-     * their opening hand for cards whose [com.wingedsheep.sdk.model.CardScript.mayStartOnBattlefield]
-     * is true. Idempotent — sets `leylinePhaseStarted = true` so re-entry into the mulligan
+     * their opening hand for cards with an opening-hand action (CR 103.6): either
+     * [com.wingedsheep.sdk.model.CardScript.mayStartOnBattlefield] or a
+     * [com.wingedsheep.sdk.model.CardScript.openingHandReveal] payoff. Idempotent — sets `leylinePhaseStarted = true` so re-entry into the mulligan
      * completion path doesn't re-scan.
      *
      * Returns the updated state. Callers should then call [tryStartNextLeylineDecision] to
@@ -340,7 +341,7 @@ class MulliganHandler(
             val leylineCardIds = hand.filter { cardId ->
                 val cardComponent = newState.getEntity(cardId)?.get<CardComponent>() ?: return@filter false
                 val cardDef = registry.getCard(cardComponent.cardDefinitionId) ?: return@filter false
-                cardDef.script.mayStartOnBattlefield
+                cardDef.script.mayStartOnBattlefield || cardDef.script.openingHandReveal != null
             }
 
             val updatedMullState = mullState.copy(
@@ -425,19 +426,26 @@ class MulliganHandler(
      * Returns null when the card no longer has a [CardComponent] (defensive — shouldn't happen).
      */
     fun createLeylineDecision(state: GameState, playerId: EntityId, leylineCardId: EntityId): ExecutionResult? {
-        val cardName = state.getEntity(leylineCardId)?.get<CardComponent>()?.name ?: return null
+        val card = state.getEntity(leylineCardId)?.get<CardComponent>() ?: return null
+        val cardName = card.name
+        val script = cardRegistry?.getCard(card.cardDefinitionId)?.script
+        // A card offers the reveal (CR 103.6b) only when it has no begin-on-battlefield action;
+        // no printed card carries both.
+        val isReveal = script != null && !script.mayStartOnBattlefield && script.openingHandReveal != null
         val question = { decisionId: String -> YesNoDecision(
             id = decisionId,
             playerId = playerId,
-            prompt = "Begin the game with $cardName on the battlefield?",
+            prompt = if (isReveal) "Reveal $cardName from your opening hand?"
+                else "Begin the game with $cardName on the battlefield?",
             context = DecisionContext(
                 sourceId = leylineCardId,
                 sourceName = cardName,
                 phase = DecisionPhase.CASTING
             ),
-            yesText = "Yes",
-            noText = "No",
-            hint = "Leyline — If this card is in your opening hand, you may begin the game with it on the battlefield."
+            yesText = if (isReveal) "Reveal" else "Yes",
+            noText = if (isReveal) "Don't reveal" else "No",
+            hint = if (isReveal) card.oracleText.lineSequence().firstOrNull()
+                else "Leyline — If this card is in your opening hand, you may begin the game with it on the battlefield."
         ) }
         val continuation = LeylineDecisionContinuation(
             playerId = playerId,

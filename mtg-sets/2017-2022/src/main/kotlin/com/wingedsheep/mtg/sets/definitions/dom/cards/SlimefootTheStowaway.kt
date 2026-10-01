@@ -28,7 +28,7 @@ val SlimefootTheStowaway = card("Slimefoot, the Stowaway") {
     oracleText = "Whenever a Saproling you control dies, Slimefoot, the Stowaway deals 1 damage to each opponent and you gain 1 life.\n{4}: Create a 1/1 green Saproling creature token."
 
     triggeredAbility {
-        trigger = Triggers.a(GameObjectFilter.Creature.youControl().withSubtype("Saproling")).dies()
+        trigger = Triggers.a(GameObjectFilter.Permanent.youControl().withSubtype("Saproling")).dies()
         effect = Effects.DealDamage(1, EffectTarget.PlayerRef(Player.EachOpponent)) then Effects.GainLife(1)
     }
 

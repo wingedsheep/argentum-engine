@@ -30,7 +30,7 @@ val BoggartCursecrafter = card("Boggart Cursecrafter") {
     keywords(Keyword.DEATHTOUCH)
 
     triggeredAbility {
-        trigger = Triggers.another(GameObjectFilter.Creature.youControl().withSubtype("Goblin")).dies()
+        trigger = Triggers.another(GameObjectFilter.Permanent.youControl().withSubtype("Goblin")).dies()
         effect = Effects.DealDamage(1, EffectTarget.PlayerRef(Player.EachOpponent))
     }
 
