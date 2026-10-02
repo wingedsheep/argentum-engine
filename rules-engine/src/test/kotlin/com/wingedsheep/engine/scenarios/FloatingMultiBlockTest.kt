@@ -84,6 +84,29 @@ class FloatingMultiBlockTest : FunSpec({
         d.grant(w,MustBlockEachAttacker()); d.blocks(listOf(a),opp)
         d.declareBlockers(opp,emptyMap()).error shouldBe null
     }
+    test("large menace combat removes impossible requirements before assignment search") {
+        val d = driver(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+        val attackers = List(24) { d.putCreatureOnBattlefield(me, menace.name) }
+        val w = d.putCreatureOnBattlefield(opp, wall.name)
+        d.grant(w, CanBlockAnyNumber()); d.grant(w, MustBlockEachAttacker())
+        d.blocks(attackers, opp)
+        d.legalActions(opp).single().mandatoryBlockerAssignments.orEmpty() shouldBe emptyMap()
+        d.declareBlockers(opp, emptyMap()).error shouldBe null
+    }
+    test("large menace combat respects limited companion capacity during assignment search") {
+        val d = driver(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+        val attackers = List(24) { d.putCreatureOnBattlefield(me, menace.name) }
+        val w = d.putCreatureOnBattlefield(opp, wall.name)
+        val companion = d.putCreatureOnBattlefield(opp, "Grizzly Bears")
+        d.grant(w, CanBlockAnyNumber()); d.grant(w, MustBlockEachAttacker())
+        d.blocks(attackers, opp)
+        val suggestion = d.legalActions(opp).single().mandatoryBlockerAssignments!!
+        suggestion.keys shouldBe setOf(w, companion)
+        suggestion.getValue(w).size shouldBe 1
+        suggestion.getValue(companion) shouldBe suggestion.getValue(w)
+        d.declareBlockers(opp, emptyMap()).error shouldNotBe null
+        d.declareBlockers(opp, suggestion).error shouldBe null
+    }
     test("menace companion is included in a maximal legal suggested declaration") {
         val d = driver(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
         val a = d.putCreatureOnBattlefield(me,menace.name); val w = d.putCreatureOnBattlefield(opp,wall.name)

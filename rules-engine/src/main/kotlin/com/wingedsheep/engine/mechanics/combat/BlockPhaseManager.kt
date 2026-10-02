@@ -241,7 +241,7 @@ internal class BlockPhaseManager(
             validateGlobalBlockerCount(state, blocks.keys) == null &&
             validateCoBlockerRequirements(state, state.projectedState, blocks.keys) == null
 
-    private fun maximalLegalPileBlocks(state: GameState, candidates: Map<EntityId, List<EntityId>>): Map<EntityId, List<EntityId>> {
+    private fun removeImpossibleBlockEdges(state: GameState, candidates: Map<EntityId, List<EntityId>>): Map<EntityId, List<EntityId>> {
         // A subset cannot repair too few eligible blockers or an absent co-blocker. Remove those
         // impossible edges first; this also keeps large all-menace combats off the subset search.
         var reduced = candidates
@@ -260,6 +260,11 @@ internal class BlockPhaseManager(
             if (next == reduced) break
             reduced = next
         }
+        return reduced
+    }
+
+    private fun maximalLegalPileBlocks(state: GameState, candidates: Map<EntityId, List<EntityId>>): Map<EntityId, List<EntityId>> {
+        val reduced = removeImpossibleBlockEdges(state, candidates)
         if (pileRestrictionsSatisfied(state, reduced)) return reduced
         // Menace and minimum/maximum blocker counts are per attacker and count-based (who may block
         // whom was settled per edge above), so each attacker's largest legal count is an upper bound
@@ -535,13 +540,39 @@ internal class BlockPhaseManager(
         fun score(blocks: Map<EntityId, List<EntityId>>) = demands.count { obeyed(it, blocks) }
         // Costs are never compulsory to satisfy a requirement. Voluntary taxed blocks are still
         // validated normally; the hypothetical maximum uses only cost-free blockers.
-        val candidates = potential.filter { blocker ->
+        val candidates = removeImpossibleBlockEdges(state, potential.filter { blocker ->
             CombatTaxes.blockTax(state, cardRegistry, setOf(blocker), state.projectedState,
                 predicateEvaluator = predicateEvaluator) == 0
         }.associateWith { blocker ->
             attackers.filter { validateBlocker(state, blockingPlayer, blocker, listOf(it)) == null }
-        }.filterValues { it.isNotEmpty() }
+        }.filterValues { it.isNotEmpty() })
         val capacities = candidates.keys.associateWith(rules::maxBlocks)
+        val minimumBlockers = candidates.values.flatten().distinct().associateWith { attacker ->
+            val eligible = candidates.filterValues { attacker in it }.keys.toList()
+            (1..eligible.size).first { count ->
+                val blocks = eligible.take(count).associateWith { listOf(attacker) }
+                validateMenaceRequirements(state, blocks) == null && validateMinBlockersRequirements(state, blocks) == null
+            }
+        }
+        fun canComplete(
+            blocks: Map<EntityId, List<EntityId>>,
+            remaining: List<EntityId>,
+            checkedAttackers: Set<EntityId>? = null,
+        ): Boolean {
+            val counts = blocks.values.flatten()
+                .filter { checkedAttackers == null || it in checkedAttackers }
+                .groupingBy { it }.eachCount()
+            val deficits = counts.mapNotNull { (attacker, count) ->
+                (minimumBlockers.getValue(attacker) - count).takeIf { it > 0 }?.let { attacker to it }
+            }.toMap()
+            if (deficits.any { (attacker, deficit) ->
+                remaining.count { attacker in candidates.getValue(it) } < deficit
+            }) return false
+            val supply = remaining.sumOf { blocker ->
+                minOf(capacities.getValue(blocker), candidates.getValue(blocker).count { it in deficits })
+            }
+            return deficits.values.sum() <= supply
+        }
         val byBlocker = demands.filter { it.blocker != null }.groupBy { it.blocker!! }
         val byAttacker = demands.filter { it.blocker == null }
         // Relax only declaration-wide restrictions. Each remaining blocker still has its actual
@@ -573,6 +604,7 @@ internal class BlockPhaseManager(
         val selected = linkedMapOf<EntityId, List<EntityId>>()
         fun search(index: Int) {
             if (bestScore == upper || (threshold != null && bestScore > threshold)) return
+            if (!canComplete(selected, holders.drop(index))) return
             if (optimistic(selected, holders.drop(index)) <= maxOf(bestScore, threshold ?: -1)) return
             if (validateGlobalBlockerCount(state, selected.keys) != null ||
                 validateMaxBlockersRequirements(state, selected) != null) return
@@ -591,6 +623,9 @@ internal class BlockPhaseManager(
             val capacity = minOf(eligible.size, capacities.getValue(blocker))
             val choice = mutableListOf<EntityId>()
             fun choose(next: Int, remaining: Int) {
+                // This blocker can still join other attackers, but cannot repair the minimum
+                // count on an attacker already in its partial choice.
+                if (!canComplete(selected + (blocker to choice), holders.drop(index + 1), choice.toSet())) return
                 if (remaining == 0) {
                     if (choice.isEmpty()) selected.remove(blocker) else selected[blocker] = choice.toList()
                     search(index + 1)
