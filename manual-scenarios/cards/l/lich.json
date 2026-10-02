@@ -1,0 +1,29 @@
+{
+  "player1Name": "Lich controller",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Lich", "Healing Salve", "Disenchant"],
+    "battlefield": [
+      {"name": "Swamp"}, {"name": "Swamp"}, {"name": "Swamp"}, {"name": "Swamp"},
+      {"name": "Plains"}, {"name": "Plains"}, {"name": "Plains"},
+      {"name": "Grizzly Bears"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest", "Forest", "Forest", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Lightning Bolt"],
+    "battlefield": [{"name": "Mountain"}],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

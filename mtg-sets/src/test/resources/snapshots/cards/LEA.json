@@ -3165,6 +3165,129 @@
     ]
 }
 
+// Lich
+{
+    "name": "Lich",
+    "manaCost": "{B}{B}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "As this enchantment enters, you lose life equal to your life total.\nYou don't lose the game for having 0 or less life.\nIf you would gain life, draw that many cards instead.\nWhenever you're dealt damage, sacrifice that many nontoken permanents. If you can't, you lose the game.\nWhen this enchantment is put into a graveyard from the battlefield, you lose the game.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lich:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForceSacrifice",
+                            "filter": "permanent nontoken",
+                            "target": "Controller",
+                            "dynamicCount": {
+                                "type": "ContextProperty",
+                                "key": "TRIGGER_DAMAGE_AMOUNT"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": "PermanentsSacrificedThisWay",
+                                    "operator": "LT",
+                                    "right": {
+                                        "type": "ContextProperty",
+                                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                                    }
+                                }
+                            },
+                            "then": "LoseGame"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Lich:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": "LoseGame"
+            }
+        ],
+        "staticAbilities": [
+            "GrantCantLoseGameFromLife"
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    },
+                    "target": "Controller"
+                }
+            },
+            {
+                "type": "ReplaceLifeGainWith",
+                "replacementEffect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "replacementLifeGainAmount"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "RARE",
+        "artist": "Daniel Gelon",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/4250caec-0e37-41be-9ec4-8938deb5f0d0.jpg?1783948694",
+        "rulings": [
+            {
+                "date": "2011-01-01",
+                "text": "The last ability will cause you to lose the game even if you somehow manage to have a life total greater than 0 at the time the Lich is put into the graveyard or if some other effect would prevent you from losing for having 0 life. If, on the other hand, some effect such as that from Platinum Angel says that you can't lose the game then even the last ability of the Lich cannot cause you to do so. The ability will just resolve and the game will continue as normal."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "Note that usually you will have 0 or less life at the time Lich leaves the battlefield causing you to lose as a State-Based Action before the last ability can even go on the stack."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If an opponent steals control of Lich and no other effect prevents you from losing with a life total of zero, you will lose the game due to a zero life total as a State-Based Action before you can take any actions. The last sentence doesn't apply in this case since the Lich didn't leave the battlefield."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If you have multiple Lich cards on the battlefield, you must sacrifice a permanent for each damage done to you for each Lich. This is because the sacrifice is a triggered ability. But you only draw one card for each life gained regardless of how many Liches you have. This is because the draw is a replacement effect and not a triggered one. You lose if any one of the Liches leaves the battlefield."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If an opponent steals control of Lich, their life total does not change. The life total changes for a player only when it enters under that player's control."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If you take more than one damage at a time, sacrifice the permanents for that damage simultaneously. This allows you to sacrifice both a creature and any Aura that is on it all at once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Lifeforce
 {
     "name": "Lifeforce",
