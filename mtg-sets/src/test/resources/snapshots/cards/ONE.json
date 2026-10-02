@@ -1182,6 +1182,105 @@
     "colorIdentityOverride": []
 }
 
+// Atraxa, Grand Unifier
+{
+    "name": "Atraxa, Grand Unifier",
+    "manaCost": "{3}{G}{W}{U}{B}",
+    "typeLine": "Legendary Creature — Phyrexian Angel",
+    "oracleText": "Flying, vigilance, deathtouch, lifelink\nWhen Atraxa enters, reveal the top ten cards of your library. For each card type, you may put a card of that type from among the revealed cards into your hand. Put the rest on the bottom of your library in a random order. (Artifact, battle, creature, enchantment, instant, land, planeswalker, and sorcery are card types.)",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE",
+        "DEATHTOUCH",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Atraxa, Grand Unifier:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 10
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 10
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "For each card type, you may put a card of that type into your hand",
+                            "selectedLabel": "Hand",
+                            "remainderLabel": "Bottom of library",
+                            "restrictions": [
+                                "OnePerCardType"
+                            ]
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "MYTHIC",
+        "artist": "Marta Nael",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.jpg?1783918003",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "If a revealed card has more than one card type, you may choose to put it into your hand for any of its types. For example, an artifact creature card could be put into your hand as the artifact card you choose or as the creature card you choose. If you choose it as the artifact card, you could also put into your hand a creature card, and vice versa."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "At the time of this document's publication, it is exceedingly unlikely you will reveal a battle this way. This likelihood will change over time."
+            }
+        ]
+    }
+}
+
 // Awaken the Sleeper
 {
     "name": "Awaken the Sleeper",

@@ -70,6 +70,98 @@
     ]
 }
 
+// Aether Revolt
+{
+    "name": "Aether Revolt",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Revolt — As long as a permanent left the battlefield under your control this turn, if a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals that much damage plus 2 instead.\nWhenever you get one or more {E}, this enchantment deals that much damage to any target.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aether Revolt:1",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "ENERGY",
+                    "recipient": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_COUNTERS_PLACED_AMOUNT"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ModifyDamageAmount",
+                "modifier": 2,
+                "restrictions": [
+                    "PermanentLeftBattlefieldThisTurn"
+                ],
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "EachOpponent"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "permanent ctrl:opponent"
+                            }
+                        ]
+                    },
+                    "source": {
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "damageType": "DamageNonCombat"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "RARE",
+        "artist": "Filipe Pagliuso",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b8732e62-cdee-4d32-82a8-8a71a04be7a1.jpg?1783911274",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Once a permanent you control leaves the battlefield, Aether Revolt's revolt ability will apply to noncombat damage dealt by sources you control until the turn ends or Aether Revolt leaves the battlefield, whichever happens first. It doesn't matter what happens to the card or token that left the battlefield afterward."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "The additional damage is dealt by the original source of the damage, not by Aether Revolt."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If you get multiple {E} at once, Aether Revolt's last ability will trigger only once. When the triggered ability resolves, it will deal damage to the target equal to the amount of {E} you gained."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If an effect instructs you to get one or more {E} and then allows you to spend {E}, Aether Revolt's last ability will see the amount of {E} you got. It doesn't matter how much {E} you spend after that."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Amped Raptor
 {
     "name": "Amped Raptor",

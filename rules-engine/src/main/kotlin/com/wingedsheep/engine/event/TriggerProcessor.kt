@@ -742,14 +742,12 @@ class TriggerProcessor(
             // for an unlimited requirement) would wrongly clamp the decision to a single target.
             val legalCount = allLegalTargets[index]?.size ?: 0
             val maxTargets = when {
-                // "Up to one ... of each card type" can never take more targets than there are
-                // distinct card types among the legal ones.
+                // "Up to one ... of each card type" can never take more targets than can each
+                // claim a distinct card type — a maximum matching, not the count of types present.
                 (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.onePerCardType == true ->
-                    minOf(
-                        legalCount,
+                    com.wingedsheep.engine.mechanics.targeting.OnePerCardType.maxDistinctAssignment(
                         allLegalTargets[index].orEmpty()
-                            .flatMapTo(mutableSetOf()) { com.wingedsheep.engine.mechanics.targeting.OnePerCardType.cardTypesOf(state, it) }
-                            .size,
+                            .map { com.wingedsheep.engine.mechanics.targeting.OnePerCardType.cardTypesOf(state, it) }
                     )
                 req.unlimited -> legalCount
                 else -> req.count

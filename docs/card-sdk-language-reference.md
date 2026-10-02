@@ -6192,7 +6192,9 @@ For `enter()` and `die()`, a filter with no controller predicate means "you cont
 `choosesTargets()`, `putsSpellOrAbilityOnStack()`, `activatesAbility(of?, targeting?, loyalty,
 minLoyaltyRemoved, exhaust, includeManaAbilities, excludeManaAbilities, withoutTapInCost)`,
 `attackTriggersAbility()`, `attacks(with?, minAttackers?)` (you declare attackers), `isAttacked(…)`,
-`isDealtDamage(by?, damageType?)`, `isDealtCombatDamage()`, `draws(exceptFirstInDrawStep?)`,
+`isDealtDamage(by?, damageType?)`, `isDealtCombatDamage()`, `getsCounters(type?)` (`you` only — counters
+put on the player by anyone: "whenever you get one or more {E}", `CountersPlacedEvent.recipient`),
+`draws(exceptFirstInDrawStep?)`,
 `drawsNth(n)`, `revealsFirstDraw(card?)`, `discards(card?, batch?)`, `cycles()`, `playsLand(…)`,
 `permanentTurnedFaceUp(filter)`, `searchesLibrary()`, `shufflesLibrary()`, `gainsLife(firstTimeEachTurn?)`,
 `losesLife()`, `losesGame()`, `sacrifices(filter, batch?)`,
@@ -7658,6 +7660,11 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   half. Without it a player is never a recipient, even for an unfiltered subject. All Will Be One:
   `Triggers.a(GameObjectFilter.Permanent).getsCounters(by = Player.You, orPlayer = true)` +
   `Effects.DealDamage(DynamicAmounts.triggerCountersPlaced(), target)`.
+  **A named player recipient.** `Triggers.you.getsCounters(type?)` (`CountersPlacedEvent.recipient =
+  Player.You`) is "whenever **you** get one or more <type> counters": only counters put on *you* match,
+  whoever's effect put them (that is `placedBy`'s axis, not this one), and no permanent ever does. It
+  folds per recipient like the permanent template, so "that much" is the summed amount. Aether Revolt:
+  `Triggers.you.getsCounters(CounterType.ENERGY)` + `Effects.DealDamage(DynamicAmounts.triggerCountersPlaced(), target)`.
 - `Triggers.self.getsCounters()` — "whenever you put one or more counters on ~" (any kind, SELF-bound).
   Aragorn, Company Leader.
 - `Triggers.<subject>.losesCounters(type, lastRemoved, byDamagePrevention)`
@@ -15136,7 +15143,9 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
   its own snapshot can't-attack floating effect (Fight or Flight / Stand or Fall; creatures entering after the
   split are unaffected).
 - `SelectFromCollectionEffect(from, into, selectCount?, allowZero?, alwaysPrompt?, restrictions?)` *(SDK-internal step; cards use `Effects.Pipeline { chooseExactly/chooseUpTo/chooseAnyNumber/chooseRandom/chooseSpell/selectAll }` — §5.5.)* — let a player pick
-  from a collection. `restrictions` (`List<SelectionRestriction>`) cap and trim the picks server-side: `OnePerCardType`,
+  from a collection. `restrictions` (`List<SelectionRestriction>`) cap and trim the picks server-side: `OnePerCardType` ("for each card type": each pick
+  claims *one* of its card types — a bipartite matching, so an artifact creature kept as the artifact still leaves the
+  creature slot open, per Atraxa, Grand Unifier's ruling; the cap is the largest such matching — Portent of Calamity),
   `OnePerColor(matchControllerPermanentColors?)`, `OnePerCardName` (surfaces `onePerCardName` on `SelectCardsDecision`;
   the UI disables a card sharing an already-picked card's name — Behold the Sinister Six!, Extrapolate the Impossible),
   `OnePerPower`, `TotalManaValueAtMost(max)` /
