@@ -5137,6 +5137,97 @@
     ]
 }
 
+// Rock Hydra
+{
+    "name": "Rock Hydra",
+    "manaCost": "{X}{R}{R}",
+    "typeLine": "Creature — Hydra",
+    "oracleText": "This creature enters with X +1/+1 counters on it.\nFor each 1 damage that would be dealt to this creature, if it has a +1/+1 counter on it, remove a +1/+1 counter from it and prevent that 1 damage.\n{R}: Prevent the next 1 damage that would be dealt to this creature this turn.\n{R}{R}{R}: Put a +1/+1 counter on this creature. Activate only during your upkeep.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rock Hydra:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "target": "Self",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Rock Hydra:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "restrictions": [
+                    {
+                        "type": "DuringStep",
+                        "step": "UPKEEP"
+                    },
+                    "OnlyDuringYourTurn"
+                ]
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "XValue"
+            },
+            {
+                "type": "PreventDamagePerCounter",
+                "counterType": "PLUS_ONE_PLUS_ONE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "RARE",
+        "artist": "Jeff A. Menges",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/410ac9e6-fbc1-4cc8-84db-84e2eb1bab97.jpg?1783948682",
+        "rulings": [
+            {
+                "date": "2008-08-01",
+                "text": "You can activate the activated ability that prevents damage any time, even if no source seems likely to deal damage to you in the near future. It will prevent the next 1 damage that would be dealt this turn, even if that turns out to be much later in the turn."
+            },
+            {
+                "date": "2008-08-01",
+                "text": "If damage that would be dealt to Rock Hydra can't be prevented, you still remove a +1/+1 counter from it for each 1 damage dealt."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If put onto the battlefield without casting it from your hand, X will be zero."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Once on the battlefield, the X is considered to be zero when calculating its mana cost."
+            }
+        ]
+    }
+}
+
 // Rod of Ruin
 {
     "name": "Rod of Ruin",
