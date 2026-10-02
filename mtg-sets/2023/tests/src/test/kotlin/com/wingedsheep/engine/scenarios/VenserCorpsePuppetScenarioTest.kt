@@ -109,12 +109,19 @@ class VenserCorpsePuppetScenarioTest : ScenarioTestBase() {
             val game = board()
             game.proliferateAndChoose("Hollow Sentinel")
             game.drain()
-            game.findPermanents("The Hollow Sentinel") shouldHaveSize 1
+            val first = game.findPermanents("The Hollow Sentinel").single()
 
             game.proliferateAndChoose("Hollow Sentinel")
-            game.drain()
+            // A second token would trip the legend rule and pause for a choice, so drain without
+            // answering decisions: none may appear.
+            var guard = 0
+            while (game.state.stack.isNotEmpty() && guard++ < 20) {
+                game.hasPendingDecision() shouldBe false
+                game.resolveStack()
+            }
             withClue("the second resolution sees the existing Sentinel and does nothing") {
-                game.findPermanents("The Hollow Sentinel") shouldHaveSize 1
+                game.hasPendingDecision() shouldBe false
+                game.findPermanents("The Hollow Sentinel") shouldBe listOf(first)
             }
         }
 

@@ -8457,14 +8457,6 @@
                         "type": "Composite",
                         "effects": [
                             {
-                                "type": "MoveToZone",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "t0"
-                                },
-                                "destination": "Exile"
-                            },
-                            {
                                 "type": "CreateTokenCopyOfTarget",
                                 "target": {
                                     "type": "BoundVariable",
@@ -8484,6 +8476,14 @@
                                 "addCardTypes": [
                                     "CREATURE"
                                 ]
+                            },
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Exile"
                             }
                         ]
                     },

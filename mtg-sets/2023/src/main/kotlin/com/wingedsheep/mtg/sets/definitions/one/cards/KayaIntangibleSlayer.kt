@@ -71,8 +71,10 @@ val KayaIntangibleSlayer = card("Kaya, Intangible Slayer") {
                 GameObjectFilter.Any.notSubtype(Subtype.AURA),
                 permanent,
             ),
-            then = Effects.Exile(permanent) then
-                Effects.CreateTokenCopyOfTarget(
+            // The copy is taken before the exile: once exiled, the object has lost any copy effect
+            // or face-down status it had on the battlefield (CR 400.7), and the token must copy
+            // the permanent as it last existed there.
+            then = Effects.CreateTokenCopyOfTarget(
                     target = permanent,
                     overridePower = 1,
                     overrideToughness = 1,
@@ -80,7 +82,7 @@ val KayaIntangibleSlayer = card("Kaya, Intangible Slayer") {
                     addedSubtypes = setOf(Subtype("Spirit")),
                     addCardTypes = setOf(CardType.CREATURE.name),
                     addedKeywords = setOf(Keyword.FLYING),
-                ),
+                ) then Effects.Exile(permanent),
             otherwise = Effects.Exile(permanent),
         )
     }

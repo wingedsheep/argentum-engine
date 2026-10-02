@@ -131,6 +131,35 @@ class KayaIntangibleSlayerScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("−3 on a Clone copying a creature: the token copies the copied creature, not Clone") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Kaya, Intangible Slayer")
+                    .withCardOnBattlefield(2, "Hill Giant")
+                    .withCardInHand(1, "Clone")
+                    .withLandsOnBattlefield(1, "Island", 4)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val giant = game.findPermanent("Hill Giant")!!
+                game.castSpell(1, "Clone").error shouldBe null
+                game.resolveStack()
+                game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
+                game.selectCards(listOf(giant)).error shouldBe null
+                val clone = game.findPermanents("Hill Giant").single { it != giant }
+
+                game.minusThree(clone)
+
+                game.isInExile(1, "Clone") shouldBe true
+                withClue("the token copies Hill Giant and does not get Clone's enter-as-a-copy choice") {
+                    game.getPendingDecision() shouldBe null
+                    val token = game.findPermanents("Hill Giant").single { it != giant }
+                    game.state.getEntity(token)!!.has<TokenComponent>() shouldBe true
+                    game.state.projectedState.hasSubtype(token, "Giant") shouldBe true
+                    game.state.projectedState.getPower(token) shouldBe 1
+                }
+            }
+
             test("−3 on a non-Aura enchantment: the copy is an enchantment creature") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
