@@ -1,8 +1,10 @@
 package com.wingedsheep.assay.grammar
 
+import com.wingedsheep.assay.normalize.Normalizer
 import com.wingedsheep.assay.syntax.Phrase
 import com.wingedsheep.assay.syntax.alternate
 import com.wingedsheep.assay.syntax.bind
+import com.wingedsheep.assay.syntax.constant
 import com.wingedsheep.assay.syntax.phrase
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
@@ -757,6 +759,30 @@ object SelfSteps {
             ) +
             sacrificesSource
 
-    /** Everything in this file that does not turn on the pronoun. Empty for now; the family is "it". */
-    val clauses: List<Phrase<CardScript>> = emptyList()
+    /**
+     * The same vocabulary aimed at **the permanent the source is attached to** — "When this Aura
+     * enters, tap enchanted creature.", "{G}: Regenerate enchanted creature.", "Sacrifice this Aura:
+     * Untap enchanted creature."
+     *
+     * A fourth instantiation of [retargetable], and the only one that is not an anaphor position:
+     * "enchanted creature" is a definite description, like `~`, so it denotes the same permanent in
+     * a first clause, a later one and a filtered trigger alike and is offered everywhere [Steps]
+     * offers its non-anaphoric clauses. "equipped creature" is the same phrase by the time it gets
+     * here — [com.wingedsheep.assay.normalize.Normalizer] abstracts the adjective, which is chosen
+     * by the type line rather than by the model.
+     *
+     * The model is [EffectTarget.EnchantedCreature], the hand-written corpus's spelling 96 times to
+     * `EquippedCreature`'s 29 and `EnchantedPermanent`'s 14. All three resolve to the source's
+     * attachment, so the two minority spellings are a standing SDK finding the differential
+     * reports, not a second reading: a `match` that accepted them would be two printers for one text.
+     */
+    private val attached: List<Phrase<CardScript>> =
+        retargetable(
+            EffectTarget.EnchantedCreature,
+            constant("enchanted ${Normalizer.ATTACHED_NOUN}", Unit),
+            tag = " the attached creature",
+        )
+
+    /** Everything in this file that does not turn on the pronoun — the attached creature's clauses. */
+    val clauses: List<Phrase<CardScript>> = attached
 }

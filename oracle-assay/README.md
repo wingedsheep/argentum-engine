@@ -872,6 +872,36 @@ Gollum, Patient Plotter's "Return this card from your graveyard to your hand" wa
 `Effects.ReturnToHandFromGraveyard(Self)` (`fromZone = Graveyard`), the spelling most graveyard-activated
 self-returns already use, and the card now does too.
 
+## The attached-creature band
+
+The twelfth loop band, tail key `enchanted creature.`: "When this Aura enters, **tap enchanted
+creature**.", "{G}: **Regenerate enchanted creature**." **95 lines**; the probe (`enchanted creature.` →
+`target creature.`) finished 28 whole cards over the corpus. It delivered **14 hand-written cards read
+whole (7,355 → 7,369)**.
+
+### A fourth instantiation, and the first that is not an anaphor
+
+`SelfSteps.retargetable` already held every verb the family needs — tap, untap, regenerate, exile,
+bounce, counters, pumps, grants — instantiated for the source, the target pronoun and a filtered
+trigger's "it". "Enchanted creature" is a definite description like `~`, so it denotes the source's
+attachment in every position: one more instantiation over `EffectTarget.EnchantedCreature`, offered
+through `SelfSteps.clauses` wherever `Steps` offers its non-anaphoric clauses. "Equipped creature" is
+the same phrase by the time it arrives; normalization abstracts the adjective.
+
+### What the differential found
+
+Differential **6,973 compared / 59 divergent → 6,987 / 62**. Five new divergences, all two SDK
+spellings of one value, none behavioural:
+
+- **Serpent Skin**, **Thrull Retainer** — regenerated their enchanted creature through
+  `EnchantedPermanent`, the minority spelling (14 uses to `EnchantedCreature`'s 96); both moved to
+  the majority, and only their goldens moved.
+- **Adventuring Gear** (standing) — `EquippedCreature` on an Equipment; the three attachment targets
+  resolve identically, and the adjective is the type line's, not the model's.
+- **Fae Flight**, **Aquitect's Defenses** (standing) — "enchanted creature gains hexproof" written as
+  `Effects.GrantHexproof` (`GrantEvasionKeywordEffect`), which the SDK's own KDoc calls identical to
+  `GrantKeyword` for a permanent; the grammar prints the majority `GrantKeyword`.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

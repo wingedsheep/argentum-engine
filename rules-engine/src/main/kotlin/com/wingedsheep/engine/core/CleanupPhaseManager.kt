@@ -42,6 +42,7 @@ import com.wingedsheep.engine.state.components.identity.RevertCopyAtNextEndStepC
 import com.wingedsheep.engine.state.components.identity.RevertCopyAtYourNextTurnComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.state.components.player.AdditionalPhasesComponent
+import com.wingedsheep.engine.state.components.player.PlayerCountersRemovedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalCombatPhaseComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalBeginningPhaseComponent
 import com.wingedsheep.engine.state.components.player.AdditionalEndStepsComponent
@@ -875,8 +876,8 @@ class CleanupPhaseManager(
                 if (result.has<CountersRemovedFromYourPermanentsThisTurnComponent>()) {
                     result = result.without<CountersRemovedFromYourPermanentsThisTurnComponent>()
                 }
-                if (result.has<com.wingedsheep.engine.state.components.player.PlayerCountersRemovedThisTurnComponent>()) {
-                    result = result.without<com.wingedsheep.engine.state.components.player.PlayerCountersRemovedThisTurnComponent>()
+                if (result.has<PlayerCountersRemovedThisTurnComponent>()) {
+                    result = result.without<PlayerCountersRemovedThisTurnComponent>()
                 }
                 if (result.has<PermanentsWithCountersPutIntoGraveyardThisTurnComponent>()) {
                     result = result.without<PermanentsWithCountersPutIntoGraveyardThisTurnComponent>()

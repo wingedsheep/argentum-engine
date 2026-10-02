@@ -711,7 +711,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CountersPutOnYourPermanentsThisTurnComponent::class)
         subclass(CountersLockedThisTurnComponent::class)
         subclass(CountersRemovedFromYourPermanentsThisTurnComponent::class)
-        subclass(com.wingedsheep.engine.state.components.player.PlayerCountersRemovedThisTurnComponent::class)
+        subclass(PlayerCountersRemovedThisTurnComponent::class)
         subclass(PermanentsWithCountersPutIntoGraveyardThisTurnComponent::class)
         subclass(SkipNextTurnComponent::class)
         subclass(EndTheTurnRequestedComponent::class)
