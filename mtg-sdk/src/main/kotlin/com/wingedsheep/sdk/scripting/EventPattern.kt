@@ -2270,10 +2270,29 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * player recipient is matched by this flag alone. `false` (default) keeps every
          * permanent-worded trigger blind to counters on players, whatever its filter.
          */
-        val includePlayers: Boolean = false
+        val includePlayers: Boolean = false,
+        /**
+         * The *player* who must receive the counters — the "Whenever **you** get one or more {E}"
+         * template (Aether Revolt), authored as `Triggers.you.getsCounters(CounterType.ENERGY)`.
+         * When set, only a player recipient matching this selector satisfies the pattern; a
+         * permanent recipient never does, so [filter] and [includePlayers] must stay at their
+         * defaults. Distinct from [placedBy], which names who *put* the counters: an opponent's
+         * effect giving you energy still fires a `recipient = Player.You` trigger.
+         */
+        val recipient: Player? = null
     ) : EventPattern {
+        init {
+            require(recipient == null || (filter == GameObjectFilter.Any && !includePlayers)) {
+                "CountersPlacedEvent.recipient names a player recipient; filter and includePlayers describe permanents"
+            }
+        }
+
         override val description: String = buildString {
             val typeLabel = counterType?.let { "${it.printed} " } ?: ""
+            if (recipient != null) {
+                append("${recipient.description} get one or more ${typeLabel}counters")
+                return@buildString
+            }
             if (placedBy != null) {
                 append("${placedBy.description} put one or more ${typeLabel}counters on ")
             } else {

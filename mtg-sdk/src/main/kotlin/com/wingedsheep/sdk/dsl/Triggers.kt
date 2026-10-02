@@ -897,6 +897,17 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     // ---- Life and the game -------------------------------------------------------------------
 
     /** "gains life [for the first time each turn]". */
+    /**
+     * "<player> get(s) one or more [type] counters" ([type] null = any kind) — counters placed on
+     * the *player*, whoever put them: `Triggers.you.getsCounters(CounterType.ENERGY)` is "Whenever
+     * you get one or more {E}" (Aether Revolt). "That many" is `DynamicAmounts.triggerCountersPlaced()`.
+     * See [CountersPlacedEvent.recipient].
+     */
+    fun getsCounters(type: CounterType? = null): TriggerSpec {
+        only("getsCounters", Player.You)
+        return spec(CountersPlacedEvent(counterType = type, recipient = player))
+    }
+
     fun gainsLife(firstTimeEachTurn: Boolean = false): TriggerSpec =
         spec(LifeGainEvent(player, firstTimeEachTurn = firstTimeEachTurn))
 
