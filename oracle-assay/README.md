@@ -1167,8 +1167,8 @@ Sawblade Slinger still diverges on a **standing finding**: its modal *trigger* s
 The twenty-second loop band, tail key `~ was kicked, …`: "**If ~ was kicked**, it enters with two
 +1/+1 counters on it." (Academy Drake, Llanowar Elite), and the Invasion sibling that adds "**and
 with flying**" (Faerie Squadron, Kavu Titan, Pouncing Kavu). **38 lines**; the probe (drop the
-condition → "~ enters with …") finished 16 whole cards, and under-stated, because it could not
-reach the keyword half. It delivered **15 hand-written cards read whole (7,476 → 7,491)** and 22
+condition → "~ enters with …") finished 16 whole cards; it cannot see the keyword half, so it is
+an estimate rather than a bound either way. It delivered **15 hand-written cards read whole (7,476 → 7,491)** and 22
 more in the verdict ledger (10,267 → 10,289).
 
 ### One sentence, two replacement effects
