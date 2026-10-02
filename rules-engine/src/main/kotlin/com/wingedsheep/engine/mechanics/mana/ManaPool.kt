@@ -92,6 +92,17 @@ data class SpellPaymentContext(
      * through, so a new activation site can't forget it.
      */
     val isEquipAbilityActivation: Boolean = false,
+    /**
+     * True when colorless mana may be spent **as though it were mana of any color** on this
+     * payment (CR 609.4b) — a per-spell permission carried by the cast grant that authorised it
+     * ("you may spend colorless mana as though it were mana of any color to cast that spell",
+     * Abstruse Appropriation). Every colored requirement (colored, hybrid, Phyrexian,
+     * monocolored-hybrid pips) additionally accepts colorless mana; `{C}` and generic are
+     * untouched, and colored mana still can't pay `{C}`. Unlike "mana of any type" this does not
+     * rewrite the cost — it widens which mana may pay it — so it is applied in the pool's pip
+     * matching and the auto-tap solver rather than to the [com.wingedsheep.sdk.core.ManaCost].
+     */
+    val colorlessAsAnyColor: Boolean = false,
 ) {
     init {
         require(!isEquipAbilityActivation || isAbilityActivation) {
@@ -267,6 +278,18 @@ data class ManaPool(
     val spendingColors: Map<Color, Set<Color>> = emptyMap()
 ) {
     /**
+     * Whether paying [cost] must go through the substitution-aware matcher: a player-wide
+     * [spendingColors] permission, or a per-payment [SpellPaymentContext.colorlessAsAnyColor]
+     * with at least one colored requirement for colorless mana to stand in for.
+     */
+    private fun substitutes(cost: ManaCost, context: SpellPaymentContext?): Boolean =
+        spendingColors.isNotEmpty() || (context?.colorlessAsAnyColor == true && cost.symbols.any { it.isColoredRequirement() })
+
+    private fun ManaSymbol.isColoredRequirement(): Boolean =
+        this is ManaSymbol.Colored || this is ManaSymbol.Phyrexian || this is ManaSymbol.HybridPair ||
+            this is ManaSymbol.MonocolorHybrid
+
+    /**
      * Get amount of mana for a specific color.
      */
     fun get(color: Color): Int = when (color) {
@@ -425,7 +448,7 @@ data class ManaPool(
      * When [spellContext] is provided, eligible restricted mana is considered (spent first).
      */
     fun canPay(cost: ManaCost, spellContext: SpellPaymentContext? = null): Boolean {
-        if (spendingColors.isNotEmpty()) {
+        if (substitutes(cost, spellContext)) {
             return payPartialWithSpending(cost, spellContext, allowMonoHybridGeneric = true).remainingCost.symbols.all { it is ManaSymbol.X }
         }
         var remaining = this
@@ -509,7 +532,7 @@ data class ManaPool(
      * When [spellContext] is provided, eligible restricted mana is spent first.
      */
     fun pay(cost: ManaCost, spellContext: SpellPaymentContext? = null): ManaPool? {
-        if (spendingColors.isNotEmpty()) {
+        if (substitutes(cost, spellContext)) {
             val partial = payPartialWithSpending(cost, spellContext, allowMonoHybridGeneric = true)
             return partial.newPool.takeIf { partial.remainingCost.symbols.all { it is ManaSymbol.X } }
         }
@@ -598,7 +621,7 @@ data class ManaPool(
      * When [spellContext] is provided, eligible restricted mana is spent first.
      */
     fun payPartial(cost: ManaCost, spellContext: SpellPaymentContext? = null): PartialPaymentResult {
-        if (spendingColors.isNotEmpty()) {
+        if (substitutes(cost, spellContext)) {
             if (cost.symbols.any { it is ManaSymbol.MonocolorHybrid }) {
                 val full = payPartialWithSpending(cost, spellContext, allowMonoHybridGeneric = true)
                 if (full.remainingCost.symbols.all { it is ManaSymbol.X }) return full
@@ -763,11 +786,13 @@ data class ManaPool(
         val symbols = cost.symbols.filter { it !is ManaSymbol.Generic && it !is ManaSymbol.X }
         fun options(symbol: ManaSymbol): List<Color?> {
             fun colors(color: Color): List<Color> = listOf(color) + spendingColors[color].orEmpty().filter { it != color }
+            // Colorless spent as though it were any color comes last: native colors first.
+            val colorless: List<Color?> = if (context?.colorlessAsAnyColor == true) listOf(null) else emptyList()
             return when (symbol) {
-                is ManaSymbol.Colored -> colors(symbol.color)
-                is ManaSymbol.Phyrexian -> colors(symbol.color)
-                is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> (colors(symbol.color1) + colors(symbol.color2)).distinct()
-                is ManaSymbol.MonocolorHybrid -> colors(symbol.color)
+                is ManaSymbol.Colored -> colors(symbol.color) + colorless
+                is ManaSymbol.Phyrexian -> colors(symbol.color) + colorless
+                is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> (colors(symbol.color1) + colors(symbol.color2)).distinct() + colorless
+                is ManaSymbol.MonocolorHybrid -> colors(symbol.color) + colorless
                 is ManaSymbol.Colorless -> listOf(null)
                 else -> emptyList()
             }

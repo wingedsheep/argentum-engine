@@ -606,12 +606,18 @@ class ManaSolver(
         }
 
         val spendingColors = ManaSpendingRules.colors(state, playerId)
+        // "Spend colorless mana as though it were mana of any color" for this spell (CR 609.4b):
+        // every colored pip may fall back to a colorless source once its own colors run out.
+        val colorlessAsAnyColor = spellContext?.colorlessAsAnyColor == true
+        val substitutes = spendingColors.isNotEmpty() || colorlessAsAnyColor
         fun payableColors(colors: List<Color>): List<Color> = colors.flatMap { color ->
             listOf(color) + spendingColors[color].orEmpty().filter { it != color }
         }.distinct()
         fun payWithAllowedColors(required: List<Color>): Boolean {
             val colors = payableColors(required)
             if (colors.any { spendBonusMana(it) }) return true
+            // Already-floating colorless costs no tap, so it beats tapping a new colored source.
+            if (colorlessAsAnyColor && spendColorlessBonusMana()) return true
             val best = colors.mapNotNull { color ->
                 findBestSourceForColor(remainingSources, color, handRequirements, availableSourcesByColor, spellContext)
                     ?.let { it to color }
@@ -627,10 +633,20 @@ class ManaSolver(
                 useSource(source, color)
                 return true
             }
+            if (colorlessAsAnyColor) {
+                val colorlessSource = remainingSources.filter { it.producesColorless }.minByOrNull {
+                    calculateTapPriority(it, handRequirements, availableSourcesByColor) + painPenalty(it, it.colorlessPainCost)
+                }
+                if (colorlessSource != null) {
+                    manaProduced[colorlessSource.entityId] = ManaProduction(colorless = colorlessSource.amountFor(null))
+                    useSource(colorlessSource, null)
+                    return true
+                }
+            }
             return colors.any { payColoredPipFromAuraBonus(it) }
         }
         // Preserve scarce, un-substitutable colors for their strict pips.
-        val paymentSymbols = if (spendingColors.isEmpty()) cost.symbols else cost.symbols.sortedBy { symbol ->
+        val paymentSymbols = if (!substitutes) cost.symbols else cost.symbols.sortedBy { symbol ->
             when (symbol) {
                 is ManaSymbol.Colored -> payableColors(listOf(symbol.color)).size
                 is ManaSymbol.Phyrexian -> payableColors(listOf(symbol.color)).size
@@ -652,8 +668,9 @@ class ManaSolver(
                 else -> emptyList()
             }
         }.toSet()
-        val needsColorless = paymentSymbols.any { it is ManaSymbol.Colorless }
-        val matchingSources = if (spendingColors.isEmpty()) emptyList() else availableSources.filter { source ->
+        val needsColorless = paymentSymbols.any { it is ManaSymbol.Colorless } ||
+            (colorlessAsAnyColor && strictColors.isNotEmpty())
+        val matchingSources = if (!substitutes) emptyList() else availableSources.filter { source ->
             val relevant = source.availableColorsFor(spellContext).any { it in strictColors } ||
                 (needsColorless && source.producesColorless)
             relevant && source.bonusManaPerTap == 0 && source.bonusManaColorlessPerTap == 0 &&
@@ -661,7 +678,7 @@ class ManaSolver(
                 source.producesColors.all { source.amountFor(it) == 1 } &&
                 (!source.producesColorless || source.amountFor(null) == 1)
         }
-        val useSourceMatching = spendingColors.isNotEmpty()
+        val useSourceMatching = substitutes
         if (useSourceMatching) {
             val choices = paymentSymbols.map { symbol ->
                 val required = when (symbol) {
@@ -675,9 +692,12 @@ class ManaSolver(
                     if (symbol is ManaSymbol.Colorless) {
                         if (source.producesColorless) listOf(PlannedPip(source, null)) else emptyList()
                     } else source.availableColorsFor(spellContext).filter { it in allowed }
-                        .map { PlannedPip(source, it) }
+                        .map { PlannedPip(source, it) } +
+                        if (colorlessAsAnyColor && required.isNotEmpty() && source.producesColorless)
+                            listOf(PlannedPip(source, null)) else emptyList()
                 }.sortedWith(compareBy<PlannedPip>(
-                    { it.color != null && it.color !in required },
+                    // Native color first, then a substitute color, then colorless standing in.
+                    { when { it.color in required -> 0; it.color != null || required.isEmpty() -> 1; else -> 2 } },
                     { calculateTapPriority(it.source, handRequirements, availableSourcesByColor) +
                         painPenalty(it.source, if (it.color == null) it.source.colorlessPainCost else it.source.colorPainCost[it.color] ?: 0) }
                 ))
@@ -723,7 +743,7 @@ class ManaSolver(
             }
             when (symbol) {
                 is ManaSymbol.Colored -> {
-                    if (spendingColors.isNotEmpty()) {
+                    if (substitutes) {
                         if (!payWithAllowedColors(listOf(symbol.color))) return null
                         continue
                     }
@@ -745,7 +765,7 @@ class ManaSolver(
                     // (handled naturally on next iteration via spendBonusMana)
                 }
                 is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> {
-                    if (spendingColors.isNotEmpty()) {
+                    if (substitutes) {
                         if (!payWithAllowedColors(listOf(symbol.color1, symbol.color2))) return null
                         continue
                     }
@@ -783,7 +803,7 @@ class ManaSolver(
                     useSource(source, colorUsed)
                 }
                 is ManaSymbol.Phyrexian -> {
-                    if (spendingColors.isNotEmpty()) {
+                    if (substitutes) {
                         if (!payWithAllowedColors(listOf(symbol.color))) return null
                         continue
                     }
@@ -833,7 +853,7 @@ class ManaSolver(
         var monoHybridGeneric = 0
         for (symbol in cost.symbols) {
             if (symbol !is ManaSymbol.MonocolorHybrid) continue
-            if (spendingColors.isNotEmpty()) {
+            if (substitutes) {
                 if (!payWithAllowedColors(listOf(symbol.color))) monoHybridGeneric += symbol.generic
                 continue
             }

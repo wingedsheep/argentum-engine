@@ -1511,6 +1511,14 @@ data class GrantMayPlayFromExileEffect(
      */
     val withAnyManaType: Boolean = false,
     /**
+     * When true, colorless mana may be spent **as though it were mana of any color** to cast the
+     * granted cards (CR 609.4b) — "and you may spend colorless mana as though it were mana of any
+     * color to cast that spell" (Abstruse Appropriation). Narrower than [withAnyManaType]: the cost
+     * is not rewritten, every colored pip simply also accepts colorless mana, and `{C}` still needs
+     * colorless.
+     */
+    val colorlessAsAnyColor: Boolean = false,
+    /**
      * Optional gate evaluated each time the play permission is checked. Used for cards
      * that grant a conditional may-play, e.g. Possibility Technician's "you may play it
      * if you control a Kavu" — the permission persists with the card in exile, but is
@@ -1686,6 +1694,7 @@ data class GrantMayPlayFromExileEffect(
         }
         if (asThoughFlash) append(", as though they had flash")
         if (withAnyManaType) append(", and mana of any type can be spent to cast them")
+        if (colorlessAsAnyColor) append(", and you may spend colorless mana as though it were mana of any color to cast them")
         if (landEntersTapped) append(". Each land played this way enters tapped")
         insteadOfGraveyard?.let { append(it.riderText) }
     }

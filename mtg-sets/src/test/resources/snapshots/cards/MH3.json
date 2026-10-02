@@ -1,3 +1,75 @@
+// Abstruse Appropriation
+{
+    "name": "Abstruse Appropriation",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nExile target nonland permanent. You may cast that card for as long as it remains exiled, and you may spend colorless mana as though it were mana of any color to cast that spell.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "gathered0",
+                    "expiry": "Permanent",
+                    "colorlessAsAnyColor": true,
+                    "nonLandOnly": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "flavorText": "\"Kozilek experiences reality on his own terms.\"\n—Ayli, high priest of the Eternal Pilgrims",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7149359-bb3f-413c-b21d-e4cd88618e56.jpg?1783911253",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield. You can't cast it."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Abstruse Appropriation doesn't change when you can cast the exiled card. For example, if you exile a creature card without flash, you can cast it only during your main phase when the stack is empty."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "In the rare case where the exiled card is a land card (probably because that land became a copy of a permanent while it was still on the battlefield), you won't be able to play it from exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Amped Raptor
 {
     "name": "Amped Raptor",

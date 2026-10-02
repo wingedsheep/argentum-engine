@@ -564,7 +564,7 @@ class CastFromZoneEnumerator(
                         cardComponent,
                         isFromExile = sourceZoneLabel == "EXILE",
                         isFromHand = false
-                    )
+                    ).copy(colorlessAsAnyColor = permissions.any { it.colorlessAsAnyColor })
                     // Convoke (CR 702.51) — printed, or granted by a zone-scoped grant keyed to the
                     // zone this card is cast from. A free cast has nothing for convoke to pay.
                     val convokeCreatures = if (!playForFree && cardDef != null &&
@@ -2635,6 +2635,9 @@ class CastFromZoneEnumerator(
                     isKicked = declaredSlot == ChoiceSlot.KICKED,
                     isFromExile = sourceZone == "EXILE",
                     isFromHand = false
+                ).copy(
+                    colorlessAsAnyColor = state.activeMayPlayFor(cardId, playerId, context.conditionEvaluator, context.cardRegistry)
+                        .any { it.colorlessAsAnyColor }
                 )
                 val canAffordKickedMana = context.manaSolver.canPay(
                     state, playerId, kickedCost,

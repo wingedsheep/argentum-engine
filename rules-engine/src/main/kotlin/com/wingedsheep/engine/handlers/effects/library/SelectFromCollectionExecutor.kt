@@ -151,7 +151,7 @@ class SelectFromCollectionExecutor(
         }
 
         // Restrictions can tighten the maximum number of selectable cards (e.g.,
-        // OnePerCardType caps the max at the number of distinct card types present).
+        // OnePerCardType caps the max at the most cards that can each claim a distinct type).
         // They are also propagated into the continuation for response-time normalization.
         val restrictionCeiling = restrictionCeiling(effect.restrictions, state, context, eligibleCards, controllerPermanentColors)
 
@@ -319,12 +319,12 @@ class SelectFromCollectionExecutor(
         var ceiling = Int.MAX_VALUE
         for (restriction in restrictions) {
             val limit = when (restriction) {
-                is SelectionRestriction.OnePerCardType -> {
-                    val distinctTypes = eligibleCards.flatMap { cardId ->
-                        state.getEntity(cardId)?.get<CardComponent>()?.typeLine?.cardTypes ?: emptySet()
-                    }.toSet()
-                    distinctTypes.size.coerceAtLeast(0)
-                }
+                is SelectionRestriction.OnePerCardType ->
+                    // Each card fills one type slot, so the cap is a maximum matching of cards
+                    // to their types — not the count of types present.
+                    com.wingedsheep.engine.mechanics.targeting.OnePerCardType.maxDistinctAssignment(
+                        eligibleCards.map { com.wingedsheep.engine.mechanics.targeting.OnePerCardType.cardTypesOf(state, it) }
+                    )
                 is SelectionRestriction.OnePerColor -> {
                     // Each colour contributes one slot. When matchControllerPermanentColors is
                     // set, eligibility is already filtered, so colourless cards are absent.

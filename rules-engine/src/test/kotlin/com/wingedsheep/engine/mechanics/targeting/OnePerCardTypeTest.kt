@@ -38,4 +38,13 @@ class OnePerCardTypeTest : FunSpec({
     test("an object with no card type can't be chosen") {
         OnePerCardType.canAssignDistinct(listOf(emptySet(), instant)) shouldBe false
     }
+
+    test("the selection cap is the largest matching, not the count of types present") {
+        OnePerCardType.maxDistinctAssignment(emptyList()) shouldBe 0
+        // Three artifact creatures span two types, so only two can be kept.
+        OnePerCardType.maxDistinctAssignment(listOf(artifactCreature, artifactCreature, artifactCreature)) shouldBe 2
+        // One artifact creature spans two types but is a single card.
+        OnePerCardType.maxDistinctAssignment(listOf(artifactCreature)) shouldBe 1
+        OnePerCardType.maxDistinctAssignment(listOf(creature, artifactCreature, creature, instant)) shouldBe 3
+    }
 })
