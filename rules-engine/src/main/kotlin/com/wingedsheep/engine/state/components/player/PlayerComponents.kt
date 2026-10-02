@@ -1744,6 +1744,24 @@ data class CountersRemovedFromYourPermanentsThisTurnComponent(
 }
 
 /**
+ * How many counters of each kind were removed from this player themself this turn — energy paid
+ * as a cost or lost to an effect, poison removed, and so on. Cleared at end of turn by
+ * CleanupPhaseManager. Recorded by `CounterHistory.recordRemovals` at the settle boundary from every
+ * `CountersRemovedEvent` whose entity is the player, so neither the cost payer nor any effect has
+ * to remember to call it. Backs
+ * [com.wingedsheep.sdk.scripting.values.TurnTracker.ENERGY_PAID_OR_LOST] (Izzet Generatorium).
+ */
+@Serializable
+data class PlayerCountersRemovedThisTurnComponent(
+    val amounts: Map<CounterType, Int> = emptyMap()
+) : Component {
+    fun with(kind: CounterType, amount: Int): PlayerCountersRemovedThisTurnComponent =
+        copy(amounts = amounts + (kind to (amounts[kind] ?: 0) + amount))
+
+    fun count(kind: CounterType): Int = amounts[kind] ?: 0
+}
+
+/**
  * The kinds of counter that were on permanents this player controlled as they were put into a
  * graveyard from the battlefield this turn, read off each one's last-known counters. Cleared at end
  * of turn by CleanupPhaseManager.

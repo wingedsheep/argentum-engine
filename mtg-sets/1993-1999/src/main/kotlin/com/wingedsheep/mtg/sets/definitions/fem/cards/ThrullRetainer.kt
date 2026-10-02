@@ -36,7 +36,7 @@ val ThrullRetainer = card("Thrull Retainer") {
 
     activatedAbility {
         cost = Costs.SacrificeSelf
-        effect = Effects.Regenerate(EffectTarget.EnchantedCreature)
+        effect = Effects.Regenerate(EffectTarget.EnchantedPermanent)
         description = "Sacrifice this Aura: Regenerate enchanted creature."
     }
 

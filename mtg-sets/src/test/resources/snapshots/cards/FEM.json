@@ -5996,7 +5996,7 @@
                 "cost": "CostSacrificeSelf",
                 "effect": {
                     "type": "Regenerate",
-                    "target": "EnchantedCreature"
+                    "target": "EnchantedPermanent"
                 },
                 "descriptionOverride": "Sacrifice this Aura: Regenerate enchanted creature."
             }

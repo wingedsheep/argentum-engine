@@ -2657,6 +2657,71 @@
     }
 }
 
+// Izzet Generatorium
+{
+    "name": "Izzet Generatorium",
+    "manaCost": "{U}{R}",
+    "typeLine": "Artifact",
+    "oracleText": "If you would get one or more {E} (energy counters), you get that many plus one {E} instead.\n{T}: Draw a card. Activate only if you've paid or lost four or more {E} this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Izzet Generatorium:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "ENERGY_PAID_OR_LOST"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    }
+                ]
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ModifyCounterPlacement",
+                "appliesTo": {
+                    "type": "CounterPlacementEvent",
+                    "counterType": "ENERGY",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "Hard hats are required. Shock-resistant coveralls aren't, but are highly recommended.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6d9537d-c6b9-46ef-834b-87750d79f1ae.jpg?1783911250"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Jolted Awake
 {
     "name": "Jolted Awake",

@@ -36,7 +36,7 @@ val SerpentSkin = card("Serpent Skin") {
 
     activatedAbility {
         cost = Costs.Mana("{G}")
-        effect = Effects.Regenerate(EffectTarget.EnchantedCreature)
+        effect = Effects.Regenerate(EffectTarget.EnchantedPermanent)
         description = "{G}: Regenerate enchanted creature."
     }
 

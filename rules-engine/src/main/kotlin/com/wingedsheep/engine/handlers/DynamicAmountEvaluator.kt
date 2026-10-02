@@ -802,6 +802,11 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.LoyaltyAbilitiesActivatedThisTurnComponent>()
                             ?.count ?: 0
                     }
+                    TurnTracker.ENERGY_PAID_OR_LOST -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.PlayerCountersRemovedThisTurnComponent>()
+                            ?.count(com.wingedsheep.sdk.core.CounterType.ENERGY) ?: 0
+                    }
                 }
             }
 

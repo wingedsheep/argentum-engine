@@ -283,7 +283,17 @@ enum class TurnTracker {
      * activated a loyalty ability this turn" (Kiora of Salt and Sand) — reach for it via
      * `Conditions.YouActivatedLoyaltyAbilityThisTurn`.
      */
-    LOYALTY_ABILITIES_ACTIVATED;
+    LOYALTY_ABILITIES_ACTIVATED,
+    /**
+     * How many energy counters ({E}) the player has paid or lost this turn — every energy counter
+     * removed from the player, whether paid as a cost or removed by an effect. Gaining energy never
+     * nets against it. Backed by `PlayerCountersRemovedThisTurnComponent`, recorded at the settle
+     * boundary from every `CountersRemovedEvent` on the player and cleared at end of turn.
+     * `Compare(TurnTracking(You, ENERGY_PAID_OR_LOST), GTE, Fixed(4))` is "if you've paid or lost
+     * four or more {E} this turn" (Izzet Generatorium) — reach for it via
+     * `Conditions.YouPaidOrLostEnergyThisTurn`.
+     */
+    ENERGY_PAID_OR_LOST;
 
     fun descriptionFor(player: Player): String = when (this) {
         CREATURES_DIED -> "the number of creatures that died under ${player.possessive} control this turn"
@@ -339,6 +349,7 @@ enum class TurnTracker {
         }
         CARDS_IN_HAND_AT_TURN_START ->
             "the number of cards ${player.description} had in hand at the beginning of this turn"
+        ENERGY_PAID_OR_LOST -> "the amount of {E} ${player.description} paid or lost this turn"
         LOYALTY_ABILITIES_ACTIVATED ->
             "the number of loyalty abilities ${player.description} activated this turn"
     }

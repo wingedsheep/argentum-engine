@@ -12361,6 +12361,8 @@ default to "you" so card authors don't need to pass it explicitly.
   ability this turn" (Kiora of Salt and Sand). A `Compare` over
   `TurnTracking(player, TurnTracker.LOYALTY_ABILITIES_ACTIVATED)`: turn history on the player, so it stays
   true after that planeswalker dies or the ability is countered.
+- `YouPaidOrLostEnergyThisTurn(atLeast, player = Player.You)` — "if you've paid or lost N or more {E} this
+  turn" (Izzet Generatorium). A `Compare` over `TurnTracking(player, TurnTracker.ENERGY_PAID_OR_LOST)`.
 - `TriggeringSpellMatches(filter)` — intervening-if guard: the spell that triggered this ability
   matches `filter`. Reads the triggering entity's static card characteristics (so it stays correct
   after the spell leaves the stack). General "whenever you cast a spell, if it's a/an X ..." gate.
@@ -13787,6 +13789,11 @@ this turn").
   counted at activation (CR 602.2) on the per-player `LoyaltyAbilitiesActivatedThisTurnComponent` and reset
   for every player at turn start. Wrapped by `Conditions.YouActivatedLoyaltyAbilityThisTurn` (Kiora of Salt
   and Sand).
+- `ENERGY_PAID_OR_LOST` — how many energy counters were removed from the player this turn, paid as a cost
+  or lost to an effect; energy gained never nets against it. Recorded by `CounterHistory.recordRemovals` at
+  the settle boundary from every `CountersRemovedEvent` on the player (so no payment path has to remember
+  it), tallied per counter kind on `PlayerCountersRemovedThisTurnComponent` and cleared at end of turn.
+  Wrapped by `Conditions.YouPaidOrLostEnergyThisTurn(atLeast)` (Izzet Generatorium).
 - `RED_NONCOMBAT_DAMAGE_DEALT` — total noncombat damage red sources a player controlled dealt this turn
   (controller-scoped). Backed by the per-player `RedNoncombatDamageDealtThisTurnComponent`, incremented in
   `DamageUtils.dealDamageToTarget` on the source's controller whenever a red source deals positive noncombat

@@ -14089,7 +14089,7 @@
                 },
                 "effect": {
                     "type": "Regenerate",
-                    "target": "EnchantedCreature"
+                    "target": "EnchantedPermanent"
                 },
                 "descriptionOverride": "{G}: Regenerate enchanted creature."
             }
