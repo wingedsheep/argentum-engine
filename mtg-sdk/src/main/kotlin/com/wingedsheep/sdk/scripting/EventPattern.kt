@@ -1410,6 +1410,32 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * When a spell is copied — "whenever you copy an instant or sorcery spell". A copy isn't cast
+     * (CR 707.10), so this is the separate half of magecraft's "cast or copy"; join the two with
+     * `Triggers.or` (or `Triggers.you.castsOrCopies`). [player] is the copy's controller — the
+     * player under whose control it was put on the stack (CR 707.10), so a copy an opponent's effect
+     * hands you is one *you* copied. A copy that is *cast* (CR 707.12) is a cast, not this event.
+     */
+    @SerialName("SpellCopiedEvent")
+    @Serializable
+    data class SpellCopiedEvent(
+        val spellFilter: GameObjectFilter = GameObjectFilter.Any,
+        val player: Player = Player.You,
+    ) : EventPattern {
+        override val description: String = buildString {
+            append(player.description)
+            append(" copies ")
+            val filterDesc = spellFilter.description
+            if (filterDesc == "card" || filterDesc.isBlank()) append("a spell") else append("a $filterDesc spell")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = spellFilter.applyTextReplacement(replacer)
+            return if (newFilter !== spellFilter) copy(spellFilter = newFilter) else this
+        }
+    }
+
+    /**
      * When a player casts their Nth spell in a turn.
      * Fires on SpellCastEvent when the casting player's per-turn spell count
      * crosses the specified threshold.

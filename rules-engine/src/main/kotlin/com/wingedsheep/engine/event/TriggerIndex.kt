@@ -47,6 +47,7 @@ enum class TriggerCategory {
     BLOCKERS_DECLARED,
     DAMAGE_RECEIVED,
     SPELL_CAST,
+    SPELL_COPIED,
     SPELL_OR_ABILITY,
     LAND_PLAYED,
     CARD_CYCLED,
@@ -254,6 +255,7 @@ class TriggerIndex(
                     if (trigger.source == GameObjectFilter.Any) listOf(TriggerCategory.DAMAGE_RECEIVED) else emptyList()
                 is SdkGameEvent.SpellCastEvent -> listOf(TriggerCategory.SPELL_CAST)
                 is SdkGameEvent.NthSpellCastEvent -> listOf(TriggerCategory.SPELL_CAST)
+                is SdkGameEvent.SpellCopiedEvent -> listOf(TriggerCategory.SPELL_COPIED)
                 is SdkGameEvent.LandPlayedEvent -> listOf(TriggerCategory.LAND_PLAYED)
                 // "When you cast this spell" fires only via TriggerDetector's self-cast path while
                 // the spell is on the stack — never index it against battlefield permanents, or a
@@ -369,6 +371,7 @@ class TriggerIndex(
             is BlockersDeclaredEvent, is com.wingedsheep.engine.core.BlocksCreatedEvent -> BLOCKERS_DECLARED_LIST
             is DamageDealtEvent -> DAMAGE_RECEIVED_LIST
             is SpellCastEvent -> SPELL_CAST_AND_ABILITY_LIST
+            is com.wingedsheep.engine.core.SpellCopiedEvent -> SPELL_COPIED_LIST
             is com.wingedsheep.engine.core.LandPlayedEvent -> LAND_PLAYED_LIST
             is AbilityActivatedEvent -> SPELL_OR_ABILITY_LIST
             is AbilityTriggeredEvent -> SPELL_OR_ABILITY_LIST
@@ -486,7 +489,6 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.ReflexiveAbilityTriggeredEvent,
             is com.wingedsheep.engine.core.ResolvedEvent,
             is com.wingedsheep.engine.core.SpeedChangedEvent,
-            is com.wingedsheep.engine.core.SpellCopiedEvent,
             is com.wingedsheep.engine.core.SpellCounteredEvent,
             is com.wingedsheep.engine.core.SpellFizzledEvent,
             is com.wingedsheep.engine.core.StatsModifiedEvent,
@@ -508,6 +510,7 @@ class TriggerIndex(
         private val BLOCKERS_DECLARED_LIST = listOf(TriggerCategory.BLOCKERS_DECLARED)
         private val DAMAGE_RECEIVED_LIST = listOf(TriggerCategory.DAMAGE_RECEIVED)
         private val SPELL_CAST_AND_ABILITY_LIST = listOf(TriggerCategory.SPELL_CAST, TriggerCategory.SPELL_OR_ABILITY)
+        private val SPELL_COPIED_LIST = listOf(TriggerCategory.SPELL_COPIED)
         private val LAND_PLAYED_LIST = listOf(TriggerCategory.LAND_PLAYED)
         private val SPELL_OR_ABILITY_LIST = listOf(TriggerCategory.SPELL_OR_ABILITY)
         private val CARD_CYCLED_LIST = listOf(TriggerCategory.CARD_CYCLED)

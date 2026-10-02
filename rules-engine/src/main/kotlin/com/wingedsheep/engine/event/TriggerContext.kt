@@ -329,6 +329,13 @@ data class TriggerContext(
                     manaValueOfTriggeringSpell = event.manaValue.takeIf { it > 0 },
                     xValueOfTriggeringSpell = event.xValue
                 )
+                // A copy is a spell too (CR 707.10): "that spell" is the copy, cast by no one but
+                // controlled by the player who copied it. No mana was spent on it.
+                is com.wingedsheep.engine.core.SpellCopiedEvent -> TriggerContext(
+                    triggeringEntityId = event.copyEntityId,
+                    triggeringPlayerId = event.controllerId,
+                    manaValueOfTriggeringSpell = event.manaValue.takeIf { it > 0 }
+                )
                 is CardsDrawnEvent -> TriggerContext(triggeringPlayerId = event.playerId)
                 // A player losing the game: the loser is both the triggering player (so
                 // Player.TriggeringPlayer / a TriggeringPlayerIs condition resolves to them) and

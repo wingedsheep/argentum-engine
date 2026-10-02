@@ -198,7 +198,8 @@ internal object StackPlacement {
                 controllerId = copyController,
                 originalSpellId = sourceSpellId,
                 copyIndex = copyIndex,
-                copyTotal = copyTotal
+                copyTotal = copyTotal,
+                manaValue = sourceCard.manaValue
             )
         )
 

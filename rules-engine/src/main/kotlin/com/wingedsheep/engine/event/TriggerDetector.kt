@@ -1176,7 +1176,8 @@ class TriggerDetector(
             // Spell-cast delayed triggers ("whenever you cast a [filtered] spell this turn, …",
             // Rediscover the Way chapter III) are filter-scoped: delegate to the canonical
             // spell-cast matcher so the spell filter and casting-player predicate are honored.
-            is com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent ->
+            is com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent,
+            is com.wingedsheep.sdk.scripting.EventPattern.SpellCopiedEvent ->
                 matcher.matchesTrigger(specEvent, spec.binding, event, sourceId, controllerId, state)
             // Ability-activation delayed triggers ("when you next activate an exhaust ability that
             // isn't a mana ability this turn, …", Pit Automaton) are player-scoped, not

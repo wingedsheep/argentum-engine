@@ -6245,7 +6245,8 @@ only, `beginningOf(step)` (the enchanted creature's controller's step) and
 For `enter()` and `die()`, a filter with no controller predicate means "you control"; say
 `.youControl()` anyway.
 
-**Player verbs**: `beginningOf(step)`, `casts(spell, requires)`, `castsNth(n, spell?)`,
+**Player verbs**: `beginningOf(step)`, `casts(spell, requires)`, `castsNth(n, spell?)`, `copies(spell)`,
+`castsOrCopies(spell)`,
 `choosesTargets()`, `putsSpellOrAbilityOnStack()`, `activatesAbility(of?, targeting?, loyalty,
 minLoyaltyRemoved, exhaust, includeManaAbilities, excludeManaAbilities, withoutTapInCost)`,
 `attackTriggersAbility()`, `attacks(with?, minAttackers?)` (you declare attackers), `isAttacked(…)`,
@@ -6930,6 +6931,15 @@ The shapes in this family, with their engine notes.
 - `Triggers.you.casts(GameObjectFilter.Enchantment)` — any enchantment you cast.
 - `Triggers.you.casts(GameObjectFilter.Historic)` — artifact / legendary / Saga.
 - `Triggers.you.casts(GameObjectFilter.Any.withSubtype(subtype))` — tribal helper: spell with matching subtype.
+- `Triggers.you.copies(GameObjectFilter.InstantOrSorcery)` — "whenever you copy an instant or sorcery spell".
+  A copy isn't cast (CR 707.10), so `casts` never sees one; this fires once per copy put onto the stack, and "you" is
+  the copy's controller (the player under whose control it was put on the stack). "That spell" is the copy
+  (`TriggeringEntity`; its mana value fills `manaValueOfTriggeringSpell`). A copy that is *cast* (CR 707.12) is a cast.
+  Works as a delayed trigger too. Backed by `EventPattern.SpellCopiedEvent(spellFilter, player)`.
+- `Triggers.you.castsOrCopies(GameObjectFilter.InstantOrSorcery)` — **magecraft**, "whenever you cast or copy an
+  instant or sorcery spell": `Triggers.or(casts(spell), copies(spell))`, one ability over both events, so a
+  per-turn resolution tally (`IncrementAbilityResolutionCountEffect` + `Conditions.SourceAbilityResolvedNTimes`)
+  counts casts and copies together (Ashling, Flame Dancer).
 - `Triggers.anyPlayer.putsSpellOrAbilityOnStack()` — any object hits the stack.
 - `Triggers.anOpponent.activatesAbility()` — an opponent activates an ability that **isn't a mana ability** (CR 605/606). Mana
   abilities don't use the stack, so they never fire this; loyalty abilities (which are activated abilities) do. Pair

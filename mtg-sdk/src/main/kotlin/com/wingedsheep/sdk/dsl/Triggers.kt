@@ -739,6 +739,20 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     ): TriggerSpec = spec(SpellCastEvent(spellFilter = spell, player = player, requires = requires))
 
     /**
+     * "copies a [spell] spell" — a copy put onto the stack under this player's control (CR 707.10).
+     * Copies aren't cast, so [casts] never sees them.
+     */
+    fun copies(spell: GameObjectFilter = GameObjectFilter.Any): TriggerSpec =
+        spec(SpellCopiedEvent(spellFilter = spell, player = player))
+
+    /**
+     * "casts or copies a [spell] spell" — magecraft's trigger (`castsOrCopies(GameObjectFilter.InstantOrSorcery)`).
+     * One ability with two events, so a per-turn resolution tally counts both.
+     */
+    fun castsOrCopies(spell: GameObjectFilter = GameObjectFilter.Any): TriggerSpec =
+        Triggers.or(casts(spell), copies(spell))
+
+    /**
      * "casts their [n]th [spell] spell each turn" — counts casts, not resolutions (The Queen of Dale:
      * `anOpponent.castsNth(1, GameObjectFilter.Noncreature)`).
      */
