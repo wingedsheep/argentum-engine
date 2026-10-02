@@ -148,8 +148,7 @@ object Statics {
 
     /**
      * "Enchanted creature doesn't untap during its controller's untap step." — Shackles, Claustrophobia,
-     * Charmed Sleep, and the rest of the untap-lock Auras (and, through the normalizer's attachment
-     * noun, Vulshok Gauntlets' equipped creature).
+     * Charmed Sleep, and the rest of the untap-lock Auras.
      *
      * The SDK grants the restriction as the `DOESNT_UNTAP` ability flag riding [GrantKeyword]'s string
      * field — the untap step skips any permanent whose projected keywords hold it — so this is
