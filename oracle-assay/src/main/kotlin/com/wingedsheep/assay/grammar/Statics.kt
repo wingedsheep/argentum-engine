@@ -1247,7 +1247,8 @@ object Statics {
     /**
      * "Enchanted creature can't attack or block." — Pacifism, Arrest's combat half, Compulsory Rest,
      * and the rest of the white Aura removal; "~ can't attack or block unless it has an even number
-     * of counters on it." — Sab-Sunen, and the source-scoped drawback creatures beside it.
+     * of counters on it." — Sab-Sunen, and the source-scoped drawback creatures beside it (whose
+     * conditions, Sab-Sunen's included, still decline inside [Conditions.condition]).
      *
      * One sentence, **two statics**: the SDK has no joint "can't attack or block" restriction, and
      * the hand-written cards carry `CantAttack` then `CantBlock` over the same group — the attack
