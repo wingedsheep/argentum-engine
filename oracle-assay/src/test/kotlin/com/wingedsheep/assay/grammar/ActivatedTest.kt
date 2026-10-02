@@ -172,6 +172,24 @@ class ActivatedTest : StringSpec({
         roundTrips("{T}: Add {W}, {U}, or {B}. ~ deals 1 damage to you.")
     }
 
+    // One printed "target" would become one target slot per ability, and two abilities with different
+    // riders were never printed as one line.
+    "a choice rider that targets declines, and unequal riders refuse to print" {
+        Grammar.abilityLine.parseLine("{T}: Add {U} or {R}. ~ deals 1 damage to any target.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+        val painland = fragment("{T}: Add {U} or {R}. ~ deals 1 damage to you.")
+        val (blue, red) = painland.script.activatedAbilities
+        val unequal = painland.copy(
+            script = painland.script.copy(
+                activatedAbilities = listOf(
+                    blue,
+                    red.copy(effect = Effects.AddMana(Color.RED) then Effects.DealDamage(2, EffectTarget.PlayerRef(Player.You))),
+                )
+            )
+        )
+        Grammar.abilityLine.printLine(unequal) shouldBe null
+    }
+
     // Dark Ritual: producing mana is a spell effect in its own right, which is why the rule lives in
     // Steps rather than only behind a cost.
     "adding mana is a spell line as well as an ability's effect" {
