@@ -105,5 +105,24 @@ class GoliathHatcheryScenarioTest : ScenarioTestBase() {
             game.findPermanent("Goliath Hatchery") shouldNotBe null
             game.state.projectedState.hasKeyword(game.findPermanent("Slaughter Singer")!!, Keyword.TOXIC) shouldBe true
         }
+
+        test("with no creature to choose, the corrupted trigger resolves without drawing") {
+            val builder = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Goliath Hatchery")
+                .withActivePlayer(2)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            repeat(6) { builder.withCardInLibrary(1, "Forest") }
+            repeat(6) { builder.withCardInLibrary(2, "Forest") }
+            val game = builder.build()
+            game.setPoison(game.player2Id, 3)
+            game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+            val handBefore = game.handSize(1)
+
+            game.resolveStack()
+            game.hasPendingDecision() shouldBe false
+            game.state.stack.isEmpty() shouldBe true
+            game.handSize(1) shouldBe handBefore
+        }
     }
 }
