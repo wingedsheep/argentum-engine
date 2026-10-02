@@ -216,6 +216,12 @@ object Conditions {
         constant("you gained and lost life this turn", SdkConditions.YouGainedAndLostLifeThisTurn),
         constant("you've lost life this turn", SdkConditions.YouLostLifeThisTurn),
         constant("an opponent lost life this turn", SdkConditions.OpponentLostLifeThisTurn),
+        // Morbid's condition and its controller-scoped sibling. "A creature died this turn" is global
+        // — any player's creature counts — and "under your control" narrows it to your own; the
+        // SDK names the two as separate facades, so each printed clause is one constant. The
+        // subtype-filtered spellings ("a Zombie died this turn") are a different model and stay out.
+        constant("a creature died this turn", SdkConditions.CreatureDiedThisTurn),
+        constant("a creature died under your control this turn", SdkConditions.ControlledCreatureDiedThisTurn),
         discardedACardThisTurn,
         eitherControlled,
         countAtLeast(

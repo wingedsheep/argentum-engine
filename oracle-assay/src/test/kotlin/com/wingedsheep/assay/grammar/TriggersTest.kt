@@ -144,6 +144,16 @@ class TriggersTest : StringSpec({
             .shouldBeInstanceOf<ParseOutcome.Declined>()
     }
 
+    // Morbid — the global clause and its "under your control" sibling are two facades, two constants.
+    "a creature died this turn is the morbid intervening-if" {
+        ability("When ~ enters, if a creature died this turn, draw a card.").interveningIf shouldBe
+            Conditions.CreatureDiedThisTurn
+        roundTrips("When ~ enters, if a creature died this turn, draw a card.")
+        ability("At the beginning of your end step, if a creature died under your control this turn, draw a card.")
+            .interveningIf shouldBe Conditions.ControlledCreatureDiedThisTurn
+        roundTrips("At the beginning of your end step, if a creature died under your control this turn, draw a card.")
+    }
+
     // The other half of the split (CR 603.2 vs CR 603.4). A `triggerRestriction` is a different
     // printed shape — "Whenever this creature attacks *while* you control a Dinosaur" — that the
     // engine reads only when the trigger fires. No trigger rule spells it, so an ability carrying

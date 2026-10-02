@@ -1095,6 +1095,32 @@ Differential **7,068 compared / 69 divergent → 7,070 / 69**. Nothing new diver
 Wickerfolk spells its gate as `Conditions.CompareAmounts(...)` rather than the facade, and the two
 build the same value.
 
+## The morbid band
+
+The twentieth loop band, tail key `a creature died …`: "When ~ enters, **if a creature died this
+turn**, …" The probe (swap in "you control an artifact") finished 21 whole cards over the corpus. It
+delivered **22 more cards read whole in the verdict ledger (10,221 → 10,243)** and **8 hand-written
+ones (7,459 → 7,467)**.
+
+### Two clauses, two facades
+
+The SDK already names both readings: `Conditions.CreatureDiedThisTurn` is global — any player's
+creature counts — and `Conditions.ControlledCreatureDiedThisTurn` is "a creature died **under your
+control** this turn" (Denethor, Faramir, Sméagol, Barrensteppe Siege). Each printed clause is one
+whole condition with a facade of its own, so the band is two `constant` rows beside the life-state
+conditions, and every position that slots `Conditions` read them at once: intervening-ifs, "Activate
+only if", "… instead if", and "This spell costs {3} less to cast if". The subtype-filtered spellings
+("if a Zombie died this turn") build `CreatureWithSubtypeDiedThisTurn` and stay out of this band.
+
+### What the differential found
+
+Differential **7,070 compared / 69 divergent → 7,078 / 71**. Both new divergences are standing SDK
+findings this grammar already names, surfaced because their last declining line now reads:
+**Dreaded Bat-Cloud** writes its reduction as `FixedIfCreatureDiedThisTurn`, the minority half of the
+`FixedIf…` / `OnlyIf` split `SpellCosts.kt` documents, and **Skirsdag High Priest** taps "two untapped
+creatures you control" with `excludeSelf = true`, the same {T}-plus-tap-others split Devout Chaplain
+already shows. No card moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
