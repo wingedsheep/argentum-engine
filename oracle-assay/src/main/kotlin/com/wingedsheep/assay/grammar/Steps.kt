@@ -647,6 +647,7 @@ object Steps {
             "each opponent", "deals damage to each opponent",
             EffectTarget.PlayerRef(Player.EachOpponent), null,
         ),
+        DamageRecipient("you", "deals damage to you", EffectTarget.PlayerRef(Player.You), null),
         DamageRecipient(
             "target opponent or planeswalker", "deals damage to target opponent or planeswalker",
             Targets.bound(), Targets.opponentOrPlaneswalker(),

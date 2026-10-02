@@ -366,6 +366,57 @@ object Activated {
         }
 
     /**
+     * "{T}: Add {U} or {R}. ~ deals 1 damage to you." — [choice] with a sentence after the mana,
+     * which the painlands and the Talismans print.
+     *
+     * The rider is one sentence that follows the choice, so it belongs to every ability the choice
+     * denotes: the hand-written cards spell each one `Effects.AddMana(colour) then rider`, and that
+     * is what this builds. The rider is any [Steps] line, read once and copied onto each ability,
+     * and `match` insists every ability carries the *same* one — two abilities with different
+     * riders were not printed as one line. A rider that targets is refused: the abilities would
+     * share one target slot on paper and hold two in the model.
+     *
+     * Disjoint from [choice] by model: [Mana.addedAlternatives] refuses anything that is not a bare
+     * mana effect, and this refuses anything that is.
+     */
+    private val choiceWithRider: Phrase<List<ActivatedAbility>> =
+        phrase("{cost}: {alternatives} {rider}", name = "an activated mana ability with a choice and a rider") {
+            slot("cost", payment)
+            slot("alternatives", Mana.addedAlternatives)
+            slot("rider", Steps.step)
+            build { bindings ->
+                val rider = bindings.value<CardScript>("rider")
+                val after = rider.spellEffect ?: return@build null
+                if (rider != CardScript(spellEffect = after)) return@build null
+                val payment = bindings.value<Payment>("cost")
+                val built = bindings.value<List<Effect>>("alternatives")
+                    .map { abilityFor(payment, CardScript(spellEffect = it then after)) }
+                if (built.any { it == null }) null else built.filterNotNull()
+            }
+            match { abilities ->
+                if (abilities.size < 2) return@match null
+                val payment = paymentOf(abilities.first())
+                val split = abilities.map { ability ->
+                    val parts = (ability.effect as? CompositeEffect)?.effects ?: return@match null
+                    if (parts.size != 2) return@match null
+                    parts[0] to parts[1]
+                }
+                val after = split.first().second
+                if (split.any { it.second != after }) return@match null
+                val printable = abilities.zip(split).all { (ability, parts) ->
+                    abilityFor(payment, CardScript(spellEffect = parts.first then after))
+                        ?.copy(id = ability.id) == ability
+                }
+                if (!printable) return@match null
+                bind(
+                    "cost" to payment,
+                    "alternatives" to split.map { it.first },
+                    "rider" to CardScript(spellEffect = after),
+                )
+            }
+        }
+
+    /**
      * "{cost}: {effect} Activate only during your turn, before attackers are declared." — the same
      * ability with the sentence that says when it may be activated.
      *
@@ -431,7 +482,7 @@ object Activated {
         }
 
     val abilities: Phrase<List<ActivatedAbility>> =
-        oneOf("an activated ability", single, restricted, sorcerySpeed, choice)
+        oneOf("an activated ability", single, restricted, sorcerySpeed, choice, choiceWithRider)
 
     /**
      * `"{T}: Regenerate target Sliver."` — one activated ability inside the quotation marks a
