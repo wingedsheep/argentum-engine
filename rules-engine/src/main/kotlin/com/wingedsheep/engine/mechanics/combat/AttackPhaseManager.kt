@@ -283,7 +283,7 @@ internal class AttackPhaseManager(
         for ((attackerId, defenderId) in attackers) {
             val hasVigilance = projected.hasKeyword(attackerId, Keyword.VIGILANCE)
             newState = newState.updateEntity(attackerId) { container ->
-                container.with(AttackingComponent(defenderId, bandIdByAttacker[attackerId]))
+                container.with(AttackingComponent(defenderId, bandIdByAttacker[attackerId], defendingPlayerId = CombatDefenders.defendingPlayerOf(newState, defenderId)))
                     .with(AttackedThisCombatComponent)
             }
             newState = AttackedPermanents.markAttacked(newState, defenderId)

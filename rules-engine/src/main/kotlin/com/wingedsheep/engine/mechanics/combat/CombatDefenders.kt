@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat
 
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -29,8 +30,15 @@ object CombatDefenders {
         if (defenderId in state.turnOrder) return defenderId
         com.wingedsheep.engine.mechanics.battle.Battles.protectorOf(state, defenderId)
             ?.let { return it }
-        return state.getEntity(defenderId)?.get<ControllerComponent>()?.playerId ?: defenderId
+        return state.projectedState.getController(defenderId)
+            ?: state.getEntity(defenderId)?.get<ControllerComponent>()?.playerId ?: defenderId
     }
+
+    /** The defending seat persists when an attacked permanent is removed from combat. */
+    fun defendingPlayerOf(state: GameState, attack: AttackingComponent, projected: ProjectedState): EntityId? =
+        attack.defendingPlayerId ?: if (attack.defenderId in state.turnOrder) attack.defenderId
+        else com.wingedsheep.engine.mechanics.battle.Battles.protectorOf(state, attack.defenderId)
+            ?: projected.getController(attack.defenderId)
 
     /** Every distinct defending player in the current combat: anyone who has a creature attacking
      *  them (or their planeswalkers/battles) — and, under shared team turns (Two-Headed Giant), their
@@ -40,8 +48,8 @@ object CombatDefenders {
      *  (`sharedTurnTeam` is a singleton there), so a teammate can't block for you. */
     fun defendingPlayers(state: GameState): Set<EntityId> =
         state.getBattlefield()
-            .mapNotNull { state.getEntity(it)?.get<AttackingComponent>()?.defenderId }
-            .map { defendingPlayerOf(state, it) }
+            .mapNotNull { state.getEntity(it)?.get<AttackingComponent>() }
+            .mapNotNull { defendingPlayerOf(state, it, state.projectedState) }
             .flatMap { state.sharedTurnTeam(it) }
             .toSet()
 

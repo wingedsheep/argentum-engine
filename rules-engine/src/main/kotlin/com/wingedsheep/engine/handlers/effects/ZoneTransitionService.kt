@@ -1399,7 +1399,7 @@ class ZoneTransitionService(
                 val defenders = com.wingedsheep.engine.mechanics.combat.CombatDefenders.defendingPlayers(state)
                 val defenderId = opponents.firstOrNull { it in defenders } ?: opponents.firstOrNull()
                 if (defenderId != null) {
-                    updated = updated.with(AttackingComponent(defenderId))
+                    updated = updated.with(AttackingComponent(defenderId, defendingPlayerId = defenderId))
                 }
             }
 

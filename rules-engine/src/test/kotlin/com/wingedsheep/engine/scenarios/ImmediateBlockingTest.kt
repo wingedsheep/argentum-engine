@@ -95,6 +95,72 @@ class ImmediateBlockingTest : FunSpec({
         val result = d.block(blocker, a)
         d.services.triggerDetector.detectTriggers(d.state, result.events).count { it.sourceId == b } shouldBe 0
     }
+    test("filtered batch trigger fires when a matching blocker joins an already blocked attacker") {
+        val filteredAttacker = card("Filtered Immediate Attacker") {
+            typeLine = "Creature"; power = 1; toughness = 4
+            triggeredAbility {
+                trigger = Triggers.self.blocksOrBecomesBlocked(
+                    GameObjectFilter.Creature.withSubtype(com.wingedsheep.sdk.core.Subtype.ORC),
+                    oncePerCombat = true)
+                effect = Effects.GainLife(1)
+            }
+        }
+        val orc = card("Immediate Orc") { typeLine = "Creature — Orc"; power = 1; toughness = 4 }
+        val d = driver(); d.registerCards(listOf(filteredAttacker, orc))
+        val opp = d.getOpponent(d.activePlayer!!)
+        val attacker = d.putCreatureOnBattlefield(d.activePlayer!!, filteredAttacker.name)
+        d.addComponent(attacker, AttackingComponent(opp))
+        val nonmatching = d.putCreatureOnBattlefield(opp, blockerCard.name)
+        val first = d.block(nonmatching, attacker)
+        d.services.triggerDetector.detectTriggers(d.state, first.events).count { it.sourceId == attacker } shouldBe 0
+        for (i in 1..2) {
+            val matching = d.putCreatureOnBattlefield(opp, orc.name)
+            val added = d.block(matching, attacker)
+            (added.events.single() as BlocksCreatedEvent).newlyBlockedAttackers shouldBe emptySet()
+            d.services.triggerDetector.detectTriggers(d.state, added.events).count { it.sourceId == attacker } shouldBe 1
+        }
+
+        val simultaneouslyBlocked = d.putCreatureOnBattlefield(d.activePlayer!!, filteredAttacker.name)
+        d.addComponent(simultaneouslyBlocked, AttackingComponent(opp))
+        val pair = List(2) { d.putCreatureOnBattlefield(opp, orc.name) }
+        val declared = d.services.combatManager.declareBlockers(d.state, opp,
+            pair.associateWith { listOf(simultaneouslyBlocked) })
+        declared.error shouldBe null; d.replaceState(declared.state)
+        d.services.triggerDetector.detectTriggers(d.state, declared.events)
+            .count { it.sourceId == simultaneouslyBlocked } shouldBe 1
+    }
+    test("filtered delayed batch trigger keeps firing once for each new batch of matching blockers") {
+        val orc = card("Delayed Immediate Orc") { typeLine = "Creature — Orc"; power = 1; toughness = 4 }
+        val d = driver(); d.registerCard(orc)
+        val opp = d.getOpponent(d.activePlayer!!)
+        val attacker = d.attack(opp)
+        fun watch(id: EntityId) {
+            d.replaceState(d.state.copy(delayedTriggers = listOf(
+                com.wingedsheep.engine.event.DelayedTriggeredAbility(
+                    id = "filtered-blocks", effect = Effects.GainLife(1),
+                    sourceId = EntityId.of("departed-source"), sourceName = "Departed source",
+                    controllerId = d.activePlayer!!, watchedEntityId = id,
+                    trigger = Triggers.self.blocksOrBecomesBlocked(
+                        GameObjectFilter.Creature.withSubtype(com.wingedsheep.sdk.core.Subtype.ORC),
+                        oncePerCombat = true)))))
+        }
+        fun count(events: List<GameEvent>) = d.services.triggerDetector.detectTriggers(d.state, events)
+            .count { it.ability.id == com.wingedsheep.sdk.scripting.AbilityId("delayed_filtered-blocks") }
+        watch(attacker)
+        val nonmatching = d.putCreatureOnBattlefield(opp, blockerCard.name)
+        count(d.block(nonmatching, attacker).events) shouldBe 0
+        repeat(2) {
+            val matching = d.putCreatureOnBattlefield(opp, orc.name)
+            count(d.block(matching, attacker).events) shouldBe 1
+        }
+        val simultaneouslyBlocked = d.attack(opp)
+        watch(simultaneouslyBlocked)
+        val pair = List(2) { d.putCreatureOnBattlefield(opp, orc.name) }
+        val declared = d.services.combatManager.declareBlockers(d.state, opp,
+            pair.associateWith { listOf(simultaneouslyBlocked) })
+        declared.error shouldBe null; d.replaceState(declared.state)
+        count(declared.events) shouldBe 1
+    }
     test("a block created against one band member blocks the entire band") {
         val d = driver(); val opp = d.getOpponent(d.activePlayer!!)
         val a = d.attack(opp, "band"); val b = d.attack(opp, "band")
@@ -210,6 +276,57 @@ class ImmediateBlockingTest : FunSpec({
         val context = PredicateContext(controllerId = me, targets = listOf(ChosenTarget.Permanent(blocker)))
         d.services.predicateEvaluator.matches(d.state, d.state.projectedState, a, filter, context) shouldBe true
         d.block(blocker, a).events.size shouldBe 1
+    }
+
+    for (change in listOf("planeswalker control", "battle protector", "planeswalker departure")) {
+        test("defending seat survives $change") {
+            val walker = card("Snapshot Walker") { typeLine = "Planeswalker"; startingLoyalty = 4 }
+            val battle = card("Snapshot Battle") { typeLine = "Battle — Siege"; startingDefense = 4 }
+            val d = driver(); d.registerCards(listOf(walker, battle))
+            val me = d.activePlayer!!; val opp = d.getOpponent(me)
+            val isBattle = change == "battle protector"
+            val defender = d.putPermanentOnBattlefield(if (isBattle) me else opp,
+                if (isBattle) battle.name else walker.name)
+            d.addComponent(defender, com.wingedsheep.engine.state.components.battlefield.CountersComponent(
+                mapOf((if (isBattle) com.wingedsheep.sdk.core.CounterType.DEFENSE
+                    else com.wingedsheep.sdk.core.CounterType.LOYALTY) to 4)))
+            if (isBattle) d.addComponent(defender,
+                com.wingedsheep.engine.state.components.battlefield.ProtectorComponent(opp))
+            val a = d.putCreatureOnBattlefield(me, attackerCard.name)
+            d.removeSummoningSickness(a)
+            d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+            val declared = d.services.combatManager.declareAttackers(d.state, me, mapOf(a to defender))
+            declared.error shouldBe null; d.replaceState(declared.state)
+            d.state.getEntity(a)!!.get<AttackingComponent>()!!.defendingPlayerId shouldBe opp
+            val blocker = d.putCreatureOnBattlefield(opp, blockerCard.name)
+            val wrongBlocker = d.putCreatureOnBattlefield(me, blockerCard.name)
+            when (change) {
+                "planeswalker control" -> {
+                    val result = d.services.effectExecutorRegistry.execute(d.state,
+                        Effects.GainControl(EffectTarget.SpecificEntity(defender)),
+                        EffectContext(sourceId = null, controllerId = me))
+                    result.error shouldBe null; d.replaceState(result.state)
+                }
+                "battle protector" -> d.addComponent(defender,
+                    com.wingedsheep.engine.state.components.battlefield.ProtectorComponent(me))
+                else -> {
+                    val result = d.services.effectExecutorRegistry.execute(d.state,
+                        Effects.Destroy(EffectTarget.SpecificEntity(defender)),
+                        EffectContext(sourceId = null, controllerId = me))
+                    result.error shouldBe null; d.replaceState(result.state)
+                }
+            }
+            d.replaceState(com.wingedsheep.engine.mechanics.sba.permanent.AttackedPermanentRemovedFromCombatCheck()
+                .check(d.state).state)
+            d.state.getEntity(a)!!.has<AttackingComponent>() shouldBe true
+            val filter = GameObjectFilter.Creature.attackingDefenderOf(EffectTarget.ContextTarget(0))
+            val context = PredicateContext(controllerId = me, targets = listOf(ChosenTarget.Permanent(blocker)))
+            d.services.predicateEvaluator.matches(d.state, d.state.projectedState, a, filter, context) shouldBe true
+            val wrongContext = context.copy(targets = listOf(ChosenTarget.Permanent(wrongBlocker)))
+            d.services.predicateEvaluator.matches(d.state, d.state.projectedState, a, filter, wrongContext) shouldBe false
+            d.block(wrongBlocker, a).events shouldBe emptyList()
+            d.block(blocker, a).events.size shouldBe 1
+        }
     }
 
 })

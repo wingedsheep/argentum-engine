@@ -5,7 +5,8 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.combat.BlockingRelationships
-import com.wingedsheep.engine.mechanics.battle.Battles
+import com.wingedsheep.engine.mechanics.combat.CombatDefenders
+import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
@@ -27,9 +28,8 @@ class BecomeBlockingExecutor : EffectExecutor<BecomeBlockingEffect> {
         ) return EffectResult.success(state)
         val attack = state.getEntity(attacker)?.get<AttackingComponent>() ?: return EffectResult.success(state)
         val controller = projected.getController(blocker) ?: return EffectResult.success(state)
-        val defender = attack.defenderId
-        val defendingPlayer = if (defender in state.turnOrder) defender
-            else Battles.protectorOf(state, defender) ?: projected.getController(defender) ?: return EffectResult.success(state)
+        val defendingPlayer = CombatDefenders.defendingPlayerOf(state, attack, projected)
+            ?: return EffectResult.success(state)
         if (controller !in state.sharedTurnTeam(defendingPlayer)) {
             return EffectResult.success(state)
         }
@@ -48,8 +48,8 @@ class BecomeBlockingExecutor : EffectExecutor<BecomeBlockingEffect> {
             newlyBlockedAttackers = newlyBlocked,
             previousBlockedCounts = mapOf(blocker to previous?.blockedAttackerIds.orEmpty().size),
             blockedCounts = mapOf(blocker to previous?.blockedAttackerIds.orEmpty().size + added.size),
-            blockerNames = mapOf(blocker to (state.getEntity(blocker)?.get<CardComponent>()?.name ?: "Creature")),
-            attackerNames = added.associateWith { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" },
+            blockerNames = mapOf(blocker to nameVisibleToAll(state, blocker, state.getEntity(blocker)?.get<CardComponent>()?.name ?: "Creature")),
+            attackerNames = added.associateWith { nameVisibleToAll(state, it, state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature") },
         )
         return EffectResult.success(BlockingRelationships.establish(state, pairs), listOf(event))
     }

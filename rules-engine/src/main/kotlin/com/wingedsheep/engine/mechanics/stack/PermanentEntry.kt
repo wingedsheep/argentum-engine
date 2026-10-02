@@ -839,7 +839,7 @@ internal class PermanentEntry(
             }
             if (legalDefender != null && projected.isCreature(spellId)) {
                 newState = newState.updateEntity(spellId) { c ->
-                    c.with(AttackingComponent(legalDefender))
+                    c.with(AttackingComponent(legalDefender, defendingPlayerId = com.wingedsheep.engine.mechanics.combat.CombatDefenders.defendingPlayerOf(newState, legalDefender)))
                 }
                 newState = com.wingedsheep.engine.mechanics.combat.AttackedPermanents.markAttacked(newState, legalDefender)
             }

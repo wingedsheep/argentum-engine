@@ -542,6 +542,31 @@ class FaceDownGameLogMaskingTest : FunSpec({
         }
     }
 
+    test("effect-created blocks retain public names after the hidden objects are revealed") {
+        val d = driver()
+        val player = d.activePlayer!!
+        val opponent = d.getOpponent(player)
+        val attacker = d.putFaceDown(player, "Disguised Angel", FaceDownMode.DISGUISE)
+        val blocker = d.putFaceDown(opponent, "Disguised Angel", FaceDownMode.DISGUISE)
+        d.addComponent(attacker, com.wingedsheep.engine.state.components.combat.AttackingComponent(opponent))
+        val result = d.services.effectExecutorRegistry.execute(d.state,
+            Effects.BecomeBlocking(EffectTarget.ContextTarget(0), EffectTarget.ContextTarget(1)),
+            com.wingedsheep.engine.handlers.EffectContext(sourceId = null, controllerId = player,
+                targets = listOf(ChosenTarget.Permanent(blocker), ChosenTarget.Permanent(attacker))))
+        result.error shouldBe null
+        val event = result.events.single() as com.wingedsheep.engine.core.BlocksCreatedEvent
+        event.blockerNames[blocker] shouldBe FACE_DOWN_DISPLAY_NAME
+        event.attackerNames[attacker] shouldBe FACE_DOWN_DISPLAY_NAME
+        val revealed = result.state.updateEntity(attacker) { it.without<FaceDownComponent>() }
+            .updateEntity(blocker) { it.without<FaceDownComponent>() }
+        for (viewer in listOf(player, opponent, EntityId.of("spectator"))) {
+            for (laterState in listOf(revealed, null)) {
+                val description = ClientEventTransformer.transform(result.events, viewer, laterState).single().description
+                description shouldNotContain "Disguised Angel"
+            }
+        }
+    }
+
     test("a face-up permanent is still named normally") {
         val d = driver()
         val caster = d.activePlayer!!

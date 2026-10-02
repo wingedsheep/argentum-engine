@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.combat.rules.BlockCheckContext
 import com.wingedsheep.engine.mechanics.combat.rules.defaultBlockEvasionRules
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -107,8 +108,8 @@ class SwapBlockingAssignmentsExecutor(
         val event = BlocksCreatedEvent(added, emptySet(), emptySet(),
             mapOf(first to firstBlocking.size, second to secondBlocking.size),
             mapOf(first to secondBlocking.size, second to firstBlocking.size),
-            added.keys.associateWith { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" },
-            added.values.flatten().distinct().associateWith { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" })
+            added.keys.associateWith { nameVisibleToAll(state, it, state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature") },
+            added.values.flatten().distinct().associateWith { nameVisibleToAll(state, it, state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature") })
         return EffectResult.success(swapped, listOf(event))
     }
 

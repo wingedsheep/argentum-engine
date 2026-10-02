@@ -275,7 +275,7 @@ class CreateTokenExecutor(
                 val defenderId = com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
                     .defenderForEnteringAttacker(context, newState, tokenControllerId)
                 if (defenderId != null) {
-                    components.add(AttackingComponent(defenderId))
+                    components.add(AttackingComponent(defenderId, defendingPlayerId = com.wingedsheep.engine.mechanics.combat.CombatDefenders.defendingPlayerOf(newState, defenderId)))
                 }
             }
             var container = ComponentContainer.of(*components.toTypedArray())

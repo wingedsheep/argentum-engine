@@ -238,7 +238,7 @@ class TriggerMatcher(
                         ?.targetId ?: return false
                     else -> return false
                 }
-                if (trigger.oncePerCombat && combatCreatureId !in event.newBlockers &&
+                if (trigger.oncePerCombat && trigger.partnerFilter == null && combatCreatureId !in event.newBlockers &&
                     combatCreatureId !in event.newlyBlockedAttackers) return false
                 event.blockers.keys.contains(combatCreatureId) ||
                     event.blockers.values.any { it.contains(combatCreatureId) }

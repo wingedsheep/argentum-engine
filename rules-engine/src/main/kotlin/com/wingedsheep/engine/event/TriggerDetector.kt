@@ -1061,13 +1061,15 @@ class TriggerDetector(
                     for ((blockerId, attackerIds) in event.blockers) {
                         if (attackerIds.contains(watched)) partners.add(blockerId)
                     }
-                    for (partnerId in partners.distinct()) {
+                    val matchingPartners = partners.distinct().filter { partnerId ->
                         val partnerFilter = specEvent.partnerFilter
-                        if (partnerFilter != null && !predicateEvaluator.matches(
+                        partnerFilter == null || predicateEvaluator.matches(
                                 state, state.projectedState, partnerId, partnerFilter,
                                 PredicateContext(controllerId = delayed.controllerId, sourceId = delayed.sourceId)
                             )
-                        ) continue
+                    }
+                    val firingPartners = if (specEvent.oncePerCombat) matchingPartners.take(1) else matchingPartners
+                    for (partnerId in firingPartners) {
                         if (delayed.fireOnce && delayed.id in firedOnceIds) continue
                         if (delayed.fireOnce) firedOnceIds.add(delayed.id)
                         triggers.add(
@@ -1252,7 +1254,8 @@ class TriggerDetector(
             is com.wingedsheep.sdk.scripting.EventPattern.BlocksOrBecomesBlockedByEvent -> {
                 if (event !is com.wingedsheep.engine.core.BlockingRelationshipsEvent) return false
                 val watched = watchedEntityId ?: return false
-                if (specEvent.oncePerCombat && watched !in event.newBlockers && watched !in event.newlyBlockedAttackers) return false
+                if (specEvent.oncePerCombat && specEvent.partnerFilter == null &&
+                    watched !in event.newBlockers && watched !in event.newlyBlockedAttackers) return false
                 event.blockers.containsKey(watched) || event.blockers.values.any { it.contains(watched) }
             }
             // "This turn, when target creature you control attacks and isn't blocked, …" — the

@@ -6,6 +6,7 @@ import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.mechanics.combat.rules.TappedBlockBypass
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
@@ -148,7 +149,7 @@ internal class BlockPhaseManager(
     fun beginBlockerPiles(state: GameState, blockingPlayer: EntityId): ExecutionResult {
         val attackers = state.getBattlefield().filter { id ->
             val attack = state.getEntity(id)?.get<AttackingComponent>() ?: return@filter false
-            CombatDefenders.defendingPlayerOf(state, attack.defenderId) in state.sharedTurnTeam(blockingPlayer)
+            CombatDefenders.defendingPlayerOf(state, attack, state.projectedState) in state.sharedTurnTeam(blockingPlayer)
         }
         val projected = state.projectedState
         val creatures = state.getBattlefield().filter {
@@ -363,8 +364,8 @@ internal class BlockPhaseManager(
             container.with(BlockersDeclaredThisCombatComponent)
         }
 
-        val blockerNameMap = expandedBlockers.keys.associateWith { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" }
-        val attackerNameMap = expandedBlockers.values.flatten().distinct().associateWith { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" }
+        val blockerNameMap = expandedBlockers.keys.associateWith { nameVisibleToAll(state, it, state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature") }
+        val attackerNameMap = expandedBlockers.values.flatten().distinct().associateWith { nameVisibleToAll(state, it, state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature") }
         val blockersEvent = BlockersDeclaredEvent(expandedBlockers, blockerNameMap, attackerNameMap)
         val blockTaxEvents = taxEvents
 
@@ -678,7 +679,7 @@ internal class BlockPhaseManager(
             // games) sharedTurnTeam is a singleton, so you can only block attackers aimed at you.
             val attacking = state.getEntity(attackerId)?.get<AttackingComponent>()
                 ?: return "${cardComponent.name} can't block: ${attackerId.value} isn't attacking"
-            val attackedDefender = CombatDefenders.defendingPlayerOf(state, attacking.defenderId)
+            val attackedDefender = CombatDefenders.defendingPlayerOf(state, attacking, projected)
             if (attackedDefender !in state.sharedTurnTeam(blockingPlayer)) {
                 return "${cardComponent.name} can't block a creature attacking another player"
             }

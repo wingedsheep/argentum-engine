@@ -1856,7 +1856,9 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   removes its target from combat first, then offers attackers defended by that target's controller.
 - `attackingDefenderOf(reference)` — filter attacking creatures by the defending side of a player or
   permanent reference. Includes attacks on that player's planeswalkers and protected battles, and shared
-  turn teams; reads projected controllers and resolves current object identity. Resolution-time targets
+  turn teams; reads projected controllers and resolves current object identity. The attack retains its
+  original defending player if the attacked planeswalker or battle changes controller/protector or leaves
+  combat. Resolution-time targets
   and pipeline references work through the normal predicate context. A missing reference fails closed;
   projection resolves only references meaningful in its context, and context-free historical/untap
   evaluators cannot resolve this relation.
@@ -6601,7 +6603,8 @@ The shapes in this family, with their engine notes.
   Fires **once per matching partner** by default, which is the singular printed wording
   ("blocked by *a* creature", Corrosive Ooze). Pass `oncePerCombat = true` for the
   "blocked by **one or more** Orcs" wording (Dwarven Soldier): one trigger however many partners
-  match. Getting this wrong is easy to miss — two identical stat-modifying resolutions collapse
+  match in one event. A later effect that adds a new matching partner can trigger it again, including
+  when an earlier nonmatching partner had already blocked it. Getting this wrong is easy to miss — two identical stat-modifying resolutions collapse
   into one continuous effect, so the P/T can read correctly while two copies of the ability sit on
   the stack. Assert the stack, not just the projection.
 - `Triggers.self.blocksOrBecomesBlocked()` — the **partner-less** printed wording ("whenever this

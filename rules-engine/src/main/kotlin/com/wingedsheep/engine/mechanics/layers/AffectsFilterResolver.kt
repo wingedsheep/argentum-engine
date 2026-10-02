@@ -481,11 +481,11 @@ internal class AffectsFilterResolver(
                 is com.wingedsheep.sdk.scripting.targets.EffectTarget.SpecificEntity -> reference.entityId
                 else -> null
             }
-            val player = referenceId?.let { if (it in state.turnOrder) it else projectedValues[it]?.controllerId }
-            val defender = container.get<AttackingComponent>()?.defenderId
-            val defendingPlayer = defender?.let {
+            val player = referenceId?.let { if (it in state.turnOrder) it else projectedController(state, it, projectedValues) }
+            val attack = container.get<AttackingComponent>()
+            val defendingPlayer = attack?.defendingPlayerId ?: attack?.defenderId?.let {
                 if (it in state.turnOrder) it
-                else com.wingedsheep.engine.mechanics.battle.Battles.protectorOf(state, it) ?: projectedValues[it]?.controllerId
+                else com.wingedsheep.engine.mechanics.battle.Battles.protectorOf(state, it) ?: projectedController(state, it, projectedValues)
             }
             player != null && defendingPlayer != null && player in state.sharedTurnTeam(defendingPlayer)
         }

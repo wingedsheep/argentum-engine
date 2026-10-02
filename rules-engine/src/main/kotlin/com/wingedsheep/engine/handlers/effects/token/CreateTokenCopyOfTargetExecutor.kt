@@ -226,7 +226,7 @@ class CreateTokenCopyOfTargetExecutor(
                 val defenderId = com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
                     .defenderForEnteringAttacker(context, newState, controllerId)
                 if (defenderId != null) {
-                    components.add(AttackingComponent(defenderId))
+                    components.add(AttackingComponent(defenderId, defendingPlayerId = com.wingedsheep.engine.mechanics.combat.CombatDefenders.defendingPlayerOf(newState, defenderId)))
                 }
             }
             // CR 707.8a: a token copy of a double-faced permanent has both faces and enters
