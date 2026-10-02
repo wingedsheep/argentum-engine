@@ -87,6 +87,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PhaseChangedEvent::class)
         subclass(StepChangedEvent::class)
         subclass(TurnEndedByEffectEvent::class)
+        subclass(TurnSkippedEvent::class)
         subclass(TurnChangedEvent::class)
         subclass(DayNightChangedEvent::class)
         subclass(PriorityChangedEvent::class)
@@ -238,6 +239,7 @@ val engineSerializersModule = SerializersModule {
         subclass(LeylinePhaseContinuation::class)
         subclass(AdvanceStepContinuation::class)
         subclass(FinishUntapStepContinuation::class)
+        subclass(FinishTurnStartContinuation::class)
         subclass(DrawReplacementRemainingDrawsContinuation::class)
         subclass(CycleDrawContinuation::class)
         subclass(TypecycleSearchContinuation::class)
@@ -264,6 +266,7 @@ val engineSerializersModule = SerializersModule {
         subclass(LeylinePhaseContinuation::class)
         subclass(AdvanceStepContinuation::class)
         subclass(FinishUntapStepContinuation::class)
+        subclass(FinishTurnStartContinuation::class)
         subclass(DrawReplacementRemainingDrawsContinuation::class)
         subclass(CycleDrawContinuation::class)
         subclass(TypecycleSearchContinuation::class)
@@ -277,6 +280,7 @@ val engineSerializersModule = SerializersModule {
     }
 
     polymorphic(AnswerContinuation::class) {
+        subclass(TurnStartReplacementContinuation::class)
         subclass(TokenCreationReplacementContinuation::class)
         subclass(SacrificeContinuation::class)
         subclass(ChooseOnePerCategoryContinuation::class)

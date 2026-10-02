@@ -23,6 +23,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed interface GameEvent
 
+/** A turn occurrence was replaced before it began; it consumes no turn number. */
+@Serializable
+@SerialName("TurnSkippedEvent")
+data class TurnSkippedEvent(val playerId: EntityId, val sourceId: EntityId? = null) : GameEvent
+
 // =============================================================================
 // Zone Change Events
 // =============================================================================

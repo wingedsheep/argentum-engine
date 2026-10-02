@@ -33,6 +33,10 @@ class MiscContinuationResumer(
 ) : ContinuationResumerModule {
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
+        resumer(TurnStartReplacementContinuation::class) { state, continuation, response, checkForMore ->
+            val result = services.turnManager.resumeTurnStartReplacement(state, continuation, response)
+            if (result.outcome is Outcome.Done) checkForMore(result.state, result.events) else result
+        },
         resumer(DrawUpToContinuation::class, ::resumeDrawUpTo),
         resumer(RepeatWhileDecisionContinuation::class, ::resumeRepeatWhile),
         resumer(FlipCoinsUntilLossContinuation::class, ::resumeFlipCoinsUntilLoss),

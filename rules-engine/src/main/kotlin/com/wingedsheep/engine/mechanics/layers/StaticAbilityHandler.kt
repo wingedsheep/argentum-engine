@@ -1264,6 +1264,7 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.PreventDraw,
             is com.wingedsheep.sdk.scripting.ReplaceDrawWith,
             is com.wingedsheep.sdk.scripting.OptionalEffectDiscardDestination,
+            is com.wingedsheep.sdk.scripting.OptionalSkipTurnWith,
             is com.wingedsheep.sdk.scripting.ModifyDrawAmount,
             // Mill:
             is com.wingedsheep.sdk.scripting.ModifyMillAmount,

@@ -1320,6 +1320,13 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         override val description: String = "when you play a card this way"
     }
 
+    /** Replacement-only interception before a turn begins; separate from beginning a step. */
+    @SerialName("TurnBeginEvent")
+    @Serializable
+    data class TurnBeginEvent(val player: Player = Player.You) : EventPattern {
+        override val description: String get() = "if ${player.description} would begin a turn"
+    }
+
     // ---- Phase/Step Triggers ----
 
     /**

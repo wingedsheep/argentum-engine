@@ -27,6 +27,9 @@ class CoreAutoResumerModule(
         autoResumer(AdvanceStepContinuation::class) { state, _, events, checkForMore ->
             mergeAndContinue(services.turnManager.advanceStep(state), events, checkForMore)
         },
+        autoResumer(FinishTurnStartContinuation::class) { state, continuation, events, checkForMore ->
+            mergeAndContinue(services.turnManager.finishTurnStart(state, continuation.activePlayerId, continuation.followUps), events, checkForMore)
+        },
         autoResumer(FinishUntapStepContinuation::class) { state, continuation, events, checkForMore ->
             mergeAndContinue(services.turnManager.finishUntapStep(state, continuation.activePlayerId), events, checkForMore)
         },

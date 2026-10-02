@@ -272,6 +272,7 @@ class TriggerIndex(
                 is SdkGameEvent.BecomesTargetEvent -> listOf(TriggerCategory.BECOMES_TARGET)
                 is SdkGameEvent.TurnFaceUpEvent -> listOf(TriggerCategory.TURN_FACE_UP)
                 is SdkGameEvent.CreatureTurnedFaceUpEvent -> listOf(TriggerCategory.TURN_FACE_UP)
+                is SdkGameEvent.TurnBeginEvent -> emptyList() // replacement-only
                 is SdkGameEvent.StepEvent -> listOf(TriggerCategory.STEP)
                 is SdkGameEvent.CardsPutIntoGraveyardFromLibraryEvent -> listOf(TriggerCategory.LIBRARY_TO_GRAVEYARD)
                 is SdkGameEvent.CardsPutIntoYourGraveyardEvent -> listOf(TriggerCategory.ANY_TO_GRAVEYARD)
@@ -433,6 +434,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.PlayerActionPermissionsChangedEvent,
             is com.wingedsheep.engine.core.PlayerActionTakenEvent,
             is com.wingedsheep.engine.core.TurnEndedByEffectEvent,
+            is com.wingedsheep.engine.core.TurnSkippedEvent,
             is com.wingedsheep.engine.core.AbilityAutoAnsweredEvent,
             is com.wingedsheep.engine.core.AbilityCounteredEvent,
             is com.wingedsheep.engine.core.AbilityFizzledEvent,

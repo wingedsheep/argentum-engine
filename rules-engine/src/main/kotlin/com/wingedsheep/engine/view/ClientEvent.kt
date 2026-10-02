@@ -1432,6 +1432,7 @@ is PermanentsSacrificedEvent -> {
             is PhaseChangedEvent,
             is StepChangedEvent,
             is TurnEndedByEffectEvent,
+            is TurnSkippedEvent,
             is PriorityChangedEvent,
             is ManaSpentEvent,
             is ManaPoolChangedEvent,

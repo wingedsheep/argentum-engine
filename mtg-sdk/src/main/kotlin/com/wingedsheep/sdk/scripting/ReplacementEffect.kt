@@ -135,8 +135,8 @@ sealed interface ReplacementEffect : TextReplaceable<ReplacementEffect> {
      * restriction reads as "the drawing/gaining/losing player". The two coincide for a
      * `Player.You` [appliesTo], which is the common case; for a `Player.EachOpponent` one they
      * do not, and a card that needs "you" to mean the source's controller has to say so with a
-     * source-relative condition instead. [ReplaceLifeGainWith] uses the source controller as
-     * `You` and exposes the affected player as `TriggeringPlayer`.
+     * source-relative condition instead. [ReplaceLifeGainWith] and [OptionalSkipTurnWith] use the
+     * source controller as `You` and expose the affected player as `TriggeringPlayer`.
      *
      * Default empty list — most replacement effects have no extra gates.
      *

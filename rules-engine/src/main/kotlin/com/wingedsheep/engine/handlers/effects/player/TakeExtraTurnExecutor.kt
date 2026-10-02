@@ -14,29 +14,19 @@ import kotlin.reflect.KClass
  * Executor for TakeExtraTurnEffect.
  * "Take an extra turn after this one."
  *
- * Implemented by making every other player skip their next turn. In a two-player game that inserts
- * exactly one extra turn for the taker. **In a three-or-more-player game it does not:**
- * `TurnManager.endTurn` consumes at most one pending skip per turn boundary (a single `if`, not a
- * loop), so the second skipped opponent takes their turn anyway with a skip still pending. This is
- * a pre-existing limitation of the skip-based model, not of the riders below.
+ * Implemented by making every other player skip their next turn. TurnManager walks all skipped
+ * occurrences before starting a turn, including in multiplayer. This remains an approximation:
+ * there is no ordered extra-turn queue, so differently owned extra turns and interactions between
+ * an actual skip-next-turn effect and an inserted turn do not have independent scheduling identity.
  *
  * If loseAtEndStep is true (e.g., Last Chance), the caster will also lose the game
  * at the beginning of their next end step.
  *
  * If powerUpAbilitiesCantBeActivated is true (Kang the Conqueror), `turnNumber + 1` is recorded in
  * [GameState.powerUpRestrictedTurns], locking every player out of power-up abilities for that turn.
- * Two caveats on which turn that actually is:
- *  - **Player count.** `turnNumber` counts turns that actually begin and a skipped turn never calls
- *    `TurnManager.startTurn`, so in a two-player game `turnNumber + 1` is the extra turn. With three
- *    or more players the skip consumption above means it can instead name an opponent's ordinary
- *    turn, locking them out on a turn that was never Kang's extra one.
- *  - **Ordering (CR 500.7).** The engine keeps no extra-turn queue, so `turnNumber + 1` is only ever
- *    "the next turn to begin". CR 500.7 gives the most recently created turn first, so if a second
- *    extra-turn effect resolves *after* this one in the same turn, that turn goes first and the
- *    lockout lands on the wrong one. Reachable with printed cards (Time Walk, Time Warp, Temporal
- *    Mastery, Karn's Temporal Sundering, …), though only when Kang resolves first; both turns
- *    usually belong to the same player, so the practical effect is a lockout on the wrong one of
- *    two consecutive turns.
+ * The turn-number stamp has no extra-turn identity: when a second extra-turn effect resolves later
+ * in the same turn, the most recently created turn goes first (CR 500.7), but this rider remains on
+ * the next turn to begin, rather than following the particular turn this effect created.
  *
  * Checks for PreventExtraTurns replacement effects (e.g., Ugin's Nexus) before applying. Both riders
  * sit behind that check: the engine models Ugin's Nexus as preventing the extra turn outright, so

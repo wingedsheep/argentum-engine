@@ -1,5 +1,10 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.engine.handlers.ObjectReferenceEnvironment
+import com.wingedsheep.engine.state.components.identity.TextChanges
+import com.wingedsheep.sdk.scripting.OptionalSkipTurnWith
+import com.wingedsheep.engine.replacement.ActiveReplacements
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
@@ -885,10 +890,7 @@ class TurnManager(
 
                 if (newState.priorityPlayerId == null && newState.pendingDecision == null) {
                     val endTurnResult = endTurn(newState)
-                    return ExecutionResult.success(
-                        endTurnResult.newState,
-                        events + endTurnResult.events
-                    )
+                    return endTurnResult.copy(events = events + endTurnResult.events)
                 }
             }
         }
@@ -906,52 +908,141 @@ class TurnManager(
         // Clean up end-of-turn effects
         var cleanedState = cleanupPhaseManager.cleanupEndOfTurn(state)
 
-        // The turn passes to the next *team* (CR 805.4) — both teammates share one turn, so we
-        // advance past the whole active team, not to a teammate. In a non-team game getNextTeam is
-        // identical to getNextPlayer.
-        var nextPlayer = cleanedState.getNextTeam(currentPlayer)
+        cleanedState = cleanedState.copy(priorityPlayerId = null, priorityPassedBy = emptySet())
+        return selectNextTurn(cleanedState, cleanedState.getNextTeam(currentPlayer))
+    }
 
-        // Team-wide skip (CR 805.8): if any member of the side taking the next turn has a skip
-        // marker, that turn is skipped. Clear the marker from every such member and move on to the
-        // team after. With shared team turns this is the whole next team; in Team vs. Team / non-team
-        // games it is just the next player (sharedTurnTeam is a singleton there), so a skip is
-        // individual.
-        val nextTeam = cleanedState.sharedTurnTeam(nextPlayer)
-        if (nextTeam.any { cleanedState.getEntity(it)?.has<SkipNextTurnComponent>() == true }) {
-            // Consume one skipped turn per affected member: decrement the remaining count and
-            // remove the component once it reaches zero (Ral Zarek can stack several). One turn
-            // is skipped per endTurn call; multi-turn skips persist across successive turns.
-            for (member in nextTeam) {
-                cleanedState = cleanedState.updateEntity(member) { container ->
-                    val remaining = container.get<SkipNextTurnComponent>()?.turns ?: 0
-                    if (remaining > 1) container.with(SkipNextTurnComponent(remaining - 1))
-                    else container.without<SkipNextTurnComponent>()
-                }
+    /** Walk skipped occurrences without allocating a recursive call per pending skip. */
+    fun selectNextTurn(
+        state: GameState,
+        nextPlayer: EntityId,
+        followUps: List<TurnStartFollowUp> = emptyList(),
+    ): ExecutionResult {
+        var current = state
+        var candidate = nextPlayer
+        val events = mutableListOf<GameEvent>()
+        while (true) {
+            val team = current.sharedTurnTeam(candidate)
+            val choices = turnStartChoices(current, team)
+            val skips = team.any { current.getEntity(it)?.has<SkipNextTurnComponent>() == true }
+            if (choices.isNotEmpty()) {
+                // Shared-turn teammates collectively choose the replacement for their side's turn.
+                val alternatives = choices.map { it.second }
+                val choiceState = current
+                val result = choiceState.suspendForDecision(
+                    question = { id -> ChooseOptionDecision(id, choices.first().first,
+                        "Your turn would begin. Choose whether to skip it.", DecisionContext(),
+                        alternatives.map { option ->
+                            val source = option.context.sourceId?.takeIf { it in choiceState.getBattlefield() }
+                            val name = source?.let {
+                                if (choiceState.projectedState.isFaceDown(it)) "face-down permanent"
+                                else choiceState.getEntity(it)?.get<CardComponent>()?.name
+                            }
+                            "Skip this turn — ${name ?: "replacement"}: ${option.effect.description}"
+                        } + if (skips) "Skip this turn using the pending skip effect" else "Begin this turn",
+                        defaultSearch = if (skips) "Skip this turn using the pending skip effect" else "Begin this turn",
+                        optionCardIds = alternatives.mapIndexedNotNull { index, option ->
+                            option.context.sourceId?.takeIf { it in choiceState.getBattlefield() }?.let { index to listOf(it) }
+                        }.toMap()) },
+                    answer = TurnStartReplacementContinuation(candidate, alternatives, followUps)
+                )
+                return result.copy(events = events + result.events)
             }
-            nextPlayer = cleanedState.getNextTeam(nextPlayer)
+            if (!skips) {
+                val result = finishTurnSelection(current, candidate, followUps)
+                return result.copy(events = events + result.events)
+            }
+            current = consumePendingTurnSkip(current, team)
+            events.add(TurnSkippedEvent(candidate))
+            candidate = current.getNextTeam(candidate)
+        }
+    }
+
+    private fun turnStartChoices(state: GameState, team: List<EntityId>): List<Pair<EntityId, TurnStartFollowUp>> {
+        val choices = mutableListOf<Pair<EntityId, TurnStartFollowUp>>()
+        for (active in ActiveReplacements.all(state)) {
+            val printed = active.effect as? OptionalSkipTurnWith ?: continue
+            if (!active.granted && Zone.BATTLEFIELD !in printed.activeZones) continue
+            if (!active.granted && (state.projectedState.hasLostAllAbilities(active.sourceId) ||
+                    state.projectedState.isFaceDown(active.sourceId))) continue
+            val text = if (active.granted) null else
+                TextChanges.of(state, active.sourceId)
+            val replacement = text?.let { printed.applyTextReplacement(it) as OptionalSkipTurnWith }
+                ?: printed
+            for (member in team) {
+                val context = EffectContext(sourceId = active.sourceId, controllerId = active.controllerId,
+                    triggeringPlayerId = member,
+                    objectReferences = ObjectReferenceEnvironment(
+                        captured = true, origin = state.objectRef(active.sourceId), source = state.objectRef(active.sourceId)))
+                val players = context.resolvePlayerTargets(
+                    EffectTarget.PlayerRef(replacement.appliesTo.player), state)
+                if (member !in players || replacement.restrictions.any {
+                        !zones.predicateEvaluator.conditions.evaluate(state, it, context)
+                    }) continue
+                choices.add(member to TurnStartFollowUp(replacement.effect, context))
+            }
+        }
+        return choices
+    }
+
+    private fun consumePendingTurnSkip(state: GameState, team: List<EntityId>): GameState =
+        team.fold(state) { current, member ->
+            current.updateEntity(member) { container ->
+                val remaining = container.get<SkipNextTurnComponent>()?.turns ?: 0
+                if (remaining > 1) container.with(SkipNextTurnComponent(remaining - 1))
+                else container.without<SkipNextTurnComponent>()
+            }
         }
 
-        // CR 800.4m — a departed player's "until your next turn" effects last until that turn
-        // would have begun. Their turn is skipped (800.4k), and this is the moment it would have
-        // started: the seat walk from the finished turn to the next one passes them over.
-        cleanedState = expireEffectsOfDepartedSeatsWhoseTurnWouldBeginNow(cleanedState, currentPlayer, nextPlayer)
+    fun resumeTurnStartReplacement(state: GameState, frame: TurnStartReplacementContinuation,
+        response: DecisionResponse): ExecutionResult {
+        if (response !is OptionChosenResponse || response.optionIndex !in 0..frame.options.size)
+            return ExecutionResult.error(state, "Expected a valid turn replacement choice")
+        if (response.optionIndex == frame.options.size)
+            return finishTurnSelection(state, frame.nextPlayerId, frame.followUps)
+        val chosen = frame.options[response.optionIndex]
+        val result = selectNextTurn(state, state.getNextTeam(frame.nextPlayerId), frame.followUps + chosen)
+        return result.copy(events = listOf(TurnSkippedEvent(frame.nextPlayerId, chosen.context.sourceId)) + result.events)
+    }
 
-        // Start the new turn (sets step to UNTAP with no priority)
-        val turnResult = startTurn(cleanedState, nextPlayer)
+    private fun finishTurnSelection(state: GameState, nextPlayer: EntityId,
+        followUps: List<TurnStartFollowUp>): ExecutionResult {
+        val nextTeam = state.sharedTurnTeam(nextPlayer)
+        if (nextTeam.any { state.getEntity(it)?.has<SkipNextTurnComponent>() == true }) {
+            val skipped = consumePendingTurnSkip(state, nextTeam)
+            val result = selectNextTurn(skipped, skipped.getNextTeam(nextPlayer), followUps)
+            return result.copy(events = listOf(TurnSkippedEvent(nextPlayer)) + result.events)
+        }
+        val cleaned = expireEffectsOfDepartedSeatsWhoseTurnWouldBeginNow(state,
+            requireNotNull(state.activePlayerId), nextPlayer)
+        val turnResult = startTurn(cleaned, nextPlayer)
         if (turnResult.outcome !is Outcome.Done) return turnResult
+        val result = finishTurnStart(turnResult.state, nextPlayer, followUps)
+        return result.copy(events = turnResult.events + result.events)
+    }
 
-        // Perform the untap step
-        val untapResult = beginningPhaseManager.performUntapStep(turnResult.newState)
+    /** Skip-then actions are the first work in the next actual turn (CR 614.10b). */
+    fun finishTurnStart(state: GameState, playerId: EntityId,
+        followUps: List<TurnStartFollowUp>): ExecutionResult {
+        var current = state
+        val events = mutableListOf<GameEvent>()
+        for ((index, followUp) in followUps.withIndex()) {
+            val result = effectExecutor(current, followUp.effect, followUp.context.withCurrentObjectReferences(current))
+                .toExecutionResult()
+            if (result.outcome is Outcome.Paused) return parkRestOfTurn(result, current,
+                FinishTurnStartContinuation(playerId, followUps.drop(index + 1)), events + result.events)
+            if (result.outcome !is Outcome.Done) return result.copy(events = events + result.events)
+            current = result.state
+            events.addAll(result.events)
+            if (current.gameOver) return ExecutionResult.success(current, events)
+        }
+        val untapResult = beginningPhaseManager.performUntapStep(current)
         if (untapResult.error != null) return untapResult
         if (untapResult.outcome is Outcome.Paused) {
-            return parkRestOfTurn(
-                untapResult, turnResult.newState, FinishUntapStepContinuation(nextPlayer),
-                turnResult.events + untapResult.events
-            )
+            return parkRestOfTurn(untapResult, current, FinishUntapStepContinuation(playerId), events + untapResult.events)
         }
-
-        val finished = finishUntapStep(untapResult.newState, nextPlayer)
-        return finished.copy(events = turnResult.events + untapResult.events + finished.events)
+        val finished = finishUntapStep(untapResult.newState, playerId)
+        return finished.copy(events = events + untapResult.events + finished.events)
     }
 
     /**
