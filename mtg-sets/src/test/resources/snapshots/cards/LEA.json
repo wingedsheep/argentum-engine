@@ -4910,6 +4910,57 @@
     ]
 }
 
+// Sacrifice
+{
+    "name": "Sacrifice",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nAdd an amount of {B} equal to the sacrificed creature's mana value.",
+    "script": {
+        "spellEffect": {
+            "type": "AddMana",
+            "color": "BLACK",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": "SacrificedAsCost",
+                "numericProperty": "ManaValue"
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/12164aee-6a27-4246-8d15-2d6dd20d92e9.jpg?1783948692",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "You must sacrifice exactly one creature to cast this spell; you cannot cast it without sacrificing a creature, and you cannot sacrifice additional creatures."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Players can only respond once this spell has been cast and all its costs have been paid. No one can try to destroy the creature you sacrificed to prevent you from casting this spell."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Sacrificing an animated land gives no mana since the converted mana cost was zero."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Samite Healer
 {
     "name": "Samite Healer",
