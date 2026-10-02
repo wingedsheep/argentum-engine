@@ -261,6 +261,13 @@ class TriggerMatcher(
                     matchesSpellFilter(trigger.spellFilter, event, state, sourceId) &&
                     trigger.requires.all { matchesSpellCastPredicate(it, event, state, sourceId, controllerId) }
             }
+            // "Whenever you copy a spell" — a copy isn't cast (CR 707.10), so only the copy event
+            // reaches here; the player is the copy's controller.
+            is EventPattern.SpellCopiedEvent -> {
+                event is com.wingedsheep.engine.core.SpellCopiedEvent &&
+                    matchesPlayer(state, trigger.player, event.controllerId, controllerId) &&
+                    matchesSpellFilter(trigger.spellFilter, event.copyEntityId, event.controllerId, state, sourceId)
+            }
             is EventPattern.NthSpellCastEvent -> {
                 // Fires on SpellCastEvent when the casting player's per-turn spell count
                 // reaches exactly the specified threshold (e.g., 2 for "second spell").
@@ -1731,11 +1738,20 @@ class TriggerMatcher(
         event: SpellCastEvent,
         state: GameState,
         triggerSourceId: EntityId? = null
+    ): Boolean = matchesSpellFilter(spellFilter, event.spellEntityId, event.casterId, state, triggerSourceId)
+
+    /** [matchesSpellFilter] over a spell on the stack by id — a cast spell or a copy alike. */
+    fun matchesSpellFilter(
+        spellFilter: GameObjectFilter,
+        spellEntityId: EntityId,
+        spellControllerId: EntityId,
+        state: GameState,
+        triggerSourceId: EntityId? = null
     ): Boolean {
         // No card predicates = match any spell (equivalent to old SpellTypeFilter.ANY)
         if (spellFilter.cardPredicates.isEmpty()) return true
 
-        val container = state.getEntity(event.spellEntityId) ?: return false
+        val container = state.getEntity(spellEntityId) ?: return false
 
         // Face-down spells have no characteristics (CR 708.2) — they don't match any type filter
         val isFaceDown = container.get<SpellOnStackComponent>()?.castFaceDown == true
@@ -1744,10 +1760,10 @@ class TriggerMatcher(
         // Use base-state matching (spells on the stack don't get continuous effects)
         // Pass sourceId so HasChosenSubtype can read the trigger source's CastChoicesComponent
         val context = com.wingedsheep.engine.handlers.PredicateContext(
-            controllerId = event.casterId,
+            controllerId = spellControllerId,
             sourceId = triggerSourceId
         )
-        return predicateEvaluator.matches(state, state.projectedState, event.spellEntityId, spellFilter, context)
+        return predicateEvaluator.matches(state, state.projectedState, spellEntityId, spellFilter, context)
     }
 
     /**
