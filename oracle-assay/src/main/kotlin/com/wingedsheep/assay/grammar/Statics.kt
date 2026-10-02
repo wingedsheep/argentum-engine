@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.dsl.Conditions as SdkConditions
 import com.wingedsheep.sdk.scripting.AssignDamageEqualToToughness
 import com.wingedsheep.sdk.scripting.AttackTax
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
+import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantAttackUnless
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
@@ -1243,6 +1244,56 @@ object Statics {
             }
         }
 
+    /**
+     * "Enchanted creature can't attack or block." — Pacifism, Arrest's combat half, Compulsory Rest,
+     * and the rest of the white Aura removal; "~ can't attack or block unless it has an even number
+     * of counters on it." — Sab-Sunen, and the source-scoped drawback creatures beside it.
+     *
+     * One sentence, **two statics**: the SDK has no joint "can't attack or block" restriction, and
+     * the hand-written cards carry `CantAttack` then `CantBlock` over the same group — the attack
+     * and block declarations read them separately (CR 508.1 and 509.1). So it is a line rule, like
+     * [attachedKeywordRun], rather than a [restriction] row, and it reuses [Subject] whole: the
+     * attached, source and group subjects all print, and the round trip through [spelling] is what
+     * refuses a group this sentence cannot say. The pair is compared in printed order, so a card
+     * carrying the block half first declines rather than being reordered into agreement.
+     *
+     * The "unless" form is source-only on purpose. Its condition comes from [Conditions.condition],
+     * whose "it" is the source; under "enchanted creature" the same pronoun would mean the Aura's
+     * host, and the condition vocabulary has no way to say so. Goblin Goon's split pair stays two
+     * constants above — its two halves print different nouns, so they are not one sentence.
+     */
+    private val cantAttackOrBlock: List<Phrase<List<StaticAbility>>> = Subject.entries.map { subject ->
+        fun abilitiesFor(group: GroupFilter) = listOf<StaticAbility>(CantAttack(group), CantBlock(group))
+        phrase("${subject.surface} can't attack or block.", name = "can't attack or block, ${subject.label}") {
+            if (subject == Subject.GROUP) slot("group", Filters.plural)
+            build { abilitiesFor(subject.groupOf(it)) }
+            match { abilities ->
+                val group = (abilities.firstOrNull() as? CantAttack)?.filter ?: return@match null
+                val bindings = subject.spelling(group) ?: return@match null
+                if (abilities != abilitiesFor(group)) return@match null
+                bind(*bindings.toTypedArray())
+            }
+        }
+    }
+
+    /** "~ can't attack or block unless {cond}." — see [cantAttackOrBlock] for why only the source. */
+    private val cantAttackOrBlockUnless: Phrase<List<StaticAbility>> = run {
+        fun abilitiesFor(condition: Condition) =
+            listOf<StaticAbility>(CantAttackUnless(condition), CantBlockUnless(condition))
+        phrase(
+            "${Normalizer.SELF} can't attack or block unless {cond}.",
+            name = "can't attack or block unless a condition",
+        ) {
+            slot("cond", Conditions.condition)
+            build { abilitiesFor(it.value("cond")) }
+            match { abilities ->
+                val condition = (abilities.firstOrNull() as? CantAttackUnless)?.condition ?: return@match null
+                if (abilities != abilitiesFor(condition)) return@match null
+                bind("cond" to condition)
+            }
+        }
+    }
+
     /** The keywords a run of plain [GrantKeyword] statics names, or null if any is something else. */
     private fun attachedKeywords(abilities: List<StaticAbility>): List<Keyword>? {
         if (abilities.isEmpty()) return null
@@ -1269,7 +1320,8 @@ object Statics {
      */
     val line: Phrase<List<StaticAbility>> = oneOf(
         "static abilities",
-        listOf(pumpAndKeyword, pumpAndQuotedAbility, attachedKeywordRun) + lordPumpAndKeyword +
+        listOf(pumpAndKeyword, pumpAndQuotedAbility, attachedKeywordRun, cantAttackOrBlockUnless) +
+            lordPumpAndKeyword + cantAttackOrBlock +
             ConditionalForm.entries.flatMap { form ->
                 listOf(
                     conditionalSelfStatic(leading = false, form = form),

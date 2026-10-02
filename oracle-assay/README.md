@@ -1186,6 +1186,38 @@ The keyword is a single `Keywords.keyword` because every printed line names exac
 Differential **7,087 compared / 72 divergent → 7,102 / 72**. All fifteen newly compared cards
 agree with their goldens; no card moved.
 
+
+## The can't-attack-or-block band
+
+The twenty-third loop band, tail key `can't attack or …`: "**Enchanted creature can't attack or
+block.**" (Pacifism, Compulsory Rest, Luminous Bonds and the rest of the white Aura removal), the same
+sentence over the source and over a plural group, and "**~ can't attack or block unless** {condition}."
+(Ketramose, Tiger-Dillo, Blind-Spot Giant). **78 lines**; the probe (→ "has flying") finished 15
+whole cards corpus-wide. It delivered **7 hand-written cards read whole (7,491 → 7,498)** and 20 more in
+the verdict ledger (10,289 → 10,309).
+
+### One sentence, two statics
+
+The SDK has no joint restriction: the goldens carry `CantAttack` then `CantBlock` over one
+`GroupFilter`, because attack and block declarations read them separately (CR 508.1, 509.1). So the
+family is a line rule yielding a list, like the attached keyword run, and it reuses the combat band's
+`Subject` table whole — the round trip through its spelling is what refuses a reversed pair, a split
+pair, or a group the sentence cannot say. The "unless" form is `CantAttackUnless` + `CantBlockUnless`
+sharing one `Conditions` slot, and it is **source-only**: the condition vocabulary's "it" is the
+source, which under "enchanted creature" would be the wrong permanent.
+
+The unless form finished no hand-written card: every one of them declines inside the condition
+("you control **another** Giant", "seven or more cards **in exile**", "it has an even number of
+counters"), so its payload is `Conditions`, the fronted-duration lesson again. Arrest's family
+("…, and its activated abilities can't be activated", five cards) is the next row: the activation lock
+is `PreventActivatedAbilities(Permanent.attachedToBySource())`, and four of the five print "enchanted
+**permanent**", a subject the attachment normalization does not spell yet.
+
+### What the differential found
+
+Differential **7,102 compared / 72 divergent → 7,108 / 72**. All six newly compared cards agree with
+their goldens; no card moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
