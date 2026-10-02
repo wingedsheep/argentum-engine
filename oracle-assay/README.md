@@ -849,6 +849,29 @@ fixed** (only their goldens moved), and one standing finding.
 - **Gadget Technician** (standing) — "When this creature enters or is turned face up" is two
   abilities in the grammar and one `AnyOf` trigger on the card; the entry band's two-spelling finding.
 
+
+## The Ring-tempts band
+
+The eleventh loop band, tail key `the Ring tempts …`: "When ~ enters, **the Ring tempts you**." (CR
+701.54). **22 lines**; the probe (`the Ring tempts you` → `you draw a card`) finished 10 whole cards. It
+delivered **18 hand-written cards read whole (7,336 → 7,354)** — more than the probe, whose
+substitute sentence is not itself read in every position the Ring sentence takes.
+
+### A whole sentence, one effect
+
+The keyword action has no variable — the tempted player is the controller, `TheRingTemptsYouEffect`'s
+default — so it is a `constantClause` in `Steps`' sentence list beside "you skip your next turn", landing
+on `Effects.TheRingTemptsYou()`, the facade all 46 LTR golden slots use. The trigger side, "Whenever the
+Ring tempts you", is a different family and stays declined.
+
+### What the differential found
+
+Differential **6,954 compared / 59 divergent → 6,972 / 59**. One new divergence, a **card bug, fixed**:
+Gollum, Patient Plotter's "Return this card from your graveyard to your hand" was a bare
+`Effects.Move(Self, HAND)`; the grammar reads the graveyard-functional return as
+`Effects.ReturnToHandFromGraveyard(Self)` (`fromZone = Graveyard`), the spelling most graveyard-activated
+self-returns already use, and the card now does too.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

@@ -40,7 +40,15 @@ object OnePerCardType {
     }
 
     /** True when each set in [typeSets] can be matched to a distinct element it contains. */
-    fun canAssignDistinct(typeSets: List<Set<String>>): Boolean {
+    fun canAssignDistinct(typeSets: List<Set<String>>): Boolean =
+        maxDistinctAssignment(typeSets) == typeSets.size
+
+    /**
+     * The most sets in [typeSets] that can each be matched to a distinct element they contain —
+     * the size of a maximum bipartite matching. It is the true cap on a "one of each card type"
+     * selection: three artifact creatures have two types between them but fill only two slots.
+     */
+    fun maxDistinctAssignment(typeSets: List<Set<String>>): Int {
         val owner = mutableMapOf<String, Int>()
         fun augment(index: Int, visited: MutableSet<String>): Boolean {
             for (type in typeSets[index]) {
@@ -53,6 +61,6 @@ object OnePerCardType {
             }
             return false
         }
-        return typeSets.indices.all { augment(it, mutableSetOf()) }
+        return typeSets.indices.count { augment(it, mutableSetOf()) }
     }
 }
