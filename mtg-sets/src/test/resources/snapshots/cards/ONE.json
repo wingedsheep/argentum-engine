@@ -6468,6 +6468,127 @@
     ]
 }
 
+// Goliath Hatchery
+{
+    "name": "Goliath Hatchery",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create two 3/3 green Phyrexian Beast creature tokens with toxic 1. (Players dealt combat damage by them also get a poison counter.)\nCorrupted — At the beginning of your upkeep, if an opponent has three or more poison counters, choose a creature you control, then draw cards equal to its total toxic value.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goliath Hatchery:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Phyrexian",
+                        "Beast"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/1/919381b0-2d23-4794-b4ff-923c23e18196.jpg?1783918168",
+                    "numericKeywords": [
+                        {
+                            "keyword": "TOXIC",
+                            "n": 1
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Goliath Hatchery:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a creature you control — draw cards equal to its total toxic value",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected1"
+                            },
+                            "body": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "EntityProperty",
+                                    "entity": "IterationEntity",
+                                    "numericProperty": {
+                                        "type": "KeywordValue",
+                                        "keyword": "TOXIC"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "PlayerCounterCount",
+                            "counterType": "POISON"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "Corrupted — At the beginning of your upkeep, if an opponent has three or more poison counters, choose a creature you control, then draw cards equal to its total toxic value."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "408",
+        "rarity": "RARE",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e1141ca-78c0-46e5-99f8-28069d69f23a.jpg?1783917918"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Graaz, Unstoppable Juggernaut
 {
     "name": "Graaz, Unstoppable Juggernaut",
@@ -10709,6 +10830,74 @@
         "imageUri": "https://cards.scryfall.io/normal/front/5/4/54a702cd-ca49-4570-b47e-8b090452a3c3.jpg?1783917980"
     },
     "colorIdentityOverride": []
+}
+
+// Mite Overseer
+{
+    "name": "Mite Overseer",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Phyrexian Soldier",
+    "oracleText": "First strike\nDuring your turn, creature tokens you control get +1/+0 and have first strike.\n{3}{W/P}: Create a 1/1 colorless Phyrexian Mite artifact creature token with toxic 1 and \"This token can't block.\" (Players dealt combat damage by it also get a poison counter. {W/P} can be paid with either {W} or 2 life.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mite Overseer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W/P}"
+                    }
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Phyrexian Mite"
+                },
+                "descriptionOverride": "{3}{W/P}: Create a 1/1 colorless Phyrexian Mite artifact creature token with toxic 1 and \"This token can't block.\""
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "creature token ctrl:you"
+                    }
+                },
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "creature token ctrl:you"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "404",
+        "rarity": "RARE",
+        "artist": "Néstor Ossandón Leal",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a55a5edb-edf3-4f6c-90b8-1780b1e73997.jpg?1783917920"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Molten Rebuke
@@ -18712,6 +18901,76 @@
     ]
 }
 
+// Vivisection Evangelist
+{
+    "name": "Vivisection Evangelist",
+    "manaCost": "{3}{W}{B}",
+    "typeLine": "Creature — Phyrexian Cleric",
+    "oracleText": "Vigilance\nCorrupted — When this creature enters, if an opponent has three or more poison counters, destroy target creature or planeswalker an opponent controls.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vivisection Evangelist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|planeswalker ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "PlayerCounterCount",
+                            "counterType": "POISON"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "Corrupted — When this creature enters, if an opponent has three or more poison counters, destroy target creature or planeswalker an opponent controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"May you rejoice in the magnificence of Norn. May your flesh serve perfection.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/626c46a3-72b8-4e04-adf2-c9c7aaf94f04.jpg?1783917995"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Vivisurgeon's Insight
 {
     "name": "Vivisurgeon's Insight",
@@ -19319,6 +19578,87 @@
         "rarity": "RARE",
         "artist": "Julian Kok Joon Wen",
         "imageUri": "https://cards.scryfall.io/normal/front/f/f/fff13d77-8133-4328-b91e-efce229bc331.jpg?1783918071"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Zealot's Conviction
+{
+    "name": "Zealot's Conviction",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nEnchanted creature gets +1/+1.\nCorrupted — As long as an opponent has three or more poison counters, enchanted creature gets an additional +1/+0 and has first strike.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 0
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "PlayerCounterCount",
+                            "counterType": "POISON"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "PlayerCounterCount",
+                            "counterType": "POISON"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a419ba1-7bd3-48e3-8f88-d9f833b25d6d.jpg?1783918071"
     },
     "colorIdentityOverride": [
         "WHITE"
