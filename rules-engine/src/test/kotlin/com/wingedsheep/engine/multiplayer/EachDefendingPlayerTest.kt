@@ -101,11 +101,11 @@ class EachDefendingPlayerTest : FunSpec({
         visits shouldBe 0
     }
 
-    test("all opposing seats defend before attackers are declared, respecting attack mode") {
+    test("all opposing seats defend before attackers are declared even with restricted attack targets") {
         val state = GameState(turnOrder = players, activePlayerId = players[2], phase = Phase.COMBAT, step = Step.BEGIN_COMBAT)
         TargetResolutionUtils.resolvePlayerTargets(target, state, context) shouldBe listOf(players[3], players[0], players[1])
-        TargetResolutionUtils.resolvePlayerTargets(target, state.copy(attackMode = AttackMode.LEFT), context) shouldBe listOf(players[3])
-        TargetResolutionUtils.resolvePlayerTargets(target, state.copy(attackMode = AttackMode.RIGHT), context) shouldBe listOf(players[1])
+        TargetResolutionUtils.resolvePlayerTargets(target, state.copy(attackMode = AttackMode.LEFT), context) shouldBe listOf(players[3], players[0], players[1])
+        TargetResolutionUtils.resolvePlayerTargets(target, state.copy(attackMode = AttackMode.RIGHT), context) shouldBe listOf(players[3], players[0], players[1])
     }
 
     test("gather, exists and player filters read only the defending seats") {

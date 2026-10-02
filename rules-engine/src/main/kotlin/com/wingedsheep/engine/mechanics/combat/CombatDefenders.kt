@@ -89,14 +89,14 @@ object CombatDefenders {
 
     /**
      * All defending seats during combat, including before attackers are declared and seats
-     * with no attackers assigned. Attack mode determines which opposing seats defend;
-     * shared team turns include every player on the defending team. Outside combat nobody
+     * with no attackers assigned. All opponents defend even when attack-left/right limits
+     * attack targets; shared team turns include every player on the defending team. Outside combat nobody
      * defends. Unlike [defendingPlayersInApnapOrder], this does not inspect attack assignments.
      */
     fun allDefendingPlayersInApnapOrder(state: GameState): List<EntityId> {
         if (state.step.phase != com.wingedsheep.sdk.core.Phase.COMBAT) return emptyList()
         val active = state.activePlayerId ?: return emptyList()
-        val defenders = legalDefendingPlayers(state, active)
+        val defenders = state.getOpponents(active)
             .flatMap { state.sharedTurnTeam(it) }.toSet()
         return state.apnapOrder.filter { it in defenders }
     }

@@ -4477,8 +4477,8 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   aggregations ("creatures your opponents control").
 - `Player.ActivePlayerFirst` — all players in APNAP order.
 - `Player.EachDefendingPlayer` — all defending seats during combat, in APNAP order, including
-  before attackers are declared and opponents with no attackers assigned. Respects the game's
-  attack mode and shared team turns. Outside combat this names nobody. Use it with
+  before attackers are declared and opponents with no attackers assigned. Includes all opponents
+  regardless of attack-left/right limits, respecting shared team turns. Outside combat this names nobody. Use it with
   `Effects.ForEachPlayer`, plural effect targets, zone gathering, or counting; the single-player
   resolver deliberately returns null.
 - `Player.TargetPlayer` / `Player.TargetOpponent` — the bound player target (resolved from the
