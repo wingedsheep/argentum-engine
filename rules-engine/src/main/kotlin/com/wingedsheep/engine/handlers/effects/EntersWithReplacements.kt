@@ -461,12 +461,6 @@ object EntersWithReplacements {
     )
 
     /**
-     * Grant [effect]'s keywords to [enteringEntityId] as permanent floating effects. The grant
-     * is entry-timestamped (Rule 613 layer ordering: a later "loses all abilities" removes it)
-     * and cleaned up when the permanent leaves the battlefield
-     * ([ZoneMovementUtils.removeFloatingEffectsTargeting], CR 400.7).
-     */
-    /**
      * Zone membership as it stood immediately before [entityId] entered the battlefield: the
      * entrant back in [preEntryZone], everything else (its components included) as it is now. A
      * read-only view for measuring an enters-with count — the replacement modifies the entry
@@ -481,6 +475,12 @@ object EntersWithReplacements {
         return state.copy(zones = zones + (preEntryZone to (zones[preEntryZone].orEmpty() + entityId)))
     }
 
+    /**
+     * Grant [effect]'s keywords to [enteringEntityId] as permanent floating effects. The grant
+     * is entry-timestamped (Rule 613 layer ordering: a later "loses all abilities" removes it)
+     * and cleaned up when the permanent leaves the battlefield
+     * ([ZoneMovementUtils.removeFloatingEffectsTargeting], CR 400.7).
+     */
     private fun grantKeywords(
         state: GameState,
         effect: EntersWithKeywords,
