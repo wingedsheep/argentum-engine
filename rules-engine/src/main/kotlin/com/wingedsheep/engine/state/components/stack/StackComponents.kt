@@ -305,6 +305,18 @@ data class TriggeredAbilityOnStackComponent(
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment =
         com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     /**
+     * The source's characteristics as it last existed on the battlefield, stamped by
+     * [com.wingedsheep.engine.handlers.effects.ZoneTransitionService] at its first departure while
+     * this ability is on the stack — the triggered twin of
+     * [ActivatedAbilityOnStackComponent.lastKnownSourceSnapshot]. Value reads of
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.Self] and target revalidation use it once
+     * the source has gone, which is what keeps them right for a token source swept by CR 704.5d or
+     * a source that has blinked back as a new object: Mentor's "target attacking creature with
+     * lesser power" compares against the mentor creature's last-known power. Null while the source
+     * remains the same battlefield object.
+     */
+    val lastKnownSourceSnapshot: EntitySnapshot? = null,
+    /**
      * The ability's intervening-"if" clause (CR 603.4), carried onto the stack object because the
      * ability itself is no longer reachable by the time this resolves — the trigger has been
      * detected, the source may have left the battlefield, and the granting static may be gone.

@@ -260,6 +260,8 @@ export enum Keyword {
   DECAYED = 'DECAYED',
   // Attack-triggered self-buff (Innistrad: Midnight Hunt)
   TRAINING = 'TRAINING',
+  // Attack-triggered counter on a lesser attacker (Ravnica Allegiance, CR 702.134)
+  MENTOR = 'MENTOR',
   // Enters-triggered self-buff (Gatecrash, CR 702.100)
   EVOLVE = 'EVOLVE',
   // Enters with X +1/+1 counters, draws at X >= 5 (CR 702.156)
@@ -394,6 +396,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.MAX_SPEED]: 'Max speed',
   [Keyword.DECAYED]: 'Decayed',
   [Keyword.TRAINING]: 'Training',
+  [Keyword.MENTOR]: 'Mentor',
   [Keyword.EVOLVE]: 'Evolve',
   [Keyword.RAVENOUS]: 'Ravenous',
   [Keyword.DAYBOUND]: 'Daybound',

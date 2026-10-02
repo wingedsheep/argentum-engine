@@ -5413,6 +5413,14 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   with `EffectTarget.AmassedArmy` for a **resolution-time pipeline** bound — Grishnákh, Brash Instigator
   ("power ≤ the amassed Army's power"). The pipeline reference is threaded into target enumeration via
   `findLegalTargets(..., pipelineContext = …)`; see §13 "Pipeline values inside target filters".
+  All three power-vs-entity predicates (with `.powerGreaterThanEntity`) read the reference's power
+  through `DynamicAmount.EntityProperty(ref, Power)`, so they share its last-known-information rule:
+  an `EffectTarget.Self` reference to a source that has left the battlefield (or blinked back as a
+  new object) compares against the power it last had there, not its printed power — Mentor's
+  re-check on resolution after the mentor creature is killed or bounced. Triggered abilities carry
+  that snapshot as `TriggeredAbilityOnStackComponent.lastKnownSourceSnapshot` (stamped at the
+  source's departure, like the activated-ability field), so a token source swept by CR 704.5d still
+  answers. A noncreature reference reads as power 0.
 - `.powerGreaterThanBase()` — **self-relative**: the object's current (projected) power is strictly greater
   than its **own** printed base power (`CardComponent.baseStats.basePower`). Any pump that raises power above
   base qualifies — a +1/+1 counter, an anthem, a temporary boost; a shrunk or unmodified creature does not.
@@ -11282,6 +11290,15 @@ composite abilities).
   counter-placed watcher (which would fire for non-training counters too). `EmitTrainedEventEffect` is an internal `data object`
   (no player-facing text) wired into `training()`; do not use it directly. See `EventPattern.TrainedEvent` under counter triggers
   for the watcher form (Savior of Ollenbock).
+- `Mentor` — "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser
+  power.)" (CR 702.134, Ravnica Allegiance; Nyxborn Unicorn). Display-only keyword; wire it with `card { mentor() }`, which
+  adds the keyword plus `mentorTriggeredAbility()`: `Triggers.self.attacks()` → `Effects.AddCounters(PLUS_ONE_PLUS_ONE, 1,
+  ContextTarget(0))` on `target(Creature.attacking().powerLessThanEntity(EffectTarget.Self))`. Lesser power is checked
+  when the trigger goes on the stack and again on resolution (CR 608.2b); a mentor creature that has left the battlefield
+  by then is compared by its **last-known** power (see `.powerLessThanEntity` in §filters), including a token swept by
+  CR 704.5d. A granted mentor — "enchanted creature … has mentor" — is `GrantKeyword(Keyword.MENTOR)` for the badge plus
+  `GrantTriggeredAbility(mentorTriggeredAbility())` for the behavior; the granted copy's `Self` is the enchanted creature.
+  Multiple instances trigger separately (CR 702.134b).
 - `Evolve` — "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than
   this creature, put a +1/+1 counter on this creature.)" (CR 702.100, Gatecrash; Pollywog Prodigy). Display-only keyword;
   wire it with `card { evolve() }`, which adds the keyword plus `evolveTriggeredAbility()`:

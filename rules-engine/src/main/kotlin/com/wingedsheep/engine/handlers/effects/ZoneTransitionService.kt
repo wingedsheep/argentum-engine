@@ -69,6 +69,7 @@ import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.engine.event.ConditionalSelfGrants
 import com.wingedsheep.engine.state.components.battlefield.withCastChoice
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
+import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 
 
 /**
@@ -650,14 +651,23 @@ class ZoneTransitionService(
             val departedTimestamp = lastKnownSnapshot?.battlefieldEntryTimestamp
             if (lastKnownSnapshot != null) {
                 for (stackId in newState.stack) {
-                    val ability = newState.getEntity(stackId)
-                        ?.get<ActivatedAbilityOnStackComponent>()
-                        ?: continue
-                    if (ability.sourceId == entityId && ability.lastKnownSourceSnapshot == null &&
-                        ability.sourceBattlefieldTimestamp == departedTimestamp
+                    val stackEntity = newState.getEntity(stackId) ?: continue
+                    val activated = stackEntity.get<ActivatedAbilityOnStackComponent>()
+                    if (activated != null && activated.sourceId == entityId &&
+                        activated.lastKnownSourceSnapshot == null &&
+                        activated.sourceBattlefieldTimestamp == departedTimestamp
                     ) {
                         newState = newState.updateEntity(stackId) {
-                            it.with(ability.copy(lastKnownSourceSnapshot = lastKnownSnapshot))
+                            it.with(activated.copy(lastKnownSourceSnapshot = lastKnownSnapshot))
+                        }
+                    }
+                    val triggered = stackEntity.get<TriggeredAbilityOnStackComponent>()
+                    if (triggered != null && triggered.sourceId == entityId &&
+                        triggered.lastKnownSourceSnapshot == null &&
+                        triggered.sourceBattlefieldTimestamp == departedTimestamp
+                    ) {
+                        newState = newState.updateEntity(stackId) {
+                            it.with(triggered.copy(lastKnownSourceSnapshot = lastKnownSnapshot))
                         }
                     }
                 }

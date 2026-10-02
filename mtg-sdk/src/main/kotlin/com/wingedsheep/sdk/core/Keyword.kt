@@ -693,6 +693,17 @@ enum class Keyword(val displayName: String) {
     TRAINING("Training"),
 
     /**
+     * Mentor (CR 702.134, Ravnica Allegiance). A triggered ability: "Whenever this creature
+     * attacks, put a +1/+1 counter on target attacking creature with lesser power."
+     *
+     * The keyword itself is display-only; the behavior is composed by the `mentor()` DSL helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder] (or [com.wingedsheep.sdk.dsl.mentorTriggeredAbility] for a
+     * grant) — an attack trigger targeting `Creature.attacking().powerLessThanEntity(Self)`. The
+     * power comparison reads the mentor creature's last-known power once it has left the battlefield.
+     */
+    MENTOR("Mentor"),
+
+    /**
      * Evolve (CR 702.100, Gatecrash). A triggered ability: "Whenever a creature you control enters,
      * if that creature's power is greater than this creature's power and/or that creature's
      * toughness is greater than this creature's toughness, put a +1/+1 counter on this creature."

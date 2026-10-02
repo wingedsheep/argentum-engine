@@ -553,6 +553,7 @@ data class EffectContext(
             sourceFaceChanges = ability.sourceFaceChanges,
             sourceBattlefieldTimestamp = ability.sourceBattlefieldTimestamp,
             objectReferences = ability.objectReferences,
+            lastKnownSourceSnapshot = ability.lastKnownSourceSnapshot,
             targets = targets,
             triggerContext = ability.triggerContext,
             triggeringEntityId = ability.triggerContext?.triggeringEntityId,

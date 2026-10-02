@@ -3787,6 +3787,130 @@
     ]
 }
 
+// Nyxborn Unicorn
+{
+    "name": "Nyxborn Unicorn",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment Creature — Unicorn",
+    "oracleText": "Bestow {3}{W} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nMentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)\nEnchanted creature gets +2/+2 and has mentor.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENTOR",
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{3}{W}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nyxborn Unicorn:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENTOR"
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Nyxborn Unicorn:2",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "PowerLessThanEntity",
+                                        "reference": "Self"
+                                    }
+                                ],
+                                "statePredicates": [
+                                    "IsAttacking"
+                                ]
+                            }
+                        }
+                    },
+                    "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "artist": "Josiah \"Jo\" Cameron",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa3a9f8f-b74f-44f1-a8b5-d21a55358a6c.jpg?1783911299",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Mentor compares the power of the creature with mentor with that of the target creature at two different times: once as the triggered ability is put onto the stack, and once as the triggered ability resolves. If you wish to raise a creature's power so its mentor ability can target a bigger creature, the last chance you have to do so is during the beginning of combat step."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If the target creature's power is no longer less than the attacking creature's power as the ability resolves, mentor doesn't add a +1/+1 counter. For example, if two 3/3 creatures with mentor attack and both mentor triggers target the same 2/2 creature, the first to resolve puts a +1/+1 counter on it and the second does nothing."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If the creature with mentor leaves the battlefield with the mentor ability on the stack, use its power as that creature last existed on the battlefield to determine whether the target creature has lesser power."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ocelot Pride
 {
     "name": "Ocelot Pride",

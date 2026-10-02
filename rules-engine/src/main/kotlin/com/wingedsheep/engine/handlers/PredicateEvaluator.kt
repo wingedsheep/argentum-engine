@@ -66,6 +66,7 @@ import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.engine.state.CastSpellRecord
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
@@ -1053,13 +1054,7 @@ class PredicateEvaluator(
             }
 
             is CardPredicate.PowerGreaterThanEntity -> {
-                val refEntityId = resolveEntity(state, predicate.reference, context, projected) ?: return false
-                val refContainer = state.getEntity(refEntityId) ?: return false
-                // Prefer projected power for the reference (layer effects, +1/+1 counters, etc.);
-                // fall back to its base printed power when projection has no entry (e.g., off-battlefield).
-                val refPower = state.projectedState.getPower(refEntityId)
-                    ?: refContainer.get<CardComponent>()?.baseStats?.basePower
-                    ?: return false
+                val refPower = referencePower(state, projected, predicate.reference, context) ?: return false
                 val candidatePower = projectedValues?.power ?: card.baseStats?.basePower ?: 0
                 candidatePower > refPower
             }
@@ -1078,21 +1073,13 @@ class PredicateEvaluator(
             }
 
             is CardPredicate.PowerAtMostEntity -> {
-                val refEntityId = resolveEntity(state, predicate.reference, context, projected) ?: return false
-                val refContainer = state.getEntity(refEntityId) ?: return false
-                val refPower = state.projectedState.getPower(refEntityId)
-                    ?: refContainer.get<CardComponent>()?.baseStats?.basePower
-                    ?: return false
+                val refPower = referencePower(state, projected, predicate.reference, context) ?: return false
                 val candidatePower = projectedValues?.power ?: card.baseStats?.basePower ?: 0
                 candidatePower <= refPower
             }
 
             is CardPredicate.PowerLessThanEntity -> {
-                val refEntityId = resolveEntity(state, predicate.reference, context, projected) ?: return false
-                val refContainer = state.getEntity(refEntityId) ?: return false
-                val refPower = state.projectedState.getPower(refEntityId)
-                    ?: refContainer.get<CardComponent>()?.baseStats?.basePower
-                    ?: return false
+                val refPower = referencePower(state, projected, predicate.reference, context) ?: return false
                 val candidatePower = projectedValues?.power ?: card.baseStats?.basePower ?: 0
                 candidatePower < refPower
             }
@@ -1634,6 +1621,32 @@ class PredicateEvaluator(
      * [TargetResolutionUtils.resolveEntity] — the same mapping effects use — and names nothing
      * without a context (target enumeration outside any resolution).
      */
+    /**
+     * The power a relative-power predicate ([CardPredicate.PowerGreaterThanEntity],
+     * [CardPredicate.PowerAtMostEntity], [CardPredicate.PowerLessThanEntity]) compares against: the
+     * referenced entity's projected power, read through the same
+     * [DynamicAmount.EntityProperty] path every other power read takes. That path owns the
+     * last-known-information rule (CR 113.7a / 608.2b), so a [EffectTarget.Self] reference to a source
+     * that has left the battlefield — Mentor's "target attacking creature with lesser power" with the
+     * mentor creature killed in response — compares against the power it last had there, not its
+     * printed power. Null (no match) when the reference doesn't resolve or there's no context.
+     */
+    private fun referencePower(
+        state: GameState,
+        projected: ProjectedState,
+        reference: EffectTarget.SingleEntity,
+        context: PredicateContext?,
+    ): Int? {
+        resolveEntity(state, reference, context, projected) ?: return null
+        val effectContext = context?.toEffectContext() ?: return null
+        return amounts.evaluate(
+            state,
+            DynamicAmount.EntityProperty(reference, EntityNumericProperty.Power),
+            effectContext,
+            projected,
+        )
+    }
+
     private fun resolveEntity(
         state: GameState,
         reference: EffectTarget.SingleEntity,

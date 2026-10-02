@@ -207,6 +207,8 @@ object Reminders {
         Keyword.EXPLOIT -> "When this creature enters, you may sacrifice a creature."
         Keyword.TRAINING -> "Whenever this creature attacks with another creature with greater power, put a " +
             "+1/+1 counter on this creature."
+        Keyword.MENTOR -> "Whenever this creature attacks, put a +1/+1 counter on target attacking creature " +
+            "with lesser power."
 
         Keyword.WITHER -> "This deals damage to creatures in the form of -1/-1 counters."
         Keyword.RIOT -> "This creature enters with your choice of a +1/+1 counter or haste."
