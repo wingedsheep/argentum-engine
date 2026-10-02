@@ -500,7 +500,9 @@ class LibraryAndZoneContinuationResumer(
             response.selectedCards.toSet()
         } else {
             val kept = mutableSetOf<EntityId>()
-            val claimedTypes = mutableSetOf<com.wingedsheep.sdk.core.CardType>()
+            // OnePerCardType: each kept card claims *one* of its types, so a multi-type card
+            // doesn't lock out every type it has — keep a card while the kept set still matches.
+            val keptTypeSets = mutableListOf<Set<String>>()
             val claimedColors = mutableSetOf<com.wingedsheep.sdk.core.Color>()
             val claimedNames = mutableSetOf<String>()
             val claimedLandTypes = mutableSetOf<com.wingedsheep.sdk.core.Subtype>()
@@ -526,12 +528,12 @@ class LibraryAndZoneContinuationResumer(
             for (cardId in response.selectedCards) {
                 val acceptsAllRestrictions = continuation.restrictions.all { restriction ->
                     when (restriction) {
-                        is SelectionRestriction.OnePerCardType -> {
-                            val cardTypes = state.getEntity(cardId)
-                                ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
-                                ?.typeLine?.cardTypes ?: emptySet()
-                            cardTypes.isEmpty() || cardTypes.none { it in claimedTypes }
-                        }
+                        is SelectionRestriction.OnePerCardType ->
+                            com.wingedsheep.engine.mechanics.targeting.OnePerCardType.canAssignDistinct(
+                                keptTypeSets + listOf(
+                                    com.wingedsheep.engine.mechanics.targeting.OnePerCardType.cardTypesOf(state, cardId)
+                                )
+                            )
                         is SelectionRestriction.OnePerColor -> {
                             val cardColors = state.getEntity(cardId)
                                 ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
@@ -579,9 +581,7 @@ class LibraryAndZoneContinuationResumer(
                     for (restriction in continuation.restrictions) {
                         when (restriction) {
                             is SelectionRestriction.OnePerCardType -> {
-                                claimedTypes += state.getEntity(cardId)
-                                    ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
-                                    ?.typeLine?.cardTypes ?: emptySet()
+                                keptTypeSets += com.wingedsheep.engine.mechanics.targeting.OnePerCardType.cardTypesOf(state, cardId)
                             }
                             is SelectionRestriction.OnePerColor -> {
                                 claimedColors += state.getEntity(cardId)

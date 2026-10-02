@@ -18,6 +18,27 @@ function extractCardTypes(typeLine: string): string[] {
   return mainTypes.trim().split(/\s+/).filter((w) => CARD_TYPES.has(w))
 }
 
+/**
+ * Whether each type set can claim a distinct card type it contains (a bipartite matching, mirroring
+ * the engine's OnePerCardType): an artifact creature and a creature fit together, two creatures don't.
+ */
+function canAssignDistinctTypes(typeSets: string[][]): boolean {
+  const owner = new Map<string, number>()
+  const augment = (index: number, visited: Set<string>): boolean => {
+    for (const type of typeSets[index] ?? []) {
+      if (visited.has(type)) continue
+      visited.add(type)
+      const holder = owner.get(type)
+      if (holder === undefined || augment(holder, visited)) {
+        owner.set(type, index)
+        return true
+      }
+    }
+    return false
+  }
+  return typeSets.every((_, i) => augment(i, new Set()))
+}
+
 /** The five basic land types, used for the OnePerBasicLandType restriction. */
 const BASIC_LAND_TYPES = new Set(['Plains', 'Island', 'Swamp', 'Mountain', 'Forest'])
 
@@ -116,16 +137,9 @@ export function CardSelectionDecision({
     45
   )
 
-  // OnePerCardType: compute which types are already claimed by selected cards
-  const claimedTypes = useMemo(() => {
-    if (!decision.onePerCardType) return new Set<string>()
-    const types = new Set<string>()
-    for (const id of selectedCards) {
-      const typeLine = decision.cardInfo?.[id]?.typeLine ?? gameState?.cards[id]?.typeLine ?? ''
-      for (const t of extractCardTypes(typeLine)) types.add(t)
-    }
-    return types
-  }, [decision.onePerCardType, decision.cardInfo, selectedCards, gameState?.cards])
+  /** A card's card types, from the decision's card info (hidden zones) or gameState. */
+  const cardTypesFor = (cardId: EntityId): string[] =>
+    extractCardTypes(decision.cardInfo?.[cardId]?.typeLine ?? gameState?.cards[cardId]?.typeLine ?? '')
 
   /** A card's name, from the decision's card info (hidden zones) or gameState. */
   const nameForCard = (cardId: EntityId): string | null =>
@@ -237,9 +251,8 @@ export function CardSelectionDecision({
   const isCardDisabled = (cardId: EntityId): boolean => {
     if (selectedCards.includes(cardId)) return false // already selected — can deselect
     if (decision.onePerCardType) {
-      const typeLine = decision.cardInfo?.[cardId]?.typeLine ?? gameState?.cards[cardId]?.typeLine ?? ''
-      const types = extractCardTypes(typeLine)
-      if (types.length > 0 && types.some((t) => claimedTypes.has(t))) return true
+      // Each selected card claims one of its types; the candidate fits if all still can.
+      if (!canAssignDistinctTypes([...selectedCards, cardId].map(cardTypesFor))) return true
     }
     if (decision.onePerCardName) {
       const name = nameForCard(cardId)
@@ -279,7 +292,7 @@ export function CardSelectionDecision({
       if (prev.length >= decision.maxSelections) {
         return prev
       }
-      // OnePerCardType: block if types already claimed
+      // Block cards an active restriction (e.g. OnePerCardType) rules out
       if (isCardDisabled(cardId)) {
         return prev
       }
