@@ -150,16 +150,24 @@ class AIPlayerTest : FunSpec({
         var state: GameState = initialState
         var turns = 0
         val maxTurns = 50
+        var transitions = 0
+        val maxTransitions = 5_000
+        var sawOffPriorityGraveyardOrdering = false
 
-        while (!state.gameOver && turns < maxTurns) {
+        while (!state.gameOver && turns < maxTurns && transitions < maxTransitions) {
             // A pending decision can belong to the player without priority (e.g. ordering
             // their graveyard after combat damage), so route decisions before priority.
             val decision = state.pendingDecision
             val nextState: GameState? = if (decision != null) {
+                if (decision is OrderObjectsDecision && decision.orderingTitle == "Order Graveyard" &&
+                    decision.playerId != state.priorityPlayerId) {
+                    sawOffPriorityGraveyardOrdering = true
+                }
                 val ai = if (decision.playerId == p1) ai1 else ai2
                 val response = ai.respondToDecision(state, decision)
                 val result = processor.process(state, SubmitDecision(decision.playerId, response)).result
-                if (result.error != null) null else result.state
+                result.error shouldBe null
+                result.state
             } else when (state.priorityPlayerId) {
                 p1 -> ai1.playPriorityWindow(state, processor)
                 p2 -> ai2.playPriorityWindow(state, processor)
@@ -167,12 +175,15 @@ class AIPlayerTest : FunSpec({
             }
             if (nextState == null) break
             state = nextState
+            transitions++
 
             if (state.turnNumber > turns) {
                 turns = state.turnNumber
             }
         }
 
+        (state.gameOver || turns >= maxTurns).shouldBeTrue()
+        sawOffPriorityGraveyardOrdering.shouldBeTrue()
         turns shouldBeGreaterThan 0
 
         val p1Life = state.getEntity(p1)?.get<LifeTotalComponent>()?.life ?: 20
