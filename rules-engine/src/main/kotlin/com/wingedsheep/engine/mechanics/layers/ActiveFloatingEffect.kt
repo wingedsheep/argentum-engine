@@ -675,7 +675,8 @@ sealed interface SerializableModification {
         val sourceName: String,
         val amountToLeave: Int,
         val eligibleSource: GameObjectFilter,
-        val combatOnly: Boolean
+        val combatOnly: Boolean,
+        val permanentSpell: Boolean = false
     ) : SerializableModification
 
     /**

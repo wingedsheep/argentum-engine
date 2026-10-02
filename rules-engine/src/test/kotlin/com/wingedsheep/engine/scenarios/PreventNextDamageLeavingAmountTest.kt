@@ -60,9 +60,13 @@ class PreventNextDamageLeavingAmountTest : ScenarioTestBase() {
             shieldCount(game) shouldBe 0
             damage(game, 7) shouldBe 7
         }
-        test("cannot increase a smaller hit and still consumes its single instance") {
+        test("a hit no larger than the remainder preserves the shield for later damage") {
             val game = board(); install(game, leave = 4)
             damage(game, 1) shouldBe 1
+            shieldCount(game) shouldBe 1
+            damage(game, 4) shouldBe 4
+            shieldCount(game) shouldBe 1
+            damage(game, 7) shouldBe 4
             shieldCount(game) shouldBe 0
         }
         test("zero damage does not spend the shield") {

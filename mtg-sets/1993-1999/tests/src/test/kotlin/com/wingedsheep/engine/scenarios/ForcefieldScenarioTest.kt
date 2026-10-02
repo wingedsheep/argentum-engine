@@ -93,11 +93,24 @@ class ForcefieldScenarioTest : ScenarioTestBase() {
             activate(game); choose(game, duelist.name); finish(game)
             game.getLifeTotal(1) shouldBe 16
         }
-        test("one-damage instance stays one and consumes the shield") {
-            val game = board("Mons's Goblin Raiders"); unblocked(game, "Mons's Goblin Raiders")
-            activate(game); choose(game, "Mons's Goblin Raiders"); finish(game)
+        test("one first-strike damage leaves the shield for a larger regular hit") {
+            val game = board("Mons's Goblin Raiders")
+            val goblin = game.findPermanent("Mons's Goblin Raiders")!!
+            game.state = services.effectExecutorRegistry.execute(game.state,
+                Effects.GrantKeyword(Keyword.DOUBLE_STRIKE, EffectTarget.ContextTarget(0)),
+                com.wingedsheep.engine.handlers.EffectContext(sourceId = null, controllerId = game.player2Id,
+                    targets = listOf(ChosenTarget.Permanent(goblin)))).state
+            unblocked(game, "Mons's Goblin Raiders")
+            activate(game); choose(game, "Mons's Goblin Raiders")
+            game.passUntilPhase(Phase.COMBAT, Step.FIRST_STRIKE_COMBAT_DAMAGE)
             game.getLifeTotal(1) shouldBe 19
-            game.state.floatingEffects.none { it.effect.modification is SerializableModification.PreventNextDamageLeavingAmount } shouldBe true
+            game.state.floatingEffects.count { it.effect.modification is SerializableModification.PreventNextDamageLeavingAmount } shouldBe 1
+            game.state = services.effectExecutorRegistry.execute(game.state,
+                Effects.ModifyStats(3, 0, EffectTarget.ContextTarget(0)),
+                com.wingedsheep.engine.handlers.EffectContext(sourceId = null, controllerId = game.player2Id,
+                    targets = listOf(ChosenTarget.Permanent(goblin)))).state
+            finish(game)
+            game.getLifeTotal(1) shouldBe 18
         }
         test("shield survives Forcefield leaving play before combat damage") {
             val game = board(); unblocked(game); activate(game); choose(game)

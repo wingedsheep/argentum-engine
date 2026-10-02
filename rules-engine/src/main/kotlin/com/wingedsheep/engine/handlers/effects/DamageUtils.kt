@@ -1625,8 +1625,11 @@ object DamageUtils {
                 if (floating.referencedObjects.any { !state.isCurrentObject(it) }) continue
                 if (!predicateEvaluator.matches(state, state.projectedState, sourceId, mod.eligibleSource,
                         PredicateContext(controllerId = floating.controllerId, sourceId = floating.sourceId))) continue
-                remainingDamage = minOf(remainingDamage, mod.amountToLeave)
-                toRemove.add(i)
+                val reducedDamage = minOf(remainingDamage, mod.amountToLeave)
+                if (reducedDamage < remainingDamage) {
+                    remainingDamage = reducedDamage
+                    toRemove.add(i)
+                }
             }
         }
 

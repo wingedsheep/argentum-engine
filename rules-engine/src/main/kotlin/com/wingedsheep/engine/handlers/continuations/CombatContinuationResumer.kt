@@ -435,7 +435,8 @@ class CombatContinuationResumer(
                 sourceName = com.wingedsheep.engine.state.nameVisibleToAll(state, choice.reference.entityId, choice.name),
                 amountToLeave = continuation.amountToLeave,
                 eligibleSource = continuation.eligibleSource,
-                combatOnly = continuation.scope == com.wingedsheep.sdk.scripting.effects.PreventionScope.CombatOnly
+                combatOnly = continuation.scope == com.wingedsheep.sdk.scripting.effects.PreventionScope.CombatOnly,
+                permanentSpell = choice.permanentSpell
             ),
             affectedEntities = setOf(continuation.targetId),
             duration = continuation.duration,

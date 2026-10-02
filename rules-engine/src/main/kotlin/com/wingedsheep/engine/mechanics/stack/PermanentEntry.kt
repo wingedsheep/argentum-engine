@@ -142,6 +142,14 @@ internal class PermanentEntry(
         val permanentRef = newState.objectRef(spellId)
         if (spellRef != null && permanentRef != null) {
             newState = newState.copy(floatingEffects = newState.floatingEffects.map { floating ->
+                val remainder = floating.effect.modification as? SerializableModification.PreventNextDamageLeavingAmount
+                if (remainder?.permanentSpell == true && remainder.damageSourceId == spellId &&
+                    spellRef in floating.referencedObjects) {
+                    return@map floating.copy(
+                        effect = floating.effect.copy(modification = remainder.copy(permanentSpell = false)),
+                        referencedObjects = floating.referencedObjects.map { if (it == spellRef) permanentRef else it }
+                    )
+                }
                 val mod = floating.effect.modification as? SerializableModification.RedirectNextDamage
                 val chosen = mod?.chosenSource
                 if (chosen?.permanentSpell == true && chosen.reference == spellRef) {

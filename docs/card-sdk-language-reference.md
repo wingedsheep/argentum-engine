@@ -2998,9 +2998,11 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   prevent all but the evaluated amount of its next qualifying damage instance to the recipient.
   The remainder is clamped to zero and never increases incoming damage. Source properties are
   checked against projected state both at choice and damage time; a failed recheck or wrong damage
-  scope leaves the shield unused. A qualifying positive instance spends it even if no damage can
-  be prevented because it is already no larger than the remainder. Object identities prevent the
-  shield from following a source or recipient through a zone change. Forcefield uses
+  scope leaves the shield unused. The shield is spent only when it prevents damage; a hit no larger
+  than the remainder leaves it available for a later instance. Object identities prevent the shield
+  from following a source or recipient through unrelated zone changes; a chosen permanent spell
+  follows its normal resolution onto the battlefield. Source selection currently covers current
+  objects only, not departed sources retained through last-known information. Forcefield uses
   `Fixed(1)`, `Creature.unblocked()`, and `combatOnly = true`; blocked tramplers never qualify.
   Uses the existing battlefield selection UI and exposes a player shield badge; standard floating
   duration cleanup applies. This is prevention, so unpreventable damage passes through unchanged.
