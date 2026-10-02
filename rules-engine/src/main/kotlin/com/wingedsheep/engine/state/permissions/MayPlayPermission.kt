@@ -28,6 +28,9 @@ import kotlinx.serialization.Serializable
  * @param condition Optional gate re-evaluated on every query. When present, the permission is
  *   only honored while the condition holds.
  * @param withAnyManaType If true, mana of any type can be spent to cast (Taster of Wares).
+ * @param colorlessAsAnyColor If true, colorless mana may be spent as though it were mana of any
+ *   color to cast (Abstruse Appropriation) — read into
+ *   [com.wingedsheep.engine.mechanics.mana.SpellPaymentContext.colorlessAsAnyColor].
  * @param landEntersTapped If true, a land card played via this permission enters the battlefield
  *   tapped. Used by Lightstall Inquisitor-style exile-from-hand effects whose "lands played
  *   this way enter tapped" clause must be enforced on top of the played card's intrinsic ETB
@@ -48,6 +51,7 @@ data class MayPlayPermission(
     val sourceId: EntityId? = null,
     val condition: Condition? = null,
     val withAnyManaType: Boolean = false,
+    val colorlessAsAnyColor: Boolean = false,
     /**
      * If true, cards played via this permission may be cast at instant speed — "as though they
      * had flash" (CR 702.8) — even if they are sorceries, creatures, or other non-instant cards.

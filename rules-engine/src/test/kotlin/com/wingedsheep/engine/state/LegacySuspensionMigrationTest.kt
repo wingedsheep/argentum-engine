@@ -295,7 +295,10 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
         else -> value
     }
 
-    /** Added copiable rules data postdates the capture; old identities must default both lists empty. */
+    /**
+     * Added copiable rules data postdates the capture; old identities must default both lists empty.
+     * Likewise a may-play permission's later `colorlessAsAnyColor` rider must default false.
+     */
     private fun withoutPostCaptureCardDefaults(value: JsonElement): JsonElement = when (value) {
         is JsonObject -> {
             val fields = if (value["type"] == JsonPrimitive(
@@ -304,6 +307,10 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value.getValue("copyTriggeredAbilities") shouldBe JsonArray(emptyList())
                 value.getValue("manaSpendingGrants") shouldBe JsonArray(emptyList())
                 value - "copyTriggeredAbilities" - "manaSpendingGrants"
+            } else if ("colorlessAsAnyColor" in value && "singleUse" in value) {
+                // MayPlayPermission's colorless-as-any-color rider postdates the capture.
+                value.getValue("colorlessAsAnyColor") shouldBe JsonPrimitive(false)
+                value - "colorlessAsAnyColor"
             } else value
             JsonObject(fields.mapValues { withoutPostCaptureCardDefaults(it.value) })
         }

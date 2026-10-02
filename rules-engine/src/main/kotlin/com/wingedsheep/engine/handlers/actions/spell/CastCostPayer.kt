@@ -457,8 +457,21 @@ internal class CastCostPayer(
                 isKicked = action.declaredCostSlot == ChoiceSlot.KICKED,
                 isFromExile = isCastFrom(state, action.cardId, Zone.EXILE),
                 isFromHand = isCastFrom(state, action.cardId, Zone.HAND),
-            )
+            ).copy(colorlessAsAnyColor = isCastWithColorlessAsAnyColor(state, action))
         } else null
+
+    /**
+     * True if colorless mana may be spent as though it were mana of any color on this spell
+     * (CR 609.4b) — the cast permission that authorises it carries the rider ("you may spend
+     * colorless mana as though it were mana of any color to cast that spell", Abstruse
+     * Appropriation). Per-card like [isCastWithAnyManaType]'s permission half, so the card must
+     * be in a zone a may-play permission grants casting from.
+     */
+    fun isCastWithColorlessAsAnyColor(state: GameState, action: CastSpell): Boolean {
+        val inGrantableZone = isCastFrom(state, action.cardId, Zone.EXILE) || isCastFrom(state, action.cardId, Zone.GRAVEYARD)
+        return inGrantableZone && state.activeMayPlayFor(action.cardId, action.playerId, conditionEvaluator, cardRegistry)
+            .any { it.colorlessAsAnyColor }
+    }
 
     /**
      * "Spend only [colors] on X" (Soul Burn). Uses the cast face's script for split/adventure cards,

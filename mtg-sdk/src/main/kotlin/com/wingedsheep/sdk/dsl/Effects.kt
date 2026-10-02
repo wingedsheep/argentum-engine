@@ -1438,6 +1438,9 @@ object Effects {
      * The grant also covers cards left in a **graveyard** — set [castFaceIndex] for
      * "you may cast it from your graveyard as an Adventure" (Mosswood Dreadknight), which
      * authorizes only the card's alternative face at that index.
+     *
+     * Set [colorlessAsAnyColor] for "you may spend colorless mana as though it were mana of any
+     * color to cast that spell" (Abstruse Appropriation) — narrower than [withAnyManaType].
      */
     fun GrantMayPlayFromExile(
         from: String,
@@ -1452,11 +1455,13 @@ object Effects {
         castFaceIndex: Int? = null,
         ownerControls: Boolean = false,
         castColorRestriction: Color? = null,
-        singleUse: Boolean = false
+        singleUse: Boolean = false,
+        colorlessAsAnyColor: Boolean = false
     ): Effect = GrantMayPlayFromExileEffect(
         from = from,
         expiry = expiry,
         withAnyManaType = withAnyManaType,
+        colorlessAsAnyColor = colorlessAsAnyColor,
         condition = condition,
         landEntersTapped = landEntersTapped,
         onPlayRider = onPlayRider,
@@ -4335,11 +4340,13 @@ object Effects {
         castColorRestriction: Color? = null,
         recipient: EffectTarget = EffectTarget.Controller,
         asThoughFlash: Boolean = false,
-        singleUse: Boolean = false
+        singleUse: Boolean = false,
+        colorlessAsAnyColor: Boolean = false
     ): Effect = GrantMayPlayFromExileEffect(
         from = from.key,
         expiry = expiry,
         withAnyManaType = withAnyManaType,
+        colorlessAsAnyColor = colorlessAsAnyColor,
         condition = condition,
         landEntersTapped = landEntersTapped,
         onPlayRider = onPlayRider,
