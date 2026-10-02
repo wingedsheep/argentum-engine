@@ -93,8 +93,14 @@ class ForEachExecutor(
         } else context
 
         val move = effect.body as? com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-        val simultaneousMove = space is IterationSpace.Group && move?.destination == Zone.GRAVEYARD &&
-            move.target == EffectTarget.IterationEntity
+        // An atomic move over a group or all chosen targets is one instruction. A
+        // per-target composite still executes its instructions in sequence and must
+        // finalize each move before the next instruction reads the graveyard.
+        val simultaneousMove = move?.destination == Zone.GRAVEYARD && when (space) {
+            is IterationSpace.Group -> move.target == EffectTarget.IterationEntity
+            IterationSpace.Targets -> move.target == EffectTarget.ContextTarget(0)
+            else -> false
+        }
         return processItems(currentState, effect, items,
             if (simultaneousMove) loopContext.copy(deferGraveyardOrdering = true) else loopContext)
     }

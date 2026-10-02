@@ -145,6 +145,65 @@ class GraveyardOrderingTest : ScenarioTestBase() {
             result.outcome shouldBe Outcome.Done
             result.state.getGraveyard(game.player1Id) shouldBe ids
         }
+        test("one move instruction over multiple targets lets the owner order their arrivals") {
+            val game = scenario().withPlayers("Owner", "Opponent").withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardOnBattlefield(1, "Llanowar Elves").withCardInGraveyard(1, "Swamp").build()
+            game.state = game.state.copy(preserveGraveyardOrder = true)
+            val ids = listOf(game.findPermanent("Grizzly Bears")!!, game.findPermanent("Llanowar Elves")!!)
+            val effect = Effects.ForEachTarget(Effects.Destroy(EffectTarget.ContextTarget(0)))
+            val result = services.effectExecutorRegistry.execute(game.state, effect,
+                EffectContext(sourceId = null, controllerId = game.player1Id,
+                    targets = ids.map { com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent(it) }))
+            (result.outcome is Outcome.Paused) shouldBe true
+            result.events.filterIsInstance<ZoneChangeEvent>().size shouldBe 0
+            game.state = result.state
+            val question = game.state.pendingDecision as OrderObjectsDecision
+            question.objects shouldBe ids
+            game.submitDecision(OrderedResponse(question.id, ids)).error shouldBe null
+            game.state.getGraveyard(game.player1Id).takeLast(2) shouldBe ids.reversed()
+            game.state.getGraveyard(game.player1Id).first() shouldBe game.findCardsInGraveyard(1, "Swamp").single()
+        }
+        test("per-target composite instructions keep chronological arrivals") {
+            val game = scenario().withPlayers("Owner", "Opponent").withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardOnBattlefield(1, "Llanowar Elves").build()
+            game.state = game.state.copy(preserveGraveyardOrder = true)
+            val ids = listOf(game.findPermanent("Grizzly Bears")!!, game.findPermanent("Llanowar Elves")!!)
+            val effect = Effects.ForEachTarget(Effects.Destroy(EffectTarget.ContextTarget(0)), Effects.GainLife(1))
+            val result = services.effectExecutorRegistry.execute(game.state, effect,
+                EffectContext(sourceId = null, controllerId = game.player1Id,
+                    targets = ids.map { com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent(it) }))
+            result.outcome shouldBe Outcome.Done
+            result.state.getGraveyard(game.player1Id) shouldBe ids
+            game.state = result.state
+            game.getLifeTotal(1) shouldBe 22
+        }
+        test("a selected sacrifice batch orders before siblings read the graveyard and retains sacrifice snapshots") {
+            val game = scenario().withPlayers("Owner", "Opponent").withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardOnBattlefield(1, "Llanowar Elves").withCardOnBattlefield(1, "Birds of Paradise").build()
+            game.state = game.state.copy(preserveGraveyardOrder = true)
+            val bear = game.findPermanent("Grizzly Bears")!!
+            val elf = game.findPermanent("Llanowar Elves")!!
+            val effect = CompositeEffect(listOf(
+                Effects.Sacrifice(GameObjectFilter.Creature, count = 2, target = EffectTarget.Controller),
+                Effects.GainLife(DynamicAmounts.cardsAboveInGraveyard(EffectTarget.SpecificEntity(bear))),
+                Effects.GainLife(com.wingedsheep.sdk.scripting.values.DynamicAmount.TotalPowerSacrificedThisWay)
+            ))
+            val result = services.effectExecutorRegistry.execute(game.state, effect,
+                EffectContext(sourceId = null, controllerId = game.player1Id))
+            game.state = result.state
+            val selection = game.state.pendingDecision as SelectCardsDecision
+            val sacrificed = game.submitDecision(CardsSelectedResponse(selection.id, listOf(bear, elf)))
+            sacrificed.error shouldBe null
+            sacrificed.events.filterIsInstance<ZoneChangeEvent>().size shouldBe 0
+            game.getLifeTotal(1) shouldBe 20
+            val ordering = game.state.pendingDecision as OrderObjectsDecision
+            // Bear is topmost: the positional life-gain instruction must see zero above it.
+            val resumed = game.submitDecision(OrderedResponse(ordering.id, listOf(bear, elf)))
+            resumed.error shouldBe null
+            resumed.events.filterIsInstance<ZoneChangeEvent>().size shouldBe 2
+            game.getLifeTotal(1) shouldBe 23
+            game.state.getGraveyard(game.player1Id) shouldBe listOf(elf, bear)
+        }
         test("replacement-diverted cards are excluded from graveyard ordering") {
             val game = scenario().withPlayers("Owner", "Opponent").withCardInHand(1, "Island").withCardInHand(1, "Swamp").build()
             game.state = game.state.copy(preserveGraveyardOrder = true)

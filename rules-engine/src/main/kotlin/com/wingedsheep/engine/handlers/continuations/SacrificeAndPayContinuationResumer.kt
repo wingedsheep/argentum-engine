@@ -107,11 +107,26 @@ class SacrificeAndPayContinuationResumer(
                 // Another player needs a decision — return paused with combined events
                 ExecutionResult.propagatePause(resultStateWithSnaps, allEvents)
             } else {
-                checkForMore(resultStateWithSnaps, allEvents)
+                finishSacrificeInstruction(resultStateWithSnaps, allEvents, checkForMore)
             }
         }
 
-        return checkForMore(newState, events)
+        return finishSacrificeInstruction(newState, events, checkForMore)
+    }
+
+    /** Finalize the resumed instruction before a sibling can read its graveyard order. */
+    private fun finishSacrificeInstruction(
+        state: GameState,
+        events: List<GameEvent>,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        // Sacrifice snapshots were already published to the enclosing effect frames;
+        // the ordering continuation parks the move events until the owner answers.
+        val ordered = com.wingedsheep.engine.mechanics.GraveyardOrdering.finish(
+            ExecutionResult.success(state, events)
+        )
+        return if (ordered.outcome is Outcome.Paused) ordered
+        else checkForMore(ordered.state, ordered.events)
     }
 
     /**

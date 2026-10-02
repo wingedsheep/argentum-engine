@@ -126,7 +126,7 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
           pointerEvents: 'auto',
         }}
       >
-        Return to Damage Assignment
+        {decision.orderingTitle ? `Return to ${decision.orderingTitle}` : 'Return to Damage Assignment'}
       </button>
     )
   }
@@ -194,6 +194,7 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
           flexDirection: 'column',
           alignItems: 'center',
           gap: 8,
+          maxWidth: '100%',
         }}
       >
         {/* FIRST indicator */}
@@ -228,13 +229,19 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
           />
         </div>
 
-        {/* Blockers */}
+        {/* Scroll long orders without putting either end outside the viewport. */}
         <div
+          role="region"
+          aria-label="Cards to order"
+          tabIndex={0}
           style={{
             display: 'flex',
             gap,
+            width: 'max-content',
+            maxWidth: '100%',
+            boxSizing: 'border-box',
+            overflowX: 'auto',
             padding: responsive.isMobile ? 12 : 24,
-            justifyContent: 'center',
             alignItems: 'flex-end',
           }}
         >
