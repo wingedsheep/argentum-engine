@@ -2470,7 +2470,7 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "creature Pirate ctrl:you"
+                        "baseFilter": "permanent Pirate ctrl:you"
                     },
                     "id": "t0"
                 }

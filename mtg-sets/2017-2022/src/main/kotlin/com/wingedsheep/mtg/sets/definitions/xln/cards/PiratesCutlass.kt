@@ -26,7 +26,7 @@ val PiratesCutlass = card("Pirate's Cutlass") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        val pirate = target(TargetFilter.CreatureYouControl.withSubtype(Subtype.PIRATE))
+        val pirate = target(TargetFilter.PermanentYouControl.withSubtype(Subtype.PIRATE))
         effect = Effects.AttachEquipment(pirate)
     }
 
