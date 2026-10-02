@@ -859,7 +859,7 @@ data class SpellCopiedEvent(
     val originalSpellId: EntityId? = null,
     val copyIndex: Int? = null,
     val copyTotal: Int? = null,
-    /** The copy's mana value (CR 707.10 — it copies the original's characteristics, X included). */
+    /** The copy's mana value — the original's printed one (CR 707.10), read the same way as [SpellCastEvent.manaValue]. */
     val manaValue: Int = 0
 ) : GameEvent
 
