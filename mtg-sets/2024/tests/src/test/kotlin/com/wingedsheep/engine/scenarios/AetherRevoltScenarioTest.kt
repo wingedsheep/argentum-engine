@@ -86,7 +86,7 @@ class AetherRevoltScenarioTest : ScenarioTestBase() {
                 val bears = game.findPermanent("Grizzly Bears")!!
                 game.castSpell(1, "Shock", targetId = bears).error shouldBe null
                 game.resolveStack()
-                withClue("damage to your own creature isn't amplified; the Bears die (revolt on)") {
+                withClue("a permanent you control left the battlefield — revolt is on") {
                     game.isInGraveyard(1, "Grizzly Bears") shouldBe true
                 }
 
