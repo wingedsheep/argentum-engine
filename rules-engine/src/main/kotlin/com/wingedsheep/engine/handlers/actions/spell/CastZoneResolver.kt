@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GraveyardCastRiderSelection
 import com.wingedsheep.engine.handlers.ConditionEvaluator
+import com.wingedsheep.engine.mechanics.BestowCasts
 import com.wingedsheep.engine.mechanics.DisturbCasts
 import com.wingedsheep.engine.mechanics.FlashTypeGrants
 import com.wingedsheep.engine.mechanics.FlashbackGrants
@@ -27,6 +28,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
@@ -117,10 +119,6 @@ class CastZoneResolver(
     }
 
     /**
-     * Check if a card has an intrinsic MayCastSelfFromZones static ability
-     * that permits casting from its current zone (e.g., Squee, the Immortal).
-     */
-    /**
      * True iff the card is in [playerId]'s command zone with `CommanderComponent` whose owner is
      * [playerId] (CR 903.8 — only the commander's owner can cast it from the command zone).
      */
@@ -136,11 +134,17 @@ class CastZoneResolver(
         return commanderComponent.ownerId == playerId
     }
 
+    /**
+     * Check if a card has an intrinsic MayCastSelfFromZones static ability
+     * that permits casting from its current zone (e.g., Squee, the Immortal).
+     * [action] is the cast being made; without one, only unrestricted permissions count.
+     */
     fun hasMayCastSelfFromZonePermission(
         state: GameState,
         playerId: EntityId,
-        cardId: EntityId
-    ): Boolean = findMayCastSelfFromZoneAbility(state, playerId, cardId) != null
+        cardId: EntityId,
+        action: CastSpell? = null
+    ): Boolean = findMayCastSelfFromZoneAbility(state, playerId, cardId, action) != null
 
     /**
      * Locate the [MayCastSelfFromZones] ability (if any) that currently permits casting [cardId]
@@ -152,7 +156,8 @@ class CastZoneResolver(
     fun findMayCastSelfFromZoneAbility(
         state: GameState,
         playerId: EntityId,
-        cardId: EntityId
+        cardId: EntityId,
+        action: CastSpell? = null
     ): MayCastSelfFromZones? {
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return null
@@ -166,13 +171,25 @@ class CastZoneResolver(
                 val inNamedZone = ability.zones.any { zone ->
                     cardId in state.getZone(ZoneKey(playerId, zone))
                 }
-                inNamedZone && (ability.condition == null ||
+                inNamedZone && castsUsing(action, ability.castUsing) && (ability.condition == null ||
                     conditionEvaluator.evaluate(
                         state,
                         ability.condition!!,
                         EffectContext(sourceId = cardId, controllerId = playerId)
                     ))
             }
+    }
+
+    /**
+     * Whether [action] casts the card using the [keyword] casting ability a
+     * `MayCastSelfFromZones.castUsing` restricts its permission to. Fails closed: a keyword this
+     * engine can't cast with authorizes nothing, and with no action only unrestricted permissions
+     * apply.
+     */
+    private fun castsUsing(action: CastSpell?, keyword: Keyword?): Boolean = when (keyword) {
+        null -> true
+        Keyword.BESTOW -> action != null && BestowCasts.selected(action)
+        else -> false
     }
 
     /**
@@ -384,7 +401,7 @@ class CastZoneResolver(
                 SneakWindow.graveyardSneakGrantCost(state, playerId, cardRegistry) != null
             ) return null
         }
-        if (hasMayCastSelfFromZonePermission(state, playerId, cardId)) return null
+        if (hasMayCastSelfFromZonePermission(state, playerId, cardId, action)) return null
         if (hasMayPlayPermanentFromGraveyardPermission(state, playerId, cardId, cardComponent)) return null
         if (hasFlashbackPermission(state, playerId, cardId) || hasHarmonizePermission(state, playerId, cardId)) return null
         return findMayCastFromGraveyardGrant(state, playerId, cardId, cardComponent, action.graveyardCastRider)

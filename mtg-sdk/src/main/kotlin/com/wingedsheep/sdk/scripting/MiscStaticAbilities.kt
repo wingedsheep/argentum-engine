@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -681,20 +682,31 @@ data object OpponentsPlayWithHandsRevealed : StaticAbility {
  * speed, on the player's turn with an empty stack. The card is cast for its normal mana cost (plus
  * [additionalCost], if any).
  *
+ * When [castUsing] is non-null the permission authorizes only a cast that uses that keyword's
+ * casting ability — "You may cast this card from your graveyard using its bestow ability"
+ * (Detective's Phoenix) is `MayCastSelfFromZones(listOf(Zone.GRAVEYARD), castUsing = Keyword.BESTOW)`.
+ * The card is then cast for that ability's price (CR 702.103a: bestow functions in any zone the
+ * card could be cast from), never for its normal mana cost. The engine reads only keywords it knows
+ * how to cast with (currently [Keyword.BESTOW]); any other keyword authorizes nothing.
+ *
  * @property zones The zones from which this card may be cast.
  * @property condition Optional gate; null = always available (the Squee shape).
  * @property additionalCost Optional additional cost required alongside the card's mana cost when
  *   cast through this permission; null = no additional cost (the Squee/Gravecrawler shape).
+ * @property castUsing The casting ability this permission is restricted to; null = an ordinary
+ *   cast (and any alternative cost the card offers).
  */
 @SerialName("MayCastSelfFromZones")
 @Serializable
 data class MayCastSelfFromZones(
     val zones: List<Zone>,
     val condition: Condition? = null,
-    val additionalCost: AdditionalCost? = null
+    val additionalCost: AdditionalCost? = null,
+    val castUsing: Keyword? = null
 ) : StaticAbility {
     override val description: String = buildString {
         append("You may cast this card from ${zones.joinToString(" or ") { it.displayName }}")
+        if (castUsing != null) append(" using its ${castUsing.displayName.lowercase()} ability")
         if (additionalCost != null) append(" by ${additionalCost.description.lowercase()} in addition to paying its other costs")
         if (condition != null) append(" ${condition.description}")
         append(".")

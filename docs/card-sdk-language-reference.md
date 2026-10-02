@@ -9766,7 +9766,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   exiling with `Effects.Exile(..., addCounterType = CounterType.CROAK)` off a per-card
   `LIBRARY -> GRAVEYARD` `EventPattern.ZoneChangeEvent`. `CounterType.CROAK` is a pure marker like
   `CounterType.STASH`: it grants nothing, it just gives the filter something to select on.
-- `MayCastSelfFromZones(zones, condition = null, additionalCost = null)` — intrinsic *self*
+- `MayCastSelfFromZones(zones, condition = null, additionalCost = null, castUsing = null)` — intrinsic *self*
   permission: this card may be cast from any of `zones` (graveyard/exile) following normal timing
   and for its normal mana cost. Squee, the Immortal = `MayCastSelfFromZones(listOf(GRAVEYARD,
   EXILE))`. When `condition` is non-null the permission is **gated**: it is available only while the
@@ -9781,7 +9781,13 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   (mirrors `GrantMayCastFromLinkedExile.additionalCost`). Alien Symbiosis (SPM) =
   `MayCastSelfFromZones(listOf(GRAVEYARD), additionalCost = Costs.additional.DiscardCards(1))` for
   "You may cast this card from your graveyard by discarding a card in addition to paying its other
-  costs." Wired through `CastZoneResolver.findMayCastSelfFromZoneAbility` (returns the applicable
+  costs." When `castUsing` (a `Keyword`) is non-null the permission authorizes **only** a cast that
+  uses that keyword's casting ability, for that ability's price — Detective's Phoenix (MH3) =
+  `MayCastSelfFromZones(listOf(GRAVEYARD), castUsing = Keyword.BESTOW)` for "You may cast this card
+  from your graveyard using its bestow ability." Such a permission is offered by the ability's own
+  enumerator (the bestow cast), never as an ordinary cast; the engine reads `Keyword.BESTOW` today
+  and any other keyword fails closed (authorizes nothing) until it is wired in `CastZoneResolver`.
+  Wired through `CastZoneResolver.findMayCastSelfFromZoneAbility` (returns the applicable
   ability so callers can read its `additionalCost`), validated/collected in `CastSpellHandler`
   alongside the other additional-cost sources, and surfaced to legal-action enumeration in
   `CastFromZoneEnumerator.enumerateIntrinsicZoneCast` via the same `AdditionalCostData` /
@@ -10841,6 +10847,8 @@ composite abilities).
   cannot remain attached. Host departure ends bestow during resolution, before later instructions.
   Spell copies retain bestow and their copy exceptions; copies of the permanent copy its underlying
   creature characteristics without the bestow status.
+  "You may cast this card from your graveyard using its bestow ability" is
+  `MayCastSelfFromZones(listOf(Zone.GRAVEYARD), castUsing = Keyword.BESTOW)` (Detective's Phoenix).
   Author the enchanted creature's bonuses and abilities with the existing attachment primitives.
   Bestow does **not** automatically condition the card's other abilities: when Oracle says
   “As long as this permanent is a creature”, condition that self branch

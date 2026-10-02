@@ -117,7 +117,7 @@ class CastAdditionalCosts(
 
         // Self-referential MayCastSelfFromZones grant's additional cost (e.g. Alien Symbiosis'
         // "by discarding a card")
-        zoneResolver.findMayCastSelfFromZoneAbility(state, action.playerId, action.cardId)
+        zoneResolver.findMayCastSelfFromZoneAbility(state, action.playerId, action.cardId, action)
             ?.additionalCost?.let { add(it) }
 
         // A graveyard-cast grant's additional cost (Six's continuous retrace: "discard a land card"),

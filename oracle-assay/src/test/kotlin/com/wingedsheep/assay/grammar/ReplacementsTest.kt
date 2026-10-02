@@ -3,6 +3,8 @@ package com.wingedsheep.assay.grammar
 import com.wingedsheep.assay.syntax.ParseOutcome
 import com.wingedsheep.assay.syntax.parseLine
 import com.wingedsheep.assay.syntax.printLine
+import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
@@ -11,7 +13,9 @@ import com.wingedsheep.sdk.scripting.CardNamePool
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.EntersWithChoice
+import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
+import com.wingedsheep.sdk.scripting.EntersWithKeywords
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifyLifeGain
@@ -319,6 +323,66 @@ class ReplacementsTest : StringSpec({
             "If an instant or sorcery card would be put into a graveyard from anywhere, " +
                 "exile it instead."
         )
+    }
+
+    // Ardent Soldier, Kavu Titan: the goldens spell the keyword half as a second replacement beside
+    // the counters, both gated on `WasKicked` — so one sentence is a two-effect line.
+    "the kicker entry is counters gated on WasKicked, plus a keyword replacement when it says one" {
+        fragment("If ~ was kicked, it enters with a +1/+1 counter on it.") shouldBe CardFragment(
+            script = CardScript(
+                replacementEffects = listOf(
+                    EntersWithCounters(
+                        counterType = CounterType.PLUS_ONE_PLUS_ONE,
+                        count = 1,
+                        selfOnly = true,
+                        condition = Conditions.WasKicked,
+                    )
+                )
+            )
+        )
+        fragment("If ~ was kicked, it enters with three +1/+1 counters on it and with trample.") shouldBe
+            CardFragment(
+                script = CardScript(
+                    replacementEffects = listOf(
+                        EntersWithCounters(
+                            counterType = CounterType.PLUS_ONE_PLUS_ONE,
+                            count = 3,
+                            selfOnly = true,
+                            condition = Conditions.WasKicked,
+                        ),
+                        EntersWithKeywords(
+                            keywords = listOf(Keyword.TRAMPLE),
+                            selfOnly = true,
+                            condition = Conditions.WasKicked,
+                        ),
+                    )
+                )
+            )
+        listOf(
+            "If ~ was kicked, it enters with a +1/+1 counter on it.",
+            "If ~ was kicked, it enters with five +1/+1 counters on it.",
+            "If ~ was kicked, it enters with a +1/+1 counter on it and with haste.",
+            "If ~ was kicked, it enters with two +1/+1 counters on it and with first strike.",
+        ).forEach(::roundTrips)
+        // The unconditional sentence is the plain rule's, and a kicked value never prints as it.
+        Grammar.abilityLine.printLine(fragment("~ enters with two +1/+1 counters on it.")) shouldBe
+            "~ enters with two +1/+1 counters on it."
+    }
+
+    // A value the sentence has no room for refuses to print rather than dropping the field.
+    "a kicker entry carrying anything else refuses to print" {
+        val kicked = EntersWithCounters(count = 2, selfOnly = true, condition = Conditions.WasKicked)
+        listOf(
+            listOf<com.wingedsheep.sdk.scripting.ReplacementEffect>(kicked.copy(selfOnly = false)),
+            listOf(kicked.copy(condition = Conditions.WasBargained)),
+            listOf(kicked, EntersWithKeywords(listOf(Keyword.FLYING), condition = Conditions.WasKicked)),
+            listOf(
+                kicked,
+                EntersWithKeywords(listOf(Keyword.FLYING, Keyword.HASTE), selfOnly = true, condition = Conditions.WasKicked),
+            ),
+        ).forEach { effects ->
+            Grammar.abilityLine.unparse(CardFragment.of(CardScript(replacementEffects = effects))) shouldBe null
+        }
     }
 
     "every as-it-enters choice rule prints what it parses" {

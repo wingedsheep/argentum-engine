@@ -703,9 +703,10 @@ sealed interface KeywordAbility {
      * graveyard. Default warp (CR 702.185a) is hand-only; cards like Timeline
      * Culler explicitly grant graveyard access via their oracle text.
      *
-     * Provisional: if a sibling keyword ever needs the same "you may cast this
-     * from your graveyard using its X ability" wording, extract a generic
-     * cast-from-zone permission rather than duplicating this flag.
+     * The generic spelling of "you may cast this from your graveyard using its X
+     * ability" is `MayCastSelfFromZones(castUsing = X)` (bestow: Detective's
+     * Phoenix); this flag predates it and should migrate there rather than be
+     * copied onto another keyword.
      */
     @SerialName("Warp")
     @Serializable

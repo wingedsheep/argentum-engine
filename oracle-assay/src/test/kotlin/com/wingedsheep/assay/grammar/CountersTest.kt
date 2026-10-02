@@ -101,8 +101,9 @@ class CountersTest : StringSpec({
     }
 
     // Gnarlid Colony and the other kicker creatures. The condition is the clause that makes the card
-    // worth playing, and a rule that printed the value without it would be byte-perfect and wrong.
-    "an entry replacement carrying a condition refuses to print rather than dropping it" {
+    // worth playing, and a rule that printed the value without it would be byte-perfect and wrong:
+    // the kicker entry band prints it, so the line must lead with the condition.
+    "an entry replacement carrying a condition prints the condition rather than dropping it" {
         val kicked = CardFragment(
             script = CardScript(
                 replacementEffects = listOf(
@@ -110,7 +111,7 @@ class CountersTest : StringSpec({
                 )
             )
         )
-        Grammar.abilityLine.printLine(kicked) shouldBe null
+        Grammar.abilityLine.printLine(kicked) shouldBe "If ~ was kicked, it enters with two +1/+1 counters on it."
     }
 
     // Hardened Scales' shape: the same type with selfOnly false says something about *other*

@@ -416,7 +416,7 @@ internal object CollectEvidenceCostKind : SpellCostKind<CostAtom.CollectEvidence
         // can't reach it, the caster can't choose to collect evidence at all, so this rejection
         // *is* the 601.2e illegal-cast rewind rather than a discount.
         val required = CostAtomAmounts.evaluate(check.state, cost.amount, check.action.xValue, check.action.targets)
-        if (!CollectEvidenceResolver.isLegalSelection(check.state, check.playerId, required, exiled, predicateEvaluator = check.predicateEvaluator)) {
+        if (!CollectEvidenceResolver.isLegalSelection(check.state, check.playerId, required, exiled, excludeCardId = check.action.cardId, predicateEvaluator = check.predicateEvaluator)) {
             return "You must exile cards with total mana value $required or " +
                 "greater from your graveyard to collect evidence $required"
         }
