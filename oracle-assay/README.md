@@ -1161,6 +1161,31 @@ bugs, fixed:
 Sawblade Slinger still diverges on a **standing finding**: its modal *trigger* sets
 `countsAsModalSpell = false`, and the flag only matters on a spell.
 
+
+## The kicker entry band
+
+The twenty-second loop band, tail key `~ was kicked, …`: "**If ~ was kicked**, it enters with two
++1/+1 counters on it." (Academy Drake, Llanowar Elite), and the Invasion sibling that adds "**and
+with flying**" (Faerie Squadron, Kavu Titan, Pouncing Kavu). **38 lines**; the probe (drop the
+condition → "~ enters with …") finished 16 whole cards, and under-stated, because it could not
+reach the keyword half. It delivered **15 hand-written cards read whole (7,476 → 7,491)** and 22
+more in the verdict ledger (10,267 → 10,289).
+
+### One sentence, two replacement effects
+
+The goldens spell the counters as `EntersWithCounters(selfOnly = true, condition = WasKicked)` and
+the keyword as a *second* replacement, `EntersWithKeywords` gated on the same condition — the shape
+`EntersWithKeywords`' own KDoc names with Kavu Titan. So the family yields a list, and the
+replacement line now slots `Replacements.replacements`, a one-effect lift beside the kicker rows,
+rather than one effect. The condition is a word, not a `Conditions` slot: its subject is the source
+("~ was kicked"), which the condition vocabulary spells "it was kicked" from the trigger position.
+The keyword is a single `Keywords.keyword` because every printed line names exactly one.
+
+### What the differential found
+
+Differential **7,087 compared / 72 divergent → 7,102 / 72**. All fifteen newly compared cards
+agree with their goldens; no card moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
