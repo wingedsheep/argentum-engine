@@ -87,10 +87,11 @@ class SolphimMayhemDominusScenarioTest : ScenarioTestBase() {
                 .withActivePlayer(2)
                 .build()
 
-            game.castSpellTargetingPlayer(2, "Lightning Bolt", 1).error shouldBe null
+            // Player 2 is Solphim's controller's opponent, so only the source clause keeps this at 3.
+            game.castSpellTargetingPlayer(2, "Lightning Bolt", 2).error shouldBe null
             game.resolveStack()
 
-            game.getLifeTotal(1) shouldBe 17
+            game.getLifeTotal(2) shouldBe 17
         }
 
         test("combat damage is not doubled") {

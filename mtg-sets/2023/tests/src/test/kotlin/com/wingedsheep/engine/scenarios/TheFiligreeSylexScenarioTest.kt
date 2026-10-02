@@ -87,11 +87,12 @@ class TheFiligreeSylexScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("sacrifice with no oil counters spares mana value 2 permanents") {
+            test("sacrifice with no oil counters destroys mana value 0 permanents, spares mana value 2") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardOnBattlefield(1, "The Filigree Sylex")
                     .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withCardOnBattlefield(2, "Ornithopter")
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
@@ -100,6 +101,7 @@ class TheFiligreeSylexScenarioTest : ScenarioTestBase() {
                 game.execute(ActivateAbility(game.player1Id, sylex, wipe)).error shouldBe null
                 game.resolveStack()
 
+                game.isOnBattlefield("Ornithopter") shouldBe false
                 game.isOnBattlefield("Grizzly Bears") shouldBe true
             }
 

@@ -59,7 +59,16 @@ class MirrexScenarioTest : FunSpec({
         val you = d.activePlayer!!
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        val mirrex = d.putLandOnBattlefield(you, "Mirrex")
+        val mirrex = d.putCardInHand(you, "Mirrex")
+        d.playLand(you, mirrex)
+        d.offersAbility(you, mirrex, anyColorAbilityId) shouldBe true
+
+        // Through the opponent's turn and back to ours: Mirrex no longer entered this turn.
+        d.passPriorityUntil(Step.UPKEEP)
+        d.passPriorityUntil(Step.END)
+        d.passPriorityUntil(Step.UPKEEP)
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        d.activePlayer shouldBe you
 
         d.offersAbility(you, mirrex, anyColorAbilityId) shouldBe false
         d.submitExpectFailure(
