@@ -14870,7 +14870,8 @@ The priority groups are (CR 616.1a–f):
   `DynamicAmounts.replacementLifeGainAmount()` (the reserved stored number
   `replacementLifeGainAmount`), which reads the amount after any earlier life-gain modifications.
   `You` inside the replacement effect is its source's controller; `TriggeringPlayer` names the player
-  who would gain life. Restrictions use the affected player as `You`, like other replacements.
+  who would gain life. Restrictions also use the source's controller as `You`, and expose the
+  affected player as `TriggeringPlayer`.
   Printed and durationally granted replacements share the life-gain path, including lifelink,
   drain, damage-prevention life gain and life-total setting. Life-gain prohibitions take precedence;
   zero or negative amounts produce no replacement. Competing modifiers and replacements use the

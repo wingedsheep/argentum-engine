@@ -22,9 +22,11 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ModifyLifeGain
 import com.wingedsheep.sdk.scripting.ReplaceLifeGainWith
+import com.wingedsheep.sdk.scripting.ReplaceDrawWith
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.matchers.shouldBe
@@ -47,6 +49,8 @@ class LifeGainReplacementTest : ScenarioTestBase() {
     }
     private val tappedOnly = enchantment("Test Tapped Life Conversion", conversion().copy(
         restrictions = listOf(Conditions.SourceIsTapped)))
+    private val controllerRestricted = enchantment("Test Controller Restricted Life Conversion", conversion().copy(
+        restrictions = listOf(Conditions.YouControl(GameObjectFilter.Creature))))
     private val firstOnly = enchantment("Test First Life Conversion", conversion().copy(
         appliesTo = EventPattern.LifeGainEvent(Player.Each, firstTimeEachTurn = true)))
     private val drawReplacement = enchantment("Test Life Into Draw", conversion())
@@ -65,6 +69,11 @@ class LifeGainReplacementTest : ScenarioTestBase() {
     private val eachThenCount = spell("Test Each Gain Then Count", Effects.Composite(listOf(
         Effects.GainLife(3, EffectTarget.PlayerRef(Player.Each)),
         Effects.LoseLife(DynamicAmounts.count(Player.You, Zone.HAND), EffectTarget.Controller)
+    )))
+    private val drawIntoLife = enchantment("Test Draw Into Life", ReplaceDrawWith(Effects.GainLife(3)))
+    private val drawIntoLoss = enchantment("Test Draw Into Loss", ReplaceDrawWith(Effects.LoseLife(1, EffectTarget.Controller)))
+    private val drawTwice = spell("Test Independent Draws", Effects.Composite(listOf(
+        Effects.DrawCards(1), Effects.DrawCards(1)
     )))
     private val gainThree = spell("Test Gain Three", Effects.GainLife(3))
     private val gainOpponent = spell("Test Opponent Gains", Effects.GainLife(3, EffectTarget.PlayerRef(Player.EachOpponent)))
@@ -127,7 +136,50 @@ class LifeGainReplacementTest : ScenarioTestBase() {
 
     init {
         listOf(drawReplacement, ownerDraw, doubler, plusOne, recursive, chooser, gainThree, gainOpponent,
-            consecutive, drawThenCount, setLife, erase, steal, grant, zero, negative, lifelinkBurn, lifelinkBear, drawThenGain, eachThenCount, tappedOnly, firstOnly).forEach(cardRegistry::register)
+            consecutive, drawThenCount, setLife, erase, steal, grant, zero, negative, lifelinkBurn, lifelinkBear, drawThenGain, eachThenCount, tappedOnly, firstOnly, controllerRestricted, drawIntoLife, drawIntoLoss, drawTwice).forEach(cardRegistry::register)
+
+        for (competing in listOf(false, true)) {
+            test("paused life conversion restores the parent draw chain only until that draw completes with competing=$competing") {
+                val replacements = listOf(drawIntoLife.name, drawThenGain.name) +
+                    if (competing) listOf(drawIntoLoss.name) else emptyList()
+                val game = board(replacements, drawTwice.name)
+                resolve(game, drawTwice.name)
+                if (competing) choose(game, drawIntoLife.name)
+                val first = game.state.pendingDecision as ChooseOptionDecision
+                game.submitDecision(OptionChosenResponse(first.id, 0)).error shouldBe null
+                game.resolveStack()
+                game.getLifeTotal(1) shouldBe if (competing) 20 else 23
+                game.handSize(1) shouldBe if (competing) 0 else 3
+                if (competing) choose(game, drawIntoLife.name)
+                val second = game.state.pendingDecision as ChooseOptionDecision
+                game.submitDecision(OptionChosenResponse(second.id, 0)).error shouldBe null
+                game.resolveStack()
+                game.getLifeTotal(1) shouldBe if (competing) 20 else 26
+                game.handSize(1) shouldBe if (competing) 0 else 6
+                game.state.activeReplacementChain shouldBe null
+                game.state.pendingDecision shouldBe null
+            }
+        }
+
+        for (gainSource in listOf(gainThree, lifelinkBurn)) {
+            for (sourceControlsCreature in listOf(false, true)) {
+                test("${gainSource.name} binds replacement restrictions to its source controller when source controls creature=$sourceControlsCreature") {
+                    val builder = scenario().withPlayers("Player1", "Player2")
+                        .withCardOnBattlefield(1, controllerRestricted.name)
+                        .withCardOnBattlefield(if (sourceControlsCreature) 1 else 2, lifelinkBear.name)
+                        .withCardInHand(2, gainSource.name)
+                        .withActivePlayer(2).withPriorityPlayer(2)
+                        .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    repeat(10) { builder.withCardInLibrary(2, "Island") }
+                    val game = builder.build()
+                    game.castSpell(2, gainSource.name).error shouldBe null
+                    game.resolveStack()
+                    game.getLifeTotal(2) shouldBe if (sourceControlsCreature) 20 else 23
+                    game.handSize(2) shouldBe if (sourceControlsCreature) 3 else 0
+                    game.state.pendingDecision shouldBe null
+                }
+            }
+        }
 
         test("replacement happens before the next instruction and emits no life gain") {
             val game = board(listOf(drawReplacement.name), drawThenCount.name)

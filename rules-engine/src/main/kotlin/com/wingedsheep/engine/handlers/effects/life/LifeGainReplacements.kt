@@ -22,7 +22,8 @@ object LifeGainReplacements {
                 com.wingedsheep.engine.state.components.identity.TextChanges.of(state, active.sourceId)
             val replacement = if (text == null) printed else printed.applyTextReplacement(text) as ReplaceLifeGainWith
             if (!active.granted && (state.projectedState.hasLostAllAbilities(active.sourceId) || state.projectedState.isFaceDown(active.sourceId))) return@any false
-            val context = EffectContext(sourceId = active.sourceId, controllerId = playerId)
+            val context = EffectContext(sourceId = active.sourceId, controllerId = active.controllerId,
+                triggeringPlayerId = playerId)
             PendingGameEvent.LifeGainPending(playerId, amount).matches(replacement.appliesTo,
                 active.controllerId, state, context) &&
                 replacement.restrictions.all { predicates.conditions.evaluate(state, it, context) }

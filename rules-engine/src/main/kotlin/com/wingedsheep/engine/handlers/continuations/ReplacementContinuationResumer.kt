@@ -101,7 +101,9 @@ class ReplacementContinuationResumer(
                 when (val outcome = result.outcome) {
                     is ReplacementOutcome.Replaced -> {
                         val execCtx = result.executionContext ?: context
-                        handleReplacedOutcome(stateAfterLifecycle, outcome, execCtx, checkForMore)
+                        handleReplacedOutcome(stateAfterLifecycle, outcome, execCtx, checkForMore,
+                            drawParentChain = state.activeReplacementChain,
+                            restoreDrawChain = continuation.pendingEvent is PendingGameEvent.DrawPending)
                     }
                     is ReplacementOutcome.Consumed -> checkForMore(stateAfterLifecycle, emptyList())
                     is ReplacementOutcome.Modified -> {
@@ -154,11 +156,15 @@ class ReplacementContinuationResumer(
         state: GameState,
         outcome: ReplacementOutcome.Replaced,
         context: EffectContext?,
-        checkForMore: CheckForMore
+        checkForMore: CheckForMore,
+        drawParentChain: Set<ReplacementEffectIdentity>? = null,
+        restoreDrawChain: Boolean = false
     ): ExecutionResult {
         val resumeContinuation = ReplacementResolveContinuation
 
-        val stateWithResumeFrame = state.pushContinuation(resumeContinuation)
+        val stateWithResumeFrame = state.pushContinuation(resumeContinuation).let {
+            if (restoreDrawChain) it.pushContinuation(RestoreReplacementChainContinuation(drawParentChain)) else it
+        }
 
         // Execute the new effect
         if (context != null) {

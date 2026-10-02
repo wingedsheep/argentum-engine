@@ -580,7 +580,10 @@ class ReplacementEffectProcessor(
         }
 
         // Evaluate the effect's restrictions (CR 614 — extra conditions).
-        // Restrictions are evaluated against the affected player, not against
+        // Life-gain effect replacements read "you" as the source controller, with the
+        // gaining player available through TriggeringPlayer. Other replacement families
+        // retain their affected-player condition convention.
+        // Those restrictions are evaluated against the affected player, not against
         // whoever announced the event (e.g. a spell's controller). Conditions
         // like CardsInHandAtMost use Player.You → EffectContext.controllerId
         // to determine whose hand to count, so the controller must be the
@@ -593,7 +596,10 @@ class ReplacementEffectProcessor(
             // replacement-effect form of a Solved static — could never resolve its own permanent.
             val evalContext = EffectContext(
                 sourceId = sourceId,
-                controllerId = event.affectedPlayerId
+                controllerId = if (event is PendingGameEvent.LifeGainPending &&
+                    effect is com.wingedsheep.sdk.scripting.ReplaceLifeGainWith)
+                    sourceControllerId else event.affectedPlayerId,
+                triggeringPlayerId = event.affectedPlayerId
             )
             return restrictions.all { condition ->
                 conditionEvaluator.evaluate(state, condition, evalContext)
