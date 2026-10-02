@@ -477,6 +477,10 @@ data class CastChoiceMade(val slot: com.wingedsheep.sdk.scripting.ChoiceSlot) : 
     // do. Value slots keep the generic wording.
     override val description: String = when (slot) {
         com.wingedsheep.sdk.scripting.ChoiceSlot.KICKED -> "if this spell was kicked"
+        // "Kicker [A] and/or [B]" (CR 702.33f) — the engine has no cost text here, so name the
+        // kicker by its printed position; a card prints its own wording in `description`.
+        com.wingedsheep.sdk.scripting.ChoiceSlot.FIRST_KICKER -> "if it was kicked with its first kicker"
+        com.wingedsheep.sdk.scripting.ChoiceSlot.SECOND_KICKER -> "if it was kicked with its second kicker"
         com.wingedsheep.sdk.scripting.ChoiceSlot.BARGAINED -> "if it was bargained"
         com.wingedsheep.sdk.scripting.ChoiceSlot.EVIDENCE_COLLECTED -> "if evidence was collected"
         com.wingedsheep.sdk.scripting.ChoiceSlot.SNEAK -> "if its sneak cost was paid"

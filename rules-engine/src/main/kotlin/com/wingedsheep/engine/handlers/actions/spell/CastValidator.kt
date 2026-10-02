@@ -583,6 +583,13 @@ internal class CastValidator(
             }
             return "This card does not have $mechanic"
         }
+        // Picking among a slot's costs ("Kicker [A] and/or [B]", CR 702.33b): each index must name
+        // one of the costs the card lists under that slot.
+        if (action.declaredCostSlot != null && action.declaredCostIndices.isNotEmpty() &&
+            action.declaredCostIndices.any { it !in slotOptionalCosts(action, cardDef).indices }
+        ) {
+            return "This card does not have that optional cost"
+        }
         // Paying a declared optional cost more than once needs a repeatable one (replicate,
         // CR 702.56a); a zero or negative count is not a declaration at all.
         if (action.declaredCostTimes < 1) return "An optional cost must be paid at least once"

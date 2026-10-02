@@ -60,6 +60,22 @@ enum class ChoiceSlot {
     KICKED,
 
     /**
+     * Whether the spell was kicked with its **first-listed** kicker cost — the `[A]` of
+     * "Kicker [A] and/or [B]" (CR 702.33b, 702.33f; Wastescape Battlemage's `{G}` kicker). A present
+     * value means that kicker was paid. Stamped only for a card with two kicker costs, alongside
+     * [KICKED] (paying either kicker kicks the spell, CR 702.33d). Read back through
+     * [com.wingedsheep.sdk.dsl.Conditions.WasKickedWithFirstKicker].
+     */
+    FIRST_KICKER,
+
+    /**
+     * Whether the spell was kicked with its **second-listed** kicker cost — the `[B]` of
+     * "Kicker [A] and/or [B]" (CR 702.33f). The [FIRST_KICKER] counterpart; read back through
+     * [com.wingedsheep.sdk.dsl.Conditions.WasKickedWithSecondKicker].
+     */
+    SECOND_KICKER,
+
+    /**
      * Whether the spell's **bargain** additional cost was declared when cast (CR 702.166b, Wilds of
      * Eldraine — "you may sacrifice an artifact, enchantment, or token as you cast this spell"). A
      * present value means the spell was *bargained*. Read back through

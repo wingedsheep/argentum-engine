@@ -1,5 +1,8 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.handlers.actions.spell.chosenKickersLabel
+import com.wingedsheep.engine.handlers.actions.spell.optionalCostDeclarations
+import com.wingedsheep.engine.handlers.actions.spell.optionalCostsManaPaid
 import com.wingedsheep.engine.legalactions.surfacedRequirements
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
@@ -2611,9 +2614,9 @@ class CastFromZoneEnumerator(
             val sourceZone = originalAction.sourceZone
 
             // One variant per mechanic on the optional-additional-cost rail (kicker → KICKED,
-            // bargain → BARGAINED, CR 702.166b).
-            for ((declaredSlot, kickers) in optionalCosts.groupBy { it.declaredSlot }) {
-                val manaKicker = kickers.firstOrNull { it.manaCost != null && it.keyword != Keyword.OFFSPRING }
+            // bargain → BARGAINED, CR 702.166b), and one per combination of a two-kicker card's
+            // kickers (CR 702.33b) — the same declarations the hand-cast enumerator offers.
+            for ((declaredSlot, kickers, declaredIndices) in optionalCostDeclarations(optionalCosts)) {
                 val additionalCostKicker = kickers.firstOrNull { it.additionalCost != null }
                 val offspringAbility = kickers.firstOrNull { it.keyword == Keyword.OFFSPRING }
                 val collectEvidenceAtom = (
@@ -2625,7 +2628,9 @@ class CastFromZoneEnumerator(
                 val baseCost = context.costCalculator.calculateEffectiveCost(
                     state, cardDef, playerId, declaredCostSlot = declaredSlot,
                 )
-                val kickedManaCost = manaKicker?.manaCost ?: offspringAbility?.manaCost
+                val kickedManaCost = optionalCostsManaPaid(
+                    kickers.filter { it.manaCost != null && it.keyword != Keyword.OFFSPRING }, 1
+                ) ?: offspringAbility?.manaCost
                 val kickedCost = if (kickedManaCost != null) baseCost + kickedManaCost else baseCost
                 // This enumerator only enumerates non-hand-zone casts (command, library, exile,
                 // graveyard, …) — `sourceZone` is never "HAND" here. Mark accordingly so
@@ -2724,6 +2729,8 @@ class CastFromZoneEnumerator(
                     declaredSlot == ChoiceSlot.TEAMWORK ->
                         additionalCostKicker?.displayPrefix ?: "Teamwork"
                     offspringAbility != null -> "Offspring"
+                    declaredIndices.isNotEmpty() ->
+                        chosenKickersLabel(kickers)
                     else -> "Kicked"
                 }
 
@@ -2749,7 +2756,7 @@ class CastFromZoneEnumerator(
                             kickerActions.add(LegalAction(
                                 actionType = "CastWithKicker",
                                 description = "Cast ${cardComponent.name} ($kickLabel)",
-                                action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), declaredCostSlot = declaredSlot, graveyardLifeCost = originalCast.graveyardLifeCost),
+                                action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), declaredCostSlot = declaredSlot, declaredCostIndices = declaredIndices, graveyardLifeCost = originalCast.graveyardLifeCost),
                                 affordable = canAffordKicked,
                                 manaCostString = kickedCostString,
                                 autoTapPreview = kickedAutoTapPreview,
@@ -2764,7 +2771,7 @@ class CastFromZoneEnumerator(
                             kickerActions.add(LegalAction(
                                 actionType = "CastWithKicker",
                                 description = "Cast ${cardComponent.name} ($kickLabel)",
-                                action = CastSpell(playerId, cardId, declaredCostSlot = declaredSlot, graveyardLifeCost = originalCast.graveyardLifeCost),
+                                action = CastSpell(playerId, cardId, declaredCostSlot = declaredSlot, declaredCostIndices = declaredIndices, graveyardLifeCost = originalCast.graveyardLifeCost),
                                 validTargets = firstReqInfo.validTargets,
                                 requiresTargets = true,
                                 targetCount = firstReqInfo.maxTargets,
@@ -2787,7 +2794,7 @@ class CastFromZoneEnumerator(
                     kickerActions.add(LegalAction(
                         actionType = "CastWithKicker",
                         description = "Cast ${cardComponent.name} ($kickLabel)",
-                        action = CastSpell(playerId, cardId, declaredCostSlot = declaredSlot, graveyardLifeCost = originalCast.graveyardLifeCost),
+                        action = CastSpell(playerId, cardId, declaredCostSlot = declaredSlot, declaredCostIndices = declaredIndices, graveyardLifeCost = originalCast.graveyardLifeCost),
                         affordable = canAffordKicked,
                         manaCostString = kickedCostString,
                         autoTapPreview = kickedAutoTapPreview,

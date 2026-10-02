@@ -1009,6 +1009,25 @@ object Conditions {
         WasKickedCondition
 
     /**
+     * "If it was kicked with its [A] kicker" — the first-listed cost of a two-kicker card
+     * ("Kicker {G} and/or {1}{U}", CR 702.33b). CR 702.33f links the ability to that specific
+     * kicker, so paying only the *second* kicker leaves this false even though the spell is kicked.
+     *
+     * A facade over the durable choice-slot read ([com.wingedsheep.sdk.scripting.ChoiceSlot.FIRST_KICKER]),
+     * the same way [WasBargained] is, so it answers in every context the mechanic uses: a
+     * "when you cast this spell" trigger (Wastescape Battlemage), the spell's own resolving effect,
+     * and an enters trigger on the permanent the spell became (Thornscape Battlemage).
+     * The card declares its two kicker costs as two `KeywordAbility.kicker(...)` entries, in
+     * printed order.
+     */
+    val WasKickedWithFirstKicker: ConditionInterface =
+        CastChoiceMadeCondition(com.wingedsheep.sdk.scripting.ChoiceSlot.FIRST_KICKER)
+
+    /** "If it was kicked with its [B] kicker" — see [WasKickedWithFirstKicker] (CR 702.33f). */
+    val WasKickedWithSecondKicker: ConditionInterface =
+        CastChoiceMadeCondition(com.wingedsheep.sdk.scripting.ChoiceSlot.SECOND_KICKER)
+
+    /**
      * If this spell was **bargained** (CR 702.166b, Wilds of Eldraine) — its optional "sacrifice an
      * artifact, enchantment, or token" additional cost was declared as it was cast.
      *

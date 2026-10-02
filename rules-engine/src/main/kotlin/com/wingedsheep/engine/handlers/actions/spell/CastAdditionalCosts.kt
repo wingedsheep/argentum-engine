@@ -45,9 +45,14 @@ class CastAdditionalCosts(
      * it carries the declared mechanic's identity, which is what names a tap's cause
      * ([com.wingedsheep.sdk.scripting.TapReason.forChoiceSlot]).
      */
-    fun declaredSlotCost(action: CastSpell, cardDef: CardDefinition?): AdditionalCost? =
-        declaredOptionalCosts(action, cardDef).firstOrNull { it.additionalCost != null }
-            ?.additionalCostPaid(action.declaredCostTimes)
+    fun declaredSlotCost(action: CastSpell, cardDef: CardDefinition?): AdditionalCost? {
+        // Every declared cost's non-mana half — two kicker costs both paid are both owed
+        // (CR 702.33b); the common single-cost case stays a bare cost rather than a one-step
+        // composite.
+        val halves = declaredOptionalCosts(action, cardDef)
+            .mapNotNull { if (it.additionalCost != null) it.additionalCostPaid(action.declaredCostTimes) else null }
+        return if (halves.size <= 1) halves.firstOrNull() else AdditionalCost.Composite(halves)
+    }
 
     /**
      * Every additional cost this cast owes: the card's (or its chosen modes'), the declared optional
