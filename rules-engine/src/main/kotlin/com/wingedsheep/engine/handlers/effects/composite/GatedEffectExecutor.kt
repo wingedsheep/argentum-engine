@@ -510,7 +510,7 @@ class GatedEffectExecutor(
      * Resolve a [Gate.MayPayAnyAmountOfLife] gate. The most life the decision-maker can pay is their
      * life total, or nothing at all while they can't lose life (CR 119.8); with nothing payable the
      * gate falls through to [GatedEffect.otherwise] unprompted. Otherwise pauses with a 0..max
-     * number chooser answered by [MayPayLifeXContinuation].
+     * number chooser answered by [MayPayLifeXContinuation]; choosing 0 also runs `otherwise`.
      */
     private fun executeMayPayAnyAmountOfLife(
         state: GameState,
@@ -545,6 +545,7 @@ class GatedEffectExecutor(
             playerId = playerId,
             sourceName = sourceName,
             effect = effect.then,
+            otherwise = effect.otherwise,
             maxX = maxPayable,
             effectContext = context
         )

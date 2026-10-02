@@ -3337,8 +3337,8 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   - `Gate.MayPayAnyAmountOfLife` — the life twin of `MayPayX`: "You may pay any amount of life. If you
     do, [then]." A number chooser over 0..(the decision-maker's life total — 0 while they can't lose
     life, CR 119.8); paying X > 0 goes through the life-payment service (so payment replacements
-    apply) and runs `then` with X bound as `DynamicAmount.XValue`. Choosing 0 declines and does
-    nothing; with no payable life there is no prompt and `otherwise` (if any) runs. Answered by
+    apply) and runs `then` with X bound as `DynamicAmount.XValue`. Choosing 0 declines and runs
+    `otherwise` (if any); with no payable life there is no prompt and `otherwise` runs directly. Answered by
     `MayPayLifeXContinuation`. Necrodominance.
   - `Gate.OnceEachTurn(abilityId, spend = true)` — **not a decision, a per-turn action budget.** The
     lowered form of `TriggeredAbility.effectOncePerTurn` ("Do this only once each turn", CR 603.2h).

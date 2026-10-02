@@ -287,8 +287,8 @@ sealed interface Gate {
      * life they can pay (their life total, or 0 under a "can't lose life" lock — CR 119.4, 119.8).
      * Paying X > 0 succeeds → [GatedEffect.then] runs with X bound into the resolution context
      * (read via `DynamicAmount.XValue`, e.g. "draw that many cards"); choosing 0 is the decline and
-     * does nothing. A player who can pay no life is not prompted and [GatedEffect.otherwise] (if
-     * any) runs. Necrodominance.
+     * runs [GatedEffect.otherwise] (if any). A player who can pay no life is not prompted and goes
+     * straight to `otherwise`. Necrodominance.
      */
     @SerialName("Gate.MayPayAnyAmountOfLife")
     @Serializable
