@@ -153,6 +153,15 @@ class FiltersTest : StringSpec({
         roundTrips(Filters.cardNoun, "creature card with power 2 or greater")
     }
 
+    // The two-type row sits before its one-type prefix, so "instant or sorcery card" is the one
+    // `Or` the cards spell rather than "instant" with an unread tail.
+    "instant or sorcery is one type phrase" {
+        read(Filters.cardNoun, "instant or sorcery card") shouldBe GameObjectFilter.InstantOrSorcery
+        roundTrips(Filters.cardNoun, "instant or sorcery card")
+        roundTrips(Filters.cardNoun, "instant card")
+        Filters.plural.parseText("instants or sorceries").shouldBeInstanceOf<ParseOutcome.Declined>()
+    }
+
     // Oracle inflects only the head noun, so the type phrase in front of it stays singular in the
     // plural. "creatures cards" is what the noun-in-the-template shape used to be able to print.
     "only the head noun inflects in card position" {

@@ -103,6 +103,10 @@ object Filters {
         // The two card types that are never permanents. They appear in the same slot as the rest —
         // "target **sorcery** card in your graveyard", "search your library for an **instant**
         // card" — which is why they are rows here rather than a vocabulary of their own.
+        // The pair is one `CardPredicate.Or`, the "artifact or enchantment" shape; it comes before its
+        // one-type prefix. No plural: Oracle's plural is "instant and sorcery cards", which the card
+        // positions spell from the singular, and a bare "instants and sorceries" is not a group noun.
+        TypeNoun("instant or sorcery", null, GameObjectFilter.InstantOrSorcery),
         TypeNoun("instant", "instants", GameObjectFilter.Instant),
         TypeNoun("sorcery", "sorceries", GameObjectFilter.Sorcery),
         TypeNoun("nonbasic land", "nonbasic lands", GameObjectFilter.NonbasicLand),
