@@ -121,6 +121,11 @@ class GatedEffectExecutor(
             return executeMayPayX(state, effect, context)
         }
 
+        // Gate.MayPayAnyAmountOfLife: the life twin — prompt 0..payable life (MayPayLifeXContinuation).
+        if (gate is Gate.MayPayAnyAmountOfLife) {
+            return executeMayPayAnyAmountOfLife(state, effect, context)
+        }
+
         // Gate.MayDecide: two cases where the former Effects.May skipped the prompt entirely.
         if (gate is Gate.MayDecide) {
             // Source must still be in its required zone (e.g. a dies-trigger "may" whose source
@@ -247,6 +252,7 @@ class GatedEffectExecutor(
             is Gate.WhenCondition -> effect.hint // unreachable: handled by the synchronous branch above
             is Gate.DoAction -> effect.hint // unreachable: handled by the action-drain branch above
             is Gate.MayPayX -> effect.hint // unreachable: handled by the number-chooser branch above
+            is Gate.MayPayAnyAmountOfLife -> effect.hint // unreachable: handled by the number-chooser branch above
             is Gate.OnceEachTurn -> effect.hint // unreachable: handled by the budget branch above
         }
 
@@ -494,6 +500,52 @@ class GatedEffectExecutor(
             sourceName = sourceName,
             effect = effect.then,
             maxX = maxAffordable,
+            effectContext = context
+        )
+
+        return EffectResult.from(state.suspendForDecision(decision, continuation))
+    }
+
+    /**
+     * Resolve a [Gate.MayPayAnyAmountOfLife] gate. The most life the decision-maker can pay is their
+     * life total, or nothing at all while they can't lose life (CR 119.8); with nothing payable the
+     * gate falls through to [GatedEffect.otherwise] unprompted. Otherwise pauses with a 0..max
+     * number chooser answered by [MayPayLifeXContinuation].
+     */
+    private fun executeMayPayAnyAmountOfLife(
+        state: GameState,
+        effect: GatedEffect,
+        context: EffectContext
+    ): EffectResult {
+        val playerId = effect.decisionMaker
+            ?.let { TargetResolutionUtils.resolvePlayerTarget(it, context, state) }
+            ?: context.controllerId
+
+        val maxPayable = if (state.isLifeLossLocked(playerId)) 0 else state.lifeTotal(playerId)
+        if (maxPayable <= 0) {
+            return effect.otherwise
+                ?.let { effectExecutor(state, it, context) }
+                ?: EffectResult.success(state)
+        }
+
+        val sourceName = context.sourceId?.let { sourceId ->
+            state.getEntity(sourceId)?.get<CardComponent>()?.name
+        }
+
+        val decision = { decisionId: String -> ChooseNumberDecision(
+            id = decisionId,
+            playerId = playerId,
+            prompt = "Pay any amount of life? Choose an amount (0 to decline)",
+            context = decisionContext(context, sourceName),
+            minValue = 0,
+            maxValue = maxPayable
+        ) }
+
+        val continuation = MayPayLifeXContinuation(
+            playerId = playerId,
+            sourceName = sourceName,
+            effect = effect.then,
+            maxX = maxPayable,
             effectContext = context
         )
 

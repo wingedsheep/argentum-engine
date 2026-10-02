@@ -16,6 +16,7 @@ internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? 
     is MayPayManaContinuation -> effectContext.objectReferences
     is MayPayManaSelectionContinuation -> effectContext.objectReferences
     is MayPayXContinuation -> effectContext.objectReferences
+    is MayPayLifeXContinuation -> effectContext.objectReferences
     is CounterUnlessPaysManaSelectionContinuation -> objectReferences
     is WardTapPermanentsSubCostContinuation -> objectReferences
     is AddDynamicManaContinuation -> objectReferences
@@ -131,6 +132,7 @@ internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnviro
     is MayPayManaContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
     is MayPayManaSelectionContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
     is MayPayXContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
+    is MayPayLifeXContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
     is CounterUnlessPaysManaSelectionContinuation -> copy(objectReferences = refs)
     is WardTapPermanentsSubCostContinuation -> copy(objectReferences = refs)
     is AddDynamicManaContinuation -> copy(objectReferences = refs)

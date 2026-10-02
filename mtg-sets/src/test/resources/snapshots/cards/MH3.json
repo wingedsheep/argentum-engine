@@ -3214,6 +3214,78 @@
     ]
 }
 
+// Necrodominance
+{
+    "name": "Necrodominance",
+    "manaCost": "{B}{B}{B}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "Skip your draw step.\nAt the beginning of your end step, you may pay any amount of life. If you do, draw that many cards.\nYour maximum hand size is five.\nIf a card or token would be put into your graveyard from anywhere, exile it instead.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Necrodominance:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayPayAnyAmountOfLife",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": "XValue"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "SkipDrawStep",
+            {
+                "type": "SetMaximumHandSize",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 5
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "own:you",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "MYTHIC",
+        "artist": "Robin Olausson",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffc0109c-f939-4424-820e-d6e60cacd794.jpg?1783911278",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If multiple effects modify your hand size, apply them in timestamp order. For example, if you put Necrodominance onto the battlefield and then put Spellbook (an artifact that says you have no maximum hand size) onto the battlefield, you would have no maximum hand size. However, if those permanents entered the battlefield in the opposite order, your maximum hand size would be five."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "While Necrodominance is on the battlefield under your control, abilities that trigger whenever a permanent you own is put into your graveyard from the battlefield (for example, \"When this creature dies…\") won't trigger because cards and tokens are never put into your graveyard."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a Necrodominance you control is destroyed by a spell you own, Necrodominance will be exiled and then the spell will be put into your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nethergoyf
 {
     "name": "Nethergoyf",
