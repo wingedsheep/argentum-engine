@@ -975,7 +975,7 @@ class MoveCollectionExecutor(
             if (destZone == Zone.BATTLEFIELD && faceDown == null) {
                 val (counterState, counterEvents) = EntersWithReplacements.applyOnEntry(
                     newState, cardId, actualDestPlayerId, cardRegistry,
-                    predicateEvaluator = predicateEvaluator
+                    predicateEvaluator = predicateEvaluator, preEntryZone = fromZoneKey
                 )
                 newState = counterState
                 events.addAll(counterEvents)

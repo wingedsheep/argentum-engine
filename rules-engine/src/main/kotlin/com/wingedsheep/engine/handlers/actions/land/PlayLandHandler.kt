@@ -392,9 +392,9 @@ class PlayLandHandler(
         // every exit so counter-placement triggers still see them.
         val entersWithEvents: List<com.wingedsheep.engine.core.GameEvent> = if (cardDef != null) {
             val (afterOwn, ownEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements
-                .applyFromDefinition(newState, action.cardId, cardDef, action.playerId, predicateEvaluator = predicateEvaluator)
+                .applyFromDefinition(newState, action.cardId, cardDef, action.playerId, predicateEvaluator = predicateEvaluator, preEntryZone = sourceZoneKey)
             val (afterGlobal, globalEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements
-                .applyGlobal(afterOwn, action.cardId, action.playerId, cardRegistry, predicateEvaluator = predicateEvaluator)
+                .applyGlobal(afterOwn, action.cardId, action.playerId, cardRegistry, predicateEvaluator = predicateEvaluator, preEntryZone = sourceZoneKey)
             newState = afterGlobal
             ownEvents + globalEvents
         } else emptyList()

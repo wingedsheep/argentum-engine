@@ -14588,7 +14588,12 @@ The priority groups are (CR 616.1a–f):
   N counters." `EntersWithCounters` takes a fixed `count: Int` (Master Biomancer, Metallic Mimic);
   `EntersWithDynamicCounters` takes a `count: DynamicAmount` (Stag Beetle; the SOS Converge "Archaic"
   cycle via `convergeEntersWithCounters()` → `count = DistinctColorsManaSpent`). `appliesTo` defaults
-  to "creatures you control entering the battlefield." Two scopes:
+  to "creatures you control entering the battlefield." A dynamic count is measured **as of just before
+  the entry** — the replacement modifies the entry event, so the entrant still sits in the zone it comes
+  from: Ulamog, the Defiler ("equal to the greatest mana value among cards in exile") blinked through
+  exile counts itself, and Golgari Grave-Troll reanimated from the graveyard counts itself among the
+  creature cards there. Cast from hand it was on the stack and counts only the others. Every non-stack
+  entry path hands `EntersWithReplacements.applyOnEntry` its `preEntryZone`; a token has none. Two scopes:
   - **Self** (default) — applies to the permanent that owns the replacement. Reserve a *dynamic* count
     for "this creature enters with a counter for each color of mana spent to cast **it**" / "for each X
     it has".
