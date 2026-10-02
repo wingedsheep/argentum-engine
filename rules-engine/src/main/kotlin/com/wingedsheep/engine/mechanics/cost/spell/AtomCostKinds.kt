@@ -111,8 +111,8 @@ internal object SacrificeCostKind : SpellCostKind<CostAtom.Sacrifice> {
         val projected = state.projectedState
         val sacrificed = check.payment?.sacrificedPermanents ?: emptyList()
         val filterDesc = cost.filter.description
-        if (sacrificed.size < cost.count) {
-            return "You must sacrifice ${cost.count} $filterDesc to cast this spell"
+        if (sacrificed.size != cost.count || sacrificed.distinct().size != cost.count) {
+            return "You must sacrifice exactly ${cost.count} $filterDesc to cast this spell"
         }
         for (permId in sacrificed) {
             val permContainer = state.getEntity(permId)

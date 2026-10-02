@@ -538,7 +538,7 @@ class DynamicAmountEvaluator(
                 // Last-known-information fallback (CR 113.7a / 603.10 / 608.2h): one rule for every
                 // reference that reads a permanent after it has left the battlefield — a
                 // self-sacrificing source, or a sacrificed / tapped / chosen cost permanent. When
-                // such a reference resolves off the battlefield, read its captured snapshot's P/T
+                // such a reference resolves off the battlefield, read its captured characteristics
                 // before falling through to base characteristics. [LkiPolicy.LIVE_ONLY] references
                 // (targets, iteration, …) skip this and read the live board. Off the battlefield the
                 // projected P/T is null, so the final resolveNumericProperty yields base
@@ -551,14 +551,16 @@ class DynamicAmountEvaluator(
                         context.sourceBattlefieldTimestamp != null && context.sourceBattlefieldTimestamp !=
                             state.getEntity(entityId)?.get<BattlefieldEntryTimestampComponent>()?.timestamp
                     }
+                val capturedSnapshot = context.lkiSnapshotFor(amount.entity, entityId)
+                val capturedObjectLeft = capturedSnapshot?.objectRef?.let { !state.isCurrentObject(it) } == true
                 if (lkiPolicyFor(amount.entity) == LkiPolicy.LIVE_THEN_LKI &&
-                    (entityId !in state.getBattlefield() || staleSource)
+                    (entityId !in state.getBattlefield() || staleSource || capturedObjectLeft)
                 ) {
                     // A reference-specific capture (the cost-paid snapshot) wins; otherwise the
                     // departed object's own battlefield-exit snapshot, which the entity carries until
                     // its next zone change — Archfiend of the Dross killed with its upkeep trigger on
                     // the stack counts the oil counters it left with (ruling 2023-02-04).
-                    val snapshot = context.lkiSnapshotFor(amount.entity, entityId)
+                    val snapshot = capturedSnapshot
                         ?: state.getEntity(entityId)?.get<LastKnownPermanentComponent>()?.snapshot
                     when (val property = amount.numericProperty) {
                         is EntityNumericProperty.Power -> {
@@ -569,6 +571,7 @@ class DynamicAmountEvaluator(
                             if (snapshot?.typeLine?.isCreature == false) return 0
                             snapshot?.toughness?.let { return it }
                         }
+                        is EntityNumericProperty.ManaValue -> snapshot?.manaValue?.let { return it }
                         is EntityNumericProperty.CounterCount -> snapshot?.let {
                             return property.counterType?.let { type -> it.counters[type] ?: 0 } ?: it.totalCounters
                         }

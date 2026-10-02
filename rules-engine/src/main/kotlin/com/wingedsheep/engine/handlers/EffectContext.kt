@@ -152,7 +152,7 @@ data class EffectContext(
     /**
      * Projected snapshots of permanents sacrificed as part of the cost (Rule 113.7a /
      * 608.2h — "as it last existed on the battlefield"). Captured before the zone change
-     * so downstream effects can read power, toughness, and subtypes after the permanent
+     * so downstream effects can read power, toughness, mana value, and subtypes after the permanent
      * has left the battlefield.
      */
     val sacrificedPermanents: List<EntitySnapshot> = emptyList(),

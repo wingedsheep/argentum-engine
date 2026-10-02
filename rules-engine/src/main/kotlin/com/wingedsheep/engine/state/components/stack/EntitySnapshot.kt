@@ -226,6 +226,10 @@ data class EntitySnapshot(
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val objectRef: com.wingedsheep.engine.state.ObjectRef? = null,
+    /** Mana value before the cost or zone change, including copy/face-down characteristics. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val manaValue: Int? = null,
 ) : EntityView {
     companion object {
         /**
@@ -242,6 +246,7 @@ data class EntitySnapshot(
                 wasFaceDown = state.getEntity(entityId)?.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() == true,
                 battlefieldEntryTimestamp = state.getEntity(entityId)
                     ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()?.timestamp,
+                manaValue = permanentManaValue(state, entityId),
                 power = projected.getPower(entityId),
                 toughness = projected.getToughness(entityId),
                 subtypes = projected.getSubtypes(entityId),
@@ -276,6 +281,7 @@ fun captureEntitySnapshots(
         objectRef = state?.objectRef(id),
         wasFaceDown = state?.getEntity(id)?.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() == true,
         name = state?.getEntity(id)?.get<CardComponent>()?.name,
+        manaValue = state?.let { permanentManaValue(it, id) },
         power = projected.getPower(id),
         toughness = projected.getToughness(id),
         subtypes = projected.getSubtypes(id),
@@ -386,3 +392,8 @@ fun captureCopyTriggeredAbilities(state: GameState, entityId: EntityId): List<co
         ?: return abilities
     return abilities.map { it.applyTextReplacement(replacement) }
 }
+
+/** Face-down permanents have no mana cost; copies and transformed faces use the effective card. */
+private fun permanentManaValue(state: GameState, entityId: EntityId): Int =
+    if (state.getEntity(entityId)?.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() == true) 0
+    else state.getEntity(entityId)?.get<CardComponent>()?.manaValue ?: 0

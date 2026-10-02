@@ -843,6 +843,10 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
 **`Costs.additional.*`** (wraps `AdditionalCost`) — extra costs paid alongside the mana cost. Card
 definitions construct these through the facade, e.g. `Costs.additional.SacrificePermanent(Filters.Creature)`.
 
+- `Costs.additional.SacrificePermanent(filter = Any, count = 1)` — sacrifice exactly `count` distinct
+  matching permanents you control as a casting cost. Extra selections and repeated entities are rejected
+  before payment; the battlefield picker uses the same fixed count.
+
 - `Costs.additional.ReturnToHand(filter = Filters.Any, count = 1, youControl = true)` — "as an additional cost to cast
   this spell, return [count] permanent(s) you control to its owner's hand" (Fear of Isolation). Paid
   as the spell is cast (CR 601.2f) via `additionalCostPayment.bouncedPermanents`; the enumerator
@@ -13050,8 +13054,15 @@ another creature you control dies, you gain life equal to **its** toughness." is
 `triggeringToughness()`, and "{2}, {T}, Sacrifice this artifact: You gain life equal to **its** mana
 value." is `sourceManaValue()`.
 
-Also on `Sacrificed`: `sacrificedPower(i)` / `sacrificedToughness(i)`, for a cost that sacrifices
-something other than the source.
+Also on `Sacrificed`: `sacrificedPower(i)` / `sacrificedToughness(i)` / `sacrificedManaValue(i)`,
+for a cost that sacrifices something other than the source.
+
+`DynamicAmounts.sacrificedManaValue(index = 0)` reads the mana value of the indexed permanent
+sacrificed as a spell or ability cost. It composes `EntityProperty(SacrificedAsCost(index), ManaValue)`.
+Cost snapshots preserve the battlefield value through zone changes, token removal, resolution pauses,
+and re-entry as a new object: copies use their copied mana cost, face-down permanents and ordinary
+costless tokens count zero, and X in a permanent's mana cost counts zero. The same frozen ManaValue
+read is available to other snapshot-backed entity references once their captured object has left.
 
 ### Counters
 

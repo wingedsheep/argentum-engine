@@ -992,6 +992,10 @@ object DynamicAmounts {
     fun sacrificedPower(index: Int = 0): DynamicAmount =
         DynamicAmount.EntityProperty(EffectTarget.SacrificedAsCost(index), EntityNumericProperty.Power)
 
+    /** Mana value of the indexed permanent sacrificed to pay a spell or ability cost. */
+    fun sacrificedManaValue(index: Int = 0): DynamicAmount =
+        DynamicAmount.EntityProperty(EffectTarget.SacrificedAsCost(index), EntityNumericProperty.ManaValue)
+
     fun sacrificedToughness(index: Int = 0): DynamicAmount =
         DynamicAmount.EntityProperty(EffectTarget.SacrificedAsCost(index), EntityNumericProperty.Toughness)
 
