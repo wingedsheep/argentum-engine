@@ -801,4 +801,16 @@ class StepsTest : StringSpec({
         roundTrips("The Ring tempts you.")
         roundTrips("When ~ enters, the Ring tempts you.")
     }
+
+    // "enchanted creature" is a definite description like `~`, not an anaphor, so the attached
+    // instantiation of the retargetable shape reads in a first clause, a later one and a trigger.
+    "a clause about the attached creature acts on the source's attachment" {
+        fragment("Tap enchanted creature.") shouldBe
+            CardFragment(script = CardScript(spellEffect = Effects.Tap(EffectTarget.EnchantedCreature)))
+        roundTrips("Tap enchanted creature.")
+        roundTrips("When ~ enters, tap enchanted creature.")
+        roundTrips("{G}: Regenerate enchanted creature.")
+        roundTrips("{U}: Untap enchanted creature.")
+        roundTrips("Draw a card. Untap enchanted creature.")
+    }
 })
