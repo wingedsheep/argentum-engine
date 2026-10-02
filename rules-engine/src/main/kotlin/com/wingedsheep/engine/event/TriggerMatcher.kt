@@ -2448,10 +2448,15 @@ class TriggerMatcher(
             val placedBy = event.placedBy ?: return false
             if (!matchesPlayer(state, placer, placedBy, controllerId)) return false
         }
+        val recipientIsPlayer = state.getEntity(event.entityId)?.has<LifeTotalComponent>() == true
+        // "Whenever YOU get one or more {E}": only a player recipient, and only the named one.
+        trigger.recipient?.let { recipient ->
+            return recipientIsPlayer && matchesPlayer(state, recipient, event.entityId, controllerId)
+        }
         // A player recipient (poison from toxic, a proliferated player) satisfies only the "on a
         // permanent or player" template, and [filter] — the permanent half — doesn't apply to it.
         // Without the flag a player is never a recipient, even for an unfiltered pattern.
-        if (state.getEntity(event.entityId)?.has<LifeTotalComponent>() == true) {
+        if (recipientIsPlayer) {
             return trigger.includePlayers
         }
         // Check filter: the permanent receiving counters must match. Battlefield recipients are read
