@@ -1878,6 +1878,56 @@
     ]
 }
 
+// Forcefield
+{
+    "name": "Forcefield",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}: The next time an unblocked creature of your choice would deal combat damage to you this turn, prevent all but 1 of that damage.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Forcefield:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "PreventNextDamageLeavingAmount",
+                    "amountToLeave": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "eligibleSource": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsUnblocked"
+                        ]
+                    },
+                    "scope": "CombatOnly"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "rarity": "RARE",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f2004c1-8efe-407f-bf48-27b807422eea.jpg?1783948667",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "This can’t be used to prevent damage caused by a blocked creature with Trample ability."
+            }
+        ]
+    }
+}
+
 // Frozen Shade
 {
     "name": "Frozen Shade",
