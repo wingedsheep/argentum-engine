@@ -9,11 +9,39 @@ import com.wingedsheep.engine.replacement.ActiveReplacements
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.OptionalEffectDiscardDestination
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.effects.Effect
 
 /** Prepare all choices against the pre-discard state; replay only the current move instruction. */
 object EffectDiscardDestinations {
     const val UNDEFINED = "__undefinedDiscardCharacteristics"
+
+    /** Unknown characteristics cannot satisfy a conjunction, but an independent OR branch can. */
+    fun filterForUndefinedCharacteristics(filter: GameObjectFilter): GameObjectFilter? {
+        if (filter.cardPredicates.isNotEmpty()) return null
+        val states = filter.statePredicates.map { stateForUndefinedCharacteristics(it) ?: return null }
+        val branches = filter.anyOf.mapNotNull(::filterForUndefinedCharacteristics)
+        if (filter.anyOf.isNotEmpty() && branches.isEmpty()) return null
+        return filter.copy(statePredicates = states, anyOf = branches)
+    }
+
+    private fun stateForUndefinedCharacteristics(predicate: StatePredicate): StatePredicate? {
+        return when (predicate) {
+            StatePredicate.HasManaAbility, StatePredicate.HasMorphAbility, StatePredicate.HasDisguiseAbility,
+            StatePredicate.HasGreatestPower, StatePredicate.HasLeastPower, StatePredicate.HasLeastPowerAmongAllCreatures,
+            StatePredicate.HasGreatestManaValueAmongAllCreatures, StatePredicate.SharesNameWithSpellCastThisTurn,
+            is StatePredicate.HasLeastManaValueAmong -> null
+            is StatePredicate.And -> predicate.copy(predicates = predicate.predicates.map {
+                stateForUndefinedCharacteristics(it) ?: return null
+            })
+            is StatePredicate.Or -> predicate.predicates.mapNotNull(::stateForUndefinedCharacteristics)
+                .takeIf { it.isNotEmpty() }?.let { predicate.copy(predicates = it) }
+            is StatePredicate.Not -> stateForUndefinedCharacteristics(predicate.predicate)
+                ?.takeIf { it == predicate.predicate }?.let { predicate.copy(predicate = it) }
+            else -> predicate
+        }
+    }
 
     fun recordUnknown(context: EffectContext, cards: List<EntityId>, vararg collections: String?): Map<String, List<EntityId>> =
         collections.filterNotNull().distinct().mapNotNull { collection ->

@@ -2333,8 +2333,13 @@ class ConditionEvaluator(
         if (collection.isEmpty()) return false
         if (condition.filter == GameObjectFilter.Any) return true
         val predicateContext = PredicateContext.fromEffectContext(context)
+        val unknown = context.pipeline.storedCollections[
+            com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.UNDEFINED + ":" + condition.collection
+        ].orEmpty().toSet()
         return collection.any { entityId ->
-            predicates.matches(state, state.projectedState, entityId, condition.filter, predicateContext)
+            val filter = if (entityId in unknown) com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations
+                .filterForUndefinedCharacteristics(condition.filter) ?: return@any false else condition.filter
+            predicates.matches(state, state.projectedState, entityId, filter, predicateContext)
         }
     }
 
@@ -2352,7 +2357,11 @@ class ConditionEvaluator(
         val collection = context.pipeline.storedCollections[condition.collection] ?: return false
         if (collection.size < 2) return false
         val seenTypes = mutableSetOf<com.wingedsheep.sdk.core.CardType>()
+        val unknown = context.pipeline.storedCollections[
+            com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.UNDEFINED + ":" + condition.collection
+        ].orEmpty().toSet()
         for (entityId in collection) {
+            if (entityId in unknown) continue
             val cardTypes = state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.cardTypes ?: continue
             if (cardTypes.any { it in seenTypes }) return true
             seenTypes += cardTypes

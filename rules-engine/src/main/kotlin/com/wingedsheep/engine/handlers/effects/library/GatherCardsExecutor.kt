@@ -416,10 +416,15 @@ class GatherCardsExecutor(
             state
         }
 
-        return EffectResult.success(newState, events).copy(
-            updatedCollections = mapOf(effect.storeAs to cards) +
-                com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.clearUnknown(context, effect.storeAs)
-        )
+        val collections = mapOf(effect.storeAs to cards)
+        val sourceVariable = effect.source as? CardSource.FromVariable
+        val updatedCollections = if (sourceVariable != null) {
+            com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.propagateUnknown(
+                collections, context.pipeline.storedCollections, sourceVariable.variableName)
+        } else {
+            collections + com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.clearUnknown(context, effect.storeAs)
+        }
+        return EffectResult.success(newState, events).copy(updatedCollections = updatedCollections)
     }
 
     private fun isLibrarySource(source: CardSource): Boolean = when (source) {

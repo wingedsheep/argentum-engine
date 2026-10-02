@@ -945,7 +945,11 @@ class TriggerMatcher(
             sourceId = sourceId
         )
         return event.cardIds.filter { cardId ->
-            (cardId !in event.undefinedCharacteristics || filter.cardPredicates.isEmpty()) && predicateEvaluator.matches(state, projected, cardId, filter, predicateContext)
+            val knownFilter = if (cardId in event.undefinedCharacteristics) {
+                com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.filterForUndefinedCharacteristics(filter)
+                    ?: return@filter false
+            } else filter
+            predicateEvaluator.matches(state, projected, cardId, knownFilter, predicateContext)
         }
     }
 

@@ -40,15 +40,16 @@ class FilterCollectionExecutor(
         val projected = state.projectedState
         val predicateContext = PredicateContext.fromEffectContext(context)
         val unknown = context.pipeline.storedCollections[EffectDiscardDestinations.UNDEFINED + ":" + effect.from].orEmpty().toSet()
-        val readsCharacteristics = effect.filter.cardPredicates.isNotEmpty() || when (effect.collectionFilter) {
+        val readsCharacteristics = when (effect.collectionFilter) {
             is CollectionFilter.SharesSubtypeWithSacrificed, is CollectionFilter.GreatestPower,
             is CollectionFilter.LeastToughness, is CollectionFilter.GreatestManaValue -> true
             else -> false
         }
         val eligible = if (readsCharacteristics) cards.filterNot { it in unknown } else cards
-        val passing = if (effect.filter == GameObjectFilter.Any) eligible
-        else eligible.filter {
-            predicateEvaluator.matches(state, projected, it, effect.filter, predicateContext)
+        val undefinedFilter = EffectDiscardDestinations.filterForUndefinedCharacteristics(effect.filter)
+        val passing = eligible.filter { id ->
+            val filter = if (id in unknown) undefinedFilter else effect.filter
+            filter != null && predicateEvaluator.matches(state, projected, id, filter, predicateContext)
         }
         val kept = (effect.collectionFilter?.let { keep(state, it, passing, context) } ?: passing).toSet()
         val (matching, nonMatching) = cards.partition { it in kept }

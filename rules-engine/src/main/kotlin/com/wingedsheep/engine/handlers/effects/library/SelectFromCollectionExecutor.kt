@@ -58,6 +58,19 @@ class SelectFromCollectionExecutor(
             ?: return EffectResult.error(state, "No collection named '${effect.from}' in storedCollections")
 
         val remainderName = effect.storeRemainder
+        val unknown = context.pipeline.storedCollections[
+            com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.UNDEFINED + ":" + effect.from
+        ].orEmpty().toSet()
+        val readsCharacteristics = effect.matchChosenCreatureType || effect.restrictions.any {
+            when (it) {
+                is SelectionRestriction.MaxAffordablePayment, is SelectionRestriction.ReducedMinimumIfMatches -> false
+                is SelectionRestriction.OnePerCardType, is SelectionRestriction.OnePerColor,
+                is SelectionRestriction.OnePerCardName, is SelectionRestriction.OnePerPower,
+                is SelectionRestriction.TotalManaValueAtMost, is SelectionRestriction.TotalPowerAtMost,
+                is SelectionRestriction.OnePerBasicLandType -> true
+            }
+        }
+        val characteristicEligible = if (readsCharacteristics) cards.filterNot { it in unknown } else cards
 
         if (cards.isEmpty()) {
             // Nothing to select from — store empty collections
@@ -72,7 +85,7 @@ class SelectFromCollectionExecutor(
             require(effect.restrictions.isEmpty() && !effect.matchChosenCreatureType) {
                 "ChooseSpell expresses eligibility through its face filter, not card-selection restrictions"
             }
-            val faces = spellFaces(state, cards, effect, context)
+            val faces = spellFaces(state, cards.filterNot { it in unknown }, effect, context)
             val chooser = when (val outcome = ChooserResolution.resolve(state, effect.chooser, context, cards)) {
                 is ChooserResolution.Outcome.Resolved -> outcome.playerId
                 is ChooserResolution.Outcome.NeedsOpponentPick -> return ChooserResolution.pauseForOpponentPick(
@@ -90,11 +103,13 @@ class SelectFromCollectionExecutor(
         // Apply filter to narrow selectable cards (e.g., "creature card" for Animal Magnetism)
         var eligibleCards = if (effect.filter != GameObjectFilter.Any) {
             val predicateContext = PredicateContext.fromEffectContext(context)
-            cards.filter { cardId ->
-                predicateEvaluator.matches(state, state.projectedState, cardId, effect.filter, predicateContext)
+            characteristicEligible.filter { cardId ->
+                val filter = if (cardId in unknown) com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations
+                    .filterForUndefinedCharacteristics(effect.filter) ?: return@filter false else effect.filter
+                predicateEvaluator.matches(state, state.projectedState, cardId, filter, predicateContext)
             }
         } else {
-            cards
+            characteristicEligible
         }
 
         // Additionally filter by chosen creature type if requested.
@@ -187,7 +202,7 @@ class SelectFromCollectionExecutor(
                 } else {
                     val clamped = minOf(count, eligibleCards.size)
                     val nonSelectable = if (effect.showAllCards) cards.filter { it !in eligibleCards } else emptyList()
-                    val conditionalMinimums = conditionalMinimumsFor(state, context, effect.restrictions, eligibleCards, clamped)
+                    val conditionalMinimums = conditionalMinimumsFor(state, context, effect.from, effect.restrictions, eligibleCards, clamped)
                     val minSelections = conditionalMinimums.minOfOrNull { it.minimumSelections } ?: clamped
                     createDecision(
                         state,
@@ -561,6 +576,7 @@ class SelectFromCollectionExecutor(
     private fun conditionalMinimumsFor(
         state: GameState,
         context: EffectContext,
+        contextSelectionCollection: String,
         restrictions: List<SelectionRestriction>,
         eligibleCards: List<EntityId>,
         requiredSelections: Int
@@ -570,8 +586,13 @@ class SelectFromCollectionExecutor(
         return restrictions.mapNotNull { restriction ->
             val reduced = restriction as? SelectionRestriction.ReducedMinimumIfMatches ?: return@mapNotNull null
             if (reduced.reducedMinimum >= requiredSelections) return@mapNotNull null
+            val unknown = context.pipeline.storedCollections[
+                com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.UNDEFINED + ":" + contextSelectionCollection
+            ].orEmpty().toSet()
             val matchingOptions = eligibleCards.filter { cardId ->
-                predicateEvaluator.matches(state, state.projectedState, cardId, reduced.filter, predicateContext)
+                val filter = if (cardId in unknown) com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations
+                    .filterForUndefinedCharacteristics(reduced.filter) ?: return@filter false else reduced.filter
+                predicateEvaluator.matches(state, state.projectedState, cardId, filter, predicateContext)
             }
             if (matchingOptions.size < reduced.requiredMatches) return@mapNotNull null
             ConditionalSelectionMinimum(

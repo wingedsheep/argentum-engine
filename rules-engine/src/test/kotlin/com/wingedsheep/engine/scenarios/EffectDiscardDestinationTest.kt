@@ -27,7 +27,14 @@ class EffectDiscardDestinationTest : ScenarioTestBase() {
         val madness = card("Effect Discard Test Madness") {
             typeLine = "Creature — Beast"; power = 2; toughness = 2; madness("{R}")
         }
-        listOf(redirect, filtered, madness).forEach(cardRegistry::register)
+        val selfDiscard = card("Effect Discard Test Self Trigger") {
+            typeLine = "Sorcery"
+            triggeredAbility {
+                trigger = Triggers.self.isDiscarded()
+                effect = Effects.GainLife(1)
+            }
+        }
+        listOf(redirect, filtered, madness, selfDiscard).forEach(cardRegistry::register)
         fun board(source: String = redirect.name, sourcePlayer: Int = 1, cards: List<String> = listOf("Grizzly Bears")) = scenario()
             .withPlayers("First", "Second").withCardOnBattlefield(sourcePlayer, source)
             .apply { cards.forEach { withCardInHand(1, it) } }
@@ -168,6 +175,49 @@ class EffectDiscardDestinationTest : ScenarioTestBase() {
             val source = game.findPermanent(redirect.name)!!
             matcher.matchingDiscardCount(EventPattern.DiscardEvent(Player.You), event, source, game.player1Id, game.state) shouldBe 1
             matcher.matchingDiscardCount(EventPattern.DiscardEvent(Player.You, GameObjectFilter.Creature), event, source, game.player1Id, game.state) shouldBe 0
+            val recursiveUnion = GameObjectFilter.Creature or GameObjectFilter.Artifact.ownedByYou()
+            recursiveUnion.cardPredicates.isEmpty() shouldBe true
+            matcher.matchingDiscardCount(EventPattern.DiscardEvent(Player.You, recursiveUnion), event, source, game.player1Id, game.state) shouldBe 0
+            val independentOwnerBranch = GameObjectFilter.Creature or GameObjectFilter.Any.ownedByYou()
+            matcher.matchingDiscardCount(EventPattern.DiscardEvent(Player.You, independentOwnerBranch), event, source, game.player1Id, game.state) shouldBe 1
+            val nestedNegation = GameObjectFilter(statePredicates = listOf(
+                com.wingedsheep.sdk.scripting.predicates.StatePredicate.Not(
+                    com.wingedsheep.sdk.scripting.predicates.StatePredicate.Or(listOf(
+                        com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasManaAbility,
+                        com.wingedsheep.sdk.scripting.predicates.StatePredicate.InZone(Zone.GRAVEYARD))))))
+            matcher.matchingDiscardCount(EventPattern.DiscardEvent(Player.You, nestedNegation), event, source, game.player1Id, game.state) shouldBe 0
+        }
+        test("an unrevealed hidden discard neither fires its own ability nor exposes its identity") {
+            val game = board(cards = listOf(selfDiscard.name))
+            val cardId = game.state.getHand(game.player1Id).single()
+            run(game)
+            val result = choose(game)
+            game.state.getLibrary(game.player1Id).first() shouldBe cardId
+            game.state.stack shouldBe emptyList()
+            result.events.filterIsInstance<AbilityTriggeredEvent>() shouldBe emptyList()
+            val codec = Json { serializersModule = engineSerializersModule; encodeDefaults = true; allowStructuredMapKeys = true }
+            val restoredEvents = codec.decodeFromString<List<GameEvent>>(codec.encodeToString(result.events))
+            for (events in listOf(result.events, restoredEvents)) {
+                val own = com.wingedsheep.engine.view.ClientEventTransformer.transform(events, game.player1Id, game.state)
+                    .filterIsInstance<com.wingedsheep.engine.view.ClientEvent.CardDiscarded>().single()
+                own.cardId shouldBe cardId
+                own.cardName shouldBe selfDiscard.name
+                for (viewer in listOf(game.player2Id, com.wingedsheep.sdk.model.EntityId.of("public-viewer"))) {
+                    val visible = com.wingedsheep.engine.view.ClientEventTransformer.transform(events, viewer, game.state)
+                    visible.any { it.description.contains(selfDiscard.name) } shouldBe false
+                    visible.filterIsInstance<com.wingedsheep.engine.view.ClientEvent.CardDiscarded>().single().cardId shouldBe null
+                    visible.filterIsInstance<com.wingedsheep.engine.view.ClientEvent.PermanentLeft>().single().cardId shouldBe null
+                }
+            }
+        }
+        test("a self-discard ability still fires when the card goes to the graveyard") {
+            val game = board(cards = listOf(selfDiscard.name))
+            run(game)
+            val result = choose(game, 1)
+            result.events.filterIsInstance<AbilityTriggeredEvent>().size shouldBe 1
+            game.state.stack.size shouldBe 1
+            game.resolveStack()
+            game.getLifeTotal(1) shouldBe 21
         }
         test("a fresh library query reads normal characteristics after an undefined discard") {
             val game = board()

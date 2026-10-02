@@ -2176,6 +2176,8 @@ class TriggerDetector(
         triggers: MutableList<PendingTrigger>
     ) {
         for (entityId in event.cardIds) {
+            // A discard into an unrevealed hidden zone exposes no abilities to trigger from.
+            if (entityId in event.undefinedCharacteristics) continue
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 

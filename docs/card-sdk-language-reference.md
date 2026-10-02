@@ -14617,7 +14617,8 @@ The priority groups are (CR 616.1a–f):
   to discard counts. Existing destination redirects (including madness) remain available via the
   normal-destination choice; choosing the alternate destination runs redirects applicable there.
   Unrevealed library-bound discards have undefined characteristics for discard filters and downstream
-  collection characteristic queries; count-only queries still count them. Their names are private
+  collection characteristic queries, including aliases and resumed selections; count-only queries still count them.
+  Characteristic-based self-discard triggers do not fire for these cards. Their names are private
   in discard narration and library placement. Example: Library of Leng uses a library-top destination.
   New vocabulary is not yet read by Assay; use behavioral scenarios and Scryfall fidelity checks.
 

@@ -40,8 +40,14 @@ class ConditionalOnCollectionExecutor(
 
             effect.filter != GameObjectFilter.Any -> {
                 val predicateContext = PredicateContext.fromEffectContext(context)
-                (if (effect.filter.cardPredicates.isEmpty()) collection else knownCards).count { entityId ->
-                    predicateEvaluator.matches(state, state.projectedState, entityId, effect.filter, predicateContext)
+                val unknown = context.pipeline.storedCollections[
+                    com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.UNDEFINED + ":" + effect.collection
+                ].orEmpty().toSet()
+                val undefinedFilter = com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations
+                    .filterForUndefinedCharacteristics(effect.filter)
+                collection.count { entityId ->
+                    val filter = if (entityId in unknown) undefinedFilter else effect.filter
+                    filter != null && predicateEvaluator.matches(state, state.projectedState, entityId, filter, predicateContext)
                 }
             }
 
