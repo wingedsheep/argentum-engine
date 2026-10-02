@@ -5965,6 +5965,71 @@
     ]
 }
 
+// Time Vault
+{
+    "name": "Time Vault",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters tapped.\nThis artifact doesn't untap during your untap step.\nIf you would begin your turn while this artifact is tapped, you may skip that turn instead. If you do, untap this artifact.\n{T}: Take an extra turn after this one.",
+    "flags": [
+        "DOESNT_UNTAP"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Time Vault:1",
+                "cost": "CostTap",
+                "effect": "TakeExtraTurn",
+                "descriptionOverride": "Take an extra turn"
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped",
+            {
+                "type": "OptionalSkipTurnWith",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "Self",
+                            "tap": false
+                        }
+                    ],
+                    "descriptionOverride": "Untap this artifact"
+                },
+                "restrictions": [
+                    {
+                        "type": "EntityMatches",
+                        "entity": "Self",
+                        "filter": "tapped"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "274",
+        "rarity": "RARE",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/902441dc-c976-4c92-b897-6376eaa0fe38.jpg?1783948660",
+        "rulings": [
+            {
+                "date": "2022-12-08",
+                "text": "If multiple \"extra turn\" effects resolve in the same turn, take them in the reverse of the order that the effects resolved. In other words, the most recently created extra turn is taken first."
+            },
+            {
+                "date": "2008-10-01",
+                "text": "The choice of whether or not to skip a turn is made as that turn would begin, and only if Time Vault is tapped at that time. If you choose to skip your turn, Time Vault untaps before anything else happens in the next turn."
+            },
+            {
+                "date": "2008-10-01",
+                "text": "This wording means that you no longer end up skipping multiple turns if you find a way to activate the ability multiple times."
+            }
+        ]
+    }
+}
+
 // Time Walk
 {
     "name": "Time Walk",
