@@ -1121,6 +1121,46 @@ findings this grammar already names, surfaced because their last declining line 
 creatures you control" with `excludeSelf = true`, the same {T}-plus-tap-others split Devout Chaplain
 already shows. No card moved.
 
+## The fight band
+
+The twenty-first loop band, tail key `fights target creature …`: "Target creature you control
+**fights** target creature you don't control." (Savage Punch, Contested Cliffs, Domri's −2), "When ~
+enters, **it fights** up to one target creature an opponent controls." (Mind Meanderer), "When this
+Aura enters, **enchanted creature fights** …" (Pitiless Fists), and the later clause "Target creature
+you control gets +1/+0 until end of turn. **It fights** target creature you don't control." (Swift
+Kick). **36 lines**; the probe (drop the fought target → "gets +1/+1 until end of turn") finished 17
+whole cards, an upper bound because it also deleted the second target. It delivered **9 hand-written
+cards read whole (7,467 → 7,476)**.
+
+### The subject is a slot; the earlier target is a name of its own
+
+`Effects.Fight(target1, target2)` names both fighters, so `SelfSteps.fights` is `attachesSource`'s
+shape with the subject as a slot: the source, the attached creature and a filtered trigger's match each
+instantiate it, as `retargetable` is instantiated. The later clause is the new part. Its "it" is the
+first clause's target *and* it declares a target of its own, so it cannot read `Targets.SLOT`, which
+its own declaration owns. It reads `Targets.PRIOR`, and `Steps.renumbered` resolves that to the slot
+the previous declaring clause was given (and `clauseParts` folds it back when printing). In first
+position there is nothing for it to name, so the line declines. The two-target sentence is
+`fightTargets`, the second rule after `exchangeControl` to declare two targets in one clause.
+
+### What the differential found
+
+Differential **7,078 compared / 71 divergent → 7,087 / 72**. Five new divergences, all five card
+bugs, fixed:
+
+- **Swift Kick, Ruthless Predation, Bushwhack** — "target creature you **don't control**" was written
+  `opponentControls()`. In a duel the two are the same; in Two-Headed Giant a teammate's creature is
+  one you don't control but not an opponent's. The grammar reads `Not(ControlledByYou)`, the spelling
+  Skemfar Elderhall and Plague Wind already use.
+- **Sawblade Slinger** — "target **Zombie** an opponent controls" was `Creature.withSubtype`; a bare
+  creature-type noun names every permanent with the subtype.
+- **Kapow!** — wrapped its fight in an `If` re-checking both targets' filters. An illegal target
+  already resolves to nothing (CR 608.2b), so the fight does nothing without it. The gate was
+  removed; the card now reads like Troll Negotiations and Swift Kick.
+
+Sawblade Slinger still diverges on a **standing finding**: its modal *trigger* sets
+`countsAsModalSpell = false`, and the flag only matters on a spell.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

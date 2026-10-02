@@ -97,6 +97,22 @@ object Targets {
     /** …and the reference half, for the effect that acts on it. */
     fun bound(): EffectTarget = EffectTarget.BoundVariable(SLOT)
 
+    /**
+     * The name a clause uses for **the target declared before it** — the one slot a clause can read
+     * while declaring a target of its own.
+     *
+     * "Target creature you control gets +1/+0 until end of turn. It fights target creature you
+     * don't control." (Swift Kick): the second clause's "it" is the first target and its object is
+     * a new one, so it cannot spell the pronoun as [SLOT], which its own declaration owns. It spells
+     * it as this instead, and [Steps]' numbering resolves it to the slot the previous declaring
+     * clause was given — and back again when a line is split for printing. Never left in a model: a
+     * clause that reads it in first position, with nothing declared before it, refuses.
+     */
+    const val PRIOR = "$SLOT before"
+
+    /** …and the reference half. */
+    fun prior(): EffectTarget = EffectTarget.BoundVariable(PRIOR)
+
     /** True when [target] is a reference to the single slot this grammar mints. */
     fun isBound(target: EffectTarget): Boolean =
         target is EffectTarget.BoundVariable && target.name == SLOT

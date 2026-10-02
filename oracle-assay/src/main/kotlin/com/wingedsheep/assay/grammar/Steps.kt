@@ -869,6 +869,47 @@ object Steps {
     }
 
     /**
+     * "Target creature you control fights target creature you don't control." — the fight
+     * (CR 701.14) between two targets one sentence declares, and the second rule after
+     * [exchangeControl] to declare two: Savage Punch, Plow Through's and Bushwhack's modes, Contested
+     * Cliffs, Domri's −2.
+     *
+     * The first fighter is a bare target; the second takes the singular quantifier rows, because
+     * "fights **up to one** target creature you don't control" is printed and the SDK spells it as
+     * the same `optional` flag [Targets.quantifiers] flips. The source, the attached creature and an
+     * earlier clause's target fighting a target are [SelfSteps]' — one subject slot per position —
+     * and this is the sentence where the subject is itself declared.
+     */
+    private val fightTargets: List<Phrase<CardScript>> = Targets.singularQuantifiers.map { quantifier ->
+        fun scriptFor(mine: GameObjectFilter, theirs: GameObjectFilter): CardScript? {
+            val second = Slots.rename(
+                CardScript(targetRequirements = listOf(quantifier.requirement(1, theirs))),
+                Targets.SLOT,
+                Targets.slot(1),
+            ) ?: return null
+            return CardScript(
+                spellEffect = Effects.Fight(Targets.bound(0), Targets.bound(1)),
+                targetRequirements = listOf(Targets.permanent(mine)) + second.targetRequirements,
+            )
+        }
+        phrase(
+            quantifier.splice("target {mine} fights {q}target {theirs}"),
+            name = "target fights a target, ${quantifier.name}",
+        ) {
+            slot("mine", Filters.filter)
+            slot("theirs", Filters.filter)
+            build { scriptFor(it.value("mine"), it.value("theirs")) }
+            match { script ->
+                if (script.targetRequirements.size != 2) return@match null
+                val mine = Targets.permanentFilter(script.targetRequirements[0]) ?: return@match null
+                val theirs = Targets.targetedFilter(script.targetRequirements[1]) ?: return@match null
+                if (script != scriptFor(mine, theirs)) return@match null
+                bind("mine" to mine, "theirs" to theirs)
+            }
+        }
+    }
+
+    /**
      * The one-off clauses: a whole printed sentence that denotes one published effect, with at most
      * one number in it.
      *
@@ -2788,6 +2829,7 @@ object Steps {
             turnSteps +
             sentenceClauses +
             exchangeControl +
+            fightTargets +
             Stack.clauses +
             Mana.addClause +
             Mana.addClauses +
@@ -2949,7 +2991,10 @@ object Steps {
             targetRequirements = mine.map { requirements[it] },
         )
         val slot = mine.singleOrNull() ?: return@mapIndexed if (mine.isEmpty()) part else null
-        Slots.rename(part, Targets.slot(slot), Targets.SLOT) ?: return null
+        // [renumbered]'s inverse, prior target first: the slot declared before this clause's own
+        // goes back to [Targets.PRIOR], which is a no-op for every clause that does not read it.
+        val prior = if (slot == 0) part else Slots.rename(part, Targets.slot(slot - 1), Targets.PRIOR) ?: return null
+        Slots.rename(prior, Targets.slot(slot), Targets.SLOT) ?: return null
     }.map { it ?: return null }
 
     /**
@@ -3087,9 +3132,16 @@ object Steps {
         if (declared.drop(1).any { (it as? TargetObject)?.filter?.excludeSelf == true }) return null
         var index = 0
         return parts.map { part ->
-            if (part.targetRequirements.isEmpty()) return@map part
+            if (part.targetRequirements.isEmpty()) {
+                return@map part.takeUnless { Slots.references(it, Targets.PRIOR) } ?: return null
+            }
             if (part.targetRequirements.size > 1) return null
-            Slots.rename(part, Targets.SLOT, Targets.slot(index++)) ?: return null
+            val own = Slots.rename(part, Targets.SLOT, Targets.slot(index++)) ?: return null
+            // A clause that names the target before its own (Swift Kick's "It fights target
+            // creature …") — see [Targets.PRIOR]. In first position there is nothing to name.
+            if (!Slots.references(own, Targets.PRIOR)) return@map own
+            if (index < 2) return null
+            Slots.rename(own, Targets.PRIOR, Targets.slot(index - 2)) ?: return null
         }
     }
 
