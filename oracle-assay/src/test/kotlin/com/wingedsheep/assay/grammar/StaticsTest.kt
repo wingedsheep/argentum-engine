@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.Conditions as SdkConditions
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -188,6 +189,21 @@ class StaticsTest : StringSpec({
             )
         )
         roundTrips("~ gets +3/+0 as long as there are seven or more cards in your graveyard.")
+    }
+
+    // Delirium. The same graveyard, counted by distinct types through the facade the cards use;
+    // "permanent types" is the sibling aggregation and the same sentence.
+    "delirium is the graveyard type count the facade builds" {
+        fragment(
+            "~ gets +1/+1 as long as there are four or more card types among cards in your graveyard."
+        ).script.staticAbilities shouldBe listOf(
+            ConditionalStaticAbility(
+                ability = ModifyStats(1, 1, GroupFilter.source()),
+                condition = SdkConditions.Delirium(),
+            )
+        )
+        roundTrips("~ gets +1/+1 as long as there are four or more card types among cards in your graveyard.")
+        roundTrips("~ gets +1/+1 as long as there are four or more permanent types among cards in your graveyard.")
     }
 
     // The Doran family. Two rules and one flag: the qualifier is a clause inside the noun phrase

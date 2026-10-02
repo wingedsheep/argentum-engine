@@ -272,7 +272,36 @@ object Conditions {
             Zone.GRAVEYARD,
             ComparisonOperator.GTE,
         ),
+        // Delirium and Matzalantli's gate — the same graveyard count by *distinct types* rather than
+        // by cards. The noun is the row and the threshold the slot: "card types" and "permanent
+        // types" are two `Aggregation`s with a facade each, and both print the one sentence shape.
+        graveyardTypes("card", SdkConditions::Delirium),
+        graveyardTypes("permanent", SdkConditions::DistinctPermanentTypesInGraveyard),
     )
+
+    /**
+     * "There are four or more card types among cards in your graveyard" — delirium's condition.
+     *
+     * A row of its own rather than a member of [zoneCount], because the amount is a different value:
+     * `AggregateZone` over a distinct-type aggregation, not a `Count` of the zone. The facades own
+     * that composition, so `build` calls them and `match` rebuilds through the same facade and
+     * compares the whole model — a filtered or opponent-side tally refuses to print rather than
+     * reading as your whole graveyard.
+     */
+    private fun graveyardTypes(kind: String, condition: (Int) -> Condition): Phrase<Condition> =
+        phrase(
+            "there are {n} or more $kind types among cards in your graveyard",
+            name = "$kind types in your graveyard",
+        ) {
+            slot("n", Cardinals.word)
+            build { condition(it.int("n")) }
+            match { value ->
+                val compare = value as? Compare ?: return@match null
+                val limit = (compare.right as? DynamicAmount.Fixed)?.amount ?: return@match null
+                if (!Cardinals.spellable(limit) || value != condition(limit)) return@match null
+                bind("n" to limit)
+            }
+        }
 
     /**
      * "There are seven or more cards in your graveyard", "that player has two or fewer cards in

@@ -1067,6 +1067,34 @@ their opponents' Swamps and Plains with `count(EachOpponent, BATTLEFIELD, …)`,
 a battlefield tally that `AggregateBattlefield` is canonical for. Both now write
 `battlefield(EachOpponent, …).count()`; the value is the same and only their goldens moved.
 
+## The delirium band
+
+The nineteenth loop band, tail key `card types among …`: "~ gets +2/+2 as long as **there are four or
+more card types among cards in your graveyard**." The probe (swap in "you control an artifact")
+finished 27 whole cards over the corpus. It delivered **25 more cards read whole in the verdict ledger
+(10,196 → 10,221)**, but only **4 hand-written ones (7,455 → 7,459)** — most delirium cards in the
+corpus are Shadows over Innistrad and Eldritch Moon commons nobody has authored yet, so they land as
+⚡ Assay-ready rather than as differential coverage.
+
+### One shape, two aggregations
+
+The condition is threshold's graveyard count with the tally swapped: `AggregateZone(You, GRAVEYARD,
+DISTINCT_TYPES)` rather than `Count`. `Conditions.Delirium` and its permanent-only sibling
+`DistinctPermanentTypesInGraveyard` (Matzalantli's gate) already name both compositions, so the
+grammar is one private shape with the noun as its row — "card types" or "permanent types" — and the
+threshold as its slot. `match` rebuilds through the facade and compares the whole `Compare`, so a
+filtered or opponent-side tally refuses to print. Because the row is in `Conditions`, every position
+that slots the vocabulary got it at once: statics' "as long as", intervening-ifs, "Activate only if",
+and "This spell costs {2} less to cast if". What still declines in the family is payload — "unless
+there are …", "while there are …", "Activate only if … and only as a sorcery" — keyed now on what
+blocks it.
+
+### What the differential found
+
+Differential **7,068 compared / 69 divergent → 7,070 / 69**. Nothing new diverged: Wildfire
+Wickerfolk spells its gate as `Conditions.CompareAmounts(...)` rather than the facade, and the two
+build the same value.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
