@@ -129,19 +129,11 @@ class ForceExileMultiZoneExecutor(
             playerId: EntityId,
             entityIds: List<EntityId>
         ): EffectResult {
-            var currentState = state
-            val allEvents = mutableListOf<GameEvent>()
-
-            for (entityId in entityIds) {
-                val transitionResult = zones.moveToZone(
-                    currentState, entityId, Zone.EXILE,
-                    ZoneEntryOptions(skipZoneChangeRedirect = true)
-                )
-                currentState = transitionResult.state
-                allEvents.addAll(transitionResult.events)
-            }
-
-            return EffectResult.success(currentState, allEvents)
+            val transitionResult = zones.moveToZoneBatch(
+                state, entityIds, Zone.EXILE,
+                ZoneEntryOptions(skipZoneChangeRedirect = true)
+            )
+            return EffectResult.success(transitionResult.state, transitionResult.events)
         }
     }
 }

@@ -218,13 +218,10 @@ class ForceSacrificeExecutor(
             newState = ZoneTransitionService.trackPermanentSacrifice(newState, permanentIds, playerId)
         }
 
-        for (permanentId in permanentIds) {
-            val transitionResult = zones.moveToZone(
-                newState, permanentId, Zone.GRAVEYARD
-            )
-            newState = transitionResult.state
-            events.addAll(transitionResult.events)
-        }
+        // One simultaneous event: a batch move freezes every look-back grant before the first goes.
+        val transitionResult = zones.moveToZoneBatch(newState, permanentIds, Zone.GRAVEYARD)
+        newState = transitionResult.state
+        events.addAll(transitionResult.events)
 
         return EffectResult.success(newState, events)
             .copy(updatedSacrificedPermanents = snapshots)

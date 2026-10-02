@@ -131,6 +131,21 @@ class IndebtedSpiritScenarioTest : ScenarioTestBase() {
             game.state.projectedState.isCreature(spirit) shouldBe true
         }
 
+        test("bestowed, the host and Indebted Spirit destroyed together each fire an afterlife — two Spirits") {
+            val game = bestowBoard("Akroma's Vengeance", extraLands = mapOf("Plains" to 6))
+            val bears = game.findPermanent("Grizzly Bears")!!
+            game.bestowOnto(bears)
+
+            game.castSpell(1, "Akroma's Vengeance").error shouldBe null
+            game.resolveStack()
+
+            game.isInGraveyard(1, "Grizzly Bears") shouldBe true
+            game.isInGraveyard(1, "Indebted Spirit") shouldBe true
+            val tokens = game.spiritTokens()
+            tokens shouldHaveSize 2
+            tokens.forEach { game.assertIsAfterlifeSpirit(it) }
+        }
+
         test("bestowed, Indebted Spirit itself destroyed as an Aura fires its own afterlife and the host loses the bonus") {
             val game = bestowBoard("Disenchant", extraLands = mapOf("Plains" to 2))
             val bears = game.findPermanent("Grizzly Bears")!!

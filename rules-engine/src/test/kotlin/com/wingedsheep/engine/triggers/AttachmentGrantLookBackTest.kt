@@ -90,6 +90,19 @@ class AttachmentGrantLookBackTest : FunSpec({
         spell { effect = Effects.DestroyAll(GameObjectFilter.Enchantment or GameObjectFilter.Creature) }
     }
 
+    // Each of host and Aura is sacrificed in one event — the sacrifice loop must freeze them together.
+    val sacrificeBoth = card("Look-Back Sacrifice") {
+        manaCost = "{0}"
+        typeLine = "Sorcery"
+        spell {
+            effect = Effects.Sacrifice(
+                GameObjectFilter.Enchantment or GameObjectFilter.Creature,
+                count = 2,
+                target = EffectTarget.Controller
+            )
+        }
+    }
+
     val bounce = card("Look-Back Bounce") {
         manaCost = "{0}"
         typeLine = "Sorcery"
@@ -123,7 +136,7 @@ class AttachmentGrantLookBackTest : FunSpec({
 
     fun setup(marks: Int = 1): Pair<GameTestDriver, EntityId> {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(mark, host, kill, burn, wipe, collectionWipe, bounce, disenchant))
+        driver.registerCards(TestCards.all + listOf(mark, host, kill, burn, wipe, collectionWipe, sacrificeBoth, bounce, disenchant))
         driver.initMirrorMatch(deck = Deck.of("Plains" to 40))
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         val hostId = driver.putCreatureOnBattlefield(driver.player1, "Look-Back Host")
@@ -157,6 +170,14 @@ class AttachmentGrantLookBackTest : FunSpec({
         val (driver, hostId) = setup()
         driver.moveHostLast(hostId)
         driver.cast("Look-Back Collection Wipe")
+        driver.getLifeTotal(driver.player1) shouldBe 23
+    }
+
+    test("host and Aura sacrificed in one event, the Aura first — the look-back sees the attachment") {
+        val (driver, hostId) = setup()
+        driver.moveHostLast(hostId)
+        driver.cast("Look-Back Sacrifice")
+        withClue("both left") { driver.findPermanent(driver.player1, "Look-Back Host") shouldBe null }
         driver.getLifeTotal(driver.player1) shouldBe 23
     }
 
