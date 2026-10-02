@@ -702,6 +702,42 @@ object SelfSteps {
     )
 
     /**
+     * "When ~ enters, attach it to target creature you control." — the Equipment that equips itself
+     * on arrival (Maul of the Skyclaves, Meltstrider's Gear, Squire's Lightblade).
+     *
+     * The source attaches *itself*: `Effects.AttachEquipment(target)` names only the host, because
+     * `AttachEquipmentEffect` always moves the ability's source — the spelling every hand-written
+     * golden in the family carries. So, like [sacrificesSource], these are not members of
+     * [retargetable]: the object is not a slot an anaphor can move. A filtered trigger's "it" would
+     * be the *triggering* Equipment, which is `AttachTargetEquipmentToCreature` and a different
+     * sentence; it declines rather than reading as the source.
+     *
+     * Singular quantifiers only — an Equipment is attached to at most one object, and the corpus
+     * prints the bare and "up to one" forms.
+     */
+    private fun attachesSource(subject: Phrase<Unit>, tag: String): List<Phrase<CardScript>> =
+        Targets.singularQuantifiers.map { quantifier ->
+            fun scriptFor(filter: GameObjectFilter) = CardScript(
+                spellEffect = quantifier.effectOver { Effects.AttachEquipment(it) },
+                targetRequirements = listOf(quantifier.requirement(1, filter)),
+            )
+            phrase(
+                quantifier.splice("attach {self} to {q}target {filter}"),
+                name = "attach$tag to a target, ${quantifier.name}",
+            ) {
+                slot("self", subject)
+                slot("filter", Filters.filter)
+                build { scriptFor(it.value("filter")) }
+                match { script ->
+                    val requirement = script.targetRequirements.singleOrNull() ?: return@match null
+                    val filter = Targets.targetedFilter(requirement) ?: return@match null
+                    if (script != scriptFor(filter)) return@match null
+                    bind("self" to Unit, "filter" to filter)
+                }
+            }
+        }
+
+    /**
      * The **name** alone — the half of [anaphoric] that means the source in every position there is.
      *
      * `~` is not an anaphor: it denotes the card whatever sentence it stands in, so unlike "it" it
@@ -716,7 +752,8 @@ object SelfSteps {
      * instances reading one text, which is redundancy the gate counts.
      */
     val named: List<Phrase<CardScript>> =
-        retargetable(EffectTarget.Self, Primitives.selfNamed, tag = " the named source")
+        retargetable(EffectTarget.Self, Primitives.selfNamed, tag = " the named source") +
+            attachesSource(Primitives.selfNamed, tag = " the named source")
 
     /**
      * The same vocabulary aimed at the **target an earlier clause chose** — what [Continuations]
@@ -740,7 +777,8 @@ object SelfSteps {
      * would be two readings of one text, which is ambiguity rather than a choice.
      */
     val anaphoric: List<Phrase<CardScript>> =
-        retargetable(EffectTarget.Self, Primitives.self, tag = " the source") + sacrificesSource
+        retargetable(EffectTarget.Self, Primitives.self, tag = " the source") + sacrificesSource +
+            attachesSource(Primitives.self, tag = " the source")
 
     /**
      * The same vocabulary inside a **filtered** trigger, where the two spellings come apart.

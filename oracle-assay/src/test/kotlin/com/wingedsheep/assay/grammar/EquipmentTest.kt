@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -135,5 +136,29 @@ class EquipmentTest : StringSpec({
     // SDK cannot hold, so the fold declines and the gate counts the card rather than losing one.
     "two equip lines do not fold into one card" {
         fragment("Equip {1}").merge(fragment("Equip {2}")) shouldBe null
+    }
+
+    // The attach band. "It" is the source, and `AttachEquipmentEffect` always moves the source, so
+    // the model names only the host: the bound target, filtered as printed.
+    "an Equipment that attaches itself on entering reads as AttachEquipment to the target" {
+        val text = "When ${Normalizer.SELF} enters, attach it to target creature you control."
+        val ability = fragment(text).script.triggeredAbilities.single()
+        ability.effect shouldBe AttachEquipmentEffect(Targets.bound())
+        Targets.targetedFilter(ability.targetRequirement!!) shouldBe
+            fragment("When ${Normalizer.SELF} enters, tap target creature you control.")
+                .script.triggeredAbilities.single().targetRequirement!!.let(Targets::targetedFilter)
+        // The pronoun is the alternate; the name is what prints.
+        Grammar.abilityLine.printLine(fragment(text)) shouldBe
+            "When ${Normalizer.SELF} enters, attach ${Normalizer.SELF} to target creature you control."
+        roundTrips("When ${Normalizer.SELF} enters, attach ${Normalizer.SELF} to target artifact creature you control.")
+        roundTrips("When ${Normalizer.SELF} enters, attach ${Normalizer.SELF} to up to one target creature you control.")
+    }
+
+    // In a filtered trigger "it" is the Equipment that triggered it, which the SDK spells as a
+    // different effect; reading it as the source would attach the wrong object.
+    "a filtered trigger's it is not the source, so the attach declines there" {
+        Grammar.abilityLine
+            .parseLine("Whenever an Equipment you control enters, attach it to target creature you control.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
     }
 })

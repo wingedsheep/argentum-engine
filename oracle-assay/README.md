@@ -929,6 +929,31 @@ a different band.
 Differential **6,987 compared / 62 divergent → 6,996 / 62**. Nothing new diverged: every lock Aura
 already spelled the grant the one way.
 
+## The self-attach band
+
+The fourteenth loop band, tail key `attach it to …`: "When this Equipment enters, **attach it to
+target creature you control**." — Meltstrider's Gear, Squire's Lightblade, Pirate's Cutlass and the
+rest of the Equipment that equips itself on arrival. **55 lines**; the probe (`attach it to target
+creature you control` → `put a +1/+1 counter on target creature you control`) finished 28 whole cards
+over the corpus. It delivered **17 hand-written cards read whole (7,378 → 7,395)**.
+
+### The source is not a slot
+
+`Effects.AttachEquipment(target)` names only the host — `AttachEquipmentEffect` always moves the
+ability's source — so the rule sits beside `sacrificesSource` rather than in `retargetable`: the
+object is the source in every position the rule is offered, and a filtered trigger's "it" (the
+Equipment that *triggered*, which the SDK spells `AttachTargetEquipmentToCreature`) declines instead
+of reading as the source. Singular quantifiers only, through the same `Targets.Quantifier` rows the
+targeted verbs use; "it" is the alternate and `~` is what prints, as for every other source clause.
+
+### What the differential found
+
+Differential **6,996 compared / 62 divergent → 7,013 / 62**. One new divergence, a **card bug,
+fixed**: Pirate's Cutlass targeted `CreatureYouControl.withSubtype(PIRATE)`, but "target Pirate you
+control" is a bare subtype noun and so a *permanent* (CR 109.2); the card now targets
+`PermanentYouControl.withSubtype(PIRATE)` and only its golden moved. Dwarven Mattock carries the
+same shape but does not read whole yet, so the differential does not reach it.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
