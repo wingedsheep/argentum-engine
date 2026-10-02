@@ -352,15 +352,18 @@ object Grammar {
         }
     }
 
-    /** A line that is one replacement effect — "~ enters tapped." */
-    private val replacementLine: Phrase<CardFragment> = phrase("{replacement}", name = "a replacement effect line") {
-        slot("replacement", Replacements.replacement)
-        build { CardFragment.of(CardScript(replacementEffects = listOf(it.value("replacement")))) }
+    /**
+     * A line that is replacement effects and nothing else — "~ enters tapped.", and the kicker
+     * sentence whose two halves are two effects ([Replacements.replacements]).
+     */
+    private val replacementLine: Phrase<CardFragment> = phrase("{replacements}", name = "a replacement effect line") {
+        slot("replacements", Replacements.replacements)
+        build { CardFragment.of(CardScript(replacementEffects = it.value("replacements"))) }
         match { fragment ->
-            val replacement = fragment.script.replacementEffects.singleOrNull() ?: return@match null
+            val replacements = fragment.script.replacementEffects.takeIf { it.isNotEmpty() } ?: return@match null
             if (fragment.keywordAbilities.isNotEmpty()) return@match null
-            if (fragment.script != CardScript(replacementEffects = listOf(replacement))) return@match null
-            bind("replacement" to replacement)
+            if (fragment.script != CardScript(replacementEffects = replacements)) return@match null
+            bind("replacements" to replacements)
         }
     }
 
