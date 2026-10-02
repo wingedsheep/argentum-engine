@@ -1,0 +1,54 @@
+{
+  "player1Name": "Attacker",
+  "player2Name": "Defender",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "False Orders"
+    ],
+    "battlefield": [
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Air Elemental"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Mountain",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Hill Giant",
+        "tapped": true
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Mountain",
+      "Forest"
+    ]
+  },
+  "phase": "COMBAT",
+  "step": "DECLARE_ATTACKERS",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "DECLARE_BLOCKERS"
+  ],
+  "player2StopAtSteps": [
+    "DECLARE_BLOCKERS"
+  ]
+}
