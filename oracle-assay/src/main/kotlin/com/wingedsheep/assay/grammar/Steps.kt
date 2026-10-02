@@ -880,7 +880,13 @@ object Steps {
      * earlier clause's target fighting a target are [SelfSteps]' — one subject slot per position —
      * and this is the sentence where the subject is itself declared.
      */
-    private val fightTargets: List<Phrase<CardScript>> = Targets.singularQuantifiers.map { quantifier ->
+    private val fightTargets: List<Phrase<CardScript>> = Targets.singularQuantifiers.filterNot {
+        // "Target creature fights **another** target creature" (Pit Fight) contrasts the second
+        // target with the first — the SDK's `TargetOther` — where the "other" rows mean
+        // `excludeSelf`, which on a spell names nothing. [renumbered] refuses the same reading
+        // across two clauses; this sentence declares both in one, so it has to refuse it here.
+        it.requirement(1, GameObjectFilter.Creature).let { r -> (r as? TargetObject)?.filter?.excludeSelf == true }
+    }.map { quantifier ->
         fun scriptFor(mine: GameObjectFilter, theirs: GameObjectFilter): CardScript? {
             val second = Slots.rename(
                 CardScript(targetRequirements = listOf(quantifier.requirement(1, theirs))),

@@ -1130,7 +1130,7 @@ Aura enters, **enchanted creature fights** …" (Pitiless Fists), and the later 
 you control gets +1/+0 until end of turn. **It fights** target creature you don't control." (Swift
 Kick). **36 lines**; the probe (drop the fought target → "gets +1/+1 until end of turn") finished 17
 whole cards, an upper bound because it also deleted the second target. It delivered **9 hand-written
-cards read whole (7,467 → 7,476)**.
+cards read whole (7,467 → 7,476)** and 24 more in the verdict ledger (10,243 → 10,267). "Target creature fights **another** target creature" stays declined: that "another" is the SDK's `TargetOther`, which the grammar does not produce.
 
 ### The subject is a slot; the earlier target is a name of its own
 

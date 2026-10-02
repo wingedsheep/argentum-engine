@@ -40,6 +40,13 @@ class FightTest : StringSpec({
         roundTrips("Target creature you control fights up to one target creature you don't control.")
     }
 
+    // "Another" here contrasts the second target with the first (`TargetOther`), which the
+    // quantifier rows' `excludeSelf` does not say — so it declines rather than reading as that.
+    "another target after a first one declines" {
+        Grammar.abilityLine.parseLine("Target creature fights another target creature.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+    }
+
     "the source fights a target it declares, whichever way it is named" {
         val effect = fragment("When $self enters, it fights up to one target creature an opponent controls.")
             .script.triggeredAbilities.single().effect
