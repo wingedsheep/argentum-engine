@@ -37,7 +37,7 @@ val NecromanticThirst = card("Necromantic Thirst") {
     triggeredAbility {
         trigger = Triggers.attached.dealsCombatDamage(Recipient.AnyPlayer)
         val t = target(TargetFilter.CreatureInYourGraveyard)
-        effect = Effects.May(Effects.ReturnToHandFromGraveyard(t))
+        effect = Effects.May(Effects.ReturnToHand(t))
     }
 
     metadata {
