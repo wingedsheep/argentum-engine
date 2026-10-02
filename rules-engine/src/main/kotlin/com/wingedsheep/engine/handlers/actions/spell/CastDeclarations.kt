@@ -142,6 +142,19 @@ internal fun optionalCostsManaPaid(
         .reduceOrNull { a, b -> com.wingedsheep.sdk.core.ManaCost(a.symbols + b.symbols) }
 
 /**
+ * The non-mana half of [costs] each paid [times] times over — "kicked with both" owes both
+ * (CR 702.33b). A single half stays a bare cost rather than a one-step composite; null when none
+ * of them has one.
+ */
+internal fun optionalCostsAdditionalPaid(
+    costs: List<KeywordAbility.OptionalAdditionalCost>,
+    times: Int,
+): com.wingedsheep.sdk.scripting.AdditionalCost? {
+    val halves = costs.mapNotNull { if (it.additionalCost != null) it.additionalCostPaid(times) else null }
+    return if (halves.size <= 1) halves.firstOrNull() else com.wingedsheep.sdk.scripting.AdditionalCost.Composite(halves)
+}
+
+/**
  * The cast-variant label for a chosen subset of a two-kicker card's kickers — "Kicked {G}",
  * "Kicked {1}{U}", "Kicked {G} + {1}{U}" — so the player sees which kicker each option pays.
  */

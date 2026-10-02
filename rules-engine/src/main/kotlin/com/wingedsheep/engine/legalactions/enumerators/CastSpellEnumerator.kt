@@ -16,6 +16,7 @@ import com.wingedsheep.engine.legalactions.TapForPowerCreatureData
 import com.wingedsheep.engine.legalactions.TargetInfo
 import com.wingedsheep.engine.handlers.actions.spell.chosenKickersLabel
 import com.wingedsheep.engine.handlers.actions.spell.optionalCostDeclarations
+import com.wingedsheep.engine.handlers.actions.spell.optionalCostsAdditionalPaid
 import com.wingedsheep.engine.handlers.actions.spell.optionalCostsManaPaid
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCostEnumeration
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCostOffer
@@ -2085,9 +2086,7 @@ class CastSpellEnumerator(
                     // Check additional cost payability (e.g., sacrifice a creature)
                     var kickerCostInfo: AdditionalCostData? = null
                     var canPayKickerAdditionalCost = true
-                    val kickerAdditionalCost = kickers
-                        .mapNotNull { if (it.additionalCost != null) it.additionalCostPaid(times) else null }
-                        .let { halves -> if (halves.size <= 1) halves.firstOrNull() else AdditionalCost.Composite(halves) }
+                    val kickerAdditionalCost = optionalCostsAdditionalPaid(kickers, times)
                     if (kickerAdditionalCost != null) {
                         when (val atom = (kickerAdditionalCost as? AdditionalCost.Atom)?.atom) {
                             // "Tap any number of creatures you control with total power N or more"
