@@ -1,8 +1,8 @@
 package com.wingedsheep.assay.grammar
 
+import com.wingedsheep.assay.normalize.Normalizer
 import com.wingedsheep.assay.syntax.Phrase
 import com.wingedsheep.assay.syntax.alternate
-import com.wingedsheep.assay.normalize.Normalizer
 import com.wingedsheep.assay.syntax.bind
 import com.wingedsheep.assay.syntax.constant
 import com.wingedsheep.assay.syntax.phrase
