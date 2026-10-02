@@ -99,7 +99,9 @@ class ReplacementEffectProcessor(
         // Merge the active replacement chain (CR 614.5 — effect identity chain from
         // a parent Replaced outcome) so nested executions don't re-apply effects
         // that were already consumed earlier in the same chain.
-        val fullAlreadyApplied = alreadyApplied + (state.activeReplacementChain ?: emptySet())
+        val scoped = state.continuationStack.filterIsInstance<RestoreReplacementChainContinuation>()
+            .flatMap { it.applied }.toSet()
+        val fullAlreadyApplied = alreadyApplied + (state.activeReplacementChain ?: emptySet()) + scoped
         return processInternal(state, event, context, fullAlreadyApplied)
     }
 
@@ -236,7 +238,9 @@ class ReplacementEffectProcessor(
                 buildContextFromShield(state, identity.floatingId, gathered.sourceControllerId)
             }
             else -> EffectContext(
-                controllerId = event.affectedPlayerId,
+                controllerId = if (event is PendingGameEvent.LifeGainPending && gathered.effect is com.wingedsheep.sdk.scripting.ReplaceLifeGainWith)
+                    gathered.sourceControllerId else event.affectedPlayerId,
+                triggeringPlayerId = event.affectedPlayerId,
                 sourceId = gathered.sourceEntityId(state),
                 objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(captured = true,
                     origin = gathered.sourceEntityId(state)?.let(state::objectRef),
@@ -254,12 +258,18 @@ class ReplacementEffectProcessor(
         // identity through so callers can act on it.
 
         val updatedAlreadyApplied = alreadyApplied + gathered.identity
+        val scopedState = if (event is PendingGameEvent.LifeGainPending) {
+            val index = state.continuationStack.indexOfLast { it is RestoreReplacementChainContinuation }
+            if (index < 0) state else state.copy(continuationStack = state.continuationStack.mapIndexed { i, frame ->
+                if (i == index) (frame as RestoreReplacementChainContinuation).copy(applied = updatedAlreadyApplied) else frame
+            })
+        } else state
 
         return when (outcome) {
             is ReplacementOutcome.Modified -> {
                 // Stamp the updated chain on state so subsequent iterations of the
                 // per-card draw loop don't re-apply the same ModifyDrawAmount (CR 614.5).
-                val stateWithChain = state.copy(activeReplacementChain = updatedAlreadyApplied)
+                val stateWithChain = scopedState.copy(activeReplacementChain = updatedAlreadyApplied)
                 val recurseResult = processInternal(
                     stateWithChain, outcome.modifiedEvent, execContext, updatedAlreadyApplied
                 )
@@ -274,11 +284,11 @@ class ReplacementEffectProcessor(
                 // Stamp the updated chain on the returned state so nested effect
                 // execution (e.g. a DrawCardsEffect produced by the replacement)
                 // does not re-trigger effects already applied in this chain.
-                val stateWithChain = state.copy(activeReplacementChain = updatedAlreadyApplied)
+                val stateWithChain = scopedState.copy(activeReplacementChain = updatedAlreadyApplied)
                 ProcessorResult.Resolved(stateWithChain, outcome, execContext, gathered.identity)
             }
             is ReplacementOutcome.Consumed -> {
-                ProcessorResult.Resolved(state, outcome, execContext, gathered.identity)
+                ProcessorResult.Resolved(scopedState, outcome, execContext, gathered.identity)
             }
         }
     }
@@ -413,6 +423,7 @@ class ReplacementEffectProcessor(
         for (entityId in battlefieldSet) {
             val container = state.getEntity(entityId) ?: continue
             val replacementSource = container.get<ReplacementEffectSourceComponent>() ?: continue
+            if (event is PendingGameEvent.LifeGainPending && (state.projectedState.hasLostAllAbilities(entityId) || state.projectedState.isFaceDown(entityId))) continue
             // Projected, not base: control change is a layer-2 effect (see EffectApplicator's
             // ChangeController branch), so a stolen permanent's ControllerComponent still names
             // its original controller. A `Player.You` replacement has to follow the permanent.
@@ -420,8 +431,11 @@ class ReplacementEffectProcessor(
                 ?: container.get<ControllerComponent>()?.playerId
                 ?: continue
 
-            for ((index, effect) in replacementSource.replacementEffects.withIndex()) {
-                val evalContext = context ?: EffectContext(
+            val text = if (event is PendingGameEvent.LifeGainPending)
+                com.wingedsheep.engine.state.components.identity.TextChanges.of(state, entityId) else null
+            for ((index, printedEffect) in replacementSource.replacementEffects.withIndex()) {
+                val effect = if (text == null) printedEffect else printedEffect.applyTextReplacement(text)
+                val evalContext = if (event is PendingGameEvent.LifeGainPending) EffectContext(controllerId = controllerId, sourceId = entityId) else context ?: EffectContext(
                     controllerId = controllerId,
                     sourceId = entityId
                 )

@@ -132,7 +132,7 @@ class TwoHeadedGiantSharedLifeTest : FunSpec({
             amount = DynamicAmount.Fixed(2),
             target = EffectTarget.PlayerRef(Player.EachOpponent)
         )
-        val result = GainLifeExecutor(amountEvaluator = PredicateEvaluator(cardRegistry = null).amounts).execute(state, effect, ctx(p[0]))
+        val result = com.wingedsheep.engine.core.EngineServices(registry()).effectExecutorRegistry.execute(state, effect, ctx(p[0]))
         result.state.lifeTotal(p[2]) shouldBe 34 // 30 + 2 + 2
         result.state.lifeTotal(p[0]) shouldBe 30
     }

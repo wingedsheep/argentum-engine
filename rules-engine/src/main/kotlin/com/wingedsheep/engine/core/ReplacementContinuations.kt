@@ -42,3 +42,18 @@ data class ReplacementChoiceContinuation(
  */
 @Serializable
 data object ReplacementResolveContinuation : AutomaticContinuation
+
+/** Apply a modified gain after its replacement-order choice completes. */
+@Serializable
+data class PerformLifeGainContinuation(val playerId: com.wingedsheep.sdk.model.EntityId, val amount: Int) : AutomaticContinuation
+
+/** Keep a parent replacement chain in force across a nested effect's decisions. */
+@Serializable
+data class RestoreReplacementChainContinuation(
+    val previous: Set<ReplacementEffectIdentity>?,
+    val applied: Set<ReplacementEffectIdentity> = emptySet()
+) : AutomaticContinuation
+
+/** The later replacement results wait until the current result, including its decisions, finishes. */
+@Serializable
+data class ReplacementRidersContinuation(val riders: List<com.wingedsheep.engine.replacement.PendingReplacementRider>) : AutomaticContinuation

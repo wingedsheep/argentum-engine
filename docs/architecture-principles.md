@@ -896,6 +896,14 @@ replacement effects are data (not callbacks), the engine can inspect which repla
 ordering when multiple replacement effects compete (the affected player chooses per Rule 616.1), and
 serialize the state even when a replacement choice is pending.
 
+Life-gain replacements that execute effects use the existing replacement-result queue where damage
+arithmetic cannot suspend. A life-gain instruction drains its result before the next instruction;
+combat drains results at the settle boundary before state-based actions. The queue isolates later
+results on an automatic continuation while a result asks questions. A replacement-chain boundary
+keeps already-applied identities in scope across nested draws and suspended effects, then restores
+the parent chain. It prevents a replacement-generated gain from invoking the same replacement again
+without suppressing later independent gains.
+
 **Why model replacement effects as declarative patterns?**
 
 - **No stack interaction.** Replacement effects modify actions in-place — they don't use the stack and

@@ -894,7 +894,7 @@ object DamageUtils {
      *
      * Unlike life loss, life *gain* can be both prevented and modified before it happens:
      * - [isLifeGainPrevented] is checked first; a prevented gain performs no mutation
-     *   (CR 119.5 effects like Sulfuric Vortex / Erebos).
+     *   (life-gain prohibitions such as Sulfuric Vortex / Erebos).
      * - When [applyLifeGainModification] is true the amount is run through
      *   [LifeGainModifiers] (CR 614 ModifyLifeGain replacements — Alhammarret's Archive,
      *   Leyline of Hope — applied once per life-gain event). True for normal "gain N life";
@@ -913,12 +913,20 @@ object DamageUtils {
         predicateEvaluator: PredicateEvaluator
     ): Pair<GameState, LifeChangedEvent?> {
         if (isLifeGainPrevented(state, playerId)) return state to null
+        if (com.wingedsheep.engine.handlers.effects.life.LifeGainReplacements.applies(state, playerId, amount, predicateEvaluator)) {
+            return com.wingedsheep.engine.handlers.effects.life.LifeGainReplacements.queue(state, playerId, amount) to null
+        }
         val gainAmount = if (applyLifeGainModification) {
             LifeGainModifiers.apply(state, playerId, amount, predicateEvaluator = predicateEvaluator)
         } else {
             amount
         }
-        if (gainAmount <= 0) return state to null
+        return gainLifePrimitive(state, playerId, gainAmount)
+    }
+
+    /** Apply a gain whose replacement chain has already completed. */
+    fun gainLifePrimitive(state: GameState, playerId: EntityId, gainAmount: Int): Pair<GameState, LifeChangedEvent?> {
+        if (gainAmount <= 0 || isLifeGainPrevented(state, playerId)) return state to null
         // Presence guard stays per-player; the value is the team's shared total (CR 810.9a).
         if (state.getEntity(playerId)?.get<LifeTotalComponent>() == null) return state to null
         val currentLife = state.lifeTotal(playerId)
@@ -1351,35 +1359,24 @@ object DamageUtils {
         ) {
             return true
         }
-        for (entityId in state.getBattlefield()) {
-            val container = state.getEntity(entityId) ?: continue
-            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
-
-            for (effect in replacementComponent.replacementEffects) {
-                if (effect !is PreventLifeGain) continue
-
-                val lifeGainEvent = effect.appliesTo
-                if (lifeGainEvent !is com.wingedsheep.sdk.scripting.EventPattern.LifeGainEvent) continue
-
-                val sourceControllerId = replacementHostController(state, entityId)
-                when (lifeGainEvent.player) {
-                    Player.Each, Player.Any -> return true
-                    Player.You -> if (playerId == sourceControllerId) return true
-                    // "Your opponents can't gain life." — Gríma Wormtongue (LTR). A real opponent
-                    // test: the controller's teammate is not their opponent (CR 102.3 / 810.9g).
-                    Player.EachOpponent ->
-                        if (sourceControllerId != null && state.isOpponentOf(playerId, sourceControllerId)) return true
-                    // "Enchanted player can't gain life." — Grievous Wound. The host is an Aura
-                    // attached to the locked player; compare against its attachment target.
-                    Player.EnchantedPlayer -> {
-                        val enchanted = container
-                            .get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
-                            ?.targetId
-                        if (enchanted == playerId) return true
-                    }
-                    else -> {}
-                }
+        for (active in com.wingedsheep.engine.replacement.ActiveReplacements.all(state)) {
+            val effect = active.effect as? PreventLifeGain ?: continue
+            if (!active.granted && (state.projectedState.hasLostAllAbilities(active.sourceId) ||
+                state.projectedState.isFaceDown(active.sourceId))) continue
+            val lifeGainEvent = effect.appliesTo as? com.wingedsheep.sdk.scripting.EventPattern.LifeGainEvent ?: continue
+            val controllerId = active.controllerId
+            val prohibitedSeats = if (state.format.sharesTeamLife) state.teamOf(playerId) else listOf(playerId)
+            val matches = when (lifeGainEvent.player) {
+                Player.Each, Player.Any -> true
+                Player.You -> controllerId in prohibitedSeats
+                Player.EachOpponent, Player.AnOpponent, Player.TargetOpponent ->
+                    prohibitedSeats.any { state.isOpponentOf(it, controllerId) }
+                Player.EnchantedPlayer -> state.getEntity(active.sourceId)
+                    ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                    ?.targetId in prohibitedSeats
+                else -> false
             }
+            if (matches) return true
         }
         return false
     }

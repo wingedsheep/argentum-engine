@@ -763,6 +763,8 @@ object CardLinter {
                 listOf(Kind.READ to (Space.CHOSEN to "chosenCreatureType"))
             // Guile's counter replacement hands the card it exiled to its `then` rider under this
             // well-known name (the engine seeds it when the rider runs).
+            type == "ReplaceLifeGainWith" ->
+                listOf(Kind.WRITE to (Space.NUMBER to com.wingedsheep.sdk.scripting.ReplaceLifeGainWith.AMOUNT))
             type == "ExileCounteredSpellInstead" ->
                 listOf(
                     Kind.WRITE to (

@@ -17,7 +17,7 @@ import kotlin.reflect.KClass
  * Executor for SetLifeTotalEffect.
  * Sets a player's life total to a specific amount.
  *
- * Per MTG Rule 118.5, setting a life total causes the player to gain or lose
+ * Setting a life total causes the player to gain or lose
  * the necessary amount of life. This executor emits the appropriate LifeChangedEvent.
  */
 class SetLifeTotalExecutor(
@@ -57,6 +57,13 @@ class SetLifeTotalExecutor(
                 continue
             }
 
+            if (newLife > currentLife) {
+                val (gained, event) = DamageUtils.gainLife(newState, playerId, newLife - currentLife,
+                    predicateEvaluator = amountEvaluator.predicates)
+                newState = gained
+                if (event != null) events.add(event)
+                continue
+            }
             if (newLife != currentLife) {
                 newState = newState.withLifeTotal(playerId, newLife)
 

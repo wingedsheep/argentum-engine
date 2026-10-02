@@ -165,6 +165,10 @@ object DynamicAmounts {
         DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS)
 
     /** The life gained by the triggering event. */
+    /** The current (possibly modified) life gain being replaced. */
+    fun replacementLifeGainAmount(): DynamicAmount =
+        DynamicAmount.VariableReference(com.wingedsheep.sdk.scripting.ReplaceLifeGainWith.AMOUNT)
+
     fun triggerLifeGained(): DynamicAmount = DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_LIFE_GAINED)
 
     /** The life lost by the triggering event. */

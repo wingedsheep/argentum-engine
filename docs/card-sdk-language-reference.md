@@ -14852,6 +14852,19 @@ The priority groups are (CR 616.1a–f):
   - Tekuthal, Inquiry Dominus:
     `RepeatKeywordAction(times = 2, appliesTo = EventPattern.ProliferatedEvent())`
     ("If you would proliferate, proliferate twice instead").
+- `ReplaceLifeGainWith(replacementEffect, appliesTo = LifeGainEvent(You), restrictions = emptyList())`
+  replaces a positive life-gain event with an arbitrary effect, immediately and without using the stack.
+  The original gain emits no life-gain event or tracker update. Compose the amount with
+  `DynamicAmounts.replacementLifeGainAmount()` (the reserved stored number
+  `replacementLifeGainAmount`), which reads the amount after any earlier life-gain modifications.
+  `You` inside the replacement effect is its source's controller; `TriggeringPlayer` names the player
+  who would gain life. Restrictions use the affected player as `You`, like other replacements.
+  Printed and durationally granted replacements share the life-gain path, including lifelink,
+  drain, damage-prevention life gain and life-total setting. Life-gain prohibitions take precedence;
+  zero or negative amounts produce no replacement. Competing modifiers and replacements use the
+  existing affected-player replacement choice, and each replacement applies once within its event.
+  Decisions inside the replacement finish before the resolving effect's next instruction or SBAs.
+  Example: Lich uses `ReplaceLifeGainWith(Effects.DrawCards(DynamicAmounts.replacementLifeGainAmount()))`.
 - `ModifyLifeGain(multiplier, modifier, appliesTo, restrictions)` — modify life gain by a multiplicative *and/or*
   additive factor: `gained = (original * multiplier) + modifier`, clamped to ≥ 0. `appliesTo` is a `LifeGainEvent`
   whose `player` filter (default `Player.Each`) gates which players the replacement applies to. `restrictions`

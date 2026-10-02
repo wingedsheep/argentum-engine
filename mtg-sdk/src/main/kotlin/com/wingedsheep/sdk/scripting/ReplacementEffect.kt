@@ -1496,6 +1496,30 @@ data class PreventDraw(
 // Life Replacement Effects
 // =============================================================================
 
+/** Replace a life-gain event with an effect, without gaining life or using the stack. */
+@SerialName("ReplaceLifeGainWith")
+@Serializable
+data class ReplaceLifeGainWith(
+    val replacementEffect: Effect,
+    override val appliesTo: EventPattern.LifeGainEvent = EventPattern.LifeGainEvent(),
+    override val restrictions: List<Condition> = emptyList()
+) : ReplacementEffect {
+    override val description: String = "If ${appliesTo.description}, instead ${replacementEffect.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val pattern = appliesTo.applyTextReplacement(replacer) as EventPattern.LifeGainEvent
+        val effect = replacementEffect.applyTextReplacement(replacer)
+        val conditions = restrictions.map { it.applyTextReplacement(replacer) }
+        return if (pattern !== appliesTo || effect !== replacementEffect || conditions != restrictions)
+            copy(replacementEffect = effect, appliesTo = pattern, restrictions = conditions)
+        else this
+    }
+
+    companion object {
+        const val AMOUNT = "replacementLifeGainAmount"
+    }
+}
+
 /**
  * Prevent life gain.
  * Example: Erebos, Sulfuric Vortex

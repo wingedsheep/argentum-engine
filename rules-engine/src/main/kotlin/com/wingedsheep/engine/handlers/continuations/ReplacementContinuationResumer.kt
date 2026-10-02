@@ -24,6 +24,21 @@ class ReplacementContinuationResumer(
     )
 
     override fun autoResumers(): List<AutoResumer<*>> = listOf(
+        autoResumer(ReplacementRidersContinuation::class) { state, continuation, events, checkForMore ->
+            val result = ReplacementRiders.drain(state.copy(
+                pendingReplacementRiders = state.pendingReplacementRiders + continuation.riders),
+                services.effectExecutorRegistry::execute)
+            if (result.outcome is Outcome.Paused) ExecutionResult.propagatePause(result.state, events + result.events)
+            else checkForMore(result.state, events + result.events)
+        },
+        autoResumer(PerformLifeGainContinuation::class) { state, continuation, events, checkForMore ->
+            val (gained, event) = com.wingedsheep.engine.handlers.effects.DamageUtils.gainLifePrimitive(
+                state, continuation.playerId, continuation.amount)
+            checkForMore(gained, events + listOfNotNull(event))
+        },
+        autoResumer(RestoreReplacementChainContinuation::class) { state, continuation, events, checkForMore ->
+            checkForMore(state.copy(activeReplacementChain = continuation.previous), events)
+        },
         autoResumer(ReplacementResolveContinuation::class) { state, continuation, events, checkForMore ->
             resumeReplacementResolve(state, continuation, events, checkForMore)
         }
@@ -154,7 +169,8 @@ class ReplacementContinuationResumer(
             val effectResult = services.effectExecutorRegistry.execute(stateWithResumeFrame, outcome.newEffect, context)
             if (effectResult.outcome is Outcome.Paused) {
                 // Clear chain on pause so subsequent execution is unaffected.
-                val clearedState = effectResult.state.copy(activeReplacementChain = null)
+                val clearedState = if (state.continuationStack.any { it is RestoreReplacementChainContinuation })
+                    effectResult.state else effectResult.state.copy(activeReplacementChain = null)
                 return ExecutionResult(clearedState, effectResult.events, effectResult.outcome)
             }
             val clearedState = effectResult.state.copy(activeReplacementChain = null)

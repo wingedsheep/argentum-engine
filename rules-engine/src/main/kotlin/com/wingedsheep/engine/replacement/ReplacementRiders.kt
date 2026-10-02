@@ -31,7 +31,8 @@ data class PendingReplacementRider(
     val hostId: EntityId,
     val controllerId: EntityId,
     val subjectId: EntityId,
-    val amount: Int = 0
+    val amount: Int = 0,
+    val replacementChain: Set<ReplacementEffectIdentity>? = null
 )
 
 /**
@@ -60,11 +61,23 @@ object ReplacementRiders {
         val events = mutableListOf<GameEvent>()
         while (current.pendingReplacementRiders.isNotEmpty()) {
             val rider = current.pendingReplacementRiders.first()
-            current = current.copy(pendingReplacementRiders = current.pendingReplacementRiders.drop(1))
-            val result = execute(current, rider.effect, contextFor(current, rider))
+            val remaining = current.pendingReplacementRiders.drop(1)
+            current = current.copy(pendingReplacementRiders = emptyList())
+            if (remaining.isNotEmpty()) current = current.pushContinuation(
+                com.wingedsheep.engine.core.ReplacementRidersContinuation(remaining))
+            val previousChain = current.activeReplacementChain
+            val result = execute(current.copy(activeReplacementChain = rider.replacementChain ?: previousChain),
+                rider.effect, contextFor(current, rider))
             events += result.events
             current = result.state
             if (result.outcome is Outcome.Paused) return EffectResult.propagatePause(current, events)
+            current = current.copy(activeReplacementChain = previousChain)
+            if (remaining.isNotEmpty()) {
+                check(current.peekContinuation() is com.wingedsheep.engine.core.ReplacementRidersContinuation)
+                current = current.popContinuation().second.copy(
+                    pendingReplacementRiders = current.pendingReplacementRiders + remaining)
+            }
+            if (result.outcome !is Outcome.Done) return result.copy(state = current, events = events)
         }
         return EffectResult.success(current, events)
     }

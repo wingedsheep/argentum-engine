@@ -241,6 +241,7 @@ class MaxSpeedBuilder {
             is ModifyMillAmount -> effect.copy(restrictions = effect.restrictions + MAX_SPEED_GATE)
             is ReplaceDrawWith -> effect.copy(restrictions = effect.restrictions + MAX_SPEED_GATE)
             is ModifyLifeGain -> effect.copy(restrictions = effect.restrictions + MAX_SPEED_GATE)
+            is com.wingedsheep.sdk.scripting.ReplaceLifeGainWith -> effect.copy(restrictions = effect.restrictions + MAX_SPEED_GATE)
             is ModifyLifeLoss -> effect.copy(restrictions = effect.restrictions + MAX_SPEED_GATE)
             is LifeLossFloor -> effect.copy(restrictions = effect.restrictions + MAX_SPEED_GATE)
             else -> throw IllegalArgumentException(

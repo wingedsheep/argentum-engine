@@ -68,7 +68,7 @@ class EffectExecutorRegistry(
     init {
         // Every module that runs sub-effects receives [recurse] at construction; the reference is
         // only invoked once an effect executes, by which point the registry is fully built.
-        registerModule(LifeExecutors(zones, amountEvaluator, cardRegistry))
+        registerModule(LifeExecutors(zones, amountEvaluator, cardRegistry, replacementProcessor, ::recurse))
         registerModule(DamageExecutors(zones, amountEvaluator, decisionHandler))
         registerModule(PermanentExecutors(::recurse, zones, decisionHandler, amountEvaluator, cardRegistry))
         registerModule(ManaExecutors(amountEvaluator, cardRegistry))

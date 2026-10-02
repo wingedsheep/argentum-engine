@@ -110,6 +110,47 @@ sealed interface PendingGameEvent {
      */
     fun performContinuation(state: GameState): AutomaticContinuation? = null
 
+    /** A life gain is one event, regardless of the number of life points. */
+    @Serializable
+    data class LifeGainPending(
+        val playerId: EntityId,
+        val amount: Int
+    ) : PendingGameEvent {
+        override val affectedPlayerId: EntityId get() = playerId
+
+        override fun matches(pattern: EventPattern, sourceControllerId: EntityId,
+            state: GameState, context: EffectContext?): Boolean {
+            val gain = pattern as? EventPattern.LifeGainEvent ?: return false
+            if (amount <= 0) return false
+            if (gain.firstTimeEachTurn && state.getEntity(playerId)?.has<
+                com.wingedsheep.engine.state.components.player.LifeGainedThisTurnComponent>() == true) return false
+            return when (gain.player) {
+                Player.EnchantedPlayer -> context?.sourceId?.let {
+                    state.getEntity(it)?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()?.targetId
+                } == playerId
+                Player.You -> playerId == sourceControllerId
+                Player.Each, Player.Any, Player.ActivePlayerFirst -> true
+                Player.EachOpponent, Player.AnOpponent, Player.TargetOpponent -> state.isOpponentOf(playerId, sourceControllerId)
+                else -> context?.copy(controllerId = sourceControllerId)?.resolvePlayerTargets(
+                    com.wingedsheep.sdk.scripting.targets.EffectTarget.PlayerRef(gain.player), state)?.contains(playerId) == true
+            }
+        }
+
+        override fun applyReplacement(effect: ReplacementEffect, state: GameState): ReplacementOutcome =
+            when (effect) {
+                is ModifyLifeGain -> ReplacementOutcome.Modified(copy(
+                    amount = (amount * effect.multiplier + effect.modifier).coerceAtLeast(0)))
+                is ReplaceLifeGainWith -> ReplacementOutcome.Replaced(
+                    com.wingedsheep.sdk.dsl.Effects.StoreNumber(ReplaceLifeGainWith.AMOUNT,
+                        com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed(amount)) then effect.replacementEffect)
+                is PreventLifeGain -> ReplacementOutcome.Consumed
+                else -> error("Unsupported life-gain replacement: ${effect::class.simpleName}")
+            }
+
+        override fun performContinuation(state: GameState): AutomaticContinuation =
+            PerformLifeGainContinuation(playerId, amount)
+    }
+
     /**
      * Draw event: a player is about to draw cards from their library.
      */

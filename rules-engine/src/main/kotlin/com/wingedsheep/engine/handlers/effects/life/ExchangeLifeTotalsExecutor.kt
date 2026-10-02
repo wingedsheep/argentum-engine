@@ -100,7 +100,8 @@ class ExchangeLifeTotalsExecutor(
         val (newState, event) = when {
             to > from -> DamageUtils.gainLife(
                 state, playerId,
-                LifeGainModifiers.apply(beforeExchange, playerId, to - from, predicateEvaluator),
+                if (LifeGainReplacements.applies(beforeExchange, playerId, to - from, predicateEvaluator)) to - from
+                else LifeGainModifiers.apply(beforeExchange, playerId, to - from, predicateEvaluator),
                 applyLifeGainModification = false,
                 predicateEvaluator = predicateEvaluator
             )
