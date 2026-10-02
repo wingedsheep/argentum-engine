@@ -99,6 +99,7 @@ class ExileLibraryUntilManaValueExecutor(private val zones: ZoneTransitionServic
 
     private fun resolvePlayers(player: Player, state: GameState, context: EffectContext): List<EntityId> {
         return when (player) {
+            Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
             Player.Each, Player.ActivePlayerFirst -> state.activePlayers
             Player.You -> listOf(context.controllerId)
             Player.EachOpponent -> state.getOpponents(context.controllerId)

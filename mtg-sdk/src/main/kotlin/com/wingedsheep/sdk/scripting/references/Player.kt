@@ -60,6 +60,18 @@ sealed interface Player {
         override val description: String = "defending player"
     }
 
+    /**
+     * All defending players in the current combat, in APNAP order, including those with
+     * no attackers assigned and before attackers are declared. Includes all opponents
+     * regardless of attack-left/right limits, respecting shared team turns. Outside combat resolves to nobody. This is a list-only reference;
+     * a single-player slot must not collapse it to one defender.
+     */
+    @SerialName("EachDefendingPlayer")
+    @Serializable
+    data object EachDefendingPlayer : Player {
+        override val description: String = "each defending player"
+    }
+
     /** All opponents */
     @SerialName("EachOpponent")
     @Serializable
@@ -379,6 +391,7 @@ sealed interface Player {
             You -> "your"
             AnOpponent -> "an opponent's"
             DefendingPlayer -> "defending player's"
+            EachDefendingPlayer -> "each defending player's"
             TargetOpponent -> "target opponent's"
             TargetPlayer -> "target player's"
             ControllerOfIterationEntity -> "its controller's"

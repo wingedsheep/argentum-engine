@@ -3884,6 +3884,16 @@ object Effects {
         duration: Duration = Duration.EndOfTurn
     ): Effect = GrantCantBeBlockedExceptByEffect(target, blockerFilter, duration)
 
+    /** Remember the objects in [collection]; alternative blockers are checked when blocking. */
+    fun GrantCantBeBlockedExceptByCollection(
+        target: EffectTarget,
+        collection: CollectionSlot,
+        alternativeFilter: GameObjectFilter,
+        duration: Duration
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedExceptByCollectionEffect(
+        target, collection.key, alternativeFilter, duration
+    )
+
     // =========================================================================
     // Control Effects
     // =========================================================================

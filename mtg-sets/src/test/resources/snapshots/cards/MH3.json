@@ -966,6 +966,146 @@
     ]
 }
 
+// Bespoke Battlewagon
+{
+    "name": "Bespoke Battlewagon",
+    "manaCost": "{3}{U}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "{T}: You get {E}{E} (two energy counters).\n{T}, Pay {E}{E}: Tap target creature.\n{T}, Pay {E}{E}{E}: Draw a card.\nPay {E}{E}{E}{E}: This Vehicle becomes an artifact creature until end of turn.\nCrew 4",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 4
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bespoke Battlewagon:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Bespoke Battlewagon:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Bespoke Battlewagon:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Bespoke Battlewagon:4",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                },
+                "descriptionOverride": "This Vehicle becomes an artifact creature until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3feccebc-c792-420d-b96c-51494b5c41db.jpg?1783911293",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "As long as Bespoke Battlewagon isn't a creature, its {T} abilities can be activated even if you haven't controlled it continuously since the beginning of your most recent turn. If it is a creature, however, it's still subject to \"summoning sickness\" during that time period."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Chthonian Nightmare
 {
     "name": "Chthonian Nightmare",
@@ -1693,6 +1833,102 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Detective's Phoenix
+{
+    "name": "Detective's Phoenix",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment Creature — Phoenix",
+    "oracleText": "Bestow—{R}, Collect evidence 6. (To pay this bestow cost, pay {R} and exile cards with total mana value 6 or greater from your graveyard.)\nFlying, haste\nEnchanted creature gets +2/+2 and has flying and haste.\nYou may cast this card from your graveyard using its bestow ability.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE",
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{R}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomCollectEvidence",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                }
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE"
+            },
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "castUsing": "BESTOW"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "RARE",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2a01edd-dbc0-4ed4-b827-9b608290e9a1.jpg?1783911273",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If you can't exile enough cards to meet or exceed the required mana value, you can't choose to collect evidence at all."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Once you've announced that you're casting a spell, players can't take actions until you've finished doing so. Notably, opponents can't try to remove cards from your graveyard to stop you from collecting evidence."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "On the stack, a spell with bestow is either a creature spell or an Aura spell. It's never both, although it's an enchantment spell in either case."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Auras attached to a creature don't become tapped when the creature becomes tapped. Except in some rare cases, an Aura with bestow remains untapped when it becomes unattached and becomes a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2493,6 +2729,94 @@
     ]
 }
 
+// Glyph Elemental
+{
+    "name": "Glyph Elemental",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment Creature — Elemental",
+    "oracleText": "Bestow {1}{W} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nLandfall — Whenever a land you control enters, put a +1/+1 counter on this permanent.\nEnchanted creature gets +1/+1 for each +1/+1 counter on this Aura.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{1}{W}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Glyph Elemental:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "PLUS_ONE_PLUS_ONE"
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "PLUS_ONE_PLUS_ONE"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "UNCOMMON",
+        "artist": "Domenico Cava",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89f48c8f-b6f9-43b2-91c3-8d6e95d62db9.jpg?1783911301",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Guide of Souls
 {
     "name": "Guide of Souls",
@@ -2919,6 +3243,104 @@
         "BLUE"
     ],
     "layout": "MODAL_DFC"
+}
+
+// Inventor's Axe
+{
+    "name": "Inventor's Axe",
+    "manaCost": "{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Flash\nWhen this Equipment enters, you get {E}{E} (two energy counters).\nWhen this Equipment enters, attach it to target creature you control.\nEquipped creature gets +2/+0.\nEquip—Pay {E}{E}.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Inventor's Axe:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Inventor's Axe:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Inventor's Axe:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "artist": "Filipe Pagliuso",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b2f918c-bd02-4a63-b4c2-ca204c77b208.jpg?1783911269"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Invert Polarity
@@ -3787,6 +4209,92 @@
     ]
 }
 
+// Nyxborn Hydra
+{
+    "name": "Nyxborn Hydra",
+    "manaCost": "{X}{G}",
+    "typeLine": "Enchantment Creature — Hydra",
+    "oracleText": "Bestow {X}{G}{G} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nReach, trample\nThis permanent enters with X +1/+1 counters on it.\nEnchanted creature gets +1/+1 for each +1/+1 counter on this Aura and has reach and trample.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "REACH",
+        "TRAMPLE",
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{X}{G}{G}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "PLUS_ONE_PLUS_ONE"
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "PLUS_ONE_PLUS_ONE"
+                    }
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "REACH"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "artist": "Vincent Christiaens",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/902a969e-9f22-4e92-93eb-9d4536ca82e5.jpg?1783911257",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nyxborn Unicorn
 {
     "name": "Nyxborn Unicorn",
@@ -4166,6 +4674,74 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Phyrexian Ironworks
+{
+    "name": "Phyrexian Ironworks",
+    "manaCost": "{2}{R}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you attack, you get {E} (an energy counter).\n{T}, Pay {E}{E}{E}: Create a 3/3 colorless Phyrexian Golem artifact creature token. Activate only as a sorcery.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Phyrexian Ironworks:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Phyrexian Ironworks:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Phyrexian",
+                        "Golem"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/e/4ee5119d-f76c-44c7-bf82-34aabb4d2e69.jpg?1783911109",
+                    "artifactToken": true
+                },
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"We have made a friend today.\"\n—Slobad, Iron Goblin",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d64e1a8-cb4f-4968-b3e0-c9ca7c7894a3.jpg?1783911269"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4580,6 +5156,82 @@
     ]
 }
 
+// Roil Cartographer
+{
+    "name": "Roil Cartographer",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Merfolk Rogue",
+    "oracleText": "Landfall — Whenever a land you control enters, you get {E} (an energy counter).\n{T}, Pay six {E}: Draw three cards.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Roil Cartographer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Roil Cartographer:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "UNCOMMON",
+        "artist": "Miranda Meeks",
+        "flavorText": "\"The world shifts constantly, but that doesn't mean it can't be mapped. Our maps must shift as well.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84317f9d-5a24-4f74-9c3e-0a8b5c15bb5f.jpg?1783911289",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "A landfall ability doesn't trigger if a permanent already on the battlefield becomes a land."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Rosheen, Roaring Prophet
 {
     "name": "Rosheen, Roaring Prophet",
@@ -4853,6 +5505,114 @@
     ]
 }
 
+// Scurry of Gremlins
+{
+    "name": "Scurry of Gremlins",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create two 1/1 red Gremlin creature tokens. Then you get an amount of {E} (energy counters) equal to the number of creatures you control.\nPay {E}{E}{E}{E}: Creatures you control get +1/+0 and gain haste until end of turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scurry of Gremlins:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Gremlin"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/1/a/1af08a84-4a57-4c94-a290-31d93f79db83.jpg?1783911112"
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature"
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Scurry of Gremlins:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "UNCOMMON",
+        "artist": "Ben Wootten",
+        "flavorText": "A whiff of aether brings the horde out of hiding.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/470ce8e9-64b9-403c-bee0-66a4c47ca6d4.jpg?1783911247"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Serum Visionary
 {
     "name": "Serum Visionary",
@@ -5095,6 +5855,147 @@
     ]
 }
 
+// Solar Transformer
+{
+    "name": "Solar Transformer",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters tapped.\nWhen this artifact enters, you get {E}{E}{E} (three energy counters).\n{T}: Add {C}.\n{T}, Pay {E}: Add one mana of any color.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Solar Transformer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 3,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Solar Transformer:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Solar Transformer:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY"
+                            }
+                        }
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Bierek",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b87315b3-d3a3-4eef-8a20-90587b36f551.jpg?1783911243"
+    },
+    "colorIdentityOverride": []
+}
+
+// Solstice Zealot
+{
+    "name": "Solstice Zealot",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Rhino Cleric",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\n{T}, Pay {E}: Tap target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Solstice Zealot:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Solstice Zealot:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Steve Ellis",
+        "flavorText": "\"Embrace the light, or succumb to the shadows.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f10539e3-d4bc-4f71-a00f-8e94bb97509d.jpg?1783911296"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Sowing Mycospawn
 {
     "name": "Sowing Mycospawn",
@@ -5188,6 +6089,152 @@
             {
                 "date": "2024-06-07",
                 "text": "Sowing Mycospawn's triggered abilities will resolve before Sowing Mycospawn does. If Sowing Mycospawn is countered or otherwise leaves the stack in response to those triggered abilities, the triggered abilities will still resolve as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Springheart Nantuko
+{
+    "name": "Springheart Nantuko",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment Creature — Insect Monk",
+    "oracleText": "Bestow {1}{G} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nEnchanted creature gets +1/+1.\nLandfall — Whenever a land you control enters, you may pay {1}{G} if this permanent is attached to a creature you control. If you do, create a token that's a copy of that creature. If you didn't create a token this way, create a 1/1 green Insect creature token.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{1}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Springheart Nantuko:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature ctrl:you"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayPay",
+                            "cost": {
+                                "type": "PayManaCost",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "then": {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.DoAction",
+                                "action": {
+                                    "type": "CreateTokenCopyOfTarget",
+                                    "target": "EnchantedCreature"
+                                },
+                                "successCriterion": {
+                                    "type": "SuccessCriterion.CollectionNonEmpty",
+                                    "name": "createdTokens"
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": []
+                            },
+                            "otherwise": {
+                                "type": "CreateToken",
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "GREEN"
+                                ],
+                                "creatureTypes": [
+                                    "Insect"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/0/5/059e9d51-c7bf-41c0-a6f0-c0bbc6d3b434.jpg?1783911112"
+                            }
+                        },
+                        "otherwise": {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Insect"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/0/5/059e9d51-c7bf-41c0-a6f0-c0bbc6d3b434.jpg?1783911112"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Insect"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/0/5/059e9d51-c7bf-41c0-a6f0-c0bbc6d3b434.jpg?1783911112"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "RARE",
+        "artist": "Valera Lutfullina",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If you don't pay {1}{G}, either because you simply chose not to or because Springheart Nantuko isn't attached to a creature you control, you'll still create a 1/1 green Insect creature token when Springheart Nantuko's landfall ability resolves."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
             }
         ]
     },
@@ -5359,6 +6406,106 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Tempest Harvester
+{
+    "name": "Tempest Harvester",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\n{T}, Pay {E}: Draw a card, then discard a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tempest Harvester:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Tempest Harvester:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "artist": "Runa I. Rosenberger",
+        "flavorText": "\"The Golden City was a trinket compared to the power that lies beneath the waves.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62a3fc3f-f5cd-45f1-a3d5-d90c9dd4f6c7.jpg?1783911285"
+    }
 }
 
 // The Necrobloom
@@ -5692,6 +6839,77 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Trickster's Elk
+{
+    "name": "Trickster's Elk",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment Creature — Elk",
+    "oracleText": "Bestow {1}{G} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nEnchanted creature loses all abilities and is a green Elk creature with base power and toughness 3/3.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{1}{G}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "TransformPermanent",
+                "setCardTypes": [
+                    "CREATURE"
+                ],
+                "setSubtypes": [
+                    "Elk"
+                ],
+                "setColors": [
+                    "GREEN"
+                ]
+            },
+            "LoseAllAbilities",
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 3,
+                "toughness": 3
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"Wait. Is *that* one Dad?\"\n—Rowan Kenrith, to Will",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/812af562-853a-48a3-b428-ad891c54be5c.jpg?1783911255",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If the enchanted creature gains an ability after Trickster's Elk becomes attached to it, it will keep that ability."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Trickster's Elk overwrites all colors and creature types the enchanted creature has. It's just a green Elk. The creature keeps any supertypes (such as legendary) it has but loses any other card types it has (such as artifact)."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Trickster's Elk overwrites all previous effects that set the creature's base power and toughness to specific values. Any power- or toughness-setting effects that start to apply afterward will overwrite this effect."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Trickster's Elk may enchant a permanent that is only temporarily a creature, such as a Vehicle. If this happens, Trickster's Elk's effect causes the enchanted permanent to remain a 3/3 green Elk creature even after the temporary effect making it a creature expires."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -6094,6 +7312,129 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Unstable Amulet
+{
+    "name": "Unstable Amulet",
+    "manaCost": "{1}{R}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, you get {E}{E} (two energy counters).\nWhenever you cast a spell from anywhere other than your hand, this artifact deals 1 damage to each opponent.\n{T}, Pay {E}{E}: Exile the top card of your library. You may play it until you exile another card with this artifact.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Unstable Amulet:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Unstable Amulet:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        {
+                            "type": "SpellCastFromZoneOtherThan",
+                            "zone": "Hand"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Unstable Amulet:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled",
+                            "expiry": "UntilSourceExilesAnother"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "UNCOMMON",
+        "artist": "José Parodi",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d9949f5-8d6c-4ea9-b203-99e8a57a6c60.jpg?1783911264",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Unstable Amulet's second ability counts any spells cast from zones other than your hand. These are usually spells cast from exile, the graveyard, or the command zone. It also counts spells cast from outside the game, such as spells cast with Wish or Garth One-Eye's ability."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "You pay all costs and follow all normal timing rules for cards played with Unstable Amulet's last ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If Unstable Amulet leaves the battlefield before you play the most recently exiled card, you can play that card for as long as it remains exiled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Volatile Stormdrake

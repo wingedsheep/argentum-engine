@@ -368,6 +368,7 @@ class ReflexiveTriggerEffectExecutor(
         context: EffectContext,
         state: GameState
     ): List<EntityId>? = when (player) {
+        is com.wingedsheep.sdk.scripting.references.Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
         is com.wingedsheep.sdk.scripting.references.Player.Each,
         is com.wingedsheep.sdk.scripting.references.Player.ActivePlayerFirst -> state.turnOrder
         is com.wingedsheep.sdk.scripting.references.Player.EachOpponent ->

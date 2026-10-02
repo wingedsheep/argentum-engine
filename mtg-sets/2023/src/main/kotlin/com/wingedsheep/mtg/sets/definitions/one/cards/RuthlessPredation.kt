@@ -3,7 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.one.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 
 /**
  * Ruthless Predation — Phyrexia: All Will Be One #182
@@ -24,7 +26,13 @@ val RuthlessPredation = card("Ruthless Predation") {
 
     spell {
         val mine = target(TargetFilter.CreatureYouControl)
-        val theirs = target(TargetFilter.CreatureOpponentControls)
+        val theirs = target(
+            TargetFilter(
+                GameObjectFilter.Creature.copy(
+                    controllerPredicate = ControllerPredicate.Not(ControllerPredicate.ControlledByYou)
+                )
+            )
+        )
         effect = Effects.ModifyStats(1, 2, mine) then Effects.Fight(mine, theirs)
     }
 

@@ -16890,7 +16890,7 @@
                                 {
                                     "type": "TargetObject",
                                     "filter": {
-                                        "baseFilter": "creature Zombie ctrl:opponent"
+                                        "baseFilter": "permanent Zombie ctrl:opponent"
                                     },
                                     "id": "t1"
                                 }

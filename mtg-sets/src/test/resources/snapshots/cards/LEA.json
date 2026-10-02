@@ -4753,6 +4753,123 @@
     ]
 }
 
+// Raging River
+{
+    "name": "Raging River",
+    "manaCost": "{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever one or more creatures you control attack, each defending player divides all creatures without flying they control into a \"left\" pile and a \"right\" pile. Then, for each attacking creature you control, choose \"left\" or \"right.\" That creature can't be blocked this combat except by creatures with flying and creatures in a pile with the chosen label.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Raging River:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachDefendingPlayer"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "BattlefieldMatching",
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    "IsCreature",
+                                                    {
+                                                        "type": "NotKeyword",
+                                                        "keyword": "FLYING"
+                                                    }
+                                                ],
+                                                "controllerPredicate": "ControlledByYou"
+                                            }
+                                        },
+                                        "storeAs": "gathered1"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered1",
+                                        "selection": "ChooseAnyNumber",
+                                        "storeSelected": "selected2",
+                                        "storeRemainder": "remainder2",
+                                        "prompt": "Select creatures for the left pile; the rest form the right pile",
+                                        "selectedLabel": "left",
+                                        "remainderLabel": "right",
+                                        "useTargetingUI": true
+                                    }
+                                ]
+                            },
+                            "collectCollections": {
+                                "selected2": "collected3",
+                                "remainder2": "collected4"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature attacking ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ChoosePile",
+                                        "pileA": "collected3",
+                                        "pileB": "collected4",
+                                        "pileALabel": "left",
+                                        "pileBLabel": "right",
+                                        "storeChosenAs": "chosenPile5",
+                                        "storeOtherAs": "otherPile5",
+                                        "prompt": "Choose left or right for this attacking creature"
+                                    },
+                                    {
+                                        "type": "GrantCantBeBlockedExceptByCollection",
+                                        "target": "IterationEntity",
+                                        "collection": "chosenPile5",
+                                        "alternativeFilter": {
+                                            "cardPredicates": [
+                                                "IsCreature",
+                                                {
+                                                    "type": "HasKeyword",
+                                                    "keyword": "FLYING"
+                                                }
+                                            ]
+                                        },
+                                        "duration": "EndOfCombat"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "RARE",
+        "artist": "Sandra Everingham",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61e4f56d-1f4f-49f2-8534-0d09196a3327.jpg?1783948682",
+        "rulings": [
+            {
+                "date": "2008-05-01",
+                "text": "If a creature is put onto the battlefield attacking after the ability resolves, it can be blocked by any creature that could normally block it (including creatures that entered after the ability resolved)."
+            }
+        ]
+    }
+}
+
 // Raise Dead
 {
     "name": "Raise Dead",

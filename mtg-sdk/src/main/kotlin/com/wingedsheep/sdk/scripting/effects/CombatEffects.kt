@@ -888,3 +888,15 @@ data class BecomeBlockingEffect(
 ) : Effect {
     override val description: String = "${blocker.description} blocks ${attacker.description}"
 }
+
+/** Restrict blockers to a remembered collection of objects or a current characteristic filter. */
+@Serializable
+@SerialName("GrantCantBeBlockedExceptByCollection")
+data class GrantCantBeBlockedExceptByCollectionEffect(
+    val target: EffectTarget,
+    val collection: String,
+    val alternativeFilter: GameObjectFilter,
+    val duration: Duration
+) : Effect {
+    override val description: String = "Can't be blocked except by the chosen creatures or ${alternativeFilter.description}"
+}

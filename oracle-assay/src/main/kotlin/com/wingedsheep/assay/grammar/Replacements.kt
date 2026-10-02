@@ -7,13 +7,16 @@ import com.wingedsheep.assay.syntax.bind
 import com.wingedsheep.assay.syntax.constant
 import com.wingedsheep.assay.syntax.oneOf
 import com.wingedsheep.assay.syntax.phrase
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Conditions as SdkConditions
 import com.wingedsheep.sdk.scripting.CardNamePool
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
+import com.wingedsheep.sdk.scripting.EntersWithKeywords
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifyLifeGain
@@ -563,6 +566,76 @@ object Replacements {
         ),
     )
 
+    /**
+     * "If ~ was kicked, it enters with two +1/+1 counters on it." and its keyword-carrying sibling
+     * "If ~ was kicked, it enters with two +1/+1 counters on it and with flying." — the kicker
+     * creatures of Invasion and Dominaria.
+     *
+     * ### One sentence, two replacement effects
+     *
+     * The hand-written cards spell the keyword half as a *second* replacement, an
+     * [EntersWithKeywords] beside the [EntersWithCounters], both gated on the same `WasKicked` —
+     * the shape `EntersWithKeywords`' own KDoc names with Kavu Titan. So this family yields a list,
+     * and the line rule that holds it is the plain replacement line one size up: a sentence is
+     * still one line, the model just has two members. The keyword is one [Keywords.keyword] rather
+     * than a run because every printed line names exactly one, and a run would have to choose
+     * between "and with flying and haste" and "and with flying and with haste" for no card.
+     *
+     * The condition is a word rather than a [Conditions.condition] slot: the subject is the source
+     * itself ("~ was kicked"), which the condition vocabulary spells "it was kicked" from the
+     * trigger position, and the only printed customer of this sentence shape is kicker. Both
+     * halves are reconstruct-and-compare, so a value with another condition, a non-default
+     * `appliesTo` or `selfOnly = false` refuses to print rather than claiming this sentence.
+     */
+    private val kickedEntry: List<Phrase<List<ReplacementEffect>>> = run {
+        fun counters(kind: CounterType, count: Int) = EntersWithCounters(
+            counterType = kind,
+            count = count,
+            selfOnly = true,
+            condition = SdkConditions.WasKicked,
+        )
+        fun keywords(keyword: Keyword) = EntersWithKeywords(
+            keywords = listOf(keyword),
+            selfOnly = true,
+            condition = SdkConditions.WasKicked,
+        )
+        fun rule(quantity: Phrase<*>?, withKeyword: Boolean): Phrase<List<ReplacementEffect>> {
+            val counted = if (quantity == null) "{kind} counter" else "{n} {kind} counters"
+            val tail = if (withKeyword) " and with {keyword}" else ""
+            return phrase(
+                "if {self} was kicked, it enters with $counted on it$tail.",
+                name = "kicked entry with " + (if (quantity == null) "a counter" else "counters") +
+                    (if (withKeyword) " and a keyword" else ""),
+            ) {
+                slot("self", Primitives.self)
+                slot("kind", if (quantity == null) Primitives.singularCounterKind else Primitives.counterKind)
+                if (quantity != null) slot("n", quantity)
+                if (withKeyword) slot("keyword", Keywords.keyword)
+                build {
+                    val first = counters(it.value("kind"), if (quantity == null) 1 else it.int("n"))
+                    if (withKeyword) listOf(first, keywords(it.value("keyword"))) else listOf(first)
+                }
+                match { effects ->
+                    if (effects.size != (if (withKeyword) 2 else 1)) return@match null
+                    val enters = effects[0] as? EntersWithCounters ?: return@match null
+                    if (quantity == null && enters.count != 1) return@match null
+                    if (quantity != null && !(enters.count >= 2 && Cardinals.spellable(enters.count))) {
+                        return@match null
+                    }
+                    if (enters != counters(enters.counterType, enters.count)) return@match null
+                    val keyword = if (withKeyword) {
+                        val granted = effects[1] as? EntersWithKeywords ?: return@match null
+                        val only = granted.keywords.singleOrNull() ?: return@match null
+                        if (granted != keywords(only)) return@match null
+                        only
+                    } else null
+                    bind("self" to Unit, "kind" to enters.counterType, "n" to enters.count, "keyword" to keyword)
+                }
+            }
+        }
+        listOf(null, Cardinals.word).flatMap { quantity -> listOf(false, true).map { rule(quantity, it) } }
+    }
+
     val replacement: Phrase<ReplacementEffect> = oneOf(
         "a replacement effect",
         listOf(
@@ -576,4 +649,19 @@ object Replacements {
             entersWithCounters + entersWithDynamicCounters + entersWithCountersPerCount +
             modifyLifeGain,
     )
+
+    /** One replacement, lifted to the list a line holds. */
+    private val singleReplacement: Phrase<List<ReplacementEffect>> =
+        phrase("{one}", name = "one replacement effect") {
+            slot("one", replacement)
+            build { listOf(it.value<ReplacementEffect>("one")) }
+            match { it.singleOrNull()?.let { only -> bind("one" to only) } }
+        }
+
+    /**
+     * The replacement effects one line spells — usually one, two when a sentence's halves are
+     * modelled as separate effects ([kickedEntry]).
+     */
+    val replacements: Phrase<List<ReplacementEffect>> =
+        oneOf("the replacement effects of a line", listOf(singleReplacement) + kickedEntry)
 }

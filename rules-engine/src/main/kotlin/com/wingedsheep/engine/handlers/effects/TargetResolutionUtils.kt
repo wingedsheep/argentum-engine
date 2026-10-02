@@ -341,7 +341,7 @@ object TargetResolutionUtils {
             // EachTargetedPlayer by DynamicAmountEvaluator.resolveUnifiedPlayerIds. Collapsing
             // either to its first player is exactly the bug they exist to avoid, so neither gets a
             // single-player arm.
-            Player.Each, Player.EachOpponent, Player.ActivePlayerFirst,
+            Player.Each, Player.EachOpponent, Player.EachDefendingPlayer, Player.ActivePlayerFirst,
             Player.EachTargetedPlayer, Player.OwnersOfLinkedExile, is Player.InCollection -> null
         }
     }
@@ -516,6 +516,7 @@ object TargetResolutionUtils {
                 controllerId?.let { listOf(it) } ?: emptyList()
             }
             is EffectTarget.PlayerRef -> when (effectTarget.player) {
+                Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
                 Player.Each -> state.activePlayers
                 // The APNAP-ordered flavour of Player.Each (CR 101.4) — for effects whose
                 // per-player choices are made in turn order starting with the active player

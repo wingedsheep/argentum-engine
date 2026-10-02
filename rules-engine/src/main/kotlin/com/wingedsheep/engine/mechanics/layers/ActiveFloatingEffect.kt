@@ -137,6 +137,14 @@ sealed interface SerializableModification {
     @Serializable
     data object RandomizedBlockerPiles : SerializableModification
 
+    /** A rules restriction, retaining battlefield visits rather than stable card identities. */
+    @Serializable
+    data class CantBeBlockedExceptByCollection(
+        val blockers: Set<com.wingedsheep.engine.state.ObjectRef>,
+        val alternativeFilter: GameObjectFilter
+    ) : SerializableModification
+
+
     /**
      * Build an [EffectContext] from this modification's stored data (targets, X value,
      * named targets, source id), or `null` if this modification type carries no such data.
@@ -802,6 +810,7 @@ fun GameState.imageOverrideFor(entityId: EntityId): String? =
  */
 fun SerializableModification.toModification(): Modification = when (this) {
     SerializableModification.RandomizedBlockerPiles -> Modification.NoOp
+    is SerializableModification.CantBeBlockedExceptByCollection -> Modification.NoOp
     is SerializableModification.SetPowerToughness -> Modification.SetPowerToughness(power, toughness)
     is SerializableModification.SetPowerToughnessDynamic -> Modification.SetPowerToughnessDynamic(power, toughness)
     is SerializableModification.SetPower -> Modification.SetPower(power)

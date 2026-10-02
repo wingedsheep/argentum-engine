@@ -85,6 +85,7 @@ class GatherUntilMatchExecutor(
 
     private fun resolvePlayers(player: Player, context: EffectContext, state: GameState): List<EntityId> =
         when (player) {
+            Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
             Player.Each -> state.activePlayers
             Player.ActivePlayerFirst -> state.apnapOrder
             Player.EachOpponent -> state.getOpponents(context.controllerId)

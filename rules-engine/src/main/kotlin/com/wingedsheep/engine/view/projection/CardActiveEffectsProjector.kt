@@ -271,6 +271,12 @@ internal class CardActiveEffectsProjector(
         // blocked this turn except by creatures with haste", Resilient Roadrunner). It routes
         // through the same projected evasion channel, so the block rules already enforced it
         // — only the badge was missing, leaving the restriction invisible to both players.
+        is SerializableModification.CantBeBlockedExceptByCollection -> ClientCardEffect(
+            effectId = "cant_be_blocked_except_by_collection",
+            name = "Evasion",
+            description = "Can't be blocked except by the chosen creatures or ${modification.alternativeFilter.description}",
+            icon = "evasion"
+        )
         is SerializableModification.CantBeBlockedExceptBy -> ClientCardEffect(
             effectId = "cant_be_blocked_except_by",
             name = "Evasion",

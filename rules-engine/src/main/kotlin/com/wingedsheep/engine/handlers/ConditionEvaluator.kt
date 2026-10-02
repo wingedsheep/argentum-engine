@@ -1246,6 +1246,8 @@ class ConditionEvaluator(
         val playerIds: List<EntityId> = when (condition.player) {
             is Player.You -> controllerId?.let { listOf(it) } ?: emptyList()
             is Player.EachOpponent -> controllerId?.let { state.getOpponents(it) } ?: emptyList()
+            is Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders
+                .allDefendingPlayersInApnapOrder(state)
             is Player.Each -> state.activePlayers
             is Player.Any -> state.activePlayers
             is Player.Candidate -> listOfNotNull((ctx as? Resolution)?.effectContext?.candidatePlayerId)
@@ -1505,6 +1507,8 @@ class ConditionEvaluator(
         // more". Every other scope resolves to the single player it names, so Player.You behaves
         // exactly as before.
         val playerIds = when (condition.player) {
+            is Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders
+                .allDefendingPlayersInApnapOrder(state)
             is Player.Each, is Player.Any -> state.activePlayers
             is Player.EachOpponent -> {
                 val controller = resolvePlayer(state, Player.You, ctx) ?: return 0

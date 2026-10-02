@@ -687,6 +687,7 @@ object CardLinter {
             "CopyCollectionIntoCollection", "RecordChosenLinkedExile",
             "PairWithSource", "EmitChampionedEvent",
         )) put(type to "from", read(Space.COLLECTION))
+        put("GrantCantBeBlockedExceptByCollection" to "collection", read(Space.COLLECTION))
         put("ChoosePile" to "pileA", read(Space.COLLECTION))
         put("ChoosePile" to "pileB", read(Space.COLLECTION))
         put("ForEachCapturedController" to "collection", read(Space.COLLECTION))

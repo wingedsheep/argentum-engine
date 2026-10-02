@@ -268,6 +268,7 @@ class ForEachExecutor(
 
     private fun resolvePlayers(player: Player, state: GameState, context: EffectContext): List<EntityId> {
         return when (player) {
+            Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
             Player.Each -> state.activePlayers
             Player.ActivePlayerFirst -> state.apnapOrder
             Player.You -> listOf(context.controllerId)

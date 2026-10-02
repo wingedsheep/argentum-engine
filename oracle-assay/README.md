@@ -1121,6 +1121,103 @@ findings this grammar already names, surfaced because their last declining line 
 creatures you control" with `excludeSelf = true`, the same {T}-plus-tap-others split Devout Chaplain
 already shows. No card moved.
 
+## The fight band
+
+The twenty-first loop band, tail key `fights target creature …`: "Target creature you control
+**fights** target creature you don't control." (Savage Punch, Contested Cliffs, Domri's −2), "When ~
+enters, **it fights** up to one target creature an opponent controls." (Mind Meanderer), "When this
+Aura enters, **enchanted creature fights** …" (Pitiless Fists), and the later clause "Target creature
+you control gets +1/+0 until end of turn. **It fights** target creature you don't control." (Swift
+Kick). **36 lines**; the probe (drop the fought target → "gets +1/+1 until end of turn") finished 17
+whole cards, an upper bound because it also deleted the second target. It delivered **9 hand-written
+cards read whole (7,467 → 7,476)** and 24 more in the verdict ledger (10,243 → 10,267). "Target creature fights **another** target creature" stays declined: that "another" is the SDK's `TargetOther`, which the grammar does not produce.
+
+### The subject is a slot; the earlier target is a name of its own
+
+`Effects.Fight(target1, target2)` names both fighters, so `SelfSteps.fights` is `attachesSource`'s
+shape with the subject as a slot: the source, the attached creature and a filtered trigger's match each
+instantiate it, as `retargetable` is instantiated. The later clause is the new part. Its "it" is the
+first clause's target *and* it declares a target of its own, so it cannot read `Targets.SLOT`, which
+its own declaration owns. It reads `Targets.PRIOR`, and `Steps.renumbered` resolves that to the slot
+the previous declaring clause was given (and `clauseParts` folds it back when printing). In first
+position there is nothing for it to name, so the line declines. The two-target sentence is
+`fightTargets`, the second rule after `exchangeControl` to declare two targets in one clause.
+
+### What the differential found
+
+Differential **7,078 compared / 71 divergent → 7,087 / 72**. Five new divergences, all five card
+bugs, fixed:
+
+- **Swift Kick, Ruthless Predation, Bushwhack** — "target creature you **don't control**" was written
+  `opponentControls()`. In a duel the two are the same; in Two-Headed Giant a teammate's creature is
+  one you don't control but not an opponent's. The grammar reads `Not(ControlledByYou)`, the spelling
+  Skemfar Elderhall and Plague Wind already use.
+- **Sawblade Slinger** — "target **Zombie** an opponent controls" was `Creature.withSubtype`; a bare
+  creature-type noun names every permanent with the subtype.
+- **Kapow!** — wrapped its fight in an `If` re-checking both targets' filters. An illegal target
+  already resolves to nothing (CR 608.2b), so the fight does nothing without it. The gate was
+  removed; the card now reads like Troll Negotiations and Swift Kick.
+
+Sawblade Slinger still diverges on a **standing finding**: its modal *trigger* sets
+`countsAsModalSpell = false`, and the flag only matters on a spell.
+
+
+## The kicker entry band
+
+The twenty-second loop band, tail key `~ was kicked, …`: "**If ~ was kicked**, it enters with two
++1/+1 counters on it." (Academy Drake, Llanowar Elite), and the Invasion sibling that adds "**and
+with flying**" (Faerie Squadron, Kavu Titan, Pouncing Kavu). **38 lines**; the probe (drop the
+condition → "~ enters with …") finished 16 whole cards; it cannot see the keyword half, so it is
+an estimate rather than a bound either way. It delivered **15 hand-written cards read whole (7,476 → 7,491)** and 22
+more in the verdict ledger (10,267 → 10,289).
+
+### One sentence, two replacement effects
+
+The goldens spell the counters as `EntersWithCounters(selfOnly = true, condition = WasKicked)` and
+the keyword as a *second* replacement, `EntersWithKeywords` gated on the same condition — the shape
+`EntersWithKeywords`' own KDoc names with Kavu Titan. So the family yields a list, and the
+replacement line now slots `Replacements.replacements`, a one-effect lift beside the kicker rows,
+rather than one effect. The condition is a word, not a `Conditions` slot: its subject is the source
+("~ was kicked"), which the condition vocabulary spells "it was kicked" from the trigger position.
+The keyword is a single `Keywords.keyword` because every printed line names exactly one.
+
+### What the differential found
+
+Differential **7,087 compared / 72 divergent → 7,102 / 72**. All fifteen newly compared cards
+agree with their goldens; no card moved.
+
+
+## The can't-attack-or-block band
+
+The twenty-third loop band, tail key `can't attack or …`: "**Enchanted creature can't attack or
+block.**" (Pacifism, Compulsory Rest, Luminous Bonds and the rest of the white Aura removal), the same
+sentence over the source and over a plural group, and "**~ can't attack or block unless** {condition}."
+(Ketramose, Tiger-Dillo, Blind-Spot Giant). **78 lines**; the probe (→ "has flying") finished 15
+whole cards corpus-wide. It delivered **7 hand-written cards read whole (7,491 → 7,498)** and 20 more in
+the verdict ledger (10,289 → 10,309).
+
+### One sentence, two statics
+
+The SDK has no joint restriction: the goldens carry `CantAttack` then `CantBlock` over one
+`GroupFilter`, because attack and block declarations read them separately (CR 508.1, 509.1). So the
+family is a line rule yielding a list, like the attached keyword run, and it reuses the combat band's
+`Subject` table whole — the round trip through its spelling is what refuses a reversed pair, a split
+pair, or a group the sentence cannot say. The "unless" form is `CantAttackUnless` + `CantBlockUnless`
+sharing one `Conditions` slot, and it is **source-only**: the condition vocabulary's "it" is the
+source, which under "enchanted creature" would be the wrong permanent.
+
+The unless form finished no hand-written card: every one of them declines inside the condition
+("you control **another** Giant", "seven or more cards **in exile**", "it has an even number of
+counters"), so its payload is `Conditions`, the fronted-duration lesson again. Arrest's family
+("…, and its activated abilities can't be activated", five cards) is the next row: the activation lock
+is `PreventActivatedAbilities(Permanent.attachedToBySource())`, and four of the five print "enchanted
+**permanent**", a subject the attachment normalization does not spell yet.
+
+### What the differential found
+
+Differential **7,102 compared / 72 divergent → 7,108 / 72**. All six newly compared cards agree with
+their goldens; no card moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

@@ -88,6 +88,20 @@ object CombatDefenders {
         }
 
     /**
+     * All defending seats during combat, including before attackers are declared and seats
+     * with no attackers assigned. All opponents defend even when attack-left/right limits
+     * attack targets; shared team turns include every player on the defending team. Outside combat nobody
+     * defends. Unlike [defendingPlayersInApnapOrder], this does not inspect attack assignments.
+     */
+    fun allDefendingPlayersInApnapOrder(state: GameState): List<EntityId> {
+        if (state.step.phase != com.wingedsheep.sdk.core.Phase.COMBAT) return emptyList()
+        val active = state.activePlayerId ?: return emptyList()
+        val defenders = state.getOpponents(active)
+            .flatMap { state.sharedTurnTeam(it) }.toSet()
+        return state.apnapOrder.filter { it in defenders }
+    }
+
+    /**
      * The defending players ordered for sequential block declaration: turn order starting
      * from the active player (CR 101.4 APNAP). The active player is never a defender, so in
      * practice this is the defenders in turn order after the active player, wrapping around.

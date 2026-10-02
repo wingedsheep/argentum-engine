@@ -760,6 +760,7 @@ fun defaultBlockEvasionRules(
     CantBeBlockedExceptByColorRule(),
     CantBeBlockedByColorRule(),
     CantBeBlockedExceptByRule(predicateEvaluator),
+    CantBeBlockedExceptByCollectionRule(predicateEvaluator),
     CantBeBlockedUnlessDefenderSharesCreatureTypeRule(),
     CantBeBlockedIfDefenderControlsRule(predicateEvaluator),
     CantBeBlockedWhilePropertyAtMostRule(),

@@ -2611,6 +2611,18 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   declaration, because a per-blocker projected flag can't express a pair.
 - `CantAttackGroupEffect(filter, condition?)` — group-scoped can't-attack.
 - `CantBlockGroupEffect(filter, condition?)` — group-scoped can't-block.
+- `GrantCantBeBlockedExceptByCollection(target, collection, alternativeFilter, duration)` — restrict
+  the named attacker to blockers that were in a pipeline collection at resolution, **or** match
+  `alternativeFilter` when blocking. Cards use the `Effects` facade with a `CollectionSlot`.
+  Membership remembers battlefield visits: leaving and returning does not restore membership;
+  newcomers qualify only through the alternative filter. The attacker is also bound to its current
+  visit. Current projected characteristics drive the alternative, independently of source survival
+  or ability loss. Restrictions stack conjunctively with each other and ordinary evasion; reach
+  is not an implicit substitute for a literal flying filter. Compose labelled pile splitting,
+  collected per-defender unions, and per-attacker pile choice for Raging River. No pile logic or
+  card names live in the engine. Emits the existing blocker-policy change event and displays an
+  evasion badge; the legal-action service supplies valid blocker pairs to the client.
+
 - `Effects.Suspect(target, duration = Permanent)` (`SuspectEffect`) — target becomes suspected (MKM,
   CR 701.60): the named designation *plus* the menace and "this creature can't block" it carries
   while suspected. **One** effect and one executor, not a composite of three, because every gate on
@@ -4464,6 +4476,11 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   in event filters (`SpellCastEvent(player = …)`), exists-conditions, and battlefield
   aggregations ("creatures your opponents control").
 - `Player.ActivePlayerFirst` — all players in APNAP order.
+- `Player.EachDefendingPlayer` — all defending seats during combat, in APNAP order, including
+  before attackers are declared and opponents with no attackers assigned. Includes all opponents
+  regardless of attack-left/right limits, respecting shared team turns. Outside combat this names nobody. Use it with
+  `Effects.ForEachPlayer`, plural effect targets, zone gathering, or counting; the single-player
+  resolver deliberately returns null.
 - `Player.TargetPlayer` / `Player.TargetOpponent` — the bound player target (resolved from the
   chosen targets, never from turn order). Both resolve to a **single** player, so on a spell that
   targets several they silently read only the first — reach for `EachTargetedPlayer` there.
@@ -9749,7 +9766,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   exiling with `Effects.Exile(..., addCounterType = CounterType.CROAK)` off a per-card
   `LIBRARY -> GRAVEYARD` `EventPattern.ZoneChangeEvent`. `CounterType.CROAK` is a pure marker like
   `CounterType.STASH`: it grants nothing, it just gives the filter something to select on.
-- `MayCastSelfFromZones(zones, condition = null, additionalCost = null)` — intrinsic *self*
+- `MayCastSelfFromZones(zones, condition = null, additionalCost = null, castUsing = null)` — intrinsic *self*
   permission: this card may be cast from any of `zones` (graveyard/exile) following normal timing
   and for its normal mana cost. Squee, the Immortal = `MayCastSelfFromZones(listOf(GRAVEYARD,
   EXILE))`. When `condition` is non-null the permission is **gated**: it is available only while the
@@ -9764,7 +9781,13 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   (mirrors `GrantMayCastFromLinkedExile.additionalCost`). Alien Symbiosis (SPM) =
   `MayCastSelfFromZones(listOf(GRAVEYARD), additionalCost = Costs.additional.DiscardCards(1))` for
   "You may cast this card from your graveyard by discarding a card in addition to paying its other
-  costs." Wired through `CastZoneResolver.findMayCastSelfFromZoneAbility` (returns the applicable
+  costs." When `castUsing` (a `Keyword`) is non-null the permission authorizes **only** a cast that
+  uses that keyword's casting ability, for that ability's price — Detective's Phoenix (MH3) =
+  `MayCastSelfFromZones(listOf(GRAVEYARD), castUsing = Keyword.BESTOW)` for "You may cast this card
+  from your graveyard using its bestow ability." Such a permission is offered by the ability's own
+  enumerator (the bestow cast), never as an ordinary cast; the engine reads `Keyword.BESTOW` today
+  and any other keyword fails closed (authorizes nothing) until it is wired in `CastZoneResolver`.
+  Wired through `CastZoneResolver.findMayCastSelfFromZoneAbility` (returns the applicable
   ability so callers can read its `additionalCost`), validated/collected in `CastSpellHandler`
   alongside the other additional-cost sources, and surfaced to legal-action enumeration in
   `CastFromZoneEnumerator.enumerateIntrinsicZoneCast` via the same `AdditionalCostData` /
@@ -10824,6 +10847,8 @@ composite abilities).
   cannot remain attached. Host departure ends bestow during resolution, before later instructions.
   Spell copies retain bestow and their copy exceptions; copies of the permanent copy its underlying
   creature characteristics without the bestow status.
+  "You may cast this card from your graveyard using its bestow ability" is
+  `MayCastSelfFromZones(listOf(Zone.GRAVEYARD), castUsing = Keyword.BESTOW)` (Detective's Phoenix).
   Author the enchanted creature's bonuses and abilities with the existing attachment primitives.
   Bestow does **not** automatically condition the card's other abilities: when Oracle says
   “As long as this permanent is a creature”, condition that self branch

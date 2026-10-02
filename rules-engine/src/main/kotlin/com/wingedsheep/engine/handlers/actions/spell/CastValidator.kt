@@ -248,7 +248,7 @@ internal class CastValidator(
             CastSourceRoute.HAND to { cardId in state.getZone(ZoneKey(playerId, Zone.HAND)) },
             CastSourceRoute.TOP_OF_LIBRARY to { zoneResolver.isOnTopOfLibraryWithPermission(state, playerId, cardId) },
             CastSourceRoute.EXILE_PERMISSION to { zoneResolver.isInExileWithPlayPermission(state, playerId, cardId) },
-            CastSourceRoute.SELF_ZONE_PERMISSION to { zoneResolver.hasMayCastSelfFromZonePermission(state, playerId, cardId) },
+            CastSourceRoute.SELF_ZONE_PERMISSION to { zoneResolver.hasMayCastSelfFromZonePermission(state, playerId, cardId, action) },
             CastSourceRoute.PERMANENT_FROM_GRAVEYARD to {
                 zoneResolver.hasMayPlayPermanentFromGraveyardPermission(state, playerId, cardId, cardComponent)
             },
