@@ -87,7 +87,7 @@ class DetectivesPhoenixScenarioTest : ScenarioTestBase() {
             val game = scenario().withPlayers()
                 .withCardOnBattlefield(1, "Llanowar Elves")
                 .withCardInGraveyard(1, "Detective's Phoenix")
-                .withCardInGraveyard(1, "Grizzly Bears")
+                .withCardInGraveyard(1, "Hill Giant")
                 .withLandsOnBattlefield(1, "Mountain", 3)
                 .withActivePlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
@@ -97,7 +97,8 @@ class DetectivesPhoenixScenarioTest : ScenarioTestBase() {
 
             game.getLegalActions(1).filter { (it.action as? CastSpell)?.cardId == phoenix }.shouldBeEmpty()
             // The Phoenix is on the stack while its costs are paid, so it can't be its own evidence.
-            game.bestowFromGraveyard(elves, game.findCardsInGraveyard(1, "Grizzly Bears") + phoenix)
+            // Hill Giant (4) plus the Phoenix itself (3) would reach six.
+            game.bestowFromGraveyard(elves, game.findCardsInGraveyard(1, "Hill Giant") + phoenix)
                 .error shouldNotBe null
         }
 
