@@ -1262,6 +1262,19 @@ sealed interface StatePredicate {
     }
 
     /**
+     * A spell or ability on the stack with exactly one chosen target — the "with a single target"
+     * qualifier (Hydroelectric Specimen's "target instant or sorcery spell with a single target").
+     * Counts the targets that were *chosen*, not the ones still legal: per the Hydroelectric
+     * Specimen ruling, a spell with several targets doesn't qualify even after all but one of them
+     * have become illegal. An object with no targets never matches.
+     */
+    @SerialName("HasSingleTarget")
+    @Serializable
+    data object HasSingleTarget : Entity {
+        override val description: String = "with a single target"
+    }
+
+    /**
      * The candidate permanent IS the effect's source permanent itself. Source-relative:
      * resolves against the source supplied in the evaluation context, and is false with no
      * source context. This is the [GameObjectFilter][com.wingedsheep.sdk.scripting.GameObjectFilter]

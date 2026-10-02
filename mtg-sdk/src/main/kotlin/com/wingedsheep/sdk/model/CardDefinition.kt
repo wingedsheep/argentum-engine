@@ -890,14 +890,20 @@ data class CardDefinition(
          * Once on the battlefield the permanent has only the played face's characteristics
          * (CR 712.8f) and can never turn over — CR 712.9 excludes modal DFCs from transforming.
          *
-         * @param frontFace The front face (must be a land with no mana cost).
+         * The front need not be a land: a spell-front // land-back modal DFC (Emeria's Call //
+         * Emeria, Shattered Skyclave; the Modern Horizons 3 cycle such as Hydroelectric Specimen //
+         * Hydroelectric Laboratory) uses the same factory. Its front is cast as usual from its own
+         * mana cost, and its land back is played (CR 712.12) — never cast.
+         *
+         * @param frontFace The front face (a land with no mana cost, or a castable nonland face).
          * @param backFace The back face (must be a land with no mana cost).
          */
         fun modalDoubleFacedLand(
             frontFace: CardDefinition,
             backFace: CardDefinition
         ): CardDefinition {
-            for (face in listOf(frontFace, backFace)) {
+            val landFaces = if (frontFace.typeLine.isLand) listOf(frontFace, backFace) else listOf(backFace)
+            for (face in landFaces) {
                 require(face.typeLine.isLand) {
                     "Modal double-faced land face '${face.name}' must be a land (CR 712.12)"
                 }

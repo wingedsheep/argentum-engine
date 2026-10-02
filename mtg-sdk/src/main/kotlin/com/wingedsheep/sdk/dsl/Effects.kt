@@ -4924,12 +4924,15 @@ object Effects {
         ChangeSpellTargetEffect(targetMustBeSource)
 
     /**
-     * Change the target of target spell or ability with a single target.
+     * Change the target of target spell or ability with a single target. Pass [to] for "… to this
+     * creature" (Hydroelectric Specimen): the target becomes that object if it's a legal target,
+     * with no choice offered.
      */
     fun ChangeTarget(
         newTargetMustBePlayer: Boolean = false,
         onlyIfCurrentTargetIsController: Boolean = false,
-    ): Effect = ChangeTargetEffect(newTargetMustBePlayer, onlyIfCurrentTargetIsController)
+        to: EffectTarget? = null,
+    ): Effect = ChangeTargetEffect(newTargetMustBePlayer, onlyIfCurrentTargetIsController, to)
 
     /**
      * Reselect the target of the triggering spell or ability at random.

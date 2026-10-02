@@ -2984,7 +2984,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   **from exile** (CR 406.7, "it doesn't change zones") is left where it is, with no move and no
   event. `SuccessCriterion.Auto` cannot infer success from this destination (there is no single zone
   to snapshot), so an `IfYouDo` over it must state its criterion explicitly.
-- `ChangeTargetEffect(spell, newTarget)` — change a spell's target.
+- `ChangeTargetEffect(spell, newTarget)` — change a spell's target. `Effects.ChangeTarget(to = EffectTarget.Self)` names the new target instead of offering a choice — see the `ChangeTargetEffect` entry below.
 - `ChangeSpellTargetEffect(spell, filter)` — same, filtered.
 - `ReselectTargetRandomlyEffect(spell)` — re-choose targets at random.
 - `Effects.ChangeTriggeringObjectTargets(chooser = RetargetChooser.Controller, spell = EffectTarget.TriggeringEntity)` — the player named by `chooser` may change the target or targets of `spell`, defaulting to the triggering spell/ability (`context.triggeringEntityId`); the player-chosen, multi-target counterpart of `ReselectTargetRandomly`. Pass a `ContextTarget`/`BoundVariable` for "you may choose new targets for target instant or sorcery spell" (**Wild Ricochet**, `Composite(ChangeTriggeringObjectTargets(spell = spell), CopyTargetSpell(spell))` — retarget first so the copy inherits the new targets, and `CopyTargetSpell` carries the copy's own "you may choose new targets" prompt). This is the *all*-targets retarget; `ChangeTarget` swaps one target and no-ops on a spell with more than one, so a card whose text says "targets" wants this even when it names its spell as a target. `RetargetChooser.Controller` = the effect's controller; `RetargetChooser.OwnerOfStored(name)` = the owner of the single card in pipeline collection `name` (≠1 card → no chooser → no-op). Reselection is offered slot-by-slot among the original object's legal targets (legality judged from *its* controller, current target kept as a "keep" option, no target chosen twice). **Psychic Battle** composes from atoms: `Composite(GatherCards(TopOfLibrary(1, Player.Each), revealed=true, storeAs="revealed"), FilterCollection("revealed", collectionFilter = GreatestManaValue, storeMatching="w"), ChangeTriggeringObjectTargets(RetargetChooser.OwnerOfStored("w")))` — a tie keeps several greatest cards so `OwnerOfStored` finds no unique owner and the targets stay put.
@@ -4680,6 +4680,10 @@ for "from a creature source" — Echo, Perceptive Prodigy);
 specific zone — `StatePredicate.WasCastFromZone`, reading `SpellOnStackComponent.castFromZone`; e.g.
 `TargetFilter.SpellOnStack.notCastFromZone(Zone.HAND)` for "target spell that wasn't cast from its
 owner's hand" — Wash Away, since a card in a hand is owned by that hand's player, CR 108.3);
+`.withSingleTarget()` (a spell or ability on the stack with exactly one *chosen* target — `StatePredicate.HasSingleTarget`;
+`TargetFilter.InstantOrSorcerySpellOnStack.withSingleTarget()` is "target instant or sorcery spell with a single
+target", Hydroelectric Specimen. It counts chosen targets, legal or not, so a spell with two targets never
+qualifies even after one became illegal; a targetless spell never does either);
 `.currentlyIn(zone)` (`StatePredicate.InZone` — the object is in that zone right now; `currentlyIn(Zone.STACK)`
 is "a spell", the damage-source reading of Hostility's "a spell you control");
 plus `TargetFilter.excludeSelf` to exclude the source.
@@ -8643,7 +8647,14 @@ in the declare-blockers step, even before the turn-based block action has comple
   are Reflecting Mirror's printed restrictions: fire only when the spell's single target is *you*,
   and restrict the replacement to a **player**. The new-target filter narrows the spell's *own*
   legal-target list rather than replacing it, so a redirect can never make an otherwise-illegal
-  choice legal. Both default false, which is the unrestricted Willbender behaviour.
+  choice legal. Both default false, which is the unrestricted Willbender behaviour. A third knob,
+  `newTarget: EffectTarget?` (facade `Effects.ChangeTarget(to = …)`), names the object the target
+  changes *to* — "change the target of target instant or sorcery spell with a single target to this
+  creature" (**Hydroelectric Specimen**, `to = EffectTarget.Self`). No choice is offered: per CR
+  115.7a the target changes only if that object is a legal target for the spell, judged by the
+  spell's own requirement from *its controller's* side (an opponent's spell can't be moved onto your
+  hexproof creature; yours can), and otherwise stays as it was. Pair with a
+  `.withSingleTarget()` target filter for the "with a single target" restriction.
 - `RedirectNextDamageEffect(protectedTargets, redirectTo, amount, scope, creaturesOnly = false, optional = false)` —
   **`creaturesOnly`** protects the *class* of creatures rather than a fixed list of entities: Blood
   of the Martyr's "if damage would be dealt to any creature". Checked against projected state at

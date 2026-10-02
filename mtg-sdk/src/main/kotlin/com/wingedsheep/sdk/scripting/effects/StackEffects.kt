@@ -755,10 +755,19 @@ data class ChangeTargetEffect(
      * Mirror's "if that target is you". Default false: Willbender redirects whatever it targets.
      */
     val onlyIfCurrentTargetIsController: Boolean = false,
+    /**
+     * The object the target is changed *to* — "change the target of target spell … to this
+     * creature" (Hydroelectric Specimen, Spellskite). Null (the default) lets the controller choose
+     * among the spell's legal new targets. When set there is no choice: the target changes only if
+     * [newTarget] is a legal target for the spell, judged from the spell's controller (CR 115.7a —
+     * a target can be changed only to another legal target; otherwise it is unchanged).
+     */
+    val newTarget: EffectTarget? = null,
 ) : Effect {
     override val description: String = buildString {
         append("Change the target of target spell or ability with a single target")
         if (onlyIfCurrentTargetIsController) append(" if that target is you")
+        if (newTarget != null) append(" to ${newTarget.description}")
         if (newTargetMustBePlayer) append(". The new target must be a player")
     }
 }

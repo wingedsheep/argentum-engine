@@ -2393,6 +2393,7 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.ExiledWithSource,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasCastForWarp,
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasCastFromZone,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasSingleTarget,
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttachedToCardType -> true
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttachedTo -> true
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.ControllerControls -> true

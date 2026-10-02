@@ -2301,6 +2301,10 @@ class PredicateEvaluator(
             is StatePredicate.WasCastFromZone ->
                 container.get<SpellOnStackComponent>()?.castFromZone == predicate.zone
 
+            // "With a single target" — counts the chosen targets, legal or not (see the predicate).
+            StatePredicate.HasSingleTarget ->
+                container.get<TargetsComponent>()?.targets?.size == 1
+
             // Relative power
             StatePredicate.HasGreatestPower -> {
                 val entityController = projected.getController(entityId)

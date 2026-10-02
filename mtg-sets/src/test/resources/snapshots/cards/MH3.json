@@ -2626,6 +2626,118 @@
     ]
 }
 
+// Hydroelectric Specimen
+{
+    "name": "Hydroelectric Specimen",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Weird",
+    "oracleText": "Flash\nWhen this creature enters, you may change the target of target instant or sorcery spell with a single target to this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hydroelectric Specimen:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ChangeTarget",
+                        "newTarget": "Self"
+                    },
+                    "descriptionOverride": "When this creature enters, you may change the target of target instant or sorcery spell with a single target to this creature."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsInstant",
+                                        "IsSorcery"
+                                    ]
+                                }
+                            ],
+                            "statePredicates": [
+                                "HasSingleTarget"
+                            ]
+                        },
+                        "zone": "Stack"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may change the target of target instant or sorcery spell with a single target to this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Hydroelectric Laboratory",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "As this land enters, you may pay 3 life. If you don't, it enters tapped.\n{T}: Add {U}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Hydroelectric Laboratory:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLUE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                {
+                    "type": "EntersTapped",
+                    "payLifeCost": 3
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "240",
+            "rarity": "UNCOMMON",
+            "artist": "Raoul Vitale",
+            "imageUri": "https://cards.scryfall.io/normal/back/8/6/8689ecd7-e9a6-458b-99d2-6dbaca527f00.jpg?1783911234"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "UNCOMMON",
+        "artist": "Raoul Vitale",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/8689ecd7-e9a6-458b-99d2-6dbaca527f00.jpg?1783911234",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "The spell's target is changed to Hydroelectric Specimen only if Hydroelectric Specimen is a legal target for that spell."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a spell has multiple targets, you can't target it with Hydroelectric Specimen's ability, even if only one of those targets is a creature or all but one of those targets have become illegal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Invert Polarity
 {
     "name": "Invert Polarity",

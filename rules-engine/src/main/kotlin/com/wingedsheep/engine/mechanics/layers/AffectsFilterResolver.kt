@@ -789,6 +789,8 @@ internal class AffectsFilterResolver(
         // in group-static projection never carry. Only meaningful in target/counter contexts via
         // PredicateEvaluator. Never match here.
         is StatePredicate.WasCastFromZone -> false
+        // Stack-only, like WasCastFromZone: a permanent has no chosen targets.
+        StatePredicate.HasSingleTarget -> false
         StatePredicate.HasGreatestPower -> hasGreatestPowerInProjection(state, entityId, container, projectedValues)
         StatePredicate.HasLeastPowerAmongAllCreatures -> hasLeastPowerAmongAllCreaturesInProjection(state, entityId, container, projectedValues)
         // Relational minimum-mana-value matching is intended for point-of-use filters (targeting

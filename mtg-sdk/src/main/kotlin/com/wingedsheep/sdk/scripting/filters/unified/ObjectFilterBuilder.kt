@@ -1016,6 +1016,12 @@ interface ObjectFilterBuilder<out Self> {
     fun notCastFromZone(zone: Zone) =
         withStatePredicate(StatePredicate.Not(StatePredicate.WasCastFromZone(zone)))
 
+    /**
+     * Must be a spell or ability on the stack with exactly one chosen target — "target instant or
+     * sorcery spell with a single target" (Hydroelectric Specimen). See [StatePredicate.HasSingleTarget].
+     */
+    fun withSingleTarget() = withStatePredicate(StatePredicate.HasSingleTarget)
+
     // =============================================================================
     // Fluent Builder Methods - Controller Predicates
     // =============================================================================
