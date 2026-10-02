@@ -945,7 +945,7 @@ class TriggerMatcher(
             sourceId = sourceId
         )
         return event.cardIds.filter { cardId ->
-            predicateEvaluator.matches(state, projected, cardId, filter, predicateContext)
+            (cardId !in event.undefinedCharacteristics || filter.cardPredicates.isEmpty()) && predicateEvaluator.matches(state, projected, cardId, filter, predicateContext)
         }
     }
 

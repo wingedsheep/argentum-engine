@@ -126,7 +126,7 @@ export interface CardDrawnEvent {
 export interface CardDiscardedEvent {
   readonly type: 'cardDiscarded'
   readonly playerId: EntityId
-  readonly cardId: EntityId
+  readonly cardId: EntityId | null
   readonly cardName: string
   readonly description: string
 }

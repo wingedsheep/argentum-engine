@@ -385,6 +385,7 @@ class DynamicAmountEvaluator(
             is DynamicAmount.StoredCardManaValue -> {
                 val cards = context.pipeline.storedCollections[amount.collectionName] ?: return 0
                 val cardId = cards.firstOrNull() ?: return 0
+                if (cardId in context.pipeline.storedCollections[com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.UNDEFINED + ":" + amount.collectionName].orEmpty()) return 0
                 state.getEntity(cardId)?.get<CardComponent>()?.manaValue ?: 0
             }
 
@@ -402,6 +403,7 @@ class DynamicAmountEvaluator(
                 val cardTypes = mutableSetOf<com.wingedsheep.sdk.core.CardType>()
                 for (collectionName in amount.collections) {
                     for (cardId in context.pipeline.storedCollections[collectionName].orEmpty()) {
+                        if (cardId in context.pipeline.storedCollections[com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.UNDEFINED + ":" + collectionName].orEmpty()) continue
                         val card = state.getEntity(cardId)?.get<CardComponent>() ?: continue
                         cardTypes.addAll(card.typeLine.cardTypes)
                     }
@@ -412,7 +414,8 @@ class DynamicAmountEvaluator(
             is DynamicAmount.ManaValueSumOfCollection -> {
                 val cards = context.pipeline.storedCollections[amount.collectionName] ?: return 0
                 cards.sumOf { cardId ->
-                    state.getEntity(cardId)?.get<CardComponent>()?.manaValue ?: 0
+                    if (cardId in context.pipeline.storedCollections[com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.UNDEFINED + ":" + amount.collectionName].orEmpty()) 0
+                    else state.getEntity(cardId)?.get<CardComponent>()?.manaValue ?: 0
                 }
             }
 
@@ -535,6 +538,10 @@ class DynamicAmountEvaluator(
                     return context.triggerContext?.enchantedCreatureLastKnownPower ?: 0
                 }
                 if (entityId == null) return 0
+                val pipelineTarget = amount.entity as? EffectTarget.PipelineTarget
+                if (pipelineTarget != null && entityId in context.pipeline.storedCollections[
+                        com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.UNDEFINED + ":" + pipelineTarget.collectionName
+                    ].orEmpty()) return 0
                 // Last-known-information fallback (CR 113.7a / 603.10 / 608.2h): one rule for every
                 // reference that reads a permanent after it has left the battlefield — a
                 // self-sacrificing source, or a sacrificed / tapped / chosen cost permanent. When

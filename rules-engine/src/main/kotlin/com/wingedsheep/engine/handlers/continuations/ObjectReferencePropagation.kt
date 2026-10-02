@@ -12,6 +12,8 @@ internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? 
     is EffectCopyAuraEntryContinuation -> context.objectReferences
     is EffectCopyEntryContinuation -> context.objectReferences
     is EffectEntryChoiceContinuation -> context.objectReferences
+    is EffectDiscardDestinationContinuation -> context.objectReferences
+    is EffectDiscardOrderContinuation -> context.objectReferences
     is CounterUnlessPaysContinuation -> objectReferences
     is MayPayManaContinuation -> effectContext.objectReferences
     is MayPayManaSelectionContinuation -> effectContext.objectReferences
@@ -129,6 +131,8 @@ internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnviro
     is EffectCopyAuraEntryContinuation -> copy(context = context.copy(objectReferences = refs))
     is EffectCopyEntryContinuation -> copy(context = context.copy(objectReferences = refs))
     is EffectEntryChoiceContinuation -> copy(context = context.copy(objectReferences = refs))
+    is EffectDiscardDestinationContinuation -> copy(context = context.copy(objectReferences = refs))
+    is EffectDiscardOrderContinuation -> copy(context = context.copy(objectReferences = refs))
     is CounterUnlessPaysContinuation -> copy(objectReferences = refs)
     is MayPayManaContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
     is MayPayManaSelectionContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))

@@ -632,7 +632,8 @@ class LibraryAndZoneContinuationResumer(
         }
 
         // Inject updated collections into the consumer frame beneath (if any)
-        val newState = exposeCollectionsToNextFrame(state, updatedCollections)
+        val newState = exposeCollectionsToNextFrame(state,
+            com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.propagateUnknown(updatedCollections, continuation.storedCollections, continuation.sourceCollection))
 
         return checkForMore(newState, emptyList())
     }

@@ -1,20 +1,19 @@
 package com.wingedsheep.engine.handlers.effects.drawing
 
-import com.wingedsheep.engine.core.DecisionPhase
-import com.wingedsheep.engine.core.EachPlayerDiscardsOrLoseLifeContinuation
 import com.wingedsheep.engine.core.EffectResult
-import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.effects.EachPlayerDiscardsOrLoseLifeEffect
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.*
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlin.reflect.KClass
-import com.wingedsheep.engine.core.Outcome
 
 /**
  * Executor for EachPlayerDiscardsOrLoseLifeEffect.
@@ -27,8 +26,7 @@ import com.wingedsheep.engine.core.Outcome
  * Players with empty hands are treated as not discarding a creature.
  */
 class EachPlayerDiscardsOrLoseLifeExecutor(
-    private val zones: ZoneTransitionService,
-    private val decisionHandler: DecisionHandler = DecisionHandler()
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<EachPlayerDiscardsOrLoseLifeEffect> {
 
     override val effectType: KClass<EachPlayerDiscardsOrLoseLifeEffect> = EachPlayerDiscardsOrLoseLifeEffect::class
@@ -38,137 +36,32 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
         effect: EachPlayerDiscardsOrLoseLifeEffect,
         context: EffectContext
     ): EffectResult {
-        val activePlayer = state.activePlayerId
-            ?: return EffectResult.error(state, "No active player")
-
-        val playerOrder = listOf(activePlayer) + state.turnOrder.filter { it != activePlayer }
-
-        return askPlayerToDiscard(
-            state = state,
-            context = context,
-            playerOrder = playerOrder,
-            currentPlayerIndex = 0,
-            discardedCreature = emptyMap(),
-            lifeLoss = effect.lifeLoss
-        )
-    }
-
-    private fun askPlayerToDiscard(
-        state: GameState,
-        context: EffectContext,
-        playerOrder: List<EntityId>,
-        currentPlayerIndex: Int,
-        discardedCreature: Map<EntityId, Boolean>,
-        lifeLoss: Int
-    ): EffectResult {
-        val playerId = playerOrder[currentPlayerIndex]
-        val handZone = ZoneKey(playerId, Zone.HAND)
-        val hand = state.getZone(handZone)
-
-        // If hand is empty, this player didn't discard a creature
-        if (hand.isEmpty()) {
-            val newDiscardedCreature = discardedCreature + (playerId to false)
-            return proceedToNextPlayerOrFinish(
-                state = state,
-                context = context,
-                playerOrder = playerOrder,
-                currentPlayerIndex = currentPlayerIndex,
-                discardedCreature = newDiscardedCreature,
-                lifeLoss = lifeLoss
-            )
+        val players = state.apnapOrder
+        val targets = context.targets + players.map { ChosenTarget.Player(it) }
+        val effects = mutableListOf<Effect>()
+        val afterDiscards = mutableListOf<Effect>()
+        for ((i, _) in players.withIndex()) {
+            val player = Player.ContextPlayer(context.targets.size + i)
+            val slot = "discard_or_life_$i"
+            val creatures = "discard_or_life_creatures_$i"
+            effects += GatherCardsEffect(
+                CardSource.FromZone(Zone.HAND, player), "${slot}_hand")
+            effects += SelectFromCollectionEffect(
+                from = "${slot}_hand", selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                chooser = Chooser.ControllerOfSelection,
+                storeSelected = slot, prompt = "Choose a card to discard")
+            effects += MoveCollectionEffect(
+                from = slot, destination = CardDestination.ToZone(Zone.GRAVEYARD, player),
+                moveType = MoveType.Discard)
+            effects += FilterCollectionEffect(
+                from = slot, filter = GameObjectFilter.Creature, storeMatching = creatures)
+            afterDiscards += ConditionalOnCollectionEffect(
+                collection = creatures,
+                ifNotEmpty = CompositeEffect(emptyList()),
+                ifEmpty = Effects.LoseLife(effect.lifeLoss,
+                    EffectTarget.ContextTarget(context.targets.size + i)))
         }
-
-        // If hand has exactly 1 card, auto-discard it
-        if (hand.size == 1) {
-            val cardId = hand.first()
-            val isCreature = state.getEntity(cardId)?.get<CardComponent>()?.isCreature == true
-
-            // Shared discard path so a card-intrinsic discard replacement (madness, CR 702.35a)
-            // applies. `isCreature` is read above, off the pre-move state, because the card may not
-            // land in the graveyard at all.
-            val discardResult = zones.discardCards(state, playerId, listOf(cardId), causedByControllerId = context.controllerId)
-            val newState = discardResult.state
-            val events = discardResult.events
-            val newDiscardedCreature = discardedCreature + (playerId to isCreature)
-
-            val nextIndex = currentPlayerIndex + 1
-            return if (nextIndex < playerOrder.size) {
-                // Continue asking next player, carrying events forward
-                val nextResult = askPlayerToDiscard(
-                    state = newState,
-                    context = context,
-                    playerOrder = playerOrder,
-                    currentPlayerIndex = nextIndex,
-                    discardedCreature = newDiscardedCreature,
-                    lifeLoss = lifeLoss
-                )
-                EffectResult(nextResult.state, events + nextResult.events, nextResult.outcome)
-            } else {
-                // All done, apply life loss
-                val lifeLossResult = applyLifeLoss(newState, newDiscardedCreature, lifeLoss)
-                EffectResult(lifeLossResult.state, events + lifeLossResult.events, lifeLossResult.outcome)
-            }
-        }
-
-        // Player must choose which card to discard
-        val sourceName = context.sourceId?.let { sourceId ->
-            state.getEntity(sourceId)?.get<CardComponent>()?.name
-        }
-
-        val remainingPlayers = playerOrder.drop(currentPlayerIndex + 1)
-
-        val continuation = EachPlayerDiscardsOrLoseLifeContinuation(
-            sourceId = context.sourceId,
-            objectReferences = context.objectReferences,
-            sourceName = sourceName,
-            controllerId = context.controllerId,
-            currentPlayerId = playerId,
-            remainingPlayers = remainingPlayers,
-            discardedCreature = discardedCreature,
-            lifeLoss = lifeLoss
-        )
-
-        val decisionResult = decisionHandler.createCardSelectionDecision(
-            state = state,
-            playerId = playerId,
-            sourceId = context.sourceId,
-            sourceName = sourceName,
-            prompt = "Choose a card to discard",
-            options = hand,
-            minSelections = 1,
-            maxSelections = 1,
-            ordered = false,
-            phase = DecisionPhase.RESOLUTION,
-            answer = continuation
-        )
-
-        return EffectResult.propagatePause(
-            decisionResult.state,
-            decisionResult.events
-        )
-    }
-
-    private fun proceedToNextPlayerOrFinish(
-        state: GameState,
-        context: EffectContext,
-        playerOrder: List<EntityId>,
-        currentPlayerIndex: Int,
-        discardedCreature: Map<EntityId, Boolean>,
-        lifeLoss: Int
-    ): EffectResult {
-        val nextIndex = currentPlayerIndex + 1
-        return if (nextIndex < playerOrder.size) {
-            askPlayerToDiscard(
-                state = state,
-                context = context,
-                playerOrder = playerOrder,
-                currentPlayerIndex = nextIndex,
-                discardedCreature = discardedCreature,
-                lifeLoss = lifeLoss
-            )
-        } else {
-            applyLifeLoss(state, discardedCreature, lifeLoss)
-        }
+        return effectExecutor(state, CompositeEffect(effects + afterDiscards), context.copy(targets = targets))
     }
 
     companion object {
@@ -188,9 +81,9 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
                     if (currentState.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>() == null
                     ) continue
-                    // CR 119.8 — a player who can't lose life doesn't.
+                    // A player whose life total is locked cannot lose life.
                     if (currentState.isLifeLossLocked(playerId)) continue
-                    // CR 810.9a — life loss applies to the team's shared total.
+                    // Shared-team games apply life loss to the team total.
                     val currentLife = currentState.lifeTotal(playerId)
                     val newLife = currentLife - lifeLoss
                     currentState = currentState.withLifeTotal(playerId, newLife)

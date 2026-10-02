@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
@@ -38,8 +39,17 @@ class FilterCollectionExecutor(
 
         val projected = state.projectedState
         val predicateContext = PredicateContext.fromEffectContext(context)
-        val passing = if (effect.filter == GameObjectFilter.Any) cards
-        else cards.filter { predicateEvaluator.matches(state, projected, it, effect.filter, predicateContext) }
+        val unknown = context.pipeline.storedCollections[EffectDiscardDestinations.UNDEFINED + ":" + effect.from].orEmpty().toSet()
+        val readsCharacteristics = effect.filter.cardPredicates.isNotEmpty() || when (effect.collectionFilter) {
+            is CollectionFilter.SharesSubtypeWithSacrificed, is CollectionFilter.GreatestPower,
+            is CollectionFilter.LeastToughness, is CollectionFilter.GreatestManaValue -> true
+            else -> false
+        }
+        val eligible = if (readsCharacteristics) cards.filterNot { it in unknown } else cards
+        val passing = if (effect.filter == GameObjectFilter.Any) eligible
+        else eligible.filter {
+            predicateEvaluator.matches(state, projected, it, effect.filter, predicateContext)
+        }
         val kept = (effect.collectionFilter?.let { keep(state, it, passing, context) } ?: passing).toSet()
         val (matching, nonMatching) = cards.partition { it in kept }
 

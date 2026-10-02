@@ -32,14 +32,15 @@ class ConditionalOnCollectionExecutor(
     ): EffectResult {
         val collection = context.pipeline.storedCollections[effect.collection] ?: emptyList()
 
+        val knownCards = collection.filter { it !in context.pipeline.storedCollections[com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.UNDEFINED + ":" + effect.collection].orEmpty() }
         val measuredSize = when {
-            effect.countDistinctCardTypes -> collection.flatMap { entityId ->
+            effect.countDistinctCardTypes -> knownCards.flatMap { entityId ->
                 state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.cardTypes ?: emptySet()
             }.toSet().size
 
             effect.filter != GameObjectFilter.Any -> {
                 val predicateContext = PredicateContext.fromEffectContext(context)
-                collection.count { entityId ->
+                (if (effect.filter.cardPredicates.isEmpty()) collection else knownCards).count { entityId ->
                     predicateEvaluator.matches(state, state.projectedState, entityId, effect.filter, predicateContext)
                 }
             }

@@ -547,6 +547,7 @@ class SelectFromCollectionExecutor(
             objectReferences = context.objectReferences,
             sourceName = sourceName,
             allCards = allCards,
+            sourceCollection = effect.from,
             storeSelected = effect.storeSelected,
             storeRemainder = effect.storeRemainder,
             storedCollections = context.pipeline.storedCollections,

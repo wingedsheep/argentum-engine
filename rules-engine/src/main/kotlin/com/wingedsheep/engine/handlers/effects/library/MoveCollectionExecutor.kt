@@ -74,6 +74,7 @@ class MoveCollectionExecutor(
             allCards
         }
 
+        if (effect.moveType == MoveType.Discard) context = context.copy(discardCollectionName = effect.from)
         val destination = effect.destination
         if (cards.isEmpty()) {
             // Nothing to move, but for library shuffles we still shuffle (e.g., ShuffleGraveyardIntoLibrary
@@ -90,6 +91,13 @@ class MoveCollectionExecutor(
                 }
             }
             return EffectResult.success(state)
+        }
+
+        if (effect.moveType == MoveType.Discard && !context.discardIsCost && destination is CardDestination.ToZone && destination.zone == Zone.GRAVEYARD) {
+            val playerId = resolvePlayer(destination.player, context, state) ?: context.controllerId
+            com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.prepare(
+                state, effect, context, cards, playerId, zones
+            )?.let { return it }
         }
 
         if (effect.faceDown == null) {
@@ -822,7 +830,7 @@ class MoveCollectionExecutor(
         // a card's own zone-change replacement can key off it (Wilt-Leaf Liege: "if a spell or
         // ability an opponent controls causes you to discard this card…"). Consumed per card by
         // ZoneTransitionService.moveToZone.
-        var newState = if (moveType == MoveType.Discard) {
+        var newState = if (moveType == MoveType.Discard && !context.discardIsCost) {
             com.wingedsheep.engine.handlers.effects.ZoneTransitionService
                 .markDiscardCause(state, cards, context.controllerId)
         } else {
@@ -849,7 +857,13 @@ class MoveCollectionExecutor(
             else -> com.wingedsheep.engine.handlers.effects.LibraryPlacement.Top
         }
 
-        for (cardId in cards) {
+        val chosenOrder = context.discardLibraryOrder.orEmpty()
+        val topOrder = chosenOrder.filter { context.discardDestinations[it]?.placement in listOf(ZonePlacement.Top, ZonePlacement.Default) }
+        val libraryOrder = topOrder.asReversed() + chosenOrder.filter { it !in topOrder }
+        val movementOrder = if (moveType == MoveType.Discard && libraryOrder.isNotEmpty())
+            cards.filter { it !in libraryOrder } + libraryOrder else cards
+        val undefinedDiscards = mutableListOf<EntityId>()
+        for (cardId in movementOrder) {
             if (destZone == Zone.BATTLEFIELD && cardId in context.entryAuraHosts &&
                 context.entryAuraHosts[cardId] == null) continue
             // Ownership lives on OwnerComponent once a card has been minted into a zone, but a
@@ -931,12 +945,19 @@ class MoveCollectionExecutor(
                 } else null
             } else null
 
+            val discardDestination = if (moveType == MoveType.Discard) context.discardDestinations[cardId] else null
+            val chosenZone = discardDestination?.zone ?: destZone
+            val chosenPlacement = when (discardDestination?.placement) {
+                ZonePlacement.Bottom -> com.wingedsheep.engine.handlers.effects.LibraryPlacement.Bottom
+                ZonePlacement.Shuffled -> com.wingedsheep.engine.handlers.effects.LibraryPlacement.Shuffled
+                else -> libraryPlacement
+            }
             val entryOptions = com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(
                 controllerId = actualDestPlayerId,
                 entryCopy = context.entryCopies[cardId],
                 entryChoices = context.entryChoices[cardId]?.values.orEmpty(),
                 auraHostId = context.entryAuraHosts[cardId],
-                libraryPlacement = libraryPlacement,
+                libraryPlacement = chosenPlacement,
                 tapped = destination.placement == ZonePlacement.Tapped || destination.placement == ZonePlacement.TappedAndAttacking,
                 tappedAndAttacking = destination.placement == ZonePlacement.TappedAndAttacking,
                 faceDown = isBattlefieldFaceDown,
@@ -955,10 +976,13 @@ class MoveCollectionExecutor(
             // Delegate to ZoneTransitionService for full cleanup + entry
             val fromZoneKey = if (fromZone != null) ZoneKey(ownerId, fromZone) else null
             val transitionResult = zones.moveToZone(
-                newState, cardId, destZone, entryOptions, fromZoneKey
+                newState, cardId, chosenZone, entryOptions.copy(libraryMoverId = if (moveType == MoveType.Discard) destPlayerId else context.controllerId), fromZoneKey
             )
             newState = transitionResult.state
             events.addAll(transitionResult.events)
+            if (moveType == MoveType.Discard && transitionResult.actualDestination == Zone.LIBRARY && !revealed && transitionResult.redirectResult?.reveal != true) {
+                undefinedDiscards.add(cardId)
+            }
 
             // Apply "enters with counters" replacement effects when a permanent enters the
             // battlefield from a non-stack zone (e.g., Celestial Reunion tutoring directly to
@@ -1005,7 +1029,7 @@ class MoveCollectionExecutor(
         // Emit discard event if configured
         if (moveType == MoveType.Discard && cards.isNotEmpty()) {
             val discardNames = cards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-            events.add(CardsDiscardedEvent(destPlayerId, cards, discardNames))
+            events.add(CardsDiscardedEvent(destPlayerId, cards, discardNames, undefinedCharacteristics = undefinedDiscards.toSet()))
             newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
                 .trackDiscard(newState, destPlayerId, cards)
         }
@@ -1085,7 +1109,10 @@ class MoveCollectionExecutor(
         }
 
         return EffectResult.success(newState, events).copy(
-            updatedCollections = updatedCollections,
+            updatedCollections = updatedCollections + if (moveType == MoveType.Discard)
+                com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.recordUnknown(
+                    context, undefinedDiscards.toList(), context.discardCollectionName, storeMovedAs)
+                else emptyMap(),
             updatedSacrificedPermanents = sacrificedSnapshots,
         )
     }

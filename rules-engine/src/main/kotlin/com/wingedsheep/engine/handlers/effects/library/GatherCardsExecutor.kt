@@ -417,7 +417,8 @@ class GatherCardsExecutor(
         }
 
         return EffectResult.success(newState, events).copy(
-            updatedCollections = mapOf(effect.storeAs to cards)
+            updatedCollections = mapOf(effect.storeAs to cards) +
+                com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.clearUnknown(context, effect.storeAs)
         )
     }
 

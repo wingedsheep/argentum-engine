@@ -34,6 +34,8 @@ class ModalAndCloneContinuationResumer(
         resumer(ModalTargetContinuation::class, ::resumeModalTarget),
         resumer(EffectCopyEntryContinuation::class, ::resumeEffectCopyEntry),
         resumer(EffectEntryChoiceContinuation::class, ::resumeEffectEntryChoice),
+        resumer(EffectDiscardDestinationContinuation::class, ::resumeEffectDiscardDestination),
+        resumer(EffectDiscardOrderContinuation::class, ::resumeEffectDiscardOrder),
         resumer(EffectCopyAuraEntryContinuation::class, ::resumeEffectCopyAuraEntry),
         resumer(CloneAuraEntryContinuation::class, ::resumeCloneAuraEntry),
         resumer(CloneEntersContinuation::class, ::resumeCloneEnters),
@@ -102,6 +104,33 @@ class ModalAndCloneContinuationResumer(
             ?: return ExecutionResult.error(state, "Unexpected response for ${continuation.question.choiceType} choice")
         val context = com.wingedsheep.engine.handlers.effects.EffectEntryChoices.answered(
             continuation.context, continuation.entityId, continuation.question.choiceType, slot, value)
+        val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
+        if (result.outcome !is Outcome.Done) return result.toExecutionResult()
+        return checkForMore(exposeCollectionsToNextFrame(result.state, result.updatedCollections), result.events)
+    }
+
+    private fun resumeEffectDiscardDestination(
+        state: GameState, continuation: EffectDiscardDestinationContinuation,
+        response: DecisionResponse, checkForMore: CheckForMore,
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse || response.optionIndex !in 0..continuation.destinations.size)
+            return ExecutionResult.error(state, "Expected a discard destination")
+        val destination = continuation.destinations.getOrNull(response.optionIndex)
+        val context = continuation.context.copy(discardDestinations = continuation.context.discardDestinations + (continuation.cardId to destination))
+        val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
+        if (result.outcome !is Outcome.Done) return result.toExecutionResult()
+        return checkForMore(exposeCollectionsToNextFrame(result.state, result.updatedCollections), result.events)
+    }
+
+    private fun resumeEffectDiscardOrder(
+        state: GameState, continuation: EffectDiscardOrderContinuation,
+        response: DecisionResponse, checkForMore: CheckForMore,
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) return ExecutionResult.error(state, "Expected library ordering")
+        val expected = continuation.context.discardDestinations.filterValues { it?.zone == Zone.LIBRARY }.keys
+        if (response.selectedCards.size != expected.size || response.selectedCards.toSet() != expected)
+            return ExecutionResult.error(state, "Order each discarded library card once")
+        val context = continuation.context.copy(discardLibraryOrder = response.selectedCards)
         val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
         if (result.outcome !is Outcome.Done) return result.toExecutionResult()
         return checkForMore(exposeCollectionsToNextFrame(result.state, result.updatedCollections), result.events)

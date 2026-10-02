@@ -158,7 +158,17 @@ class EffectExecutorRegistry(
                     "(EffectExecutorCoverageTest guards this at build time)."
             )
         val instructionContext = context.withCurrentObjectReferences(state)
-        val result = executor.execute(state, effect, instructionContext)
+        val executed = executor.execute(state, effect, instructionContext)
+        val result = if (effect is com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect ||
+            effect is com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect) {
+            executed.copy(updatedCollections = EffectDiscardDestinations.propagateUnknown(
+                executed.updatedCollections, instructionContext.pipeline.storedCollections,
+                when (effect) {
+                    is com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect -> effect.from
+                    is com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect -> effect.from
+                    else -> null
+                }))
+        } else executed
         val references = instructionContext.objectReferences.authorize(result.events)
         val finished = result.copy(state = com.wingedsheep.engine.handlers.continuations.propagateObjectReferences(result.state, references))
         val recorded = finished.copy(state = com.wingedsheep.engine.core.ControlHistory.record(finished.state, finished.events))

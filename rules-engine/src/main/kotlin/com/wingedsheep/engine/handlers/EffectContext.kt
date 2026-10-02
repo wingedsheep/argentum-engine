@@ -340,7 +340,19 @@ data class EffectContext(
     /** Prepared attachment choices; a null host means the Aura cannot enter. */
     val entryAuraHosts: Map<EntityId, EntityId?> = emptyMap(),
     /** Prepared "as this enters, choose …" answers, stamped on each entrant as it arrives. */
-    val entryChoices: Map<EntityId, com.wingedsheep.engine.handlers.effects.EntryChoiceAnswers> = emptyMap()
+    val entryChoices: Map<EntityId, com.wingedsheep.engine.handlers.effects.EntryChoiceAnswers> = emptyMap(),
+    /** Answers belong to this one discard instruction, including explicit declines. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val discardDestinations: Map<EntityId, com.wingedsheep.sdk.scripting.effects.CardDestination.ToZone?> = emptyMap(),
+    /** Top-to-bottom library order chosen before any card in the discard batch moves. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val discardLibraryOrder: List<EntityId>? = null,
+    /** Internal pipelines used to pay ward discard costs must not pose as resolving effects. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val discardIsCost: Boolean = false,
+    /** Collection whose discard result is being committed by the current instruction. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val discardCollectionName: String? = null
 ) {
     val activatedAbilityId: com.wingedsheep.sdk.scripting.AbilityId?
         get() = activatedAbility?.id

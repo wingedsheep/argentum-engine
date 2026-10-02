@@ -1599,7 +1599,10 @@ data class CardsDiscardedEvent(
      * but the client suppresses the "You discarded X" log line, because the accompanying
      * [CardCycledEvent] already narrates the same action.
      */
-    val asCyclingCost: Boolean = false
+    val asCyclingCost: Boolean = false,
+    /** Unrevealed hidden-zone discard replacements leave characteristics undefined. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val undefinedCharacteristics: Set<EntityId> = emptySet(),
 ) : GameEvent
 
 /**

@@ -51,7 +51,8 @@ class GrantReplacementEffectExecutor : EffectExecutor<GrantReplacementEffectEffe
         }
 
         val controllerId = if (onBattlefield) {
-            targetContainer.get<ControllerComponent>()?.playerId ?: context.controllerId
+            state.projectedState.getController(targetId)
+                ?: targetContainer.get<ControllerComponent>()?.playerId ?: context.controllerId
         } else {
             context.controllerId
         }

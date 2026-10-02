@@ -141,7 +141,7 @@ sealed interface ClientEvent {
     @SerialName("cardDiscarded")
     data class CardDiscarded(
         val playerId: EntityId,
-        val cardId: EntityId,
+        val cardId: EntityId?,
         val cardName: String,
         val isYours: Boolean? = null,
         override val description: String = when (isYours) {
@@ -974,24 +974,29 @@ object ClientEventTransformer {
                 // both would read as two separate actions.
                 if (event.cardIds.isNotEmpty() && !event.asCyclingCost) {
                     val isYours = event.playerId == viewingPlayerId
-                    if (event.cardNames.size > 1) {
-                        val names = event.cardNames.joinToString(", ")
+                    val visibleNames = event.cardIds.mapIndexed { index, id ->
+                        if (!isYours && id in event.undefinedCharacteristics) "a card"
+                        else event.cardNames.getOrNull(index) ?: "Card"
+                    }
+                    val firstId = event.cardIds.first().takeUnless { !isYours && it in event.undefinedCharacteristics }
+                    if (visibleNames.size > 1) {
+                        val names = visibleNames.joinToString(", ")
                         val desc = when (isYours) {
                             true -> "You discarded $names"
                             false -> "Opponent discarded $names"
                         }
                         ClientEvent.CardDiscarded(
                             playerId = event.playerId,
-                            cardId = event.cardIds.first(),
-                            cardName = event.cardNames.firstOrNull() ?: "Card",
+                            cardId = firstId,
+                            cardName = visibleNames.firstOrNull() ?: "Card",
                             isYours = isYours,
                             description = desc
                         )
                     } else {
-                        val firstName = event.cardNames.firstOrNull() ?: "Card"
+                        val firstName = visibleNames.firstOrNull() ?: "Card"
                         ClientEvent.CardDiscarded(
                             playerId = event.playerId,
-                            cardId = event.cardIds.first(),
+                            cardId = firstId,
                             cardName = firstName,
                             isYours = isYours
                         )
