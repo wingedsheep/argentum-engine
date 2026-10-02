@@ -44,6 +44,7 @@ class CombatContinuationResumer(
         resumer(DistributeDamageContinuation::class, ::resumeDistributeDamage),
         resumer(DeflectDamageSourceChoiceContinuation::class, ::resumeDeflectDamageSourceChoice),
         resumer(PreventDamageFromChosenSourceContinuation::class, ::resumePreventDamageFromChosenSource),
+        resumer(PreventNextDamageLeavingAmountContinuation::class, ::resumePreventNextDamageLeavingAmount),
         resumer(RedirectDamageSourceContinuation::class, ::resumeRedirectDamageSource),
         resumer(CombatOptionalRedirectContinuation::class) { state, continuation, response, _ ->
             resumeCombatOptionalRedirect(state, continuation, response)
@@ -413,6 +414,36 @@ class CombatContinuationResumer(
                 objectReferences = continuation.objectReferences)
         )
         return checkForMore(next, emptyList())
+    }
+
+    private fun resumePreventNextDamageLeavingAmount(
+        state: GameState,
+        continuation: PreventNextDamageLeavingAmountContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse || response.selectedCards.size != 1) {
+            return ExecutionResult.error(state, "Choose exactly one damage source")
+        }
+        val choice = continuation.choices.singleOrNull { it.reference.entityId == response.selectedCards.single() }
+            ?: return ExecutionResult.error(state, "Invalid damage source")
+        if (!state.isCurrentObject(choice.reference)) return checkForMore(state, emptyList())
+        val newState = state.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.PreventNextDamageLeavingAmount(
+                damageSourceId = choice.reference.entityId,
+                sourceName = com.wingedsheep.engine.state.nameVisibleToAll(state, choice.reference.entityId, choice.name),
+                amountToLeave = continuation.amountToLeave,
+                eligibleSource = continuation.eligibleSource,
+                combatOnly = continuation.scope == com.wingedsheep.sdk.scripting.effects.PreventionScope.CombatOnly
+            ),
+            affectedEntities = setOf(continuation.targetId),
+            duration = continuation.duration,
+            context = continuation.context
+        )
+        return checkForMore(newState, listOf(DamagePreventionShieldCreatedEvent(
+            continuation.targetId, newState.floatingEffects.last().id
+        )))
     }
 
     fun resumePreventDamageFromChosenSource(

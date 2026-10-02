@@ -1613,6 +1613,23 @@ object DamageUtils {
             }
         }
 
+        // A source's required properties are rechecked when damage occurs, not frozen at choice.
+        if (remainingDamage > 0 && sourceId != null) {
+            for (i in updatedEffects.indices) {
+                if (remainingDamage <= 0) break
+                if (i in toRemove) continue
+                val floating = updatedEffects[i]
+                val mod = floating.effect.modification as? SerializableModification.PreventNextDamageLeavingAmount ?: continue
+                if (targetId !in floating.effect.affectedEntities || mod.damageSourceId != sourceId) continue
+                if (mod.combatOnly && !isCombatDamage) continue
+                if (floating.referencedObjects.any { !state.isCurrentObject(it) }) continue
+                if (!predicateEvaluator.matches(state, state.projectedState, sourceId, mod.eligibleSource,
+                        PredicateContext(controllerId = floating.controllerId, sourceId = floating.sourceId))) continue
+                remainingDamage = minOf(remainingDamage, mod.amountToLeave)
+                toRemove.add(i)
+            }
+        }
+
         // Remove fully consumed shields in reverse order to maintain indices
         for (idx in toRemove.sortedDescending()) {
             updatedEffects.removeAt(idx)

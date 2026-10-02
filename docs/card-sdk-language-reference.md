@@ -2993,6 +2993,17 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 
 ### Combat-shape & misc
 
+- `Effects.PreventNextDamageLeavingAmount(amountToLeave, target = Controller, eligibleSource = Any,
+  combatOnly = false, duration = EndOfTurn)` — choose a current source at resolution, without targeting it;
+  prevent all but the evaluated amount of its next qualifying damage instance to the recipient.
+  The remainder is clamped to zero and never increases incoming damage. Source properties are
+  checked against projected state both at choice and damage time; a failed recheck or wrong damage
+  scope leaves the shield unused. A qualifying positive instance spends it even if no damage can
+  be prevented because it is already no larger than the remainder. Object identities prevent the
+  shield from following a source or recipient through a zone change. Forcefield uses
+  `Fixed(1)`, `Creature.unblocked()`, and `combatOnly = true`; blocked tramplers never qualify.
+  Uses the existing battlefield selection UI and exposes a player shield badge; standard floating
+  duration cleanup applies. This is prevention, so unpreventable damage passes through unchanged.
 - `Effects.PreventDamage(target = Controller, direction = ToTarget, sources = AnySource, amount = null, combatOnly = false, toGroup = null, alsoToYou = false, nextInstanceOnly = false, halve = false, onPrevented = null, stillDealt = false, gainLifeFromColors = emptySet(), gainLifeFromPrevented = false, toPlayersOnly = false, duration = EndOfTurn)` — **the** damage-prevention facade over `PreventDamageEffect` (serial `PreventDamageShield`); each parameter mirrors one field, and a call names only the words the card prints. Named shorthands for the commonest points: `Effects.PreventNextDamage(amount, target)`, `Effects.PreventAllCombatDamage()` (Fog), `Effects.PreventCombatDamageToAndBy(target = Self)`, `Effects.PreventAllDamageDealtBy(target, duration = EndOfTurn, scope = AllDamage)` (pass `PreventionScope.CombatOnly` for "prevent all **combat** damage that would be dealt by …" — Restrain, Safeguard, Loafing Giant, Heroism; `Duration.WhileSourceOnBattlefield` for Old Fat Spider Can't See Me), `Effects.PreventCombatDamageFrom(source: GameObjectFilter, duration)` (Frontline Strategist, Hunter's Ambush).
   - **Amount / scope / direction.** `amount = null` prevents all; `combatOnly` is "combat damage". `direction` is damage dealt *to* `target` (`ToTarget`), *by* it (`FromTarget`), or both. An amount-less combat-only shield left on the default `Controller` target is the global Fog. Fleeting Flight = `PreventDamage(target = t, combatOnly = true)`; Indestructible Aura = `PreventDamage(target = t)`; Decorated Griffin = `PreventDamage(amount = Fixed(1), combatOnly = true)`.
   - **Recipient groups.** `toGroup: GameObjectFilter?` protects **every** permanent matching it instead of `target` — "prevent all damage that would be dealt to creatures you control this turn" (Summon: Alexander = `PreventDamage(toGroup = Creature.youControl())`). `alsoToYou` adds the shield's controller ("to **you and** creatures you control" — Safe Passage), and without `toGroup` names you alone. Both recipient filters and any `Matching` source filter are re-evaluated against projected state when each damage instance would be dealt, with the shield's controller as "you"; an unidentifiable damage source fails **closed**.

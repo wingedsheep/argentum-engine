@@ -668,6 +668,16 @@ sealed interface SerializableModification {
     @Serializable
     data object RemoveAllAbilities : SerializableModification
 
+    /** A chosen-source shield leaving a fixed remainder of its next qualifying damage instance. */
+    @Serializable
+    data class PreventNextDamageLeavingAmount(
+        val damageSourceId: EntityId,
+        val sourceName: String,
+        val amountToLeave: Int,
+        val eligibleSource: GameObjectFilter,
+        val combatOnly: Boolean
+    ) : SerializableModification
+
     /**
      * Single-instance prevention shield tied to a source: the next time [damageSourceId]
      * would deal damage to an affected entity this turn, prevent that damage. An empty affected
@@ -880,6 +890,7 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventAllDamageFromSource -> Modification.NoOp
     // PreventNextDamageInstanceFromSource is checked during damage resolution directly (no layer mod)
     is SerializableModification.PreventNextDamageInstanceFromSource -> Modification.NoOp
+    is SerializableModification.PreventNextDamageLeavingAmount -> Modification.NoOp
     // AmplifyDamage doesn't map to a layer modification - it's read during damage resolution directly
     is SerializableModification.AmplifyDamage -> Modification.NoOp
     // DoubleDamageToPlayer doesn't map to a layer modification - it's read during damage resolution directly

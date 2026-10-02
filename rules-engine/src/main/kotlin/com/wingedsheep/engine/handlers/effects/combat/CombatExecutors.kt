@@ -17,6 +17,7 @@ class CombatExecutors(
         ProvokeExecutor(),
         ForceBlockExecutor(),
         PreventDamageExecutor(amountEvaluator),
+        PreventNextDamageLeavingAmountExecutor(amountEvaluator),
         GrantCantBeBlockedExceptByColorExecutor(predicateEvaluator = amountEvaluator.predicates),
         GrantCantBeBlockedExceptByExecutor(),
         ReflectCombatDamageExecutor(),

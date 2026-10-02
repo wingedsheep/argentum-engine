@@ -5746,6 +5746,18 @@ object Effects {
     // Damage Prevention (unified via PreventDamageEffect)
     // -------------------------------------------------------------------------
 
+    /** Choose a source at resolution, then prevent all but [amountToLeave] of its next damage instance. */
+    fun PreventNextDamageLeavingAmount(
+        amountToLeave: DynamicAmount,
+        target: EffectTarget = EffectTarget.Controller,
+        eligibleSource: GameObjectFilter = GameObjectFilter.Any,
+        combatOnly: Boolean = false,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = com.wingedsheep.sdk.scripting.effects.PreventNextDamageLeavingAmountEffect(
+        amountToLeave, target, eligibleSource,
+        if (combatOnly) PreventionScope.CombatOnly else PreventionScope.AllDamage, duration
+    )
+
     /**
      * Prevent damage — the one facade over [PreventDamageEffect]. Every parameter mirrors a field of
      * the effect under a name that reads like the Oracle sentence, and every default is the plain

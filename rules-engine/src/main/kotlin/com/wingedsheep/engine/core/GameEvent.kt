@@ -2343,3 +2343,8 @@ data class BlocksCreatedEvent(
 @Serializable
 @SerialName("RemovedFromCombatEvent")
 data class RemovedFromCombatEvent(val entityId: EntityId) : GameEvent
+
+/** Internal notification; the shield itself is exposed through state projection. */
+@Serializable
+@SerialName("DamagePreventionShieldCreatedEvent")
+data class DamagePreventionShieldCreatedEvent(val entityId: EntityId, val shieldId: EntityId) : GameEvent
