@@ -1218,6 +1218,42 @@ is `PreventActivatedAbilities(Permanent.attachedToBySource())`, and four of the 
 Differential **7,102 compared / 72 divergent → 7,108 / 72**. All six newly compared cards agree with
 their goldens; no card moved.
 
+
+## The base power and toughness band
+
+The twenty-fourth loop band, tail key `has base power …`: "Target creature **has base power and
+toughness 4/4** until end of turn." (Square Up, Multiply by Zero, Diminish), the source's own
+("{4}{G/U}: ~ has base power and toughness 5/5 until end of turn.", Brokers Initiate, Marsh
+Flitter), the quantified rows ("up to one other target creature has …", Chrome Host Hulk), the
+"and gains {kws}" rider (Water Wings) and the later clause's "that creature has …" (Taranika).
+**30 lines**; the probe (→ "gets +1/+1") finished 15 cards. It delivered **7 hand-written cards read
+whole (7,498 → 7,505)** and 14 more in the verdict ledger (10,309 → 10,323), and the family fell from
+30 lines to 5.
+
+### A stat change is a row, not a sentence
+
+Every rider the pump takes is one Oracle prints on this sentence too, so `Steps.StatChange` makes the
+verb phrase an axis of the four pump shapes (`pumpTargetPermanent`, `pumpAndGrantTarget`, and
+`SelfSteps`' `selfGets` / `selfGetsAndGains`, which reach the source, the anaphors and the filtered
+trigger's match through `retargetable`). The `gets` row is `Effects.ModifyStats` over the signed
+`Primitives.statModifiers`; the new row is `Effects.SetBasePowerAndToughness` over the unsigned
+`Primitives.basePowerToughness`. The leaves are disjoint, so neither row reads the other, and both
+facades default to `Duration.EndOfTurn`, so the duration stays the template's. The pump row keeps
+its rule names.
+
+The probe overstated by two: the rest of the 15 decline on another clause. Wings of Velis Vel and
+Glamer Gifter on "gains all creature types", Genemorph Imago on its "… instead" upgrade, Flexible
+Waterbender on the waterbend cost, Quandrix Charm on its "counter unless" mode. Zhalfirin Shapecraft
+now reads line by line but lands in "lines do not fold": a spell printed as two lines is two spell
+effects. The static "Enchanted creature has base power and toughness 0/2, has defender, …" (Stasis
+Field, Deep Freeze) is a separate family (a `SetBasePowerToughnessStatic`, not an effect) and
+is not in this band.
+
+### What the differential found
+
+Differential **7,108 compared / 72 divergent → 7,113 / 72**. All five newly compared cards agree
+with their goldens; no card moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

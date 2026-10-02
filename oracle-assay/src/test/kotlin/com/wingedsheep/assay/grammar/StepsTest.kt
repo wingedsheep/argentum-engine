@@ -332,6 +332,32 @@ class StepsTest : StringSpec({
         ).forEach { roundTrips(it) }
     }
 
+    // Square Up's golden. "has base power and toughness" is the pump's second stat-change row: the
+    // same sentence and riders, over `SetBaseStats` instead of `ModifyStats`. The two leaves are
+    // disjoint — a modifier carries its sign, a base P/T never does — so neither row reads the other.
+    "base power and toughness is a row of every pump shape" {
+        fragment("Target creature has base power and toughness 4/4 until end of turn.") shouldBe CardFragment(
+            script = CardScript(
+                spellEffect = Effects.SetBasePowerAndToughness(4, 4, Targets.bound()),
+                targetRequirements = listOf(Targets.permanent(GameObjectFilter.Creature)),
+            )
+        )
+        fragment("~ has base power and toughness 3/3 until end of turn.") shouldBe CardFragment(
+            script = CardScript(spellEffect = Effects.SetBasePowerAndToughness(3, 3, EffectTarget.Self))
+        )
+        listOf(
+            "Target creature has base power and toughness 0/0 until end of turn.",
+            "Up to one other target creature has base power and toughness 5/5 until end of turn.",
+            "Two target creatures each have base power and toughness 1/1 until end of turn.",
+            "Target creature you control has base power and toughness 4/4 and gains flying and hexproof until end of turn.",
+            "~ has base power and toughness 5/2 until end of turn.",
+        ).forEach { roundTrips(it) }
+        Grammar.abilityLine.parseLine("Target creature has base power and toughness +1/+1 until end of turn.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+        Grammar.abilityLine.parseLine("Target creature gets 1/1 until end of turn.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+    }
+
     // The pump sentence is the second family to slot the quantifier table, and its verb agrees in
     // number: one creature "gets", several "each get". Second Breakfast prints the plural.
     "the pump sentence takes every quantifier, and its verb agrees in number" {

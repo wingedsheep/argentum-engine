@@ -51,6 +51,7 @@ import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.effects.PlayAdditionalLandsEffect
 import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
@@ -98,6 +99,56 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * every draw card in the corpus, which is the grammar telling the truth about a bad factoring.
  */
 object Steps {
+
+    // ---------------------------------------------------------------------------------------
+    // Stat changes — declared first: rules below and in [SelfSteps] slot them while this object
+    // is still initializing, and a later declaration would read as null.
+    // ---------------------------------------------------------------------------------------
+
+    /**
+     * What a creature's power and toughness do for the rest of the turn, as one axis of every
+     * "{subject} gets {mod} until end of turn" shape: "Target creature **gets +3/+3** until end of
+     * turn." and "Target creature **has base power and toughness 4/4** until end of turn." (Square
+     * Up, Multiply by Zero, Water Wings) are one sentence with a different verb phrase, and the
+     * second is `Effects.SetBasePowerAndToughness` where the first is `Effects.ModifyStats`. Both
+     * facades default to `Duration.EndOfTurn`, which is why the duration stays the template's.
+     *
+     * A row of a shared layer rather than a copy of each rule, because every rider the pump takes —
+     * the quantifier, the fronted duration, "and gains {kws}", the self and anaphor subjects — is
+     * one Oracle prints on the base-P/T sentence too. The [pump] row keeps its rules' old names, so
+     * an ambiguity diagnostic or a test that names one still finds it.
+     *
+     * @property singular the verb phrase after a singular subject, with `{mod}` for the slot.
+     * @property plural the same after "each" ("each get +1/+1", "each have base power …").
+     */
+    internal class StatChange(
+        val tag: String,
+        val singular: String,
+        val plural: String,
+        val leaf: Phrase<Pair<Int, Int>>,
+        val effect: (Pair<Int, Int>, EffectTarget) -> Effect,
+        val read: (Effect?) -> Pair<Int, Int>?,
+    )
+
+    internal val pump = StatChange(
+        tag = "",
+        singular = "gets {mod}",
+        plural = "each get {mod}",
+        leaf = Primitives.statModifiers,
+        effect = { (power, toughness), target -> Effects.ModifyStats(power, toughness, target) },
+        read = ::fixedModifiers,
+    )
+
+    internal val setBaseStats = StatChange(
+        tag = " (base power and toughness)",
+        singular = "has base power and toughness {mod}",
+        plural = "each have base power and toughness {mod}",
+        leaf = Primitives.basePowerToughness,
+        effect = { (power, toughness), target -> Effects.SetBasePowerAndToughness(power, toughness, target) },
+        read = ::fixedBaseStats,
+    )
+
+    internal val statChanges = listOf(pump, setBaseStats)
 
     // ---------------------------------------------------------------------------------------
     // Draw
@@ -1110,25 +1161,29 @@ object Steps {
      * into one shape would have had to be written into the other. What the two share instead is the
      * table and the [effectOver]/[memberOf] pair.
      */
-    private val pumpTargetPermanent: List<Phrase<CardScript>> = Targets.quantifiers.map { quantifier ->
+    private val pumpTargetPermanent: List<Phrase<CardScript>> = statChanges.flatMap { change ->
+        Targets.quantifiers.map { quantifier -> pumpTargetPermanent(change, quantifier) }
+    }
+
+    private fun pumpTargetPermanent(change: StatChange, quantifier: Targets.Quantifier): Phrase<CardScript> {
         fun scriptFor(count: Int, modifiers: Pair<Int, Int>, filter: GameObjectFilter) = CardScript(
-            spellEffect = quantifier.effectOver { Effects.ModifyStats(modifiers.first, modifiers.second, it) },
+            spellEffect = quantifier.effectOver { change.effect(modifiers, it) },
             targetRequirements = listOf(quantifier.requirement(count, filter)),
         )
         // "gets" for one creature and "each get" for several: the verb agrees with the quantifier,
         // which is the same reason [quantifiedPermanentSteps] takes two templates.
         val template = quantifier.splice(
             if (quantifier.plural) {
-                "{q}target {filter} each get {mod} until end of turn"
+                "{q}target {filter} ${change.plural} until end of turn"
             } else {
-                "{q}target {filter} gets {mod} until end of turn"
+                "{q}target {filter} ${change.singular} until end of turn"
             }
         )
-        phrase(template, name = "pump, ${quantifier.name}") {
+        return phrase(template, name = "pump, ${quantifier.name}${change.tag}") {
             frontedDuration()
             if (quantifier.counted) slot(Targets.COUNT_SLOT, Cardinals.word)
             slot("filter", if (quantifier.plural) Filters.plural else Filters.filter)
-            slot("mod", Primitives.statModifiers)
+            slot("mod", change.leaf)
             build {
                 scriptFor(
                     if (quantifier.counted) it.int(Targets.COUNT_SLOT) else 1,
@@ -1137,7 +1192,7 @@ object Steps {
                 )
             }
             match { script ->
-                val modifiers = fixedModifiers(quantifier.memberOf(script.spellEffect)) ?: return@match null
+                val modifiers = change.read(quantifier.memberOf(script.spellEffect)) ?: return@match null
                 val requirement = script.targetRequirements.singleOrNull() ?: return@match null
                 val filter = Targets.targetedFilter(requirement) ?: return@match null
                 val count = if (quantifier.counted) requirement.count else 1
@@ -1476,7 +1531,11 @@ object Steps {
      * The second verb does *not* take "each" — Oracle writes "each get +1/+1 and **gain** lifelink",
      * the adverb attaching once to the pair.
      */
-    private val pumpAndGrantTarget: List<Phrase<CardScript>> = Targets.quantifiers.map { quantifier ->
+    private val pumpAndGrantTarget: List<Phrase<CardScript>> = statChanges.flatMap { change ->
+        Targets.quantifiers.map { quantifier -> pumpAndGrantTarget(change, quantifier) }
+    }
+
+    private fun pumpAndGrantTarget(change: StatChange, quantifier: Targets.Quantifier): Phrase<CardScript> {
         fun scriptFor(
             count: Int,
             modifiers: Pair<Int, Int>,
@@ -1485,7 +1544,7 @@ object Steps {
         ) = CardScript(
             spellEffect = quantifier.effectOver { target ->
                 Effects.Composite(
-                    listOf(Effects.ModifyStats(modifiers.first, modifiers.second, target)) +
+                    listOf(change.effect(modifiers, target)) +
                         keywords.map { Effects.GrantKeyword(it, target) }
                 )
             },
@@ -1493,16 +1552,16 @@ object Steps {
         )
         val template = quantifier.splice(
             if (quantifier.plural) {
-                "{q}target {filter} each get {mod} and gain {kws} until end of turn"
+                "{q}target {filter} ${change.plural} and gain {kws} until end of turn"
             } else {
-                "{q}target {filter} gets {mod} and gains {kws} until end of turn"
+                "{q}target {filter} ${change.singular} and gains {kws} until end of turn"
             }
         )
-        phrase(template, name = "pump and grant keywords to a target, ${quantifier.name}") {
+        return phrase(template, name = "pump and grant keywords to a target, ${quantifier.name}${change.tag}") {
             frontedDuration()
             if (quantifier.counted) slot(Targets.COUNT_SLOT, Cardinals.word)
             slot("filter", if (quantifier.plural) Filters.plural else Filters.filter)
-            slot("mod", Primitives.statModifiers)
+            slot("mod", change.leaf)
             slot("kws", Keywords.keywordRun)
             build {
                 scriptFor(
@@ -1515,7 +1574,7 @@ object Steps {
             match { script ->
                 val member = quantifier.memberOf(script.spellEffect)
                 val effects = (member as? CompositeEffect)?.effects ?: return@match null
-                val modifiers = fixedModifiers(effects.firstOrNull()) ?: return@match null
+                val modifiers = change.read(effects.firstOrNull()) ?: return@match null
                 val keywords = grantedKeywords(effects.drop(1)) ?: return@match null
                 val requirement = script.targetRequirements.singleOrNull() ?: return@match null
                 val filter = Targets.targetedFilter(requirement) ?: return@match null
@@ -3683,6 +3742,18 @@ object Steps {
         val stats = effect as? ModifyStatsEffect ?: return null
         val power = stats.powerModifier.fixed() ?: return null
         val toughness = stats.toughnessModifier.fixed() ?: return null
+        return power to toughness
+    }
+
+    /**
+     * The fixed base power and toughness a `SetBaseStats` effect sets, or null when it sets one
+     * half only or a dynamic value.
+     */
+    internal fun fixedBaseStats(effect: Effect?): Pair<Int, Int>? {
+        val stats = effect as? SetBaseStatsEffect ?: return null
+        if (stats.reevaluateContinuously) return null
+        val power = stats.power?.fixed() ?: return null
+        val toughness = stats.toughness?.fixed() ?: return null
         return power to toughness
     }
 

@@ -87,8 +87,8 @@ object SelfSteps {
         tag: String,
     ): List<Phrase<CardScript>> {
         val named = listOf(
-            selfGets(target, subject, tag),
-            selfGetsAndGains(target, subject, tag),
+            *Steps.statChanges.map { selfGets(it, target, subject, tag) }.toTypedArray(),
+            *Steps.statChanges.map { selfGetsAndGains(it, target, subject, tag) }.toTypedArray(),
             selfGainsKeywords(target, subject, tag),
             selfLosesKeyword(target, subject, tag),
             move("untap {self}", "untap$tag", Effects.Untap(target), subject),
@@ -231,17 +231,23 @@ object SelfSteps {
      * pronoun come back as a [com.wingedsheep.assay.gate.LineVerdict.VARIANT], which says the
      * reading was right and only the spelling moved.
      */
-    private fun selfGets(target: EffectTarget, subject: Phrase<Unit>, tag: String): Phrase<CardScript> {
-        fun scriptFor(modifiers: Pair<Int, Int>) = CardScript(
-            spellEffect = Effects.ModifyStats(modifiers.first, modifiers.second, target)
-        )
-        return phrase("{self} gets {mod} until end of turn", name = "$tag gets".trim()) {
+    private fun selfGets(
+        change: Steps.StatChange,
+        target: EffectTarget,
+        subject: Phrase<Unit>,
+        tag: String,
+    ): Phrase<CardScript> {
+        fun scriptFor(modifiers: Pair<Int, Int>) = CardScript(spellEffect = change.effect(modifiers, target))
+        return phrase(
+            "{self} ${change.singular} until end of turn",
+            name = "$tag gets${change.tag}".trim(),
+        ) {
             frontedDuration()
             slot("self", subject)
-            slot("mod", Primitives.statModifiers)
+            slot("mod", change.leaf)
             build { scriptFor(it.value("mod")) }
             match { script ->
-                val modifiers = Steps.fixedModifiers(script.spellEffect) ?: return@match null
+                val modifiers = change.read(script.spellEffect) ?: return@match null
                 if (script != scriptFor(modifiers)) return@match null
                 bind("self" to Unit, "mod" to modifiers)
             }
@@ -257,28 +263,29 @@ object SelfSteps {
      * one object. A [Steps.sequence] would need the second clause to name what it acts on.
      */
     private fun selfGetsAndGains(
+        change: Steps.StatChange,
         target: EffectTarget,
         subject: Phrase<Unit>,
         tag: String,
     ): Phrase<CardScript> {
         fun scriptFor(modifiers: Pair<Int, Int>, keywords: List<Keyword>) = CardScript(
             spellEffect = Effects.Composite(
-                listOf(Effects.ModifyStats(modifiers.first, modifiers.second, target)) +
+                listOf(change.effect(modifiers, target)) +
                     keywords.map { Effects.GrantKeyword(it, target) }
             )
         )
         return phrase(
-            "{self} gets {mod} and gains {kws} until end of turn",
-            name = "$tag gets and gains".trim(),
+            "{self} ${change.singular} and gains {kws} until end of turn",
+            name = "$tag gets and gains${change.tag}".trim(),
         ) {
             frontedDuration()
             slot("self", subject)
-            slot("mod", Primitives.statModifiers)
+            slot("mod", change.leaf)
             slot("kws", Keywords.keywordRun)
             build { scriptFor(it.value("mod"), it.value("kws")) }
             match { script ->
                 val effects = (script.spellEffect as? CompositeEffect)?.effects ?: return@match null
-                val modifiers = Steps.fixedModifiers(effects.firstOrNull()) ?: return@match null
+                val modifiers = change.read(effects.firstOrNull()) ?: return@match null
                 val keywords = Steps.grantedKeywords(effects.drop(1)) ?: return@match null
                 if (script != scriptFor(modifiers, keywords)) return@match null
                 bind("self" to Unit, "mod" to modifiers, "kws" to keywords)
