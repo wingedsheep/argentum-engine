@@ -8,6 +8,7 @@ import com.wingedsheep.assay.syntax.bind
 import com.wingedsheep.assay.syntax.constant
 import com.wingedsheep.assay.syntax.oneOf
 import com.wingedsheep.assay.syntax.phrase
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
@@ -144,6 +145,45 @@ object Statics {
                 bind("kw" to keyword)
             }
         }
+
+    /**
+     * "Enchanted creature doesn't untap during its controller's untap step." — Shackles, Claustrophobia,
+     * Charmed Sleep, and the rest of the untap-lock Auras (and, through the normalizer's attachment
+     * noun, Vulshok Gauntlets' equipped creature).
+     *
+     * The SDK grants the restriction as the `DOESNT_UNTAP` ability flag riding [GrantKeyword]'s string
+     * field — the untap step skips any permanent whose projected keywords hold it — so this is
+     * [attachedKeyword] with a sentence of its own instead of a keyword word. It is not a row in
+     * [Keywords.keyword]: the flag has no printed keyword, so "has doesn't untap" would be a spelling
+     * that exists nowhere, and the printer must never be able to produce it.
+     */
+    private val attachedDoesntUntap: Phrase<StaticAbility> = constant(
+        "enchanted creature doesn't untap during its controller's untap step.",
+        GrantKeyword(AbilityFlag.DOESNT_UNTAP.name),
+    )
+
+    /**
+     * "This creature doesn't untap during your untap step if it attacked during your last turn." —
+     * Goblin Rock Sled, and the counter-gated lands and creatures beside it.
+     *
+     * The conditional twin of the unconditional line [Grammar] reads as a card flag: once the lock
+     * depends on a condition the SDK can no longer spell it as a property of the card, so it is a
+     * `ConditionalStaticAbility` around the same `DOESNT_UNTAP` grant aimed at the source — the
+     * shape [conditionalSelfStatic] builds for "has flying as long as …", with "if" where that one
+     * says "as long as" because that is the word every one of these cards prints.
+     */
+    private val conditionalSelfDoesntUntap: Phrase<StaticAbility> = phrase(
+        "${Normalizer.SELF} doesn't untap during your untap step if {cond}.",
+        name = "the source doesn't untap under a condition",
+    ) {
+        slot("cond", Conditions.condition)
+        build { ConditionalStaticAbility(GrantKeyword(AbilityFlag.DOESNT_UNTAP.name, GroupFilter.source()), it.value("cond")) }
+        match { ability ->
+            val conditional = ability as? ConditionalStaticAbility ?: return@match null
+            if (conditional.ability != GrantKeyword(AbilityFlag.DOESNT_UNTAP.name, GroupFilter.source())) return@match null
+            bind("cond" to conditional.condition)
+        }
+    }
 
     /**
      * `Enchanted creature has "Whenever this creature deals combat damage, create a Blood token."` —
@@ -994,6 +1034,8 @@ object Statics {
     val all: List<Phrase<StaticAbility>> = listOf(
         attachedPump,
         attachedKeyword,
+        attachedDoesntUntap,
+        conditionalSelfDoesntUntap,
         attachedQuotedAbility,
         spellsCantBeCountered,
         spellsHaveFlash,

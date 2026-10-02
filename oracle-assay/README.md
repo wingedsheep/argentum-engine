@@ -902,6 +902,33 @@ spellings of one value, none behavioural:
   `Effects.GrantHexproof` (`GrantEvasionKeywordEffect`), which the SDK's own KDoc calls identical to
   `GrantKeyword` for a permanent; the grammar prints the majority `GrantKeyword`.
 
+## The untap-lock band
+
+The thirteenth loop band, tail key `doesn't untap during …`: "**Enchanted creature doesn't untap during
+its controller's untap step.**" — Shackles, Claustrophobia, Charmed Sleep and the rest of the lock
+Auras. **94 lines**; the probe (`doesn't untap during its controller's untap step` → `has flying`)
+finished 29 whole cards over the corpus. It delivered **9 hand-written cards read whole (7,369 →
+7,378)**, and took the family from 94 lines to 35.
+
+### A keyword-shaped grant with no keyword word
+
+The SDK grants the lock as `GrantKeyword("DOESNT_UNTAP")` at the aura default filter — the
+`AbilityFlag` riding the static's string field, which the untap step reads off projected keywords. So
+the rule is `Statics.attachedKeyword` with a sentence of its own rather than a new row in
+`Keywords.keyword`: the flag has no printed keyword, and a row there would let the printer produce
+"has doesn't untap". The conditional self form ("~ doesn't untap during your untap step if …") is the
+same grant aimed at `GroupFilter.source()` inside a `ConditionalStaticAbility`, the shape Goblin Rock
+Sled and Bombur carry; the unconditional self form stays the card flag `Grammar.flagLine` already reads.
+
+What is left in the family is the *one-shot* lock — "it doesn't untap during its controller's next
+untap step", "for as long as you control ~" — which is an effect with a duration, not a static, and
+a different band.
+
+### What the differential found
+
+Differential **6,987 compared / 62 divergent → 6,996 / 62**. Nothing new diverged: every lock Aura
+already spelled the grant the one way.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
