@@ -1440,6 +1440,73 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  ONE: {
+    setCode: 'ONE',
+    setName: 'Phyrexia: All Will Be One',
+    archetypes: [
+      {
+        name: 'Artifact Flyers',
+        colors: ['W', 'U'],
+        keyCard: 'Cephalopod Sentry',
+        description: 'Fill the board with artifacts and artifact creatures, then take to the air with flyers that grow with your artifact count. A tempo deck that wins the race over the top of ground stalls.',
+      },
+      {
+        name: 'Proliferate Toxic',
+        colors: ['U', 'B'],
+        keyCard: 'Voidwing Hybrid',
+        description: 'Land evasive toxic hits, then proliferate to push poison and counters past the finish line. A controlling tempo deck that recurs its threats every time it proliferates.',
+      },
+      {
+        name: 'Oil Sacrifice',
+        colors: ['B', 'R'],
+        keyCard: 'Charforger',
+        description: 'Sacrifice creatures and artifacts for value while oil counters pile up on your payoffs. An attrition deck that turns every expendable body into cards and damage.',
+      },
+      {
+        name: 'Oil Aggro',
+        colors: ['R', 'G'],
+        keyCard: 'Cinderslash Ravager',
+        description: 'Put oil counters on your permanents to power up cheaper, bigger threats, then attack early and often. A stompy aggro deck that clears small blockers and keeps the pressure on.',
+      },
+      {
+        name: 'Toxic Aggro',
+        colors: ['G', 'W'],
+        keyCard: 'Slaughter Singer',
+        description: 'Curve out with toxic creatures and pump them on the attack to poison the opponent out fast. A go-wide aggro deck where every connected hit counts double.',
+      },
+      {
+        name: 'Corrupted',
+        colors: ['W', 'B'],
+        keyCard: 'Vivisection Evangelist',
+        description: 'Get the opponent to three poison counters, then unlock corrupted removal and bonuses. A midrange deck that pairs early toxic pressure with powerful payoffs.',
+      },
+      {
+        name: 'Noncreature Spells',
+        colors: ['U', 'R'],
+        keyCard: 'Serum-Core Chimera',
+        description: 'Cast instants, sorceries, and artifacts to charge up oil counters on your payoffs, then cash them in for cards and damage. A spells-matter tempo deck that grinds through blockers.',
+      },
+      {
+        name: 'Toxic Midrange',
+        colors: ['B', 'G'],
+        keyCard: 'Necrogen Rotpriest',
+        description: 'Stack up toxic creatures and threaten deathtouch to make blocking miserable, adding extra poison with every hit. A resilient midrange deck that poisons the opponent out.',
+      },
+      {
+        name: 'Equipment',
+        colors: ['R', 'W'],
+        keyCard: 'Bladehold War-Whip',
+        description: 'Suit up Rebels with Equipment — For Mirrodin! brings its own body — and swing with double strike and cheap equips. An aggressive deck that turns any creature into a must-answer threat.',
+        creatureTypes: ['Rebel'],
+      },
+      {
+        name: 'Proliferate',
+        colors: ['G', 'U'],
+        keyCard: 'Tainted Observer',
+        description: 'Spread counters of every kind, then proliferate them — poison, +1/+1, and oil alike. A value midrange deck whose whole board grows with every new creature.',
+      },
+    ],
+  },
   MOM: {
     setCode: 'MOM',
     setName: 'March of the Machine',
