@@ -1616,12 +1616,6 @@ class PredicateEvaluator(
     }
 
     /**
-     * The entity a characteristic-comparing predicate compares against ("shares a color with
-     * it", "power greater than the sacrificed creature's"). A value read, so it resolves through
-     * [TargetResolutionUtils.resolveEntity] — the same mapping effects use — and names nothing
-     * without a context (target enumeration outside any resolution).
-     */
-    /**
      * The power a relative-power predicate ([CardPredicate.PowerGreaterThanEntity],
      * [CardPredicate.PowerAtMostEntity], [CardPredicate.PowerLessThanEntity]) compares against: the
      * referenced entity's projected power, read through the same
@@ -1647,6 +1641,12 @@ class PredicateEvaluator(
         )
     }
 
+    /**
+     * The entity a characteristic-comparing predicate compares against ("shares a color with
+     * it", "power greater than the sacrificed creature's"). A value read, so it resolves through
+     * [TargetResolutionUtils.resolveEntity] — the same mapping effects use — and names nothing
+     * without a context (target enumeration outside any resolution).
+     */
     private fun resolveEntity(
         state: GameState,
         reference: EffectTarget.SingleEntity,
