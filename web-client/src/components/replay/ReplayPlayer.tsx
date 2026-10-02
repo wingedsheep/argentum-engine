@@ -22,6 +22,7 @@ import type { SpectatingState } from '@/store/slices'
 import type { PublicReplayData, SpectatorStateUpdate } from '@/replay/reconstructSnapshots.ts'
 import { buildReplayScenarioUrl } from '../scenario/shareScenario'
 import { useViewportSize } from '@/hooks/useResponsive.ts'
+import { replayExportUrl } from '@/replay/replayFile.ts'
 
 const HEADER_HEIGHT = 55
 const AUTOPLAY_INTERVAL_MS = 1000
@@ -32,6 +33,7 @@ export function ReplayPlayer({
   snapshots,
   gameId,
   metadata,
+  fromFile = false,
   onExit,
 }: {
   snapshots: readonly SpectatorStateUpdate[]
@@ -39,6 +41,11 @@ export function ReplayPlayer({
   gameId: string
   /** Only the public-replay route has this; the overlay passes nothing and loses only the extras. */
   metadata?: ReplayMetadata | null
+  /**
+   * Frames from an uploaded replay file rather than a stored game. The server never kept it, so
+   * nothing here can address it by id — sharing, exporting and the scenario tools all go.
+   */
+  fromFile?: boolean
   /** Back button and Escape. The route navigates home; the overlay returns to its game list. */
   onExit: () => void
 }) {
@@ -195,7 +202,7 @@ export function ReplayPlayer({
   if (!primed || !snapshot) return null
 
   // Older replays predate the flag; they re-simulate, so treat a missing value as reproducible.
-  const stateReproducible = metadata?.stateReproducible !== false
+  const stateReproducible = !fromFile && metadata?.stateReproducible !== false
 
   // Replay metadata only carries the first two seat names (legacy 2-player shape), so a 3+ player
   // game would misleadingly read "Alice vs Bob". The reconstructed snapshot's gameState carries
@@ -246,7 +253,10 @@ export function ReplayPlayer({
             </span>
           </div>
           <div style={styles.replayInfo}>
-            <span style={styles.replayLabel}>{isMultiplayerReplay ? `Replay · ${allSeats.length} players` : 'Replay'}</span>
+            <span style={styles.replayLabel}>
+              {isMultiplayerReplay ? `Replay · ${allSeats.length} players` : 'Replay'}
+              {fromFile ? ' · from file' : ''}
+            </span>
             <span style={styles.matchupText}>{matchupLabel}</span>
             {metadata?.winnerName && (
               <span style={styles.winnerText}>Winner: {metadata.winnerName}</span>
@@ -286,9 +296,22 @@ export function ReplayPlayer({
                   </button>
                 </>
               )}
-              <button onClick={() => void handleShareReplay()} style={styles.shareButton} title="Copy a link to this replay">
-                {replayCopied ? 'Copied!' : 'Share replay'}
-              </button>
+              {!fromFile && (
+                <>
+                  {/* A plain link with `download`: the server sends the file with its own name. */}
+                  <a
+                    href={replayExportUrl(gameId)}
+                    download
+                    style={styles.exportButton}
+                    title="Download this game's replay file — its seed, decks and every action — to keep, or to watch later with 'Open replay file'."
+                  >
+                    Export replay
+                  </a>
+                  <button onClick={() => void handleShareReplay()} style={styles.shareButton} title="Copy a link to this replay">
+                    {replayCopied ? 'Copied!' : 'Share replay'}
+                  </button>
+                </>
+              )}
             </>
           )}
         </div>
@@ -420,6 +443,18 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
     flexShrink: 0,
     whiteSpace: 'nowrap',
+  },
+  exportButton: {
+    padding: '7px 10px',
+    fontSize: 12,
+    backgroundColor: '#1a1a2e',
+    color: '#ccc',
+    border: '1px solid #2a2a3e',
+    borderRadius: 6,
+    cursor: 'pointer',
+    flexShrink: 0,
+    whiteSpace: 'nowrap',
+    textDecoration: 'none',
   },
   scenarioButton: {
     padding: '7px 10px',

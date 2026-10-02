@@ -779,6 +779,23 @@ AI/human games tend to have shorter action logs — but the same or larger pins.
 ./gradlew :game-server:test --tests "*.CompactReplaySizeBenchmark" -Dbenchmark=true -DbenchmarkGames=40 -DbenchmarkSet=BLB
 ```
 
+### Replay files (export / upload)
+
+A finished game's `CompactReplay` can leave the server as a file and come back to be watched:
+
+- **Export** — `GET /api/public/replays/{gameId}/export` returns the record's plain JSON
+  (`ReplayCodec.encodeJson`, pins included) as an `argentum-replay-<gameId>.json` attachment.
+  `FINISHED` records only: the seed plus decklists reveal every hand and library order.
+- **Upload** — `POST /api/public/replays/upload` takes the raw file as the body (plain or gzipped
+  JSON), re-simulates it without storing it, and answers in the same `{metadata, initialSnapshot,
+  deltas}` shape as `GET /api/public/replays/{gameId}`, with `stateReproducible: false` (nothing is
+  stored for the scenario endpoints to find). `ReplayFile` caps the upload size, its inflated size,
+  seats, deck sizes, pinned cards and action count before anything runs; errors are `400 {error}`,
+  and a server already re-simulating its quota of uploads answers `429`.
+
+The same `FINISHED` gate covers `ReplayService.reconstructStateAt`, so neither the full-state
+download nor `from-replay-frame` can read a game still in progress.
+
 ### "Share frame as scenario" (replay)
 
 The replay viewer can also reproduce an **exact full-state snapshot** — stack, targets, floating

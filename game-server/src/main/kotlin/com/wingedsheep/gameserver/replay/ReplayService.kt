@@ -229,9 +229,28 @@ class ReplayService(
         )
     }
 
-    /** The full unmasked [GameState] at [frame] for [gameId] (0 = initial), or null. */
+    /**
+     * The viewer body for a replay *file* someone uploaded — re-simulated, never stored.
+     *
+     * Always reported as not reproducible: "share frame as scenario" fetches a frame's state from
+     * the store by game id, and an uploaded replay isn't there (or, if its id happens to match a
+     * stored game, the stored one isn't necessarily the file that was uploaded).
+     */
+    fun viewerPayloadForUpload(replay: CompactReplay): ReplayViewerPayload? =
+        viewerPayload(StoredReplay(replay = replay, status = ReplayStatus.FINISHED))
+            ?.copy(stateReproducible = false)
+
+    /**
+     * The full unmasked [GameState] at [frame] for [gameId] (0 = initial), or null.
+     *
+     * Finished games only: an in-progress recording is in the store too (see [saveInProgress]), and
+     * its unmasked state is the opponent's hand and library order — exactly what a player in that
+     * game must not be able to fetch by its id.
+     */
     fun reconstructStateAt(gameId: String, frame: Int): GameState? =
-        find(gameId)?.let { reconstructor.reconstructStateAt(it, frame) }
+        store.find(gameId)
+            ?.takeIf { it.status == ReplayStatus.FINISHED }
+            ?.let { reconstructor.reconstructStateAt(it.replay, frame) }
 
     /** Finished games this player took part in, newest first. */
     fun recentForPlayer(playerId: String, limit: Int = 50): List<ReplaySummary> =

@@ -3528,7 +3528,28 @@ object Steps {
             positionScoped = Tokens.damageClauses,
         )
 
+    /**
+     * The cascade a damage trigger **on the attached creature** takes — "Whenever enchanted
+     * creature deals combat damage to a player, …" — which is [damageCascade] without the source
+     * pronoun.
+     *
+     * The event's subject is the creature the Aura or Equipment is attached to, not the source, so
+     * "it" in the payoff (Pain for All's "it deals that much damage") would read as `~` through
+     * [SelfSteps.anaphoric] and build a model that means the Equipment. Only the source's *name* is
+     * kept — [SelfSteps.named], the half that denotes the card in any sentence — and the pronoun
+     * declines until a card's golden says which object it should be. "that many" is the event's
+     * damage exactly as on the source's own rows.
+     */
+    private val attachedDamageCascade =
+        Cascade(SelfSteps.named, tag = " after attached damage", positionScoped = Tokens.damageClauses)
+
     val step: Phrase<CardScript> = sourceCascade.step
+
+    /**
+     * The same vocabulary for a damage trigger whose subject is the attached creature;
+     * [Triggers]' attached damage prefixes are the only callers. See [attachedDamageCascade].
+     */
+    val attachedDamageStep: Phrase<CardScript> = attachedDamageCascade.step
 
     /**
      * The same vocabulary for a trigger whose event names a filter, where "it" is the object that

@@ -5,13 +5,14 @@
  * over a live screen (home, tournament standings, an FFA pod) and routing away would drop the
  * WebSocket. Only the *list* half is specific to it; playback is the shared {@link ReplayPlayer}.
  */
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   reconstructSnapshots,
   type ReplayData,
   type SpectatorStateUpdate,
 } from '@/replay/reconstructSnapshots.ts'
-import { ReplayPlayer } from '../replay/ReplayPlayer'
+import { uploadReplayFile } from '@/replay/replayFile.ts'
+import { ReplayPlayer, type ReplayMetadata } from '../replay/ReplayPlayer'
 
 // ============================================================================
 // Types
@@ -49,6 +50,8 @@ export function ReplayViewer({ fetchGames, fetchReplay, onBack }: ReplayViewerPr
   const [error, setError] = useState<string | null>(null)
   const [snapshots, setSnapshots] = useState<SpectatorStateUpdate[]>([])
   const [replayGameId, setReplayGameId] = useState<string>('')
+  /** Set when watching an uploaded file: the upload response carries metadata, the list's endpoints don't. */
+  const [fileMetadata, setFileMetadata] = useState<ReplayMetadata | null>(null)
 
   const loadGames = useCallback(async () => {
     setLoading(true)
@@ -72,9 +75,25 @@ export function ReplayViewer({ fetchGames, fetchReplay, onBack }: ReplayViewerPr
       const data = await fetchReplay(gameId)
       setSnapshots(reconstructSnapshots(data.initialSnapshot, data.deltas))
       setReplayGameId(gameId)
+      setFileMetadata(null)
       setView('replay')
     } catch {
       setError('Failed to load replay')
+    }
+    setLoading(false)
+  }
+
+  const handleOpenFile = async (file: File) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await uploadReplayFile(file)
+      setSnapshots(reconstructSnapshots(data.initialSnapshot, data.deltas))
+      setReplayGameId(data.metadata.gameId)
+      setFileMetadata(data.metadata)
+      setView('replay')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load replay file')
     }
     setLoading(false)
   }
@@ -89,6 +108,7 @@ export function ReplayViewer({ fetchGames, fetchReplay, onBack }: ReplayViewerPr
       <GameListView
         games={games}
         onReplay={handleReplay}
+        onOpenFile={handleOpenFile}
         onReload={loadGames}
         onBack={onBack}
         loading={loading}
@@ -99,7 +119,15 @@ export function ReplayViewer({ fetchGames, fetchReplay, onBack }: ReplayViewerPr
 
   // The admin/tournament replay endpoints return frames only — no metadata block — so the player
   // falls back to the frame's own seat names and hides the winner line. Everything else is shared.
-  return <ReplayPlayer snapshots={snapshots} gameId={replayGameId} onExit={handleBackToList} />
+  return (
+    <ReplayPlayer
+      snapshots={snapshots}
+      gameId={replayGameId}
+      metadata={fileMetadata}
+      fromFile={fileMetadata != null}
+      onExit={handleBackToList}
+    />
+  )
 }
 
 // ============================================================================
@@ -141,6 +169,7 @@ function groupByTournament(games: GameSummary[]): GameGroup[] {
 function GameListView({
   games,
   onReplay,
+  onOpenFile,
   onReload,
   onBack,
   loading,
@@ -148,6 +177,7 @@ function GameListView({
 }: {
   games: GameSummary[]
   onReplay: (gameId: string) => void
+  onOpenFile: (file: File) => void
   onReload: () => void
   onBack: () => void
   loading: boolean
@@ -155,6 +185,7 @@ function GameListView({
 }) {
   const groups = groupByTournament(games)
   const hasTournaments = games.some((g) => g.tournamentName)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   return (
     <div style={styles.pageContainer}>
@@ -162,6 +193,26 @@ function GameListView({
         <div style={styles.listHeader}>
           <h1 style={styles.listTitle}>Game Replays</h1>
           <div style={styles.headerButtons}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,.gz,.replay,application/json,application/gzip"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                // Reset so choosing the same file again still fires onChange.
+                e.target.value = ''
+                if (file) onOpenFile(file)
+              }}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={loading}
+              style={styles.secondaryButton}
+              title="Watch a replay file exported from any game ('Export replay' in the replay viewer)."
+            >
+              Open replay file
+            </button>
             <button onClick={onReload} disabled={loading} style={styles.secondaryButton}>
               {loading ? 'Loading...' : 'Reload'}
             </button>

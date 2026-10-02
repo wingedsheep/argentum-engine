@@ -4060,6 +4060,14 @@ object Effects {
     fun MayPayX(then: Effect): GatedEffect = GatedEffect(gate = Gate.MayPayX, then = then)
 
     /**
+     * "You may pay any amount of life. If you do, [then]." — prompts for X (0 to the most life the
+     * player can pay), pays it, and binds it into [then]'s context as `DynamicAmount.XValue`
+     * (Necrodominance: "draw that many cards").
+     */
+    fun MayPayAnyAmountOfLife(then: Effect): GatedEffect =
+        GatedEffect(gate = Gate.MayPayAnyAmountOfLife, then = then)
+
+    /**
      * "[action]. If you do, [then]. If you don't, [otherwise]." — gates on whether [action]
      * actually accomplished its work, not on a decision. Wrap in [May] for the common
      * "You may [action]. If you do, [then]".

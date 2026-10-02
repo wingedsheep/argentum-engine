@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.effects.FlipCoinEffect
 import com.wingedsheep.sdk.scripting.effects.FlipCoinsEffect
 import com.wingedsheep.sdk.scripting.effects.FlipCoinsUntilLossEffect
 import com.wingedsheep.sdk.scripting.effects.FlipTwoCoinsEffect
+import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
 import com.wingedsheep.engine.handlers.effects.permanent.counters.ProliferateExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.counters.MoveChosenCountersFlow
 import com.wingedsheep.engine.handlers.effects.permanent.counters.RemoveAnyNumberOfCountersFlow
@@ -47,6 +48,7 @@ class MiscContinuationResumer(
         resumer(AddCountersUpToContinuation::class, ::resumeAddCountersUpTo),
         resumer(AddCountersOfChosenKindContinuation::class, ::resumeAddCountersOfChosenKind),
         resumer(com.wingedsheep.engine.core.PayAnyAmountOfLifeAsEntersContinuation::class, ::resumePayAnyAmountOfLifeAsEnters),
+        resumer(MayPayLifeXContinuation::class, ::resumeMayPayLifeX),
         resumer(PayCountersContinuation::class, ::resumePayCounters),
         resumer(ConvertCountersToTokensContinuation::class, ::resumeConvertCountersToTokens),
         resumer(MoveChosenCountersToTargetContinuation::class, ::resumeMoveChosenCountersToTarget),
@@ -274,6 +276,44 @@ class MiscContinuationResumer(
         }
 
         return checkForMore(newState, emptyList())
+    }
+
+    /**
+     * Pay the chosen amount of life for a "you may pay any amount of life. If you do, …" gate and
+     * run the gated effect with that amount as X. Choosing 0 is the decline and runs the gate's
+     * `otherwise`. The payment goes through [LifePaymentService], so life-payment replacements apply,
+     * and a lock that appeared since the prompt makes the payment fail — which is also "you don't".
+     */
+    private fun resumeMayPayLifeX(
+        state: GameState,
+        continuation: MayPayLifeXContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is NumberChosenResponse) {
+            return ExecutionResult.error(state, "Expected number response for pay-any-amount-of-life")
+        }
+        val chosen = response.number
+        if (chosen !in 0..continuation.maxX) {
+            return ExecutionResult.error(state, "Life payment $chosen is outside 0..${continuation.maxX}")
+        }
+
+        val paid = if (chosen > 0 && state.canPayLife(continuation.playerId, chosen)) {
+            LifePaymentService.pay(services.zones, state, continuation.playerId, chosen)
+        } else null
+
+        val (afterPayment, payEvents) = paid ?: (state to emptyList())
+        val branch = if (paid != null) continuation.effect else continuation.otherwise
+            ?: return checkForMore(state, emptyList())
+        val context = if (paid != null) continuation.effectContext.copy(xValue = chosen) else continuation.effectContext
+
+        val effectResult = services.effectExecutorRegistry.execute(afterPayment, branch, context)
+            .toExecutionResult()
+        if (effectResult.error != null) return effectResult
+        if (effectResult.outcome is Outcome.Paused) {
+            return effectResult.copy(events = payEvents + effectResult.events)
+        }
+        return checkForMore(effectResult.state, payEvents + effectResult.events)
     }
 
     private fun resumePayCounters(

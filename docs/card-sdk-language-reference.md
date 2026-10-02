@@ -3349,6 +3349,12 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
     `Effects.MayPayX` (see "Optional & gated" below). For the *repeated fixed* cost — "pay {1} up
     to three times", where the count rather than the size is the variable — use
     `Effects.PayRepeatedly` (see "Mana" above) as the gate's cost or as a reflexive trigger's action.
+  - `Gate.MayPayAnyAmountOfLife` — the life twin of `MayPayX`: "You may pay any amount of life. If you
+    do, [then]." A number chooser over 0..(the decision-maker's life total — 0 while they can't lose
+    life, CR 119.8); paying X > 0 goes through the life-payment service (so payment replacements
+    apply) and runs `then` with X bound as `DynamicAmount.XValue`. Choosing 0 declines and runs
+    `otherwise` (if any); with no payable life there is no prompt and `otherwise` runs directly. Answered by
+    `MayPayLifeXContinuation`. Necrodominance.
   - `Gate.OnceEachTurn(abilityId, spend = true)` — **not a decision, a per-turn action budget.** The
     lowered form of `TriggeredAbility.effectOncePerTurn` ("Do this only once each turn", CR 603.2h).
     Succeeds iff the source permanent's controller hasn't yet taken this ability's action this turn;
@@ -3471,6 +3477,10 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   `GatedEffect(Gate.MayPayX, then = then)`. Prompts a 0..max-affordable number chooser; paying X auto-taps
   X generic mana and binds the chosen X into `then`'s context (read via `DynamicAmount.XValue`).
   Decree of Justice's cycling trigger, Hollow Specter's combat-damage trigger.
+- `Effects.MayPayAnyAmountOfLife(then)` — "You may pay any amount of life. If you do, [then]." Lowers to
+  `GatedEffect(Gate.MayPayAnyAmountOfLife, then = then)`; `then` reads the life paid as
+  `DynamicAmount.XValue` ("draw that many cards" — Necrodominance). Distinct from
+  `PayAnyAmountOfLifeAsEnters`, which records the amount on an entering permanent.
 - `Effects.AnyPlayerMayPay(cost, consequence)` / `Effects.UnlessAnyPlayerPays(cost, effect)` —
   back the single `AnyPlayerMayPayEffect(cost, consequence?, consequenceIfNonePaid?)`, which asks
   each player in APNAP order whether to pay `cost`. The first to pay runs `consequence` and stops

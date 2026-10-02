@@ -317,6 +317,7 @@ val engineSerializersModule = SerializersModule {
         subclass(MayPayManaContinuation::class)
         subclass(MayPayManaSelectionContinuation::class)
         subclass(MayPayXContinuation::class)
+        subclass(MayPayLifeXContinuation::class)
         subclass(PayManaCostRepeatedlyContinuation::class)
         subclass(MayPayManaTriggerContinuation::class)
         subclass(CounterUnlessPaysManaSelectionContinuation::class)

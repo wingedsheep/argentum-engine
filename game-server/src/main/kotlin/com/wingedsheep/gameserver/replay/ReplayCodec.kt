@@ -29,11 +29,17 @@ import java.util.zip.GZIPOutputStream
  */
 object ReplayCodec {
 
-    fun encode(replay: CompactReplay): String =
-        encodeText(persistenceJson.encodeToString(CompactReplay.serializer(), replay))
+    fun encode(replay: CompactReplay): String = encodeText(encodeJson(replay))
 
-    fun decode(encoded: String): CompactReplay =
-        persistenceJson.decodeFromString(CompactReplay.serializer(), migrateKickerFlag(decodeText(encoded)))
+    fun decode(encoded: String): CompactReplay = decodeJson(decodeText(encoded))
+
+    /** The plain-JSON form of [replay] — what a replay *file* holds (see [ReplayFile]). */
+    fun encodeJson(replay: CompactReplay): String =
+        persistenceJson.encodeToString(CompactReplay.serializer(), replay)
+
+    /** Inverse of [encodeJson], with the same legacy migrations a stored record gets. */
+    fun decodeJson(json: String): CompactReplay =
+        persistenceJson.decodeFromString(CompactReplay.serializer(), migrateKickerFlag(json))
 
     /**
      * Rewrite the pre-Bargain `CastSpell.wasKicked: Boolean` into the `declaredCostSlot: ChoiceSlot?`

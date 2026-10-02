@@ -124,6 +124,12 @@ data class GatedEffect(
                 append(". Otherwise, ${otherwise.description.replaceFirstChar { it.lowercase() }}")
             }
         }
+        is Gate.MayPayAnyAmountOfLife -> buildString {
+            append("You may pay any amount of life. If you do, ${then.description.replaceFirstChar { it.lowercase() }}")
+            if (otherwise != null) {
+                append(". Otherwise, ${otherwise.description.replaceFirstChar { it.lowercase() }}")
+            }
+        }
         // The budget gate is invisible in prompt text — the "Do this only once each turn" rider is
         // rendered once, on the owning TriggeredAbility. Rendering it here too would double it up
         // inside the enclosing "You may …" prompt.
@@ -276,6 +282,21 @@ sealed interface Gate {
     }
 
     /**
+     * Optionally pay a *variable* amount of life — "You may pay any amount of life. If you do,
+     * [then]." The life twin of [MayPayX]: the decision-maker names a number from 0 to the most
+     * life they can pay (their life total, or 0 under a "can't lose life" lock — CR 119.4, 119.8).
+     * Paying X > 0 succeeds → [GatedEffect.then] runs with X bound into the resolution context
+     * (read via `DynamicAmount.XValue`, e.g. "draw that many cards"); choosing 0 is the decline and
+     * runs [GatedEffect.otherwise] (if any). A player who can pay no life is not prompted and goes
+     * straight to `otherwise`. Necrodominance.
+     */
+    @SerialName("Gate.MayPayAnyAmountOfLife")
+    @Serializable
+    data object MayPayAnyAmountOfLife : Gate {
+        override fun applyTextReplacement(replacer: TextReplacer): Gate = this
+    }
+
+    /**
      * Not a decision — a **per-turn action budget**. Models the printed rider "*Do this only once
      * each turn*" (Jennifer Walters // The Sensational She-Hulk, Baron Strucker, HYDRA Overlord).
      *
@@ -329,7 +350,8 @@ sealed interface Gate {
  * processor decides where a "you may" is answered by whether the effect owns one.
  */
 val Gate.isConsentGate: Boolean
-    get() = this is Gate.MayDecide || this is Gate.MayPay || this is Gate.MayPayX
+    get() = this is Gate.MayDecide || this is Gate.MayPay || this is Gate.MayPayX ||
+        this is Gate.MayPayAnyAmountOfLife
 
 /**
  * Does this effect already ask its controller for consent before doing anything?

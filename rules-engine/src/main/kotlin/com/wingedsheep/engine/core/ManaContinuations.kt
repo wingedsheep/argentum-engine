@@ -123,6 +123,24 @@ data class MayPayXContinuation(
 ) : AnswerContinuation
 
 /**
+ * Resume after the payer names how much life to pay for a "you may pay any amount of life" gate
+ * ([com.wingedsheep.sdk.scripting.effects.Gate.MayPayAnyAmountOfLife], Necrodominance). The life
+ * twin of [MayPayXContinuation]: X > 0 is paid and [effect] runs with X bound; 0 declines and runs
+ * [otherwise], as does a payment that can no longer be made.
+ *
+ * @property maxX The payable ceiling that was offered, re-checked on resume.
+ */
+@Serializable
+data class MayPayLifeXContinuation(
+    val playerId: EntityId,
+    val sourceName: String?,
+    val effect: Effect,
+    val otherwise: Effect? = null,
+    val maxX: Int,
+    val effectContext: EffectContext
+) : AnswerContinuation
+
+/**
  * Resume after the payer names how many times to pay a
  * [com.wingedsheep.sdk.scripting.effects.PayManaCostRepeatedlyEffect] ("pay {1} up to three
  * times"). The chosen count is multiplied into one `cost * n` payment and then published to the

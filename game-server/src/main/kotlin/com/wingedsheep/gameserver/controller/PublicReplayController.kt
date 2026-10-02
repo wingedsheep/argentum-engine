@@ -3,13 +3,25 @@ package com.wingedsheep.gameserver.controller
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.gameserver.handler.MessageSender
 import com.wingedsheep.gameserver.persistence.persistenceJson
+import com.wingedsheep.gameserver.replay.CompactReplay
 import com.wingedsheep.gameserver.replay.ReplayFidelity
+import com.wingedsheep.gameserver.replay.ReplayFile
+import com.wingedsheep.gameserver.replay.ReplayFileException
 import com.wingedsheep.gameserver.replay.ReplayService
+import com.wingedsheep.gameserver.replay.ReplayStatus
+import com.wingedsheep.gameserver.replay.ReplayViewerPayload
+import jakarta.servlet.http.HttpServletRequest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
+import org.springframework.http.ContentDisposition
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.util.concurrent.Semaphore
+
+private const val MAX_CONCURRENT_UPLOADS = 2
 
 /**
  * Public (unauthenticated) REST controller for viewing game replays via shareable links.
@@ -26,6 +38,8 @@ class PublicReplayController(
     private val replayService: ReplayService,
     private val messageSender: MessageSender
 ) {
+    /** Concurrent upload re-simulations; past this an upload is refused rather than queued. */
+    private val uploadPermits = Semaphore(MAX_CONCURRENT_UPLOADS)
 
     @GetMapping("/{gameId}", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getReplay(@PathVariable gameId: String): ResponseEntity<Any> {
@@ -33,8 +47,62 @@ class PublicReplayController(
             ?: return ResponseEntity.notFound().build()
         val payload = replayService.viewerPayload(stored)
             ?: return ResponseEntity.notFound().build()
-        val replay = stored.replay
+        return viewerResponse(stored.replay, payload)
+    }
 
+    /**
+     * The game's compact record ([CompactReplay]) as a downloadable JSON file — the input stream,
+     * seed, decks and pinned cards, which [uploadReplay] (on this or any other server) re-simulates
+     * back into the full game.
+     *
+     * Finished games only. The record carries the RNG seed and every decklist, which together give
+     * away every hand and library order, so handing it out mid-game would let a player read their
+     * opponent's hidden information.
+     */
+    @GetMapping("/{gameId}/export", produces = [MediaType.APPLICATION_JSON_VALUE])
+    fun exportReplay(@PathVariable gameId: String): ResponseEntity<String> {
+        val stored = replayService.findStored(gameId)
+            ?.takeIf { it.status == ReplayStatus.FINISHED }
+            ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(
+                HttpHeaders.CONTENT_DISPOSITION,
+                ContentDisposition.attachment().filename(ReplayFile.fileName(gameId)).build().toString(),
+            )
+            .body(ReplayFile.export(stored.replay))
+    }
+
+    /**
+     * Watch a replay file — an [exportReplay] download, plain or gzipped — without storing it. The
+     * body is the raw file; the response has the same shape as [getReplay].
+     *
+     * Re-simulating is the expensive part of serving any replay, and here the input is whatever the
+     * uploader sent, so [ReplayFile] caps its size before anything runs and [uploadPermits] caps how
+     * many run at once.
+     */
+    @PostMapping("/upload", produces = [MediaType.APPLICATION_JSON_VALUE])
+    fun uploadReplay(request: HttpServletRequest): ResponseEntity<Any> {
+        if (!uploadPermits.tryAcquire()) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(mapOf("error" to "The server is busy replaying other uploads — try again in a moment."))
+        }
+        try {
+            val replay = try {
+                ReplayFile.read(request.inputStream)
+            } catch (e: ReplayFileException) {
+                return ResponseEntity.badRequest().body(mapOf("error" to e.message))
+            }
+            val payload = replayService.viewerPayloadForUpload(replay)
+                ?: return ResponseEntity.unprocessableEntity()
+                    .body(mapOf("error" to "This replay could not be re-simulated on the current version."))
+            return viewerResponse(replay, payload)
+        } finally {
+            uploadPermits.release()
+        }
+    }
+
+    private fun viewerResponse(replay: CompactReplay, payload: ReplayViewerPayload): ResponseEntity<Any> {
         val response = PublicReplayResponse(
             gameId = replay.gameId,
             player1Name = replay.players.getOrNull(0)?.name ?: "",

@@ -978,6 +978,34 @@ fixed**: Postmortem Professor's "Return this card **from your graveyard** to the
 `Effects.PutOntoBattlefield`, dropping the graveyard guard; it now uses
 `Effects.PutOntoBattlefieldFromGraveyard`, and only its golden moved.
 
+## The attached damage-trigger band
+
+The sixteenth loop band, tail key `enchanted creature deals …`: "**Whenever equipped creature deals
+combat damage to a player**, create a Treasure token." — the Swords, the Jittes, Armadillo Cloak,
+Sleeper's Robe. **84 lines**; the probe (`enchanted creature deals` → `~ deals`) finished 17 whole
+cards over the corpus. It delivered **6 hand-written cards read whole (7,406 → 7,412)**.
+
+### The same rows under a different binding
+
+`Triggers.attached` is `Triggers.self` with `TriggerBinding.ATTACHED`, so the band is the source's
+six damage rows said of "enchanted creature" — combat damage to a player, to a creature, with no
+recipient, any damage, damage to a filtered recipient, and "is dealt damage" — and no recipient the
+source's rows do not already read. The payoff is where they differ: "it" is the enchanted creature
+now, not the source, so the constant rows take a fourth cascade, `Steps.attachedDamageStep` — the
+damage cascade with `~` and "that many" but without the source pronoun. Pain for All's "it deals that
+much damage" declines rather than reading as the Aura. The filtered-recipient row takes
+`triggeredStep` exactly as the source's does.
+
+### What the differential found
+
+Differential **7,023 compared / 62 divergent → 7,029 / 63**. Two new divergences:
+
+- **Card bug, fixed**: Necromantic Thirst returned its target with `ReturnToHandFromGraveyard`, the
+  *self*-return facade whose KDoc says a targeted return writes plain `ReturnToHand` (the target's
+  graveyard zone is re-checked on resolution). Only its golden moved.
+- **Standing SDK finding**: Lost Jitte puts its counter on `EquippedCreature` where the grammar builds
+  `EnchantedCreature` — the minority-spelling finding `SelfSteps`' attached clauses already name.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
