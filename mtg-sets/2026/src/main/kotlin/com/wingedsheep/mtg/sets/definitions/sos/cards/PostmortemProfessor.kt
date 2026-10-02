@@ -23,7 +23,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * The recursion ability is activated from the graveyard (`activateFromZone = GRAVEYARD`). Its
  * activation cost combines the mana cost with exiling one instant or sorcery card from the
  * graveyard ([Costs.ExileFromGraveyard]), and it returns the card to the battlefield (untapped)
- * via [Effects.PutOntoBattlefield].
+ * via [Effects.PutOntoBattlefieldFromGraveyard], whose graveyard guard keeps it from moving a card
+ * that left the graveyard in response.
  */
 val PostmortemProfessor = card("Postmortem Professor") {
     manaCost = "{1}{B}"
@@ -50,7 +51,7 @@ val PostmortemProfessor = card("Postmortem Professor") {
             Costs.Mana("{1}{B}"),
             Costs.ExileFromGraveyard(1, GameObjectFilter.InstantOrSorcery),
         )
-        effect = Effects.PutOntoBattlefield(EffectTarget.Self)
+        effect = Effects.PutOntoBattlefieldFromGraveyard(EffectTarget.Self)
         activateFromZone = Zone.GRAVEYARD
         description = "{1}{B}, Exile an instant or sorcery card from your graveyard: Return this card from your graveyard to the battlefield."
     }
