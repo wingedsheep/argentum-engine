@@ -1239,6 +1239,7 @@ class StaticAbilityHandler(
             // Damage replacement/modification:
             is PreventDamage,
             is com.wingedsheep.sdk.scripting.PreventDamageByRemovingCounter,
+            is com.wingedsheep.sdk.scripting.PreventDamagePerCounter,
             is DoubleDamage,
             is com.wingedsheep.sdk.scripting.HalveDamage,
             is ModifyDamageAmount,

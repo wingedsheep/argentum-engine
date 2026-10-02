@@ -1327,7 +1327,12 @@ internal class CombatDamageManager(
         shieldResult.lifeGains.forEach { (controllerId, gained) -> preventionLifeGains.merge(controllerId, gained, Int::plus) }
         if (effectiveAmount <= 0) return newState
 
-        return removeCountersForDamage(newState, sourceId, targetId, effectiveAmount, counterType, events)
+        val counterPrevention = DamageUtils.applyPerPointCounterPrevention(
+            newState, targetId, effectiveAmount, sourceId, isCombatDamage = true, predicateEvaluator = predicateEvaluator
+        )
+        events.addAll(counterPrevention.events)
+        if (counterPrevention.remainingDamage <= 0) return counterPrevention.state
+        return removeCountersForDamage(counterPrevention.state, sourceId, targetId, counterPrevention.remainingDamage, counterType, events)
     }
 
     /**
@@ -1455,13 +1460,21 @@ internal class CombatDamageManager(
         state: GameState,
         sourceId: EntityId,
         targetId: EntityId,
-        amount: Int,
+        incomingAmount: Int,
         events: MutableList<GameEvent>,
         /** Recipients whose heal-on-damage replacement was already evaluated this step — see [applyCombatDamage]. */
         healProcessedTargets: MutableSet<EntityId>
     ): GameState {
-        if (amount <= 0) return state
+        if (incomingAmount <= 0) return state
         var newState = state
+
+        val counterPrevention = DamageUtils.applyPerPointCounterPrevention(
+            newState, targetId, incomingAmount, sourceId, isCombatDamage = true, predicateEvaluator = predicateEvaluator
+        )
+        newState = counterPrevention.state
+        events.addAll(counterPrevention.events)
+        val amount = counterPrevention.remainingDamage
+        if (amount <= 0) return newState
 
         val targetContainer = newState.getEntity(targetId) ?: return newState
         val isPlayer = targetContainer.get<LifeTotalComponent>() != null &&

@@ -1537,7 +1537,7 @@ data class CountersRemovedEvent(
     val entityName: String = "",
     val remainingCount: Int? = null,
     /**
-     * True when a `PreventDamageByRemovingCounter` replacement did this removal — the "**this
+     * True when a counter-spending damage prevention ability did this removal — the "**this
      * way**" in Magma Pummeler's "When one or more counters are removed from this creature this
      * way, it deals that much damage to any target."
      *
