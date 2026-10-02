@@ -66,6 +66,24 @@ object Primitives {
         write = { (power, toughness) -> "${signed(power, toughness)}/${signed(toughness, power)}" },
     )
 
+    /**
+     * A base power and toughness — the unsigned "4/4" of "has base power and toughness 4/4".
+     *
+     * [statModifiers]' unsigned sibling, and one leaf for the same reason: the pair is what
+     * [Steps.StatChange] slots, so the "gets" row and the "has base power and toughness" row can
+     * share one `{mod}` slot. The two patterns are disjoint — a modifier always carries its sign —
+     * so no text reads as both.
+     */
+    val basePowerToughness: Phrase<Pair<Int, Int>> = token(
+        name = "a base power/toughness",
+        pattern = Regex("""(?:0|[1-9][0-9]*)/(?:0|[1-9][0-9]*)"""),
+        read = { text ->
+            val (power, toughness) = text.split("/")
+            power.toInt() to toughness.toInt()
+        },
+        write = { (power, toughness) -> "$power/$toughness" },
+    )
+
     /** [value]'s printed form, taking [sibling]'s sign when it is zero and has none of its own. */
     private fun signed(value: Int, sibling: Int): String = when {
         value != 0 -> if (value > 0) "+$value" else "$value"
