@@ -105,6 +105,19 @@ describe('playCostRange', () => {
     expect(range).toMatchObject({ low: '{1}{G}', high: '{4}{G}', isRange: true })
   })
 
+  it('every kicker variant the server offers becomes its own option ("Kicker {G} and/or {1}{U}")', () => {
+    const options = buildActionOptions(card('{1}{C}'), [
+      action({ manaCostString: '{1}{C}' }),
+      action({ actionType: 'CastWithKicker', manaCostString: '{1}{C}{G}', description: 'Cast (Kicked {G})' }),
+      action({ actionType: 'CastWithKicker', manaCostString: '{2}{C}{U}', description: 'Cast (Kicked {1}{U})' }),
+      action({ actionType: 'CastWithKicker', manaCostString: '{2}{C}{G}{U}', description: 'Cast (Kicked {G} + {1}{U})' }),
+    ])
+    const kicked = options.filter((o) => o.actionType === 'castWithKicker')
+    expect(kicked.map((o) => o.label)).toEqual(['Cast (Kicked {G})', 'Cast (Kicked {1}{U})', 'Cast (Kicked {G} + {1}{U})'])
+    expect(new Set(kicked.map((o) => o.key)).size).toBe(3)
+    expect(playCostRange(options)).toMatchObject({ low: '{1}{C}', high: '{2}{C}{G}{U}', isRange: true })
+  })
+
   it('a convoke floor opens a range on a card with only one cast option', () => {
     const range = playCostRange(buildActionOptions(card('{4}{W}{W}'), [
       action({ manaCostString: '{4}{W}{W}', minimumManaCostString: '{4}', hasConvoke: true }),

@@ -139,7 +139,18 @@ internal class SpellOnStackProjector(
             when {
                 declared?.keyword == Keyword.OFFSPRING -> "Offspring"
                 slot == ChoiceSlot.BARGAINED -> "Bargained"
-                slot == ChoiceSlot.KICKED -> "Kicked"
+                slot == ChoiceSlot.KICKED -> {
+                    // A two-kicker card names the kicker(s) paid ("Kicked {G}"), CR 702.33f.
+                    val kickers = cardDef?.keywordAbilities
+                        ?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>()
+                        ?.filter { it.declaredSlot == ChoiceSlot.KICKED }.orEmpty()
+                    val paid = listOfNotNull(
+                        kickers.getOrNull(0)?.takeIf { ChoiceSlot.FIRST_KICKER in spellOnStack.additionalCostChoices },
+                        kickers.getOrNull(1)?.takeIf { ChoiceSlot.SECOND_KICKER in spellOnStack.additionalCostChoices },
+                    )
+                    if (paid.isEmpty()) "Kicked"
+                    else com.wingedsheep.engine.handlers.actions.spell.chosenKickersLabel(paid)
+                }
                 // Teamwork prints its N, so the badge is the keyword's own prefix ("Teamwork 2")
                 // rather than the bare slot name (CR 702.194b — "cast using teamwork").
                 slot == ChoiceSlot.TEAMWORK ->

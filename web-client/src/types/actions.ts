@@ -141,6 +141,12 @@ export interface CastSpellAction {
    * (replicate). Server-stamped on each "Replicate ×N" variant; the client only echoes it back.
    */
   readonly declaredCostTimes?: number
+  /**
+   * Which of the card's costs under `declaredCostSlot` are paid, by printed position — set only for
+   * "Kicker [A] and/or [B]" cards, where each variant ("Kicked {G}", "Kicked {1}{U}", both) is its
+   * own server-offered cast. The client only echoes it back.
+   */
+  readonly declaredCostIndices?: readonly number[]
   readonly additionalCostChoices?: Readonly<Record<string, number>>
   /**
    * Whether the spell's optional waterbend additional cost was elected (Avatar: The Last

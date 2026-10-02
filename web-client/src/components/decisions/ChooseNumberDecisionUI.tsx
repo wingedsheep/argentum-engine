@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import type { ChooseNumberDecision } from '@/types'
 import { ManaSymbol } from '../ui/ManaSymbols'
+import { DecisionContextCards, hasDecisionContextCards, resolveDecisionCards } from './DecisionContextCards'
 import styles from './DecisionUI.module.css'
 
 /**
@@ -34,6 +35,8 @@ function ManaDistributionUI({
 }) {
   const [firstAmount, setFirstAmount] = useState(0)
   const submitNumberDecision = useGameStore((s) => s.submitNumberDecision)
+  const gameState = useGameStore((s) => s.gameState)
+  const cards = resolveDecisionCards(decision.context, gameState)
 
   const secondAmount = total - firstAmount
 
@@ -57,6 +60,7 @@ function ManaDistributionUI({
 
   return (
     <>
+      <DecisionContextCards cards={cards} />
       {decision.context.sourceName && (
         <h2 className={styles.title}>
           {decision.context.sourceName}
@@ -278,6 +282,8 @@ export function ChooseNumberDecisionUI({
   // Default number selection UI
   const [selectedNumber, setSelectedNumber] = useState(decision.minValue)
   const submitNumberDecision = useGameStore((s) => s.submitNumberDecision)
+  const gameState = useGameStore((s) => s.gameState)
+  const cards = resolveDecisionCards(decision.context, gameState)
 
   const clamp = (n: number) => Math.min(decision.maxValue, Math.max(decision.minValue, n))
 
@@ -298,11 +304,13 @@ export function ChooseNumberDecisionUI({
 
   return (
     <>
+      <DecisionContextCards cards={cards} />
+
       <h2 className={styles.title}>
         {decision.prompt}
       </h2>
 
-      {decision.context.sourceName && (
+      {!hasDecisionContextCards(cards) && decision.context.sourceName && (
         <p className={styles.subtitle}>
           {decision.context.sourceName}
         </p>

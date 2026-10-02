@@ -6271,6 +6271,90 @@
     ]
 }
 
+// Wastescape Battlemage
+{
+    "name": "Wastescape Battlemage",
+    "manaCost": "{1}{C}",
+    "typeLine": "Creature — Eldrazi Wizard",
+    "oracleText": "Kicker {G} and/or {1}{U}\nWhen you cast this spell, if it was kicked with its {G} kicker, exile target artifact or enchantment an opponent controls.\nWhen you cast this spell, if it was kicked with its {1}{U} kicker, return target creature an opponent controls to its owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{G}"
+        },
+        {
+            "type": "Kicker",
+            "manaCost": "{1}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wastescape Battlemage:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|enchantment ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "CastChoiceMade",
+                    "slot": "FIRST_KICKER"
+                },
+                "descriptionOverride": "When you cast this spell, if it was kicked with its {G} kicker, exile target artifact or enchantment an opponent controls."
+            },
+            {
+                "id": "Wastescape Battlemage:2",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t1"
+                },
+                "interveningIf": {
+                    "type": "CastChoiceMade",
+                    "slot": "SECOND_KICKER"
+                },
+                "descriptionOverride": "When you cast this spell, if it was kicked with its {1}{U} kicker, return target creature an opponent controls to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "UNCOMMON",
+        "artist": "Paolo Parente",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bc119b8-429c-4ab6-adba-b65b03810e98.jpg?1783911303"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Wing It
 {
     "name": "Wing It",

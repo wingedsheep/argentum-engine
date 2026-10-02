@@ -624,7 +624,9 @@ class CastSpellHandler(
             additionalCostBlightAmount = action.additionalCostPayment?.blightAmount ?: 0,
             additionalCostPayXLifeAmount = payXLifeAmount,
             declaredCostSlot = action.declaredCostSlot,
-            additionalCostChoices = action.additionalCostChoices,
+            // Plus which kicker(s) of a two-kicker card were paid (CR 702.33f), recorded on the
+            // same cast-choice rail so the linked "kicked with its [A] kicker" abilities read them.
+            additionalCostChoices = action.additionalCostChoices + linkedKickerChoices(action, cardDef),
             wasBlightPaid = (action.additionalCostPayment?.blightTargets?.isNotEmpty() == true),
             // True when the spell's waterbend additional cost was paid (Avatar) — mandatory costs
             // always, optional "you may waterbend {N}" only when the player elected it.

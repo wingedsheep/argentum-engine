@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.PlayerYields
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.player.HotseatControlComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.view.projection.CardActiveEffectsProjector
 import com.wingedsheep.engine.view.projection.CardFacesProjector
 import com.wingedsheep.engine.view.projection.CardProjector
@@ -178,6 +179,18 @@ class ClientStateTransformer(
             }
         }
         // --- FIX END ---
+
+        // A permanent spell's "as this enters" choice (Sorcerous Spyglass's card name, a Thriving
+        // land's color) is asked mid-resolution, after the spell has left the stack and before it
+        // reaches the battlefield — so it sits in no zone. Project it anyway so the decision UI and
+        // the "X is making a choice" banner can show its card; it was public on the stack a moment ago.
+        state.pendingDecision?.context?.sourceId
+            ?.takeIf { it !in cards && state.getEntity(it)?.has<SpellOnStackComponent>() == true }
+            ?.let { sourceId ->
+                val stackZoneKey = zones.first { it.zoneId.zoneType == Zone.STACK }.zoneId
+                cardProjector.project(state, sourceId, stackZoneKey, projectedState, viewingPlayerId, isSpectator)
+                    ?.let { cards[sourceId] = it }
+            }
 
         // Build player information
         val players = state.turnOrder.map { playerId ->

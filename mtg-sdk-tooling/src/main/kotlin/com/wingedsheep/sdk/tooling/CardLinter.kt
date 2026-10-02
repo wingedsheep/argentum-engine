@@ -894,6 +894,8 @@ object CardLinter {
         val declaredModeIds = mutableSetOf<String>()
         val reads = mutableListOf<Pair<String, String>>() // slot to nodeType
         val modeIdReads = mutableListOf<String>()
+        /** How many kicker costs the card lists — two ("Kicker [A] and/or [B]") declare FIRST/SECOND_KICKER. */
+        var kickerCosts = 0
     }
 
     /** One pass over the whole card (all faces) collecting slot declarations and reads. */
@@ -929,6 +931,11 @@ object CardLinter {
                 if (type == "Kicker") {
                     val declaredSlot = (element["declaredSlot"] as? JsonPrimitive)?.contentOrNull
                     slots.declared.add(declaredSlot ?: "KICKED")
+                    // "Kicker [A] and/or [B]" (CR 702.33f): the engine stamps which kicker was paid.
+                    if ((declaredSlot ?: "KICKED") == "KICKED" && ++slots.kickerCosts >= 2) {
+                        slots.declared.add("FIRST_KICKER")
+                        slots.declared.add("SECOND_KICKER")
+                    }
                 }
                 if (type == "SourceChosenModeIs") {
                     (element["modeId"] as? JsonPrimitive)?.contentOrNull

@@ -95,6 +95,15 @@ data class CastSpell(
      * Ignored when [declaredCostSlot] is null.
      */
     val declaredCostTimes: Int = 1,
+    /**
+     * Which of the card's optional costs under [declaredCostSlot] this cast pays, by printed
+     * position (0 = first). Only meaningful for a card that lists two costs under one slot —
+     * "Kicker [A] and/or [B]" (CR 702.33b), where each kicker may be paid independently and the
+     * spell is kicked if either is (CR 702.33d): `{0}`, `{1}`, or `{0, 1}`. Empty means *every*
+     * cost under the slot, which is the only shape for a single-cost slot. Ignored when
+     * [declaredCostSlot] is null.
+     */
+    val declaredCostIndices: Set<Int> = emptySet(),
     /** Explicit branches of named additional-cost choices; retained independently of payment. */
     val additionalCostChoices: Map<ChoiceSlot, Int> = emptyMap(),
     /**

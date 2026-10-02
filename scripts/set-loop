@@ -100,8 +100,9 @@ PROMPT="You are one iteration of an unattended loop implementing MTG set '$CODE'
 You are a fresh session: your memory is the ledger at $RUNS/$CODE-cards.md (create it if missing),
 the gap analysis at $RUNS/$CODE-gaps.md, and GitHub. Do exactly ONE of the steps below, then stop.
 
-The set is built in three phases: gap analysis once, then every engine gap one PR at a time, then the
-cards in big batches — by then every remaining card composes from existing primitives.
+The set is built in four phases: gap analysis once, then the Assay-ready sweep (the cards Argentum Assay
+already reads whole, authored to its compiled model), then every engine gap one PR at a time, then the
+remaining cards in big batches — by then every remaining card composes from existing primitives.
 
 Other loops may be running for other sets at the same time, so everything this set owns is named by its prefix
 'loop-$CODE-': every branch you create is 'loop-$CODE-<short-slug>', and its worktree is
@@ -112,16 +113,19 @@ that PR belongs to the other loop). Never touch a PR, branch or worktree without
 worktree (recreate it with \`git worktree add\` if missing). Never work in the main checkout.
 
 0. No $RUNS/$CODE-gaps.md yet -> gap analysis, no PR. From a fresh worktree 'loop-$CODE-gaps' off origin/main, list the
-   unimplemented cards (\`just card-status --set $CODE --list\`; \`just assay-ready $CODE\` marks the ones that are
-   already free). If backlog/$CODE-engine-gaps.md or the set's backlog/sets/*/mechanics.md exists, start from
-   it but re-verify every claim against the current SDK — they go stale. Fan the cards out to subagents in
+   unimplemented cards (\`just card-status --set $CODE --list\`). Cards \`just assay-ready $CODE --names\` lists
+   in its original / elsewhere / row-only / basic buckets are the step-5 sweep's: don't classify them. If
+   backlog/$CODE-engine-gaps.md or the set's backlog/sets/*/mechanics.md exists, start from
+   it but re-verify every claim against the current SDK — they go stale. Fan the other cards out to subagents in
    chunks (by colour), each checking Scryfall oracle text against docs/card-sdk-language-reference.md and the
    source, and returning one line per card: READY, or BLOCKED on a named missing capability. Merge the answers
-   into $RUNS/$CODE-gaps.md with two sections:
+   into $RUNS/$CODE-gaps.md with three sections:
    '## Gaps' — one line per distinct missing capability: \`- [ ] G<n> <capability> — unlocks <k>: <cards> — deps: <G ids or none>\`,
      ordered by dependencies first, then most cards unlocked. Collapse near-duplicates into one gap; a gap is
      engine/SDK vocabulary, never a single card's quirk that composition can express.
    '## Ready' — every card that composes from existing primitives today.
+   '## Assay-ready' — the split's counts per bucket, and a \`- [ ] sweep\` line. If the split is all zero (or only
+     unscaffolded/absent), write \`- [x] sweep — nothing to sweep\`.
    Stop after writing it.
 1. PR open, CI failed -> read only the failing log tail (\`gh run view <id> --log-failed | tail -200\`),
    fix it, re-run the affected gate per the verify skill, push. A known-flaky test: \`gh run rerun --failed\` instead.
@@ -130,20 +134,39 @@ worktree (recreate it with \`git worktree add\` if missing). Never work in the m
    fix what holds up, gate, push, and post a PR comment starting 'loop-reviewed' listing fixes and declines.
 4. PR open, CI green, reviewed, nothing pushed since -> \`gh pr merge --squash --delete-branch\` (from $REPO, after
    \`git worktree remove\` of its worktree), mark the unit done in the ledger. If it closed a gap, tick it \`[x]\`
-   in the gaps file and move the cards it unlocked (minus any it shipped) into '## Ready'.
-5. No PR open, an unticked gap whose deps are all \`[x]\` -> engine gap. \`git fetch\`, new worktree + 'loop-$CODE-' branch
+   in the gaps file and move the cards it unlocked (minus any it shipped) into '## Ready'. If it was an Assay sweep
+   whose after-count left nothing but dropped, unscaffolded and absent cards, tick the sweep \`[x]\`.
+5. No PR open, the '## Assay-ready' sweep line is not \`[x]\` or \`[!]\` (add it as \`[ ]\` if a gaps file predates it)
+   -> Assay-ready sweep. \`git fetch\`, new worktree + 'loop-$CODE-assay-<n>' branch from origin/main, and follow the
+   assay-ready-sweep skill on the worktree: Stage 0's split (\`just assay-ready $CODE --names --tail\`, run there; never
+   \`just assay-bake\` — the verdict ledger is someone else's deliberate commit), the capability pre-flight, the
+   differential baseline, every card authored to \`oracle-assay compile\`'s JSON rather than to the oracle text, and
+   placed by bucket (an \`elsewhere\` canonical goes in its earliest printing's set, plus a row here). Take at most 30
+   cards to author (original + elsewhere) per PR, and every row-only and basic card plus the scoped
+   \`generate-reprints.py --since origin/main\` tail. Leave out unscaffolded cards and \`absent\` ones — they join
+   '## Ready' (or '## Gaps') as ordinary cards — and leave out any card another open PR already adds. A card the pre-flight
+   or the differential shows needs new vocabulary, or that the batch can't make faithful, is dropped: name it in
+   the gaps file under '## Assay-ready' as \`dropped: <card> — <reason>\`, add it to '## Gaps' or '## Ready', and
+   never sweep it again. One definition file and one scenario test file per authored card. Gate per Stage 5
+   (\`just build\`, \`just rebless-cards\` moving only your cards, \`just assay-differential\` with only the delta
+   classified, \`just check-card-printing\`), then re-run \`just assay-ready $CODE\` on the branch. Commit, push, open
+   a PR titled '[agent-loop: $MODEL] Add <N> Assay-ready <set name> cards' whose body carries the split, the
+   before/after differential triple, the before/after assay-ready count, dropped cards with reasons, and that
+   nothing was play-tested. Record the unit and its after-count in the ledger; a sweep with cards left over gets
+   another sweep PR once this one merges.
+6. No PR open, sweep \`[x]\` or \`[!]\`, an unticked gap whose deps are all \`[x]\` -> engine gap. \`git fetch\`, new worktree + 'loop-$CODE-' branch
    from origin/main. Take the first such gap, mark it \`[~]\`, and build it with the add-feature skill: the capability,
    its SDK reference entry, engine tests, plus one or two of the cards it unlocks as proof (one scenario test file
    per card). Gate, commit, push, open a PR titled '[agent-loop: $MODEL] <capability> for <set name>' whose body
    names the gap, the cards it unlocks, the gate run, and that nothing was play-tested. Record the unit in the ledger.
-6. No PR open, no buildable gap left -> card batch. \`git fetch\`, new worktree + 'loop-$CODE-' branch from origin/main. Take up
+7. No PR open, sweep \`[x]\` or \`[!]\`, no buildable gap left -> card batch. \`git fetch\`, new worktree + 'loop-$CODE-' branch from origin/main. Take up
    to 15 unimplemented cards from '## Ready', grouped by colour or theme. Fan them out to subagents, one card each,
    with the add-card skill (one definition file and one scenario test file per card). A card that turns out to need
    new vocabulary is dropped from the batch and added to '## Gaps' as a new \`[ ]\` gap — the next iteration builds
    it before more cards. Gate once per the verify skill, commit, push, open a PR titled
    '[agent-loop: $MODEL] Add <N> <set name> cards' whose body lists the cards, the gate run, and that nothing was
    play-tested. Record the unit in the ledger.
-7. No PR open, \`card-status\` shows every card implemented, finishing PR not yet merged -> finishing PR. \`git fetch\`, new
+8. No PR open, \`card-status\` shows every card implemented, finishing PR not yet merged -> finishing PR. \`git fetch\`, new
    worktree + 'loop-$CODE-finish' branch from origin/main. Make the set draftable and give it Limited archetypes:
    - Drop \`override val incomplete = true\` from the set's \`MtgSet\` object (finishing a set also trips the
      FrozenBaselineTest hash — re-bless it per the verify skill).
@@ -162,8 +185,8 @@ PR open, CI still pending or running -> do nothing; don't poll or wait on it —
 between sessions. Answer WAITING_CI.
 
 If a step fails twice for the same PR, comment on it, mark it needs-human in the ledger (and the gap \`[!]\` if it
-was one), and move on. Cards blocked on a \`[!]\` gap are skipped. When the only cards left are blocked on \`[!]\`
-gaps, answer STUCK naming those gaps; when \`card-status\` shows the set complete AND the step-7
+was one), and move on. A sweep that fails twice marks the sweep line \`[!]\`, and its cards go through steps 6-7. Cards blocked on a \`[!]\` gap are skipped. When the only cards left are blocked on \`[!]\`
+gaps, answer STUCK naming those gaps; when \`card-status\` shows the set complete AND the step-8
 finishing PR (archetypes + no \`incomplete\`) is merged, answer SET_COMPLETE.
 Follow AGENTS.md. Never revert or stash work that isn't yours.
 An unrelated failure on origin/main (a test in a module your change doesn't touch) is NOT a reason to answer
@@ -172,7 +195,7 @@ and carry on. Only answer STUCK when the failure is inside code your unit change
 failure is a trivial stale test, you may fix it in a separate one-commit PR.
 
 A human watches your text live, one line at a time, so keep them posted in short lines (under 150 chars each):
-- once you know which step you're taking: 'Working on: <step and unit, e.g. step 5, G3 splice onto Arcane>'
+- once you know which step you're taking: 'Working on: <step and unit, e.g. step 6, G3 splice onto Arcane>'
 - whenever you learn something that changes the plan — a gap found, a card dropped as needing vocabulary, a
   failure's cause, a review finding you fixed or declined: 'Finding: <one line>'
 - just before your final line, one to three lines: 'Summary: <what you did / what's next>'
@@ -183,7 +206,7 @@ if [ "$HARNESS" = codex ]; then
   PROMPT="$PROMPT
 
 Read the applicable skill files in .agents/skills/ (add-card/SKILL.md, add-feature/SKILL.md,
-review-changes/SKILL.md, verify/SKILL.md). If subagents are unavailable, perform their steps inline."
+assay-ready-sweep/SKILL.md, review-changes/SKILL.md, verify/SKILL.md). If subagents are unavailable, perform their steps inline."
 elif [ "$MODEL" = sonnet ] || [ "$MODEL" = opus ]; then
   PROMPT="$PROMPT
 

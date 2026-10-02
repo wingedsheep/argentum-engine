@@ -77,9 +77,9 @@ internal class CastCostTotaller(
         // Add kicker/offspring mana cost if kicked (only for mana-based kicker/offspring; not
         // applicable with alternative costs).
         if (!playForFree && !action.useAlternativeCost) {
-            val kickerManaCost = declaredOptionalCosts(action, cardDef)
-                .firstOrNull { it.manaCost != null }
-                ?.manaCostPaid(action.declaredCostTimes)
+            // Summed over every declared cost: "Kicker [A] and/or [B]" kicked with both pays both
+            // (CR 702.33b); a single-cost declaration is the one-element case.
+            val kickerManaCost = optionalCostsManaPaid(declaredOptionalCosts(action, cardDef), action.declaredCostTimes)
             if (kickerManaCost != null) {
                 effectiveCost = ManaCost(effectiveCost.symbols + kickerManaCost.symbols)
             }

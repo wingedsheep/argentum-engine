@@ -14,6 +14,10 @@ import com.wingedsheep.engine.legalactions.ModalLegalEnumeration
 import com.wingedsheep.engine.legalactions.TapForGenericPermanentData
 import com.wingedsheep.engine.legalactions.TapForPowerCreatureData
 import com.wingedsheep.engine.legalactions.TargetInfo
+import com.wingedsheep.engine.handlers.actions.spell.chosenKickersLabel
+import com.wingedsheep.engine.handlers.actions.spell.optionalCostDeclarations
+import com.wingedsheep.engine.handlers.actions.spell.optionalCostsAdditionalPaid
+import com.wingedsheep.engine.handlers.actions.spell.optionalCostsManaPaid
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCostEnumeration
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCostOffer
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCosts
@@ -2025,8 +2029,10 @@ class CastSpellEnumerator(
             // One cast variant per mechanic riding the optional-additional-cost rail, keyed by the
             // slot it declares: kicker/multikicker/offspring stamp KICKED, bargain stamps BARGAINED
             // (CR 702.166b). Grouping by slot keeps them separate cast options rather than one
-            // conflated "kicked" cast.
-            for ((declaredSlot, kickers) in optionalCosts.groupBy { it.declaredSlot }) {
+            // conflated "kicked" cast. A card listing two kicker costs ("Kicker [A] and/or [B]",
+            // CR 702.33b) gets one variant per combination — [A], [B], both — carried on the action
+            // as `declaredCostIndices`.
+            for ((declaredSlot, kickers, declaredIndices) in optionalCostDeclarations(optionalCosts)) {
                 // A repeatable cost (replicate, CR 702.56a) is announced with a count (CR 601.2b),
                 // so each affordable count is its own cast variant — "Replicate ×2" — and the count
                 // rides the action as `declaredCostTimes`. Affordability only falls as the count
@@ -2034,7 +2040,6 @@ class CastSpellEnumerator(
                 // has the single count 1.
                 val repeatable = kickers.any { it.multi }
                 for (times in 1..(if (repeatable) MAX_OPTIONAL_COST_REPEATS else 1)) {
-                    val manaKicker = kickers.firstOrNull { it.manaCost != null && it.keyword != Keyword.OFFSPRING }
                     val additionalCostKicker = kickers.firstOrNull { it.additionalCost != null }
                     val offspringAbility = kickers.firstOrNull { it.keyword == Keyword.OFFSPRING }
                     val collectEvidenceAtom = (
@@ -2044,7 +2049,7 @@ class CastSpellEnumerator(
                     // Re-check timing per slot: the flash unlock belongs to the mechanic that prints it
                     // (Ghitu Fire's pay-{2}-more clause), so a bargain variant on the same card must not
                     // ride a kicker's instant-speed permission.
-                    val flashKicker = manaKicker?.grantsFlashTiming == true ||
+                    val flashKicker = kickers.any { it.manaCost != null && it.keyword != Keyword.OFFSPRING && it.grantsFlashTiming } ||
                         additionalCostKicker?.grantsFlashTiming == true
                     if (!isInstant && !grantedFlash && !flashKicker && !context.canPlaySorcerySpeed) continue
 
@@ -2054,7 +2059,9 @@ class CastSpellEnumerator(
                     val baseCost = context.costCalculator.calculateEffectiveCost(
                         state, cardDef, playerId, declaredCostSlot = declaredSlot,
                     )
-                    val kickedManaCost = manaKicker?.manaCostPaid(times) ?: offspringAbility?.manaCost
+                    val kickedManaCost = optionalCostsManaPaid(
+                        kickers.filter { it.manaCost != null && it.keyword != Keyword.OFFSPRING }, times
+                    ) ?: offspringAbility?.manaCost
                     val kickedCost = if (kickedManaCost != null) baseCost + kickedManaCost else baseCost
                     val kickedSpellContext = spellPaymentContextFor(cardComponent, isKicked = declaredSlot == ChoiceSlot.KICKED)
                     val canAffordKickedMana = context.manaSolver.canPay(state, playerId, kickedCost, spellContext = kickedSpellContext, precomputedSources = context.availableManaSources)
@@ -2079,7 +2086,7 @@ class CastSpellEnumerator(
                     // Check additional cost payability (e.g., sacrifice a creature)
                     var kickerCostInfo: AdditionalCostData? = null
                     var canPayKickerAdditionalCost = true
-                    val kickerAdditionalCost = additionalCostKicker?.additionalCostPaid(times)
+                    val kickerAdditionalCost = optionalCostsAdditionalPaid(kickers, times)
                     if (kickerAdditionalCost != null) {
                         when (val atom = (kickerAdditionalCost as? AdditionalCost.Atom)?.atom) {
                             // "Tap any number of creatures you control with total power N or more"
@@ -2152,6 +2159,10 @@ class CastSpellEnumerator(
                             additionalCostKicker?.displayPrefix ?: "Teamwork"
                         offspringAbility != null -> "Offspring"
                         flashKicker -> "with Flash"
+                        // Which of "Kicker [A] and/or [B]" this variant pays — "Kicked {G}",
+                        // "Kicked {1}{U}", "Kicked {G} + {1}{U}" (CR 702.33b).
+                        declaredIndices.isNotEmpty() ->
+                            chosenKickersLabel(kickers)
                         else -> "Kicked"
                     }
                     // "Replicate ×2" — the count is the whole choice for a repeatable cost.
@@ -2211,7 +2222,7 @@ class CastSpellEnumerator(
                         result.add(LegalAction(
                             actionType = "CastSpellModal",
                             description = "Cast ${cardComponent.name} ($castLabel)",
-                            action = CastSpell(playerId, cardId, declaredCostSlot = declaredSlot, declaredCostTimes = times),
+                            action = CastSpell(playerId, cardId, declaredCostSlot = declaredSlot, declaredCostTimes = times, declaredCostIndices = declaredIndices),
                             affordable = canAffordKicked,
                             manaCostString = kickedCostString,
                             autoTapPreview = kickedAutoTapPreview,
@@ -2255,7 +2266,7 @@ class CastSpellEnumerator(
                                 result.add(LegalAction(
                                     actionType = "CastWithKicker",
                                     description = "Cast ${cardComponent.name} ($castLabel)",
-                                    action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), declaredCostSlot = declaredSlot, declaredCostTimes = times),
+                                    action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), declaredCostSlot = declaredSlot, declaredCostTimes = times, declaredCostIndices = declaredIndices),
                                     affordable = canAffordKicked,
                                     manaCostString = kickedCostString,
                                     autoTapPreview = kickedAutoTapPreview,
@@ -2270,7 +2281,7 @@ class CastSpellEnumerator(
                                 result.add(LegalAction(
                                     actionType = "CastWithKicker",
                                     description = "Cast ${cardComponent.name} ($castLabel)",
-                                    action = CastSpell(playerId, cardId, declaredCostSlot = declaredSlot, declaredCostTimes = times),
+                                    action = CastSpell(playerId, cardId, declaredCostSlot = declaredSlot, declaredCostTimes = times, declaredCostIndices = declaredIndices),
                                     validTargets = firstReqInfo.validTargets,
                                     requiresTargets = true,
                                     targetCount = firstReqInfo.maxTargets,
@@ -2293,7 +2304,7 @@ class CastSpellEnumerator(
                         result.add(LegalAction(
                             actionType = "CastWithKicker",
                             description = "Cast ${cardComponent.name} ($castLabel)",
-                            action = CastSpell(playerId, cardId, declaredCostSlot = declaredSlot, declaredCostTimes = times),
+                            action = CastSpell(playerId, cardId, declaredCostSlot = declaredSlot, declaredCostTimes = times, declaredCostIndices = declaredIndices),
                             affordable = canAffordKicked,
                             manaCostString = kickedCostString,
                             autoTapPreview = kickedAutoTapPreview,

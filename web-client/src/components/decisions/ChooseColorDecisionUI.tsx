@@ -3,6 +3,7 @@ import { useGameStore } from '@/store/gameStore.ts'
 import type { ChooseColorDecision } from '@/types'
 import { ColorDisplayNames } from '@/types'
 import { ManaSymbol } from '@/components/ui/ManaSymbols.tsx'
+import { DecisionSourceThumbnail } from '@/components/ui/DecisionSourceThumbnail.tsx'
 
 /**
  * Map color enum names to mana symbol keys (W, U, B, R, G).
@@ -148,6 +149,7 @@ export function ChooseColorDecisionUI({
           gap: 12,
         }}
       >
+        <DecisionSourceThumbnail sourceId={decision.context.sourceId} />
         <div
           style={{
             color: 'var(--text-primary)',
