@@ -229,6 +229,8 @@ data class ReplaySetup(
      * into each reconstructed snapshot so the replay viewer renders the same seating it would live.
      */
     val seatRoster: List<ServerMessage.PlayerSeatInfo>,
+    /** Absent in old replays, which chose deterministic insertion order. */
+    val preserveGraveyardOrder: Boolean = false,
 )
 
 /** Flattened, serializable form of [com.wingedsheep.engine.core.PlayerConfig]. */

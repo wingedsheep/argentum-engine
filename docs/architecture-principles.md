@@ -562,6 +562,17 @@ actionable references: invalidating a live object does not erase the event's las
 These fields are internal engine data; client event mapping continues to expose the existing game
 log shape.
 
+Graveyards store cards oldest first. `GraveyardOrdering` finishes each atomic effect, SBA pass,
+or action-cost batch: it preserves earlier cards and asks each owner to order simultaneous arrivals,
+in APNAP order. `GraveyardOrderContinuation` holds the move events and pipeline outputs until all
+owners answer; only then are events published and the next instruction or SBA pass resumed.
+Direct graveyard moves in a group loop defer this finish until the group is complete. Reordering
+uses `reorderZone`, so object identities stay intact, and emits `GraveyardOrderedEvent`.
+`GameConfig.preserveGraveyardOrder` is fixed at setup and recorded in replay setup. New games
+use owner choices; deterministic fixtures and legacy replays retain insertion order without
+questions. This setting never inspects hidden deck contents. An Aura whose valid host dies in
+an SBA pass leaves in the following pass, putting it above the host rather than in the same batch.
+
 Zone moves with a source-departure duration store `ZoneReturn` records in `GameState.zoneReturns`.
 Each record identifies the source's battlefield visit, the moved object's destination visit, and its
 previous zone. `ZoneReturnService` consumes expired records inside the zone-transition pipeline,

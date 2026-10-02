@@ -82,8 +82,8 @@ export function DecisionUI() {
 
   // Handle OrderObjectsDecision (e.g., damage assignment order for blockers)
   if (pendingDecision.type === 'OrderObjectsDecision') {
-    // Combat phase ordering uses dedicated blocker ordering UI
-    if (pendingDecision.context.phase === 'COMBAT') {
+    // The server supplies labels for other ordered zones, including graveyards.
+    if (pendingDecision.context.phase === 'COMBAT' || pendingDecision.orderingTitle) {
       return <OrderBlockersUI key={pendingDecision.id} decision={pendingDecision} responsive={responsive} />
     }
     // Other ordering decisions could use a generic ordering UI (not yet implemented)

@@ -12615,6 +12615,20 @@ default to "you" so card authors don't need to pass it explicitly.
   checks, e.g. `All(GraveyardContains(Filters.Instant), GraveyardContains(Filters.Sorcery))` =
   "an instant card and a sorcery card in your graveyard" (Flow State). `GraveyardContainsSubtype(subtype)`
   is the subtype-filtered sibling.
+- `DynamicAmounts.cardsAboveInGraveyard(entity = Self, filter = Any)` /
+  `cardsBelowInGraveyard(entity = Self, filter = Any)` — `GraveyardRelativeCount` counts
+  matching cards strictly above/below the current object in its own graveyard (Nether Shadow).
+  A missing, departed, or non-graveyard object contributes zero; there is no positional LKI.
+  Compose with `Conditions.CompareAmounts` for thresholds and `interveningIf` for upkeep gates.
+  Graveyards store oldest first, so later arrivals are above earlier ones; removing a card leaves
+  the remaining order intact. Simultaneous arrivals are ordered by their owner in APNAP order
+  before the next instruction or SBA pass. The existing ordering UI labels the leftmost card as
+  the top of the graveyard. `GameConfig.preserveGraveyardOrder` defaults to true for real games;
+  scenario-server games also enable it. Deterministic fixtures and legacy replay states default
+  to false through `GameState`, choosing insertion order without asking. This setup rule never
+  depends on hidden card identities. Each atomic effect, SBA pass, and action-cost batch is separate.
+  Replay setup records the rule; absent fields in old replays retain insertion-order behavior.
+  New vocabulary awaits a separate Assay grammar band.
 - `CardsInGraveyardMatchingAtLeast(count, filter)` — "there are `count` or more cards matching `filter`
   in your graveyard" (`Compare(Count(Player.You, Zone.GRAVEYARD, filter), GTE, count)`). The general
   form behind `CreatureCardsInGraveyardAtLeast(count)`; use for "N or more <kind> cards", e.g. Ran and

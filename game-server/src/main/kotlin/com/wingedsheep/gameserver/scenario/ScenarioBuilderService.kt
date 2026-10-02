@@ -205,7 +205,7 @@ class ScenarioBuilderService(
      */
     private class ScenarioBuilder(private val cardRegistry: CardRegistry) {
         private val entityIdCounter = AtomicLong(1000)
-        private var state = GameState()
+        private var state = GameState(preserveGraveyardOrder = true)
 
         private val playerIds = mutableListOf<EntityId>()
 

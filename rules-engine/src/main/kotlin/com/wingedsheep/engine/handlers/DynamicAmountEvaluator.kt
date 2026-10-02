@@ -137,6 +137,9 @@ class DynamicAmountEvaluator(
         amount: DynamicAmount,
         context: EffectContext
     ): Boolean = when (amount) {
+        is DynamicAmount.GraveyardRelativeCount ->
+            TargetResolutionUtils.resolveTarget(amount.entity, context, state) != null
+
         is DynamicAmount.EntityProperty ->
             // The enchanted-creature branch of [evaluate] has its own last-known-information
             // fallback and stays determinable even once the aura has detached.
@@ -464,6 +467,24 @@ class DynamicAmountEvaluator(
             // zones (e.g., GRAVEYARD `Count`), which infinitely recurses if a mid-projection
             // caller (a `ConditionalStaticAbility` condition evaluated inside [EffectApplicator])
             // reaches this branch through a default-constructed [ConditionEvaluator].
+            is DynamicAmount.GraveyardRelativeCount -> {
+                val id = TargetResolutionUtils.resolveTarget(amount.entity, context, state)
+                val zone = id?.let { state.logicalZone(it) }
+                if (zone?.zoneType != Zone.GRAVEYARD) 0 else {
+                    val cards = state.getZone(zone)
+                    val index = cards.indexOf(id)
+                    if (index < 0) 0 else {
+                        val predicateContext = PredicateContext.fromEffectContext(context)
+                        // Reuse the caller's intermediate projection during layer evaluation.
+                        val projection = resolveProjection(state, projectedState)
+                        cards.indices.count { i ->
+                            (if (amount.above) i > index else i < index) &&
+                                conditions.predicates.matches(state, projection, cards[i], amount.filter, predicateContext)
+                        }
+                    }
+                }
+            }
+
             is DynamicAmount.Count ->
                 evaluateUnifiedCount(state, amount.player, amount.zone, amount.filter, context, projectedState)
 

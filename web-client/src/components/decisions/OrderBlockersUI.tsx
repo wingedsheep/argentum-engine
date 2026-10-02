@@ -160,7 +160,7 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
             fontWeight: 600,
           }}
         >
-          Order Damage Assignment
+          {decision.orderingTitle ?? 'Order Damage Assignment'}
         </h2>
       </div>
 
@@ -184,7 +184,7 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
           maxWidth: 500,
         }}
       >
-        Order the blockers for damage assignment. The leftmost creature receives damage first and must receive lethal damage before the next can be assigned any.
+        {decision.orderingTitle ? decision.prompt : 'Order the blockers for damage assignment. The leftmost creature receives damage first and must receive lethal damage before the next can be assigned any.'}
       </p>
 
       {/* Card arrangement with FIRST/LAST indicators */}
@@ -216,7 +216,7 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
               borderBottom: '12px solid #f87171',
             }}
           />
-          FIRST TO RECEIVE DAMAGE
+          {decision.firstLabel ?? 'FIRST TO RECEIVE DAMAGE'}
           <div
             style={{
               width: 0,
@@ -301,7 +301,7 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
             fontSize: responsive.fontSize.small,
           }}
         >
-          (rightmost = last to receive damage)
+          {decision.lastLabel ?? '(rightmost = last to receive damage)'}
         </div>
       </div>
 
@@ -433,7 +433,7 @@ function BlockerCard({
             alignItems: 'center',
             justifyContent: 'center',
           }}
-          title="Move left (receives damage earlier)"
+          title="Move earlier in the order"
         >
           &#8592;
         </button>
@@ -453,7 +453,7 @@ function BlockerCard({
             alignItems: 'center',
             justifyContent: 'center',
           }}
-          title="Move right (receives damage later)"
+          title="Move later in the order"
         >
           &#8594;
         </button>

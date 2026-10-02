@@ -417,7 +417,13 @@ data class OrderObjectsDecision(
     override val prompt: String,
     override val context: DecisionContext,
     val objects: List<EntityId>,
-    val cardInfo: Map<EntityId, SearchCardInfo>? = null
+    val cardInfo: Map<EntityId, SearchCardInfo>? = null,
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val orderingTitle: String? = null,
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val firstLabel: String? = null,
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val lastLabel: String? = null
 ) : PendingDecision
 
 /**

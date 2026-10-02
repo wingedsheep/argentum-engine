@@ -1446,6 +1446,7 @@ is PermanentsSacrificedEvent -> {
             is SagaChapterResolvedEvent,
             is DiscardRequiredEvent,
             is LookedAtCardsEvent,
+            is GraveyardOrderedEvent,
             is LibraryReorderedEvent,
             is KeywordGrantedEvent,
             is CitysBlessingGainedEvent,

@@ -352,7 +352,10 @@ data class EffectContext(
     val discardIsCost: Boolean = false,
     /** Collection whose discard result is being committed by the current instruction. */
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
-    val discardCollectionName: String? = null
+    val discardCollectionName: String? = null,
+    /** A single group-move instruction orders its arrivals after every member has moved. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val deferGraveyardOrdering: Boolean = false,
 ) {
     val activatedAbilityId: com.wingedsheep.sdk.scripting.AbilityId?
         get() = activatedAbility?.id

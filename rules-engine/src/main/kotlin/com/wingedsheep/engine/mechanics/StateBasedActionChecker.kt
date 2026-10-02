@@ -119,7 +119,8 @@ class StateBasedActionChecker(
             events.addAll(result.events)
         }
 
-        return ExecutionResult.success(newState, events)
+        val result = ExecutionResult.success(newState, events)
+        return GraveyardOrdering.finish(result)
     }
 
     companion object {

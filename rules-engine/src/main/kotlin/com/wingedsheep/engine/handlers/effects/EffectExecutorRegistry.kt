@@ -172,7 +172,9 @@ class EffectExecutorRegistry(
         val references = instructionContext.objectReferences.authorize(result.events)
         val finished = result.copy(state = com.wingedsheep.engine.handlers.continuations.propagateObjectReferences(result.state, references))
         val recorded = finished.copy(state = com.wingedsheep.engine.core.ControlHistory.record(finished.state, finished.events))
-        return runReplacementRiders(recorded, context)
+        val completed = runReplacementRiders(recorded, context)
+        return if (context.deferGraveyardOrdering) completed
+            else com.wingedsheep.engine.mechanics.GraveyardOrdering.finish(completed)
     }
 
     /**

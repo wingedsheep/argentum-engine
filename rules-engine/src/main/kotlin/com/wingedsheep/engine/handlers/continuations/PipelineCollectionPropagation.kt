@@ -59,20 +59,25 @@ fun exposeCollectionsToNextFrame(
     collections: Map<String, List<EntityId>>,
     numbers: Map<String, Int> = emptyMap(),
     chosenValues: Map<String, String> = emptyMap(),
+    subtypeGroups: Map<String, List<Set<String>>> = emptyMap(),
+    sacrificed: List<com.wingedsheep.engine.state.components.stack.EntitySnapshot> = emptyList(),
 ): GameState {
-    if (collections.isEmpty() && numbers.isEmpty() && chosenValues.isEmpty()) return state
+    if (collections.isEmpty() && numbers.isEmpty() && chosenValues.isEmpty() && subtypeGroups.isEmpty() && sacrificed.isEmpty()) return state
 
     fun EffectContext.withMergedCollections(): EffectContext =
         copy(
+            sacrificedPermanents = sacrificedPermanents + sacrificed,
             pipeline = pipeline.copy(
                 storedCollections = pipeline.storedCollections + collections,
                 storedNumbers = pipeline.storedNumbers + numbers,
                 chosenValues = pipeline.chosenValues + chosenValues,
+                storedSubtypeGroups = pipeline.storedSubtypeGroups + subtypeGroups,
             )
         )
 
     return when (val next = state.peekContinuation()) {
         is ForEachContinuation -> {
+            val merged = next.effectContext.withMergedCollections()
             var accumulated = next.effectContext.pipeline.storedCollections
             for ((localName, aggregateName) in next.effect.collectCollections) {
                 val iterationOutput = collections[localName].orEmpty()
@@ -85,8 +90,8 @@ fun exposeCollectionsToNextFrame(
             val (_, popped) = state.popContinuation()
             popped.pushContinuation(
                 next.copy(
-                    effectContext = next.effectContext.copy(
-                        pipeline = next.effectContext.pipeline.copy(storedCollections = accumulated)
+                    effectContext = merged.copy(
+                        pipeline = merged.pipeline.copy(storedCollections = accumulated)
                     )
                 )
             )

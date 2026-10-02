@@ -190,6 +190,7 @@ object TableGameRunner {
         recordActionStream: Boolean = false,
         featureCollector: ArenaFeatureCollector? = null,
         trainingObserver: ArenaTrainingObserver? = null,
+        preserveGraveyardOrder: Boolean = true,
     ): TableGameOutcome {
         require(agents.size == setup.seats && decks.size == setup.seats) {
             "${setup.id} has ${setup.seats} seats but got ${agents.size} agents / ${decks.size} decks."
@@ -205,6 +206,7 @@ object TableGameRunner {
                 // mulligan quality out of test — schedule a separate mulligan A/B rather than
                 // pretending this measures it.
                 skipMulligans = true,
+                preserveGraveyardOrder = preserveGraveyardOrder,
                 startingPlayerIndex = 0,
                 seed = seed,
                 format = setup.format,

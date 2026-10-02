@@ -15,6 +15,8 @@ import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
@@ -90,7 +92,11 @@ class ForEachExecutor(
             if (frozen.isEmpty()) context else context.copy(lookBackSelfGrants = context.lookBackSelfGrants + frozen)
         } else context
 
-        return processItems(currentState, effect, items, loopContext)
+        val move = effect.body as? com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+        val simultaneousMove = space is IterationSpace.Group && move?.destination == Zone.GRAVEYARD &&
+            move.target == EffectTarget.IterationEntity
+        return processItems(currentState, effect, items,
+            if (simultaneousMove) loopContext.copy(deferGraveyardOrdering = true) else loopContext)
     }
 
     /**

@@ -1142,6 +1142,21 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     // Zone-based Counting — generic counting primitives
     // =========================================================================
 
+    /** Count matching cards above or below a current object in its graveyard. */
+    @Serializable
+    @SerialName("GraveyardRelativeCount")
+    data class GraveyardRelativeCount(
+        val entity: EffectTarget.SingleEntity,
+        val above: Boolean,
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+    ) : DynamicAmount {
+        override val description: String = "the number of ${pluralize(filter.description)} ${if (above) "above" else "below"} ${entity.description} in its graveyard"
+        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount {
+            val replaced = filter.applyTextReplacement(replacer)
+            return if (replaced !== filter) copy(filter = replaced) else this
+        }
+    }
+
     /**
      * Count game objects in a zone matching a unified filter.
      * This is the preferred counting primitive using the new unified filter system.

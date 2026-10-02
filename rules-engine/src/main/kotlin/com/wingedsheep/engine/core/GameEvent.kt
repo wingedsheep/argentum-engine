@@ -33,8 +33,13 @@ data class TurnSkippedEvent(val playerId: EntityId, val sourceId: EntityId? = nu
 // =============================================================================
 
 /**
- * An entity moved between zones.
+ * An owner chose the order of simultaneous graveyard arrivals.
  */
+@Serializable
+@SerialName("GraveyardOrderedEvent")
+data class GraveyardOrderedEvent(val playerId: EntityId, val topFirst: List<EntityId>) : GameEvent
+
+/** An entity moved between zones. */
 @Serializable
 @SerialName("ZoneChangeEvent")
 data class ZoneChangeEvent(
@@ -87,7 +92,10 @@ data class ZoneChangeEvent(
     val newObject: com.wingedsheep.engine.state.ObjectRef? = null,
     val transitionCause: ZoneTransitionCause = ZoneTransitionCause.PRIMARY,
     /** The move's requested destination, before any redirect chose [toZone]. */
-    val requestedDestination: Zone = toZone
+    val requestedDestination: Zone = toZone,
+    /** Internal: this arrival's simultaneous graveyard batch has already been ordered. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val graveyardOrderFinalized: Boolean = false
 ) : GameEvent
 
 @Serializable

@@ -596,6 +596,7 @@ class GameSession(
         // roster (now that gameState exists, seatInfos() reflects the real turn order).
         replaySetup = com.wingedsheep.gameserver.replay.ReplaySetup(
             seed = result.seed,
+            preserveGraveyardOrder = config.preserveGraveyardOrder,
             format = engineFormat,
             attackMode = attackMode,
             startingHandSize = config.startingHandSize,

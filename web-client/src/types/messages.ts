@@ -506,6 +506,9 @@ export interface ReorderLibraryDecision extends PendingDecisionBase {
  */
 export interface OrderObjectsDecision extends PendingDecisionBase {
   readonly type: 'OrderObjectsDecision'
+  readonly orderingTitle?: string
+  readonly firstLabel?: string
+  readonly lastLabel?: string
   readonly objects: readonly EntityId[]
   readonly cardInfo?: Record<EntityId, SearchCardInfo>
 }

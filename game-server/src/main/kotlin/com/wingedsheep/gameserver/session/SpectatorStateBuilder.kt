@@ -91,7 +91,7 @@ class SpectatorStateBuilder(
             is ChooseColorDecision -> "Choosing a color"
             is ChooseNumberDecision -> "Choosing a number"
             is DistributeDecision -> "Distributing"
-            is OrderObjectsDecision -> "Ordering blockers"
+            is OrderObjectsDecision -> decision.orderingTitle ?: "Ordering blockers"
             is SplitPilesDecision -> "Splitting piles"
             is SearchLibraryDecision -> "Searching library"
             is ReorderLibraryDecision -> "Reordering cards"

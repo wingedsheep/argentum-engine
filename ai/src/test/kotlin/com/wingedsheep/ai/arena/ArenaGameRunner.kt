@@ -65,6 +65,7 @@ object ArenaGameRunner {
          *  default: it costs a string per action, and only `FrozenBaselineTest` needs it. */
         recordActionStream: Boolean = false,
         featureCollector: ArenaFeatureCollector? = null,
+        preserveGraveyardOrder: Boolean = true,
     ): ArenaGameOutcome {
         val game = TableGameRunner.play(
             registry = registry,
@@ -77,6 +78,7 @@ object ArenaGameRunner {
             maxTurns = maxTurns,
             recordActionStream = recordActionStream,
             featureCollector = featureCollector,
+            preserveGraveyardOrder = preserveGraveyardOrder,
         )
         return ArenaGameOutcome(
             pairId = pairId,

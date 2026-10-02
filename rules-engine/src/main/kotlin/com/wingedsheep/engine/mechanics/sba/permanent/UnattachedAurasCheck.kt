@@ -59,7 +59,9 @@ class UnattachedAurasCheck(
     override val name = "704.5m/n/p Unattached Auras"
     override val order = SbaOrder.UNATTACHED_AURAS
 
-    override fun check(state: GameState): ExecutionResult {
+    override fun check(state: GameState): ExecutionResult = check(state, state)
+
+    override fun check(state: GameState, passStartState: GameState): ExecutionResult {
         var newState = state
         val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
         val projected = state.projectedState
@@ -108,6 +110,17 @@ class UnattachedAurasCheck(
             val isEquipment = cardComponent.typeLine.isEquipment
 
             if (!isAura && !isEquipment) continue
+
+            // A host that died during this SBA pass was still a legal host when the pass
+            // began. Its orphaned Aura is a later SBA, above the host in graveyard order.
+            val priorHost = passStartState.getEntity(entityId)?.get<AttachedToComponent>()?.targetId
+            if (isAura && priorHost != null && priorHost in passStartState.getBattlefield() &&
+                priorHost !in state.getBattlefield()) {
+                val before = passStartState.projectedState
+                if (!before.isCreature(entityId) &&
+                    !hostFailsEnchantRestriction(passStartState, before, entityId, cardComponent, priorHost) &&
+                    !hostProtectedFromAttachment(passStartState, before, entityId, cardComponent, priorHost)) continue
+            }
 
             // CR 400.7 / 704.5m-n: the host this attachment was on left the battlefield. The host's
             // EntityId may have returned via a blink (a same-id but *new* object), so the id-based

@@ -43,6 +43,10 @@ import kotlinx.serialization.ExperimentalSerializationApi
 @KeepGeneratedSerializer
 @Serializable(with = LegacyGameStateSerializer::class)
 data class GameState(
+    /** Fixed at setup; false is a deterministic-order mode for fixtures and legacy replays. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val preserveGraveyardOrder: Boolean = false,
+
     /** All entities in the game, keyed by their ID */
     val entities: Map<EntityId, ComponentContainer> = emptyMap(),
 

@@ -470,6 +470,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.HandLookedAtEvent,
             is com.wingedsheep.engine.core.HandRevealedEvent,
             is com.wingedsheep.engine.core.KeywordGrantedEvent,
+            is com.wingedsheep.engine.core.GraveyardOrderedEvent,
             is com.wingedsheep.engine.core.LibraryReorderedEvent,
             is com.wingedsheep.engine.core.LookedAtCardsEvent,
             is com.wingedsheep.engine.core.LoyaltyChangedEvent,

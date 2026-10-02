@@ -306,6 +306,7 @@ class CreateDelayedTriggerExecutor(
         is DynamicAmount.CastChoice,
         DynamicAmount.CastX,
         is DynamicAmount.ContextProperty,
+        is DynamicAmount.GraveyardRelativeCount,
         is DynamicAmount.Count,
         is DynamicAmount.CountPlayersWith,
         DynamicAmount.CraftedMaterialsColorCount,

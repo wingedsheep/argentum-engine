@@ -46,6 +46,8 @@ class FrozenBaselineTest : FunSpec({
             seed = FROZEN_SEED, pairId = 0, gameIndex = 0,
             maxTurns = 30,
             recordActionStream = true,
+            // Preserve the historical action stream before owner ordering became a game rule.
+            preserveGraveyardOrder = false,
         )
 
         withClue(

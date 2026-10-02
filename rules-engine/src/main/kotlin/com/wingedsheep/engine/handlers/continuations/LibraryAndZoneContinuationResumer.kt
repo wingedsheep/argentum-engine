@@ -38,6 +38,7 @@ class LibraryAndZoneContinuationResumer(
     }
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
+        resumer(GraveyardOrderContinuation::class, ::resumeGraveyardOrder),
         resumer(ReturnFromGraveyardContinuation::class, ::resumeReturnFromGraveyard),
         resumer(MoveCollectionOrderContinuation::class, ::resumeMoveCollectionOrder),
         resumer(PutOnBottomOfLibraryContinuation::class, ::resumePutOnBottomOfLibrary),
@@ -56,6 +57,20 @@ class LibraryAndZoneContinuationResumer(
         resumer(CastFromCollectionTargetsContinuation::class, ::resumeCastFromCollectionTargets),
         resumer(CastAnyNumberFromCollectionContinuation::class, ::resumeCastAnyNumberFromCollection)
     )
+
+    fun resumeGraveyardOrder(state: GameState, continuation: GraveyardOrderContinuation,
+        response: DecisionResponse, checkForMore: CheckForMore): ExecutionResult {
+        if (response !is OrderedResponse || response.orderedObjects.size != continuation.cards.size ||
+            response.orderedObjects.toSet() != continuation.cards.toSet())
+            return ExecutionResult.error(state, "Order each graveyard card exactly once")
+        var reordered = com.wingedsheep.engine.mechanics.GraveyardOrdering.reorder(
+            state, continuation.ownerId, continuation.cards, response.orderedObjects)
+        if (continuation.remaining.isNotEmpty()) return com.wingedsheep.engine.mechanics.GraveyardOrdering.ask(
+            reordered, continuation.remaining, continuation.events + GraveyardOrderedEvent(continuation.ownerId, response.orderedObjects), continuation.collections, continuation.numbers, continuation.chosenValues, continuation.subtypeGroups, continuation.sacrificed)
+        reordered = exposeCollectionsToNextFrame(reordered, continuation.collections, continuation.numbers,
+            continuation.chosenValues, continuation.subtypeGroups, continuation.sacrificed)
+        return checkForMore(reordered, continuation.events + GraveyardOrderedEvent(continuation.ownerId, response.orderedObjects))
+    }
 
     fun resumeReturnFromGraveyard(
         state: GameState,

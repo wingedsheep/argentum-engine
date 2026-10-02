@@ -31,6 +31,15 @@ import com.wingedsheep.sdk.scripting.values.TurnTracker
  * ```
  */
 object DynamicAmounts {
+    /** Graveyard order is oldest first; newly arrived cards are above older cards. */
+    fun cardsAboveInGraveyard(entity: EffectTarget.SingleEntity = EffectTarget.Self,
+                             filter: GameObjectFilter = GameObjectFilter.Any): DynamicAmount =
+        DynamicAmount.GraveyardRelativeCount(entity, above = true, filter)
+
+    fun cardsBelowInGraveyard(entity: EffectTarget.SingleEntity = EffectTarget.Self,
+                             filter: GameObjectFilter = GameObjectFilter.Any): DynamicAmount =
+        DynamicAmount.GraveyardRelativeCount(entity, above = false, filter)
+
 
     // =========================================================================
     // Constants, X, and the number of cards in a zone

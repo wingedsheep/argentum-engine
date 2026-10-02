@@ -66,7 +66,8 @@ class Settler(
         // no one receives priority, and no permanent can have triggered.
         if (mulligansInProgress(executed.state)) return executed
 
-        val result = runReplacementRiders(endTheTurnIfRequested(executed))
+        val raw = runReplacementRiders(endTheTurnIfRequested(executed))
+        val result = com.wingedsheep.engine.mechanics.GraveyardOrdering.finish(raw)
         if (result.outcome is Outcome.Rejected) return result
         val state = result.state
         // A lone priority pass changes nothing on the board, so there is nothing to detect,
