@@ -43,7 +43,7 @@ class FrogmyrEnforcerScenarioTest : ScenarioTestBase() {
                 projected.getPower(frog) shouldBe 2
                 projected.getToughness(frog) shouldBe 2
                 projected.hasColor(frog, Color.RED) shouldBe true
-                game.state.getEntity(frog)!!.get<CardComponent>()!!.manaCost.cmc shouldBe 4
+                game.state.getEntity(frog)!!.get<CardComponent>()!!.manaValue shouldBe 4
 
                 game.passPriority()
                 game.castSpell(2, "Shock", frog).error shouldBe null
@@ -52,7 +52,7 @@ class FrogmyrEnforcerScenarioTest : ScenarioTestBase() {
                 game.isInGraveyard(1, "Frogmyr Enforcer") shouldBe true
                 val card = game.findCardsInGraveyard(1, "Frogmyr Enforcer").single()
                 val printed = game.state.getEntity(card)!!.get<CardComponent>()!!
-                printed.manaCost.cmc shouldBe 7
+                printed.manaValue shouldBe 7
                 printed.colors shouldBe emptySet()
             }
 

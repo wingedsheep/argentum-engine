@@ -50,11 +50,12 @@ object PrototypeCasts {
         val container = state.getEntity(action.cardId) ?: return state
         if (container.has<PrototypedComponent>()) return state
         val card = container.get<CardComponent>() ?: return state
-        val prototype = prototypeOf(registry.getCard(card.cardDefinitionId)) ?: return state
+        val definition = registry.getCard(card.cardDefinitionId)
+        val prototype = prototypeOf(definition) ?: return state
         return state.updateEntity(action.cardId) {
             it.with(PrototypedComponent(card.manaCost, card.colors, card.baseStats)).with(card.copy(
                 manaCost = prototype.cost,
-                colors = prototype.cost.colors,
+                colors = prototype.cost.colors + definition?.colorIndicator.orEmpty(),
                 baseStats = CreatureStats(prototype.power, prototype.toughness),
             ))
         }

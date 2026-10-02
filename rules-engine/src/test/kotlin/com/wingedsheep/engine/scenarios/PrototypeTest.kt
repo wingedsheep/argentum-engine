@@ -47,6 +47,7 @@ class PrototypeTest : FunSpec({
         power = 5
         toughness = 5
         keywordAbility(KeywordAbility.bestow("{1}{W}"))
+        keywordAbility(KeywordAbility.prototype("{1}{R}", 2, 1))
     }
     val rock = card("Prototype Test Rock") {
         manaCost = "{0}"
@@ -72,6 +73,14 @@ class PrototypeTest : FunSpec({
         typeLine = "Instant"
         spell { val t = target(TargetFilter.Permanent); effect = Effects.CreateTokenCopyOfTarget(t) }
     }
+    val remand = card("Prototype Test Remand") {
+        manaCost = "{0}"
+        typeLine = "Instant"
+        spell {
+            target(TargetFilter.SpellOnStack)
+            effect = Effects.ReturnSpellToOwnersHand()
+        }
+    }
     val counter = card("Prototype Test Counter") {
         manaCost = "{0}"
         typeLine = "Instant"
@@ -82,7 +91,7 @@ class PrototypeTest : FunSpec({
     }
 
     fun driver(): GameTestDriver = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(proto, bestowProto, rock, kill, bounce, spellCopy, permanentCopy, counter))
+        it.registerCards(TestCards.all + listOf(proto, bestowProto, rock, kill, bounce, spellCopy, permanentCopy, remand, counter))
         it.initMirrorMatch(deck = Deck.of("Mountain" to 40))
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -107,7 +116,7 @@ class PrototypeTest : FunSpec({
     }
     fun GameTestDriver.card(id: EntityId) = state.getEntity(id)!!.get<CardComponent>()!!
     fun CardComponent.isPrinted() {
-        manaCost.cmc shouldBe 6
+        manaValue shouldBe 6
         colors shouldBe emptySet()
         baseStats shouldBe CreatureStats(5, 5)
     }
@@ -132,7 +141,7 @@ class PrototypeTest : FunSpec({
         game.giveMana(player, Color.RED, 2)
         game.castPrototyped(golem).outcome shouldBe Outcome.Done
         val spell = game.card(game.state.stack.single())
-        spell.manaCost.cmc shouldBe 2
+        spell.manaValue shouldBe 2
         spell.colors shouldBe setOf(Color.RED)
         spell.typeLine.isArtifact shouldBe true
         game.resolveAll()
@@ -141,7 +150,7 @@ class PrototypeTest : FunSpec({
         game.state.projectedState.getToughness(permanent) shouldBe 1
         game.state.projectedState.hasColor(permanent, Color.RED) shouldBe true
         game.state.projectedState.hasSubtype(permanent, "Golem") shouldBe true
-        game.card(permanent).manaCost.cmc shouldBe 2
+        game.card(permanent).manaValue shouldBe 2
         game.getLifeTotal(player) shouldBe 21
     }
 
@@ -234,17 +243,36 @@ class PrototypeTest : FunSpec({
         val token = game.state.getBattlefield().single { it != original && game.card(it).name == proto.name }
         game.state.projectedState.getPower(token) shouldBe 2
         game.state.projectedState.hasColor(token, Color.RED) shouldBe true
-        game.card(token).manaCost.cmc shouldBe 2
+        game.card(token).manaValue shouldBe 2
+    }
+
+    test("a prototyped spell returned to hand has only its normal characteristics, and recasts normally") {
+        val game = driver()
+        val player = game.activePlayer!!
+        val golem = game.putCardInHand(player, proto.name)
+        game.giveMana(player, Color.RED, 2)
+        game.castPrototyped(golem).outcome shouldBe Outcome.Done
+        game.castFree(remand.name, ChosenTarget.Spell(game.state.stack.single()))
+        game.resolveAll()
+        val card = game.getHand(player).single { game.card(it).name == proto.name }
+        game.card(card).isPrinted()
+        game.state.getEntity(card)?.has<PrototypedComponent>() shouldBe false
+        game.giveColorlessMana(player, 6)
+        game.castSpell(player, card).outcome shouldBe Outcome.Done
+        game.resolveAll()
+        game.state.projectedState.getPower(game.findPermanent(player, proto.name)!!) shouldBe 5
     }
 
     test("castPrototyped is refused for a card without prototype and alongside bestow") {
         val game = driver()
         val player = game.activePlayer!!
-        val plain = game.putCardInHand(player, bestowProto.name)
-        game.giveColorlessMana(player, 6)
-        game.castPrototyped(plain).error shouldNotBe null
-        game.submit(CastSpell(player, plain, castPrototyped = true, useAlternativeCost = true,
-            alternativeCostType = AlternativeCostType.BESTOW, paymentStrategy = PaymentStrategy.FromPool)).error shouldNotBe null
+        val plain = game.putCardInHand(player, rock.name)
+        game.castPrototyped(plain).error shouldBe "This card has no prototype"
+        val both = game.putCardInHand(player, bestowProto.name)
+        game.giveMana(player, Color.WHITE, 2)
+        game.submit(CastSpell(player, both, castPrototyped = true, useAlternativeCost = true,
+            alternativeCostType = AlternativeCostType.BESTOW, paymentStrategy = PaymentStrategy.FromPool)).error shouldBe
+            "A prototyped spell is cast with its own characteristics only"
         game.stackSize shouldBe 0
     }
 })
