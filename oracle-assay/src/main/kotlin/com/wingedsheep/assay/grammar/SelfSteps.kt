@@ -703,8 +703,7 @@ object SelfSteps {
 
     /**
      * "When ~ enters, attach it to target creature you control." — the Equipment that equips itself
-     * on arrival (Maul of the Skyclaves, Meltstrider's Gear, Squire's Lightblade, the Living Weapon
-     * cousins' riders), 55 printed lines.
+     * on arrival (Maul of the Skyclaves, Meltstrider's Gear, Squire's Lightblade).
      *
      * The source attaches *itself*: `Effects.AttachEquipment(target)` names only the host, because
      * `AttachEquipmentEffect` always moves the ability's source — the spelling every hand-written
