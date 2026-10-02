@@ -1,0 +1,79 @@
+{
+  "player1Name": "Shadow owner",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Wrath of God"
+    ],
+    "battlefield": [
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Llanowar Elves"
+      }
+    ],
+    "graveyard": [
+      "Nether Shadow",
+      "Grizzly Bears",
+      "Grizzly Bears",
+      "Grizzly Bears"
+    ],
+    "library": [
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Forest"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "ENDING",
+  "step": "END",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [
+    "UPKEEP",
+    "DECLARE_ATTACKERS"
+  ],
+  "player2StopAtSteps": [
+    "UPKEEP"
+  ],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}
