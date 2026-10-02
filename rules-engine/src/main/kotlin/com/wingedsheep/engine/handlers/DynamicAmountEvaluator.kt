@@ -1377,6 +1377,7 @@ class DynamicAmountEvaluator(
                 .filterIsInstance<com.wingedsheep.engine.state.components.stack.ChosenTarget.Player>()
                 .map { it.playerId }
                 .distinct()
+            is Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
             is Player.Each -> state.activePlayers
             is Player.Any -> state.activePlayers
             // "those players" recorded by a `StorePlayer` step earlier in this resolution.

@@ -5,6 +5,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.ChooserResolution
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.effects.ChoosePileEffect
 import kotlin.reflect.KClass
@@ -47,6 +48,13 @@ class ChoosePileExecutor : EffectExecutor<ChoosePileEffect> {
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         }
 
+        // A pile choice in a per-object loop must identify the creature choosing a side.
+        val choiceSubject = context.iterationEntityId ?: context.sourceId
+        val choiceSubjectName = choiceSubject?.let { entityId ->
+            nameVisibleToAll(state, entityId,
+                state.getEntity(entityId)?.get<CardComponent>()?.name ?: "Unknown")
+        }
+
         val cardInfo = (pileA + pileB).associateWith { cardId ->
             val cc = state.getEntity(cardId)?.get<CardComponent>()
             SearchCardInfo(
@@ -63,8 +71,8 @@ class ChoosePileExecutor : EffectExecutor<ChoosePileEffect> {
             playerId = deciderId,
             prompt = effect.prompt ?: "Choose a pile to keep",
             context = DecisionContext(
-                sourceId = context.sourceId,
-                sourceName = sourceName,
+                sourceId = choiceSubject,
+                sourceName = choiceSubjectName,
                 phase = DecisionPhase.RESOLUTION
             ),
             options = listOf(effect.pileALabel, effect.pileBLabel),

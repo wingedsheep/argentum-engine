@@ -450,6 +450,7 @@ class GatherCardsExecutor(
         context: EffectContext,
         state: GameState
     ): List<com.wingedsheep.sdk.model.EntityId>? = when (player) {
+        is Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
         is Player.Each, is Player.ActivePlayerFirst -> state.turnOrder
         is Player.EachOpponent -> state.turnOrder.filter { it != context.controllerId }
         else -> resolvePlayer(player, context, state)?.let { listOf(it) }

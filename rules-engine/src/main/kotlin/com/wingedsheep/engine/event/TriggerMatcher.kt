@@ -1508,6 +1508,7 @@ class TriggerMatcher(
      */
     fun matchesPlayer(state: GameState, player: Player, eventPlayerId: EntityId, controllerId: EntityId): Boolean {
         return when (player) {
+            Player.EachDefendingPlayer -> eventPlayerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
             Player.You -> eventPlayerId == controllerId
             Player.Each -> true
             Player.EachOpponent -> state.isOpponentOf(eventPlayerId, controllerId)
@@ -1718,6 +1719,7 @@ class TriggerMatcher(
         sourceId: EntityId? = null
     ): Boolean {
         return when (player) {
+            Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state).any { state.isActiveTurnFor(it) }
             Player.You -> state.isActiveTurnFor(controllerId)
             Player.Each -> true
             Player.EachOpponent -> !state.isActiveTurnFor(controllerId)

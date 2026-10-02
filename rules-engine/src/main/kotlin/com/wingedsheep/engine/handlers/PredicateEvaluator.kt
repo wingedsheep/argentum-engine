@@ -277,6 +277,7 @@ class PredicateEvaluator(
         playerId: EntityId,
         context: PredicateContext,
     ): Boolean = when (player) {
+        Player.EachDefendingPlayer -> playerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
         Player.Any, Player.Each -> true
         Player.You -> playerId == context.controllerId
         Player.EachOpponent, Player.AnOpponent -> state.isOpponentOf(playerId, context.controllerId)
@@ -490,6 +491,9 @@ class PredicateEvaluator(
                 triggeringPlayer != null && controllerId == triggeringPlayer
             }
             is ControllerPredicate.ControlledByReferencedPlayer -> {
+                if ((predicate.target as? EffectTarget.PlayerRef)?.player == Player.EachDefendingPlayer) {
+                    return controllerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
+                }
                 val referenced = context.resolvePlayerTarget(predicate.target)
                     ?: resolveReferencedPlayerFromState(state, state.projectedState, predicate.target, context)
                 referenced?.let { controllerId == it } ?: false
@@ -1515,9 +1519,13 @@ class PredicateEvaluator(
             triggeringPlayer != null && playerId == triggeringPlayer
         }
         is ControllerPredicate.ControlledByReferencedPlayer -> {
-            val referenced = context.resolvePlayerTarget(predicate.target)
-                ?: resolveReferencedPlayerFromState(state, projected, predicate.target, context)
-            referenced?.let { playerId == it } ?: false
+            if ((predicate.target as? EffectTarget.PlayerRef)?.player == Player.EachDefendingPlayer) {
+                playerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
+            } else {
+                val referenced = context.resolvePlayerTarget(predicate.target)
+                    ?: resolveReferencedPlayerFromState(state, projected, predicate.target, context)
+                referenced?.let { playerId == it } ?: false
+            }
         }
         ControllerPredicate.OwnedByYou, ControllerPredicate.OwnedByOpponent,
         ControllerPredicate.OwnedByTargetPlayer, ControllerPredicate.OwnedByTriggeringPlayer -> false

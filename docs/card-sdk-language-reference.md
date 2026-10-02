@@ -2611,6 +2611,18 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   declaration, because a per-blocker projected flag can't express a pair.
 - `CantAttackGroupEffect(filter, condition?)` — group-scoped can't-attack.
 - `CantBlockGroupEffect(filter, condition?)` — group-scoped can't-block.
+- `GrantCantBeBlockedExceptByCollection(target, collection, alternativeFilter, duration)` — restrict
+  the named attacker to blockers that were in a pipeline collection at resolution, **or** match
+  `alternativeFilter` when blocking. Cards use the `Effects` facade with a `CollectionSlot`.
+  Membership remembers battlefield visits: leaving and returning does not restore membership;
+  newcomers qualify only through the alternative filter. The attacker is also bound to its current
+  visit. Current projected characteristics drive the alternative, independently of source survival
+  or ability loss. Restrictions stack conjunctively with each other and ordinary evasion; reach
+  is not an implicit substitute for a literal flying filter. Compose labelled pile splitting,
+  collected per-defender unions, and per-attacker pile choice for Raging River. No pile logic or
+  card names live in the engine. Emits the existing blocker-policy change event and displays an
+  evasion badge; the legal-action service supplies valid blocker pairs to the client.
+
 - `Effects.Suspect(target, duration = Permanent)` (`SuspectEffect`) — target becomes suspected (MKM,
   CR 701.60): the named designation *plus* the menace and "this creature can't block" it carries
   while suspected. **One** effect and one executor, not a composite of three, because every gate on
@@ -4464,6 +4476,11 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   in event filters (`SpellCastEvent(player = …)`), exists-conditions, and battlefield
   aggregations ("creatures your opponents control").
 - `Player.ActivePlayerFirst` — all players in APNAP order.
+- `Player.EachDefendingPlayer` — all defending seats during combat, in APNAP order, including
+  before attackers are declared and opponents with no attackers assigned. Respects the game's
+  attack mode and shared team turns. Outside combat this names nobody. Use it with
+  `Effects.ForEachPlayer`, plural effect targets, zone gathering, or counting; the single-player
+  resolver deliberately returns null.
 - `Player.TargetPlayer` / `Player.TargetOpponent` — the bound player target (resolved from the
   chosen targets, never from turn order). Both resolve to a **single** player, so on a spell that
   targets several they silently read only the first — reach for `EachTargetedPlayer` there.
