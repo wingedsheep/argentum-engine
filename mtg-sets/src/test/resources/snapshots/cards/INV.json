@@ -3395,15 +3395,13 @@
                     "scope": "Self"
                 },
                 "powerBonus": {
-                    "type": "Count",
+                    "type": "AggregateBattlefield",
                     "player": "EachOpponent",
-                    "zone": "Battlefield",
                     "filter": "land Swamp"
                 },
                 "toughnessBonus": {
-                    "type": "Count",
+                    "type": "AggregateBattlefield",
                     "player": "EachOpponent",
-                    "zone": "Battlefield",
                     "filter": "land Swamp"
                 }
             }
@@ -7624,15 +7622,13 @@
                     "scope": "Self"
                 },
                 "powerBonus": {
-                    "type": "Count",
+                    "type": "AggregateBattlefield",
                     "player": "EachOpponent",
-                    "zone": "Battlefield",
                     "filter": "land Plains"
                 },
                 "toughnessBonus": {
-                    "type": "Count",
+                    "type": "AggregateBattlefield",
                     "player": "EachOpponent",
-                    "zone": "Battlefield",
                     "filter": "land Plains"
                 }
             }

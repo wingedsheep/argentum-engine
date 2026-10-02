@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.scripting.GrantDynamicStats
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
@@ -33,16 +32,8 @@ val CrusadingKnight = card("Crusading Knight") {
     staticAbility {
         ability = GrantDynamicStats(
             filter = GroupFilter.source(),
-            powerBonus = DynamicAmounts.count(
-                Player.EachOpponent,
-                Zone.BATTLEFIELD,
-                GameObjectFilter.Land.withSubtype("Swamp")
-            ),
-            toughnessBonus = DynamicAmounts.count(
-                Player.EachOpponent,
-                Zone.BATTLEFIELD,
-                GameObjectFilter.Land.withSubtype("Swamp")
-            )
+            powerBonus = DynamicAmounts.battlefield(Player.EachOpponent, GameObjectFilter.Land.withSubtype("Swamp")).count(),
+            toughnessBonus = DynamicAmounts.battlefield(Player.EachOpponent, GameObjectFilter.Land.withSubtype("Swamp")).count()
         )
     }
 
