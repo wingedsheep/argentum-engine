@@ -34,6 +34,7 @@ class PhyrexianIronworksScenarioTest : ScenarioTestBase() {
         .withPlayers("Player", "Opponent")
         .withCardOnBattlefield(1, "Phyrexian Ironworks")
         .withCardOnBattlefield(1, "Grizzly Bears")
+        .withCardOnBattlefield(1, "Savannah Lions")
         .withCardInLibrary(1, "Mountain")
         .withCardInLibrary(2, "Mountain")
         .withActivePlayer(1)
@@ -43,11 +44,11 @@ class PhyrexianIronworksScenarioTest : ScenarioTestBase() {
     init {
         context("Phyrexian Ironworks") {
 
-            test("attacking gets you one energy") {
+            test("attacking with two creatures gets you one energy, not one per attacker") {
                 val game = build()
                 game.energy() shouldBe 0
                 game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
-                game.declareAttackers(mapOf("Grizzly Bears" to 2)).error shouldBe null
+                game.declareAttackers(mapOf("Grizzly Bears" to 2, "Savannah Lions" to 2)).error shouldBe null
                 game.resolveStack()
                 game.energy() shouldBe 1
             }
