@@ -749,14 +749,7 @@ class ZoneTransitionService(
                 // for the previous incarnation needs to read them via state during the exit
                 // event. By the time we reach this point those triggers are already queued on
                 // the stack with their own captured ability data, so it is safe to wipe.
-                newState = newState.copy(
-                    grantedTriggeredAbilities = newState.grantedTriggeredAbilities
-                        .filter { it.entityId != entityId },
-                    grantedStateTriggeredAbilities = newState.grantedStateTriggeredAbilities
-                        .filter { it.entityId != entityId },
-                    grantedActivatedAbilities = newState.grantedActivatedAbilities
-                        .filter { it.entityId != entityId }
-                )
+                newState = newState.withoutObjectGrants(entityId)
                 if (!options.faceDown) {
                     options.entryCopy?.let { choice ->
                         // Face tracking belongs to the physical entrant, not the copied definition.

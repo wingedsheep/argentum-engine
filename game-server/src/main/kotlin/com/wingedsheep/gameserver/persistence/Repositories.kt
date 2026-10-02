@@ -85,6 +85,39 @@ interface GameReplayRepository : CrudRepository<GameReplayRow, Long> {
     fun findRecentForPlayer(@Param("playerId") playerId: String, @Param("limit") limit: Int): List<GameReplayRow>
 
     /**
+     * Finished games a signed-in account played in, newest first. The seat index above is keyed by the
+     * per-connection player id, which changes whenever the account reconnects with a fresh token (new
+     * device, cleared storage, server restart) — so an account's own history is found through the
+     * match records instead, which carry the account id.
+     */
+    @Query(
+        """
+        SELECT r.* FROM game_replays r
+        WHERE r.status = 'FINISHED'
+          AND r.game_id IN (
+              SELECT mr.game_id FROM match_results mr
+              JOIN match_participants mp ON mp.match_id = mr.id
+              WHERE mp.user_id = :userId
+          )
+        ORDER BY r.ended_at DESC
+        LIMIT :limit
+        """
+    )
+    fun findRecentForUser(@Param("userId") userId: UUID, @Param("limit") limit: Int): List<GameReplayRow>
+
+    /** Whether the account [userId] held a seat in [gameId] — the account half of the replay access check. */
+    @Query(
+        """
+        SELECT EXISTS (
+            SELECT 1 FROM match_results mr
+            JOIN match_participants mp ON mp.match_id = mr.id
+            WHERE mr.game_id = :gameId AND mp.user_id = :userId
+        )
+        """
+    )
+    fun isUserParticipant(@Param("userId") userId: UUID, @Param("gameId") gameId: String): Boolean
+
+    /**
      * The in-progress flush write: only the columns that actually move.
      *
      * Deliberately *not* `save()`. A full aggregate write would name `pinned_cards` (and re-insert the

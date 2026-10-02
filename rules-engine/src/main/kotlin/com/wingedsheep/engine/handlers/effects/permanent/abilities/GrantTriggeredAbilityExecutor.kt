@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
  *
  * Adds the triggered ability to GameState.grantedTriggeredAbilities,
  * where TriggerDetector will find it when checking for triggers on
- * that entity.
+ * that entity. The target may also be a permanent spell on the stack ([ObjectGrantTarget]).
  */
 class GrantTriggeredAbilityExecutor : EffectExecutor<GrantTriggeredAbilityEffect> {
 
@@ -34,8 +34,8 @@ class GrantTriggeredAbilityExecutor : EffectExecutor<GrantTriggeredAbilityEffect
             ?: return EffectResult.error(state, "Target no longer exists")
         targetContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Target is not a card")
-        if (!state.getBattlefield().contains(targetId)) {
-            return EffectResult.error(state, "Target is not on the battlefield")
+        if (!ObjectGrantTarget.canReceive(state, targetId)) {
+            return EffectResult.error(state, ObjectGrantTarget.NOT_A_PERMANENT_OR_PERMANENT_SPELL)
         }
         // Deliberately *not* gated on the target being a creature. Nothing in the rules restricts
         // "gains '<triggered ability>'" to creatures, and the printed wording routinely names a

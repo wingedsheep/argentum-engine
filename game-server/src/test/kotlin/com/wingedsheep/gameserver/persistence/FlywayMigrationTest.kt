@@ -426,6 +426,36 @@ class FlywayMigrationTest : FunSpec({
                         rs.next() shouldBe false
                     }
 
+                    // The account join backing GameReplayRepository.findRecentForUser / isUserParticipant:
+                    // found through match records, so a game played under a different seat id still counts.
+                    st.execute("INSERT INTO users(id, email, display_name) VALUES ('$alice', 'a@test.com', 'a')")
+                    st.execute("INSERT INTO match_results(id, game_id) VALUES (20, 'g-new'), (21, 'g-live')")
+                    st.execute("INSERT INTO match_participants(match_id, user_id, player_name, won) VALUES (20, '$alice', 'Alice', true), (21, '$alice', 'Alice', false)")
+                    st.executeQuery(
+                        """
+                        SELECT r.game_id FROM game_replays r
+                        WHERE r.status = 'FINISHED'
+                          AND r.game_id IN (
+                              SELECT mr.game_id FROM match_results mr
+                              JOIN match_participants mp ON mp.match_id = mr.id
+                              WHERE mp.user_id = '$alice'
+                          )
+                        ORDER BY r.ended_at DESC
+                        """.trimIndent()
+                    ).use { rs ->
+                        rs.next(); rs.getString(1) shouldBe "g-new"
+                        rs.next() shouldBe false
+                    }
+                    st.executeQuery(
+                        """
+                        SELECT EXISTS (
+                            SELECT 1 FROM match_results mr
+                            JOIN match_participants mp ON mp.match_id = mr.id
+                            WHERE mr.game_id = 'g-new' AND mp.user_id = '$alice'
+                        )
+                        """.trimIndent()
+                    ).use { rs -> rs.next(); rs.getBoolean(1) shouldBe true }
+
                     // In-progress records are findable for resume, with their fingerprint.
                     st.executeQuery("SELECT game_id, resume_fingerprint FROM game_replays WHERE status = 'IN_PROGRESS'").use { rs ->
                         rs.next(); rs.getString(1) shouldBe "g-live"; rs.getString(2) shouldBe "deadbeefdeadbeef"

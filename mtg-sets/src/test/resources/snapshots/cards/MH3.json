@@ -5151,6 +5151,132 @@
     }
 }
 
+// Thief of Existence
+{
+    "name": "Thief of Existence",
+    "manaCost": "{1}{C}{G}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nWhen you cast this spell, exile up to one target noncreature, nonland permanent an opponent controls with mana value 4 or less. If you do, Thief of Existence gains \"When this creature leaves the battlefield, target opponent draws a card.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thief of Existence:2",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": {
+                                        "statePredicates": [
+                                            {
+                                                "type": "InZone",
+                                                "zone": "Exile"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "Thief of Existence:1",
+                                    "trigger": {
+                                        "type": "ZoneChangeEvent",
+                                        "from": "Battlefield"
+                                    },
+                                    "effect": {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    },
+                                    "targetRequirement": {
+                                        "type": "TargetOpponent",
+                                        "id": "t1"
+                                    },
+                                    "descriptionOverride": "When this creature leaves the battlefield, target opponent draws a card."
+                                },
+                                "target": "Self",
+                                "duration": "Permanent"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsNonland",
+                                "IsPermanent",
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsCreature"
+                                },
+                                {
+                                    "type": "ManaValueAtMost",
+                                    "max": 4
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "RARE",
+        "artist": "Raph Lomotan",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/328b02ca-d8eb-401d-9c41-93f8eb909312.jpg?1783911254",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Thief of Existence's triggered ability will resolve before Thief of Existence does. If Thief of Existence is countered or otherwise leaves the stack in response to that triggered ability, the triggered ability will still resolve as normal."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If the target of Thief of Existence's triggered ability is illegal as the ability tries to resolve, it won't resolve and none of its effects will happen. Thief of Existence won't gain another ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Thraben Charm
 {
     "name": "Thraben Charm",

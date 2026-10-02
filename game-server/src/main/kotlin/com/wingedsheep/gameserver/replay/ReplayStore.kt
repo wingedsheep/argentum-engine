@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.util.Collections
+import java.util.UUID
 
 /** Whether a stored record is still being written to, or is the final record of a finished game. */
 enum class ReplayStatus { IN_PROGRESS, FINISHED }
@@ -63,6 +64,15 @@ interface ReplayStore {
     fun find(gameId: String): StoredReplay?
     fun findRecentForPlayer(playerId: String, limit: Int): List<ReplaySummary>
 
+    /**
+     * Finished games the signed-in account [userId] played in, newest first. Unlike
+     * [findRecentForPlayer] this survives reconnecting under a new player id.
+     */
+    fun findRecentForUser(userId: UUID, limit: Int): List<ReplaySummary>
+
+    /** Whether the account [userId] held a seat in [gameId]. */
+    fun isUserParticipant(userId: UUID, gameId: String): Boolean
+
     /** In-progress records, for resuming recordings after a restart. */
     fun findInProgress(): List<StoredReplay>
 }
@@ -98,6 +108,11 @@ class InMemoryReplayStore : ReplayStore {
                 .take(limit)
                 .map { it.replay.toSummary() }
         }
+
+    // No database means no accounts, so there is no account to look up.
+    override fun findRecentForUser(userId: UUID, limit: Int): List<ReplaySummary> = emptyList()
+
+    override fun isUserParticipant(userId: UUID, gameId: String): Boolean = false
 
     override fun findInProgress(): List<StoredReplay> =
         synchronized(records) { records.values.filter { it.status == ReplayStatus.IN_PROGRESS } }
@@ -180,18 +195,24 @@ class JdbcReplayStore(private val replays: GameReplayRepository) : ReplayStore {
     override fun find(gameId: String): StoredReplay? = replays.findByGameId(gameId)?.toStored()
 
     override fun findRecentForPlayer(playerId: String, limit: Int): List<ReplaySummary> =
-        replays.findRecentForPlayer(playerId, limit).map { row ->
-            ReplaySummary(
-                gameId = row.gameId,
-                playerNames = row.playerNames.split(", ").filter { it.isNotBlank() },
-                startedAt = row.startedAt?.toString() ?: "",
-                endedAt = row.endedAt.toString(),
-                winnerName = row.winnerName,
-                frameCount = row.frameCount,
-                tournamentName = row.tournamentName,
-                tournamentRound = row.tournamentRound,
-            )
-        }
+        replays.findRecentForPlayer(playerId, limit).map { it.toSummary() }
+
+    override fun findRecentForUser(userId: UUID, limit: Int): List<ReplaySummary> =
+        replays.findRecentForUser(userId, limit).map { it.toSummary() }
+
+    override fun isUserParticipant(userId: UUID, gameId: String): Boolean =
+        replays.isUserParticipant(userId, gameId)
+
+    private fun GameReplayRow.toSummary() = ReplaySummary(
+        gameId = gameId,
+        playerNames = playerNames.split(", ").filter { it.isNotBlank() },
+        startedAt = startedAt?.toString() ?: "",
+        endedAt = endedAt.toString(),
+        winnerName = winnerName,
+        frameCount = frameCount,
+        tournamentName = tournamentName,
+        tournamentRound = tournamentRound,
+    )
 
     override fun findInProgress(): List<StoredReplay> =
         replays.findByStatus(ReplayStatus.IN_PROGRESS.name).mapNotNull { it.toStored() }

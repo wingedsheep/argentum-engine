@@ -133,8 +133,10 @@ internal class SpellCaster(
         // Determine which zone the spell is being cast from (before removal)
         val castFromZone = findCastFromZone(state, cardId, casterId)
 
-        // Remove from current zone (typically hand)
-        var newState = removeFromCurrentZone(state, cardId, casterId)
+        // Remove from current zone (typically hand). The spell is a new object (CR 400.7): a grant
+        // left on the card by an earlier stack life that never resolved (a countered spell whose
+        // cast trigger gave it an ability) must not follow it back onto the stack.
+        var newState = removeFromCurrentZone(state, cardId, casterId).withoutObjectGrants(cardId)
         if (castFaceDown) {
             newState = clearRevealedMorphsInHand(newState, casterId)
         }

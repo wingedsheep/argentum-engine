@@ -49,6 +49,15 @@ class ReplayStorageTest : ScenarioTestBase() {
             actions = emptyList(),
         )
 
+    private fun summaryOf(r: CompactReplay) = ReplaySummary(
+        gameId = r.gameId,
+        playerNames = r.players.map { it.name },
+        startedAt = r.startedAt,
+        endedAt = r.endedAt,
+        winnerName = r.winnerName,
+        frameCount = r.frameCount,
+    )
+
     /** Play a real recorded game and stop after [actions] recorded actions. */
     private fun playPartialGame(): GameSession {
         val session = GameSession(cardRegistry = cardRegistry, maxPlayers = 2)
@@ -93,6 +102,24 @@ class ReplayStorageTest : ScenarioTestBase() {
             store.findRecentForPlayer("alice", 10).map { it.gameId } shouldContainExactly listOf("g2", "g1")
             store.find("g3").shouldNotBeNull().replay.gameId shouldBe "g3"
             store.find("nope") shouldBe null
+        }
+
+        test("a signed-in player's list adds the account's games played under earlier seat ids") {
+            val inner = InMemoryReplayStore()
+            inner.save(StoredReplay(replay("old", listOf("seat-old" to "Alice", "bob" to "Bob"), "2026-01-01T00:00:00Z"), ReplayStatus.FINISHED))
+            inner.save(StoredReplay(replay("both", listOf("seat-now" to "Alice", "bob" to "Bob"), "2026-01-02T00:00:00Z"), ReplayStatus.FINISHED))
+            inner.save(StoredReplay(replay("new", listOf("seat-now" to "Alice", "carol" to "Carol"), "2026-01-03T00:00:00Z"), ReplayStatus.FINISHED))
+            val account = java.util.UUID.randomUUID()
+            // Stands in for the match-records join the JDBC store does.
+            val store = object : ReplayStore by inner {
+                override fun findRecentForUser(userId: java.util.UUID, limit: Int) =
+                    if (userId == account) listOf("both", "old").mapNotNull { inner.find(it) }.map { summaryOf(it.replay) }
+                    else emptyList()
+            }
+            val service = ReplayService(store, mockk(relaxed = true), mockk(relaxed = true))
+
+            service.recentFor("seat-now", account).map { it.gameId } shouldContainExactly listOf("new", "both", "old")
+            service.recentFor("seat-now", null).map { it.gameId } shouldContainExactly listOf("new", "both")
         }
 
         test("an in-progress recording is listed for resume but never in a player's history") {

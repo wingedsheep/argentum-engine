@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
  * (e.g. Glorious Sunrise grants a land "{T}: Add {G}{G}{G}"). The type of a valid
  * target is already constrained by the effect's [GrantActivatedAbilityEffect.target]
  * requirement, so the executor only verifies the resolved target is a permanent on the
- * battlefield.
+ * battlefield or a permanent spell on the stack ([ObjectGrantTarget]).
  */
 class GrantActivatedAbilityExecutor : EffectExecutor<GrantActivatedAbilityEffect> {
 
@@ -38,13 +38,13 @@ class GrantActivatedAbilityExecutor : EffectExecutor<GrantActivatedAbilityEffect
         val targetId = context.resolveTarget(effect.target)
             ?: return EffectResult.error(state, "No valid target for activated ability grant")
 
-        // Verify target exists and is a permanent on the battlefield.
+        // Verify target exists and is a permanent or a permanent spell.
         val targetContainer = state.getEntity(targetId)
             ?: return EffectResult.error(state, "Target no longer exists")
         targetContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Target is not a card")
-        if (!state.getBattlefield().contains(targetId)) {
-            return EffectResult.error(state, "Target is not on the battlefield")
+        if (!ObjectGrantTarget.canReceive(state, targetId)) {
+            return EffectResult.error(state, ObjectGrantTarget.NOT_A_PERMANENT_OR_PERMANENT_SPELL)
         }
 
         val grant = GrantedActivatedAbility(

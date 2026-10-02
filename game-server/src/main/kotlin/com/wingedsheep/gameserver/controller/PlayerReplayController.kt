@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.*
  * Player-facing REST controller for browsing and replaying completed games.
  *
  * Auth: reads X-Player-Token header and looks up player identity in SessionRegistry.
- * Players can view replays of games they participated in, or any game from their tournament.
+ * Players can view replays of games they participated in, or any game from their tournament. A
+ * signed-in player also sees every game their account played, whichever connection played it.
  */
 @RestController
 @RequestMapping("/api/replays")
@@ -30,7 +31,7 @@ class PlayerReplayController(
             ?: return ResponseEntity.status(401)
                 .body(mapOf("error" to "Invalid or missing player token"))
 
-        val summaries = replayService.recentForPlayer(identity.playerId.value).map { it.toGameSummary() }
+        val summaries = replayService.recentFor(identity.playerId.value, identity.userId).map { it.toGameSummary() }
         return ResponseEntity.ok(summaries)
     }
 
@@ -71,9 +72,11 @@ class PlayerReplayController(
         val stored = replayService.findStored(gameId)
             ?: return ResponseEntity.notFound().build()
 
-        // Verify the player was a participant OR is in the same tournament
+        // Verify the player was a participant (under this connection's seat id, or — signed in — as
+        // the same account under an earlier one) OR is in the same tournament
         val playerId = identity.playerId.value
-        val isParticipant = stored.replay.players.any { it.playerId == playerId }
+        val isParticipant = stored.replay.players.any { it.playerId == playerId } ||
+            identity.userId?.let { replayService.isAccountParticipant(it, gameId) } == true
         val isTournamentMember = lobbyId?.let { lid ->
             val tournament = lobbyRepository.findTournamentById(lid)
             tournament != null &&
