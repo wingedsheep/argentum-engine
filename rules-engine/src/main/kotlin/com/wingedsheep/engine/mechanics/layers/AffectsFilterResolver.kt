@@ -332,6 +332,8 @@ internal class AffectsFilterResolver(
                         // creatures). Unknown leaves fail OPEN in evaluateWith, so leaving this
                         // unhandled silently matched every creature.
                         ControllerPredicate.ControlledByActivePlayer -> entityController == state.activePlayerId
+                        ControllerPredicate.ControlledByDefendingPlayer ->
+                            com.wingedsheep.engine.mechanics.combat.CombatDefenders.isCombatDefender(state, entityController)
                         // Owner-axis leaves read the card's owner relative to the source's
                         // controller (Laughing Jasper Flint: "creatures you control but don't own").
                         ControllerPredicate.OwnedByYou -> card.ownerId != null && card.ownerId == controller
@@ -700,6 +702,8 @@ internal class AffectsFilterResolver(
                         ControllerPredicate.ControlledByOpponent -> auraController != sourceController
                         ControllerPredicate.ControlledByAny -> true
                         ControllerPredicate.ControlledByActivePlayer -> auraController == state.activePlayerId
+                        ControllerPredicate.ControlledByDefendingPlayer ->
+                            com.wingedsheep.engine.mechanics.combat.CombatDefenders.isCombatDefender(state, auraController)
                         else -> null
                     }
                 }
@@ -716,6 +720,8 @@ internal class AffectsFilterResolver(
                     ControllerPredicate.ControlledByOpponent -> protector != sourceController
                     ControllerPredicate.ControlledByAny -> true
                     ControllerPredicate.ControlledByActivePlayer -> protector == state.activePlayerId
+                        ControllerPredicate.ControlledByDefendingPlayer ->
+                            com.wingedsheep.engine.mechanics.combat.CombatDefenders.isCombatDefender(state, protector)
                     ControllerPredicate.OwnedByYou, ControllerPredicate.OwnedByOpponent,
                     ControllerPredicate.OwnedByTargetPlayer, ControllerPredicate.OwnedByTriggeringPlayer -> false
                     else -> null

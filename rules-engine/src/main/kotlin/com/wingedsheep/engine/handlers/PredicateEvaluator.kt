@@ -92,6 +92,9 @@ class PredicateEvaluator(
     private val manaAbilityQueries: Set<EntityId> = emptySet(),
 ) {
 
+    private fun isCombatDefender(state: GameState, playerId: EntityId?): Boolean =
+        com.wingedsheep.engine.mechanics.combat.CombatDefenders.isCombatDefender(state, playerId)
+
     internal fun duringManaAbilityQuery(entityId: EntityId): PredicateEvaluator =
         PredicateEvaluator(cardRegistry, manaAbilityQueries + entityId)
 
@@ -475,6 +478,7 @@ class PredicateEvaluator(
             ControllerPredicate.ControlledByOpponent -> controllerId != context.controllerId
             ControllerPredicate.ControlledByAny -> true
             ControllerPredicate.ControlledByActivePlayer -> controllerId == state.activePlayerId
+            ControllerPredicate.ControlledByDefendingPlayer -> isCombatDefender(state, controllerId)
             ControllerPredicate.ControlledByTargetOpponent ->
                 context.targetOpponentId?.let { controllerId == it } ?: false
             ControllerPredicate.ControlledByTargetPlayer ->
@@ -1463,6 +1467,7 @@ class PredicateEvaluator(
             ControllerPredicate.ControlledByOpponent,
             ControllerPredicate.ControlledByAny,
             ControllerPredicate.ControlledByActivePlayer,
+            ControllerPredicate.ControlledByDefendingPlayer,
             ControllerPredicate.ControlledByTargetOpponent,
             ControllerPredicate.ControlledByTargetPlayer,
             ControllerPredicate.ControlledByTriggeringPlayer,
@@ -1509,6 +1514,7 @@ class PredicateEvaluator(
         ControllerPredicate.ControlledByOpponent -> playerId != context.controllerId
         ControllerPredicate.ControlledByAny -> true
         ControllerPredicate.ControlledByActivePlayer -> playerId == state.activePlayerId
+        ControllerPredicate.ControlledByDefendingPlayer -> isCombatDefender(state, playerId)
         ControllerPredicate.ControlledByTargetOpponent ->
             context.targetOpponentId?.let { playerId == it } ?: false
         ControllerPredicate.ControlledByTargetPlayer ->
@@ -2153,6 +2159,7 @@ class PredicateEvaluator(
                             ControllerPredicate.ControlledByYou -> auraController == you
                             ControllerPredicate.ControlledByOpponent -> auraController != you
                             ControllerPredicate.ControlledByAny -> true
+                            ControllerPredicate.ControlledByDefendingPlayer -> isCombatDefender(state, auraController)
                             ControllerPredicate.ControlledByActivePlayer ->
                                 auraController == state.activePlayerId
                             else -> null

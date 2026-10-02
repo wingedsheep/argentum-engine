@@ -2420,6 +2420,27 @@ class CombatAdvisorTest : FunSpec({
             driver.state, driver.state.projectedState, attacker, smallBlocker, registry
         ) shouldBe true
     }
+    test("server multi-block requirement keeps every mandated attacker in the AI plan") {
+        val unlimited = CardDefinition.creature(
+            name = "Multi Block Advisor Wall", manaCost = ManaCost.parse("{3}"),
+            subtypes = setOf(Subtype("Wall")), power = 0, toughness = 10,
+            script = com.wingedsheep.sdk.model.CardScript.creature(staticAbilities = listOf(
+                com.wingedsheep.sdk.scripting.CanBlockAnyNumber())))
+        val (driver, _, advisor) = setup(listOf(groundBlocker, unlimited))
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val p1 = driver.activePlayer!!; val p2 = driver.getOpponent(p1)
+        val a = driver.putCreatureOnBattlefield(p1, "Grizzly Bears").also(driver::removeSummoningSickness)
+        val b = driver.putCreatureOnBattlefield(p1, "Grizzly Bears").also(driver::removeSummoningSickness)
+        val wall = driver.putCreatureOnBattlefield(p2, unlimited.name)
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(p1, listOf(a,b), p2).error shouldBe null
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        val hint = buildBlockAction(p2,listOf(wall),mapOf(wall to listOf(a,b)))
+            .copy(blockerMaxBlockCounts = mapOf(wall to Int.MAX_VALUE))
+        val result = advisor.chooseBlockers(driver.state,hint,p2) as DeclareBlockers
+        result.blockers[wall] shouldBe listOf(a,b)
+        driver.submit(result).error shouldBe null
+    }
 })
 
 /**

@@ -45,6 +45,11 @@ object CombatDefenders {
             .flatMap { state.sharedTurnTeam(it) }
             .toSet()
 
+    /** Combat's defending seats, including before attack declaration. */
+    fun isCombatDefender(state: GameState, playerId: EntityId?): Boolean =
+        state.step.phase == com.wingedsheep.sdk.core.Phase.COMBAT &&
+            state.activePlayerId?.let { playerId in legalDefendingPlayers(state, it) } == true
+
     /** True if [playerId] is a defending player in the current combat. */
     fun isDefendingPlayer(state: GameState, playerId: EntityId): Boolean =
         defendingPlayers(state).contains(playerId)

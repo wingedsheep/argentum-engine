@@ -1023,6 +1023,7 @@ class StaticAbilityHandler(
             is BlockerCountLimit,
             is CanAttackDespiteDefender,
             is CanBlockAnyNumber,
+            is com.wingedsheep.sdk.scripting.MustBlockEachAttacker,
             is com.wingedsheep.sdk.scripting.CanBlockAsThoughUntapped,
             is CantAttackUnless,
             is com.wingedsheep.sdk.scripting.CantAttackUnlessSacrifice,

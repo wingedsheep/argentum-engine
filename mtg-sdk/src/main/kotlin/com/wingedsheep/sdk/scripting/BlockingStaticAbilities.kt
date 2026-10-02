@@ -247,6 +247,19 @@ data class CanBlockAnyNumber(
     val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can block any number of creatures"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility =
+        copy(filter = filter.applyTextReplacement(replacer))
+}
+
+/** Each attacking creature creates a separate blocking requirement for matching blockers. */
+@SerialName("MustBlockEachAttacker")
+@Serializable
+data class MustBlockEachAttacker(
+    val filter: GroupFilter = GroupFilter.source()
+) : StaticAbility {
+    override val description: String = "blocks each attacking creature if able"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility =
+        copy(filter = filter.applyTextReplacement(replacer))
 }
 
 /**

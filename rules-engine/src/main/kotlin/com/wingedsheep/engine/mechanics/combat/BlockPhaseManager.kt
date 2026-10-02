@@ -111,22 +111,29 @@ internal class BlockPhaseManager(
             return ExecutionResult.error(state, coBlockerValidation)
         }
 
-        // Check "must be blocked" requirements (Alluring Scent, etc.)
-        val mustBeBlockedValidation = validateMustBeBlockedRequirements(state, blockingPlayer, blockers)
-        if (mustBeBlockedValidation != null) {
-            return ExecutionResult.error(state, mustBeBlockedValidation)
-        }
+        val eachRequirements = eachAttackerRequirements(state, blockingPlayer, blockers)
+        if (eachRequirements != null) {
+            if (eachRequirements != blockers) {
+                return ExecutionResult.error(state, "Creatures must obey the maximum possible blocking requirements")
+            }
+        } else {
+            // Check "must be blocked" requirements (Alluring Scent, etc.)
+            val mustBeBlockedValidation = validateMustBeBlockedRequirements(state, blockingPlayer, blockers)
+            if (mustBeBlockedValidation != null) {
+                return ExecutionResult.error(state, mustBeBlockedValidation)
+            }
 
-        // Check provoke "must block specific attacker" requirements
-        val provokeValidation = validateProvokeRequirements(state, blockingPlayer, blockers)
-        if (provokeValidation != null) {
-            return ExecutionResult.error(state, provokeValidation)
-        }
+            // Check provoke "must block specific attacker" requirements
+            val provokeValidation = validateProvokeRequirements(state, blockingPlayer, blockers)
+            if (provokeValidation != null) {
+                return ExecutionResult.error(state, provokeValidation)
+            }
 
-        // Check projected must-block requirements (Grand Melee)
-        val projectedMustBlockValidation = validateProjectedMustBlockRequirements(state, blockingPlayer, blockers)
-        if (projectedMustBlockValidation != null) {
-            return ExecutionResult.error(state, projectedMustBlockValidation)
+            // Check projected must-block requirements (Grand Melee)
+            val projectedMustBlockValidation = validateProjectedMustBlockRequirements(state, blockingPlayer, blockers)
+            if (projectedMustBlockValidation != null) {
+                return ExecutionResult.error(state, projectedMustBlockValidation)
+            }
         }
 
         // Calculate (but don't pay) the block tax. If non-zero, pause for the blocking
@@ -170,22 +177,7 @@ internal class BlockPhaseManager(
     }
 
     private fun maxPileMemberships(state: GameState, blocker: EntityId, pileCount: Int): Int {
-        val container = state.getEntity(blocker) ?: return 1
-        val card = container.get<CardComponent>() ?: return 1
-        val projected = state.projectedState
-        val printed = if (container.has<FaceDownComponent>()) emptyList() else
-            cardRegistry.getCard(card.cardDefinitionId)?.staticAbilities.orEmpty()
-        val abilities = printed +
-            state.grantedStaticAbilities.filter { it.entityId == blocker }.map { it.ability }
-        val canBlockAny = !projected.hasLostAllAbilities(blocker) &&
-            abilities.any { ability ->
-                val unwrapped = if (ability is ConditionalStaticAbility) ability.ability else ability
-                unwrapped is CanBlockAnyNumber && unwrapped.filter.scope is Scope.Self &&
-                    (ability !is ConditionalStaticAbility || conditionEvaluator.evaluate(state, ability.condition,
-                        EffectContext(sourceId = blocker, controllerId = projected.getController(blocker) ?: blocker)))
-            }
-
-        return if (canBlockAny) pileCount else minOf(pileCount, 1 + projected.getAdditionalBlockCount(blocker))
+        return minOf(pileCount, BlockStaticRules(state, cardRegistry, predicateEvaluator).maxBlocks(blocker))
     }
 
     fun resolveBlockerPiles(state: GameState, continuation: BlockerPilesContinuation, response: PilesSplitResponse): ExecutionResult {
@@ -249,7 +241,7 @@ internal class BlockPhaseManager(
             validateGlobalBlockerCount(state, blocks.keys) == null &&
             validateCoBlockerRequirements(state, state.projectedState, blocks.keys) == null
 
-    private fun maximalLegalPileBlocks(state: GameState, candidates: Map<EntityId, List<EntityId>>): Map<EntityId, List<EntityId>> {
+    private fun removeImpossibleBlockEdges(state: GameState, candidates: Map<EntityId, List<EntityId>>): Map<EntityId, List<EntityId>> {
         // A subset cannot repair too few eligible blockers or an absent co-blocker. Remove those
         // impossible edges first; this also keeps large all-menace combats off the subset search.
         var reduced = candidates
@@ -268,6 +260,11 @@ internal class BlockPhaseManager(
             if (next == reduced) break
             reduced = next
         }
+        return reduced
+    }
+
+    private fun maximalLegalPileBlocks(state: GameState, candidates: Map<EntityId, List<EntityId>>): Map<EntityId, List<EntityId>> {
+        val reduced = removeImpossibleBlockEdges(state, candidates)
         if (pileRestrictionsSatisfied(state, reduced)) return reduced
         // Menace and minimum/maximum blocker counts are per attacker and count-based (who may block
         // whom was settled per edge above), so each attacker's largest legal count is an upper bound
@@ -465,6 +462,7 @@ internal class BlockPhaseManager(
      * Returns a map of blocker → list of attackers it must block.
      */
     fun getMandatoryBlockerAssignments(state: GameState, blockingPlayer: EntityId): Map<EntityId, List<EntityId>> {
+        eachAttackerRequirements(state, blockingPlayer)?.let { return it }
         val projected = state.projectedState
         val potentialBlockers = findPotentialBlockers(state, blockingPlayer)
         val result = mutableMapOf<EntityId, MutableList<EntityId>>()
@@ -500,6 +498,152 @@ internal class BlockPhaseManager(
         }
 
         return result.filterValues { it.isNotEmpty() }
+    }
+
+    /** A separate requirement per attacker, maximized together with the existing combat demands. */
+    private fun eachAttackerRequirements(
+        state: GameState,
+        blockingPlayer: EntityId,
+        submitted: Map<EntityId, List<EntityId>>? = null,
+    ): Map<EntityId, List<EntityId>>? {
+        val rules = BlockStaticRules(state, cardRegistry, predicateEvaluator)
+        val potential = findPotentialBlockers(state, blockingPlayer)
+        val each = potential.filter { rules.mustBlockEach(it) }
+        if (each.isEmpty()) return null
+        val attackers = state.findEntitiesWith<AttackingComponent>().map { it.first }
+        data class Demand(val blocker: EntityId? = null, val attacker: EntityId? = null)
+        val demands = mutableListOf<Demand>()
+        for (blocker in each) repeat(rules.eachRequirementCount(blocker)) {
+            for (attacker in attackers) demands.add(Demand(blocker, attacker))
+        }
+        for (blocker in potential) if (state.projectedState.mustBlock(blocker)) {
+            demands.add(Demand(blocker = blocker))
+        }
+        for (attacker in findMustBeBlockedAttackers(state)) for (blocker in potential) {
+            demands.add(Demand(blocker, attacker))
+        }
+        for (attacker in findMustBeBlockedIfAbleAttackers(state)) {
+            demands.add(Demand(attacker = attacker))
+        }
+        for (floating in state.floatingEffects) {
+            val modification = floating.effect.modification as? SerializableModification.MustBlockSpecificAttacker ?: continue
+            if (modification.attackerId !in attackers) continue
+            for (blocker in floating.effect.affectedEntities) if (blocker in potential) {
+                demands.add(Demand(blocker, modification.attackerId))
+            }
+        }
+        fun obeyed(demand: Demand, blocks: Map<EntityId, List<EntityId>>): Boolean = when {
+            demand.blocker == null -> blocks.values.any { demand.attacker in it }
+            demand.attacker == null -> blocks[demand.blocker].orEmpty().isNotEmpty()
+            else -> demand.attacker in blocks[demand.blocker].orEmpty()
+        }
+        fun score(blocks: Map<EntityId, List<EntityId>>) = demands.count { obeyed(it, blocks) }
+        // Costs are never compulsory to satisfy a requirement. Voluntary taxed blocks are still
+        // validated normally; the hypothetical maximum uses only cost-free blockers.
+        val candidates = removeImpossibleBlockEdges(state, potential.filter { blocker ->
+            CombatTaxes.blockTax(state, cardRegistry, setOf(blocker), state.projectedState,
+                predicateEvaluator = predicateEvaluator) == 0
+        }.associateWith { blocker ->
+            attackers.filter { validateBlocker(state, blockingPlayer, blocker, listOf(it)) == null }
+        }.filterValues { it.isNotEmpty() })
+        val capacities = candidates.keys.associateWith(rules::maxBlocks)
+        val minimumBlockers = candidates.values.flatten().distinct().associateWith { attacker ->
+            val eligible = candidates.filterValues { attacker in it }.keys.toList()
+            (1..eligible.size).first { count ->
+                val blocks = eligible.take(count).associateWith { listOf(attacker) }
+                validateMenaceRequirements(state, blocks) == null && validateMinBlockersRequirements(state, blocks) == null
+            }
+        }
+        fun canComplete(
+            blocks: Map<EntityId, List<EntityId>>,
+            remaining: List<EntityId>,
+            checkedAttackers: Set<EntityId>? = null,
+        ): Boolean {
+            val counts = blocks.values.flatten()
+                .filter { checkedAttackers == null || it in checkedAttackers }
+                .groupingBy { it }.eachCount()
+            val deficits = counts.mapNotNull { (attacker, count) ->
+                (minimumBlockers.getValue(attacker) - count).takeIf { it > 0 }?.let { attacker to it }
+            }.toMap()
+            if (deficits.any { (attacker, deficit) ->
+                remaining.count { attacker in candidates.getValue(it) } < deficit
+            }) return false
+            val supply = remaining.sumOf { blocker ->
+                minOf(capacities.getValue(blocker), candidates.getValue(blocker).count { it in deficits })
+            }
+            return deficits.values.sum() <= supply
+        }
+        val byBlocker = demands.filter { it.blocker != null }.groupBy { it.blocker!! }
+        val byAttacker = demands.filter { it.blocker == null }
+        // Relax only declaration-wide restrictions. Each remaining blocker still has its actual
+        // capacity, so a board of one-block creatures does not explore every attacker permutation.
+        fun optimistic(blocks: Map<EntityId, List<EntityId>>, remaining: List<EntityId>): Int {
+            val possible = blocks + remaining.associateWith { candidates[it]!! }
+            val attackerDemands = byAttacker.count { obeyed(it, possible) }
+            val blockerDemands = byBlocker.entries.sumOf { (blocker, requirements) ->
+                if (blocker !in remaining) requirements.count { obeyed(it, blocks) }
+                else {
+                    val eligible = candidates[blocker].orEmpty()
+                    val weights = eligible.map { attacker -> requirements.count { it.attacker == attacker } }
+                    weights.sortedDescending().take(minOf(eligible.size, capacities[blocker]!!)).sum() +
+                        requirements.count { it.attacker == null && eligible.isNotEmpty() }
+                }
+            }
+            return attackerDemands + blockerDemands
+        }
+        val upper = optimistic(emptyMap(), candidates.keys.toList())
+        val threshold = submitted?.let(::score)
+        if (threshold != null && threshold >= upper) return submitted
+        fun legal(blocks: Map<EntityId, List<EntityId>>) =
+            blocks.all { (blocker, targets) -> targets.size <= capacities.getValue(blocker) } &&
+                pileRestrictionsSatisfied(state, blocks)
+        if (legal(candidates)) return candidates
+        var best = emptyMap<EntityId, List<EntityId>>()
+        var bestScore = 0
+        val holders = candidates.keys.sortedByDescending { if (it in each) Int.MAX_VALUE else candidates[it]!!.size }
+        val selected = linkedMapOf<EntityId, List<EntityId>>()
+        fun search(index: Int) {
+            if (bestScore == upper || (threshold != null && bestScore > threshold)) return
+            if (!canComplete(selected, holders.drop(index))) return
+            if (optimistic(selected, holders.drop(index)) <= maxOf(bestScore, threshold ?: -1)) return
+            if (validateGlobalBlockerCount(state, selected.keys) != null ||
+                validateMaxBlockersRequirements(state, selected) != null) return
+            if (score(selected) == upper && legal(selected)) {
+                bestScore = upper; best = selected.toMap(); return
+            }
+            if (index == holders.size) {
+                if (legal(selected)) {
+                    val value = score(selected)
+                    if (value > bestScore) { bestScore = value; best = selected.toMap() }
+                }
+                return
+            }
+            val blocker = holders[index]
+            val eligible = candidates[blocker]!!
+            val capacity = minOf(eligible.size, capacities.getValue(blocker))
+            val choice = mutableListOf<EntityId>()
+            fun choose(next: Int, remaining: Int) {
+                // This blocker can still join other attackers, but cannot repair the minimum
+                // count on an attacker already in its partial choice.
+                if (!canComplete(selected + (blocker to choice), holders.drop(index + 1), choice.toSet())) return
+                if (remaining == 0) {
+                    if (choice.isEmpty()) selected.remove(blocker) else selected[blocker] = choice.toList()
+                    search(index + 1)
+                    selected.remove(blocker)
+                    return
+                }
+                for (i in next..eligible.size - remaining) {
+                    choice.add(eligible[i]); choose(i + 1, remaining - 1); choice.removeAt(choice.lastIndex)
+                    if (bestScore == upper || (threshold != null && bestScore > threshold)) return
+                }
+            }
+            for (count in capacity downTo 0) {
+                choose(0, count)
+                if (bestScore == upper || (threshold != null && bestScore > threshold)) break
+            }
+        }
+        search(0)
+        return if (threshold != null && bestScore <= threshold) submitted else best
     }
 
     // =========================================================================
