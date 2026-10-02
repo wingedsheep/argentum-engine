@@ -2,6 +2,7 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.CountersRemovedFromYourPermanentsThisTurnComponent
+import com.wingedsheep.engine.state.components.player.PlayerCountersRemovedThisTurnComponent
 import com.wingedsheep.sdk.core.Zone
 
 /**
@@ -20,12 +21,23 @@ object CounterHistory {
      * The controller is the projected one when the permanent is still on the battlefield. When the
      * same action also moved it off the battlefield (removed as a cost, then sacrificed), it is the
      * last-known controller its [ZoneChangeEvent] carries. Anything else — a player, a suspended card
-     * in exile — isn't a permanent and records nothing.
+     * in exile — isn't a permanent and records nothing here.
+     *
+     * Counters removed from a player themself are tallied by amount on that player instead — "if
+     * you've paid or lost four or more {E} this turn" (Izzet Generatorium).
      */
     fun recordRemovals(state: GameState, events: List<GameEvent>): GameState {
         var result = state
         for (event in events) {
             if (event !is CountersRemovedEvent || event.amount <= 0) continue
+            if (event.entityId in state.turnOrder) {
+                result = result.updateEntity(event.entityId) { container ->
+                    val existing = container.get<PlayerCountersRemovedThisTurnComponent>()
+                        ?: PlayerCountersRemovedThisTurnComponent()
+                    container.with(existing.with(event.counterType, event.amount))
+                }
+                continue
+            }
             val controllerId = controllerOf(state, event, events) ?: continue
             result = result.updateEntity(controllerId) { container ->
                 val existing = container.get<CountersRemovedFromYourPermanentsThisTurnComponent>()

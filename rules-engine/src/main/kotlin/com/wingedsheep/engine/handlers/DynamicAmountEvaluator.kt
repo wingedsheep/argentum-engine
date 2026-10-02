@@ -25,6 +25,7 @@ import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.NumericKeywordValuesComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.engine.state.components.player.PlayerCountersRemovedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.RoomComponent
 import com.wingedsheep.engine.state.components.identity.ToxicComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
@@ -801,6 +802,11 @@ class DynamicAmountEvaluator(
                         state.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.player.LoyaltyAbilitiesActivatedThisTurnComponent>()
                             ?.count ?: 0
+                    }
+                    TurnTracker.ENERGY_PAID_OR_LOST -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<PlayerCountersRemovedThisTurnComponent>()
+                            ?.count(CounterType.ENERGY) ?: 0
                     }
                 }
             }

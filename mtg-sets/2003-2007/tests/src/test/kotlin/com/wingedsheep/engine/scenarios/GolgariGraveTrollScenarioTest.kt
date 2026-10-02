@@ -61,6 +61,26 @@ class GolgariGraveTrollScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("returned from the graveyard, it counts itself among the creature cards there") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInGraveyard(1, "Golgari Grave-Troll")
+                    .withCardInGraveyard(1, "Grizzly Bears")
+                    .withCardInHand(1, "Zombify")
+                    .withLandsOnBattlefield(1, "Swamp", 4)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val troll = game.findCardsInGraveyard(1, "Golgari Grave-Troll").single()
+                game.castSpellTargetingGraveyardCard(1, "Zombify", listOf(troll)).error shouldBe null
+                game.resolveStack()
+
+                withClue("the Bears and the Troll itself were in the graveyard as it entered") {
+                    plusCounters(game, game.findPermanent("Golgari Grave-Troll")!!) shouldBe 2
+                }
+            }
+
             test("an empty graveyard leaves a 0/0 that dies to state-based actions") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")

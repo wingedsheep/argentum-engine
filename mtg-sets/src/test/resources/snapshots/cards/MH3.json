@@ -2657,6 +2657,71 @@
     }
 }
 
+// Izzet Generatorium
+{
+    "name": "Izzet Generatorium",
+    "manaCost": "{U}{R}",
+    "typeLine": "Artifact",
+    "oracleText": "If you would get one or more {E} (energy counters), you get that many plus one {E} instead.\n{T}: Draw a card. Activate only if you've paid or lost four or more {E} this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Izzet Generatorium:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "ENERGY_PAID_OR_LOST"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    }
+                ]
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ModifyCounterPlacement",
+                "appliesTo": {
+                    "type": "CounterPlacementEvent",
+                    "counterType": "ENERGY",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "Hard hats are required. Shock-resistant coveralls aren't, but are highly recommended.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6d9537d-c6b9-46ef-834b-87750d79f1ae.jpg?1783911250"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Jolted Awake
 {
     "name": "Jolted Awake",
@@ -5236,6 +5301,141 @@
             {
                 "date": "2024-06-07",
                 "text": "In the rare case where more than one card is exiled with Ugin's Labyrinth's imprint ability (likely because the triggered ability was copied or the ability triggered a second time), its last ability will return all such cards to their owners' hands."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Ulamog, the Defiler
+{
+    "name": "Ulamog, the Defiler",
+    "manaCost": "{10}",
+    "typeLine": "Legendary Creature — Eldrazi",
+    "oracleText": "When you cast this spell, target opponent exiles the top half of their library, rounded up.\nWard—Sacrifice two permanents.\nUlamog enters with a number of +1/+1 counters on it equal to the greatest mana value among cards in exile.\nUlamog has annihilator X, where X is the number of +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Sacrifice",
+                "filter": "permanent",
+                "count": 2
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ulamog, the Defiler:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Divide",
+                                    "numerator": {
+                                        "type": "AggregateZone",
+                                        "player": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        },
+                                        "zone": "Library"
+                                    },
+                                    "denominator": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "exiled_top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "exiled_top",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When you cast this spell, target opponent exiles the top half of their library, rounded up."
+            },
+            {
+                "id": "Ulamog, the Defiler:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "permanent",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    },
+                    "dynamicCount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    }
+                },
+                "descriptionOverride": "Annihilator X, where X is the number of +1/+1 counters on Ulamog."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "AggregateZone",
+                    "player": "Each",
+                    "zone": "Exile",
+                    "aggregation": "MAX",
+                    "property": "MANA_VALUE"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd00d56a-86bd-41d8-82b6-975404ef8067.jpg?1783911305",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Ulamog, the Defiler's first ability will resolve before Ulamog does. If Ulamog is countered or otherwise leaves the stack in response to its triggered ability, the triggered ability will still resolve as normal."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If Ulamog is entering the battlefield directly from exile, it will see itself when determining which card has the greatest mana value among cards in exile. If that's Ulamog, which seems likely, it will enter with ten +1/+1 counters on it."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Use the number of +1/+1 counters on Ulamog at the time its annihilator ability resolves to determine how many permanents defending player should sacrifice."
             }
         ]
     },

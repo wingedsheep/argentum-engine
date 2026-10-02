@@ -469,6 +469,7 @@ internal fun returnDfcFace(
         ?: return ZoneTransitionResult(state, emptyList())
     val prepared = prepareDfcFaceSwap(state, cardRegistry, entityId, destinationFace)
         ?: return ZoneTransitionResult(state, emptyList())
+    val origin = prepared.logicalZone(entityId)
     val moved = zones.moveToZone(
         prepared,
         entityId,
@@ -481,7 +482,7 @@ internal fun returnDfcFace(
     // with an additional loyalty counter … for each instant and sorcery spell you've cast this turn".
     val (entered, entryEvents) = EntersWithReplacements.applyOnEntry(
         moved.state, entityId, ownerId, cardRegistry,
-        predicateEvaluator = zones.predicateEvaluator
+        predicateEvaluator = zones.predicateEvaluator, preEntryZone = origin
     )
     return moved.copy(state = entered, events = moved.events + entryEvents)
 }

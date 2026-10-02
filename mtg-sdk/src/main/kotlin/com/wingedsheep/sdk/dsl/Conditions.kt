@@ -1652,6 +1652,18 @@ object Conditions {
         )
 
     /**
+     * "If you've paid or lost N or more {E} this turn" (Izzet Generatorium) — every energy counter
+     * removed from the player this turn, paid as a cost or lost to an effect
+     * ([com.wingedsheep.sdk.scripting.values.TurnTracker.ENERGY_PAID_OR_LOST]).
+     */
+    fun YouPaidOrLostEnergyThisTurn(atLeast: Int, player: Player = Player.You): ConditionInterface =
+        trackerAtLeast(
+            com.wingedsheep.sdk.scripting.values.TurnTracker.ENERGY_PAID_OR_LOST,
+            atLeast,
+            player,
+        )
+
+    /**
      * As long as you haven't activated an exhaust ability this turn — Elvish Refueler's gate on its
      * "activate exhaust abilities as though they haven't been activated" permission.
      */
