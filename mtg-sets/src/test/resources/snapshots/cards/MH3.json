@@ -2148,6 +2148,43 @@
     ]
 }
 
+// Frogmyr Enforcer
+{
+    "name": "Frogmyr Enforcer",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Frog Myr",
+    "oracleText": "Prototype {3}{R} — 2/2 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nAffinity for artifacts (This spell costs {1} less to cast for each artifact you control.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "PROTOTYPE",
+        "AFFINITY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{3}{R}",
+            "power": 2,
+            "toughness": 2
+        },
+        {
+            "type": "Affinity",
+            "forType": "ARTIFACT"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "UNCOMMON",
+        "artist": "Maxime Minard",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/981fdd21-a650-4360-9ea5-550399d1da91.jpg?1783911272"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Furnace Hellkite
 {
     "name": "Furnace Hellkite",

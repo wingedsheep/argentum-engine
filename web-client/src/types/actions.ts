@@ -120,6 +120,8 @@ export interface CastSpellAction {
   readonly alternativePayment?: AlternativePaymentChoice
   /** Whether to cast this card face-down (for Morph creatures) */
   readonly castFaceDown?: boolean
+  /** Whether to cast this card prototyped — its prototype cost and size (CR 718.3) */
+  readonly castPrototyped?: boolean
   /** Whether the spell is being cast for an alternative cost (impending, evoke, flashback, …) */
   readonly useAlternativeCost?: boolean
   /**

@@ -201,7 +201,15 @@ internal class CastValidator(
     fun validate(inputState: GameState, action: CastSpell): String? {
         if (com.wingedsheep.engine.mechanics.BestowCasts.selected(action) &&
             (action.castFaceDown || action.faceIndex != null)) return "Bestow cannot be combined with another face or face-down casting"
-        val state = com.wingedsheep.engine.mechanics.BestowCasts.announce(inputState, action, cardRegistry)
+        if (action.castPrototyped) {
+            if (action.castFaceDown || action.faceIndex != null || com.wingedsheep.engine.mechanics.BestowCasts.selected(action)) {
+                return "A prototyped spell is cast with its own characteristics only"
+            }
+            val printed = inputState.getEntity(action.cardId)?.get<CardComponent>()
+                ?.let { cardRegistry.getCard(it.cardDefinitionId) }
+            if (com.wingedsheep.engine.mechanics.PrototypeCasts.prototypeOf(printed) == null) return "This card has no prototype"
+        }
+        val state = com.wingedsheep.engine.mechanics.CastCharacteristics.announce(inputState, action, cardRegistry)
         if (!state.hasPriority(action.playerId)) {
             return "You don't have priority"
         }
@@ -211,7 +219,7 @@ internal class CastValidator(
             ?: return "Not a card: ${action.cardId}"
         val source = castSource(state, action, cardComponent)
             ?: return "Card is not in your hand"
-        val cardDef = com.wingedsheep.engine.mechanics.BestowCasts.definitionForCast(
+        val cardDef = com.wingedsheep.engine.mechanics.CastCharacteristics.definitionForCast(
             cardRegistry.getCard(cardComponent.cardDefinitionId), action
         )
 

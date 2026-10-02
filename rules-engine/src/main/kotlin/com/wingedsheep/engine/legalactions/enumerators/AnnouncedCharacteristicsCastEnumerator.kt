@@ -11,6 +11,11 @@ import com.wingedsheep.engine.legalactions.AdditionalCostData
 import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.mechanics.BestowCasts
+import com.wingedsheep.engine.mechanics.CastCharacteristics
+import com.wingedsheep.engine.mechanics.PrototypeCasts
+import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCostEnumeration
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCosts
 import com.wingedsheep.engine.mechanics.mana.TapForGeneric
@@ -22,8 +27,35 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.KeywordAbility
 
-/** Offers the Aura announcement using its own characteristics and the ordinary casting rails. */
-class BestowCastEnumerator : ActionEnumerator {
+/**
+ * A way to cast a card announced with characteristics other than its printed ones — bestow's Aura
+ * (CR 702.103) or prototype's cost and size (CR 718.3). The announced characteristics decide
+ * every cost, payment and timing check, through [CastCharacteristics].
+ */
+enum class CharacteristicsAnnouncement(val actionType: String) {
+    BESTOW("CastWithAlternativeCost") {
+        override fun offers(printed: CardDefinition) = printed.keywordAbilities.any { it is KeywordAbility.Bestow }
+        override fun action(player: EntityId, card: EntityId) =
+            CastSpell(player, card, useAlternativeCost = true, alternativeCostType = AlternativeCostType.BESTOW)
+        override val targets = listOf(BestowCasts.enchantCreature)
+        override fun description(printed: CardDefinition, card: CardComponent) = "Bestow ${card.name}"
+    },
+    PROTOTYPE("CastSpell") {
+        override fun offers(printed: CardDefinition) = PrototypeCasts.prototypeOf(printed) != null
+        override fun action(player: EntityId, card: EntityId) = CastSpell(player, card, castPrototyped = true)
+        override val targets = emptyList<TargetRequirement>()
+        override fun description(printed: CardDefinition, card: CardComponent) =
+            PrototypeCasts.prototypeOf(printed)!!.let { "Cast ${card.name} prototyped (${it.power}/${it.toughness})" }
+    };
+
+    abstract fun offers(printed: CardDefinition): Boolean
+    abstract fun action(player: EntityId, card: EntityId): CastSpell
+    abstract val targets: List<TargetRequirement>
+    abstract fun description(printed: CardDefinition, card: CardComponent): String
+}
+
+/** Offers each [CharacteristicsAnnouncement] cast on the ordinary casting rails. */
+class AnnouncedCharacteristicsCastEnumerator(private val kind: CharacteristicsAnnouncement) : ActionEnumerator {
     override fun enumerate(context: EnumerationContext): List<LegalAction> {
         val player = context.playerId
         val zones = CastZoneResolver(context.cardRegistry, context.conditionEvaluator, context.legality)
@@ -42,10 +74,10 @@ class BestowCastEnumerator : ActionEnumerator {
             for (id in candidates) {
                 val original = context.state.getEntity(id)?.get<CardComponent>() ?: continue
                 val printed = context.cardRegistry.getCard(original.cardDefinitionId) ?: continue
-                if (printed.keywordAbilities.none { it is KeywordAbility.Bestow }) continue
-                val action = CastSpell(player, id, useAlternativeCost = true, alternativeCostType = AlternativeCostType.BESTOW)
-                val state = BestowCasts.announce(context.state, action, context.cardRegistry)
-                val def = BestowCasts.definitionForCast(printed, action)!!
+                if (!kind.offers(printed)) continue
+                val action = kind.action(player, id)
+                val state = CastCharacteristics.announce(context.state, action, context.cardRegistry)
+                val def = CastCharacteristics.definitionForCast(printed, action)!!
                 val card = state.getEntity(id)!!.get<CardComponent>()!!
                 val inHand = id in state.getHand(player)
                 if (inHand && context.cantPlayCardsFromHand) continue
@@ -66,10 +98,10 @@ class BestowCastEnumerator : ActionEnumerator {
                 val cost = totals.totalCost(state, action, def, card, false, zones.hasCommanderCastPermission(state, player, id)) ?: continue
                 val sources = context.availableManaSources
                 val paymentContext = com.wingedsheep.engine.mechanics.mana.SpellPaymentContext(
-                    isCreature = false, isLegendary = card.typeLine.isLegendary,
+                    isCreature = card.typeLine.isCreature, isLegendary = card.typeLine.isLegendary,
                     manaValue = card.manaCost.cmc, hasXInCost = card.manaCost.hasX,
                     isColorless = card.colors.isEmpty(),
-                    subtypes = setOf("Aura"), cardTypes = card.typeLine.cardTypes,
+                    subtypes = card.typeLine.subtypes.mapTo(mutableSetOf()) { it.value }, cardTypes = card.typeLine.cardTypes,
                     isFromHand = inHand,
                     isFromExile = state.turnOrder.any { id in state.getZone(ZoneKey(it, Zone.EXILE)) }
                 )
@@ -116,7 +148,7 @@ class BestowCastEnumerator : ActionEnumerator {
                     if (costInfo == null) costInfo = SpellCosts.present(env, term, choices)?.second
                 }
                 if (!payable) continue
-                val targets = context.targetUtils.buildTargetInfos(state, player, listOf(BestowCasts.enchantCreature), id, TargetingSourceType.SPELL)
+                val targets = context.targetUtils.buildTargetInfos(state, player, kind.targets, id, TargetingSourceType.SPELL)
                 if (!context.targetUtils.allRequirementsSatisfied(targets)) continue
                 val maxX = if (cost.hasX) {
                     // Reprice announced X before reductions: an enchantment discount can pay X.
@@ -135,9 +167,10 @@ class BestowCastEnumerator : ActionEnumerator {
                     low
                 } else null
                 add(LegalAction(
-                    actionType = "CastWithAlternativeCost", description = "Bestow ${card.name}", action = action,
-                    requiresTargets = true, validTargets = targets.first().validTargets,
-                    targetCount = 1, minTargets = 1, targetDescription = BestowCasts.enchantCreature.description,
+                    actionType = kind.actionType, description = kind.description(printed, card), action = action,
+                    requiresTargets = targets.isNotEmpty(), validTargets = targets.firstOrNull()?.validTargets,
+                    targetCount = kind.targets.size.coerceAtLeast(1), minTargets = kind.targets.size,
+                    targetDescription = kind.targets.firstOrNull()?.description,
                     manaCostString = cost.toString(), hasXCost = cost.hasX, maxAffordableX = maxX,
                     additionalCostInfo = costInfo,
                     hasConvoke = hasConvoke, convokeCreatures = convokeCreatures.takeIf { hasConvoke },
