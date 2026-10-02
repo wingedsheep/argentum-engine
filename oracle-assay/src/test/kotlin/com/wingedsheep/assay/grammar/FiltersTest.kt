@@ -99,11 +99,20 @@ class FiltersTest : StringSpec({
             GameObjectFilter.Creature.opponentControls().withKeyword(Keyword.FLYING)
     }
 
-    // "your opponents control" is a third `ControllerPredicate` this cascade has never spelled, in
-    // either word order — a row nobody has written, not a casualty of the order above.
-    "the plural-opponents controller clause is still unspelled" {
-        Filters.plural.parseText("creatures your opponents control")
-            .shouldBeInstanceOf<ParseOutcome.Declined>()
+    // The opponent clause agrees in number: "your opponents control" is the plural spelling of the
+    // same `ControlledByOpponent`, and the plural prints it. The singular form still reads in the
+    // plural — the 26 "creatures an opponent controls" prints — and comes back as a VARIANT.
+    "the plural opponent clause is 'your opponents control'" {
+        read(Filters.plural, "creatures your opponents control") shouldBe
+            GameObjectFilter.Creature.opponentControls()
+        roundTrips(Filters.plural, "creatures your opponents control")
+        roundTrips(Filters.plural, "creatures your opponents control with flying")
+        read(Filters.plural, "creatures an opponent controls") shouldBe GameObjectFilter.Creature.opponentControls()
+        Filters.plural.unparse(read(Filters.plural, "creatures an opponent controls")) shouldBe
+            "creatures your opponents control"
+        // The singular never takes the plural verb.
+        roundTrips(Filters.filter, "creature an opponent controls")
+        Filters.filter.parseText("creature your opponents control").shouldBeInstanceOf<ParseOutcome.Declined>()
     }
 
     // Number is an axis rather than a second vocabulary, so every layer exists in both.

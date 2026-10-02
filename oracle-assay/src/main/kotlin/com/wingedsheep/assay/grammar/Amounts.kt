@@ -72,10 +72,10 @@ object Amounts {
     // ---------------------------------------------------------------------------------------
 
     /**
-     * **Where a battlefield tally counts**, as the three clauses English ends the noun phrase on.
+     * **Where a battlefield tally counts**, as the clauses English ends the noun phrase on.
      *
      * One layer, and the reason it is published rather than spelled per rule is that it is the same
-     * three rows every time: "the number of Elves **on the battlefield**", "~ gets +1/+1 for each
+     * rows every time: "the number of Elves **on the battlefield**", "~ gets +1/+1 for each
      * artifact **you control**", "you gain 1 life for each attacking creature" — same clause, three
      * heads in front of it. Before this table each family wrote the row it happened to be born for
      * and froze the rest as literal text, and every one of them froze a *different* row: [count]
@@ -107,15 +107,25 @@ object Amounts {
         /** The filter this clause may be printed in front of, or null when the two would say it twice. */
         fun narrowing(filter: GameObjectFilter): GameObjectFilter? = when {
             surface.isNotEmpty() -> filter.takeIf { it.controllerPredicate == null }
-            else -> filter.takeIf { it.controllerPredicate != ControllerPredicate.ControlledByYou }
+            else -> filter.takeIf { it.controllerPredicate !in ROWED_CONTROLLERS }
         }
     }
+
+    /**
+     * The controller clauses a [scopes] row prints, which the empty row must therefore refuse:
+     * "the number of artifacts **your opponents control**" would otherwise read twice — once as
+     * this layer's opponents row and once as the plural noun phrase's own opponent clause over the
+     * whole battlefield — and the hand-written corpus spells it the first way
+     * (`battlefield(Player.EachOpponent, …)`, Gaea's Avenger, Angry Mob, Pygmy Kavu).
+     */
+    private val ROWED_CONTROLLERS = setOf(ControllerPredicate.ControlledByYou, ControllerPredicate.ControlledByOpponent)
 
     /** The layer itself. Adding a row here reaches every family that counts. */
     val scopes: List<Scope> = listOf(
         Scope(" on the battlefield", Player.Each, "the whole battlefield"),
         Scope("", Player.Each, "the whole battlefield, unqualified", canonical = false),
         Scope(" you control", Player.You, "your battlefield"),
+        Scope(" your opponents control", Player.EachOpponent, "your opponents' battlefields"),
     )
 
     /**

@@ -1037,6 +1037,36 @@ report. Midnight Reaper also spells `damageSource = Self` explicitly, the Jagged
 Bargain's golden splices its `Patterns.Library` sequence flat with `then`, where the grammar keeps the
 first sentence's composite whole.
 
+## The opponents' controller band
+
+The eighteenth loop band, tail key `your opponents control …`: "Creatures **your opponents control**
+get -2/-0 until end of turn", "~ gets +1/+1 for each Swamp **your opponents control**". The probe
+(swap in "an opponent controls") finished 29 whole cards over the corpus. It delivered **13
+hand-written cards read whole (7,442 → 7,455)**.
+
+### One clause, inflected; one row, added
+
+The controller clause agrees in number with its noun. The cascade spelled only the singular, "creature
+**an opponent controls**", in both numbers, so the plural "creatures your opponents control" — 351
+prints corpus-wide against 26 of "creatures an opponent controls" — declined, and `FiltersTest` pinned
+the decline as if it were a third `ControllerPredicate`. It is not: Maha's golden holds the same
+`ctrl:opponent`. `Filters.byController` now prints "your opponents control" in the plural and keeps the
+singular form there as an alternate, so the 26 minority prints read as VARIANTs.
+
+The counted positions are a different model. "the number of artifacts your opponents control" is
+`battlefield(Player.EachOpponent, Artifact)` in every hand-written card (Gaea's Avenger, Angry Mob,
+Pygmy Kavu), not a whole-battlefield tally over an opponent-controlled filter — so `Amounts.scopes`
+gains the row, and the empty row refuses the opponent clause the way it already refused "you control".
+Without that refusal the gate reported both readings' printer gap as three print mismatches.
+
+### What the differential found
+
+Differential **7,058 compared / 69 divergent → 7,068 / 69**. Two divergences surfaced and both were
+**card bugs** of the minority-spelling kind: **Crusading Knight** and **Marauding Knight** counted
+their opponents' Swamps and Plains with `count(EachOpponent, BATTLEFIELD, …)`, the `Count` spelling of
+a battlefield tally that `AggregateBattlefield` is canonical for. Both now write
+`battlefield(EachOpponent, …).count()`; the value is the same and only their goldens moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

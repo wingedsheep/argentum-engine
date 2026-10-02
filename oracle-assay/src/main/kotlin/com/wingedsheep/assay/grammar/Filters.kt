@@ -688,14 +688,30 @@ object Filters {
             ManaValues.layer(inner, label),
         )
 
-        fun byController(inner: Phrase<GameObjectFilter>, label: String) = listOf(
-            controlledBy(inner, "you control", ControllerPredicate.ControlledByYou, "a permanent you control$label"),
-            controlledBy(
+        // The opponent clause agrees in number with its noun: "creature an opponent controls" but
+        // "creatures **your opponents control**" — 351 plural prints corpus-wide against 26 of
+        // "creatures an opponent controls". Both denote `ControlledByOpponent`, so in the plural the
+        // majority form is the one that prints and the minority one still reads, as a VARIANT.
+        fun opponentClause(inner: Phrase<GameObjectFilter>, label: String): Phrase<GameObjectFilter> {
+            val singular = controlledBy(
                 inner,
                 "an opponent controls",
                 ControllerPredicate.ControlledByOpponent,
                 "a permanent an opponent controls$label",
-            ),
+            )
+            if (!plural) return singular
+            val opponents = controlledBy(
+                inner,
+                "your opponents control",
+                ControllerPredicate.ControlledByOpponent,
+                "permanents your opponents control$label",
+            )
+            return oneOf("permanents an opponent controls$label", listOf(opponents, alternate(singular)))
+        }
+
+        fun byController(inner: Phrase<GameObjectFilter>, label: String) = listOf(
+            controlledBy(inner, "you control", ControllerPredicate.ControlledByYou, "a permanent you control$label"),
+            opponentClause(inner, label),
             // "you don't control" is a **third** value here, not a spelling of the second. The two
             // coincide in a duel and separate in multiplayer, where a teammate's creature is one you
             // don't control and not one an opponent controls — so the SDK spells it
