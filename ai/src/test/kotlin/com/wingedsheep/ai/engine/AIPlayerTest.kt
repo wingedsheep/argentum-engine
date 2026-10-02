@@ -36,7 +36,7 @@ class AIPlayerTest : FunSpec({
         return registry
     }
 
-    fun initGame(registry: CardRegistry, deck: Deck): Pair<GameState, ActionProcessor> {
+    fun initGame(registry: CardRegistry, deck: Deck, seed: Long? = null): Pair<GameState, ActionProcessor> {
         val initializer = GameInitializer(registry)
         val result = initializer.initializeGame(
             GameConfig(
@@ -45,7 +45,8 @@ class AIPlayerTest : FunSpec({
                     PlayerConfig("Opponent", deck)
                 ),
                 skipMulligans = true,
-                startingPlayerIndex = 0
+                startingPlayerIndex = 0,
+                seed = seed,
             )
         )
         return Pair(result.state, ActionProcessor(registry))
@@ -84,17 +85,15 @@ class AIPlayerTest : FunSpec({
         var state: GameState = initialState
         var safety = 0
         while (state.turnNumber < 3 && !state.gameOver && safety < 200) {
-            val nextState: GameState? = when (state.priorityPlayerId) {
+            val d = state.pendingDecision
+            val nextState: GameState? = if (d != null) {
+                val ai = if (d.playerId == p1) ai1 else ai2
+                val r = processor.process(state, SubmitDecision(d.playerId, ai.respondToDecision(state, d))).result
+                if (r.error != null) null else r.state
+            } else when (state.priorityPlayerId) {
                 p1 -> ai1.playPriorityWindow(state, processor)
                 p2 -> ai2.playPriorityWindow(state, processor)
-                else -> {
-                    val d = state.pendingDecision
-                    if (d != null) {
-                        val ai = if (d.playerId == p1) ai1 else ai2
-                        val r = processor.process(state, SubmitDecision(d.playerId, ai.respondToDecision(state, d))).result
-                        if (r.error != null) null else r.state
-                    } else null
-                }
+                else -> null
             }
             if (nextState == null) break
             state = nextState
@@ -139,7 +138,9 @@ class AIPlayerTest : FunSpec({
     test("two AI players can play a full game") {
         val registry = createCardRegistry()
         val deck = Deck.of("Mountain" to 14, "Raging Goblin" to 3, "Hill Giant" to 3)
-        val (initialState, processor) = initGame(registry, deck)
+        // Seed 2 has combat kill two of one owner's creatures at once, so that owner orders
+        // their graveyard while the other player holds priority.
+        val (initialState, processor) = initGame(registry, deck, seed = 2L)
 
         val p1 = initialState.turnOrder[0]
         val p2 = initialState.turnOrder[1]
@@ -151,18 +152,18 @@ class AIPlayerTest : FunSpec({
         val maxTurns = 50
 
         while (!state.gameOver && turns < maxTurns) {
-            val nextState: GameState? = when (state.priorityPlayerId) {
+            // A pending decision can belong to the player without priority (e.g. ordering
+            // their graveyard after combat damage), so route decisions before priority.
+            val decision = state.pendingDecision
+            val nextState: GameState? = if (decision != null) {
+                val ai = if (decision.playerId == p1) ai1 else ai2
+                val response = ai.respondToDecision(state, decision)
+                val result = processor.process(state, SubmitDecision(decision.playerId, response)).result
+                if (result.error != null) null else result.state
+            } else when (state.priorityPlayerId) {
                 p1 -> ai1.playPriorityWindow(state, processor)
                 p2 -> ai2.playPriorityWindow(state, processor)
-                else -> {
-                    val decision = state.pendingDecision
-                    if (decision != null) {
-                        val ai = if (decision.playerId == p1) ai1 else ai2
-                        val response = ai.respondToDecision(state, decision)
-                        val result = processor.process(state, SubmitDecision(decision.playerId, response)).result
-                        if (result.error != null) null else result.state
-                    } else null
-                }
+                else -> null
             }
             if (nextState == null) break
             state = nextState

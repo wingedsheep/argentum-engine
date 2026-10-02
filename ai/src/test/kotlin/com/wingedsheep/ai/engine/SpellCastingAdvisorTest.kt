@@ -82,18 +82,18 @@ class SpellCastingAdvisorTest : FunSpec({
         val startTurn = state.turnNumber
 
         while (state.turnNumber < startTurn + 2 && !state.gameOver && safety < 300) {
-            val nextState: GameState? = when (state.priorityPlayerId) {
+            // A pending decision can belong to the player without priority (e.g. ordering
+            // their graveyard after combat damage), so route decisions before priority.
+            val decision = state.pendingDecision
+            val nextState: GameState? = if (decision != null) {
+                val responder = if (decision.playerId == aiPlayerId) ai else opponent
+                val response = responder.respondToDecision(state, decision)
+                val result = processor.process(state, SubmitDecision(decision.playerId, response)).result
+                if (result.error != null) null else result.state
+            } else when (state.priorityPlayerId) {
                 aiPlayerId -> ai.playPriorityWindow(state, processor)
                 opponentId -> opponent.playPriorityWindow(state, processor)
-                else -> {
-                    val decision = state.pendingDecision
-                    if (decision != null) {
-                        val responder = if (decision.playerId == aiPlayerId) ai else opponent
-                        val response = responder.respondToDecision(state, decision)
-                        val result = processor.process(state, SubmitDecision(decision.playerId, response)).result
-                        if (result.error != null) null else result.state
-                    } else null
-                }
+                else -> null
             }
             if (nextState == null) break
             state = nextState

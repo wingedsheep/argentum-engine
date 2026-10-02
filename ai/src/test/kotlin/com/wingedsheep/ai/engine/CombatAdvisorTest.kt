@@ -2299,18 +2299,18 @@ class CombatAdvisorTest : FunSpec({
         var turns = 0
 
         while (!state.gameOver && turns < 50) {
-            val nextState = when (state.priorityPlayerId) {
+            // A pending decision can belong to the player without priority (e.g. ordering
+            // their graveyard after combat damage), so route decisions before priority.
+            val decision = state.pendingDecision
+            val nextState = if (decision != null) {
+                val ai = if (decision.playerId == p1) ai1 else ai2
+                val response = ai.respondToDecision(state, decision)
+                val r = processor.process(state, SubmitDecision(decision.playerId, response)).result
+                if (r.error != null) null else r.state
+            } else when (state.priorityPlayerId) {
                 p1 -> ai1.playPriorityWindow(state, processor)
                 p2 -> ai2.playPriorityWindow(state, processor)
-                else -> {
-                    val decision = state.pendingDecision
-                    if (decision != null) {
-                        val ai = if (decision.playerId == p1) ai1 else ai2
-                        val response = ai.respondToDecision(state, decision)
-                        val r = processor.process(state, SubmitDecision(decision.playerId, response)).result
-                        if (r.error != null) null else r.state
-                    } else null
-                }
+                else -> null
             }
             if (nextState == null) break
             state = nextState
