@@ -1836,6 +1836,102 @@
     ]
 }
 
+// Detective's Phoenix
+{
+    "name": "Detective's Phoenix",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment Creature — Phoenix",
+    "oracleText": "Bestow—{R}, Collect evidence 6. (To pay this bestow cost, pay {R} and exile cards with total mana value 6 or greater from your graveyard.)\nFlying, haste\nEnchanted creature gets +2/+2 and has flying and haste.\nYou may cast this card from your graveyard using its bestow ability.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE",
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{R}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomCollectEvidence",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                }
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE"
+            },
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "castUsing": "BESTOW"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "RARE",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2a01edd-dbc0-4ed4-b827-9b608290e9a1.jpg?1783911273",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If you can't exile enough cards to meet or exceed the required mana value, you can't choose to collect evidence at all."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Once you've announced that you're casting a spell, players can't take actions until you've finished doing so. Notably, opponents can't try to remove cards from your graveyard to stop you from collecting evidence."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "On the stack, a spell with bestow is either a creature spell or an Aura spell. It's never both, although it's an enchantment spell in either case."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Auras attached to a creature don't become tapped when the creature becomes tapped. Except in some rare cases, an Aura with bestow remains untapped when it becomes unattached and becomes a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Devourer of Destiny
 {
     "name": "Devourer of Destiny",

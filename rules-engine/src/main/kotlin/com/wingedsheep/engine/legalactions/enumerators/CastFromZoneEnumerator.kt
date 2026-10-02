@@ -1026,11 +1026,13 @@ class CastFromZoneEnumerator(
                 val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
                 // The card grants its own cast-from-zone permission only if some MayCastSelfFromZones
                 // names this zone AND its optional condition (e.g. Undead Sprinter's "a non-Zombie
-                // creature died this turn") currently holds in the casting player's context.
+                // creature died this turn") currently holds in the casting player's context. A
+                // permission restricted to one casting ability (`castUsing`, "using its bestow
+                // ability") is offered by that ability's own enumerator, never as an ordinary cast.
                 val zoneCastAbility = cardDef.script.staticAbilities
                     .filterIsInstance<MayCastSelfFromZones>()
                     .firstOrNull { ability ->
-                        zone in ability.zones && (ability.condition == null ||
+                        zone in ability.zones && ability.castUsing == null && (ability.condition == null ||
                             context.conditionEvaluator.evaluate(
                                 state,
                                 ability.condition!!,

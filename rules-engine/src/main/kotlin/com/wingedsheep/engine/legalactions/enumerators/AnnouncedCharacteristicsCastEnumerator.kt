@@ -83,7 +83,7 @@ class AnnouncedCharacteristicsCastEnumerator(private val kind: CharacteristicsAn
                 if (inHand && context.cantPlayCardsFromHand) continue
                 if (!inHand && !(zones.isOnTopOfLibraryWithPermission(state, player, id) ||
                     zones.isInExileWithPlayPermission(state, player, id) ||
-                    zones.hasMayCastSelfFromZonePermission(state, player, id) ||
+                    zones.hasMayCastSelfFromZonePermission(state, player, id, action) ||
                     zones.hasMayPlayPermanentFromGraveyardPermission(state, player, id, card) ||
                     zones.hasMayCastFromGraveyardPermission(state, player, id, card) ||
                     zones.hasCommanderCastPermission(state, player, id))) continue
