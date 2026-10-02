@@ -3,6 +3,7 @@ package com.wingedsheep.assay.grammar
 import com.wingedsheep.assay.syntax.ParseOutcome
 import com.wingedsheep.assay.syntax.parseLine
 import com.wingedsheep.assay.syntax.printLine
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -68,6 +69,31 @@ class StaticsTest : StringSpec({
             CardFragment(script = CardScript(staticAbilities = listOf(ModifyStats(1, 2))))
         roundTrips("Enchanted creature gets +1/+2.")
         roundTrips("Enchanted creature gets -3/-0.")
+    }
+
+    // Shackles. The untap lock is the DOESNT_UNTAP flag riding GrantKeyword's string field at the
+    // aura default filter.
+    "the untap-lock aura is the DOESNT_UNTAP grant at the aura default" {
+        fragment("Enchanted creature doesn't untap during its controller's untap step.") shouldBe
+            CardFragment(script = CardScript(staticAbilities = listOf(GrantKeyword(AbilityFlag.DOESNT_UNTAP.name))))
+        roundTrips("Enchanted creature doesn't untap during its controller's untap step.")
+        // A lock aimed anywhere but the attached creature is a different sentence.
+        Grammar.abilityLine.printLine(
+            CardFragment(
+                script = CardScript(
+                    staticAbilities = listOf(GrantKeyword(AbilityFlag.DOESNT_UNTAP.name, GroupFilter.source())),
+                ),
+            ),
+        ) shouldBe null
+    }
+
+    // Goblin Rock Sled. Conditional, so no longer a card flag: the same grant aimed at the source,
+    // wrapped in the condition.
+    "the conditional self untap lock wraps the source-aimed grant" {
+        val line = "~ doesn't untap during your untap step if you control a Forest."
+        val ability = fragment(line).script.staticAbilities.single().shouldBeInstanceOf<ConditionalStaticAbility>()
+        ability.ability shouldBe GrantKeyword(AbilityFlag.DOESNT_UNTAP.name, GroupFilter.source())
+        roundTrips(line)
     }
 
     // Flight. GrantKeyword holds a String, so reading it back has to find the enum constant rather
