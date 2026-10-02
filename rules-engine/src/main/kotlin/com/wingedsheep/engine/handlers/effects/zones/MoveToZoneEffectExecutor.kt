@@ -72,7 +72,7 @@ class MoveToZoneEffectExecutor(
         if (effect.byDestruction) {
             return destroyPermanent(
                 zones, state, targetId,
-                conditionalSelfGrantIds = context.lookBackSelfGrants[targetId]
+                lookBackGrants = context.lookBackGrants[targetId]
             )
         }
 
@@ -148,7 +148,7 @@ class MoveToZoneEffectExecutor(
 
         // Build ZoneEntryOptions based on placement and effect properties
         val entryOptions = buildEntryOptions(effect, cardComponent, controllerId, context.controllerId)
-            .copy(conditionalSelfGrantIds = context.lookBackSelfGrants[targetId], entryCopy = context.entryCopies[targetId], auraHostId = context.entryAuraHosts[targetId],
+            .copy(lookBackGrants = context.lookBackGrants[targetId], entryCopy = context.entryCopies[targetId], auraHostId = context.entryAuraHosts[targetId],
                 entryChoices = context.entryChoices[targetId]?.values.orEmpty())
 
         val transitionResult = zones.moveToZone(

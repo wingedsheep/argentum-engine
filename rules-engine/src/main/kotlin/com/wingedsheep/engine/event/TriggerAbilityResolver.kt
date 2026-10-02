@@ -58,6 +58,11 @@ class TriggerAbilityResolver(
         state: GameState,
         statics: BattlefieldStaticsIndex = BattlefieldStaticsIndex.build(state, cardRegistry, predicateEvaluator = predicateEvaluator),
         textReplacement: TextReplacementComponent? = TextChanges.of(state, entityId),
+        /**
+         * The Aura/Equipment-granted triggered abilities to use instead of reading the live
+         * attachments — a departed permanent's, frozen on its exit snapshot ([LookBackGrants]).
+         */
+        attachmentGrants: List<TriggeredAbility>? = null,
     ): List<TriggeredAbility> {
         // First check the AbilityRegistry (for manually registered abilities)
         val registryAbilities = abilityRegistry.getTriggeredAbilities(entityId, cardDefinitionId)
@@ -92,7 +97,8 @@ class TriggerAbilityResolver(
         // The index includes every battlefield/soulbond provider this scan can use.
         val staticGrantedAbilities = if (statics.triggerGrantProviders.isEmpty()) emptyList()
             else getStaticGrantedFromProviders(entityId, state, statics.triggerGrantProviders)
-        val attachedGrantedAbilities = getAttachedGrantedTriggeredAbilities(entityId, state, statics)
+        val attachedGrantedAbilities = attachmentGrants
+            ?: getAttachedGrantedTriggeredAbilities(entityId, state, statics)
         // "This creature has '<triggered ability>' [as long as …]" — a Scope.Self GrantTriggeredAbility
         // on the permanent's own definition, optionally gated by a ConditionalStaticAbility.
         val selfGrantedAbilities =
@@ -411,9 +417,6 @@ class TriggerAbilityResolver(
         else ability.copy(id = AbilityId("granted_${granterId.value}_${ability.id.value}"))
 
     /**
-     * Triggered abilities granted by Auras/Equipment attached to this entity.
-     */
-    /**
      * The permanents whose `GrantTriggeredAbility` static granted the triggered ability [abilityId]
      * to [entityId], in attachment (reverse-index) order — empty when [abilityId] is one of
      * [entityId]'s own printed abilities. Populates
@@ -457,48 +460,8 @@ class TriggerAbilityResolver(
         entityId: EntityId,
         state: GameState,
         statics: BattlefieldStaticsIndex
-    ): List<TriggeredAbility> {
-        val result = mutableListOf<TriggeredAbility>()
-
-        for (permanentId in statics.attachmentsOn(entityId)) {
-            val container = state.getEntity(permanentId) ?: continue
-
-            val card = container.get<CardComponent>() ?: continue
-            if (container.has<FaceDownComponent>()) continue
-
-            val sourceDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
-            val allStaticAbilities = sourceDef.script.effectiveStaticAbilities(classLevel)
-
-            for (ability in allStaticAbilities) {
-                when (ability) {
-                    is GrantTriggeredAbility ->
-                        if (ability.filter.scope is Scope.AttachedTo) result.add(ability.ability)
-
-                    // "As long as enchanted permanent is X, it has '<triggered ability>'" —
-                    // a conditional grant (e.g. Essence Leak). Only contribute the granted ability
-                    // while the gating condition holds, evaluated with the Aura as the source so
-                    // EnchantedPermanentMatches resolves the attached permanent.
-                    is ConditionalStaticAbility -> {
-                        val grant = ability.ability as? GrantTriggeredAbility ?: continue
-                        if (grant.filter.scope !is Scope.AttachedTo) continue
-                        val controllerId = state.projectedState.getController(permanentId) ?: continue
-                        val context = EffectContext(
-                            sourceId = permanentId,
-                            controllerId = controllerId,
-                        )
-                        if (conditionEvaluator.evaluate(state, ability.condition, context)) {
-                            result.add(grant.ability)
-                        }
-                    }
-
-                    else -> {}
-                }
-            }
-        }
-
-        return result
-    }
+    ): List<TriggeredAbility> =
+        AttachmentGrantedTriggers.of(state, statics.attachmentsOn(entityId), cardRegistry, conditionEvaluator)
 
     /**
      * Triggered abilities a permanent grants to *itself* through a [Scope.Self]
@@ -552,10 +515,11 @@ class TriggerAbilityResolver(
     }
 
     /**
-     * The departed permanent's own triggered abilities, plus the conditional self-grants frozen on
-     * its exit snapshot ([ConditionalSelfGrants]) — the ability set a dies / leaves-the-battlefield
-     * trigger looks back to (CR 603.10a). The live read can't supply those: the permanent is gone
-     * and has no controller to evaluate the condition against.
+     * The departed permanent's own triggered abilities, plus the grants frozen on its exit snapshot
+     * ([LookBackGrants]) — its conditional self-grants and the triggered abilities its Auras and
+     * Equipment granted it — the ability set a dies / leaves-the-battlefield trigger looks back to
+     * (CR 603.10a). The live read can't supply those: the permanent is gone and has no controller to
+     * evaluate a condition against, and its attachments may have left or changed by now.
      */
     fun getDepartedTriggeredAbilities(
         event: com.wingedsheep.engine.core.ZoneChangeEvent,
@@ -566,9 +530,13 @@ class TriggerAbilityResolver(
         if (event.lastKnown?.lostAllAbilities == true || event.lastKnown?.wasFaceDown == true) return emptyList()
         val currentCopyAbilityIds = state.getEntity(event.entityId)?.get<CardComponent>()
             ?.copyTriggeredAbilities.orEmpty().mapTo(HashSet()) { it.id }
-        val live = getTriggeredAbilities(event.entityId, cardDefinitionId, state, statics, event.lastKnown?.textChanges)
-            .filterNot { it.id in currentCopyAbilityIds } + event.lastKnown?.copyTriggeredAbilities.orEmpty()
-        val frozenIds = event.lastKnown?.conditionalSelfGrantIds ?: return live
+        val live = getTriggeredAbilities(
+            event.entityId, cardDefinitionId, state, statics, event.lastKnown?.textChanges,
+            // A snapshot is the look-back: an attachment still on the battlefield now may not
+            // have been there as the permanent left, and one that left with it is gone.
+            attachmentGrants = event.lastKnown?.let { it.lookBackGrants?.attachmentGrantedTriggers.orEmpty() },
+        ).filterNot { it.id in currentCopyAbilityIds } + event.lastKnown?.copyTriggeredAbilities.orEmpty()
+        val frozenIds = event.lastKnown?.lookBackGrants?.conditionalSelfGrantIds ?: return live
         val liveIds = live.mapTo(HashSet()) { it.id }
         return live + ConditionalSelfGrants.byIds(cardDefinitionId, frozenIds, cardRegistry)
             .filter { it.id !in liveIds }

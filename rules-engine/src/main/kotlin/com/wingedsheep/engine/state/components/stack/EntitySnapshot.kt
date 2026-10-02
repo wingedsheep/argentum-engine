@@ -215,14 +215,15 @@ data class EntitySnapshot(
     /** Copy-added rules text, frozen before the original identity is restored on departure. */
     val copyTriggeredAbilities: List<com.wingedsheep.sdk.scripting.TriggeredAbility> = emptyList(),
     /**
-     * The "as long as …" self-granted triggered abilities ([com.wingedsheep.sdk.scripting.ConditionalStaticAbility]
-     * around a `Scope.Self` [com.wingedsheep.sdk.scripting.GrantTriggeredAbility]) whose condition held
-     * immediately before the permanent left. Leaves-the-battlefield abilities look back in time
-     * (CR 603.10a), and by trigger time the permanent has no controller to evaluate the condition
-     * against — Oculus Whelp's granted "when this creature dies" is read from here. See
-     * [com.wingedsheep.engine.event.ConditionalSelfGrants].
+     * The granted triggered abilities this permanent had immediately before it left that can't be
+     * read back afterwards: its "as long as …" self-grants whose condition held, and the triggered
+     * abilities its Auras / Equipment granted it. Leaves-the-battlefield abilities look back in time
+     * (CR 603.10a) — Oculus Whelp's conditional "when this creature dies" and Infernal Scarring's
+     * granted one are read from here. See [com.wingedsheep.engine.event.LookBackGrants].
      */
-    val conditionalSelfGrantIds: List<com.wingedsheep.sdk.scripting.AbilityId> = emptyList(),
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val lookBackGrants: com.wingedsheep.engine.event.LookBackGrants? = null,
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val objectRef: com.wingedsheep.engine.state.ObjectRef? = null,

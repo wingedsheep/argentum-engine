@@ -66,7 +66,7 @@ import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EntersTapped
-import com.wingedsheep.engine.event.ConditionalSelfGrants
+import com.wingedsheep.engine.event.LookBackGrants
 import com.wingedsheep.engine.state.components.battlefield.withCastChoice
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
@@ -120,14 +120,14 @@ data class ZoneEntryOptions(
      */
     val libraryMovePublic: Boolean = false,
     /**
-     * The conditional self-granted triggered abilities ([ConditionalSelfGrants]) this permanent had
-     * immediately before the event this move is part of, frozen by a caller that moves several
-     * objects as one simultaneous event (a board wipe, a state-based-action pass) one at a time.
-     * Leaves-the-battlefield abilities look back in time to before the event (CR 603.10a), so a
-     * condition over *other* objects — "as long as you control a transformed permanent" — must not
-     * see the partly-moved state. Null for a lone move: the pre-move state already is the look-back.
+     * The look-back grants ([LookBackGrants]) this permanent had immediately before the event this
+     * move is part of, frozen by a caller that moves several objects as one simultaneous event (a
+     * board wipe, a state-based-action pass) one at a time. Leaves-the-battlefield abilities look
+     * back in time to before the event (CR 603.10a), so a condition over *other* objects — "as long
+     * as you control a transformed permanent" — and an Aura that moved first must not be read off
+     * the partly-moved state. Null for a lone move: the pre-move state already is the look-back.
      */
-    val conditionalSelfGrantIds: List<com.wingedsheep.sdk.scripting.AbilityId>? = null
+    val lookBackGrants: LookBackGrants? = null
 )
 
 /**
@@ -490,8 +490,9 @@ class ZoneTransitionService(
                 damageSources = lastKnownDamageSources,
                 wasFaceDown = lastKnownWasFaceDown,
                 copyTriggeredAbilities = com.wingedsheep.engine.state.components.stack.captureCopyTriggeredAbilities(state, entityId),
-                conditionalSelfGrantIds = options.conditionalSelfGrantIds
-                    ?: ConditionalSelfGrants.activeIds(state, entityId, cardRegistry, conditionEvaluator),
+                lookBackGrants = (options.lookBackGrants
+                    ?: LookBackGrants.of(state, entityId, cardRegistry, conditionEvaluator))
+                    .takeUnless { it.isEmpty },
             )
         } else null
 
@@ -1231,8 +1232,8 @@ class ZoneTransitionService(
         var currentState = state
         val allEvents = mutableListOf<EngineGameEvent>()
         val transitions = mutableListOf<ZoneTransitionOutcome>()
-        // One simultaneous event: freeze every look-back self-grant before the first move.
-        val lookBack = ConditionalSelfGrants.frozen(state, entityIds, cardRegistry, conditionEvaluator)
+        // One simultaneous event: freeze every look-back grant before the first move.
+        val lookBack = LookBackGrants.frozen(state, entityIds, cardRegistry, conditionEvaluator)
 
         for (entityId in entityIds) {
             // For batch library moves with Shuffled placement, don't shuffle per-card
@@ -1248,7 +1249,7 @@ class ZoneTransitionService(
             val result = moveToZone(
                 currentState, entityId, destinationZone,
                 perCardOptions.copy(
-                    conditionalSelfGrantIds = perCardOptions.conditionalSelfGrantIds ?: lookBack[entityId]
+                    lookBackGrants = perCardOptions.lookBackGrants ?: lookBack[entityId] ?: LookBackGrants()
                 )
             )
             currentState = result.state

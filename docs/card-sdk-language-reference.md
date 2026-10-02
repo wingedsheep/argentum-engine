@@ -8114,6 +8114,13 @@ staticAbility {
   colour, type, counter or state predicate gates the grant, and a creature turned blue mid-turn gains it. Battlefield
   grants (this and `GrantWard`) share that one evaluation; `Scope.AttachedTo` and `Scope.SoulbondPair` are their
   own membership tests (see Tandem Lookout below).
+  On the default attached scope it is the Aura/Equipment shape — Infernal Scarring's "Enchanted creature … has 'When
+  this creature dies, draw a card'", Indebted Spirit's granted afterlife. A granted **dies / leaves-the-battlefield**
+  trigger looks back in time (CR 603.10a), and by trigger time the attachment is often gone — put into the graveyard
+  by the state-based action after its host's, destroyed in the same wipe, or (bestow) a creature again — so the
+  engine freezes the host's attachment-granted triggers onto its exit snapshot (`LookBackGrants.attachmentGrantedTriggers`,
+  taken before the whole batch moves, as for the conditional self-grants below) and the dies / leaves detectors read
+  them from there, one per granting attachment.
 - `GrantWard(cost, filter = attachedCreature())` — "[filter] have ward [cost]" (CR 702.21). The static
   counterpart of the printed `KeywordAbility.Ward`: use this one to hand ward to *other* permanents —
   an Aura/Equipment's "enchanted/equipped creature has ward {N}" (Lavaspur Boots, the Royal Role token)
@@ -11133,11 +11140,11 @@ composite abilities).
   transformed permanent, this creature has 'When this creature dies, draw a card'" (Oculus Whelp):
   `ConditionalStaticAbility(GrantTriggeredAbility(grantedTriggeredAbility { trigger = Triggers.self.dies(); … },
   GroupFilter.source()), Conditions.YouControl(…))`. Such a trigger looks back in time (CR 603.10a), so the
-  engine freezes the condition onto the permanent's exit snapshot (`EntitySnapshot.conditionalSelfGrantIds`,
-  `ConditionalSelfGrants`) rather than reading it live once the permanent is gone. When several objects leave as
-  one event, the freeze is taken before the whole batch moves — a state-based-action pass, a `MoveCollection`
-  batch (`Effects.DestroyAll`), `ZoneTransitionService.moveToZoneBatch`, and a `ForEachInGroup` loop (via
-  `EffectContext.lookBackSelfGrants`) — so the Whelp still draws when the transformed permanent dies beside it.
+  engine freezes the condition onto the permanent's exit snapshot (`EntitySnapshot.lookBackGrants`,
+  `LookBackGrants` / `ConditionalSelfGrants`) rather than reading it live once the permanent is gone. When several
+  objects leave as one event, the freeze is taken before the whole batch moves — a state-based-action pass, a
+  `MoveCollection` batch (`Effects.DestroyAll`), `ZoneTransitionService.moveToZoneBatch`, and a `ForEachInGroup`
+  loop (via `EffectContext.lookBackGrants`) — so the Whelp still draws when the transformed permanent dies beside it.
 - `Increment` — "Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power
   or toughness, put a +1/+1 counter on this creature." (Secrets of Strixhaven). Display-only; wire the behavior with
   the `card { increment() }` builder helper, which adds the `KeywordAbility.Increment` display marker (surfacing

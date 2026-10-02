@@ -24,7 +24,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.Scope
  * and has no controller to evaluate against, and anything that left alongside it (Oculus Whelp's
  * transformed permanent dying in the same wipe) has left too. [ZoneTransitionService] therefore
  * freezes [activeIds] onto the exit snapshot — taken before the whole batch moves when several
- * objects leave as one event ([frozen], carried in as `ZoneEntryOptions.conditionalSelfGrantIds`) —
+ * objects leave as one event ([LookBackGrants.frozen], carried in as `ZoneEntryOptions.lookBackGrants`) —
  * and the dies / leaves detectors read the abilities back with [byIds].
  */
 internal object ConditionalSelfGrants {
@@ -58,22 +58,6 @@ internal object ConditionalSelfGrants {
         cardRegistry: CardRegistry,
         conditionEvaluator: ConditionEvaluator,
     ): List<AbilityId> = active(state, entityId, cardRegistry, conditionEvaluator).map { it.id }
-
-    /**
-     * [activeIds] for each of [entityIds], taken from one [state] before any of them moves — the
-     * look-back for a batch that leaves as one simultaneous event. Entities with none are omitted.
-     */
-    fun frozen(
-        state: GameState,
-        entityIds: Collection<com.wingedsheep.sdk.model.EntityId>,
-        cardRegistry: CardRegistry,
-        conditionEvaluator: ConditionEvaluator,
-    ): Map<com.wingedsheep.sdk.model.EntityId, List<AbilityId>> = buildMap {
-        for (id in entityIds) {
-            val ids = activeIds(state, id, cardRegistry, conditionEvaluator)
-            if (ids.isNotEmpty()) put(id, ids)
-        }
-    }
 
     /** The conditional self-granted triggered abilities of [cardDefinitionId] named by [ids]. */
     fun byIds(cardDefinitionId: String, ids: List<AbilityId>, cardRegistry: CardRegistry): List<TriggeredAbility> {

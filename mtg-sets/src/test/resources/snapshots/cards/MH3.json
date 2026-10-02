@@ -3245,6 +3245,122 @@
     "layout": "MODAL_DFC"
 }
 
+// Indebted Spirit
+{
+    "name": "Indebted Spirit",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment Creature — Spirit",
+    "oracleText": "Bestow {2}{W} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nAfterlife 1 (When this permanent is put into a graveyard from the battlefield, create a 1/1 white and black Spirit creature token with flying.)\nEnchanted creature gets +1/+1 and has afterlife 1.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{2}{W}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Indebted Spirit:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef77c8eb-aa24-46d5-8036-6651c7602383.jpg?1783911111"
+                },
+                "descriptionOverride": "Afterlife 1 (When this permanent is put into a graveyard from the battlefield, create a 1/1 white and black Spirit creature token with flying.)"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Indebted Spirit:2",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "WHITE",
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Spirit"
+                        ],
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef77c8eb-aa24-46d5-8036-6651c7602383.jpg?1783911111"
+                    },
+                    "descriptionOverride": "Afterlife 1 (When this permanent is put into a graveyard from the battlefield, create a 1/1 white and black Spirit creature token with flying.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "UNCOMMON",
+        "artist": "L.A. Draws",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bfdbef00-bc1b-4dd6-aef5-aeb5ce454344.jpg?1783911300",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If Indebted Spirit is put into a graveyard from the battlefield while it's an Aura, its afterlife ability will still trigger."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a bestowed Indebted Spirit and the creature it's attached to are put into a graveyard from the battlefield at the same time, each of their afterlife abilities will trigger."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Inventor's Axe
 {
     "name": "Inventor's Axe",

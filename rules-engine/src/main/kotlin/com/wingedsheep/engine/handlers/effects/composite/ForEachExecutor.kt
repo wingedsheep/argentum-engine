@@ -79,15 +79,15 @@ class ForEachExecutor(
             }
         }
 
-        // A group loop is one simultaneous event: freeze each member's conditional self-grants
+        // A group loop is one simultaneous event: freeze each member's look-back grants
         // before the first iteration moves anything, for its leaves-the-battlefield look-back
         // (CR 603.10a). Carried on the outer context, so it survives a mid-loop pause.
         val loopContext = if (space is IterationSpace.Group && cardRegistry != null) {
-            val frozen = com.wingedsheep.engine.event.ConditionalSelfGrants.frozen(
+            val frozen = com.wingedsheep.engine.event.LookBackGrants.frozen(
                 state, items.mapNotNull { (it as? ForEachItem.OfEntity)?.entityId },
                 cardRegistry, predicateEvaluator.conditions
             )
-            if (frozen.isEmpty()) context else context.copy(lookBackSelfGrants = context.lookBackSelfGrants + frozen)
+            if (frozen.isEmpty()) context else context.copy(lookBackGrants = context.lookBackGrants + frozen)
         } else context
 
         return processItems(currentState, effect, items, loopContext)

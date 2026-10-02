@@ -838,8 +838,8 @@ class MoveCollectionExecutor(
         }
 
         // Leaves-the-battlefield abilities look back to before this one simultaneous event
-        // (CR 603.10a): freeze each card's conditional self-grants before the first card moves.
-        val lookBack = com.wingedsheep.engine.event.ConditionalSelfGrants.frozen(
+        // (CR 603.10a): freeze each card's look-back grants before the first card moves.
+        val lookBack = com.wingedsheep.engine.event.LookBackGrants.frozen(
             state, cards, cardRegistry, predicateEvaluator.conditions
         )
 
@@ -970,7 +970,7 @@ class MoveCollectionExecutor(
                 libraryMoverId = context.controllerId,
                 libraryMovePublic = revealed,
                 // The whole collection moves as one event (CR 603.10a look-back).
-                conditionalSelfGrantIds = lookBack[cardId] ?: emptyList()
+                lookBackGrants = lookBack[cardId] ?: com.wingedsheep.engine.event.LookBackGrants()
             )
 
             // Delegate to ZoneTransitionService for full cleanup + entry
