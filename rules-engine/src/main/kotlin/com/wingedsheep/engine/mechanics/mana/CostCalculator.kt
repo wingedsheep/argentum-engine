@@ -782,8 +782,8 @@ class CostCalculator(
     /**
      * One battlefield permanent's value for [property]. Power/toughness read projected state
      * (CR 613) and fall back to the printed base when a permanent has no projected P/T; base
-     * power/toughness read the printed base directly; mana value comes from
-     * `CardDefinition.manaCost.cmc` (X-costs contribute X = 0 per CR 202.3b on the battlefield).
+     * power/toughness read the printed base directly; mana value is the permanent's own
+     * [CardComponent.manaValue], so copy and prototype values count.
      */
     private fun numericProperty(
         projectedState: ProjectedState,
@@ -798,7 +798,7 @@ class CostCalculator(
             projectedState.getToughness(entityId) ?: baseCharacteristic(card.baseStats?.toughness)
         EntityNumericProperty.BasePower -> baseCharacteristic(card.baseStats?.power)
         EntityNumericProperty.BaseToughness -> baseCharacteristic(card.baseStats?.toughness)
-        EntityNumericProperty.ManaValue -> cardDef.manaCost.cmc
+        EntityNumericProperty.ManaValue -> card.manaValue
         else -> 0
     }
 

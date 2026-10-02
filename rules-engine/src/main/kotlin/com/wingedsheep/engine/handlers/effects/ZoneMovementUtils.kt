@@ -444,7 +444,9 @@ object ZoneMovementUtils {
         // "As this enters, it becomes …" choices were baked into the card's copiable values; the
         // card that leaves is its printed self again (CR 400.7). Runs after the copy revert: when
         // both snapshots exist, this one is the older.
-        return com.wingedsheep.engine.state.components.identity.EntryCharacteristicsBaking.unbake(container)
+        val unbaked = com.wingedsheep.engine.state.components.identity.EntryCharacteristicsBaking.unbake(container)
+        // A prototyped permanent is its normal-sized card again off the battlefield (CR 718.4).
+        return com.wingedsheep.engine.mechanics.PrototypeCasts.restore(unbaked)
             // Identity
             .without<ControllerComponent>()
             .without<TextReplacementComponent>()

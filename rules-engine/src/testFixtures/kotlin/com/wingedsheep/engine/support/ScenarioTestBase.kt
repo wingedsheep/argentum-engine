@@ -802,6 +802,15 @@ abstract class ScenarioTestBase : FunSpec() {
             )
         }
 
+        /** Cast a prototype card from hand prototyped (CR 718.3). */
+        fun castSpellPrototyped(playerNumber: Int, spellName: String): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val cardId = state.getHand(playerId).find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+            return execute(CastSpell(playerId, cardId, castPrototyped = true))
+        }
+
         /**
          * Cast a spell for its Cleave cost (CR 702.148), optionally targeting a permanent. Cleave
          * is an alternative cost, so this drives [CastSpell.useAlternativeCost] gated on

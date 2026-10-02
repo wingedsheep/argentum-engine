@@ -127,7 +127,7 @@ class LibraryAndZoneContinuationResumer(
         for (cardId in orderedCards) {
             val currentZone = newState.zones.entries.firstOrNull { cardId in it.value }?.key
             if (currentZone != null) newState = newState.removeFromZone(currentZone, cardId)
-            if (cardId in newState.stack) newState = newState.removeFromStack(cardId)
+            if (cardId in newState.stack) newState = com.wingedsheep.engine.mechanics.CastCharacteristics.end(newState.removeFromStack(cardId), cardId)
         }
 
         // Positional entry distinguishes real arrivals from same-library ordering.
@@ -849,7 +849,7 @@ class LibraryAndZoneContinuationResumer(
             ?: return checkForMore(state, emptyList())
         val spellName = spellContainer.get<CardComponent>()?.name ?: "Unknown"
 
-        var newState = state.removeFromStack(spellId)
+        var newState = com.wingedsheep.engine.mechanics.CastCharacteristics.end(state.removeFromStack(spellId), spellId)
         newState = newState.updateEntity(spellId) { c ->
             c.without<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
                 .without<com.wingedsheep.engine.state.components.identity.TextReplacementComponent>()

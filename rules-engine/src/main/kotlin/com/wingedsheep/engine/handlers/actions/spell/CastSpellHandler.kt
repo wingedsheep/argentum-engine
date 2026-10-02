@@ -218,7 +218,7 @@ class CastSpellHandler(
         // An unfinished cost/target picker still presents a card in its original zone. Rebuild
         // the announcement when resumed; cancellation must not leave Aura characteristics behind.
         return if (action.cardId !in result.state.stack && action.cardId !in result.state.getBattlefield()) {
-            result.copy(state = com.wingedsheep.engine.mechanics.BestowCasts.end(result.state, action.cardId))
+            result.copy(state = com.wingedsheep.engine.mechanics.CastCharacteristics.end(result.state, action.cardId))
         } else result
     }
 
@@ -250,10 +250,10 @@ class CastSpellHandler(
     }
 
     private fun executeAnnounced(inputState: GameState, action: CastSpell, lockedCost: ManaCost? = null): ExecutionResult {
-        val state = com.wingedsheep.engine.mechanics.BestowCasts.announce(inputState, action, cardRegistry)
+        val state = com.wingedsheep.engine.mechanics.CastCharacteristics.announce(inputState, action, cardRegistry)
         val cardComponent = state.getEntity(action.cardId)?.get<CardComponent>()
             ?: return ExecutionResult.error(state, "Card not found")
-        val cardDef = com.wingedsheep.engine.mechanics.BestowCasts.definitionForCast(
+        val cardDef = com.wingedsheep.engine.mechanics.CastCharacteristics.definitionForCast(
             cardRegistry.getCard(cardComponent.cardDefinitionId), action
         )
 

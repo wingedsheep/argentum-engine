@@ -887,6 +887,22 @@ sealed interface KeywordAbility {
         override val description: String = "Bestow $cost" + (additionalCost?.let { ", ${it.description}" } ?: "")
     }
 
+    // =========================================================================
+    // Prototype
+
+    /**
+     * Prototype [cost] — [power]/[toughness] (CR 702.160, 718). The caster may cast the card
+     * "prototyped": the spell, and the permanent it becomes, has this mana cost (and so its colors
+     * and mana value) and this power and toughness instead of the printed ones. Every other
+     * characteristic is unchanged. Prototyping is not an alternative cost, so it combines with one.
+     */
+    @Serializable
+    @SerialName("Prototype")
+    data class Prototype(val cost: ManaCost, val power: Int, val toughness: Int) : KeywordAbility {
+        override val keyword: Keyword = Keyword.PROTOTYPE
+        override val description: String = "Prototype $cost — $power/$toughness"
+    }
+
     // Evoke
     // =========================================================================
 
@@ -1503,6 +1519,10 @@ sealed interface KeywordAbility {
          */
         fun bestow(cost: String, additionalCost: AdditionalCost? = null): KeywordAbility =
             Bestow(ManaCost.parse(cost), additionalCost)
+
+        /** Create Prototype with its alternative mana cost and size: `prototype("{3}{R}", 2, 2)`. */
+        fun prototype(cost: String, power: Int, toughness: Int): KeywordAbility =
+            Prototype(ManaCost.parse(cost), power, toughness)
 
         /** Create Evoke with mana cost from string. */
         fun evoke(cost: String): KeywordAbility = Evoke(ManaCost.parse(cost))

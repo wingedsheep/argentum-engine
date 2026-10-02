@@ -954,6 +954,30 @@ control" is a bare subtype noun and so a *permanent* (CR 109.2); the card now ta
 `PermanentYouControl.withSubtype(PIRATE)` and only its golden moved. Dwarven Mattock carries the
 same shape but does not read whole yet, so the differential does not reach it.
 
+## The instant-or-sorcery card band
+
+The fifteenth loop band, tail key `or sorcery card …`: "Return target **instant or sorcery card**
+from your graveyard to your hand", "Exile an instant or sorcery card from your graveyard" — the type
+phrase every spellslinger recursion and graveyard cost prints. **76 lines**; the probe (`instant or
+sorcery card` → `creature card`) finished 22 whole cards over the corpus. It delivered **11
+hand-written cards read whole (7,395 → 7,406)**.
+
+### One row, before its prefix
+
+`GameObjectFilter.InstantOrSorcery` is a `CardPredicate.Or` — the "artifact or enchantment" shape —
+so it is one more `TypeNoun` row, and that one row serves every position the cascade is instantiated
+for. It sits before the bare "instant" row, the order `Stack` already keeps for "instant or sorcery
+spell". It carries no plural: Oracle's plural is "instant and sorcery cards", which card position
+spells from the singular type phrase, and a bare "instants and sorceries" is not a group noun the
+cards use.
+
+### What the differential found
+
+Differential **7,013 compared / 62 divergent → 7,023 / 62**. One new divergence, a **card bug,
+fixed**: Postmortem Professor's "Return this card **from your graveyard** to the battlefield" used
+`Effects.PutOntoBattlefield`, dropping the graveyard guard; it now uses
+`Effects.PutOntoBattlefieldFromGraveyard`, and only its golden moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

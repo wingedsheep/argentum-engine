@@ -69,6 +69,12 @@ data class CastSpell(
     val additionalCostPayment: AdditionalCostPayment? = null,
     val castFaceDown: Boolean = false,
     /**
+     * Cast the card prototyped (CR 718.3): the spell uses the card's
+     * [com.wingedsheep.sdk.scripting.KeywordAbility.Prototype] mana cost, colors, power and
+     * toughness. Not an alternative cost, so it combines with [useAlternativeCost] or a free cast.
+     */
+    val castPrototyped: Boolean = false,
+    /**
      * The optional-additional-cost mechanic this cast declares (CR 601.2b), or `null` when the
      * spell is cast without it — the single rail shared by every
      * [com.wingedsheep.sdk.scripting.KeywordAbility.OptionalAdditionalCost] keyword: kicker,

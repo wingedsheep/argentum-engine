@@ -274,6 +274,8 @@ enum class Keyword(val displayName: String) {
     DISTURB("Disturb"),
     EVOKE("Evoke"),
     BESTOW("Bestow"),
+    /** Prototype (CR 702.160) — see [com.wingedsheep.sdk.scripting.KeywordAbility.Prototype]. */
+    PROTOTYPE("Prototype"),
 
     /**
      * Sneak [cost] (CR 702.190, Teenage Mutant Ninja Turtles).

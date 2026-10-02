@@ -824,6 +824,8 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
 - `evoke` — pay evoke cost; creature is sacrificed at ETB.
 - `keywordAbility(KeywordAbility.bestow(cost, additionalCost = null))` — cast as an Aura for the
   bestow price, or normally as a creature. See the parameterized keyword entry below.
+- `keywordAbility(KeywordAbility.prototype(cost, power, toughness))` — cast prototyped with a
+  smaller cost and size, or normally. Not an alternative cost. See the parameterized keyword entry below.
 - `morph` — cast face-down for `{3}`-ish.
 - `disguise` — cast face-down for `{3}` as a 2/2 with ward {2} (CR 702.168a); same sorcery-speed
   timing and the same `MorphCastEnumerator` as morph.
@@ -10774,6 +10776,17 @@ composite abilities).
   with `Conditions.SourceMatches(GameObjectFilter.Creature)` and author the enchanted-creature
   branch separately. Intrinsic keywords remain on the Aura unless another effect removes them;
   granting those keywords to the enchanted creature still needs an explicit static ability.
+- `Prototype(cost, power, toughness)` (`KeywordAbility.prototype("{3}{R}", 2, 2)`, Frogmyr
+  Enforcer) — CR 702.160 / 718. The caster may cast the card *prototyped* (`CastSpell.castPrototyped`):
+  the spell and the permanent it becomes have the prototype mana cost — and therefore its colors and
+  mana value — and the prototype power and toughness; name, types, and abilities are unchanged.
+  Prototyping is **not** an alternative cost, so the handler combines it with one or with a free cast,
+  and cost reductions (affinity) and casting restrictions see the prototyped characteristics. The
+  values are written onto the card's `CardComponent`, so they are copiable values: a copy of a
+  prototyped spell or permanent is prototyped too (CR 718.3c–d). In every other zone the card has
+  only its normal characteristics (CR 718.4) — leaving the stack or the battlefield restores them
+  (`PrototypeCasts.end` / the battlefield-exit strip). The prototyped cast is offered for the zones
+  bestow is (hand, plus ordinary cast permissions), not alongside a free-cast permission.
 - `Affinity(filter)` — cost reduction per matching permanent.
 - `Amplify(n)` — ETB reveal-creatures-for-counters.
 - `Devour(multiplier, sacrificeFilter, variant)` — "As this enters, you may sacrifice any number of [sacrificeFilter]. It enters with [multiplier] × that many +1/+1 counters." Plain Devour uses `sacrificeFilter = Creature` and `variant = ""`; the Edge of Eternities variant "Devour land N" uses `KeywordAbility.devourLand(n)` (`sacrificeFilter = Land`, `variant = "land"`). The keyword surfaces the rules text; pair with [`EntersWithDevour`](#15-replacement-effects) for the mechanical behavior.

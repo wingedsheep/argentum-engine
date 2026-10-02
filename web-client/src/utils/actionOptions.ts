@@ -407,9 +407,10 @@ export function buildActionOptions(
     // specific face (a prepare-spell copy in exile, an adventure-only permission) is named by the
     // server after that face: "Cast Bloodline Recollector" would hide that it casts Ancestral Craving.
     const castFaceIndex = (castAction.action as { faceIndex?: number | null }).faceIndex
+    const castPrototyped = (castAction.action as { castPrototyped?: boolean }).castPrototyped === true
     options.push({
       key: 'cast',
-      label: castAction.actionType === 'CastWithAlternativeCost' || castFaceIndex != null
+      label: castAction.actionType === 'CastWithAlternativeCost' || castFaceIndex != null || castPrototyped
         ? castAction.description
         : `Cast ${cardInfo.name}`,
       ...costFieldsFor(castAction, cardInfo.manaCost),

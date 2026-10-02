@@ -206,6 +206,7 @@ internal class SpellResolver(
         newState = newState.addToZone(destZoneKey, spellId)
         // CR 712.8a — a fizzled card cast transformed is front face up again once off the stack.
         newState = restoreDfcFrontFace(newState, cardRegistry, spellId)
+        newState = com.wingedsheep.engine.mechanics.PrototypeCasts.end(newState, spellId)
         val destinationObject = newState.objectRef(spellId)
         // A card-intrinsic redirect into the library shuffles the card in (Progenitus).
         if (destZone == Zone.LIBRARY && fizzleRedirect.shuffleIntoLibrary) {
