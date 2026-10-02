@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
 import com.wingedsheep.engine.core.EffectResult
+import com.wingedsheep.engine.core.BlocksCreatedEvent
+import com.wingedsheep.engine.mechanics.combat.BlockingRelationships
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.combat.rules.BlockCheckContext
@@ -9,6 +11,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.SwapBlockingAssignmentsEffect
 import kotlin.reflect.KClass
@@ -77,11 +80,36 @@ class SwapBlockingAssignmentsExecutor(
         if (!canBlockAll(state, first, secondBlocking, firstController)) return EffectResult.success(state)
         if (!canBlockAll(state, second, firstBlocking, secondController)) return EffectResult.success(state)
 
-        val swapped = state
+        var swapped = state
             .updateEntity(first) { it.with(BlockingComponent(secondBlocking)) }
             .updateEntity(second) { it.with(BlockingComponent(firstBlocking)) }
-
-        return EffectResult.success(swapped)
+        // Update the attacker side too, preserving blocked status throughout the atomic swap.
+        for (attacker in (firstBlocking + secondBlocking).distinct()) {
+            swapped = swapped.updateEntity(attacker) { c ->
+                val existing = c.get<com.wingedsheep.engine.state.components.combat.BlockedComponent>()?.blockerIds.orEmpty()
+                val replacements = buildList {
+                    if (attacker in secondBlocking) add(first)
+                    if (attacker in firstBlocking) add(second)
+                }
+                c.with(com.wingedsheep.engine.state.components.combat.BlockedComponent(
+                    (existing.filter { it != first && it != second } + replacements).distinct()
+                ))
+            }
+        }
+        val added = buildMap {
+            val newFirst = secondBlocking.filter { it !in firstBlocking }
+            val newSecond = firstBlocking.filter { it !in secondBlocking }
+            if (newFirst.isNotEmpty()) put(first, newFirst)
+            if (newSecond.isNotEmpty()) put(second, newSecond)
+        }
+        if (added.isEmpty()) return EffectResult.success(swapped)
+        swapped = BlockingRelationships.establish(swapped, added)
+        val event = BlocksCreatedEvent(added, emptySet(), emptySet(),
+            mapOf(first to firstBlocking.size, second to secondBlocking.size),
+            mapOf(first to secondBlocking.size, second to firstBlocking.size),
+            added.keys.associateWith { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" },
+            added.values.flatten().distinct().associateWith { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" })
+        return EffectResult.success(swapped, listOf(event))
     }
 
     /** True if [blockerId] could legally block every attacker in [attackerIds]. */

@@ -1070,10 +1070,17 @@ data class AttackersDeclaredEvent(
 @Serializable
 @SerialName("BlockersDeclaredEvent")
 data class BlockersDeclaredEvent(
-    val blockers: Map<EntityId, List<EntityId>>,  // blocker -> blocked attackers
-    val blockerNames: Map<EntityId, String> = emptyMap(),
-    val attackerNames: Map<EntityId, String> = emptyMap()
-) : GameEvent
+    override val blockers: Map<EntityId, List<EntityId>>,  // blocker -> blocked attackers
+    override val blockerNames: Map<EntityId, String> = emptyMap(),
+    override val attackerNames: Map<EntityId, String> = emptyMap()
+) : GameEvent, BlockingRelationshipsEvent {
+    override val newBlockers: Set<EntityId> get() = blockers.keys
+    @kotlinx.serialization.Transient
+    override val newlyBlockedAttackers: Set<EntityId> = blockers.values.flatten().toSet()
+    override val previousBlockedCounts: Map<EntityId, Int> get() = emptyMap()
+    @kotlinx.serialization.Transient
+    override val blockedCounts: Map<EntityId, Int> = blockers.mapValues { it.value.size }
+}
 
 /**
  * Player ordered blockers for damage assignment.
@@ -2308,3 +2315,31 @@ data object BlockerDeclarationPolicyChangedEvent : GameEvent
 @Serializable
 @SerialName("StaticAbilityGrantedEvent")
 data class StaticAbilityGrantedEvent(val entityId: EntityId) : GameEvent
+
+/** New pairings, with the two creature-level transitions kept distinct from new edges. */
+interface BlockingRelationshipsEvent {
+    val blockers: Map<EntityId, List<EntityId>>
+    val blockerNames: Map<EntityId, String>
+    val attackerNames: Map<EntityId, String>
+    val newBlockers: Set<EntityId>
+    val newlyBlockedAttackers: Set<EntityId>
+    val previousBlockedCounts: Map<EntityId, Int>
+    val blockedCounts: Map<EntityId, Int>
+}
+
+@Serializable
+@SerialName("BlocksCreatedEvent")
+data class BlocksCreatedEvent(
+    override val blockers: Map<EntityId, List<EntityId>>,
+    override val newBlockers: Set<EntityId>,
+    override val newlyBlockedAttackers: Set<EntityId>,
+    override val previousBlockedCounts: Map<EntityId, Int>,
+    override val blockedCounts: Map<EntityId, Int>,
+    override val blockerNames: Map<EntityId, String> = emptyMap(),
+    override val attackerNames: Map<EntityId, String> = emptyMap(),
+) : GameEvent, BlockingRelationshipsEvent
+
+/** Combat removal changes live relationships without undoing previously triggered abilities. */
+@Serializable
+@SerialName("RemovedFromCombatEvent")
+data class RemovedFromCombatEvent(val entityId: EntityId) : GameEvent

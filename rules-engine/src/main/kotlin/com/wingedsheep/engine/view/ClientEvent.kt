@@ -870,7 +870,7 @@ object ClientEventTransformer {
                     )
                 }
             }
-            is BlockersDeclaredEvent -> {
+            is BlockingRelationshipsEvent -> {
                 if (event.blockers.isEmpty()) return emptyList()
                 return event.blockers.flatMap { (blockerId, attackerIds) ->
                     val blockerName = event.blockerNames[blockerId] ?: "Creature"
@@ -1307,7 +1307,7 @@ object ClientEventTransformer {
 
             // AttackersDeclaredEvent and BlockersDeclaredEvent are handled in transformEventToList()
             is AttackersDeclaredEvent,
-            is BlockersDeclaredEvent -> null
+            is BlockersDeclaredEvent, is BlocksCreatedEvent, is RemovedFromCombatEvent -> null
 
 is PermanentsSacrificedEvent -> {
                 val names = event.permanentNames.ifEmpty { event.permanentIds.map { "Permanent" } }

@@ -261,7 +261,10 @@ class AffectsFilterResolverStatePredicateTest : FunSpec({
         assertCombatStatus(removed, attacker, blocked = true, unblocked = false)
         assertCombatStatus(removed.copy(step = Step.END_COMBAT), attacker, blocked = true, unblocked = false)
         assertCombatStatus(CombatRemovalHelper.removeFromCombat(removed, attacker), attacker, blocked = false, unblocked = false)
-        val explicitlyUnblocked = CombatRemovalHelper.removeFromCombat(state, blocker, unblockSoleBlockedAttackers = true)
+        val tracked = com.wingedsheep.engine.mechanics.combat.BlockingRelationships.establish(
+            state, mapOf(blocker to listOf(attacker))
+        )
+        val explicitlyUnblocked = CombatRemovalHelper.removeFromCombat(tracked, blocker, unblockSoleBlockedAttackers = true)
         assertCombatStatus(explicitlyUnblocked, attacker, blocked = false, unblocked = true)
     }
 

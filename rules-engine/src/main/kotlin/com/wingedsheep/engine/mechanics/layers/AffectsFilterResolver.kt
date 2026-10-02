@@ -470,6 +470,25 @@ internal class AffectsFilterResolver(
         // that player controls. Reads the *base* controller of the defender rather than a
         // projection — this resolver runs while the projection is being built, and a planeswalker's
         // controller is the fact being asked about, not a layered characteristic.
+        is StatePredicate.IsAttackingDefenderOf -> {
+            val referenceId = when (val reference = predicate.reference) {
+                com.wingedsheep.sdk.scripting.targets.EffectTarget.Self -> sourceId
+                com.wingedsheep.sdk.scripting.targets.EffectTarget.AffectedEntity -> entityId
+                com.wingedsheep.sdk.scripting.targets.EffectTarget.EnchantedCreature,
+                com.wingedsheep.sdk.scripting.targets.EffectTarget.EnchantedPermanent -> sourceId?.let {
+                    state.getEntity(it)?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()?.targetId
+                }
+                is com.wingedsheep.sdk.scripting.targets.EffectTarget.SpecificEntity -> reference.entityId
+                else -> null
+            }
+            val player = referenceId?.let { if (it in state.turnOrder) it else projectedValues[it]?.controllerId }
+            val defender = container.get<AttackingComponent>()?.defenderId
+            val defendingPlayer = defender?.let {
+                if (it in state.turnOrder) it
+                else com.wingedsheep.engine.mechanics.battle.Battles.protectorOf(state, it) ?: projectedValues[it]?.controllerId
+            }
+            player != null && defendingPlayer != null && player in state.sharedTurnTeam(defendingPlayer)
+        }
         StatePredicate.IsAttackingYouOrYourPlaneswalkers -> {
             val defenderId = container.get<AttackingComponent>()?.defenderId
             sourceController != null && defenderId != null && (

@@ -185,6 +185,15 @@ sealed interface StatePredicate {
      * the permanent was attacking, never whom. Fails closed when there's no controller context to
      * scope "you" against.
      */
+    /** Attacking the player, planeswalker, or battle defended by the reference's controller/team. */
+    @SerialName("IsAttackingDefenderOf")
+    @Serializable
+    data class IsAttackingDefenderOf(
+        val reference: com.wingedsheep.sdk.scripting.targets.EffectTarget.SingleEntity
+    ) : Entity {
+        override val description: String = "attacking the defender of ${reference.description}"
+    }
+
     @SerialName("IsAttackingYouOrYourPlaneswalkers")
     @Serializable
     data object IsAttackingYouOrYourPlaneswalkers : Entity {

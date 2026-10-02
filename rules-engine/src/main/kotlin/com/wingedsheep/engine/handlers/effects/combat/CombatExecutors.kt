@@ -26,6 +26,7 @@ class CombatExecutors(
         CantAttackExecutor(),
         CantBlockExecutor(),
         RemoveFromCombatExecutor(),
+        BecomeBlockingExecutor(),
         SwapBlockingAssignmentsExecutor(cardRegistry, predicateEvaluator = amountEvaluator.predicates),
         OpponentGuessesTopCardKindExecutor(),
         PlayerGuessesConditionExecutor(),

@@ -1845,6 +1845,27 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   for player targets it attaches the matching player protection component; for permanents it grants the
   keyword via a Layer-6 floating effect (like `GrantKeyword`).
 - `GrantExileOnLeave(target)` — "if it would leave, exile instead".
+- `BecomeBlocking(blocker, attacker)` — establish a block immediately during resolution. Both operands
+  are independent symbolic entity references; a noncreature, departed object, nonattacker, attacking
+  blocker, or blocker outside the attacker's defending side produces no block. Declaration restrictions,
+  requirements, evasion, tapping, capacity and blocking costs do not apply to an effect-created block.
+  Attacking bands acquire the same blocker. Emits new-pair and creature-transition facts so "blocks a
+  creature" can fire for a new partner while "blocks" / "becomes blocked" fire only for the corresponding
+  status transition. Combat and turn histories are recorded just as for declared blocks.
+  Optional non-targeting choice composes from `Pipeline` + `gather` + `chooseUpTo(1)`; False Orders
+  removes its target from combat first, then offers attackers defended by that target's controller.
+- `attackingDefenderOf(reference)` — filter attacking creatures by the defending side of a player or
+  permanent reference. Includes attacks on that player's planeswalkers and protected battles, and shared
+  turn teams; reads projected controllers and resolves current object identity. Resolution-time targets
+  and pipeline references work through the normal predicate context. A missing reference fails closed;
+  projection resolves only references meaningful in its context, and context-free historical/untap
+  evaluators cannot resolve this relation.
+- `RemoveFromCombat(target, unblockSoleBlockedAttackers = true)` — the explicit older-card exception to
+  retaining blocked status consults every blocker **object identity** that blocked an attacker this combat,
+  including departed blockers. Combat-end cleanup clears the history; repeated blocks by the same object
+  do not count as another blocker. Removal emits an internal notification and does not cancel queued triggers.
+  Swapping blocking assignments updates both attacker and blocker relationships, records the new pairings
+  in these histories, and emits only the corresponding new-pair triggers.
 - `GrantKeywordToAttackersBlockedBy(keyword, target)` — grant keyword to creatures this blocks.
 
 ### Counters

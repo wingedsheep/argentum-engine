@@ -878,3 +878,13 @@ data class RemoveSuspectedEffect(
 }
 
 
+
+/** Establish a blocking relationship during resolution, without declaring blockers. */
+@SerialName("BecomeBlocking")
+@Serializable
+data class BecomeBlockingEffect(
+    val blocker: EffectTarget,
+    val attacker: EffectTarget,
+) : Effect {
+    override val description: String = "${blocker.description} blocks ${attacker.description}"
+}

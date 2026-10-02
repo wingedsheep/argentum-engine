@@ -5920,6 +5920,10 @@ object Effects {
      *   Ydwen Efreet's "Creatures it was blocking that had become blocked by only this
      *   creature this combat become unblocked."
      */
+    /** Make a creature block an attacker immediately; declaration restrictions do not apply. */
+    fun BecomeBlocking(blocker: EffectTarget, attacker: EffectTarget): Effect =
+        com.wingedsheep.sdk.scripting.effects.BecomeBlockingEffect(blocker, attacker)
+
     fun RemoveFromCombat(target: EffectTarget, unblockSoleBlockedAttackers: Boolean = false): Effect =
         RemoveFromCombatEffect(target, unblockSoleBlockedAttackers)
 

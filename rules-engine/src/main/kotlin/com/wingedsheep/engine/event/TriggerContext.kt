@@ -427,7 +427,8 @@ data class TriggerContext(
                 is AttackersDeclaredEvent -> TriggerContext(
                     triggeringPlayerId = event.attackingPlayerId
                 )
-                is BlockersDeclaredEvent -> TriggerContext()
+                is BlockersDeclaredEvent, is com.wingedsheep.engine.core.BlocksCreatedEvent -> TriggerContext()
+                is com.wingedsheep.engine.core.RemovedFromCombatEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is TappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is UntappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is com.wingedsheep.engine.core.LandTappedForManaEvent -> TriggerContext(

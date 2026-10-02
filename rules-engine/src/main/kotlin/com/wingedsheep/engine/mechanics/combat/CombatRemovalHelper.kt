@@ -27,8 +27,8 @@ object CombatRemovalHelper {
      *   whose blocker list becomes empty after this removal have their [BlockedComponent]
      *   and damage-assignment components stripped — they become unblocked. Defaults to
      *   false (CR 509.1h: a blocked creature stays blocked even if all blockers leave
-     *   combat). Ydwen Efreet's oracle text explicitly overrides 509.1h and is the only
-     *   current use site.
+     *   combat). Some older cards explicitly override the usual blocked status and consult the
+     *   complete history of blocker object identities this combat.
      */
     fun removeFromCombat(
         state: GameState,
@@ -78,11 +78,9 @@ object CombatRemovalHelper {
                 val attackerEntity = newState.getEntity(attackerId) ?: continue
                 val blockedComponent = attackerEntity.get<BlockedComponent>() ?: continue
                 val updatedBlockerIds = blockedComponent.blockerIds - targetId
-                // "Sole blocker" is judged from the CURRENT blocker set (empty after removing this
-                // creature), not from who blocked it when combat began. Ydwen's oracle says "blocked by
-                // only this creature this combat"; we have no per-combat became-blocked-by history, so a
-                // contrived case (another blocker left earlier in the same combat) is treated as sole.
-                newState = if (unblockSoleBlockedAttackers && updatedBlockerIds.isEmpty()) {
+                val history = attackerEntity.get<com.wingedsheep.engine.state.components.combat.BlockersThisCombatComponent>()?.blockers
+                val wasOnlyBlocker = history == setOf(state.objectRef(targetId))
+                newState = if (unblockSoleBlockedAttackers && updatedBlockerIds.isEmpty() && wasOnlyBlocker) {
                     newState.updateEntity(attackerId) { container ->
                         container
                             .without<BlockedComponent>()

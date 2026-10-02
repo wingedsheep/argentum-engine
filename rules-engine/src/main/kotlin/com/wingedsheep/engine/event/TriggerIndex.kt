@@ -365,7 +365,7 @@ class TriggerIndex(
             is CardsDrawnEvent -> DRAW_LIST
             is CardRevealedFromDrawEvent -> CARD_REVEALED_LIST
             is AttackersDeclaredEvent -> ATTACKERS_DECLARED_LIST
-            is BlockersDeclaredEvent -> BLOCKERS_DECLARED_LIST
+            is BlockersDeclaredEvent, is com.wingedsheep.engine.core.BlocksCreatedEvent -> BLOCKERS_DECLARED_LIST
             is DamageDealtEvent -> DAMAGE_RECEIVED_LIST
             is SpellCastEvent -> SPELL_CAST_AND_ABILITY_LIST
             is com.wingedsheep.engine.core.LandPlayedEvent -> LAND_PLAYED_LIST
@@ -438,6 +438,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.AbilityFizzledEvent,
             is com.wingedsheep.engine.core.AbilityResolvedEvent,
             is com.wingedsheep.engine.core.AttackerOrderDeclaredEvent,
+            is com.wingedsheep.engine.core.RemovedFromCombatEvent,
             is com.wingedsheep.engine.core.BlockerOrderDeclaredEvent,
             is com.wingedsheep.engine.core.CardExiledWithMadnessEvent,
             is com.wingedsheep.engine.core.CardsRevealedEvent,

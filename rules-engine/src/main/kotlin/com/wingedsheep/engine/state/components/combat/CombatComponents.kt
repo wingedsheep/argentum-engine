@@ -333,3 +333,7 @@ data class PlayerAttackedPlayersThisTurnComponent(
 data class GoadedComponent(
     val goaderIds: Set<EntityId>
 ) : Component
+
+/** Object identities that have blocked this attacker during the current combat, even after departure. */
+@Serializable
+data class BlockersThisCombatComponent(val blockers: Set<com.wingedsheep.engine.state.ObjectRef>) : Component

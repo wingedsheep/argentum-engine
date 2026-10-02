@@ -187,19 +187,20 @@ class TriggerMatcher(
                 attackingAnOpponent >= trigger.minAttackers
             }
             is EventPattern.BlockEvent -> {
-                // `blockers` maps each blocker to the attackers it was declared against, so its
-                // size is the "blocks N creatures" count. A blocker that appears as a key blocks
-                // at least one attacker, which is why the default bar of 1 is the old
-                // `keys.contains(sourceId)` check unchanged.
-                event is BlockersDeclaredEvent &&
-                    (
-                        binding != TriggerBinding.SELF ||
-                            event.blockers[sourceId].orEmpty().size >= trigger.minBlockedAttackers
-                        )
+                if (event !is com.wingedsheep.engine.core.BlockingRelationshipsEvent) return false
+                if (binding != TriggerBinding.SELF) return true
+                val added = event.blockers[sourceId].orEmpty().size
+                if (trigger.attackerFilter != null) return added > 0 &&
+                    (event.blockedCounts[sourceId] ?: 0) >= trigger.minBlockedAttackers
+                val before = event.previousBlockedCounts[sourceId] ?: 0
+                if (trigger.minBlockedAttackers == 1) sourceId in event.newBlockers
+                else before < trigger.minBlockedAttackers && (event.blockedCounts[sourceId] ?: 0) >= trigger.minBlockedAttackers
             }
             is EventPattern.BecomesBlockedEvent -> {
-                event is BlockersDeclaredEvent &&
-                    (binding != TriggerBinding.SELF || event.blockers.values.any { it.contains(sourceId) })
+                event is com.wingedsheep.engine.core.BlockingRelationshipsEvent &&
+                    (binding != TriggerBinding.SELF ||
+                        if (trigger.filter == null) sourceId in event.newlyBlockedAttackers
+                        else event.blockers.values.any { sourceId in it })
             }
             is EventPattern.BecomesUnblockedEvent -> {
                 // CR 509.3g: fires for an attacker with no creatures declared as blockers.
@@ -229,7 +230,7 @@ class TriggerMatcher(
                 // in combat. Per-partner trigger creation happens in detectTriggersForEvent.
                 // SELF: the source creature itself; ATTACHED: the source's equipped/enchanted
                 // creature (Barrow-Blade). Other bindings don't apply.
-                if (event !is BlockersDeclaredEvent) return false
+                if (event !is com.wingedsheep.engine.core.BlockingRelationshipsEvent) return false
                 val combatCreatureId = when (binding) {
                     TriggerBinding.SELF -> sourceId
                     TriggerBinding.ATTACHED -> state.getEntity(sourceId)
@@ -237,7 +238,8 @@ class TriggerMatcher(
                         ?.targetId ?: return false
                     else -> return false
                 }
-                // The combat creature is a blocker or an attacker that's being blocked.
+                if (trigger.oncePerCombat && combatCreatureId !in event.newBlockers &&
+                    combatCreatureId !in event.newlyBlockedAttackers) return false
                 event.blockers.keys.contains(combatCreatureId) ||
                     event.blockers.values.any { it.contains(combatCreatureId) }
             }
@@ -2325,6 +2327,7 @@ class TriggerMatcher(
         // This relational predicate is a targeting/gathering constraint. Trigger matching has no
         // ability-controller context with which to evaluate an arbitrary candidate filter.
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasLeastManaValueAmong -> false
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingDefenderOf -> false
         // Trigger-matching predicates beyond IsFaceDown are not currently used as
         // *trigger-gating* filters (those evaluate the triggering entity, not the source
         // state). Returning true preserves the prior "don't gate" behavior, but listing

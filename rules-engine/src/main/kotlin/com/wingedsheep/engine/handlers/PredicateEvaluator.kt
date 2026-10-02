@@ -1722,6 +1722,10 @@ class PredicateEvaluator(
             // excluded — a battle's protector is a player, not its controller, so `defendingPlayerOf`
             // would wrongly fold "attacking a battle you protect" into this. Same no-last-known
             // policy as IsAttackingAnOpponent.
+            is StatePredicate.IsAttackingDefenderOf -> context != null &&
+                com.wingedsheep.engine.handlers.predicates.isAttackingDefenderOf(
+                    state, projected, entityId, predicate.reference, context
+                )
             StatePredicate.IsAttackingYouOrYourPlaneswalkers -> {
                 val you = context?.controllerId
                 val defenderId = container.get<AttackingComponent>()?.defenderId

@@ -10,9 +10,6 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.mechanics.combat.rules.TappedBlockBypass
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
-import com.wingedsheep.engine.state.components.combat.BlockedThisCombatComponent
-import com.wingedsheep.engine.state.components.combat.BlockedThisTurnComponent
-import com.wingedsheep.engine.state.components.combat.CombatPartnersThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -359,47 +356,7 @@ internal class BlockPhaseManager(
             expanded.toList()
         }
 
-        var newState = state
-        // Capture legendary-ness of every combatant *now* (at block declaration), so the
-        // "blocked or was blocked by a legendary creature this turn" marker (You Cannot Pass!)
-        // reflects the pairing-time status even if a legendary partner later leaves or loses
-        // legendary-ness (CR: the predicate looks at combat history).
-        val projected = state.projectedState
-        for ((blockerId, attackerIds) in expandedBlockers) {
-            newState = newState.updateEntity(blockerId) { container ->
-                container.with(BlockingComponent(attackerIds))
-                    .with(BlockedThisCombatComponent)
-                    .with(BlockedThisTurnComponent)
-            }
-
-            // Mark attackers as blocked
-            for (attackerId in attackerIds) {
-                newState = newState.updateEntity(attackerId) { container ->
-                    val existing = container.get<BlockedComponent>()?.blockerIds ?: emptyList()
-                    container.with(BlockedComponent(existing + blockerId))
-                }
-            }
-
-            // Record the pairing on both sides as turn-scoped combat history ("blocked or was
-            // blocked by it this turn" — Gaze of the Gorgon).
-            newState = recordCombatPartners(newState, blockerId, attackerIds)
-
-            // Stamp the "paired with a legendary in combat this turn" marker on each side
-            // whose partner is legendary.
-            val blockerIsLegendary = projected.isLegendary(blockerId)
-            for (attackerId in attackerIds) {
-                if (projected.isLegendary(attackerId)) {
-                    newState = newState.updateEntity(blockerId) { container ->
-                        container.with(com.wingedsheep.engine.state.components.combat.BlockedOrWasBlockedByLegendaryThisTurnComponent)
-                    }
-                }
-                if (blockerIsLegendary) {
-                    newState = newState.updateEntity(attackerId) { container ->
-                        container.with(com.wingedsheep.engine.state.components.combat.BlockedOrWasBlockedByLegendaryThisTurnComponent)
-                    }
-                }
-            }
-        }
+        var newState = BlockingRelationships.establish(state, expandedBlockers)
 
         // Mark that blockers have been declared this combat (even if empty)
         newState = newState.updateEntity(blockingPlayer) { container ->
@@ -1505,17 +1462,4 @@ internal class BlockPhaseManager(
         )
     }
 
-    private fun recordCombatPartners(state: GameState, blockerId: EntityId, attackerIds: List<EntityId>): GameState {
-        var newState = state.updateEntity(blockerId) { container ->
-            val existing = container.get<CombatPartnersThisTurnComponent>()?.partnerIds ?: emptySet()
-            container.with(CombatPartnersThisTurnComponent(existing + attackerIds))
-        }
-        for (attackerId in attackerIds) {
-            newState = newState.updateEntity(attackerId) { container ->
-                val existing = container.get<CombatPartnersThisTurnComponent>()?.partnerIds ?: emptySet()
-                container.with(CombatPartnersThisTurnComponent(existing + blockerId))
-            }
-        }
-        return newState
-    }
 }
