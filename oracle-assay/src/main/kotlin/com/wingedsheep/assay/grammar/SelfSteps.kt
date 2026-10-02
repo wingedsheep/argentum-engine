@@ -738,6 +738,45 @@ object SelfSteps {
         }
 
     /**
+     * "When ~ enters, it fights up to one target creature an opponent controls." — the fight
+     * (CR 701.14) between an object the position already fixes and a target the clause declares.
+     *
+     * `Effects.Fight(target1, target2)` names both fighters, so the subject is a slot that moves
+     * with the position exactly as [retargetable]'s does: the source (Mind Meanderer, Territorial
+     * Allosaurus), the attached creature (Pitiless Fists), a filtered trigger's match, or — after a
+     * clause that chose one — the earlier target ("Target creature you control gets +1/+0 until end
+     * of turn. It fights target creature you don't control.", Swift Kick). That last one is why
+     * [fighter] is a parameter rather than the [retargetable] `target`: the clause declares a target
+     * of its own, so the earlier one cannot be [Targets.bound] — it is [Targets.prior], which
+     * [Steps]' numbering resolves to the target declared before this clause.
+     *
+     * Not a member of [retargetable] for that reason, and for [attachesSource]'s: the subject is
+     * not the object the clause acts on, it is one of two. Singular quantifiers only — a fight is
+     * between two creatures, and "fights up to two target creatures" is not printed.
+     */
+    private fun fights(fighter: EffectTarget, subject: Phrase<Unit>, tag: String): List<Phrase<CardScript>> =
+        Targets.singularQuantifiers.map { quantifier ->
+            fun scriptFor(filter: GameObjectFilter) = CardScript(
+                spellEffect = quantifier.effectOver { Effects.Fight(fighter, it) },
+                targetRequirements = listOf(quantifier.requirement(1, filter)),
+            )
+            phrase(
+                quantifier.splice("{self} fights {q}target {filter}"),
+                name = "$tag fights a target, ${quantifier.name}",
+            ) {
+                slot("self", subject)
+                slot("filter", Filters.filter)
+                build { scriptFor(it.value("filter")) }
+                match { script ->
+                    val requirement = script.targetRequirements.singleOrNull() ?: return@match null
+                    val filter = Targets.targetedFilter(requirement) ?: return@match null
+                    if (script != scriptFor(filter)) return@match null
+                    bind("self" to Unit, "filter" to filter)
+                }
+            }
+        }
+
+    /**
      * The **name** alone — the half of [anaphoric] that means the source in every position there is.
      *
      * `~` is not an anaphor: it denotes the card whatever sentence it stands in, so unlike "it" it
@@ -753,7 +792,8 @@ object SelfSteps {
      */
     val named: List<Phrase<CardScript>> =
         retargetable(EffectTarget.Self, Primitives.selfNamed, tag = " the named source") +
-            attachesSource(Primitives.selfNamed, tag = " the named source")
+            attachesSource(Primitives.selfNamed, tag = " the named source") +
+            fights(EffectTarget.Self, Primitives.selfNamed, tag = " the named source")
 
     /**
      * The same vocabulary aimed at the **target an earlier clause chose** — what [Continuations]
@@ -764,7 +804,8 @@ object SelfSteps {
      * pronoun cannot dangle.
      */
     val continuing: List<Phrase<CardScript>> =
-        retargetable(Targets.bound(), Primitives.targetPronoun, tag = " the target")
+        retargetable(Targets.bound(), Primitives.targetPronoun, tag = " the target") +
+            fights(Targets.prior(), Primitives.targetPronoun, tag = " the earlier target")
 
     /**
      * The clauses whose "it" is the **source** — what every position but a filtered trigger reads.
@@ -778,7 +819,8 @@ object SelfSteps {
      */
     val anaphoric: List<Phrase<CardScript>> =
         retargetable(EffectTarget.Self, Primitives.self, tag = " the source") + sacrificesSource +
-            attachesSource(Primitives.self, tag = " the source")
+            attachesSource(Primitives.self, tag = " the source") +
+            fights(EffectTarget.Self, Primitives.self, tag = " the source")
 
     /**
      * The same vocabulary inside a **filtered** trigger, where the two spellings come apart.
@@ -795,6 +837,7 @@ object SelfSteps {
                 Primitives.itPronoun,
                 tag = " the triggering permanent",
             ) +
+            fights(EffectTarget.TriggeringEntity, Primitives.itPronoun, tag = " the triggering permanent") +
             sacrificesSource
 
     /**
@@ -814,12 +857,11 @@ object SelfSteps {
      * attachment, so the two minority spellings are a standing SDK finding the differential
      * reports, not a second reading: a `match` that accepted them would be two printers for one text.
      */
-    private val attached: List<Phrase<CardScript>> =
-        retargetable(
-            EffectTarget.EnchantedCreature,
-            constant("enchanted ${Normalizer.ATTACHED_NOUN}", Unit),
-            tag = " the attached creature",
-        )
+    private val attached: List<Phrase<CardScript>> = run {
+        val subject = constant("enchanted ${Normalizer.ATTACHED_NOUN}", Unit)
+        retargetable(EffectTarget.EnchantedCreature, subject, tag = " the attached creature") +
+            fights(EffectTarget.EnchantedCreature, subject, tag = " the attached creature")
+    }
 
     /** Everything in this file that does not turn on the pronoun — the attached creature's clauses. */
     val clauses: List<Phrase<CardScript>> = attached

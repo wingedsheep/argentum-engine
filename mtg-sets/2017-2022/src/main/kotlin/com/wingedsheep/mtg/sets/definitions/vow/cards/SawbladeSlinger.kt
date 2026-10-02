@@ -44,7 +44,7 @@ val SawbladeSlinger = card("Sawblade Slinger") {
                     effect = Effects.Destroy(artifact)
                 },
                 mode("This creature fights target Zombie an opponent controls") {
-                    val creature = target(TargetFilter(GameObjectFilter.Creature.withSubtype("Zombie").opponentControls()))
+                    val creature = target(TargetFilter(GameObjectFilter.Permanent.withSubtype("Zombie").opponentControls()))
                     effect = Effects.Fight(EffectTarget.Self, creature)
                 }
             ),

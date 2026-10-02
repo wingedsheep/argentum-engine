@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 
 /**
  * Swift Kick
@@ -20,7 +21,13 @@ val SwiftKick = card("Swift Kick") {
 
     spell {
         val yourCreature = target(TargetFilter(GameObjectFilter.Creature.youControl()))
-        val theirCreature = target(TargetFilter(GameObjectFilter.Creature.opponentControls()))
+        val theirCreature = target(
+            TargetFilter(
+                GameObjectFilter.Creature.copy(
+                    controllerPredicate = ControllerPredicate.Not(ControllerPredicate.ControlledByYou)
+                )
+            )
+        )
         effect = Effects.ModifyStats(1, 0, yourCreature) then Effects.Fight(yourCreature, theirCreature)
     }
 

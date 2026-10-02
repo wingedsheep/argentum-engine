@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 
 /**
  * Bushwhack
@@ -37,7 +38,13 @@ val Bushwhack = card("Bushwhack") {
             }
             mode("Target creature you control fights target creature you don't control") {
                 val yourCreature = target(TargetFilter(GameObjectFilter.Creature.youControl()))
-                val theirCreature = target(TargetFilter(GameObjectFilter.Creature.opponentControls()))
+                val theirCreature = target(
+                    TargetFilter(
+                        GameObjectFilter.Creature.copy(
+                            controllerPredicate = ControllerPredicate.Not(ControllerPredicate.ControlledByYou)
+                        )
+                    )
+                )
                 effect = Effects.Fight(yourCreature, theirCreature)
             }
         }
