@@ -917,12 +917,35 @@ class TurnManager(
         state: GameState,
         nextPlayer: EntityId,
         followUps: List<TurnStartFollowUp> = emptyList(),
+        previousPlayerId: EntityId = requireNotNull(state.activePlayerId),
     ): ExecutionResult {
         var current = state
         var candidate = nextPlayer
+        var previous = previousPlayerId
+        var bypassedOrdinarySeats = false
         val events = mutableListOf<GameEvent>()
         while (true) {
             val team = current.sharedTurnTeam(candidate)
+            if (team.any { (current.getEntity(it)?.get<SkipNextTurnComponent>()?.extraTurnBypasses ?: 0) > 0 }) {
+                current = team.fold(current) { next, member ->
+                    next.updateEntity(member) { container ->
+                        val skip = container.get<SkipNextTurnComponent>()
+                        if (skip == null || skip.extraTurnBypasses == 0) container
+                        else if (skip.turns == 1) container.without<SkipNextTurnComponent>()
+                        else container.with(skip.copy(turns = skip.turns - 1,
+                            extraTurnBypasses = skip.extraTurnBypasses - 1))
+                    }
+                }
+                bypassedOrdinarySeats = true
+                candidate = current.getNextTeam(candidate)
+                continue
+            }
+            // Synthetic bypasses insert an extra turn ahead of the ordinary seat walk; departed
+            // seats on that walk have not reached their would-be turns yet.
+            if (!bypassedOrdinarySeats) {
+                current = expireEffectsOfDepartedSeatsWhoseTurnWouldBeginNow(current, previous, candidate)
+            }
+            bypassedOrdinarySeats = false
             val choices = turnStartChoices(current, team)
             val skips = team.any { current.getEntity(it)?.has<SkipNextTurnComponent>() == true }
             if (choices.isNotEmpty()) {
@@ -954,6 +977,7 @@ class TurnManager(
             }
             current = consumePendingTurnSkip(current, team)
             events.add(TurnSkippedEvent(candidate))
+            previous = candidate
             candidate = current.getNextTeam(candidate)
         }
     }
@@ -989,7 +1013,7 @@ class TurnManager(
         team.fold(state) { current, member ->
             current.updateEntity(member) { container ->
                 val remaining = container.get<SkipNextTurnComponent>()?.turns ?: 0
-                if (remaining > 1) container.with(SkipNextTurnComponent(remaining - 1))
+                if (remaining > 1) container.with(requireNotNull(container.get<SkipNextTurnComponent>()).copy(turns = remaining - 1))
                 else container.without<SkipNextTurnComponent>()
             }
         }
@@ -1001,7 +1025,8 @@ class TurnManager(
         if (response.optionIndex == frame.options.size)
             return finishTurnSelection(state, frame.nextPlayerId, frame.followUps)
         val chosen = frame.options[response.optionIndex]
-        val result = selectNextTurn(state, state.getNextTeam(frame.nextPlayerId), frame.followUps + chosen)
+        val result = selectNextTurn(state, state.getNextTeam(frame.nextPlayerId), frame.followUps + chosen,
+            previousPlayerId = frame.nextPlayerId)
         return result.copy(events = listOf(TurnSkippedEvent(frame.nextPlayerId, chosen.context.sourceId)) + result.events)
     }
 
@@ -1010,12 +1035,11 @@ class TurnManager(
         val nextTeam = state.sharedTurnTeam(nextPlayer)
         if (nextTeam.any { state.getEntity(it)?.has<SkipNextTurnComponent>() == true }) {
             val skipped = consumePendingTurnSkip(state, nextTeam)
-            val result = selectNextTurn(skipped, skipped.getNextTeam(nextPlayer), followUps)
+            val result = selectNextTurn(skipped, skipped.getNextTeam(nextPlayer), followUps,
+                previousPlayerId = nextPlayer)
             return result.copy(events = listOf(TurnSkippedEvent(nextPlayer)) + result.events)
         }
-        val cleaned = expireEffectsOfDepartedSeatsWhoseTurnWouldBeginNow(state,
-            requireNotNull(state.activePlayerId), nextPlayer)
-        val turnResult = startTurn(cleaned, nextPlayer)
+        val turnResult = startTurn(state, nextPlayer)
         if (turnResult.outcome !is Outcome.Done) return turnResult
         val result = finishTurnStart(turnResult.state, nextPlayer, followUps)
         return result.copy(events = turnResult.events + result.events)

@@ -39,8 +39,8 @@ class SkipNextTurnExecutor(
         if (turns <= 0) return EffectResult.success(state)
 
         val newState = state.updateEntity(targetPlayerId) { container ->
-            val existing = container.get<SkipNextTurnComponent>()?.turns ?: 0
-            container.with(SkipNextTurnComponent(existing + turns))
+            val existing = container.get<SkipNextTurnComponent>() ?: SkipNextTurnComponent(0)
+            container.with(existing.copy(turns = existing.turns + turns))
         }
 
         return EffectResult.success(newState)

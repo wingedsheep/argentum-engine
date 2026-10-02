@@ -16,8 +16,9 @@ import kotlin.reflect.KClass
  *
  * Implemented by making every other player skip their next turn. TurnManager walks all skipped
  * occurrences before starting a turn, including in multiplayer. This remains an approximation:
- * there is no ordered extra-turn queue, so differently owned extra turns and interactions between
- * an actual skip-next-turn effect and an inserted turn do not have independent scheduling identity.
+ * there is no ordered extra-turn queue, so differently owned extra turns do not have independent
+ * scheduling identity. Synthetic bypasses are distinguished from real skips so turn replacements
+ * cannot apply to an opponent while the inserted turn is being scheduled.
  *
  * If loseAtEndStep is true (e.g., Last Chance), the caster will also lose the game
  * at the beginning of their next end step.
@@ -61,15 +62,16 @@ class TakeExtraTurnExecutor : EffectExecutor<TakeExtraTurnEffect> {
         }
         var newState = otherPlayerIds.fold(state) { acc, otherPlayerId ->
             acc.updateEntity(otherPlayerId) { container ->
-                val existing = container.get<SkipNextTurnComponent>()?.turns ?: 0
-                container.with(SkipNextTurnComponent(existing + 1))
+                val existing = container.get<SkipNextTurnComponent>() ?: SkipNextTurnComponent(0)
+                container.with(existing.copy(turns = existing.turns + 1,
+                    extraTurnBypasses = existing.extraTurnBypasses + 1))
             }
         }
 
         // "During that turn, power-up abilities can't be activated" (Kang the Conqueror). Stamp the
         // next turn to actually begin: skipped turns never call `TurnManager.startTurn`, so they
-        // consume no turn numbers. See the KDoc for the two cases where that is not the extra turn
-        // — three-or-more-player pods, and a second extra-turn effect resolving afterwards.
+        // consume no turn numbers. A later extra-turn effect can move this stamp onto the wrong
+        // inserted turn; see the scheduling limitation in the KDoc.
         if (effect.powerUpAbilitiesCantBeActivated) {
             newState = newState.copy(
                 powerUpRestrictedTurns = newState.powerUpRestrictedTurns + (newState.turnNumber + 1)

@@ -391,8 +391,8 @@ internal class PlayerActiveEffectsProjector(
             )
         }
 
-        // Check for SkipNextTurnComponent (opponent will skip their turn)
-        if (container.has<SkipNextTurnComponent>()) {
+        val turnSkips = container.get<SkipNextTurnComponent>()
+        if (turnSkips != null && turnSkips.turns > turnSkips.extraTurnBypasses) {
             effects.add(
                 ClientPlayerEffect(
                     effectId = "skip_next_turn",

@@ -1813,19 +1813,18 @@ data class CombatDamageReceivedThisTurnComponent(
 data object WasDealtCombatDamageByLegendaryCreatureThisTurnComponent : Component
 
 /**
- * Component indicating that a player should skip their entire next [turns] turns.
- * Applied by effects like Last Chance (which gives the opponent an "extra turn" by skipping the
- * other player's turn in a 2-player game) and Ral Zarek, Guest Lecturer's ultimate (skip several
- * turns).
+ * Pending real turn skips and scheduling bypasses used to insert another player's extra turns.
+ * Real skips wait for actual turn occurrences; bypasses are consumed before turn replacements.
+ * Re-applying either kind accumulates it without replacing the other kind.
  *
- * One skipped turn is consumed each time the affected player's turn would start: [turns] is
- * decremented, the turn is skipped, and the component is removed once the count reaches zero.
- * Re-applying it adds to the remaining count rather than overwriting (multiple skip effects stack).
- *
- * @property turns How many of the player's upcoming turns remain to be skipped (≥ 1 while present).
+ * @property turns Total pending skips and bypasses (positive while this component is present).
  */
 @Serializable
-data class SkipNextTurnComponent(val turns: Int = 1) : Component
+data class SkipNextTurnComponent(
+    val turns: Int = 1,
+    /** Scheduling bypasses for another player's extra turns; these are not actual turn occurrences. */
+    val extraTurnBypasses: Int = 0,
+) : Component
 
 /**
  * Marks that an "end the turn" effect (CR 724.1) has resolved this turn and the end-the-turn

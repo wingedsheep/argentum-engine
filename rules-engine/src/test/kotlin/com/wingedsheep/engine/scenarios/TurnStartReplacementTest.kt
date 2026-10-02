@@ -214,5 +214,81 @@ class TurnStartReplacementTest : ScenarioTestBase() {
                 EffectTarget.Self, Duration.EndOfTurn), other)
             end(expiring); expiring.state.pendingDecision shouldBe null
         }
+        test("departed seat durations expire when skipped turns walk a complete circuit") {
+            val game = board(tapped = false)
+            val id = game.findPermanent(source.name)!!
+            val departed = com.wingedsheep.sdk.model.EntityId.of("departed-seat")
+            val fourth = com.wingedsheep.sdk.model.EntityId.of("fourth-seat")
+            game.state = game.state
+                .withEntity(departed, game.state.getEntity(game.player1Id)!!.with(
+                    com.wingedsheep.engine.state.components.player.PlayerLostComponent(
+                        com.wingedsheep.engine.state.components.player.LossReason.CONCESSION)))
+                .withEntity(fourth, game.state.getEntity(game.player1Id)!!)
+                .copy(turnOrder = listOf(game.player2Id, game.player1Id, departed, fourth))
+            val suppressed = services.effectExecutorRegistry.execute(game.state,
+                Effects.RemoveAllAbilities(EffectTarget.SpecificEntity(id), Duration.UntilYourNextTurn),
+                EffectContext(sourceId = id, controllerId = departed))
+            suppressed.error shouldBe null
+            game.state = suppressed.state
+            game.state.projectedState.hasLostAllAbilities(id) shouldBe true
+            for (player in listOf(game.player1Id, fourth, game.player2Id)) {
+                game.state = game.state.updateEntity(player) { it.with(SkipNextTurnComponent()) }
+            }
+            val result = end(game)
+            result.events.filterIsInstance<TurnSkippedEvent>().map { it.playerId } shouldBe
+                listOf(game.player1Id, fourth, game.player2Id)
+            game.state.activePlayerId shouldBe game.player1Id
+            game.state.projectedState.hasLostAllAbilities(id) shouldBe false
+            game.state.floatingEffects.any { it.controllerId == departed } shouldBe false
+        }
+        test("departed seat ability suppression expires before the next turn replacement choice") {
+            val game = board()
+            val id = game.findPermanent(source.name)!!
+            val departed = com.wingedsheep.sdk.model.EntityId.of("departed-seat")
+            game.state = game.state
+                .withEntity(departed, game.state.getEntity(game.player1Id)!!.with(
+                    com.wingedsheep.engine.state.components.player.PlayerLostComponent(
+                        com.wingedsheep.engine.state.components.player.LossReason.CONCESSION)))
+                .copy(turnOrder = listOf(game.player2Id, departed, game.player1Id))
+            val suppressed = services.effectExecutorRegistry.execute(game.state,
+                Effects.RemoveAllAbilities(EffectTarget.SpecificEntity(id), Duration.UntilYourNextTurn),
+                EffectContext(sourceId = id, controllerId = departed))
+            suppressed.error shouldBe null
+            game.state = suppressed.state
+            game.state.projectedState.hasLostAllAbilities(id) shouldBe true
+            end(game)
+            (game.state.pendingDecision as ChooseOptionDecision).playerId shouldBe game.player1Id
+            game.state.projectedState.hasLostAllAbilities(id) shouldBe false
+            choose(game)
+            game.state.activePlayerId shouldBe game.player2Id
+            game.isTapped(id) shouldBe false
+        }
+        test("an inserted extra turn does not expire a departed seat duration before its ordinary turn") {
+            val game = board(tapped = false)
+            val id = game.findPermanent(source.name)!!
+            val departed = com.wingedsheep.sdk.model.EntityId.of("departed-seat")
+            game.state = game.state
+                .withEntity(departed, game.state.getEntity(game.player1Id)!!.with(
+                    com.wingedsheep.engine.state.components.player.PlayerLostComponent(
+                        com.wingedsheep.engine.state.components.player.LossReason.CONCESSION)))
+                .copy(turnOrder = listOf(game.player2Id, departed, game.player1Id))
+            val suppressed = services.effectExecutorRegistry.execute(game.state,
+                Effects.RemoveAllAbilities(EffectTarget.SpecificEntity(id), Duration.UntilYourNextTurn),
+                EffectContext(sourceId = id, controllerId = departed))
+            suppressed.error shouldBe null
+            game.state = suppressed.state
+            val extra = services.effectExecutorRegistry.execute(game.state, Effects.TakeExtraTurn(),
+                EffectContext(sourceId = id, controllerId = game.player2Id))
+            extra.error shouldBe null
+            game.state = extra.state
+            end(game)
+            game.state.activePlayerId shouldBe game.player2Id
+            game.state.projectedState.hasLostAllAbilities(id) shouldBe true
+            game.state.floatingEffects.any { it.controllerId == departed } shouldBe true
+            end(game)
+            game.state.activePlayerId shouldBe game.player1Id
+            game.state.projectedState.hasLostAllAbilities(id) shouldBe false
+            game.state.floatingEffects.any { it.controllerId == departed } shouldBe false
+        }
     }
 }

@@ -1012,8 +1012,9 @@ object ZoneMovementUtils {
             val cid = controllerId ?: return state to emptyList()
             val newState = state.getOpponents(cid).fold(state) { acc, opponentId ->
                 acc.updateEntity(opponentId) { container ->
-                    val existing = container.get<SkipNextTurnComponent>()?.turns ?: 0
-                    container.with(SkipNextTurnComponent(existing + 1))
+                    val existing = container.get<SkipNextTurnComponent>() ?: SkipNextTurnComponent(0)
+                    container.with(existing.copy(turns = existing.turns + 1,
+                        extraTurnBypasses = existing.extraTurnBypasses + 1))
                 }
             }
             return newState to emptyList()
