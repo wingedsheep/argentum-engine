@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.dsl.Triggers as SdkTriggers
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -494,5 +495,29 @@ class TriggersTest : StringSpec({
     // Two identical abilities is not a sentence: it is one trigger line written twice.
     "a join of an event with itself declines" {
         declines("When ~ enters and when ~ enters, draw a card.")
+    }
+
+    // Zephyr Boots, Armadillo Cloak, Kusari-Gama: the source's damage rows said of the attached
+    // creature, landing on `Triggers.attached` — the binding, not a filter.
+    "a damage trigger on enchanted creature is the attached binding" {
+        ability("Whenever enchanted creature deals combat damage to a player, draw a card.") shouldBe
+            TriggeredAbility(
+                id = AbilityId("trigger"),
+                trigger = SdkTriggers.attached.dealsCombatDamage(Recipient.AnyPlayer).event,
+                binding = SdkTriggers.attached.dealsCombatDamage(Recipient.AnyPlayer).binding,
+                effect = Effects.DrawCards(1),
+            )
+        listOf(
+            "Whenever enchanted creature deals combat damage to a player, draw a card.",
+            "Whenever enchanted creature deals combat damage, put a +1/+1 counter on ~.",
+            "Whenever enchanted creature deals damage, you gain that much life.",
+            "Whenever enchanted creature is dealt damage, draw a card.",
+        ).forEach { roundTrips(it) }
+    }
+
+    // "It" names the enchanted creature here, not the source; until a card's golden says how that
+    // is spelled, the pronoun declines rather than reading as `~`.
+    "the source pronoun does not read inside an attached damage trigger" {
+        declines("Whenever enchanted creature is dealt damage, it deals that much damage to each opponent.")
     }
 })

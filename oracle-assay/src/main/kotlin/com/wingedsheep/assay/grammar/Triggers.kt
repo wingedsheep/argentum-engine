@@ -748,6 +748,61 @@ object Triggers {
             ) { batchSubject(it, other).leaveWithoutDying() }
         }
 
+    /**
+     * "Whenever **enchanted creature** deals combat damage to a player, …" — the source's own damage
+     * rows below, said of the creature an Aura or Equipment is attached to. "equipped creature" is
+     * the same phrase by the time it gets here (the normalizer abstracts the adjective).
+     *
+     * The SDK spells the subject as a binding rather than a filter — `Triggers.attached` is
+     * `Triggers.self` with `TriggerBinding.ATTACHED` — so these are the same events over the same
+     * recipients, and the rows mirror the source's one for one rather than adding a recipient the
+     * source's rows do not read. What differs is the payoff: "it" is not the source any more, so
+     * the constant rows take [Steps.attachedDamageStep], which keeps `~` and "that many" and drops
+     * the source pronoun. The filtered-recipient row takes [Steps.triggeredStep] exactly as the
+     * source's does, its "that creature" being the recipient the filter matched.
+     */
+    private fun attachedDamagePrefixes(): List<Prefix> {
+        val subject = "enchanted ${Normalizer.ATTACHED_NOUN}"
+        val attached = SdkTriggers.attached
+        return listOf(
+            triggerRule(
+                "whenever $subject deals combat damage to a player",
+                attached.dealsCombatDamage(Recipient.AnyPlayer),
+                effect = Steps.attachedDamageStep,
+            ),
+            triggerRule(
+                "whenever $subject deals combat damage to a creature",
+                attached.dealsCombatDamage(Recipient.AnyCreature),
+                effect = Steps.attachedDamageStep,
+            ),
+            triggerRule(
+                "whenever $subject deals combat damage",
+                attached.dealsCombatDamage(),
+                effect = Steps.attachedDamageStep,
+            ),
+            triggerRule(
+                "whenever $subject deals damage",
+                attached.dealsDamage(),
+                effect = Steps.attachedDamageStep,
+            ),
+            slottedTriggerRule(
+                surface = "whenever $subject deals damage to {filter}",
+                name = "whenever the attached creature deals damage to a filtered recipient",
+                noun = Filters.indefinite,
+                effect = Steps.triggeredStep,
+                valueOf = { spec ->
+                    ((spec.event as? EventPattern.DealsDamageEvent)?.recipient as? Recipient.Object)?.filter
+                },
+                spec = { attached.dealsDamage(Recipient.Object(it)) },
+            ),
+            triggerRule(
+                "whenever $subject is dealt damage",
+                attached.isDealtDamage(),
+                effect = Steps.attachedDamageStep,
+            ),
+        )
+    }
+
     private val eventPrefixes: List<Prefix> = listOf(
         triggerRule("when ${Normalizer.SELF} enters", SdkTriggers.self.enters()),
         // CR 700.4 defines "dies" as "is put into a graveyard from the battlefield", and Oracle
@@ -829,6 +884,7 @@ object Triggers {
             spec = { SdkTriggers.self.dealsDamage(Recipient.Object(it)) },
         ),
         triggerRule("whenever ${Normalizer.SELF} is dealt damage", SdkTriggers.self.isDealtDamage()),
+    ) + attachedDamagePrefixes() + listOf(
         // Valiant, and one row rather than a shape over `BecomesTargetEvent`'s six flags: the SDK
         // publishes the whole configuration as `Triggers.self.becomesTarget(byYou = true, firstTimeEachTurn = true)`, which is the lowering this file's
         // rule says to call rather than restate. The other flag combinations (by an opponent, a
