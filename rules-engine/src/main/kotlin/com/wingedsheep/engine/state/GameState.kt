@@ -1164,9 +1164,6 @@ data class GameState(
         getEntity(entityId)?.has<SpellOnStackComponent>() == true
 
     /**
-     * Remove a specific entity from the stack (for countering).
-     */
-    /**
      * Take an object off the stack without it resolving — countered, bounced, exiled, or moved by
      * any other zone change. The object it becomes is new (CR 400.7), so abilities granted to the
      * stack object (CR 400.7a — Thief of Existence's cast trigger) end here. A *resolving* permanent
