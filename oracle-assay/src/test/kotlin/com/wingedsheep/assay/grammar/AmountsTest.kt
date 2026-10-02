@@ -209,10 +209,17 @@ class AmountsTest : StringSpec({
         // resolves by ordering an alternation.
         declines("You gain 1 life for each creature you control on the battlefield.")
         declines("~ gets +1/+1 for each creature you control on the battlefield.")
-        // The empty row refuses only the clause the " you control" row prints, so a controller the
-        // layer has no row for still reaches the model through the noun phrase. (It reads rather
-        // than round-trips: the noun phrase itself has a canonical spelling of its own.)
-        fragment("You gain 1 life for each creature an opponent controls.")
+        // The empty row refuses the clauses the " you control" and " your opponents control" rows
+        // print, so a controller the layer has no row for still reaches the model through the noun
+        // phrase. (It reads rather than round-trips: the noun phrase has a canonical spelling of its
+        // own.)
+        fragment("You gain 1 life for each creature you don't control.")
+        // The opponents' tally is the row, `EachOpponent` — the hand-written spelling — and the
+        // noun phrase's opponent clause over the whole battlefield is not a second reading of it.
+        roundTrips("~ gets +1/+1 for each Swamp your opponents control.")
+        dynamicStat("~ gets +1/+1 for each Swamp your opponents control.")
+            .shouldBeInstanceOf<DynamicAmount.AggregateBattlefield>().player shouldBe Player.EachOpponent
+        declines("You gain 1 life for each creature an opponent controls.")
     }
 
     "the modifier pair is two numbers, not one" {
