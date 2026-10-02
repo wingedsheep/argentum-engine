@@ -294,7 +294,15 @@
                         {
                             "type": "TargetObject",
                             "filter": {
-                                "baseFilter": "creature ctrl:opponent"
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "controllerPredicate": {
+                                        "type": "ControllerNot",
+                                        "predicate": "ControlledByYou"
+                                    }
+                                }
                             },
                             "id": "t1"
                         }

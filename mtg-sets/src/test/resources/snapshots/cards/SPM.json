@@ -4014,41 +4014,14 @@
                     }
                 },
                 {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "All",
-                            "conditions": [
-                                {
-                                    "type": "EntityMatches",
-                                    "entity": {
-                                        "type": "BoundVariable",
-                                        "name": "t0"
-                                    },
-                                    "filter": "creature ctrl:you"
-                                },
-                                {
-                                    "type": "EntityMatches",
-                                    "entity": {
-                                        "type": "BoundVariable",
-                                        "name": "t1"
-                                    },
-                                    "filter": "creature ctrl:opponent"
-                                }
-                            ]
-                        }
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
                     },
-                    "then": {
-                        "type": "Fight",
-                        "target1": {
-                            "type": "BoundVariable",
-                            "name": "t0"
-                        },
-                        "target2": {
-                            "type": "BoundVariable",
-                            "name": "t1"
-                        }
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
                     }
                 }
             ]
