@@ -1166,8 +1166,29 @@ data class GameState(
     /**
      * Remove a specific entity from the stack (for countering).
      */
+    /**
+     * Take an object off the stack without it resolving — countered, bounced, exiled, or moved by
+     * any other zone change. The object it becomes is new (CR 400.7), so abilities granted to the
+     * stack object (CR 400.7a — Thief of Existence's cast trigger) end here. A *resolving* permanent
+     * spell leaves through [popFromStack] instead and keeps them on the permanent it becomes.
+     */
     fun removeFromStack(entityId: EntityId): GameState =
-        copy(stack = stack - entityId)
+        copy(stack = stack - entityId).withoutObjectGrants(entityId)
+
+    /**
+     * Drop the triggered, state-triggered and activated abilities granted to [entityId] — the
+     * object stopped existing as the object those grants were made to (CR 400.7).
+     */
+    fun withoutObjectGrants(entityId: EntityId): GameState =
+        if (grantedTriggeredAbilities.none { it.entityId == entityId } &&
+            grantedStateTriggeredAbilities.none { it.entityId == entityId } &&
+            grantedActivatedAbilities.none { it.entityId == entityId }
+        ) this
+        else copy(
+            grantedTriggeredAbilities = grantedTriggeredAbilities.filter { it.entityId != entityId },
+            grantedStateTriggeredAbilities = grantedStateTriggeredAbilities.filter { it.entityId != entityId },
+            grantedActivatedAbilities = grantedActivatedAbilities.filter { it.entityId != entityId }
+        )
 
     // =========================================================================
     // Convenience Zone Accessors

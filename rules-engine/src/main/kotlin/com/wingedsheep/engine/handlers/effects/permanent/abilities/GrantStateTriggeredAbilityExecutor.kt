@@ -38,8 +38,8 @@ class GrantStateTriggeredAbilityExecutor : EffectExecutor<GrantStateTriggeredAbi
             ?: return EffectResult.error(state, "Target no longer exists")
         targetContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Target is not a card")
-        if (!state.getBattlefield().contains(targetId)) {
-            return EffectResult.error(state, "Target is not on the battlefield")
+        if (!ObjectGrantTarget.canReceive(state, targetId)) {
+            return EffectResult.error(state, ObjectGrantTarget.NOT_A_PERMANENT_OR_PERMANENT_SPELL)
         }
 
         val grant = GrantedStateTriggeredAbility(
