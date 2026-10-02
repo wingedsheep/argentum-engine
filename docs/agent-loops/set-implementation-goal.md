@@ -94,7 +94,7 @@ Repeat until the set is done:
 
 Constraints: one batch or one feature per PR, never two <SET> PRs in flight — a PR for some other set does not block you from starting one here. A card that turns out to need new SDK vocabulary drops out of the batch — reset its commit, record it in the ledger as `needs-feature` so no later pass re-picks it, and ship the rest. Build only through `just`, never raw ./gradlew, and gate once per batch rather than per card. Each card still gets its own definition file and its own scenario test file — never a shared batch test. Never revert, stash, or discard changes you did not make; if someone else's work breaks the build, report it and mark the goal blocked. Do not retry a failed step more than once — mark the unit `[!]` in the ledger with the reason and move on; three consecutive failures is environmental, so stop.
 
-Done when every card in <SET> is implemented and merged. If a card turns on a rules question you can't confirm against the Comprehensive Rules, mark blocked rather than guessing.
+Done when every card in <SET> is implemented and merged, and a final finishing PR has merged that drops `override val incomplete = true` from the set object (re-bless FrozenBaselineTest) and — unless the set is `sealedSupported = false` — adds its Limited archetypes in lockstep to `ai/.../deck/SetArchetypes.kt` and `web-client/src/components/draft/SetSynergiesOverlay.tsx`, derived from the gold signpost uncommons (Scryfall `set:<code> rarity:uncommon c:m`, each signpost as `keyCard`), with a `SetArchetypesTest` case. If a card turns on a rules question you can't confirm against the Comprehensive Rules, mark blocked rather than guessing.
 ```
 
 ## Checking on a long run

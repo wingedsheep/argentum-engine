@@ -232,3 +232,15 @@ data class BlockerPileRestrictionChoiceContinuation(
     val candidates: Map<EntityId, List<EntityId>>,
     val assignmentCount: Int,
 ) : AnswerContinuation
+
+/** Carries the resolved amount and source object identities across the source-choice decision. */
+@Serializable
+data class PreventNextDamageLeavingAmountContinuation(
+    val context: com.wingedsheep.engine.handlers.EffectContext,
+    val targetId: EntityId,
+    val amountToLeave: Int,
+    val eligibleSource: com.wingedsheep.sdk.scripting.GameObjectFilter,
+    val scope: com.wingedsheep.sdk.scripting.effects.PreventionScope,
+    val duration: com.wingedsheep.sdk.scripting.Duration,
+    val choices: List<com.wingedsheep.engine.handlers.effects.combat.ChosenDamageSource>
+) : AnswerContinuation

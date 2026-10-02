@@ -143,13 +143,28 @@ worktree (recreate it with \`git worktree add\` if missing). Never work in the m
    it before more cards. Gate once per the verify skill, commit, push, open a PR titled
    '[agent-loop: $MODEL] Add <N> <set name> cards' whose body lists the cards, the gate run, and that nothing was
    play-tested. Record the unit in the ledger.
+7. No PR open, \`card-status\` shows every card implemented, finishing PR not yet merged -> finishing PR. \`git fetch\`, new
+   worktree + 'loop-$CODE-finish' branch from origin/main. Make the set draftable and give it Limited archetypes:
+   - Drop \`override val incomplete = true\` from the set's \`MtgSet\` object (finishing a set also trips the
+     FrozenBaselineTest hash — re-bless it per the verify skill).
+   - Unless the set has \`sealedSupported = false\`, add its archetypes if they're missing, in BOTH files, kept in
+     lockstep: \`ai/src/main/kotlin/com/wingedsheep/ai/engine/deck/SetArchetypes.kt\` (the \`allSets\` map) and
+     \`web-client/src/components/draft/SetSynergiesOverlay.tsx\` (\`SET_SYNERGIES\`). Copy the shape of an existing
+     entry (e.g. MOM). Derive the archetypes from the set's gold signpost uncommons on Scryfall
+     (\`set:$CODE rarity:uncommon c:m\` — usually one per colour pair; wedge sets add 3-colour clans), using each
+     signpost as \`keyCard\`, a 1–2 sentence description of the deck's plan, and \`creatureTypes\` only when the
+     archetype is tribal. No signposts (e.g. a supplemental set) -> model the colour pairs the set's mechanics
+     actually support. Add a \`SetArchetypesTest\` case pinning the names and colour pairs.
+   Gate (\`just test-ai\`, \`npm run typecheck\` in web-client, and the set-module tests the baseline re-bless touches), commit, push, open a PR titled
+   '[agent-loop: $MODEL] Finish <set name>: archetypes + draftable' and record the unit in the ledger.
 
 PR open, CI still pending or running -> do nothing; don't poll or wait on it — the loop waits for CI
 between sessions. Answer WAITING_CI.
 
 If a step fails twice for the same PR, comment on it, mark it needs-human in the ledger (and the gap \`[!]\` if it
 was one), and move on. Cards blocked on a \`[!]\` gap are skipped. When the only cards left are blocked on \`[!]\`
-gaps, answer STUCK naming those gaps; when \`card-status\` shows the set complete, answer SET_COMPLETE.
+gaps, answer STUCK naming those gaps; when \`card-status\` shows the set complete AND the step-7
+finishing PR (archetypes + no \`incomplete\`) is merged, answer SET_COMPLETE.
 Follow AGENTS.md. Never revert or stash work that isn't yours.
 An unrelated failure on origin/main (a test in a module your change doesn't touch) is NOT a reason to answer
 STUCK: run the gates for the modules you changed, note the unrelated failure in the ledger and the PR body,

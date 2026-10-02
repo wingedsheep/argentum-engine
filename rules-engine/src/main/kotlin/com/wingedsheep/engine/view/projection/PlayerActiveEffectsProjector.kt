@@ -104,6 +104,7 @@ internal class PlayerActiveEffectsProjector(
         // because they read differently: "the next time" rather than "all damage", and Dark Sphere
         // halves rather than prevents. Pair = (source, halved).
         val preventedNextInstanceFromSources = mutableListOf<Pair<EntityId, Boolean>>()
+        val leavingAmountShields = mutableListOf<ClientPlayerEffect>()
     }
 
     /** Check floating effects for damage prevention shields on this player. */
@@ -139,6 +140,23 @@ internal class PlayerActiveEffectsProjector(
                 is SerializableModification.PreventAllDamageFromSource -> {
                     tally.preventedFromSources.add(modification.damageSourceId)
                 }
+                is SerializableModification.PreventNextDamageLeavingAmount -> {
+                    val sourceRef = floatingEffect.referencedObjects.firstOrNull { it.entityId == modification.damageSourceId }
+                    val sourceName = if (sourceRef != null && state.isCurrentObject(sourceRef) &&
+                        state.logicalZone(modification.damageSourceId)?.zoneType !in setOf(Zone.HAND, Zone.LIBRARY)) {
+                        nameVisibleToAll(state, modification.damageSourceId,
+                            state.getEntity(modification.damageSourceId)?.get<CardComponent>()?.name ?: modification.sourceName)
+                    } else modification.sourceName
+                    val kind = if (modification.combatOnly) "combat damage" else "damage"
+                    val ending = durationPhrase(state, floatingEffect)?.let { " $it" } ?: ""
+                    tally.leavingAmountShields.add(ClientPlayerEffect(
+                        effectId = "prevent_next_damage_leaving_amount_${floatingEffect.id.value}",
+                        name = "Leave ${modification.amountToLeave} from $sourceName",
+                        description = "The next time $sourceName would deal $kind to you$ending, " +
+                            "prevent all but ${modification.amountToLeave} of that damage",
+                        icon = "prevent-damage"
+                    ))
+                }
                 is SerializableModification.PreventNextDamageInstanceFromSource -> {
                     tally.preventedNextInstanceFromSources.add(
                         modification.damageSourceId to modification.halveRoundedDown
@@ -151,7 +169,7 @@ internal class PlayerActiveEffectsProjector(
     }
 
     private fun ShieldTally.badges(state: GameState): List<ClientPlayerEffect> {
-        val effects = mutableListOf<ClientPlayerEffect>()
+        val effects = leavingAmountShields.toMutableList()
         if (preventsAllDamage) {
             effects.add(
                 ClientPlayerEffect(

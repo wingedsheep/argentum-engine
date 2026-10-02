@@ -12,6 +12,8 @@ import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.dsl.Costs as SdkCosts
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -157,6 +159,35 @@ class ActivatedTest : StringSpec({
     "the choice form is several abilities and never a colour set" {
         fragment("{T}: Add {B} or {G}.").script.activatedAbilities.map { it.effect } shouldBe
             listOf(Effects.AddMana(Color.BLACK), Effects.AddMana(Color.GREEN))
+    }
+
+    // Shivan Reef's golden: each colour is its own ability, and each carries the damage rider.
+    "a painland's rider follows every ability the choice denotes" {
+        val rider = Effects.DealDamage(1, EffectTarget.PlayerRef(Player.You))
+        fragment("{T}: Add {U} or {R}. ~ deals 1 damage to you.").script.activatedAbilities.map { it.effect } shouldBe
+            listOf(Effects.AddMana(Color.BLUE) then rider, Effects.AddMana(Color.RED) then rider)
+        fragment("{T}: Add {U} or {R}. ~ deals 1 damage to you.").script.activatedAbilities
+            .all { it.isManaAbility && it.timing == TimingRule.ManaAbility } shouldBe true
+        roundTrips("{T}: Add {U} or {R}. ~ deals 1 damage to you.")
+        roundTrips("{T}: Add {W}, {U}, or {B}. ~ deals 1 damage to you.")
+    }
+
+    // One printed "target" would become one target slot per ability, and two abilities with different
+    // riders were never printed as one line.
+    "a choice rider that targets declines, and unequal riders refuse to print" {
+        Grammar.abilityLine.parseLine("{T}: Add {U} or {R}. ~ deals 1 damage to any target.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+        val painland = fragment("{T}: Add {U} or {R}. ~ deals 1 damage to you.")
+        val (blue, red) = painland.script.activatedAbilities
+        val unequal = painland.copy(
+            script = painland.script.copy(
+                activatedAbilities = listOf(
+                    blue,
+                    red.copy(effect = Effects.AddMana(Color.RED) then Effects.DealDamage(2, EffectTarget.PlayerRef(Player.You))),
+                )
+            )
+        )
+        Grammar.abilityLine.printLine(unequal) shouldBe null
     }
 
     // Dark Ritual: producing mana is a spell effect in its own right, which is why the rule lives in

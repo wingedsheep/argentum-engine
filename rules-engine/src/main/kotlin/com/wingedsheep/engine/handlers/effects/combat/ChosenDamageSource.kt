@@ -103,6 +103,7 @@ fun damageSourceChoices(state: GameState, resolvingContext: EffectContext? = nul
             is SerializableModification.PreventNextDamage -> mod.onlyFromSource
             is SerializableModification.PreventAllDamageFromSource -> mod.damageSourceId
             is SerializableModification.PreventNextDamageInstanceFromSource -> mod.damageSourceId
+            is SerializableModification.PreventNextDamageLeavingAmount -> mod.damageSourceId
             is SerializableModification.PreventNextDamageFromSourceShield -> mod.damageSourceId
             else -> null
         }
@@ -110,6 +111,7 @@ fun damageSourceChoices(state: GameState, resolvingContext: EffectContext? = nul
             is SerializableModification.PreventNextDamage,
             is SerializableModification.PreventAllDamageFromSource,
             is SerializableModification.PreventNextDamageInstanceFromSource,
+            is SerializableModification.PreventNextDamageLeavingAmount,
             is SerializableModification.PreventNextDamageFromSourceShield,
             is SerializableModification.PreventAllDamageDealtBy,
             is SerializableModification.PreventAllDamageTo,

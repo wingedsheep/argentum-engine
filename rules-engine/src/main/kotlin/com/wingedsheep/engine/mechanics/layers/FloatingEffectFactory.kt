@@ -71,6 +71,7 @@ fun GameState.createFloatingEffect(
         is SerializableModification.PreventNextDamage -> modification.onlyFromSource
         is SerializableModification.PreventAllDamageFromSource -> modification.damageSourceId
         is SerializableModification.PreventNextDamageInstanceFromSource -> modification.damageSourceId
+        is SerializableModification.PreventNextDamageLeavingAmount -> modification.damageSourceId
         is SerializableModification.PreventNextDamageFromSourceShield -> modification.damageSourceId
         else -> null
     }

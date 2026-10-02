@@ -1006,6 +1006,37 @@ Differential **7,023 compared / 62 divergent → 7,029 / 63**. Two new divergenc
 - **Standing SDK finding**: Lost Jitte puts its counter on `EquippedCreature` where the grammar builds
   `EnchantedCreature` — the minority-spelling finding `SelfSteps`' attached clauses already name.
 
+## The painland rider band
+
+The seventeenth loop band, tail key `~ deals # …`: "{T}: Add {U} or {R}. **~ deals 1 damage to
+you.**" — the painlands and the Talismans. **28 lines**; the probe (drop the rider sentence) finished
+25 whole cards over the corpus. It delivered **30 hand-written cards read whole (7,412 → 7,442)**.
+
+### Two gaps, one of them a missing row
+
+The rider was blocked twice. "~ deals 1 damage to you" was not a sentence at all: `damageRecipients`
+named every player but the controller, so "you" is one more row — `PlayerRef(Player.You)`, the
+spelling 52 hand-written "damage to you" lines use — and that row reaches the counted and the
+"equal to" forms in every position at once. That is where the delivery beat the probe: the upkeep
+costs of the Arabian Nights djinns and the "becomes tapped" pain of City of Brass needed only the
+row.
+
+The second gap is the choice form. "Add {U} or {R}." denotes two abilities, and the sentence after it
+belongs to both, so `Activated.choiceWithRider` reads it once through `Steps.step` and builds each
+ability as `AddMana(colour) then rider` — exactly what Shivan Reef's golden holds. `match` insists
+every ability carries the same rider, and refuses one with targets: two abilities would hold two
+target slots for one printed "target".
+
+### What the differential found
+
+Differential **7,029 compared / 63 divergent → 7,058 / 69**. All six new divergences are **standing
+SDK findings**, one spelling: City of Brass, Juzám Djinn, Serendib Efreet, Callous Inspector,
+Midnight Reaper and Dark Bargain deal their damage to `EffectTarget.Controller`, where the majority
+(52 lines to 22) writes `PlayerRef(Player.You)` — two SDK values for "you", the minority left to
+report. Midnight Reaper also spells `damageSource = Self` explicitly, the Jagged-Scar finding; Dark
+Bargain's golden splices its `Patterns.Library` sequence flat with `then`, where the grammar keeps the
+first sentence's composite whole.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
