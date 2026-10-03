@@ -29,8 +29,9 @@ class CyclingEnumerator : ActionEnumerator {
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
 
             // Cycling is an activated ability of the card in hand (CR 702.29a), so an any-zone
-            // "players can't activate abilities" (Yuriko, Blade of the Mighty) forbids it.
-            if (context.castPermissionUtils.isActivationPreventedForPlayer(state, cardId, playerId)) continue
+            // "players can't activate abilities" (Yuriko, Blade of the Mighty) or a name lock on
+            // "sources" (Pithing Needle) forbids it.
+            if (context.castPermissionUtils.isActivationForbidden(state, cardId, playerId)) continue
 
             val cyclingAbilities = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Cycling>()
             val plainCycling = cyclingAbilities.firstOrNull { it.searchFilter == null }

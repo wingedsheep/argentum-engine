@@ -50,6 +50,10 @@ class SaddleEnumerator : ActionEnumerator {
                 .filterIsInstance<KeywordAbility.Numeric>()
                 .firstOrNull { it.keyword == Keyword.SADDLE } ?: continue
 
+            // Saddle is an activated ability (CR 702.171a) — mirror `SaddleMountHandler`'s
+            // activation-prohibition check so it's never offered and then refused.
+            if (context.castPermissionUtils.isActivationForbidden(state, entityId, playerId)) continue
+
             // Find all other untapped creatures the player controls that can saddle this mount.
             val validSaddleCreatures = mutableListOf<TapForPowerCreatureData>()
             var totalAvailablePower = 0

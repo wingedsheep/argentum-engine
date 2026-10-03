@@ -181,9 +181,10 @@ internal class ActivationValidator(
             val inZone = state.getZone(ownerId, ability.activateFromZone).contains(action.sourceId)
             if (!inZone) return "This ability can only be activated from the ${ability.activateFromZone.name.lowercase()}"
             if (ownerId != action.playerId) return "You don't own this card"
-            // An unqualified "players can't activate abilities" (Yuriko, Blade of the Mighty)
-            // reaches abilities of cards in every zone, not just permanents.
-            if (castPermissionUtils.isActivationPreventedForPlayer(
+            // An unqualified "players can't activate abilities" (Yuriko, Blade of the Mighty) and
+            // a name lock on "sources" (Pithing Needle) reach abilities of cards in every zone,
+            // not just permanents.
+            if (castPermissionUtils.isActivationForbidden(
                     state, action.sourceId, action.playerId, abilityIsManaAbility = ability.isManaAbility
                 )
             ) {

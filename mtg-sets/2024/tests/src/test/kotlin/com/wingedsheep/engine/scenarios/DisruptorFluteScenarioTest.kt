@@ -3,9 +3,13 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.CrewVehicle
+import com.wingedsheep.engine.core.CycleCard
 import com.wingedsheep.engine.core.OptionChosenResponse
+import com.wingedsheep.engine.core.SaddleMount
 import com.wingedsheep.engine.state.components.battlefield.chosenCardName
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.mtg.sets.definitions.fra.cards.SeasonedCryomancer
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
@@ -103,6 +107,89 @@ class DisruptorFluteScenarioTest : ScenarioTestBase() {
 
             withClue("Non-mana ability locked") { game.nonManaAbilityCount(necropolis) shouldBe 0 }
             withClue("Mana ability unaffected") { game.manaAbilityCount(necropolis) shouldNotBe 0 }
+        }
+
+        // "Sources" is any object, so the lock reaches cards outside the battlefield too.
+        test("a named card in hand can't be cycled") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardInHand(1, "Disruptor Flute")
+                .withCardInHand(1, "Disciple of Law")
+                .withLandsOnBattlefield(1, "Plains", 6)
+                .withCardInLibrary(1, "Island")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.getLegalActions(1).any { it.action is CycleCard } shouldBe true
+            game.castFluteNaming("Disciple of Law")
+
+            game.getLegalActions(1).any { it.action is CycleCard } shouldBe false
+            game.cycleCard(1, "Disciple of Law").error shouldNotBe null
+        }
+
+        test("a named card's graveyard ability can't be activated") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardInHand(1, "Disruptor Flute")
+                .withCardInGraveyard(1, "Seasoned Cryomancer")
+                .withLandsOnBattlefield(1, "Island", 8)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val cryomancer = game.findCardsInGraveyard(1, "Seasoned Cryomancer").single()
+            game.nonManaAbilityCount(cryomancer) shouldBe 1
+            game.castFluteNaming("Seasoned Cryomancer")
+
+            game.nonManaAbilityCount(cryomancer) shouldBe 0
+            val abilityId = SeasonedCryomancer.activatedAbilities.single().id
+            game.execute(ActivateAbility(game.player1Id, cryomancer, abilityId)).error shouldNotBe null
+        }
+
+        test("crew and saddle are activated abilities, so a named Vehicle or Mount is locked") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardInHand(1, "Disruptor Flute")
+                .withCardOnBattlefield(1, "Ballista Charger")
+                .withCardOnBattlefield(1, "Caustic Bronco")
+                .withCardOnBattlefield(1, "Hill Giant", summoningSickness = false)
+                .withLandsOnBattlefield(1, "Island", 2)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val charger = game.findPermanent("Ballista Charger")!!
+            val bronco = game.findPermanent("Caustic Bronco")!!
+            val giant = game.findPermanent("Hill Giant")!!
+            game.castFluteNaming("Ballista Charger")
+
+            withClue("the named Vehicle can't be crewed") {
+                game.getLegalActions(1).any { (it.action as? CrewVehicle)?.vehicleId == charger } shouldBe false
+                game.execute(CrewVehicle(game.player1Id, charger, listOf(giant))).error shouldNotBe null
+            }
+            withClue("an unnamed Mount still saddles") {
+                game.getLegalActions(1).any { (it.action as? SaddleMount)?.mountId == bronco } shouldBe true
+            }
+        }
+
+        test("saddle is locked on a named Mount") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardInHand(1, "Disruptor Flute")
+                .withCardOnBattlefield(1, "Caustic Bronco")
+                .withCardOnBattlefield(1, "Hill Giant", summoningSickness = false)
+                .withLandsOnBattlefield(1, "Island", 2)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val bronco = game.findPermanent("Caustic Bronco")!!
+            val giant = game.findPermanent("Hill Giant")!!
+            game.castFluteNaming("Caustic Bronco")
+
+            game.getLegalActions(1).any { (it.action as? SaddleMount)?.mountId == bronco } shouldBe false
+            game.execute(SaddleMount(game.player1Id, bronco, listOf(giant))).error shouldNotBe null
         }
     }
 }

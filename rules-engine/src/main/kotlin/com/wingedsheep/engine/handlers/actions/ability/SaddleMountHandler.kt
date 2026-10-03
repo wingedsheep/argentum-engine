@@ -37,6 +37,7 @@ import kotlin.reflect.KClass
 class SaddleMountHandler(
     private val cardRegistry: CardRegistry,
     private val stackResolver: StackResolver,
+    private val castPermissionUtils: com.wingedsheep.engine.legalactions.utils.CastPermissionUtils? = null,
 ) : ActionHandler<SaddleMount> {
     override val actionType: KClass<SaddleMount> = SaddleMount::class
 
@@ -65,6 +66,12 @@ class SaddleMountHandler(
         val projected = state.projectedState
         if (projected.getController(action.mountId) != action.playerId) {
             return "You don't control this permanent"
+        }
+
+        // Saddle is an activated ability of the Mount (CR 702.171a), so a "players can't activate
+        // abilities" static (Grand Abolisher) or a name lock (Pithing Needle) forbids it.
+        if (castPermissionUtils?.isActivationForbidden(state, action.mountId, action.playerId) == true) {
+            return "An effect prevents you from activating that ability right now"
         }
 
         val cardDef = cardRegistry.getCard(mountCard.cardDefinitionId)
@@ -187,6 +194,7 @@ class SaddleMountHandler(
             return SaddleMountHandler(
                 services.cardRegistry,
                 services.stackResolver,
+                services.castPermissionUtils,
             )
         }
     }

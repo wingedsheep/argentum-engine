@@ -45,8 +45,8 @@ class CrewEnumerator : ActionEnumerator {
                 .firstOrNull { it.keyword == Keyword.CREW } ?: continue
 
             // Crew is an activated ability (CR 702.122a) — mirror `CrewVehicleHandler`'s
-            // "players can't activate abilities" check so it's never offered and then refused.
-            if (context.castPermissionUtils.isActivationPreventedForPlayer(state, entityId, playerId)) continue
+            // activation-prohibition check so it's never offered and then refused.
+            if (context.castPermissionUtils.isActivationForbidden(state, entityId, playerId)) continue
 
             // "Crew N. Activate only once each turn." — once it's already been crewed this turn,
             // the crew action is no longer available (Luxurious Locomotive).

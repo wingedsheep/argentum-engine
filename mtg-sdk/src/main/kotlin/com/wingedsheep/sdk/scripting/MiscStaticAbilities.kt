@@ -862,12 +862,19 @@ data object PreventCycling : StaticAbility {
  * @property filter Which permanents' activated abilities are locked (matched via projected state).
  * @property nonManaAbilitiesOnly When true, mana abilities are exempt; only non-mana abilities
  *   are blocked. Defaults to false (block everything, the Cursed Totem shape).
+ * @property anyZone When true, the lock also reaches abilities of cards outside the battlefield —
+ *   cycling and typecycling, channel and other hand abilities, graveyard and command-zone
+ *   abilities — matched against the card in its zone. This is the "sources with the chosen name"
+ *   wording (Pithing Needle, Sorcerous Spyglass, Disruptor Flute): a source is any object, not
+ *   only a permanent. Off (the default), the filter speaks of permanents only — Cursed Totem's
+ *   "activated abilities of creatures" never stops a creature card cycling from hand.
  */
 @SerialName("PreventActivatedAbilities")
 @Serializable
 data class PreventActivatedAbilities(
     val filter: GameObjectFilter,
-    val nonManaAbilitiesOnly: Boolean = false
+    val nonManaAbilitiesOnly: Boolean = false,
+    val anyZone: Boolean = false
 ) : StaticAbility {
     override val description: String =
         if (nonManaAbilitiesOnly)
