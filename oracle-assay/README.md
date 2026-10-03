@@ -1331,6 +1331,36 @@ player investigates" stay declined: a dynamic count and a non-default controller
 Differential **7,170 compared / 73 divergent → 7,186 / 73**. All sixteen newly compared cards agree
 with their goldens; no card moved.
 
+## The three-type list band
+
+The twenty-eighth loop band, tail key `, enchantment, or …`: the flexible-Naturalize target noun —
+"destroy target **artifact, enchantment, or creature with flying**", "artifact, enchantment, or
+land", "creature, enchantment, or planeswalker". **24 lines**; the probe (dropping the first two
+members) finished 16 cards. It delivered **10 hand-written cards read whole (7,607 → 7,617)**; the
+rest of the family is unimplemented cards, Atraxa's Fall's four-type list, and the plural.
+
+### Two model shapes, and the last member decides
+
+The SDK spells a three-type union two ways and the cards use both, split cleanly by whether the last
+member carries a quality. Three bare types are one flat `CardPredicate.Or` — the shape
+`GameObjectFilter.ArtifactEnchantmentOrLand` and `ArtifactCreatureOrEnchantment` publish and Creeping
+Mold and Get Lost write. A qualified last member ("creature with flying", "tapped creature") is the
+`GameObjectFilter.or` fold, `(Artifact or Enchantment) or Creature.withKeyword(FLYING)`, nested
+because `or` is binary — what Broken Wings, Spider Food, Exorcise and five more write. So
+`Filters.threeTypeList` builds the flat union when the last member is a bare type and the fold
+otherwise, and its `match` proposes a decomposition and rebuilds it, so the fold of three bare types
+and the flat union over a qualified member each refuse to print. The list exists only as the singular
+uncontrolled noun: the plural changes the conjunction, and a controller clause after it would leave
+its scope ambiguous.
+
+### What the differential found
+
+Differential **7,213 compared / 73 divergent → 7,223 / 73**. One card bug, a spelling: **Shower of
+Arrows** wrote the flat raw `CardPredicate.Or` over a qualified member, the only compared card
+outside the fold; it now writes the fold like its eight siblings. Behaviour is unchanged — the
+engine matches both shapes the same way. Mutant Chain Reaction writes the same raw shape but is not
+yet compared (its token line declines), so it is left for the band that reaches it.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
