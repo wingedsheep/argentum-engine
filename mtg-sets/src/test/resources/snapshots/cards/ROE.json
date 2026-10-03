@@ -1923,6 +1923,80 @@
     "colorIdentityOverride": []
 }
 
+// Ondu Giant
+{
+    "name": "Ondu Giant",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Giant Druid",
+    "oracleText": "When this creature enters, you may search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ondu Giant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "placement": "Tapped"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Some druids nurture gardens. Others nurture continents.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/daf8b1e5-418f-4e64-a2ac-0e03b387ed33.jpg?1783941961"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Pathrazer of Ulamog
 {
     "name": "Pathrazer of Ulamog",

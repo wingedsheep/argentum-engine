@@ -204,7 +204,8 @@ object SbaZoneMovementHelper {
     /**
      * Move a permanent to graveyard via SBA (planeswalker loyalty, saga sacrifice,
      * unattached aura, legend rule). Emits ZoneChangeEvent only (no CreatureDestroyedEvent).
-     * Respects zone change redirects.
+     * Respects zone change redirects and an ExileOnDeath mark — "dies" covers any permanent, so a
+     * planeswalker hit by Fanged Flames that falls to 0 loyalty is exiled instead.
      */
     fun putPermanentInGraveyard(
         zones: ZoneTransitionService,
@@ -213,9 +214,13 @@ object SbaZoneMovementHelper {
         cardComponent: CardComponent,
         lastKnownAttachedTo: EntityId? = null
     ): ExecutionResult {
+        val exiledState = ZoneMovementUtils.consumeExileOnDeath(state, entityId)
+        val newState = exiledState ?: state
+        val destinationZone = if (exiledState != null) Zone.EXILE else Zone.GRAVEYARD
+
         // Delegate zone movement to ZoneTransitionService for full cleanup
         val transitionResult = zones.moveToZone(
-            state, entityId, Zone.GRAVEYARD,
+            newState, entityId, destinationZone,
             com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(lastKnownAttachedTo = lastKnownAttachedTo)
         )
 

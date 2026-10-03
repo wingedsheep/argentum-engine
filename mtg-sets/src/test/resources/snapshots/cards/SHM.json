@@ -1790,6 +1790,72 @@
     }
 }
 
+// Leechridden Swamp
+{
+    "name": "Leechridden Swamp",
+    "manaCost": "",
+    "typeLine": "Land — Swamp",
+    "oracleText": "({T}: Add {B}.)\nThis land enters tapped.\n{B}, {T}: Each opponent loses 1 life. Activate only if you control two or more black permanents.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Leechridden Swamp:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "permanent black"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    }
+                ]
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "273",
+        "rarity": "UNCOMMON",
+        "artist": "Lars Grant-West",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/afa47202-5824-4f6a-b306-465976d4d422.jpg?1783942706"
+    }
+}
+
 // Loamdragger Giant
 {
     "name": "Loamdragger Giant",

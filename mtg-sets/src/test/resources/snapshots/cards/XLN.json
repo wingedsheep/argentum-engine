@@ -1694,6 +1694,75 @@
     ]
 }
 
+// Imperial Aerosaur
+{
+    "name": "Imperial Aerosaur",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Flying\nWhen this creature enters, another target creature you control gets +1/+1 and gains flying until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Imperial Aerosaur:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "Its assistance is unnervingly similar to its hunting technique.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d08f90b-9b98-4237-9826-578fb812d412.jpg?1783935802"
+    }
+}
+
 // Imperial Lancer
 {
     "name": "Imperial Lancer",

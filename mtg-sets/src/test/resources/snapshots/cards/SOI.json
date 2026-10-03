@@ -7411,6 +7411,93 @@
     ]
 }
 
+// Warped Landscape
+{
+    "name": "Warped Landscape",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{2}, {T}, Sacrifice this land: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Warped Landscape:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Warped Landscape:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "280",
+        "artist": "Cliff Childs",
+        "flavorText": "Each cryptolith twists the plane's mana, bending its flow to a singular purpose.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16793435-8eb3-4d57-8683-de1120eb46b6.jpg?1783937697"
+    },
+    "colorIdentityOverride": []
+}
+
 // Westvale Abbey
 {
     "name": "Westvale Abbey",

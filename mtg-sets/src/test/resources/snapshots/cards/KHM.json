@@ -2062,6 +2062,87 @@
     ]
 }
 
+// Immersturm Raider
+{
+    "name": "Immersturm Raider",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Demon Berserker",
+    "oracleText": "When this creature enters, you may discard a card. If you do, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Immersturm Raider:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "The demons took no captives and claimed no spoils; they sought only to destroy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77da4de2-4d34-40e5-8fc0-850aef05356b.jpg?1783928227"
+    }
+}
+
 // Iron Verdict
 {
     "name": "Iron Verdict",

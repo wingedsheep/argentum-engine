@@ -9001,9 +9001,13 @@ staticAbility {
   `EntityNumericProperty` through the cost calculator's own smaller switch; the shared thing is the
   property type, not the evaluation. The evaluated value is floored at 0 per **CR 107.1b**, per
   source, so a source shrunk below 0 power reduces nothing rather than taxing the spell (and never
-  eats another source's discount). Prefer `Fixed(n)` for a literal amount. Only meaningful with a
-  battlefield-sourced target — under `SelfCast` there is no source permanent (the card *is* the
-  spell), so a source-relative amount contributes 0. … — see `CostStaticAbilities.kt`
+  eats another source's discount). Prefer `Fixed(n)` for a literal amount. Under `SelfCast` there is
+  no source permanent (the card *is* the spell), so "you" is the **caster** and a source-relative
+  amount contributes 0 — player-scoped amounts are the self-cast use: Deem Inferior's "this spell
+  costs {1} less to cast for each card you've drawn this turn" is
+  `ModifySpellCost(SelfCast, ReduceGenericBy(Dynamic(DynamicAmounts.cardsDrawnThisTurn())))`, and
+  Bloodsoaked Insight's "for each 1 life your opponents have lost this turn" is
+  `Dynamic(DynamicAmounts.lifeLostThisTurn(Player.EachOpponent))`. … — see `CostStaticAbilities.kt`
   for the full list.
 - `gating: CostGating` — gates whether/how often the modifier fires:
   - `None` (default) — applies to every matching cast.

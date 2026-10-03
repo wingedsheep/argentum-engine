@@ -3367,7 +3367,7 @@ object Effects {
         CreatePredefinedTokenEffect("Clue", controller = controller, dynamicCount = count)
 
     /**
-     * Investigate (keyword action, CR 701.36): create [count] Clue tokens. Synonymous with
+     * Investigate (keyword action, CR 701.16): create [count] Clue tokens. Synonymous with
      * [CreateClue]; named after the keyword action so card text "investigate" maps directly.
      *
      * @param count Number of Clue tokens to create (e.g. "investigate twice" → 2)

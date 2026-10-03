@@ -119,6 +119,9 @@ object TokenArt {
             "Snake" to "https://cards.scryfall.io/art_crop/front/8/3/83a6a142-f065-4a74-9a73-8105be29bc94.jpg?1562636831",
             "Soldier" to "https://cards.scryfall.io/art_crop/front/b/1/b159b57d-bc52-4cef-ac7a-e364e40c3d03.jpg?1761614919",
             "Sphinx" to "https://cards.scryfall.io/art_crop/front/f/8/f82ba894-7b10-45ae-9322-60ef85a2869d.jpg?1572892536",
+            // Spawn (DST — Spawning Pit). Darksteel printed no token cards; this is the only
+            // Scryfall token typed plain Spawn (Warhammer 40,000 Commander).
+            "Spawn" to "https://cards.scryfall.io/art_crop/front/b/c/bc938f2e-2d6e-4afd-9a88-34eeaf0b51e3.jpg?1783920661",
             "Spider" to "https://cards.scryfall.io/art_crop/front/7/d/7df0de51-8d05-475a-832e-de8a0f60849e.jpg?1562279134",
             "Spirit" to "https://cards.scryfall.io/art_crop/front/1/4/14ef4815-3dfe-47b3-ad81-1506925280d3.jpg?1561756700",
             "Squirrel" to "https://cards.scryfall.io/art_crop/front/5/a/5a6ec62e-0e9b-4312-bfe8-cc85d76fd9e0.jpg?1721425294",

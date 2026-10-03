@@ -1315,6 +1315,88 @@
     ]
 }
 
+// Elvish Rejuvenator
+{
+    "name": "Elvish Rejuvenator",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "When this creature enters, look at the top five cards of your library. You may put a land card from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elvish Rejuvenator:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "land",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may put a land card from among them onto the battlefield tapped",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0299b00-b16c-4e7d-b67a-ec160ea81a54.jpg?1783934536"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Epicure of Blood
 {
     "name": "Epicure of Blood",
@@ -3569,6 +3651,97 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Stitcher's Supplier
+{
+    "name": "Stitcher's Supplier",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "When this creature enters or dies, mill three cards. (Put the top three cards of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stitcher's Supplier:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Stitcher's Supplier:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Seaman",
+        "flavorText": "No part goes to waste.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b737126-50b5-4678-91bf-197b64086fe4.jpg?1783934562"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

@@ -307,6 +307,72 @@
     ]
 }
 
+// Blighted Fen
+{
+    "name": "Blighted Fen",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{4}{B}, {T}, Sacrifice this land: Target opponent sacrifices a creature of their choice.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Blighted Fen:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Blighted Fen:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{B}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "UNCOMMON",
+        "artist": "Jonas De Ro",
+        "flavorText": "\"We came to a place where the skin of Zendikar was peeled back and its bones lay bare to the sky.\"\n—Greenweaver Mina",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29d02950-cd50-4662-97af-3106598dc3c4.jpg?1783938175"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Blighted Gorge
 {
     "name": "Blighted Gorge",

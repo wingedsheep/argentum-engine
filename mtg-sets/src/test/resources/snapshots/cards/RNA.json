@@ -4006,6 +4006,85 @@
     ]
 }
 
+// Titanic Brawl
+{
+    "name": "Titanic Brawl",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {1} less to cast if it targets a creature you control with a +1/+1 counter on it.\nTarget creature you control fights target creature you don't control. (Each deals damage equal to its power to the other.)",
+    "script": {
+        "spellEffect": {
+            "type": "Fight",
+            "target1": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "target2": {
+                "type": "BoundVariable",
+                "name": "t1"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t1"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 1,
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "HasCounter",
+                                    "counterType": "PLUS_ONE_PLUS_ONE"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Whoever wins, the neighborhood loses.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcf9b57a-a759-4488-965a-651070cd2156.jpg?1783933664"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Tome of the Guildpact
 {
     "name": "Tome of the Guildpact",
