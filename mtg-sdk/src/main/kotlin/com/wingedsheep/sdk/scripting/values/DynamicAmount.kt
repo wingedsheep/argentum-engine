@@ -56,6 +56,12 @@ enum class TurnTracker {
      * losing 3 in a turn leaves the amount lost at 3).
      */
     LIFE_LOST_AMOUNT,
+    /**
+     * [LIFE_LOST] one turn back: whether the player lost life during the previous turn, whoever's
+     * turn that was. Snapshotted at the turn boundary, before the this-turn marker is cleared.
+     * Powers "if an opponent lost life last turn" (Feast on the Fallen).
+     */
+    LIFE_LOST_LAST_TURN,
     /** Indicator (0 or 1) that the player declared at least one attacker this turn. */
     PLAYER_ATTACKED,
     /** Indicator (0 or 1) that the player was dealt combat damage this turn. */
@@ -306,6 +312,7 @@ enum class TurnTracker {
         LIFE_GAINED -> "the amount of life ${player.possessive} gained this turn"
         LIFE_LOST -> "whether ${player.description} lost life this turn"
         LIFE_LOST_AMOUNT -> "the amount of life ${player.possessive} lost this turn"
+        LIFE_LOST_LAST_TURN -> "whether ${player.description} lost life last turn"
         PLAYER_ATTACKED -> "whether ${player.description} attacked this turn"
         DEALT_COMBAT_DAMAGE -> "whether ${player.description} were dealt combat damage this turn"
         DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE ->

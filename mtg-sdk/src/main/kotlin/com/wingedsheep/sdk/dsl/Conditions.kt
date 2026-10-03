@@ -1889,6 +1889,13 @@ object Conditions {
         trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.LIFE_LOST, player = Player.EachOpponent)
 
     /**
+     * If an opponent lost life last turn — the turn before this one, whoever's it was (Feast on
+     * the Fallen).
+     */
+    val OpponentLostLifeLastTurn: ConditionInterface =
+        trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.LIFE_LOST_LAST_TURN, player = Player.EachOpponent)
+
+    /**
      * If an opponent was dealt noncombat damage this turn (Whiplash Wordsmith, Grim Repriser).
      * Prevented damage isn't dealt, so it doesn't count.
      */
