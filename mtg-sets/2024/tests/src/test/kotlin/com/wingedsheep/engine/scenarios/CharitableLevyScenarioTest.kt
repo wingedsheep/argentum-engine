@@ -74,6 +74,24 @@ class CharitableLevyScenarioTest : FunSpec({
         }
     }
 
+    test("creature spells are neither taxed nor counted") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val levy = driver.putPermanentOnBattlefield(me, "Charitable Levy")
+
+        val lions = driver.putCardInHand(me, "Savannah Lions")
+        driver.giveMana(me, Color.WHITE, 1)
+        withClue("{W} alone pays for Savannah Lions") {
+            driver.submit(
+                CastSpell(playerId = me, cardId = lions, paymentStrategy = PaymentStrategy.FromPool)
+            ).outcome shouldBe Outcome.Done
+        }
+        driver.resolveWholeStack()
+
+        driver.findPermanent(me, "Savannah Lions") shouldNotBe null
+        driver.collectionCounters(levy) shouldBe 0
+    }
+
     test("both players' noncreature spells add collection counters") {
         val driver = createDriver()
         val me = driver.activePlayer!!
