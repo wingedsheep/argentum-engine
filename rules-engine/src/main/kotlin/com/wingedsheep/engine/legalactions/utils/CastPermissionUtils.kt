@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.legalactions.utils
 
+import com.wingedsheep.engine.state.manaAbilitySourceAllowed
+
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.handlers.ConditionEvaluator
@@ -1118,6 +1120,7 @@ class CastPermissionUtils(
         activatingPlayerId: EntityId,
         abilityIsManaAbility: Boolean = false
     ): Boolean {
+        if (abilityIsManaAbility && !state.manaAbilitySourceAllowed(activatingPlayerId, sourceId, predicateEvaluator)) return true
         val projected = state.projectedState
         val sourceOnBattlefield = sourceId in state.getBattlefield()
         for (permanentId in state.getBattlefield()) {
