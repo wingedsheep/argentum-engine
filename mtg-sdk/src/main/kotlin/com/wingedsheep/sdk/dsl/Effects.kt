@@ -4591,6 +4591,13 @@ object Effects {
     )
 
     /** Instruct [player] to play the first gathered card if able, paying its costs. */
+    /** Source filters are evaluated from the affected player's perspective, at activation time. */
+    fun WithManaAbilitySources(
+        effect: Effect,
+        sources: GameObjectFilter,
+        player: EffectTarget = EffectTarget.Controller,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.WithManaAbilitySourcesEffect(effect, sources, player)
+
     fun ForcePlay(from: String, player: EffectTarget = EffectTarget.Controller, storePlayedTo: String? = null): Effect =
         com.wingedsheep.sdk.scripting.effects.ForcePlayEffect(from, player, storePlayedTo)
 

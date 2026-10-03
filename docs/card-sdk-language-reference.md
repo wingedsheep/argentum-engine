@@ -16195,4 +16195,24 @@ Shared-turn teams follow the existing player-control team rule. A later resoluti
 and a completed window reveals the underlying turn control again. Session hotseat routing keeps precedence.
 
 This primitive composes with `Effects.ForcePlay` for mandatory paid card play. Word of Command
-still needs mana-origin/spending restrictions (G31); it is not yet authorable faithfully.
+still needs the produced-mana spending obligation (G40); it is not yet authorable faithfully.
+
+### Scoped mana-ability sources
+
+`Effects.WithManaAbilitySources(effect, sources, player = Controller)` runs a nested instruction
+with a restriction on that player's **activated mana abilities**. Their sources must match the
+`GameObjectFilter` at activation time, using projected characteristics and the affected player's
+perspective. Source-relative references retain the enclosing resolution's context. Nested restrictions
+intersect. The serializable scope remains active across casting and payment decisions, then expires
+before the next sibling instruction. Other players and existing floating mana are unaffected.
+
+Example: `Effects.WithManaAbilitySources(Effects.ForcePlay(chosen, opponent),
+GameObjectFilter.Land.youControl(), opponent)` limits the forced play's activated mana abilities
+to lands the affected player controls. Granted abilities are tested on the permanent carrying them;
+objects tapped or sacrificed as activation costs do not become the ability's source. Triggered mana
+abilities are not activation choices and are unaffected. Existing mana-source menus, automatic and
+explicit payment, and affordability use the same restriction. No new decision or client field is added.
+
+This is only the source restriction. It does **not** require all newly produced mana to be spent.
+Word of Command still needs the distinct produced-mana spending obligation (G40), including exact
+color/restriction provenance and activation chains, before it can be authored faithfully.

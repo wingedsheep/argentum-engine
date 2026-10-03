@@ -11,6 +11,7 @@ import com.wingedsheep.engine.legalactions.utils.donorCardsActivatedAbilities
 import com.wingedsheep.engine.legalactions.utils.donorGrantReaches
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.manaAbilitySourceAllowed
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
@@ -407,7 +408,7 @@ class ManaSolver(
             cachedSources ?: findAvailableManaSources(state, playerId)
         }
         val availableSources = rawSources
-            .filter { it.entityId !in excludeSources }
+            .filter { it.entityId !in excludeSources && state.manaAbilitySourceAllowed(playerId, it.entityId, predicateEvaluator) }
             // Auto-pay must not silently sacrifice permanents (e.g. Treasure tokens).
             // The bonus-mana accounting in canPay() still counts these via
             // sacrificeSelfManaBySource(), but the solver itself never picks them.
@@ -1096,6 +1097,7 @@ class ManaSolver(
         }
         val candidates = sources.filter { source ->
             source.isSnow && source.entityId !in excludeSources &&
+                state.manaAbilitySourceAllowed(playerId, source.entityId, predicateEvaluator) &&
                 !source.requiresSacrifice && source.tapPermanentsSubCost == null &&
                 source.colorActivationManaCost.values.all { it == 0 } &&
                 (source.restriction == null || spellContext != null && source.restriction.isSatisfiedBy(spellContext)) &&
@@ -1308,6 +1310,7 @@ class ManaSolver(
         val battlefieldCards = projected.getBattlefieldControlledBy(playerId) + borrowed.keys
 
         return battlefieldCards.mapNotNull { entityId ->
+            if (!state.manaAbilitySourceAllowed(playerId, entityId, predicateEvaluator)) return@mapNotNull null
             val container = state.getEntity(entityId) ?: return@mapNotNull null
 
             // Must be untapped
@@ -2699,6 +2702,7 @@ class ManaSolver(
             precomputedSources ?: findAvailableManaSources(state, playerId)
         }
         val autoTappableSources = sourcesForCount
+            .filter { state.manaAbilitySourceAllowed(playerId, it.entityId, predicateEvaluator) }
             .filter { !it.requiresSacrifice && it.tapPermanentsSubCost == null }
         val sourceMana = autoTappableSources
             // A *mixed* source (Ancient Spring — "{T}: Add {U}" plus "{T}, Sacrifice this land:
@@ -2797,6 +2801,7 @@ class ManaSolver(
         val consumedIds = mutableSetOf<EntityId>()
 
         for (entityId in battlefieldCards) {
+            if (!state.manaAbilitySourceAllowed(playerId, entityId, predicateEvaluator)) continue
             val container = state.getEntity(entityId) ?: continue
             val card = container.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
@@ -2885,6 +2890,7 @@ class ManaSolver(
         var total = TapPermanentsBonusMana()
 
         for (entityId in projected.getBattlefieldControlledBy(playerId)) {
+            if (!state.manaAbilitySourceAllowed(playerId, entityId, predicateEvaluator)) continue
             val container = state.getEntity(entityId) ?: continue
             // Face-down permanents have no abilities (CR 708.2).
             if (container.has<FaceDownComponent>()) continue
@@ -3052,6 +3058,7 @@ class ManaSolver(
         val runtimeGrants = runtimeGrantedManaAbilities(state)
 
         for (entityId in battlefieldCards) {
+            if (!state.manaAbilitySourceAllowed(playerId, entityId, predicateEvaluator)) continue
             val container = state.getEntity(entityId) ?: continue
 
             // Already tapped → can't pay the {T} sub-cost.
@@ -3178,6 +3185,7 @@ class ManaSolver(
         val consumedIds = mutableSetOf<EntityId>()
 
         for (entityId in battlefieldCards) {
+            if (!state.manaAbilitySourceAllowed(playerId, entityId, predicateEvaluator)) continue
             val container = state.getEntity(entityId) ?: continue
             if (container.has<TappedComponent>()) continue
             val card = container.get<CardComponent>() ?: continue
