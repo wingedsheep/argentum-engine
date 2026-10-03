@@ -536,6 +536,7 @@ object ZoneMovementUtils {
             .without<SagaComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.SolvedComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.RenownedComponent>()
+            .without<com.wingedsheep.engine.state.components.battlefield.MonstrousComponent>()
             .without<ReplacementEffectSourceComponent>()
             .without<TimestampComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()

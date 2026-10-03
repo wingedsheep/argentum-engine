@@ -358,6 +358,15 @@ sealed interface ClientEvent {
         override val description: String = "$permanentName became renowned"
     ) : ClientEvent
 
+    /** A permanent became monstrous (CR 701.37b) — its monstrous payoffs are now switched on. */
+    @Serializable
+    @SerialName("permanentMonstrous")
+    data class PermanentMonstrous(
+        val permanentId: EntityId,
+        val permanentName: String,
+        override val description: String = "$permanentName became monstrous"
+    ) : ClientEvent
+
     @Serializable
     @SerialName("permanentExerted")
     data class PermanentExerted(
@@ -1154,6 +1163,11 @@ object ClientEventTransformer {
             )
 
             is BecameRenownedEvent -> ClientEvent.PermanentRenowned(
+                permanentId = event.entityId,
+                permanentName = event.entityName
+            )
+
+            is BecameMonstrousEvent -> ClientEvent.PermanentMonstrous(
                 permanentId = event.entityId,
                 permanentName = event.entityName
             )
