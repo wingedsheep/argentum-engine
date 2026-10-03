@@ -1,3 +1,81 @@
+// Creeperhulk
+{
+    "name": "Creeperhulk",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Plant Elemental",
+    "oracleText": "Trample\n{1}{G}: Until end of turn, target creature you control has base power and toughness 5/5 and gains trample.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Creeperhulk:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SetBaseStats",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}{G}: Until end of turn, target creature you control has base power and toughness 5/5 and gains trample."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "RARE",
+        "artist": "Ralph Horsley",
+        "flavorText": "\"I saw the devastation when the juggernauts crashed the walls of An Karras. Then I got to thinking.\"\n—Janji, sylvan druid",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c70f3a79-5b79-4496-9234-58baeae74af3.jpg?1783938866"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Jazal Goldmane
 {
     "name": "Jazal Goldmane",

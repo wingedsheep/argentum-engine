@@ -105,3 +105,64 @@
         "GREEN"
     ]
 }
+
+// Wolverine Riders
+{
+    "name": "Wolverine Riders",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Elf Warrior",
+    "oracleText": "At the beginning of each upkeep, create a 1/1 green Elf Warrior creature token.\nWhenever another Elf you control enters, you gain life equal to its toughness.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wolverine Riders:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Elf",
+                        "Warrior"
+                    ]
+                }
+            },
+            {
+                "id": "Wolverine Riders:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Elf ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "Toughness"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "RARE",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"We'll break their lines. The rest of you, follow!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/70fd0439-294b-454c-b2af-e814b85f4590.jpg?1783928337"
+    }
+}

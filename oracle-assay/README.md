@@ -1308,6 +1308,29 @@ agree, but the line rule does not depend on it.
 Differential **7,160 compared / 73 divergent → 7,170 / 73**. All ten newly compared cards agree with
 their goldens; no card moved.
 
+## The investigate band
+
+The twenty-seventh loop band, tail key `investigate.`: the keyword action as a whole effect — "When ~
+enters, **investigate**.", "{4}, {T}: Investigate.", "Whenever ~ deals combat damage to a player,
+investigate." and "investigate twice". **39 lines**; the probe (→ "draw a card.") finished 12 cards.
+It delivered **16 hand-written cards read whole (7,564 → 7,580)** — more than the probe, because
+"investigate twice" reads too, and the probe's stand-in only counted the singular.
+
+### A keyword action that is an existing noun
+
+CR 701.16a defines investigating as creating a Clue token, and `Effects.Investigate` and
+`Effects.CreateClue` build the same `CreatePredefinedTokenEffect("Clue")`. `Tokens` already printed
+that model as "create a Clue token" and its KDoc had reserved the keyword spelling for this: the two
+rows ("investigate", "investigate twice") are `alternate`s beside the predefined-token rows, so they
+read into the Clue model and print back as the noun form — a `VARIANT`. A canonical row would have
+given one model two printed forms. "Investigate once for each …", "investigate X times" and "Target
+player investigates" stay declined: a dynamic count and a non-default controller are different values.
+
+### What the differential found
+
+Differential **7,170 compared / 73 divergent → 7,186 / 73**. All sixteen newly compared cards agree
+with their goldens; no card moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
@@ -2058,7 +2081,7 @@ a number word, "X") and the keyword rider — plus a colour *run* with `keywordR
 keywords print in `Keyword`'s declaration order: both are `Color`/`Keyword`'s own, and a card that
 built its set the other way round still prints the sentence Oracle prints. The predefined nouns
 (Food, Treasure, Clue, Blood, Map, Lander, Shard) are a second family, each row calling the facade
-the SDK publishes for it — with "investigate" deliberately left out, because CR 701.36a makes it the
+the SDK publishes for it — with "investigate" deliberately left out, because CR 701.16a makes it the
 same model as "create a Clue token" and two canonical spellings would leave printing undecided.
 
 **An ability word is printed shape, and belongs to normalization.** CR 207.2c: *"they have no

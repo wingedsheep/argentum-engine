@@ -998,6 +998,112 @@
     ]
 }
 
+// Tempered Veteran
+{
+    "name": "Tempered Veteran",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "{W}, {T}: Put a +1/+1 counter on target creature with a +1/+1 counter on it.\n{4}{W}{W}, {T}: Put a +1/+1 counter on target creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tempered Veteran:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{W}, {T}: Put a +1/+1 counter on target creature with a +1/+1 counter on it."
+            },
+            {
+                "id": "Tempered Veteran:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{W}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{4}{W}{W}, {T}: Put a +1/+1 counter on target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "\"I've been carrying a sword since before you were born. I wouldn't give up my oath for all the peace and comfort in the world.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b43d7bc-173c-41eb-bba9-a9d94dcfc5fa.jpg?1783930732"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Valorous Steed
 {
     "name": "Valorous Steed",

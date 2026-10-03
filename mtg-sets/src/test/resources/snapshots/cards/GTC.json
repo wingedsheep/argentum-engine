@@ -647,6 +647,63 @@
     ]
 }
 
+// Ogre Slumlord
+{
+    "name": "Ogre Slumlord",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Ogre Rogue",
+    "oracleText": "Whenever another nontoken creature dies, you may create a 1/1 black Rat creature token.\nRats you control have deathtouch.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ogre Slumlord:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Rat"
+                        ]
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEATHTOUCH",
+                "filter": {
+                    "baseFilter": "permanent Rat ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "RARE",
+        "artist": "Trevor Claxton",
+        "flavorText": "\"His tenement is filled with the most vile, disgusting vermin. It's infested with rats, too.\"\n—Branko One-Ear",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29727bd1-9415-408a-99de-dd992e26e767.jpg?1783940128"
+    }
+}
+
 // Orzhov Guildgate
 {
     "name": "Orzhov Guildgate",

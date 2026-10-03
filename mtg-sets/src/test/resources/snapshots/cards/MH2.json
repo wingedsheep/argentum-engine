@@ -3340,6 +3340,71 @@
     ]
 }
 
+// Vermin Gorger
+{
+    "name": "Vermin Gorger",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "{T}, Sacrifice another creature: Each opponent loses 2 life and you gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vermin Gorger:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "artist": "Tobias Kwan",
+        "flavorText": "\"Once, vampires ruled this world, commanding the fear and respect that befit our noble blood. Have we truly sunk so low?\"\n—Sorin Markov",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d3166b10-5bc3-4db6-bb5b-81045d98e446.jpg?1783926853"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Viashino Lashclaw
 {
     "name": "Viashino Lashclaw",

@@ -1,3 +1,79 @@
+// Avenger of Zendikar
+{
+    "name": "Avenger of Zendikar",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature enters, create a 0/1 green Plant creature token for each land you control.\nLandfall — Whenever a land you control enters, you may put a +1/+1 counter on each Plant creature you control.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Avenger of Zendikar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "power": 0,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Plant"
+                    ]
+                }
+            },
+            {
+                "id": "Avenger of Zendikar:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature Plant ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "IterationEntity"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "MYTHIC",
+        "artist": "Zoltan Boros & Gabor Szikszai",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dde073e0-f329-4ab0-8e31-a48929e017ce.jpg?1783942047"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Basilisk Collar
 {
     "name": "Basilisk Collar",
