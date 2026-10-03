@@ -1589,6 +1589,162 @@
     ]
 }
 
+// Charitable Levy
+{
+    "name": "Charitable Levy",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Noncreature spells cost {1} more to cast.\nWhenever a player casts a noncreature spell, put a collection counter on this enchantment. Then if there are three or more collection counters on it, sacrifice it. If you do, draw a card, then you may search your library for a Plains card, put it onto the battlefield tapped, then shuffle.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Charitable Levy:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "COLLECTION",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "COLLECTION"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.DoAction",
+                                    "action": {
+                                        "type": "SacrificeTarget",
+                                        "target": "Self"
+                                    },
+                                    "successCriterion": "SuccessCriterion.PermanentsSacrificed"
+                                },
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "Gated",
+                                            "gate": "Gate.MayDecide",
+                                            "then": {
+                                                "type": "Composite",
+                                                "effects": [
+                                                    {
+                                                        "type": "GatherCards",
+                                                        "source": {
+                                                            "type": "FromZone",
+                                                            "zone": "Library",
+                                                            "filter": "land Plains"
+                                                        },
+                                                        "storeAs": "searchable",
+                                                        "search": true
+                                                    },
+                                                    {
+                                                        "type": "SelectFromCollection",
+                                                        "from": "searchable",
+                                                        "selection": {
+                                                            "type": "ChooseUpTo",
+                                                            "count": {
+                                                                "type": "Fixed",
+                                                                "amount": 1
+                                                            }
+                                                        },
+                                                        "storeSelected": "found"
+                                                    },
+                                                    {
+                                                        "type": "MoveCollection",
+                                                        "from": "found",
+                                                        "destination": {
+                                                            "type": "ToZone",
+                                                            "zone": "Battlefield",
+                                                            "placement": "Tapped"
+                                                        }
+                                                    },
+                                                    "ShuffleLibrary",
+                                                    "EmitLibrarySearchedEvent"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a player casts a noncreature spell, put a collection counter on this enchantment. Then if there are three or more collection counters on it, sacrifice it. If you do, draw a card, then you may search your library for a Plains card, put it onto the battlefield tapped, then shuffle."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "AnyCaster",
+                    "filter": "noncreature"
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "Eli Minaya",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a5cab75-546c-4760-97b7-4591de9e6662.jpg?1783911303",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Charitable Levy's triggered ability resolves before the spell that causes it to trigger. The ability will resolve even if that spell is countered or otherwise leaves the stack."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "In the rare case where the player who controlled Charitable Levy as its last ability triggered doesn't control it as it resolves, that player won't be able to sacrifice Charitable Levy even if it has three or more collection counters on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Chthonian Nightmare
 {
     "name": "Chthonian Nightmare",
