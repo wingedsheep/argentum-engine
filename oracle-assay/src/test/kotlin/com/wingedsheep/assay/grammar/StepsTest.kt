@@ -403,6 +403,34 @@ class StepsTest : StringSpec({
         ).forEach { roundTrips(it) }
     }
 
+    // The colour is chosen on resolution, so the grant sits inside `ChooseColorThen` — the spelling
+    // all fifteen hand-written cards share. The sentence reads on a target, on the source, and on
+    // the anaphor after an earlier clause (Feat of Resistance); its plural is deliberately unread.
+    "protection from the color of your choice wraps the grant in the colour choice" {
+        fragment("Target creature gains protection from the color of your choice until end of turn.") shouldBe
+            CardFragment(
+                script = CardScript(
+                    spellEffect = Effects.ChooseColorThen(Effects.GrantProtectionFromChosenColor(Targets.bound())),
+                    targetRequirements = listOf(Targets.permanent(GameObjectFilter.Creature)),
+                )
+            )
+        fragment("~ gains protection from the color of your choice until end of turn.") shouldBe
+            CardFragment(
+                script = CardScript(
+                    spellEffect = Effects.ChooseColorThen(Effects.GrantProtectionFromChosenColor(EffectTarget.Self))
+                )
+            )
+        listOf(
+            "Target creature you control gains protection from the color of your choice until end of turn.",
+            "Up to one target creature gains protection from the color of your choice until end of turn.",
+            "{W}: ~ gains protection from the color of your choice until end of turn.",
+            "Put a +1/+1 counter on target creature you control. It gains protection from the color of your choice until end of turn.",
+        ).forEach { roundTrips(it) }
+        Grammar.abilityLine.parseLine(
+            "Two target creatures each gain protection from the color of your choice until end of turn."
+        ).shouldBeInstanceOf<ParseOutcome.Declined>()
+    }
+
     // The compound sentence is where the plural rows actually pay — every quantified line the corpus
     // prints for it is plural. Both halves are per-target, so the whole composite goes *inside* the
     // iteration rather than the iteration being split in two.
