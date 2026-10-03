@@ -144,6 +144,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DoorUnlockedEvent::class)
         subclass(DoorLockedEvent::class)
         subclass(TurnHijackedEvent::class)
+        subclass(ResolutionControlEvent::class)
         subclass(HandRevealedEvent::class)
         subclass(KeywordGrantedEvent::class)
         subclass(CitysBlessingGainedEvent::class)
@@ -229,6 +230,7 @@ val engineSerializersModule = SerializersModule {
     polymorphic(ContinuationFrame::class) {
         subclass(Suspension::class)
         subclass(FinishResolvingSpellContinuation::class)
+        subclass(EndResolutionControlContinuation::class)
         subclass(ReplacementResolveContinuation::class)
         subclass(PerformLifeGainContinuation::class)
         subclass(RestoreReplacementChainContinuation::class)
@@ -256,6 +258,7 @@ val engineSerializersModule = SerializersModule {
 
     polymorphic(AutomaticContinuation::class) {
         subclass(FinishResolvingSpellContinuation::class)
+        subclass(EndResolutionControlContinuation::class)
         subclass(ReplacementResolveContinuation::class)
         subclass(PerformLifeGainContinuation::class)
         subclass(RestoreReplacementChainContinuation::class)

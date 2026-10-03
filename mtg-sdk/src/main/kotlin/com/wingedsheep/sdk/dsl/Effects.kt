@@ -5633,6 +5633,12 @@ object Effects {
         storeExiledAs = storeExiledAs
     )
 
+    /** Control a player only while the captured stack object resolves, including paused decisions. */
+    fun ControlPlayerDuringResolution(
+        target: EffectTarget,
+        resolvingObject: EffectTarget? = null,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.ControlPlayerDuringResolutionEffect(target, resolvingObject)
+
     /**
      * Controller controls the target player during that player's next **turn**
      * (Mindslaver-style). Used by The Dominion Bracelet.

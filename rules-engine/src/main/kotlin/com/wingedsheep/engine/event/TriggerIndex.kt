@@ -496,6 +496,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.StatsModifiedEvent,
             is com.wingedsheep.engine.core.TargetReselectedEvent,
             is com.wingedsheep.engine.core.TurnChangedEvent,
+            is com.wingedsheep.engine.core.ResolutionControlEvent,
             is com.wingedsheep.engine.core.TurnHijackedEvent,
             is com.wingedsheep.engine.core.TurnedFaceDownEvent -> emptyList()
             // No card triggers on a permanent flipping (CR 710); the flip is its own action.

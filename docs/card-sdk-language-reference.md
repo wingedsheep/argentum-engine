@@ -16121,3 +16121,24 @@ amount = Fixed(1))` with instant timing, after its initial X-sized shield.
 Life-funded fixed colorless-mana actions contribute to mana affordability, sharing one life budget
 across permissions. They are never automatically spent: the player explicitly takes the action in
 the mana window. Costs of casting and activating stay locked while that window is open.
+
+
+### Resolution-scoped player control
+
+`Effects.ControlPlayerDuringResolution(target, resolvingObject = null)` moves input
+authority to the effect's controller only while the captured stack object is resolving. Omitting the object
+controls the remainder of the current resolution; `EffectTarget.PipelineTarget("castCard")` schedules
+control during a spell cast by an earlier collection step. The object must be on the stack or currently
+resolving. A countered object or an object that fails resolution-time validity checks never activates the grant;
+later visits of the same card do not inherit it.
+Paused targets, costs, searches and other decisions retain the window until the whole resolution ends.
+The affected player still owns the resources and controls their spells and permanents. Existing
+`actorFor` routing supplies private views and decision input to the controlling player; sideboards stay private.
+Hand identities seen in the window, explicitly looked-at cards, and known library placements retain the existing reveal-memory semantics;
+later unseen hand cards stay hidden, and library shuffles clear library knowledge. Draw and hand-look events
+capture their authorized observers before the control window ends, without transferring resource ownership.
+Shared-turn teams follow the existing player-control team rule. A later resolution-control grant wins,
+and a completed window reveals the underlying turn control again. Session hotseat routing keeps precedence.
+
+This primitive does not instruct card play or restrict mana sources. Word of Command additionally needs
+forced paid card play (G39) and mana-origin/spending restrictions (G31); it is not yet authorable faithfully.

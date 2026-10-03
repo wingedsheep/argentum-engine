@@ -59,14 +59,14 @@ export interface ClientGameState {
   readonly dayNight?: DayNight | null
 
   /**
-   * If non-null, the affected player whose turn the viewing player is currently driving
-   * (Mindslaver-style hijack). Drives the controller banner and promoting their hand to
+   * If non-null, the affected player whose choices the viewing player is currently driving
+   * (turn, combat or stack-resolution control). Drives the controller banner and promoting their hand to
    * face-up. Null in normal play.
    */
   readonly youAreHijacking?: EntityId | null
 
   /**
-   * If non-null, the controller currently driving the viewing player's turn. Drives the
+   * If non-null, the controller currently driving the viewing player's choices. Drives the
    * affected-player banner and disabling click handlers. Null in normal play.
    */
   readonly youAreHijackedBy?: EntityId | null

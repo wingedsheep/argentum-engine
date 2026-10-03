@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.endResolutionControl
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.engine.view.EventPresentationFactory
@@ -252,22 +253,26 @@ class StackResolver(
             ?: return ExecutionResult.error(state, "Stack item not found: $topId")
 
         // Pop from stack
-        val (_, poppedState) = state.popFromStack()
+        val ref = state.objectRef(topId) ?: return ExecutionResult.error(state, "Missing stack object identity")
+        val (_, popped) = state.popFromStack()
 
         // Determine what type of item this is
-        return when {
+        val result = when {
             container.has<SpellOnStackComponent>() ->
-                spellResolver.resolveSpell(poppedState, topId, container)
+                spellResolver.resolveSpell(popped, topId, container)
 
             container.has<TriggeredAbilityOnStackComponent>() ->
-                abilityResolver.resolveTriggeredAbility(poppedState, topId, container)
+                abilityResolver.resolveTriggeredAbility(popped, topId, container)
 
             container.has<ActivatedAbilityOnStackComponent>() ->
-                abilityResolver.resolveActivatedAbility(poppedState, topId, container)
+                abilityResolver.resolveActivatedAbility(popped, topId, container)
 
             else ->
                 ExecutionResult.error(state, "Unknown stack item type")
         }
+        if (result.outcome is Outcome.Paused) return result
+        val ended = result.state.endResolutionControl(ref)
+        return result.copy(state = ended.state, events = result.events + ended.events)
     }
 
     /** Finish only the captured resolving spell, never a later visit of the same card. */

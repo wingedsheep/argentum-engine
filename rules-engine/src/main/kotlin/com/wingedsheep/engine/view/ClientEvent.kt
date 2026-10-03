@@ -126,13 +126,13 @@ sealed interface ClientEvent {
     @SerialName("cardDrawn")
     data class CardDrawn(
         val playerId: EntityId,
-        /** The drawn card, sent only to the player who drew it; `null` for everyone else. */
+        /** The drawn card, sent only to players entitled to its identity at draw time. */
         val cardId: EntityId?,
         val cardName: String?,
         val isYours: Boolean? = null,
         override val description: String = when (isYours) {
             true -> if (cardName != null) "You drew $cardName" else "You drew a card"
-            false -> "Opponent drew a card"
+            false -> if (cardName != null) "Opponent drew $cardName" else "Opponent drew a card"
             null -> if (cardName != null) "Drew $cardName" else "Drew a card"
         }
     ) : ClientEvent
@@ -940,22 +940,25 @@ object ClientEventTransformer {
 
             is CardsDrawnEvent -> {
                 val isYours = event.playerId == viewingPlayerId
+                val canSeeIdentity = isYours || viewingPlayerId in event.identityViewers
                 if (event.cardIds.isNotEmpty()) {
                     if (event.count > 1) {
                         // For multiple cards, show the count and names if visible
-                        val cardNamesList = if (isYours && event.cardNames.isNotEmpty()) {
+                        val cardNamesList = if (canSeeIdentity && event.cardNames.isNotEmpty()) {
                             event.cardNames
                         } else emptyList()
                         val desc = when {
                             isYours && cardNamesList.isNotEmpty() ->
                                 "You drew ${event.count} cards: ${cardNamesList.joinToString(", ")}"
                             isYours -> "You drew ${event.count} cards"
+                            canSeeIdentity && cardNamesList.isNotEmpty() ->
+                                "Opponent drew ${event.count} cards: ${cardNamesList.joinToString(", ")}"
                             else -> "Opponent drew ${event.count} cards"
                         }
                         ClientEvent.CardDrawn(
                             playerId = event.playerId,
-                            cardId = if (isYours) event.cardIds.first() else null,
-                            cardName = if (isYours) event.cardNames.firstOrNull() else null,
+                            cardId = if (canSeeIdentity) event.cardIds.first() else null,
+                            cardName = if (canSeeIdentity) event.cardNames.firstOrNull() else null,
                             isYours = isYours,
                             description = desc
                         )
@@ -963,8 +966,8 @@ object ClientEventTransformer {
                         val firstName = event.cardNames.firstOrNull()
                         ClientEvent.CardDrawn(
                             playerId = event.playerId,
-                            cardId = if (isYours) event.cardIds.first() else null,
-                            cardName = if (isYours) firstName else null,
+                            cardId = if (canSeeIdentity) event.cardIds.first() else null,
+                            cardName = if (canSeeIdentity) firstName else null,
                             isYours = isYours
                         )
                     }
@@ -1237,8 +1240,8 @@ object ClientEventTransformer {
             )
 
             is HandLookedAtEvent -> {
-                // Only send this event to the player who looked at the hand
-                if (event.viewingPlayerId == viewingPlayerId) {
+                // Preserve the observers entitled to the look at event time
+                if (event.viewingPlayerId == viewingPlayerId || viewingPlayerId in event.identityViewers) {
                     ClientEvent.HandLookedAt(
                         viewingPlayerId = event.viewingPlayerId,
                         targetPlayerId = event.targetPlayerId,
@@ -1544,6 +1547,7 @@ is PermanentsSacrificedEvent -> {
             // battlefield, so no separate client event.
             is PermanentUnattachedEvent -> null
 
+            is ResolutionControlEvent,
             is TurnHijackedEvent,
             is CommitCrimeEvent,
             is CardPlayedFromPermissionEvent,
