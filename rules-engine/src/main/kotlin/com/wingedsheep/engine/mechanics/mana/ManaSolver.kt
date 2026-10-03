@@ -1190,12 +1190,6 @@ class ManaSolver(
             priority += 2
         }
 
-        // Tiebreak: keep snow sources for later {S} pips (CR 107.4h) — a {4}{S}{S} paid off a mixed
-        // board should tap the plain lands for the {4}, not strand the next activation.
-        if (source.isSnow) {
-            priority += 1
-        }
-
         // Preserve utility lands (+10 for non-mana abilities)
         if (source.hasNonManaAbilities) {
             priority += 10

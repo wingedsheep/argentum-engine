@@ -228,6 +228,7 @@ class MonstrosityTest : FunSpec({
 
         result.events.filterIsInstance<BecameMonstrousEvent>() shouldBe emptyList()
         driver.state.getBattlefield().contains(brute) shouldBe false
+        driver.state.getHand(player).forEach { plusOneCounters(driver, it) shouldBe 0 }
     }
 
     test("CR 701.37b — the designation ends when the permanent leaves the battlefield") {
