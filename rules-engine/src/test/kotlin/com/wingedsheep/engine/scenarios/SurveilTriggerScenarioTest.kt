@@ -52,6 +52,16 @@ class SurveilTriggerScenarioTest : FunSpec({
     val SurveilZero = surveilSpell("Surveil Zero", 0)
     val ScryOne = scrySpell("Scry One", 1)
 
+    // The dynamic-count pipeline (`surveil(DynamicAmount)`), whose event tail is gated at resolution.
+    fun dynamicSurveilSpell(name: String, n: Int) = card(name) {
+        manaCost = "{0}"
+        typeLine = "Sorcery"
+        oracleText = "Surveil X."
+        spell { effect = Patterns.Library.surveil(DynamicAmount.Fixed(n)) }
+    }
+    val DynamicSurveilTwo = dynamicSurveilSpell("Dynamic Surveil Two", 2)
+    val DynamicSurveilZero = dynamicSurveilSpell("Dynamic Surveil Zero", 0)
+
     // "Whenever you surveil, put a +1/+1 counter on it." — fires once per surveil.
     val SurveilWatcher = card("Surveil Watcher") {
         manaCost = "{0}"
@@ -104,7 +114,7 @@ class SurveilTriggerScenarioTest : FunSpec({
         val driver = GameTestDriver()
         driver.registerCards(
             TestCards.all + listOf(
-                SurveilOne, SurveilThree, SurveilZero, ScryOne,
+                SurveilOne, SurveilThree, SurveilZero, ScryOne, DynamicSurveilTwo, DynamicSurveilZero,
                 SurveilWatcher, ScryWatcher, BothWatcher, SurveilCounter
             )
         )
@@ -283,6 +293,38 @@ class SurveilTriggerScenarioTest : FunSpec({
 
         driver.events.drop(before).filterIsInstance<SurveiledEvent>() shouldBe emptyList()
         driver.events.drop(before).filterIsInstance<ScriedEvent>() shouldBe emptyList()
+        driver.plusOneCounters(watcher) shouldBe 0
+    }
+
+    test("dynamic surveil X emits one SurveiledEvent with the cards looked at") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
+        val active = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val watcher = driver.putCreatureOnBattlefield(active, "Surveil Watcher")
+
+        val before = driver.events.size
+        driver.castLook(active, "Dynamic Surveil Two")
+        driver.bothPass()
+
+        driver.events.drop(before).filterIsInstance<SurveiledEvent>().single().count shouldBe 2
+        driver.plusOneCounters(watcher) shouldBe 1
+    }
+
+    test("dynamic surveil with X = 0 fires no trigger and emits no event (CR 701.25c)") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
+        val active = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val watcher = driver.putCreatureOnBattlefield(active, "Surveil Watcher")
+
+        val before = driver.events.size
+        driver.castLook(active, "Dynamic Surveil Zero")
+        driver.bothPass()
+
+        driver.events.drop(before).filterIsInstance<SurveiledEvent>() shouldBe emptyList()
         driver.plusOneCounters(watcher) shouldBe 0
     }
 })
