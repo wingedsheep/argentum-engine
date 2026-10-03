@@ -224,8 +224,8 @@ object Conditions {
         constant("a creature died under your control this turn", SdkConditions.ControlledCreatureDiedThisTurn),
         // Raid's condition — "At the beginning of your end step, if you attacked this turn, …",
         // "Activate only if you attacked this turn." One whole clause, one facade, past simple its
-        // only printed spelling. "You attacked with N or more creatures this turn" is a counted
-        // sibling the SDK doesn't name, and stays out.
+        // only printed spelling. "You attacked with N or more creatures this turn" is the counted
+        // sibling, `YouAttackedWithCreaturesThisTurn`, left for a band of its own.
         constant("you attacked this turn", SdkConditions.YouAttackedThisTurn),
         discardedACardThisTurn,
         eitherControlled,

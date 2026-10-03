@@ -1426,8 +1426,8 @@ one facade, `Conditions.YouAttackedThisTurn`, printed in the past simple only, s
 `constant` row in `Conditions` and reaches every position that slots the vocabulary — the
 intervening-if, the activation restriction and the conditional clause at once. The probe's other
 three cards decline on their payloads ("target opponent discards a card", the mana-value return);
-"you attacked with N or more creatures this turn" is a counted sibling the SDK does not name, and
-stays out.
+"you attacked with N or more creatures this turn" is the counted sibling,
+`Conditions.YouAttackedWithCreaturesThisTurn`, and is left for a band of its own.
 
 ### What the differential found
 
