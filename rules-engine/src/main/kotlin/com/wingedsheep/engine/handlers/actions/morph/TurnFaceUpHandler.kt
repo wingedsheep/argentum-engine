@@ -300,7 +300,7 @@ class TurnFaceUpHandler(
                         val xSymbolCount = manaCost.xCount.coerceAtLeast(1)
                         var xRemainingToPay = xValue * xSymbolCount
                         while (xRemainingToPay > 0 && poolAfterPayment.colorless > 0) {
-                            poolAfterPayment = poolAfterPayment.copy(colorless = poolAfterPayment.colorless - 1)
+                            poolAfterPayment = poolAfterPayment.spendColorless()!!
                             colorlessSpent++
                             xRemainingToPay--
                         }
@@ -315,11 +315,11 @@ class TurnFaceUpHandler(
                                 }
                                 if (current <= 0) break
                                 poolAfterPayment = when (color) {
-                                    Color.WHITE -> poolAfterPayment.copy(white = poolAfterPayment.white - 1).also { whiteSpent++ }
-                                    Color.BLUE -> poolAfterPayment.copy(blue = poolAfterPayment.blue - 1).also { blueSpent++ }
-                                    Color.BLACK -> poolAfterPayment.copy(black = poolAfterPayment.black - 1).also { blackSpent++ }
-                                    Color.RED -> poolAfterPayment.copy(red = poolAfterPayment.red - 1).also { redSpent++ }
-                                    Color.GREEN -> poolAfterPayment.copy(green = poolAfterPayment.green - 1).also { greenSpent++ }
+                                    Color.WHITE -> poolAfterPayment.spend(color)!!.also { whiteSpent++ }
+                                    Color.BLUE -> poolAfterPayment.spend(color)!!.also { blueSpent++ }
+                                    Color.BLACK -> poolAfterPayment.spend(color)!!.also { blackSpent++ }
+                                    Color.RED -> poolAfterPayment.spend(color)!!.also { redSpent++ }
+                                    Color.GREEN -> poolAfterPayment.spend(color)!!.also { greenSpent++ }
                                 }
                                 xRemainingToPay--
                             }

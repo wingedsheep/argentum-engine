@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
+import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
 import com.wingedsheep.engine.core.AttackTaxManaSelectionContinuation
 import com.wingedsheep.engine.core.BlockTaxManaSelectionContinuation
 import com.wingedsheep.engine.core.DecisionResponse
@@ -225,8 +226,11 @@ class CombatTaxContinuationResumer(
                     currentState = tappedState
                     events.addAll(tapEvents)
                     pool = when {
-                        source.producesColors.isNotEmpty() -> pool.add(source.producesColors.first())
-                        source.producesColorless -> pool.addColorless(1)
+                        source.producesColors.isNotEmpty() -> source.producesColors.first().let { color ->
+                            pool.add(color).let { if (ManaProvenanceTracker.isSnowSource(currentState, sourceId)) it.markSnow(color, 1) else it }
+                        }
+                        source.producesColorless ->
+                            pool.addColorless(1).let { if (ManaProvenanceTracker.isSnowSource(currentState, sourceId)) it.markSnow(null, 1) else it }
                         else -> pool
                     }
                 }

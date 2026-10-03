@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.continuations
 import com.wingedsheep.sdk.dsl.Patterns
+import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
 
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.*
@@ -1528,9 +1529,10 @@ class ManaPaymentContinuationResumer(
             }
 
             if (source.producesColors.isNotEmpty()) {
-                currentPool = currentPool.add(source.producesColors.first())
+                val color = source.producesColors.first()
+                currentPool = currentPool.add(color).let { if (ManaProvenanceTracker.isSnowSource(currentState, sourceId)) it.markSnow(color, 1) else it }
             } else if (source.producesColorless) {
-                currentPool = currentPool.addColorless(1)
+                currentPool = currentPool.addColorless(1).let { if (ManaProvenanceTracker.isSnowSource(currentState, sourceId)) it.markSnow(null, 1) else it }
             }
         }
 
@@ -1701,9 +1703,10 @@ class ManaPaymentContinuationResumer(
             snowColorless = poolComponent.snowColorless
         ).withSpendingColors(currentState, continuation.payingPlayerId)
         pool = if (sourceOption.producesColors.isNotEmpty()) {
-            pool.add(sourceOption.producesColors.first())
+            val color = sourceOption.producesColors.first()
+            pool.add(color).let { if (ManaProvenanceTracker.isSnowSource(currentState, sourceOption.entityId)) it.markSnow(color, 1) else it }
         } else if (sourceOption.producesColorless) {
-            pool.addColorless(1)
+            pool.addColorless(1).let { if (ManaProvenanceTracker.isSnowSource(currentState, sourceOption.entityId)) it.markSnow(null, 1) else it }
         } else {
             pool
         }

@@ -1098,7 +1098,7 @@ class ManaSolver(
             source.isSnow && source.entityId !in excludeSources &&
                 !source.requiresSacrifice && source.tapPermanentsSubCost == null &&
                 source.colorActivationManaCost.values.all { it == 0 } &&
-                (source.restriction == null || spellContext == null || source.restriction.isSatisfiedBy(spellContext)) &&
+                (source.restriction == null || spellContext != null && source.restriction.isSatisfiedBy(spellContext)) &&
                 (source.producesColorless || source.availableColorsFor(spellContext).isNotEmpty())
         }.sortedWith(compareBy<ManaSource>(
             { if (it.producesColorless) 0 else it.availableColorsFor(spellContext).size },
@@ -1107,6 +1107,11 @@ class ManaSolver(
             { it.entityId.value },
         ))
         if (candidates.size < pips) return null
+        // Reserving sources only removes options, so a base the whole board can't pay fails every
+        // combination — check once before trying up to MAX_SNOW_RESERVATIONS of them.
+        if (candidates.size > pips && !(base.isEmpty() && xValue == 0) &&
+            solve(state, playerId, base, xValue, excludeSources, spellContext, precomputedSources, xManaRestriction) == null
+        ) return null
 
         // Lexicographic combinations, cheapest first; bounded so a board of snow lands can't blow up.
         var tried = 0

@@ -100,27 +100,6 @@ class ManaAbilityResolutionPipeline(
     }
 
     /**
-     * Snow mana (CR 107.4h): when [sourceId] is a snow source, mark every unit its mana ability
-     * just added to [tapperId]'s pool — the per-kind increase from [stateBeforeEffect] to [state] —
-     * as snow, so a later `{S}` pip can be paid with it. Reads the pool delta rather than the
-     * effect, so every mana executor (fixed, chosen, dynamic, dampened) is covered by this one call.
-     */
-    fun markSnowProduction(
-        stateBeforeEffect: GameState,
-        state: GameState,
-        sourceId: EntityId,
-        tapperId: EntityId,
-    ): GameState {
-        if (!ManaProvenanceTracker.isSnowSource(state, sourceId)) return state
-        val before = stateBeforeEffect.getEntity(tapperId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
-        val after = state.getEntity(tapperId)?.get<ManaPoolComponent>() ?: return state
-        val marked = Color.entries.fold(after) { pool, color ->
-            pool.markSnow(color, after.getAmount(color) - before.getAmount(color))
-        }.markSnow(null, after.colorless - before.colorless)
-        return if (marked == after) state else state.updateEntity(tapperId) { it.with(marked) }
-    }
-
-    /**
      * The tap payoffs, in resolution order: aura bonuses attached to the source
      * ([AdditionalManaOnTap] — Elvish Guidance), global "whenever a matching source is tapped for
      * mana" statics ([AdditionalManaOnSourceTap] — Lavaleaper, Badgermole Cub, Overabundance), the

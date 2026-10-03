@@ -214,6 +214,8 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
         val unmatched = mutableListOf<ManaSymbol>()
         for (symbol in reduction.symbols) {
             if (symbol is ManaSymbol.Generic || symbol is ManaSymbol.X) continue
+            // CR 118.7g: a reduction by {S} reduces generic, never a {S} pip in the cost.
+            if (symbol is ManaSymbol.Snow) { genericReduction += 1; continue }
             val index = remaining.indexOfFirst { it == symbol }
             if (index >= 0) remaining.removeAt(index) else unmatched.add(symbol)
         }

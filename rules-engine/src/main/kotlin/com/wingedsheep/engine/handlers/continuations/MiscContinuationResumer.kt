@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.CoinFlipService
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
@@ -1109,7 +1110,7 @@ class MiscContinuationResumer(
             state, continuation.playerId,
             mapOf(continuation.firstColor to firstAmount, continuation.secondColor to secondAmount),
             continuation.restriction
-        )
+        ).let { ManaProvenanceTracker.markSnowProduction(state, it, continuation.sourceId, continuation.playerId) }
 
         return checkForMore(newState, emptyList())
     }
@@ -1135,7 +1136,7 @@ class MiscContinuationResumer(
             state, continuation.playerId,
             mapOf(color to 1),
             continuation.restriction
-        )
+        ).let { ManaProvenanceTracker.markSnowProduction(state, it, continuation.sourceId, continuation.playerId) }
 
         val event = ManaAddedEvent(
             playerId = continuation.playerId,

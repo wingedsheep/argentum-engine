@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
 import com.wingedsheep.engine.core.AbilityActivatedEvent
+import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
@@ -211,7 +212,7 @@ internal class ActivatedManaAbilityResolver(
         val dampening = manaPipeline.applyLandManaDampening(
             stateBeforeActivation, currentState, cardComponent, action.playerId
         )
-        currentState = manaPipeline.markSnowProduction(stateBeforeEffect, dampening.state, action.sourceId, action.playerId)
+        currentState = ManaProvenanceTracker.markSnowProduction(stateBeforeEffect, dampening.state, action.sourceId, action.playerId)
 
         // Emit ManaAddedEvent — if dampened, always emit 1 colorless
         val manaEvent: ManaAddedEvent? = if (dampening.dampened) {

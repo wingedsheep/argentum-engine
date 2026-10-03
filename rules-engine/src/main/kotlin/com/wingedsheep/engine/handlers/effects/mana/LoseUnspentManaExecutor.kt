@@ -30,6 +30,7 @@ class LoseUnspentManaExecutor(private val cardRegistry: CardRegistry) : EffectEx
                 val plainMana = pool.white + pool.blue + pool.black + pool.red + pool.green + pool.colorless
                 pool.copy(
                     white = 0, blue = 0, black = 0, red = 0, green = 0, colorless = 0,
+                    snowMana = emptyMap(), snowColorless = 0,
                     restrictedMana = pool.restrictedMana.map { it.copy(color = conversion) }
                 ).add(conversion, plainMana)
             }
