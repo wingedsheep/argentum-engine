@@ -3130,6 +3130,12 @@ class TriggerDetector(
                     cardComponent.typeLine.isArtifact
                 is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
                     cardComponent.typeLine.hasSubtype(predicate.subtype)
+                // The sacrificed token is still in the graveyard here (it ceases to exist at the next
+                // SBA check, CR 704.5d), so its TokenComponent is still readable.
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsToken ->
+                    entity.has<TokenComponent>()
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNontoken ->
+                    !entity.has<TokenComponent>()
                 else -> true
             }
         }

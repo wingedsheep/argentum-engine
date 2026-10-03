@@ -9080,6 +9080,61 @@
     ]
 }
 
+// Monstrous Vortex
+{
+    "name": "Monstrous Vortex",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast a creature spell with power 5 or greater, discover X, where X is that spell's mana value. (Exile cards from the top of your library until you exile a nonland card with that mana value or less. Cast it without paying its mana cost or put it into your hand. Put the rest on the bottom in a random order.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Monstrous Vortex:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "PowerAtLeast",
+                                "min": 5
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Discover",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGERING_SPELL_MANA_VALUE"
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a creature spell with power 5 or greater, discover X, where X is that spell's mana value."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "UNCOMMON",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/162fcdec-bf3c-43ba-9ada-212f7dec5fbd.jpg?1783911259",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "A spell's mana value is determined only by its mana cost. Ignore any alternative costs, additional costs, cost increases, or cost reductions."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "When you discover, you must exile cards. The only optional part of the ability is whether you cast the exiled card or put it into your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Monumental Henge
 {
     "name": "Monumental Henge",
@@ -10071,6 +10126,80 @@
     ]
 }
 
+// Path of Annihilation
+{
+    "name": "Path of Annihilation",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Devoid (This card has no color.)\nWhen this enchantment enters, create two 0/1 colorless Eldrazi Spawn creature tokens with \"Sacrifice this token: Add {C}.\"\nEldrazi you control have \"{T}: Add one mana of any color.\"\nWhenever you cast a creature spell with mana value 7 or greater, you gain 4 life.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Path of Annihilation:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn",
+                    "count": 2
+                }
+            },
+            {
+                "id": "Path of Annihilation:3",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "ManaValueAtLeast",
+                                "min": 7
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Path of Annihilation:2",
+                    "cost": "CostTap",
+                    "effect": "AddManaOfChoice",
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                "filter": {
+                    "baseFilter": "permanent Eldrazi ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "UNCOMMON",
+        "artist": "Ben Hill",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28493c98-a11c-4bcc-bf55-412c884ffa7a.jpg?1783911258"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Perilous Landscape
 {
     "name": "Perilous Landscape",
@@ -10621,6 +10750,122 @@
             {
                 "date": "2024-06-07",
                 "text": "If you cast a spell for another cost \"rather than paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the spell has any mandatory additional costs, those must be paid to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Propagator Drone
+{
+    "name": "Propagator Drone",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nCreature tokens you control have evolve. (They have \"Whenever a creature you control enters, if it has greater power or toughness than this token, put a +1/+1 counter on this token.\" They see this creature enter.)\n{3}{G}: Create a 0/1 colorless Eldrazi Spawn creature token with \"Sacrifice this token: Add {C}.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Propagator Drone:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "EVOLVE",
+                "filter": {
+                    "baseFilter": "creature token ctrl:you"
+                }
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Propagator Drone:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "filter": "creature ctrl:you",
+                        "to": "Battlefield"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    },
+                    "interveningIf": {
+                        "type": "Any",
+                        "conditions": [
+                            {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "EntityProperty",
+                                    "entity": "TriggeringEntity",
+                                    "numericProperty": "Power"
+                                },
+                                "operator": "GT",
+                                "right": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": "Power"
+                                }
+                            },
+                            {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "EntityProperty",
+                                    "entity": "TriggeringEntity",
+                                    "numericProperty": "Toughness"
+                                },
+                                "operator": "GT",
+                                "right": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": "Toughness"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)"
+                },
+                "filter": {
+                    "baseFilter": "creature token ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f5b2d89-d641-4815-8e6c-5dba0d31419e.jpg?1783911258",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "When comparing the stats of the two creatures for evolve, you always compare power to power and toughness to toughness."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If the creature that entered the battlefield leaves the battlefield before evolve tries to resolve, use its last known power and toughness to compare the stats."
             }
         ]
     },
@@ -12602,6 +12847,49 @@
     }
 }
 
+// Skittering Precursor
+{
+    "name": "Skittering Precursor",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nMenace\nWhenever you sacrifice a nontoken permanent, create a 0/1 colorless Eldrazi Spawn creature token with \"Sacrifice this token: Add {C}.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID",
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skittering Precursor:1",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "permanent nontoken",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "UNCOMMON",
+        "artist": "Tuan Duong Chu",
+        "flavorText": "It pushes ahead, eliminating lookouts and tactically sowing spawn.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3a3b943-7b38-4316-87d9-15e0c08abea5.jpg?1783911266"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Smelted Chargebug
 {
     "name": "Smelted Chargebug",
@@ -14345,6 +14633,99 @@
     ]
 }
 
+// Titans' Vanguard
+{
+    "name": "Titans' Vanguard",
+    "manaCost": "{3}{R}{G}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nWhen you cast this spell and whenever this creature attacks, put a +1/+1 counter on each colorless creature you control.\nTrample",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEVOID",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Titans' Vanguard:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsColorless"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "When you cast this spell, put a +1/+1 counter on each colorless creature you control."
+            },
+            {
+                "id": "Titans' Vanguard:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsColorless"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature attacks, put a +1/+1 counter on each colorless creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "UNCOMMON",
+        "artist": "Richard Kane Ferguson",
+        "flavorText": "With a shriek, it directed the spawn toward the temple where the refugees sheltered.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb3ea14e-44ac-4f69-bfea-cb6bf1bfbd74.jpg?1783911244",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "When you cast Titans' Vanguard, its triggered ability will resolve before Titans' Vanguard does. If Titans' Vanguard is countered or otherwise leaves the stack in response to that triggered ability, the triggered ability will still resolve as normal."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Since Titans' Vanguard's triggered ability resolves before Titans' Vanguard does, it won't be on the battlefield when that ability resolves, and it won't receive a +1/+1 counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Tranquil Landscape
 {
     "name": "Tranquil Landscape",
@@ -14790,6 +15171,217 @@
     ]
 }
 
+// Twisted Riddlekeeper
+{
+    "name": "Twisted Riddlekeeper",
+    "manaCost": "{8}",
+    "typeLine": "Creature — Eldrazi Sphinx",
+    "oracleText": "Emerge {5}{C}{U} (You may cast this spell by sacrificing a creature and paying the emerge cost reduced by that creature's mana value.)\nWhen you cast this spell, tap up to two target permanents. Put a stun counter on each of them. (If a permanent with a stun counter would become untapped, remove one from it instead.)\nFlying",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "EMERGE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Emerge",
+            "cost": "{5}{C}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Twisted Riddlekeeper:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "AddCounters",
+                                "counterType": "STUN",
+                                "count": 1,
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When you cast this spell, tap up to two target permanents. Put a stun counter on each of them."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Nino Vecia",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/534d7ae4-9c4b-4a5a-a109-7630a07aeb45.jpg?1783911306",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "The triggered ability may target permanents that are already tapped. It will still put a stun counter on them."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "The triggered ability will resolve before Twisted Riddlekeeper does. If Twisted Riddlekeeper is countered or otherwise leaves the stack in response to its triggered ability, the triggered ability will still resolve as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Ugin's Binding
+{
+    "name": "Ugin's Binding",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nReturn target nonland permanent you don't control to its owner's hand.\nWhenever you cast a colorless spell with mana value 7 or greater, you may exile this card from your graveyard. When you do, return each nonland permanent you don't control to its owner's hand.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsNonland",
+                            "IsPermanent"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t0"
+            }
+        ],
+        "triggeredAbilities": [
+            {
+                "id": "Ugin's Binding:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsColorless",
+                            {
+                                "type": "ManaValueAtLeast",
+                                "min": 7
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Graveyard"
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Exile",
+                            "fromZone": "Graveyard"
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "BattlefieldMatching",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsNonland",
+                                                "IsPermanent"
+                                            ],
+                                            "controllerPredicate": {
+                                                "type": "ControllerNot",
+                                                "predicate": "ControlledByYou"
+                                            }
+                                        }
+                                    },
+                                    "storeAs": "returnAllToHand_gathered"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "returnAllToHand_gathered",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Hand"
+                                    }
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "You may exile this card from your graveyard. When you do, return each nonland permanent you don't control to its owner's hand."
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "MYTHIC",
+        "artist": "Drew Baker",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be13786a-f967-456b-bbc6-f4312467a827.jpg?1783911286",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "The last ability triggers only if Ugin's Binding is in your graveyard as you cast the colorless spell. That ability will resolve before the colorless spell does. If the colorless spell is countered or otherwise leaves the stack in response to Ugin's Binding's triggered ability, the ability will still resolve as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ugin's Labyrinth
 {
     "name": "Ugin's Labyrinth",
@@ -15056,6 +15648,44 @@
     "colorIdentityOverride": []
 }
 
+// Unfathomable Truths
+{
+    "name": "Unfathomable Truths",
+    "manaCost": "{4}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nDraw three cards and create a 0/1 colorless Eldrazi Spawn creature token with \"Sacrifice this token: Add {C}.\"",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "artist": "Drew Tucker",
+        "flavorText": "\"Maybe we are all just figments of Kozilek's imagination.\"\n—Anowon, the Ruin Sage",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f95b8eb1-4dbb-4bb9-aa31-b7a12e3b4618.jpg?1783911285"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Unstable Amulet
 {
     "name": "Unstable Amulet",
@@ -15266,6 +15896,60 @@
     }
 }
 
+// Voidpouncer
+{
+    "name": "Voidpouncer",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nKicker {2}{C} (You may pay an additional {2}{C} as you cast this spell.)\nIf this creature was kicked, it enters with two +1/+1 counters and a trample counter on it and with haste.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}{C}"
+        }
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true,
+                "condition": "WasKicked"
+            },
+            {
+                "type": "EntersWithCounters",
+                "counterType": "TRAMPLE",
+                "count": 1,
+                "selfOnly": true,
+                "condition": "WasKicked"
+            },
+            {
+                "type": "EntersWithKeywords",
+                "keywords": [
+                    "HASTE"
+                ],
+                "condition": "WasKicked",
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "artist": "Michele Giorgi",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f9b8532-4f1a-4653-9cbb-befba8169e5a.jpg?1783911263"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Volatile Stormdrake
 {
     "name": "Volatile Stormdrake",
@@ -15384,6 +16068,62 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Warped Tusker
+{
+    "name": "Warped Tusker",
+    "manaCost": "{7}",
+    "typeLine": "Creature — Eldrazi Boar Beast",
+    "oracleText": "Reach\nWhen you cast or cycle Warped Tusker, create a 0/1 colorless Eldrazi Spawn creature token with \"Sacrifice this token: Add {C}.\"\nCycling {2}{G} ({2}{G}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 8
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Warped Tusker:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn"
+                }
+            },
+            {
+                "id": "Warped Tusker:2",
+                "trigger": "CycleEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "artist": "Camille Alquier",
+        "flavorText": "Once, foraging for truffles, the very average boar fell asleep beneath the moon . . . .",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b5f3a1a-8514-4598-be3d-c3be719f6951.jpg?1783911305",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "The triggered ability will resolve before Warped Tusker or its cycling ability does, as appropriate. If Warped Tusker or its cycling ability are countered or otherwise leave the stack in response to that triggered ability, the triggered ability will still resolve as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -15690,6 +16430,49 @@
     ]
 }
 
+// Winter Moon
+{
+    "name": "Winter Moon",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Players can't untap more than one nonbasic land during their untap steps.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "UntapLimitPerStep",
+                "filter": {
+                    "cardPredicates": [
+                        "IsLand",
+                        {
+                            "type": "Not",
+                            "predicate": "IsBasicLand"
+                        }
+                    ]
+                },
+                "max": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "RARE",
+        "artist": "Drew Baker",
+        "flavorText": "\"The sun and moon have decided to make a competition of our misery.\"\n—Naromin, veteran explorer",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f76bc2da-8f4b-4153-8a7b-c601b19affaf.jpg?1783911242",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If multiple Winter Moons are on the battlefield, their effects are redundant. Each player will still be able to untap no more than one nonbasic land during their untap step."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If Winter Moon is on the battlefield while another effect restricts untapping lands or permanents in a different way, their effects are cumulative. For example, if you control both Winter Moon and Static Orb, each player will be able to untap no more than two permanents, up to one of which can be a nonbasic land, during their untap step."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Wither and Bloom
 {
     "name": "Wither and Bloom",
@@ -15768,6 +16551,65 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Writhing Chrysalis
+{
+    "name": "Writhing Chrysalis",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nWhen you cast this spell, create two 0/1 colorless Eldrazi Spawn creature tokens with \"Sacrifice this token: Add {C}.\"\nReach\nWhenever you sacrifice another Eldrazi, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID",
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Writhing Chrysalis:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn",
+                    "count": 2
+                }
+            },
+            {
+                "id": "Writhing Chrysalis:2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "permanent Eldrazi",
+                    "perPermanent": true
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "artist": "Domenico Cava",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f54dbeb1-51f8-40e2-912a-ec25457de5a2.jpg?1783911244",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Writhing Chrysalis's second ability will resolve before Writhing Chrysalis does. If Writhing Chrysalis is countered or otherwise leaves the stack in response to that triggered ability, the triggered ability will still resolve as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -15858,5 +16700,82 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Wurmcoil Larva
+{
+    "name": "Wurmcoil Larva",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Artifact Creature — Phyrexian Wurm",
+    "oracleText": "Deathtouch, lifelink\nWhen this creature dies, create a 1/2 black Phyrexian Wurm artifact creature token with deathtouch and a 2/1 black Phyrexian Wurm artifact creature token with lifelink.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wurmcoil Larva:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 2,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Phyrexian",
+                                "Wurm"
+                            ],
+                            "keywords": [
+                                "DEATHTOUCH"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a7800c9-6808-4f33-87ad-50ad8c79f2d7.jpg?1783911116",
+                            "artifactToken": true
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 1,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Phyrexian",
+                                "Wurm"
+                            ],
+                            "keywords": [
+                                "LIFELINK"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/1/4/1482ab42-875c-46fc-aa0b-b18154488985.jpg?1783911115",
+                            "artifactToken": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "David Astruga",
+        "flavorText": "Even a scrap of Phyrexian machinery can be lethal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc9b30e0-3934-4e4c-bdd9-5b7696b45948.jpg?1783911275"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
