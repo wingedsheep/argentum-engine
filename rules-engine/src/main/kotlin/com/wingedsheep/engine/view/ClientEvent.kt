@@ -898,6 +898,8 @@ object ClientEventTransformer {
         state: GameState?,
     ): ClientEvent? {
         return when (event) {
+            // Public identity bookkeeping has no separate client animation or log entry.
+            is SourceObjectsRecordedEvent -> null
             // The land-play signal drives triggers only; the client renders the land entering via
             // the accompanying ZoneChangeEvent, so no separate client event is emitted.
             is LandPlayedEvent -> null

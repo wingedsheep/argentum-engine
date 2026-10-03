@@ -56,6 +56,10 @@ data class GameState(
     /** Exile piles of departed battlefield visits, keyed by their unique entry timestamp. */
     val departedLinkedExile: Map<Long, List<EntityId>> = emptyMap(),
 
+    /** Source-visit histories survive their source leaving or ceasing to exist. String keys keep JSON portable. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val sourceObjectRecords: Map<String, SourceObjectRecord> = emptyMap(),
+
     /** Outstanding zone-return one-shot effects, independent of the source's current abilities. */
     val zoneReturns: List<ZoneReturn> = emptyList(),
 

@@ -104,6 +104,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CreaturesUnpairedEvent::class)
         subclass(PhasedOutEvent::class)
         subclass(PhasedInEvent::class)
+        subclass(SourceObjectsRecordedEvent::class)
         subclass(CountersAddedEvent::class)
         subclass(CountersRemovedEvent::class)
         subclass(CardsDrawnEvent::class)

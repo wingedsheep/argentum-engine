@@ -744,7 +744,98 @@ object Filters {
             oneOf("a permanent with a quality$suffix (unowned)", qualities(head, "$suffix (unowned)")),
             "$suffix (controller last)",
         ).map { alternate(it) }
-        return oneOf("a permanent$suffix", listOf(canonical) + reversed)
+        // The three-member list — "artifact, enchantment, or creature with flying" — exists only as
+        // the singular target noun; see [threeTypeList].
+        val listed = if (plural || spellPosition) {
+            emptyList()
+        } else {
+            val last = oneOf("the last member of a type list$suffix", listOf(head) + qualities(head, "$suffix (listed)"))
+            listOf(threeTypeList(last, "a permanent of one of three types$suffix"))
+        }
+        return oneOf("a permanent$suffix", listOf(canonical) + reversed + listed)
+    }
+
+    /** The one-predicate card types a type list opens with — "**artifact**, **enchantment**, or …". */
+    private val LISTED_TYPES: List<Pair<String, GameObjectFilter>> = listOf(
+        "artifact" to GameObjectFilter.Artifact,
+        "creature" to GameObjectFilter.Creature,
+        "enchantment" to GameObjectFilter.Enchantment,
+        "land" to GameObjectFilter.Land,
+        "planeswalker" to GameObjectFilter.Planeswalker,
+    )
+
+    private val listedType: Phrase<GameObjectFilter> =
+        oneOf("a card type in a list", LISTED_TYPES.map { (word, filter) -> constant(word, filter) })
+
+    /**
+     * "artifact, enchantment, or land", "artifact, enchantment, or creature with flying" — three
+     * types, any of which qualifies, the last of which may carry a quality clause that binds to it
+     * alone.
+     *
+     * **Two shapes, and the cards decide which.** When all three members are bare types the value is
+     * one flat `CardPredicate.Or` of three — the shape the SDK publishes as
+     * `GameObjectFilter.ArtifactEnchantmentOrLand` and `ArtifactCreatureOrEnchantment`, and the one
+     * Creeping Mold and Get Lost write. When the last member is qualified, the value is the
+     * `GameObjectFilter.or` fold, `(Artifact or Enchantment) or Creature.withKeyword(FLYING)` — what
+     * Broken Wings, Spider Food, Exorcise and the rest write, nested because `or` is binary. The
+     * qualification is what tells them apart, so each model has exactly one printed form; the fold
+     * of three bare types and the flat form of a qualified one have none and decline to print.
+     *
+     * Only the singular, uncontrolled noun: the plural swaps the conjunction ("artifacts,
+     * creatures, **and** enchantments"), and a controller clause after the list would leave English
+     * ambiguous about whether it binds to the last member or to all three.
+     */
+    private fun threeTypeList(last: Phrase<GameObjectFilter>, name: String): Phrase<GameObjectFilter> =
+        phrase("{first}, {second}, or {third}", name = name) {
+            slot("first", listedType)
+            slot("second", listedType)
+            slot("third", last)
+            build { listOf3(it.value("first"), it.value("second"), it.value("third")) }
+            match { filter ->
+                val (first, second, third) = unlist3(filter) ?: return@match null
+                if (listOf3(first, second, third) != filter) return@match null
+                bind("first" to first, "second" to second, "third" to third)
+            }
+        }
+
+    private fun GameObjectFilter.isBareType(): Boolean =
+        cardPredicates.size == 1 && statePredicates.isEmpty() && controllerPredicate == null && anyOf.isEmpty()
+
+    private fun listOf3(first: GameObjectFilter, second: GameObjectFilter, third: GameObjectFilter): GameObjectFilter =
+        if (third.isBareType()) {
+            GameObjectFilter(
+                cardPredicates = listOf(
+                    CardPredicate.Or(first.cardPredicates + second.cardPredicates + third.cardPredicates),
+                ),
+            )
+        } else {
+            first or second or third
+        }
+
+    /** [listOf3] read backwards; the caller rebuilds and compares, so this only has to propose. */
+    private fun unlist3(filter: GameObjectFilter): Triple<GameObjectFilter, GameObjectFilter, GameObjectFilter>? {
+        fun single(p: CardPredicate) = GameObjectFilter(cardPredicates = listOf(p))
+        fun pair(f: GameObjectFilter): Pair<GameObjectFilter, GameObjectFilter>? {
+            val or = f.cardPredicates.singleOrNull() as? CardPredicate.Or ?: return null
+            if (or.predicates.size != 2 || !f.isBareType()) return null
+            return single(or.predicates[0]) to single(or.predicates[1])
+        }
+        if (filter.anyOf.size == 2 && filter.cardPredicates.isEmpty()) {
+            val (first, second) = pair(filter.anyOf[0]) ?: return null
+            return Triple(first, second, filter.anyOf[1])
+        }
+        val or = filter.cardPredicates.singleOrNull() as? CardPredicate.Or ?: return null
+        val members = or.predicates
+        if (members.size == 3) return Triple(single(members[0]), single(members[1]), single(members[2]))
+        if (members.size != 2) return null
+        val (first, second) = pair(single(members[0])) ?: return null
+        val rest = members[1].let { if (it is CardPredicate.And) it.predicates else listOf(it) }
+        val third = GameObjectFilter(
+            cardPredicates = rest,
+            statePredicates = filter.statePredicates,
+            controllerPredicate = filter.controllerPredicate,
+        )
+        return Triple(first, second, third)
     }
 
     /** A whole noun phrase in the singular — "creature", "nonblack attacking creature". */

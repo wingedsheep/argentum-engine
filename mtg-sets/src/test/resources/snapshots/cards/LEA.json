@@ -1176,6 +1176,207 @@
     ]
 }
 
+// Cyclopean Tomb
+{
+    "name": "Cyclopean Tomb",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Put a mire counter on target non-Swamp land. That land is a Swamp for as long as it has a mire counter on it. Activate only during your upkeep.\nWhen this artifact is put into a graveyard from the battlefield, at the beginning of each of your upkeeps for the rest of the game, remove all mire counters from a land that a mire counter was put onto with this artifact but that a mire counter has not been removed from with this artifact.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cyclopean Tomb:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "UPKEEP",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "SourceLinkedBattlefield",
+                                    "key": "marked"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "SourceLinkedBattlefield",
+                                    "key": "cleaned"
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered0",
+                                "collectionFilter": {
+                                    "type": "ExcludeOtherCollection",
+                                    "otherCollectionName": "gathered1"
+                                },
+                                "storeMatching": "matching2"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "matching2",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "filter": "land",
+                                "storeSelected": "selected3",
+                                "prompt": "Choose a land marked by this Cyclopean Tomb to remove all mire counters",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "selected3"
+                                },
+                                "body": {
+                                    "type": "Gated",
+                                    "gate": {
+                                        "type": "Gate.DoAction",
+                                        "action": {
+                                            "type": "RemoveAllCountersOfType",
+                                            "counterType": "MIRE",
+                                            "target": {
+                                                "type": "PipelineTarget",
+                                                "collectionName": "selected3"
+                                            }
+                                        },
+                                        "successCriterion": "SuccessCriterion.CountersRemoved"
+                                    },
+                                    "then": {
+                                        "type": "RecordSourceObjects",
+                                        "from": "selected3",
+                                        "key": "cleaned"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "expiry": "DelayedTriggerExpiry.Never",
+                    "repeatAtEachMatchingStep": true,
+                    "fireOnPlayer": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Cyclopean Tomb:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.DoAction",
+                                "action": {
+                                    "type": "AddCounters",
+                                    "counterType": "MIRE",
+                                    "count": 1,
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "successCriterion": "SuccessCriterion.CountersAdded"
+                            },
+                            "then": {
+                                "type": "RecordSourceObjects",
+                                "from": "gathered0",
+                                "key": "marked"
+                            }
+                        },
+                        {
+                            "type": "SetLandType",
+                            "landType": "Swamp",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": {
+                                "type": "WhileAffectedHasCounter",
+                                "counterType": "MIRE"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsLand",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Swamp"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "DuringStep",
+                        "step": "UPKEEP"
+                    },
+                    "OnlyDuringYourTurn"
+                ],
+                "descriptionOverride": "{2}, {T}: Put a mire counter on target non-Swamp land. It is a Swamp while it has a mire counter. Activate only during your upkeep."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "RARE",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/894c5cf2-8ae2-427a-bcbc-67df0bdfee9d.jpg?1783948668",
+        "rulings": [
+            {
+                "date": "2008-08-01",
+                "text": "The land remains a Swamp as long as it has a mire counter on it. This effect is not tied to the Tomb remaining on the battlefield."
+            },
+            {
+                "date": "2006-10-15",
+                "text": "Will not add or remove the supertype snow to or from a land."
+            }
+        ]
+    }
+}
+
 // Dark Ritual
 {
     "name": "Dark Ritual",
