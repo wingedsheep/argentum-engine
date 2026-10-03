@@ -63,6 +63,110 @@
     ]
 }
 
+// Distinguished Conjurer
+{
+    "name": "Distinguished Conjurer",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Whenever another creature you control enters, you gain 1 life.\n{4}{W}, {T}: Exile another target creature you control, then return it to the battlefield under its owner's control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Distinguished Conjurer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Distinguished Conjurer:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Battlefield"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0eaeec2-d1d4-4494-9c5d-cebfd7f088de.jpg?1783919197",
+        "rulings": [
+            {
+                "date": "2022-12-02",
+                "text": "When the card exiled by the second ability returns to the battlefield, it will be a new object with no connection to the card that was exiled. Auras attached to the exiled creature will be put into their owners' graveyards. Any Equipment will become unattached and remain on the battlefield. Any counters on the exiled creature will cease to exist."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "Distinguished Conjurer's first ability triggers whenever any creature other than itself enters the battlefield under your control, including those returned by its last ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Giant Ladybug
 {
     "name": "Giant Ladybug",

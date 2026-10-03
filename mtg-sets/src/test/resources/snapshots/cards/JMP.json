@@ -47,6 +47,43 @@
     ]
 }
 
+// Branching Evolution
+{
+    "name": "Branching Evolution",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "If one or more +1/+1 counters would be put on a creature you control, twice that many +1/+1 counters are put on that creature instead.",
+    "script": {
+        "replacementEffects": [
+            "DoubleCounterPlacement"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "\"Is it the water? The stars? Whatever it is, something incredible is happening here.\"\n—Eris, zoologist, journal entry",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a6971ad-cbb4-4f66-9bc4-b407c5805e85.jpg?1783930499",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If a creature you control would enter the battlefield with a number of +1/+1 counters on it, it enters with twice that many instead."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you control two Branching Evolutions, the number of +1/+1 counters put on a creature is four times the original number. Three Branching Evolutions multiplies the original number by eight, and so on."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If two or more effects attempt to modify how many counters would be put onto a creature you control, you choose the order to apply those effects, no matter who controls the sources of those effects."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Brightmare
 {
     "name": "Brightmare",
