@@ -341,13 +341,19 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      *
      * @property excludeSelf when true the cost's source permanent is excluded from the candidate
      *   pool — "tap another untapped [filter] you control".
+     * @property sharedCreatureType when true the [count] tapped permanents must all have at least
+     *   one creature type in common — "tap two untapped creatures you control that share a creature
+     *   type" (Weight of Conscience). The [Sacrifice.distinctNames] twin: the cost is only payable
+     *   when some creature type is held by at least [count] candidates, and a payment whose chosen
+     *   permanents have no common creature type is rejected.
      */
     @SerialName("AtomTapPermanents")
     @Serializable
     data class TapPermanents(
         val count: Int = 1,
         val filter: GameObjectFilter = GameObjectFilter.Any,
-        val excludeSelf: Boolean = false
+        val excludeSelf: Boolean = false,
+        val sharedCreatureType: Boolean = false
     ) : CostAtom {
         override val selectionCount: Int get() = count
         override val description: String get() = buildString {
@@ -355,6 +361,7 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
             if (count == 1) append(if (excludeSelf) "another untapped ${filter.description}" else "an untapped ${filter.description}")
             else append("$count untapped ${filter.description}s")
             append(" you control")
+            if (sharedCreatureType) append(" that share a creature type")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): CostAtom {

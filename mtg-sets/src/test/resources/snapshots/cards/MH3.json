@@ -8401,6 +8401,207 @@
     ]
 }
 
+// Kozilek's Command
+{
+    "name": "Kozilek's Command",
+    "manaCost": "{X}{C}{C}",
+    "typeLine": "Kindred Instant — Eldrazi",
+    "oracleText": "Choose two —\n• Target player creates X 0/1 colorless Eldrazi Spawn creature tokens with \"Sacrifice this token: Add {C}.\"\n• Target player scries X, then draws a card.\n• Exile target creature with mana value X or less.\n• Exile up to X target cards from graveyards.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Eldrazi Spawn",
+                        "controller": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "dynamicCount": "XValue"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target player creates X 0/1 colorless Eldrazi Spawn creature tokens"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": "XValue",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                },
+                                "storeAs": "scried"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "scried",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": "XValue"
+                                },
+                                "chooser": "TargetPlayer",
+                                "storeSelected": "toBottom",
+                                "storeRemainder": "toTop",
+                                "selectedLabel": "Put on bottom",
+                                "remainderLabel": "Put on top"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "toBottom",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    },
+                                    "placement": "Bottom"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "toTop",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    },
+                                    "placement": "Top"
+                                },
+                                "order": "OwnerChooses"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "Compare",
+                                        "left": "XValue",
+                                        "operator": "GT",
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 0
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "type": "EmitScriedEvent",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Target player scries X, then draws a card"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        },
+                        "destination": "Exile"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        "ManaValueAtMostX"
+                                    ]
+                                }
+                            },
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Exile target creature with mana value X or less"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "destination": "Exile"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Graveyard"
+                            },
+                            "id": "t3",
+                            "dynamicMaxCount": "XValue"
+                        }
+                    ],
+                    "description": "Exile up to X target cards from graveyards"
+                }
+            ],
+            "chooseCount": 2
+        }
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92585587-cfdc-406a-9114-4f6dd8802c37.jpg?1784634156",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If all of Kozilek's Command's targets are illegal as it tries to resolve, it will do nothing. If at least one target is still legal, it will resolve and do as much as it can."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a creature has {X} in its mana cost, X is 0 when determining its mana value."
+            }
+        ]
+    }
+}
+
 // Kozilek's Unsealing
 {
     "name": "Kozilek's Unsealing",

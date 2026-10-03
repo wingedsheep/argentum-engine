@@ -47,7 +47,9 @@ data class ShuffleLibraryEffect(
 @SerialName("EmitScriedEvent")
 @Serializable
 data class EmitScriedEventEffect(
-    val gatherCollection: String = "scried"
+    val gatherCollection: String = "scried",
+    /** Who scried — the player whose library was looked at ("Target player scries X"). */
+    val player: Player = Player.You
 ) : Effect {
     // Intentionally blank: this is an internal pipeline tail with no player-facing text.
     override val description: String = ""

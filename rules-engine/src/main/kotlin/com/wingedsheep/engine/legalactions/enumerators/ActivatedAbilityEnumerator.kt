@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
@@ -318,9 +319,12 @@ class ActivatedAbilityEnumerator(
                         }
                         is CostAtom.TapPermanents -> {
                             tapCost = atom
-                            tapTargets = context.costUtils.findAbilityTapTargets(
-                                state, playerId, atom.filter,
-                                if (atom.excludeSelf) entityId else null
+                            tapTargets = SharedCreatureTypeTapCost.eligible(
+                                state, atom,
+                                context.costUtils.findAbilityTapTargets(
+                                    state, playerId, atom.filter,
+                                    if (atom.excludeSelf) entityId else null
+                                )
                             )
                             if (tapTargets.size < atom.count) continue
                         }
@@ -541,9 +545,12 @@ class ActivatedAbilityEnumerator(
                                     }
                                     is CostAtom.TapPermanents -> {
                                         tapCost = atom
-                                        tapTargets = context.costUtils.findAbilityTapTargets(
-                                            state, playerId, atom.filter,
-                                            if (atom.excludeSelf) entityId else null
+                                        tapTargets = SharedCreatureTypeTapCost.eligible(
+                                            state, atom,
+                                            context.costUtils.findAbilityTapTargets(
+                                                state, playerId, atom.filter,
+                                                if (atom.excludeSelf) entityId else null
+                                            )
                                         )
                                         if (tapTargets.size < atom.count) {
                                             costCanBePaid = false

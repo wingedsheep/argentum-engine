@@ -467,6 +467,7 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   state-based action).
 - `Costs.Sacrifice(filter)` — sacrifice a permanent matching the filter (may include self).
 - `Costs.SacrificeAnother(filter)` — sacrifice a *different* permanent matching the filter.
+- `Costs.TapPermanents(count, filter = Creature, excludeSelf = false, sharedCreatureType = false)` — **fixed-count** "tap N untapped permanents you control matching `filter`" activated-ability cost (a cost, not `{T}`, so summoning sickness doesn't apply). `excludeSelf = true` reads "N other untapped …"; `Costs.TapAnotherPermanent(filter)` is the one-permanent "another" shorthand. With `sharedCreatureType = true` the chosen permanents must all have **a creature type in common** ("tap two untapped creatures you control that share a creature type" — Weight of Conscience): the cost is only payable when some creature type (projected, so changelings count) is held by ≥ `count` candidates, only those candidates are offered, and a selection with no common type is rejected.
 - `Costs.SacrificeMultiple(count, filter = Any, distinctNames = false)` — sacrifice `count` matching permanents. With `distinctNames = true` the chosen permanents must all have **different names** ("sacrifice three artifact tokens with different names" — Transmutation Font); the cost is only payable when ≥ `count` distinctly-named candidates exist, and the activation always pauses for the selection (it's a real choice even when candidates == count).
 - `Costs.SacrificeSelf` — sacrifice this permanent (the ability's source).
 - `Costs.SacrificeGrantingPermanent` — sacrifice the permanent that *granted* this activated ability, resolved from the static-grant lookup at activation time (no filter, no prompt). The self-sacrifice sibling of `Costs.ExileGrantingPermanent`: use for an Equipment/Aura whose granted activated ability says "Sacrifice [this permanent]" — e.g. Deconstruction Hammer's "{3}, {T}, Sacrifice Deconstruction Hammer: ...". Per CR 201.5a the name refers only to the specific granting permanent, so this sacrifices exactly that one even with another same-named permanent on the battlefield.
@@ -3808,6 +3809,16 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
   (`Chooser.TargetPlayer`) — the scry analogue of `mill(count, target)`. Used by modal "• Target
   player scries N" modes (Bumi, King of Three Trials), where `target` is the chosen mode's local
   `EffectTarget.ContextTarget(0)`.
+  The target also orders the cards left on top (`MoveCollectionEffect(order = CardOrder.OwnerChooses)`
+  — the player whose library receives the cards gets the reorder prompt; `ControllerChooses` would
+  hand it to the caster), and the `ScriedEvent` it emits names the **scrying** player, so the
+  target's own "Whenever you scry" triggers fire, not the caster's.
+- `scry(count: DynamicAmount, target = Controller)` — **"Scry X" / "Target player scries X"**
+  (`Effects.Scry(amount, target)`), X known only at resolution (Kozilek's Command: "Target player
+  scries X, then draws a card." → `Effects.Scry(DynamicAmounts.xValue(), player)`). A `Fixed` amount
+  collapses to the literal `scry(n, target)`; otherwise it expands to the dynamic
+  `scryPipeline(count, player, chooser)`, whose `ScriedEvent` tail is gated on X > 0 — "scry 0" is
+  no scry event (CR 701.22b), while an empty library with X > 0 still is one (CR 701.22d).
 - `surveil(count)` — look at top N, any to graveyard, rest on top. Also `Effects.Surveil(count)`.
   - **Compact macro effect.** `scry`/`surveil` return a single `ScryEffect`/`SurveilEffect` *marker*
     node (`{"type":"Scry","count":N}`), not the unrolled pipeline. The engine's `ScryExecutor` /
@@ -3822,8 +3833,9 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
     "surveil X" where X is only known at resolution (e.g. Spider-Man Noir: "surveil X, where X is the
     number of counters on it", `DynamicAmounts.countersOnTriggering()`). There is no compact macro for
     a dynamic surveil (the marker only carries a literal), so this expands straight to
-    `surveilPipeline(count)` and always emits `SurveiledEvent` (the real gathered size drives the event,
-    handling library-smaller-than-X and X = 0). Twin of the dynamic `lookAtTopAndReorder(count)`.
+    `surveilPipeline(count)`, whose `SurveiledEvent` is gated on X > 0 ("surveil 0" is no surveil
+    event, CR 701.25c) and carries the real gathered size (handling library-smaller-than-X). Twin of
+    the dynamic `lookAtTopAndReorder(count)` and the dynamic `scry(count, target)`.
   - **Remembering the graveyard pile.** `surveil(count, storeGraveyardAs)` expands to the same
     `surveilPipeline(count, storeGraveyardAs)` (`SurveiledEvent` included) and stores the cards the
     graveyard move moved under `storeGraveyardAs`, for "if you put a card … into your

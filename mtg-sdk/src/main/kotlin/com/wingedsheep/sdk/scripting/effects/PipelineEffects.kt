@@ -869,6 +869,11 @@ enum class LookAudience {
 enum class CardOrder {
     /** Controller chooses the order (prompts if > 1 card) */
     ControllerChooses,
+    /**
+     * The player whose library receives the cards chooses the order (prompts like
+     * [ControllerChooses]) — "target player scries X": that player puts the rest back in any order.
+     */
+    OwnerChooses,
     /** Random order */
     Random,
     /** Preserve the existing order */

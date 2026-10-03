@@ -490,13 +490,15 @@ object Costs {
 
     /**
      * Tap permanents you control (e.g., "Tap five untapped Clerics you control").
-     * Set [excludeSelf] for "tap N other untapped … you control" (excludes the source permanent).
+     * Set [excludeSelf] for "tap N other untapped … you control" (excludes the source permanent),
+     * and [sharedCreatureType] for "… that share a creature type" (Weight of Conscience).
      */
     fun TapPermanents(
         count: Int,
         filter: GameObjectFilter = GameObjectFilter.Creature,
-        excludeSelf: Boolean = false
-    ): AbilityCost = AbilityCost.Atom(CostAtom.TapPermanents(count, filter, excludeSelf))
+        excludeSelf: Boolean = false,
+        sharedCreatureType: Boolean = false
+    ): AbilityCost = AbilityCost.Atom(CostAtom.TapPermanents(count, filter, excludeSelf, sharedCreatureType))
 
     /**
      * Tap another untapped permanent you control (e.g., "Tap another untapped permanent you control").

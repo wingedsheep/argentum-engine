@@ -18,6 +18,10 @@ import com.wingedsheep.sdk.scripting.effects.EmitScriedEventEffect
 import com.wingedsheep.sdk.scripting.effects.EmitSurveiledEventEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
+import com.wingedsheep.sdk.scripting.effects.Gate
+import com.wingedsheep.sdk.scripting.effects.GatedEffect
+import com.wingedsheep.sdk.scripting.conditions.Compare
+import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
@@ -390,6 +394,23 @@ object LibraryPatterns {
         else -> scryPipeline(count, scryPlayer(target), Chooser.TargetPlayer)
     }
 
+    /**
+     * "Scry X" / "Target player scries X" with a *dynamic* count (CR 701.22) — X is only known at
+     * resolution, e.g. Kozilek's Command's "Target player scries X, then draws a card." A [count]
+     * that is already a [DynamicAmount.Fixed] collapses to the literal [scry]`(n, target)` (and so to
+     * the compact [ScryEffect] macro for the controller). Otherwise it expands to the dynamic
+     * [scryPipeline], keyed to [target]'s library and decided by that player, whose `ScriedEvent`
+     * tail is gated on X > 0 — "scry 0" is no scry event (CR 701.22b), while an empty library with
+     * X > 0 still is one (CR 701.22d).
+     */
+    fun scry(count: DynamicAmount, target: EffectTarget = EffectTarget.Controller): Effect = when (count) {
+        is DynamicAmount.Fixed -> scry(count.amount, target)
+        else -> when (target) {
+            EffectTarget.Controller -> scryPipeline(count)
+            else -> scryPipeline(count, scryPlayer(target), Chooser.TargetPlayer)
+        }
+    }
+
     /** Map a scry [target] to the [Player] reference whose library is looked at (mirrors [mill]). */
     private fun scryPlayer(target: EffectTarget): Player = when (target) {
         EffectTarget.Controller -> Player.You
@@ -448,15 +469,49 @@ object LibraryPatterns {
         count: Int,
         player: Player = Player.You,
         chooser: Chooser = Chooser.Controller
+    ): CompositeEffect = scrySteps(
+        count = DynamicAmount.Fixed(count),
+        player = player,
+        chooser = chooser,
+        // Fire "Whenever you scry" triggers (CR 701.22) after the pipeline finishes.
+        // The event count is the actual size of the "scried" gather collection at
+        // resolution time, not the literal N (handles library-smaller-than-N). Per
+        // CR 701.22d the trigger still fires when the library was empty and zero
+        // cards were looked at, so the tail emits unconditionally — it is only
+        // omitted for a literal "scry 0" (CR 701.22b: no scry event occurs).
+        tail = if (count > 0) EmitScriedEventEffect(player = player) else null
+    )
+
+    /**
+     * The expanded scry pipeline with a *dynamic* look count — twin of the literal [scryPipeline].
+     * Whether X is 0 is only known at resolution, so the `ScriedEvent` tail is gated on X > 0
+     * instead of being omitted (CR 701.22b); the event still carries the real gathered size.
+     */
+    fun scryPipeline(
+        count: DynamicAmount,
+        player: Player = Player.You,
+        chooser: Chooser = Chooser.Controller
+    ): CompositeEffect = scrySteps(
+        count = count,
+        player = player,
+        chooser = chooser,
+        tail = positiveCountGate(count, EmitScriedEventEffect(player = player))
+    )
+
+    private fun scrySteps(
+        count: DynamicAmount,
+        player: Player,
+        chooser: Chooser,
+        tail: Effect?
     ): CompositeEffect = CompositeEffect(
         listOfNotNull(
             GatherCardsEffect(
-                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count), player),
+                source = CardSource.TopOfLibrary(count, player),
                 storeAs = "scried"
             ),
             SelectFromCollectionEffect(
                 from = "scried",
-                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
+                selection = SelectionMode.ChooseUpTo(count),
                 chooser = chooser,
                 storeSelected = "toBottom",
                 storeRemainder = "toTop",
@@ -470,16 +525,20 @@ object LibraryPatterns {
             MoveCollectionEffect(
                 from = "toTop",
                 destination = CardDestination.ToZone(Zone.LIBRARY, player, placement = ZonePlacement.Top),
-                order = CardOrder.ControllerChooses
+                // The scrying player orders their own top cards (CR 701.22a).
+                order = if (chooser == Chooser.Controller) CardOrder.ControllerChooses else CardOrder.OwnerChooses
             ),
-            // Fire "Whenever you scry" triggers (CR 701.22) after the pipeline finishes.
-            // The event count is the actual size of the "scried" gather collection at
-            // resolution time, not the literal N (handles library-smaller-than-N). Per
-            // CR 701.22d the trigger still fires when the library was empty and zero
-            // cards were looked at, so the tail emits unconditionally — it is only
-            // omitted for a literal "scry 0" (CR 701.22b: no scry event occurs).
-            if (count > 0) EmitScriedEventEffect() else null
+            tail
         )
+    )
+
+    /**
+     * Run a keyword action's event [tail] only when its dynamic [count] resolves above zero — "scry 0"
+     * / "surveil 0" is no event at all (CR 701.22b / 701.25c).
+     */
+    private fun positiveCountGate(count: DynamicAmount, tail: Effect): Effect = GatedEffect(
+        gate = Gate.WhenCondition(Compare(count, ComparisonOperator.GT, DynamicAmount.Fixed(0))),
+        then = tail
     )
 
     /**
@@ -524,9 +583,9 @@ object LibraryPatterns {
     /**
      * The expanded surveil pipeline with a *dynamic* look count (Gather → Select → Move
      * graveyard/top → emit `SurveiledEvent`). Twin of the literal [surveilPipeline]; the gather and
-     * the "put in graveyard" selection both use [count]. The `SurveiledEvent` is always emitted
-     * because the actual number of cards looked at is only known at resolution time — the event
-     * carries the real gathered size (which handles a library smaller than X, and X resolving to 0).
+     * the "put in graveyard" selection both use [count]. The `SurveiledEvent` is gated on X > 0
+     * ("surveil 0" is no surveil event, CR 701.25c) and carries the real gathered size, so a library
+     * smaller than X — even an empty one — still surveils (CR 701.25d).
      */
     fun surveilPipeline(count: DynamicAmount): CompositeEffect = CompositeEffect(
         listOf(
@@ -551,7 +610,7 @@ object LibraryPatterns {
                 destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
                 order = CardOrder.ControllerChooses
             ),
-            EmitSurveiledEventEffect()
+            positiveCountGate(count, EmitSurveiledEventEffect())
         )
     )
 
