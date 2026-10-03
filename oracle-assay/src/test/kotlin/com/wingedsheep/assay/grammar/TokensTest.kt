@@ -161,6 +161,19 @@ class TokensTest : StringSpec({
         Grammar.abilityLine.printLine(unknown) shouldBe null
     }
 
+    // CR 701.36a: investigating *is* creating a Clue, so the keyword action reads into the Clue row's
+    // model and prints back as the noun form — one model, one printed form.
+    "investigate is an alternate spelling of creating a Clue" {
+        fragment("Investigate.").script.spellEffect shouldBe Effects.Investigate()
+        fragment("Investigate.").script.spellEffect shouldBe Effects.CreateClue()
+        fragment("When ~ enters, investigate twice.").script.triggeredAbilities.single().effect shouldBe
+            Effects.Investigate(2)
+
+        Grammar.abilityLine.printLine(fragment("Investigate.")) shouldBe "Create a Clue token."
+        Grammar.abilityLine.printLine(fragment("When ~ enters, investigate twice.")) shouldBe
+            "When ~ enters, create two Clue tokens."
+    }
+
     "the token clause is the same clause inside a trigger" {
         roundTrips("When ~ enters, create a Food token.")
         roundTrips("When ~ enters, create two 1/1 white Rabbit creature tokens.")

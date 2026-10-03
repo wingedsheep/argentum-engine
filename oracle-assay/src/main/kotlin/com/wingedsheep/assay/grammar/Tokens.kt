@@ -2,6 +2,7 @@ package com.wingedsheep.assay.grammar
 
 import com.wingedsheep.assay.syntax.Bindings
 import com.wingedsheep.assay.syntax.Phrase
+import com.wingedsheep.assay.syntax.alternate
 import com.wingedsheep.assay.syntax.bind
 import com.wingedsheep.assay.syntax.constant
 import com.wingedsheep.assay.syntax.oneOf
@@ -405,8 +406,8 @@ object Tokens {
      * `Effects.CreateClue` are the same call — so the two printed forms denote one model. Only the
      * noun form is registered here. The keyword-action spelling declines, which names the gap; what
      * it must never become is a second canonical rule, because then one model would have two printed
-     * forms and nothing would decide which the printer emits. When the keyword-action family is
-     * written, "investigate" belongs in it as an `alternate`.
+     * forms and nothing would decide which the printer emits. So "investigate" is an `alternate`
+     * ([investigate]).
      */
     /**
      * One predefined token noun, and the two facades the SDK gives it.
@@ -460,6 +461,23 @@ object Tokens {
         }
     }
 
+    /**
+     * "Investigate." / "investigate twice." — the keyword action (CR 701.36a) that *is* "create a
+     * Clue token". `Effects.Investigate` and `Effects.CreateClue` build the same
+     * `CreatePredefinedTokenEffect`, so these are [alternate]s of the Clue rows: they read into that
+     * one model and print back as the noun form, a `VARIANT`. Making them canonical would give one
+     * model two printed forms with nothing to choose between them.
+     */
+    private val investigate: List<Phrase<CardScript>> =
+        listOf("investigate" to 1, "investigate twice" to 2).map { (text, times) ->
+            alternate(
+                phrase<CardScript>(text, name = text) {
+                    build { CardScript(spellEffect = Effects.Investigate(times)) }
+                    canonical = false
+                }
+            )
+        }
+
     /** One token clause, for the sentences that wrap it — see [Granted]. */
     val clause: Phrase<CardScript> get() = oneOf("a token clause", clauses)
 
@@ -504,7 +522,8 @@ object Tokens {
             // word only, so the X row is left out rather than written against nothing.
             PREDEFINED.flatMap { token ->
                 counts.dropLast(1).map { createPredefined(it, token) }
-            }
+            } +
+            investigate
 
     /**
      * "Create that many Blood tokens." — Olivia's Attendants; "…create that many 1/1 green Elf
