@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.PlayerLeftGameEvent
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.isResolving
 import com.wingedsheep.engine.mechanics.combat.CombatRemovalHelper
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
@@ -141,11 +142,23 @@ object PlayerLeavesGameProcessor {
         // 8. Mark the leave processing done so the SBA loop never re-applies it.
         s = s.updateEntity(leaver) { it.with(PlayerLeftGameComponent) }
 
+        // Player control ends when its controller leaves, or when an abandoned resolution loses
+        // its bottom frame. Retain only grants for living seats and still-existing stack visits.
+        val expiredControl = s.resolutionControls.filter {
+            it.controllerId == leaver || it.playerId == leaver ||
+                (!s.isCurrentObject(it.resolvingObject) && !s.isResolving(it.resolvingObject)) ||
+                (state.isResolving(it.resolvingObject) && !s.isResolving(it.resolvingObject))
+        }
+        s = s.copy(resolutionControls = s.resolutionControls - expiredControl.toSet())
+        val controlEvents = expiredControl.map {
+            com.wingedsheep.engine.core.ResolutionControlEvent(it, com.wingedsheep.engine.core.ResolutionControlEvent.Stage.ENDED)
+        }
+
         // Leaving the game ends zone-return durations without producing a return trigger.
         val returns = com.wingedsheep.engine.handlers.effects.ZoneReturnService.returnDepartedSources(zones, s)
         return ExecutionResult.success(
             returns.state,
-            listOf(PlayerLeftGameEvent(leaver, reason, toRemove.size)) + returns.events
+            listOf(PlayerLeftGameEvent(leaver, reason, toRemove.size)) + controlEvents + returns.events
         )
     }
 

@@ -96,6 +96,7 @@ val engineSerializersModule = SerializersModule {
         subclass(BecameSaddledEvent::class)
         subclass(CaseSolvedEvent::class)
         subclass(BecameRenownedEvent::class)
+        subclass(BecameMonstrousEvent::class)
         subclass(PermanentAttachedEvent::class)
         subclass(PermanentUnattachedEvent::class)
         subclass(UntappedEvent::class)
@@ -144,6 +145,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DoorUnlockedEvent::class)
         subclass(DoorLockedEvent::class)
         subclass(TurnHijackedEvent::class)
+        subclass(ResolutionControlEvent::class)
         subclass(HandRevealedEvent::class)
         subclass(KeywordGrantedEvent::class)
         subclass(CitysBlessingGainedEvent::class)
@@ -229,6 +231,7 @@ val engineSerializersModule = SerializersModule {
     polymorphic(ContinuationFrame::class) {
         subclass(Suspension::class)
         subclass(FinishResolvingSpellContinuation::class)
+        subclass(EndResolutionControlContinuation::class)
         subclass(ReplacementResolveContinuation::class)
         subclass(PerformLifeGainContinuation::class)
         subclass(RestoreReplacementChainContinuation::class)
@@ -256,6 +259,7 @@ val engineSerializersModule = SerializersModule {
 
     polymorphic(AutomaticContinuation::class) {
         subclass(FinishResolvingSpellContinuation::class)
+        subclass(EndResolutionControlContinuation::class)
         subclass(ReplacementResolveContinuation::class)
         subclass(PerformLifeGainContinuation::class)
         subclass(RestoreReplacementChainContinuation::class)
@@ -607,6 +611,7 @@ val engineSerializersModule = SerializersModule {
         subclass(SaddledComponent::class)
         subclass(SolvedComponent::class)
         subclass(RenownedComponent::class)
+        subclass(MonstrousComponent::class)
         subclass(CrewSaddleContributorsComponent::class)
         subclass(CastForImpendingComponent::class)
         subclass(EnduringReturnComponent::class)

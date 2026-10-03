@@ -1605,6 +1605,28 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * When a permanent becomes monstrous (CR 701.37b) — a monstrosity ability resolved on a
+     * permanent that wasn't yet monstrous.
+     *
+     * Binding SELF = "when this creature becomes monstrous" (Ember Swallower); ANY = "whenever a [filter] becomes monstrous". The permanent stays on the
+     * battlefield, so this matches in the regular battlefield trigger loop like [BecameRenownedEvent].
+     * Fires once per permanent: the designation is sticky and monstrosity does nothing to a
+     * permanent that is already monstrous.
+     */
+    @SerialName("BecameMonstrousEvent")
+    @Serializable
+    data class BecameMonstrousEvent(
+        val filter: GameObjectFilter = GameObjectFilter.Any
+    ) : EventPattern {
+        override val description: String = describeObjectForEvent(filter) + " becomes monstrous"
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /**
      * When an Aura, Equipment, or Fortification becomes attached to a permanent or player
      * (CR 603.2f — "becomes" triggers fire only at the moment of attaching, not on a state that
      * already exists, and not on phasing in/out per CR 702.26j).

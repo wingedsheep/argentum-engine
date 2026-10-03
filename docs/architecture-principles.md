@@ -698,6 +698,15 @@ recorded responses while keeping their player and choice payloads.
 - **Deterministic replay.** The continuation stack is part of `GameState`. A replay log of actions
   deterministically reproduces the exact sequence of decisions and resumptions.
 
+### Resolution control lifetime
+
+After target and intervening-condition checks succeed, each stack resolution pushes
+`EndResolutionControlContinuation` below its effect, casting and finishing frames. It captures the original `ObjectRef`, so a paused permanent entry can finish its
+choices after the card changes zones. `GameState.resolutionControls` binds player input authority to
+that frame, not to priority or the stable card id. Synchronous completion and the automatic resumer
+remove the same window; countering an awaiting object removes its inactive grants. Ordinary `actorFor`
+seams provide the server and client views. No priority window or trigger detection is added here.
+
 ### 2.5 Explicit Event Emission
 
 **Principle:** Every state mutation emits an explicit, typed event.

@@ -56,12 +56,12 @@ object LibraryRevealUtils {
     }
 
     /**
-     * **Replace** each card's reveal audience with exactly [playerIds] — the authoritative write
-     * for a library placement.
+     * **Replace** each card's reveal audience with [playerIds] and their current input controllers
+     * — the authoritative write for a library placement.
      *
      * Replacing, not merging, is the whole point: a card that was public knowledge in a hand
      * (revealed there, or returned to hand from the battlefield) becomes hidden again the moment
-     * it is tucked into a library, and any player outside [playerIds] must lose it. An empty
+     * it is tucked into a library, and any player outside that authorized audience must lose it. An empty
      * audience strips the component outright. [markRevealed] merges instead, and is for reveals
      * that add to what a player already knows.
      */
@@ -71,14 +71,15 @@ object LibraryRevealUtils {
         playerIds: Set<EntityId>,
     ): GameState {
         if (cardIds.isEmpty()) return state
+        val observers = playerIds + playerIds.map(state::actorFor)
         var newState = state
         for (cardId in cardIds) {
             val container = newState.getEntity(cardId) ?: continue
             val current = container.get<RevealedToComponent>()?.playerIds ?: emptySet()
-            if (current == playerIds) continue
+            if (current == observers) continue
             newState = newState.updateEntity(cardId) { c ->
-                if (playerIds.isEmpty()) c.without<RevealedToComponent>()
-                else c.with(RevealedToComponent(playerIds))
+                if (observers.isEmpty()) c.without<RevealedToComponent>()
+                else c.with(RevealedToComponent(observers))
             }
         }
         return newState
@@ -91,14 +92,17 @@ object LibraryRevealUtils {
         playerIds: Collection<EntityId>
     ): GameState {
         if (cardIds.isEmpty() || playerIds.isEmpty()) return state
+        // Knowledge is acquired now, while the control window is active, even if that window
+        // ends before the next client update. Library shuffles still clear this reveal memory.
+        val observers = playerIds.toSet() + playerIds.map(state::actorFor)
         var newState = state
         for (cardId in cardIds) {
             newState = newState.updateEntity(cardId) { container ->
                 val existing = container.get<RevealedToComponent>()
                 val merged = if (existing == null) {
-                    RevealedToComponent(playerIds.toSet())
+                    RevealedToComponent(observers)
                 } else {
-                    existing.copy(playerIds = existing.playerIds + playerIds)
+                    existing.copy(playerIds = existing.playerIds + observers)
                 }
                 container.with(merged)
             }

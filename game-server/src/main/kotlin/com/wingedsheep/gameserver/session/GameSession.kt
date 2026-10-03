@@ -903,8 +903,7 @@ class GameSession(
     fun executeAction(playerId: EntityId, action: GameAction, messageId: String? = null): ActionResult = synchronized(stateLock) {
         val state = gameState ?: return ActionResult.Failure("Game not started")
 
-        // Seat authorization: a seat may submit actions tagged with its own playerId, or
-        // act on behalf of a player whose turn it currently controls (Mindslaver-style).
+        // Only the current input authority may submit a player's actions.
         // The action.playerId always represents the in-game actor (whose mana, cards,
         // and spell-controllership this action is); the controller is just the input
         // device. Concede is excluded — the affected player can always concede regardless
@@ -919,8 +918,11 @@ class GameSession(
             if (combatDeclarer != playerId) {
                 return ActionResult.Failure("Another player chooses this combat declaration")
             }
-        } else if (action !is Concede && playerId != actionPlayerId && state.actorFor(actionPlayerId) != playerId) {
-            return ActionResult.Failure("Not authorized to submit actions for player $actionPlayerId")
+        } else {
+            val inputAuthority = if (action is Concede) actionPlayerId else state.actorFor(actionPlayerId)
+            if (playerId != inputAuthority) {
+                return ActionResult.Failure("Not authorized to submit actions for player $actionPlayerId")
+            }
         }
 
         // Idempotency check: if this messageId was already processed, skip

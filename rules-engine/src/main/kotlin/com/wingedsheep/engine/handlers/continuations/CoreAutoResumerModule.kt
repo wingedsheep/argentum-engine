@@ -3,6 +3,7 @@ import com.wingedsheep.sdk.dsl.Patterns
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.state.endResolutionControl
 
 /**
  * Core auto-resumers that process continuations without player input:
@@ -20,6 +21,9 @@ class CoreAutoResumerModule(
 ) : AutoResumerModule {
 
     override fun autoResumers(): List<AutoResumer<*>> = listOf(
+        autoResumer(EndResolutionControlContinuation::class) { state, continuation, events, checkForMore ->
+            mergeAndContinue(state.endResolutionControl(continuation.resolvingObject, wasResolving = true), events, checkForMore)
+        },
         autoResumer(FinishResolvingSpellContinuation::class) { state, continuation, events, checkForMore ->
             val result = services.stackResolver.finishResolvingSpell(state, continuation)
             mergeAndContinue(result, events, checkForMore)

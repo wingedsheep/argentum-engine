@@ -398,6 +398,11 @@ data class TriggerContext(
                     triggeringEntityId = event.entityId,
                     triggeringPlayerId = event.controllerId
                 )
+                // Monstrosity (CR 701.37b): same shape as renown.
+                is com.wingedsheep.engine.core.BecameMonstrousEvent -> TriggerContext(
+                    triggeringEntityId = event.entityId,
+                    triggeringPlayerId = event.controllerId
+                )
                 // Manifest dread (CR 701.60): the cards put into the graveyard this way are
                 // carried as capturedEntityIds, seeded into the resolving trigger's pipeline under
                 // TRIGGER_CAPTURED_COLLECTION so "a card you put into your graveyard this way"

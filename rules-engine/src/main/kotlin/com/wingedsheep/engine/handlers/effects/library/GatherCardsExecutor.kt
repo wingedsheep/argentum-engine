@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.isPlayerControlledByEffect
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
@@ -68,7 +69,8 @@ class GatherCardsExecutor(
                 val playerIds = resolvePlayers(source.player, context, state)
                     ?: return EffectResult.error(state, "Could not resolve player for GatherCards")
                 val allCards = playerIds.flatMap { playerId ->
-                    state.getZone(ZoneKey(playerId, source.zone))
+                    if (source.zone == Zone.SIDEBOARD && state.isPlayerControlledByEffect(playerId)) emptyList()
+                    else state.getZone(ZoneKey(playerId, source.zone))
                 }
                 val filtered = if (source.filter != GameObjectFilter.Any) {
                     val predicateContext = PredicateContext.fromEffectContext(context)
@@ -94,7 +96,8 @@ class GatherCardsExecutor(
                     ?: return EffectResult.error(state, "Could not resolve player for GatherCards")
                 val allCards = playerIds.flatMap { playerId ->
                     source.zones.flatMap { zone ->
-                        state.getZone(ZoneKey(playerId, zone))
+                        if (zone == Zone.SIDEBOARD && state.isPlayerControlledByEffect(playerId)) emptyList()
+                        else state.getZone(ZoneKey(playerId, zone))
                     }
                 }
                 if (source.filter != GameObjectFilter.Any) {

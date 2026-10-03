@@ -2322,8 +2322,8 @@ function GameCardImpl({
       })()}
 
       {/* Keyword ability icons (shown for face-up cards, and for face-down cards with granted keywords) */}
-      {battlefield && !hideKeywordIcons && (card.keywords.length > 0 || (card.abilityFlags && card.abilityFlags.length > 0) || (card.protections && card.protections.length > 0) || (card.hexproofFromColors && card.hexproofFromColors.length > 0) || card.isSuspected || card.isSolved || card.isRenowned) && (
-        <KeywordIcons keywords={card.keywords} abilityFlags={card.abilityFlags ?? []} protections={card.protections ?? []} hexproofFromColors={card.hexproofFromColors ?? []} hexproofFromMonocolored={card.hexproofFromMonocolored ?? false} hexproofFromMulticolored={card.hexproofFromMulticolored ?? false} isSuspected={card.isSuspected ?? false} isSolved={card.isSolved ?? false} isRenowned={card.isRenowned ?? false} {...(() => {
+      {battlefield && !hideKeywordIcons && (card.keywords.length > 0 || (card.abilityFlags && card.abilityFlags.length > 0) || (card.protections && card.protections.length > 0) || (card.hexproofFromColors && card.hexproofFromColors.length > 0) || card.isSuspected || card.isSolved || card.isRenowned || card.isMonstrous) && (
+        <KeywordIcons keywords={card.keywords} abilityFlags={card.abilityFlags ?? []} protections={card.protections ?? []} hexproofFromColors={card.hexproofFromColors ?? []} hexproofFromMonocolored={card.hexproofFromMonocolored ?? false} hexproofFromMulticolored={card.hexproofFromMulticolored ?? false} isSuspected={card.isSuspected ?? false} isSolved={card.isSolved ?? false} isRenowned={card.isRenowned ?? false} isMonstrous={card.isMonstrous ?? false} {...(() => {
           // The ring-bearer marker and the "Prepared" badge both pin to the top-left corner; push the
           // keyword icons down past whichever is showing so they aren't hidden beneath the badge.
           const topOffset = (card.isRingBearer && !faceDown ? 3 + responsive.badges.ptFontSize * 1.7 + 3 : 0) + (card.isPrepared ? 22 : 0)

@@ -123,6 +123,7 @@ export function computeCardGroupKey(card: ClientCard): string {
   if (card.isSuspected) parts.push('suspected')
   if (card.isSolved) parts.push('solved')
   if (card.isRenowned) parts.push('renowned')
+  if (card.isMonstrous) parts.push('monstrous')
   if (card.isRingBearer) parts.push('ringbearer')
   if (card.isCommander) parts.push('commander')
   // A soulbond pair anchors a drawn bond to one specific slot, so a paired creature must never

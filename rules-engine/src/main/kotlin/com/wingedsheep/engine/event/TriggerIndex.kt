@@ -96,6 +96,7 @@ enum class TriggerCategory {
     SHUFFLE_LIBRARY,
     BECAME_SADDLED,
     BECAME_RENOWNED,
+    BECAME_MONSTROUS,
     CREW_OR_SADDLE_CONTRIBUTION,
     BECOMES_ATTACHED,
     BECOMES_UNATTACHED,
@@ -318,6 +319,7 @@ class TriggerIndex(
                 is SdkGameEvent.ShuffleLibraryEvent -> SHUFFLE_LIBRARY_LIST
                 is SdkGameEvent.BecameSaddledEvent -> BECAME_SADDLED_LIST
                 is SdkGameEvent.BecameRenownedEvent -> BECAME_RENOWNED_LIST
+                is SdkGameEvent.BecameMonstrousEvent -> BECAME_MONSTROUS_LIST
                 is SdkGameEvent.CrewsEvent,
                 is SdkGameEvent.SaddlesEvent -> CREW_OR_SADDLE_CONTRIBUTION_LIST
                 is SdkGameEvent.BecomesAttachedEvent -> BECOMES_ATTACHED_LIST
@@ -413,6 +415,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.LibraryShuffledEvent -> SHUFFLE_LIBRARY_LIST
             is com.wingedsheep.engine.core.BecameSaddledEvent -> BECAME_SADDLED_LIST
             is com.wingedsheep.engine.core.BecameRenownedEvent -> BECAME_RENOWNED_LIST
+            is com.wingedsheep.engine.core.BecameMonstrousEvent -> BECAME_MONSTROUS_LIST
             is CrewOrSaddleContributionEvent -> CREW_OR_SADDLE_CONTRIBUTION_LIST
             is com.wingedsheep.engine.core.PermanentAttachedEvent -> BECOMES_ATTACHED_LIST
             is com.wingedsheep.engine.core.PermanentUnattachedEvent -> BECOMES_UNATTACHED_LIST
@@ -496,6 +499,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.StatsModifiedEvent,
             is com.wingedsheep.engine.core.TargetReselectedEvent,
             is com.wingedsheep.engine.core.TurnChangedEvent,
+            is com.wingedsheep.engine.core.ResolutionControlEvent,
             is com.wingedsheep.engine.core.TurnHijackedEvent,
             is com.wingedsheep.engine.core.TurnedFaceDownEvent -> emptyList()
             // No card triggers on a permanent flipping (CR 710); the flip is its own action.
@@ -552,6 +556,7 @@ class TriggerIndex(
         private val SHUFFLE_LIBRARY_LIST = listOf(TriggerCategory.SHUFFLE_LIBRARY)
         private val BECAME_SADDLED_LIST = listOf(TriggerCategory.BECAME_SADDLED)
         private val BECAME_RENOWNED_LIST = listOf(TriggerCategory.BECAME_RENOWNED)
+        private val BECAME_MONSTROUS_LIST = listOf(TriggerCategory.BECAME_MONSTROUS)
         private val CREW_OR_SADDLE_CONTRIBUTION_LIST =
             listOf(TriggerCategory.CREW_OR_SADDLE_CONTRIBUTION)
         private val BECOMES_ATTACHED_LIST = listOf(TriggerCategory.BECOMES_ATTACHED)

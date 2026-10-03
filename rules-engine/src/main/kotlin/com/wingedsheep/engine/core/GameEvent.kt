@@ -1350,6 +1350,21 @@ data class BecameRenownedEvent(
 ) : GameEvent
 
 /**
+ * A permanent became monstrous (CR 701.37b) — a monstrosity ability resolved on a permanent that
+ * wasn't yet monstrous. Fires once per permanent: the designation is sticky and monstrosity does
+ * nothing to a permanent that is already monstrous. Matches "when this creature becomes
+ * monstrous" (Ember Swallower) payoffs.
+ */
+@Serializable
+@SerialName("BecameMonstrousEvent")
+data class BecameMonstrousEvent(
+    val entityId: EntityId,
+    val entityName: String,
+    /** The monstrous permanent's controller as the ability resolved, for "you control" filters. */
+    val controllerId: EntityId
+) : GameEvent
+
+/**
  * An Aura, Equipment, or Fortification became attached to a permanent (CR 603.2f). Emitted only
  * at the moment of attaching — when the attachment moves onto a new host — not when an
  * already-attached state persists, and not on phasing in/out (CR 702.26j). Emitted from every
@@ -1572,7 +1587,10 @@ data class CardsDrawnEvent(
     val playerId: EntityId,
     val count: Int,
     val cardIds: List<EntityId>,
-    val cardNames: List<String> = emptyList()
+    val cardNames: List<String> = emptyList(),
+    /** Additional players entitled to this identity at the moment of the draw. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val identityViewers: Set<EntityId> = emptySet(),
 ) : GameEvent
 
 /**
@@ -1932,7 +1950,9 @@ data class ManaSpentEvent(
 data class HandLookedAtEvent(
     val viewingPlayerId: EntityId,
     val targetPlayerId: EntityId,
-    val cardIds: List<EntityId>
+    val cardIds: List<EntityId>,
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val identityViewers: Set<EntityId> = emptySet(),
 ) : GameEvent
 
 /**
@@ -2375,3 +2395,15 @@ data class SourceObjectsRecordedEvent(
     val key: String,
     val objectIds: List<EntityId>,
 ) : GameEvent
+
+
+/** Internal authority lifecycle. Client routing is derived from actorFor; never exposes the captured card. */
+@Serializable
+@SerialName("ResolutionControlEvent")
+data class ResolutionControlEvent(
+    val control: com.wingedsheep.engine.state.ResolutionControl,
+    val stage: Stage,
+) : GameEvent {
+    @Serializable
+    enum class Stage { GRANTED, STARTED, ENDED }
+}

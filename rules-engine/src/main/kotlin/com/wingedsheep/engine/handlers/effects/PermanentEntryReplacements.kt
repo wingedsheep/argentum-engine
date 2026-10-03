@@ -115,15 +115,10 @@ object PermanentEntryReplacements {
     ): Pair<GameState, List<GameEvent>> {
         val opponentId = state.getOpponents(viewerId).firstOrNull() ?: return state to emptyList()
         val handCards = state.getHand(opponentId)
-        var newState = state
-        for (cardId in handCards) {
-            newState = newState.updateEntity(cardId) { container ->
-                val existing = container.get<RevealedToComponent>()
-                if (existing != null) container.with(existing.withPlayer(viewerId))
-                else container.with(RevealedToComponent.to(viewerId))
-            }
-        }
-        return newState to listOf(HandLookedAtEvent(viewerId, opponentId, handCards))
+        val observers = setOf(state.actorFor(viewerId)) - viewerId
+        val newState = com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils.markRevealed(
+            state, handCards, observers + viewerId)
+        return newState to listOf(HandLookedAtEvent(viewerId, opponentId, handCards, observers))
     }
 
     /**

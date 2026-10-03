@@ -59,14 +59,14 @@ export interface ClientGameState {
   readonly dayNight?: DayNight | null
 
   /**
-   * If non-null, the affected player whose turn the viewing player is currently driving
-   * (Mindslaver-style hijack). Drives the controller banner and promoting their hand to
+   * If non-null, the affected player whose choices the viewing player is currently driving
+   * (turn, combat or stack-resolution control). Drives the controller banner and promoting their hand to
    * face-up. Null in normal play.
    */
   readonly youAreHijacking?: EntityId | null
 
   /**
-   * If non-null, the controller currently driving the viewing player's turn. Drives the
+   * If non-null, the controller currently driving the viewing player's choices. Drives the
    * affected-player banner and disabling click handlers. Null in normal play.
    */
   readonly youAreHijackedBy?: EntityId | null
@@ -314,6 +314,9 @@ export interface ClientCard {
   /** Whether this creature has the renowned designation (CR 702.112b — renown can't trigger again
    * and its renown payoffs are on). Battlefield only. */
   readonly isRenowned?: boolean
+
+  /** Whether this permanent has the monstrous designation (CR 701.37b). Battlefield only. */
+  readonly isMonstrous?: boolean
 
   /** Whether this card is plotted in exile (CR 718 — Plot keyword, castable for free on a later turn). Exile only. */
   readonly isPlotted?: boolean
