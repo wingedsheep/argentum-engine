@@ -68,6 +68,19 @@ class PerPointCounterPreventionTest : ScenarioTestBase() {
             count(result.state, game) shouldBe 0
             result.events.size shouldBe 1
         }
+        test("an explicitly unpreventable damage effect spends counters and deals full damage") {
+            val game = board()
+            val id = game.findPermanent(body.name)!!
+            val result = services.effectExecutorRegistry.execute(
+                game.state, Effects.DealDamage(4, EffectTarget.Self, cantBePrevented = true),
+                com.wingedsheep.engine.handlers.EffectContext(sourceId = id, controllerId = game.player1Id)
+            )
+            result.outcome shouldBe com.wingedsheep.engine.core.Outcome.Done
+            count(result.newState, game) shouldBe 0
+            result.newState.getEntity(id)!!.get<com.wingedsheep.engine.state.components.battlefield.DamageComponent>()!!.amount shouldBe 4
+            result.events.filterIsInstance<CountersRemovedEvent>().single().amount shouldBe 3
+            result.events.filterIsInstance<com.wingedsheep.engine.core.DamageDealtEvent>().single().amount shouldBe 4
+        }
         test("combat type amount and source filters all restrict applicability") {
             val game = board(); val id = game.findPermanent(body.name)!!
             fun replace(pattern: EventPattern.DamageEvent) {

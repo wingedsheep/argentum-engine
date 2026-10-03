@@ -424,7 +424,8 @@ object DamageUtils {
             }
         }
         val perPoint = applyPerPointCounterPrevention(
-            newState, targetId, effectiveAmount, sourceId, isCombatDamage, zones.predicateEvaluator
+            newState, targetId, effectiveAmount, sourceId, isCombatDamage, zones.predicateEvaluator,
+            cantBePrevented = cantBePrevented
         )
         newState = perPoint.state
         effectiveAmount = perPoint.remainingDamage
@@ -2114,6 +2115,7 @@ object DamageUtils {
         sourceId: EntityId?,
         isCombatDamage: Boolean,
         predicateEvaluator: PredicateEvaluator,
+        cantBePrevented: Boolean = false,
     ): CounterPreventionResult {
         // Most damage recipients have no counters. Avoid a battlefield replacement scan (and
         // prevention-shutoff scan) entirely in that common path.
@@ -2126,7 +2128,7 @@ object DamageUtils {
         var newState = state
         var remaining = damageAmount
         val events = mutableListOf<EngineGameEvent>()
-        var preventionDisabled: Boolean? = null
+        var preventionDisabled: Boolean? = if (cantBePrevented) true else null
         for (active in com.wingedsheep.engine.replacement.ActiveReplacements.all(state)) {
             val effect = active.effect as? com.wingedsheep.sdk.scripting.PreventDamagePerCounter ?: continue
             if (remaining <= 0) break
