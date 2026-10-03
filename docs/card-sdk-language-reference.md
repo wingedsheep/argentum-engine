@@ -11034,9 +11034,10 @@ composite abilities).
 - `Afflict(n)` — defender loses N when this becomes blocked.
 - `Crew(n)` (`KeywordAbility.crew(n, onceEachTurn = false)` / `Numeric(Keyword.CREW, n, onceEachTurn)`) —
   Crew N (CR 702.122): tap any number of untapped creatures you control with total power N or greater to
-  animate a **Vehicle** (artifact subtype, CR 301.7) — it becomes an artifact creature until end of turn at
-  its printed P/T and keywords (the engine `CrewVehicleHandler` resolves a `BecomeCreature`; surfaced as the
-  `CrewVehicle` legal action). Summoning-sick creatures may crew (CR 702.122c). Pass `onceEachTurn = true` for
+  animate a **Vehicle** (artifact subtype, CR 301.7) — it becomes an artifact creature until end of turn
+  (the engine `CrewVehicleHandler` resolves an `AddCardType(CREATURE)`; surfaced as the `CrewVehicle` legal
+  action). Crew never sets power/toughness: the Vehicle keeps its printed P/T, so a base-P/T effect such as
+  Kudo, King Among Bears's still applies to it. Summoning-sick creatures may crew (CR 702.122c). Pass `onceEachTurn = true` for
   "Crew N. Activate only once each turn." (Luxurious Locomotive): the crew enumerator + handler then refuse a
   second crew activation in the same turn (counted via `CrewSaddleContributorsComponent.crewActivations`, reset
   at end of turn). Vanilla Crew is uncapped. `onceEachTurn` is omitted from compiled JSON when false

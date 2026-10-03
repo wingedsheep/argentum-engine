@@ -5183,6 +5183,54 @@
     ]
 }
 
+// Whirlermaker
+{
+    "name": "Whirlermaker",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{4}, {T}: Create a 1/1 colorless Thopter artifact creature token with flying.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Whirlermaker:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"Our creations are more than mere things. They have life in them, little bits of ourselves.\"\n—Saheeli Rai",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff1a1246-d5a0-43dc-825a-062a3bb4def9.jpg"
+    }
+}
+
 // Wily Bandar
 {
     "name": "Wily Bandar",

@@ -2229,6 +2229,44 @@
     ]
 }
 
+// Gavony Unhallowed
+{
+    "name": "Gavony Unhallowed",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Whenever another creature you control dies, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gavony Unhallowed:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "artist": "Christopher Moeller",
+        "flavorText": "\"We entered the church in search of solace, but it became clear we wouldn't find it there.\"\n—Grete, Order of Saint Traft",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21f4c713-089b-497c-8c0f-826cab10aa87.jpg"
+    }
+}
+
 // Gisa and Geralf
 {
     "name": "Gisa and Geralf",
@@ -5002,6 +5040,63 @@
                 "text": "If Tree of Perdition isn't on the battlefield when the ability resolves, the exchange can't happen and the ability will have no effect."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Wailing Ghoul
+{
+    "name": "Wailing Ghoul",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "When this creature enters, mill two cards. (Put the top two cards of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wailing Ghoul:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Don't worry, sweet brother. Help is on the way.\"\n—Ghoulcaller Gisa",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b1bf0dd-825c-4c8a-a48d-84f35fbe5901.jpg"
     },
     "colorIdentityOverride": [
         "BLACK"

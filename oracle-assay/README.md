@@ -1254,6 +1254,35 @@ is not in this band.
 Differential **7,108 compared / 72 divergent → 7,113 / 72**. All five newly compared cards agree
 with their goldens; no card moved.
 
+
+## The chosen-colour protection band
+
+The twenty-fifth loop band, tail key `protection from the …`: "Target creature you control **gains
+protection from the color of your choice** until end of turn." (Thornscape Master, Blessed Breath,
+Sygg), the source's own ("{W}: ~ gains protection from …", Jareth, Kami of the Painted Road) and the
+anaphor after an earlier clause ("Put a +1/+1 counter on target creature you control. It gains …",
+Feat of Resistance). **26 lines** of the family's 44; the probe (→ "flying") finished 24 cards. It
+delivered **9 hand-written cards read whole (7,505 → 7,514)**.
+
+### The choice is inside the effect, and that is the whole model
+
+The colour is chosen on resolution, after targets, so every hand-written card spells
+`Effects.ChooseColorThen(Effects.GrantProtectionFromChosenColor(t))` and the grant facade defaults to
+`Duration.EndOfTurn`. `Steps.protectionFromChosenColor` builds that once; the target rule rides the
+**singular** quantifier rows only (bare and "up to one"), and the self and anaphor sides are one
+`move` row of `SelfSteps.retargetable`, so the source, the triggering entity and the later clause's
+"it" come for free. The plural "each gain protection from the color of your choice" stays declined on
+purpose: it is one choice for every target, which a per-target iteration around the choice would not
+say. The family's other half — "the chosen color" after an entry choice, "the card type of your
+choice", "the chosen player" — is different SDK shapes and not in this band.
+
+### What the differential found
+
+Differential **7,113 compared / 72 divergent → 7,121 / 72**. The one new divergence was a card bug:
+Sygg, River Guide targeted a Merfolk *creature*, where "target Merfolk" is any Merfolk permanent (the
+bare tribal noun, as Sawblade Slinger's Zombie was). Fixed to `GameObjectFilter.Permanent.withSubtype`;
+it is the only card that moved in the golden, and the other seven newly compared cards agree.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

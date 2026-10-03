@@ -16,11 +16,10 @@ import com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributor
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
-import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
+import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
@@ -142,7 +141,7 @@ class CrewVehicleHandler(
         val vehicleCard = vehicleContainer.get<CardComponent>()
             ?: return ExecutionResult.error(state, "Not a card")
 
-        val cardDef = cardRegistry.getCard(vehicleCard.cardDefinitionId)
+        cardRegistry.getCard(vehicleCard.cardDefinitionId)
             ?: return ExecutionResult.error(state, "Card definition not found")
 
         var currentState = state
@@ -179,16 +178,14 @@ class CrewVehicleHandler(
             )
         }
 
-        // Create the crew ability effect: Vehicle becomes an artifact creature
-        // with its base P/T until end of turn
-        val stats = cardDef.creatureStats
-        val basePower = (stats?.power as? CharacteristicValue.Fixed)?.value ?: 0
-        val baseToughness = (stats?.toughness as? CharacteristicValue.Fixed)?.value ?: 0
-        val crewEffect = BecomeCreatureEffect(
+        // Create the crew ability effect: "this Vehicle becomes an artifact creature until end of
+        // turn" (CR 702.122a). Only the CREATURE type is added (the Vehicle is already an artifact);
+        // crew does NOT set power and toughness — the Vehicle keeps its printed P/T, so an earlier
+        // P/T-setting effect such as Kudo, King Among Bears's base 2/2 still applies to it.
+        val crewEffect = AddCardTypeEffect(
+            cardType = "CREATURE",
             target = EffectTarget.Self,
-            power = DynamicAmount.Fixed(basePower),
-            toughness = DynamicAmount.Fixed(baseToughness),
-            keywords = cardDef.keywords
+            duration = Duration.EndOfTurn
         )
 
         // Put the crew ability on the stack

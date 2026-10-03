@@ -513,6 +513,50 @@
     ]
 }
 
+// Smoldering Efreet
+{
+    "name": "Smoldering Efreet",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Efreet Monk",
+    "oracleText": "When this creature dies, it deals 2 damage to you.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Smoldering Efreet:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "artist": "Chase Stone",
+        "flavorText": "The efreet are drawn to the Kaisham Wanderers, a loosely organized Jeskai school where trickery is employed to challenge the status quo and upend the belief systems of others.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af33b204-6b50-4404-b986-9f6b970a7f06.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Valorous Stance
 {
     "name": "Valorous Stance",

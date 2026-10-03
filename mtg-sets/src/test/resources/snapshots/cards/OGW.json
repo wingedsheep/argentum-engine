@@ -446,6 +446,59 @@
     ]
 }
 
+// Stalking Drone
+{
+    "name": "Stalking Drone",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\n{C}: This creature gets +1/+2 until end of turn. Activate only once each turn. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Stalking Drone:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{C}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "artist": "Slawomir Maniak",
+        "flavorText": "As the Eldrazi adapted to the jungles of Zendikar, some took on the tactics of more familiar predators.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/12bc5b4c-a809-43f0-8848-38812ce865c2.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Submerged Boneyard
 {
     "name": "Submerged Boneyard",
@@ -747,6 +800,45 @@
         "artist": "Willian Murai",
         "flavorText": "\"Mindlessness is not weakness. When we are lost to hunger we are unstoppable.\"\n—Drana, Kalastria bloodchief",
         "imageUri": "https://cards.scryfall.io/normal/front/5/9/595deb86-b6cf-4e4f-a6cf-f5ff128b720d.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Vampire Envoy
+{
+    "name": "Vampire Envoy",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Vampire Cleric Ally",
+    "oracleText": "Flying\nWhenever this creature becomes tapped, you gain 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vampire Envoy:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "artist": "Johannes Voss",
+        "flavorText": "\"Zendikar will fight until it has bled its last.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3ba8e7aa-9a87-410e-b846-5f5c910585cf.jpg"
     },
     "colorIdentityOverride": [
         "BLACK"

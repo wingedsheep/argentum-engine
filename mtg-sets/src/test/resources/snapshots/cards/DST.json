@@ -1691,6 +1691,46 @@
     "colorIdentityOverride": []
 }
 
+// Vedalken Engineer
+{
+    "name": "Vedalken Engineer",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Vedalken Artificer",
+    "oracleText": "{T}: Add two mana of any one color. Spend this mana only to cast artifact spells or activate abilities of artifacts.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vedalken Engineer:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "restriction": {
+                        "type": "CardTypeSpellsOrAbilitiesOnly",
+                        "cardType": "ARTIFACT",
+                        "allowAbilities": true
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "artist": "Lars Grant-West",
+        "flavorText": "Art is unknown to the vedalken—for them, all creations must serve a purpose.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d06a2d9a-9401-4711-97b6-825652090c4d.jpg"
+    }
+}
+
 // Viridian Acolyte
 {
     "name": "Viridian Acolyte",

@@ -91,6 +91,17 @@ object SelfSteps {
             *Steps.statChanges.map { selfGetsAndGains(it, target, subject, tag) }.toTypedArray(),
             selfGainsKeywords(target, subject, tag),
             selfLosesKeyword(target, subject, tag),
+            // "~ gains protection from the color of your choice until end of turn." — Jareth, Kami of
+            // the Painted Road, and Feat of Resistance's "It gains …" after its counter. The colour is
+            // chosen on resolution, which is why the grant sits inside `ChooseColorThen` — the shape
+            // every hand-written card spells, and a row here because its object moves with the
+            // position exactly as untap's does.
+            move(
+                "{self} gains protection from the color of your choice until end of turn",
+                "gains protection from the color of your choice$tag",
+                Steps.protectionFromChosenColor(target),
+                subject,
+            ),
             move("untap {self}", "untap$tag", Effects.Untap(target), subject),
             // Untap's twin, and a row for exactly the reason untap is one: "Target creature gets
             // -1/-1 until end of turn. Tap that creature." (Stabbing Pain) is the same shape said of

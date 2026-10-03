@@ -1512,6 +1512,41 @@ object Steps {
     }
 
     /**
+     * "[Target] creature [you control] gains protection from the color of your choice until end of
+     * turn." — the colour is chosen on resolution, so the grant is `ChooseColorThen` around
+     * `GrantProtectionFromChosenColor`, the one spelling all of its hand-written cards share. Shared
+     * with [SelfSteps.retargetable], whose row reads the same sentence of the source or an anaphor.
+     */
+    internal fun protectionFromChosenColor(target: EffectTarget): Effect =
+        Effects.ChooseColorThen(Effects.GrantProtectionFromChosenColor(target))
+
+    /**
+     * The target side of [protectionFromChosenColor], over the **singular** quantifiers only: a
+     * plural "each gain protection from the color of your choice" is one choice for every target,
+     * which a per-target iteration around the choice would not say.
+     */
+    private val protectionFromChosenColorToTarget: List<Phrase<CardScript>> =
+        Targets.quantifiers.filterNot { it.plural || it.counted }.map { quantifier ->
+            fun scriptFor(filter: GameObjectFilter) = CardScript(
+                spellEffect = quantifier.effectOver(::protectionFromChosenColor),
+                targetRequirements = listOf(quantifier.requirement(1, filter)),
+            )
+            phrase(
+                quantifier.splice("{q}target {filter} gains protection from the color of your choice until end of turn"),
+                name = "grant protection from a chosen color to a target, ${quantifier.name}",
+            ) {
+                slot("filter", Filters.filter)
+                build { scriptFor(it.value("filter")) }
+                match { script ->
+                    val requirement = script.targetRequirements.singleOrNull() ?: return@match null
+                    val filter = Targets.targetedFilter(requirement) ?: return@match null
+                    if (script != scriptFor(filter)) return@match null
+                    bind("filter" to filter)
+                }
+            }
+        }
+
+    /**
      * "Target creature gets +3/+3 and gains flying until end of turn." — Angelic Blessing.
      *
      * One sentence, one target, **two** effects, which is why it is a rule of its own rather than a
@@ -2882,6 +2917,7 @@ object Steps {
             mayPumpTargetPermanent +
             animateTargetPermanent +
             grantToTargetPermanent +
+            protectionFromChosenColorToTarget +
             pumpAndGrantTarget +
             putCountersOnTargetPermanent +
             permanentSteps +

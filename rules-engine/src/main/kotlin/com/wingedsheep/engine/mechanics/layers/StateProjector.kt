@@ -239,16 +239,18 @@ class StateProjector {
             effectApplicator.applyEffect(effect.copy(affectedEntities = lockAffected(effect, effect.affectedEntities)), state, projectedValues)
         }
 
-        // Re-resolve controller-dependent filters for layers 3-6 now that control is established
+        // Re-resolve controller-dependent filters for layers 3-6 now that control is established.
+        // No CR 613.6 lock here: a group is locked where its first part actually applies, below —
+        // locking now would freeze a Layer-4 part's set before the creature-dependent re-resolve
+        // (Kudo, King Among Bears would miss a Vehicle crewed this turn).
         val nonControlNonPTEffects = sortedEffects.filter { it.layer != Layer.CONTROL && it.layer != Layer.POWER_TOUGHNESS }
             .map { effect -> applyControllerGate(effect, projectedValues) }
             .map { effect ->
-                val resolved = if (effect.affectsFilter != null && filterResolver.isControllerDependentFilter(effect.affectsFilter)) {
-                    filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues)
+                if (effect.affectsFilter != null && filterResolver.isControllerDependentFilter(effect.affectsFilter)) {
+                    effect.copy(affectedEntities = filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues))
                 } else {
-                    effect.affectedEntities
+                    effect
                 }
-                effect.copy(affectedEntities = lockAffected(effect, resolved))
             }
 
         // === Layers 3-4 (Text + Type) ===
@@ -269,7 +271,11 @@ class StateProjector {
             filter != null && filterResolver.isCreatureDependentFilter(filter)
         }
         for (effect in plainTypeEffects) {
-            effectApplicator.applyEffect(effect, state, projectedValues)
+            effectApplicator.applyEffect(
+                effect.copy(affectedEntities = lockAffected(effect, effect.affectedEntities)),
+                state,
+                projectedValues
+            )
         }
         for (effect in creatureDependentTypeEffects) {
             val resolved = effect.affectsFilter

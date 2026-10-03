@@ -1,8 +1,10 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.CrewVehicle
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.dom.cards.Weatherlight
 import com.wingedsheep.mtg.sets.definitions.mh3.cards.KudoKingAmongBears
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
@@ -16,7 +18,7 @@ import io.kotest.matchers.shouldBe
  */
 class KudoKingAmongBearsScenarioTest : FunSpec({
     fun driver(): GameTestDriver = GameTestDriver().also {
-        it.registerCards(TestCards.all + KudoKingAmongBears)
+        it.registerCards(TestCards.all + KudoKingAmongBears + Weatherlight)
         it.initMirrorMatch(Deck.of("Forest" to 40), skipMulligans = true, startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -48,5 +50,24 @@ class KudoKingAmongBearsScenarioTest : FunSpec({
         })
         d.state.projectedState.getPower(courser) shouldBe 4
         d.state.projectedState.getToughness(courser) shouldBe 4
+    }
+
+    test("a Vehicle crewed after Kudo is a 2/2 Bear — crewing does not set power and toughness") {
+        val d = driver()
+        val kudo = d.putCreatureOnBattlefield(d.player1, "Kudo, King Among Bears")
+        val courser = d.putCreatureOnBattlefield(d.player1, "Centaur Courser")
+        val weatherlight = d.putPermanentOnBattlefield(d.player1, "Weatherlight")
+        d.state.projectedState.isCreature(weatherlight) shouldBe false
+
+        // Crew 3: Kudo (2) + the courser, now base 2/2 (2).
+        d.submitSuccess(CrewVehicle(d.player1, weatherlight, listOf(kudo, courser)))
+        d.bothPass()
+
+        val projected = d.state.projectedState
+        projected.isCreature(weatherlight) shouldBe true
+        projected.getPower(weatherlight) shouldBe 2
+        projected.getToughness(weatherlight) shouldBe 2
+        projected.hasSubtype(weatherlight, "Bear") shouldBe true
+        projected.hasSubtype(weatherlight, "Vehicle") shouldBe true
     }
 })

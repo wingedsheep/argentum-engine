@@ -1340,6 +1340,62 @@
     ]
 }
 
+// Markov Warlord
+{
+    "name": "Markov Warlord",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Vampire Warrior",
+    "oracleText": "Haste (This creature can attack and {T} as soon as it comes under your control.)\nWhen this creature enters, up to two target creatures can't block this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Markov Warlord:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "CantBlockTargetCreatures",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "\"What use is a stake or holy symbol in the hands of a coward?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/5035276f-31b9-4dd3-9ec8-42a664bdbd5c.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Midnight Guard
 {
     "name": "Midnight Guard",
@@ -2115,6 +2171,52 @@
         "artist": "Christopher Moeller",
         "flavorText": "Linger on death's door and risk being invited in.",
         "imageUri": "https://cards.scryfall.io/normal/front/0/9/09666671-601e-4fca-bdfb-fb288bf2672c.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Wakedancer
+{
+    "name": "Wakedancer",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Morbid — When this creature enters, if a creature died this turn, create a 2/2 black Zombie creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wakedancer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/7/17f001ab-514b-49e7-a657-b2872ad7a1de.jpg?1767954964"
+                },
+                "interveningIf": "CreatureDiedThisTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "Austin Hsu",
+        "flavorText": "Hers is an ancient form of necromancy, steeped in shamanic trance and ritual that few skaberen or ghoulcallers comprehend.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f533fbfa-42ae-4e27-92a4-9936bcd2a5f4.jpg"
     },
     "colorIdentityOverride": [
         "BLACK"
