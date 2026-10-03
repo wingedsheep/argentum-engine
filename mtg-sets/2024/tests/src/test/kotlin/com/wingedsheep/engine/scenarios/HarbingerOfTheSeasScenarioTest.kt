@@ -52,20 +52,20 @@ class HarbingerOfTheSeasScenarioTest : FunSpec({
         val (driver, player) = newGame()
         val opponent = driver.state.getOpponents(player).single()
         driver.putCreatureOnBattlefield(player, "Harbinger of the Seas")
-        val volcanic = driver.putLandOnBattlefield(player, "Test Volcanic Island")
-        val opponentsBadlands = driver.putLandOnBattlefield(opponent, "Test Badlands")
+        val badlandsId = driver.putLandOnBattlefield(player, "Test Badlands")
+        val opponentsVolcanic = driver.putLandOnBattlefield(opponent, "Test Volcanic Island")
         val basicForest = driver.putLandOnBattlefield(player, "Forest")
 
         val projected = driver.state.projectedState
-        projected.hasSubtype(volcanic, "Island").shouldBeTrue()
-        projected.hasSubtype(volcanic, "Mountain") shouldBe false
-        projected.hasSubtype(opponentsBadlands, "Island").shouldBeTrue()
-        projected.hasSubtype(opponentsBadlands, "Swamp") shouldBe false
-        projected.hasSubtype(opponentsBadlands, "Mountain") shouldBe false
+        projected.hasSubtype(opponentsVolcanic, "Island").shouldBeTrue()
+        projected.hasSubtype(opponentsVolcanic, "Mountain") shouldBe false
+        projected.hasSubtype(badlandsId, "Island").shouldBeTrue()
+        projected.hasSubtype(badlandsId, "Swamp") shouldBe false
+        projected.hasSubtype(badlandsId, "Mountain") shouldBe false
         projected.hasSubtype(basicForest, "Forest").shouldBeTrue()
         projected.hasSubtype(basicForest, "Island") shouldBe false
 
-        driver.submitSuccess(ActivateAbility(player, volcanic, AbilityId.intrinsicMana('U')))
+        driver.submitSuccess(ActivateAbility(player, badlandsId, AbilityId.intrinsicMana('U')))
         val pool = driver.state.getEntity(player)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
         pool.blue shouldBe 1
     }

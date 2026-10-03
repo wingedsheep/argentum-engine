@@ -68,7 +68,8 @@ class DreamtideWhaleScenarioTest : ScenarioTestBase() {
             game.castSpellTargetingPlayer(1, "Lightning Bolt", 2).error shouldBe null
             game.passPriority().error shouldBe null
             game.castSpellTargetingPlayer(2, "Lightning Bolt", 1).error shouldBe null
-            game.state.pendingDecision shouldBe null
+            // The turn's second spell, but Player 2's first: no proliferate trigger joins the stack.
+            game.state.stack.size shouldBe 2
             // Player 2 holds priority after casting and casts their second spell.
             game.castSpellTargetingPlayer(2, "Lightning Bolt", 1).error shouldBe null
             game.resolveStack()

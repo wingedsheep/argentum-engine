@@ -9,7 +9,7 @@ import com.wingedsheep.mtg.sets.definitions.mh3.cards.MonumentalHenge
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
-import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -55,8 +55,10 @@ class MonumentalHengeScenarioTest : ScenarioTestBase() {
                 .withCardInLibrary(1, "Grizzly Bears")
                 .withCardInLibrary(1, "Grizzly Bears")
                 .withCardInLibrary(1, "Grizzly Bears")
+                .withCardInLibrary(1, "Plains")
                 .build()
             val henge = game.findPermanent(cardName)!!
+            val sixth = game.state.getLibrary(game.player1Id).last()
 
             game.execute(
                 ActivateAbility(game.player1Id, henge, MonumentalHenge.activatedAbilities[1].id)
@@ -66,12 +68,14 @@ class MonumentalHengeScenarioTest : ScenarioTestBase() {
 
             val pick = game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
             val thopter = game.findCardsInLibrary(1, "Ornithopter").single()
-            pick.options shouldContain thopter
+            pick.options shouldBe listOf(thopter)
+            pick.nonSelectableOptions shouldContainAll game.findCardsInLibrary(1, "Grizzly Bears")
             game.selectCards(listOf(thopter)).error shouldBe null
 
             game.isInHand(1, "Ornithopter") shouldBe true
             game.isInHand(1, "Grizzly Bears") shouldBe false
-            game.librarySize(1) shouldBe 4
+            game.librarySize(1) shouldBe 5
+            game.state.getLibrary(game.player1Id).first() shouldBe sixth
         }
 
         test("the reveal is optional") {
