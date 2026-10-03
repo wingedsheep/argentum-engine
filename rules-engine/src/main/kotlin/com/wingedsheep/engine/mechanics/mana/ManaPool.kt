@@ -531,6 +531,7 @@ data class ManaPool(
      * When [spellContext] is provided, eligible restricted mana is considered (spent first).
      */
     fun canPay(cost: ManaCost, spellContext: SpellPaymentContext? = null): Boolean {
+        if (restrictedMana.any { it.obligationIds.isNotEmpty() }) return allocateFloating(cost, spellContext) != null
         if (substitutes(cost, spellContext)) {
             return payPartialWithSpending(cost, spellContext, allowMonoHybridGeneric = true).remainingCost.symbols.all { it is ManaSymbol.X }
         }
@@ -621,6 +622,7 @@ data class ManaPool(
      * When [spellContext] is provided, eligible restricted mana is spent first.
      */
     fun pay(cost: ManaCost, spellContext: SpellPaymentContext? = null): ManaPool? {
+        if (restrictedMana.any { it.obligationIds.isNotEmpty() }) return allocateFloating(cost, spellContext)?.pool
         if (substitutes(cost, spellContext)) {
             val partial = payPartialWithSpending(cost, spellContext, allowMonoHybridGeneric = true)
             return partial.newPool.takeIf { partial.remainingCost.symbols.all { it is ManaSymbol.X } }
@@ -715,6 +717,11 @@ data class ManaPool(
      * When [spellContext] is provided, eligible restricted mana is spent first.
      */
     fun payPartial(cost: ManaCost, spellContext: SpellPaymentContext? = null): PartialPaymentResult {
+        if (restrictedMana.any { it.obligationIds.isNotEmpty() }) {
+            allocateFloating(cost, spellContext)?.let {
+                return PartialPaymentResult(it.pool, ManaCost(cost.symbols.filterIsInstance<ManaSymbol.X>()), it.spent)
+            }
+        }
         if (substitutes(cost, spellContext)) {
             if (cost.symbols.any { it is ManaSymbol.MonocolorHybrid }) {
                 val full = payPartialWithSpending(cost, spellContext, allowMonoHybridGeneric = true)

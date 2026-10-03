@@ -1,11 +1,13 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.mechanics.mana.allocateFloating
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.CountersRemovedEvent
 import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.core.LoyaltyChangedEvent
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.tapForMana
@@ -155,9 +157,11 @@ internal class ActivationCostPayer(
             ?: return ActivationPaymentOutcome.Failed("Invalid Phyrexian mana payment")
 
         val scopedDirect = currentState.activeManaSpendingScope(action.playerId) != null
+        val scopedAllocation = if (scopedDirect && manaCost != null) manaPool.allocateFloating(
+            manaCost, paymentContext, if (manaCost.hasX) xValue * manaCost.xCount else 0,
+            ability.xManaRestriction) else null
         if (manaCost != null) {
-            if (scopedDirect &&
-                !manaPool.canPay(manaCost.withXAs(xValue), paymentContext)) {
+            if (scopedDirect && scopedAllocation == null) {
                 return ActivationPaymentOutcome.Failed("Exact mana-activation allocation is not supported in this scope")
             }
             val tapped = if (scopedDirect) {
@@ -212,9 +216,16 @@ internal class ActivationCostPayer(
 
         // When using Explicit payment, mana sources were already tapped above —
         // strip the Mana portion so payAbilityCost doesn't try to deduct from the pool.
-        // Scoped payments did not tap solver sources and still owe the entire direct pool cost.
+        // Scoped payments allocate the entire fixed/X cost from the pool before the other atoms.
         // When convoke was applied, replace the mana portion with the reduced cost.
-        val costForPayment = if (action.paymentStrategy is PaymentStrategy.Explicit && !scopedDirect) {
+        if (scopedAllocation != null) {
+            manaPool = scopedAllocation.pool
+            val spent = scopedAllocation.spent
+            if (spent.total > 0) events.add(ManaSpentEvent(playerId = action.playerId,
+                reason = "Activate ${activation.sourceName}", white = spent.white, blue = spent.blue,
+                black = spent.black, red = spent.red, green = spent.green, colorless = spent.colorless))
+        }
+        val costForPayment = if (scopedDirect || action.paymentStrategy is PaymentStrategy.Explicit) {
             effectiveCost.stripManaCost()
         } else if (manaCost != null && (phyrexianLifePayments.isNotEmpty() ||
                 ((ability.hasConvoke || ability.hasWaterbend) && action.alternativePayment != null && !action.alternativePayment.isEmpty))
@@ -256,8 +267,8 @@ internal class ActivationCostPayer(
 
         // Deduct X mana from the pool. ManaPool.pay() skips X symbols ("handled by caller"),
         // so we must explicitly spend the X portion here (same pattern as CastSpellHandler.autoPay).
-        // Unscoped Explicit payment already tapped its sources; scoped Explicit still owes X.
-        if ((action.paymentStrategy !is PaymentStrategy.Explicit || scopedDirect) && manaCost != null && manaCost.hasX && xValue > 0) {
+        // Explicit and scoped payments have already paid their entire fixed/X allocation.
+        if (!scopedDirect && action.paymentStrategy !is PaymentStrategy.Explicit && manaCost != null && manaCost.hasX && xValue > 0) {
             manaPool = spendXFromPool(manaPool, manaCost, xValue, ability.xManaRestriction, paymentContext)
         }
 

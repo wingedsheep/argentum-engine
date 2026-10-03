@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
+import com.wingedsheep.engine.mechanics.mana.allocateFloating
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
 import com.wingedsheep.engine.core.GameEvent
@@ -215,6 +216,10 @@ class CastPaymentProcessor(
             ?: ManaPoolComponent()
         val pool = toManaPool(poolComponent).withSpendingColors(state, playerId)
 
+        if (state.activeManaSpendingScope(playerId) != null) {
+            return payAllocatedFromPool(state, playerId, pool, cost, cardName, xValue, spellContext, xManaRestriction)
+        }
+
         // Pay base cost first
         var poolAfterPayment = costHandler.payManaCost(pool, cost, spellContext)
             ?: return PaymentResult(state, emptyList(), "Insufficient mana in pool")
@@ -333,6 +338,37 @@ class CastPaymentProcessor(
             consumedRiders,
             spentManaProvenance = spentProvenance,
             xManaSpentByColor = xSpentByColor
+        )
+    }
+
+    private fun payAllocatedFromPool(
+        state: GameState,
+        playerId: EntityId,
+        before: ManaPool,
+        cost: ManaCost,
+        cardName: String,
+        xValue: Int,
+        context: SpellPaymentContext?,
+        xColors: Set<Color>,
+    ): PaymentResult {
+        val allocation = before.allocateFloating(cost, context, xValue * cost.xCount.coerceAtLeast(1), xColors)
+            ?: return PaymentResult(state, emptyList(), "Insufficient mana in pool for complete allocation")
+        val after = allocation.pool
+        val restrictedSpent = before.restrictedMana.size - after.restrictedMana.size
+        val (updated, ordinaryProvenance) = after.consumeProvenance(allocation.spent.total - restrictedSpent)
+        val provenance = ordinaryProvenance +
+            SpentManaProvenance.ofConsumedRestricted(before.restrictedMana, after.restrictedMana) +
+            SpentManaProvenance(snow = before.snowTotal - after.snowTotal)
+        val spent = allocation.spent
+        return PaymentResult(
+            state.updateEntity(playerId) { it.with(toComponent(updated)) },
+            listOf(ManaSpentEvent(playerId = playerId, reason = "Cast $cardName",
+                white = spent.white, blue = spent.blue, black = spent.black,
+                red = spent.red, green = spent.green, colorless = spent.colorless)),
+            null,
+            consumedRiders = ridersConsumedDuringPayment(before.restrictedMana, after.restrictedMana),
+            spentManaProvenance = provenance,
+            xManaSpentByColor = allocation.xSpentByColor,
         )
     }
 

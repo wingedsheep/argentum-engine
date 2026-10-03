@@ -16271,10 +16271,19 @@ visible changes. No client field or new decision is introduced.
 **This is a foundation, not yet a complete forced-play payment policy.** Scoped casts and
 activations currently accept floating-pool payments; solver-dependent production and multi-part
 activated production return explicit unsupported errors rather than claiming an unproved allocation.
-An unmatched obligation rejects completion atomically. It does not establish forward legality or
-provide recovery from an earlier manual overactivation. Floating-pool selection remains greedy:
-for example, it can spend a tagged snow unit on a colored pip before a later snow pip needs it.
-G41 must supply exact feasible allocations
-through mana chains, zero-output and bonus-only activations, multi-part production pauses, and
-recoverable payment before a printed card uses this wrapper. Word of Command remains blocked;
-no incomplete canonical is registered.
+An unmatched obligation rejects completion atomically. Complete floating-pool payments now
+assign exact units to fixed pips and X together. The matcher reserves snow units, reassigns flexible
+hybrid/substituted pips, honors mana restrictions and actual-color restrictions on X, and maximizes
+distinct activation contributions. Affordability recognizes the same complete floating allocation
+before attempting partial/source planning. A monocolored hybrid can use its larger generic alternative when
+that is needed for two activations to contribute. If contribution coverage is equal, the smaller
+mana payment wins. Selected entries preserve the exact unused riders/source/snow metadata; events
+and X-spend records report actual colors. Nested mana-ability payments use the same allocation and
+settle the prior activations they consume, without requiring every outstanding activation to
+contribute to that intermediate payment.
+
+This does not establish forward activation legality or provide recovery from an earlier manual
+overactivation. G42 must supply feasible activated-source plans through mana chains, zero-output
+and bonus-only activations, multi-part production pauses, and recoverable payment before a printed
+card uses this wrapper. Partial pool/source planning is still outside the completed floating-pool
+allocator. Word of Command remains blocked; no incomplete canonical is registered.

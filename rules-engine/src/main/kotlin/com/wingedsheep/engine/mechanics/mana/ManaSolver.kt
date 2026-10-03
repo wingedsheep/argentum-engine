@@ -11,6 +11,7 @@ import com.wingedsheep.engine.legalactions.utils.donorCardsActivatedAbilities
 import com.wingedsheep.engine.legalactions.utils.donorGrantReaches
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.activeManaSpendingScope
 import com.wingedsheep.engine.state.manaAbilitySourceAllowed
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
@@ -2592,6 +2593,11 @@ class ManaSolver(
         } else {
             ManaPool().withSpendingColors(state, playerId)
         }
+
+        // A complete scoped pool payment must reserve fixed and X pips together, just as
+        // execution does. Source-dependent/partial plans continue through the solver below.
+        if (state.activeManaSpendingScope(playerId) != null && pool.allocateFloating(
+                cost, spellContext, xValue * cost.xCount.coerceAtLeast(1), xManaRestriction) != null) return true
 
         // Pay partial from pool for the base cost
         val partialResult = pool.payPartial(cost, spellContext)

@@ -228,4 +228,72 @@ class ManaObligationPaymentTest : FunSpec({
         result.state shouldBe tagged
     }
 
+    test("complete scoped spell payment reserves tagged snow for the snow pip") {
+        val d = driver(); val p = d.activePlayer!!
+        val snow = ManaSourceTag(com.wingedsheep.sdk.model.EntityId("snow"), isSnow = true)
+        val state = scoped(d, ManaPoolComponent(green = 1,
+            restrictedMana = listOf(unit(Color.GREEN, "snow").copy(source = snow))), setOf("snow"))
+        for (strategy in listOf(PaymentStrategy.FromPool, PaymentStrategy.AutoPay, PaymentStrategy.Explicit(emptyList()))) {
+            val result = pay(d, state, "{G}{S}", strategy)
+            result.error shouldBe null
+            result.state.remainingManaObligations(p) shouldBe false
+            result.spentManaProvenance.snow shouldBe 1
+            result.events.filterIsInstance<ManaSpentEvent>().single().green shouldBe 2
+        }
+    }
+    test("fixed and restricted X are allocated together with actual X colors") {
+        val d = driver(); val p = d.activePlayer!!
+        val state = scoped(d, ManaPoolComponent(green = 1, restrictedMana = listOf(
+            unit(Color.BLUE, "blue"), unit(Color.GREEN, "green"))), setOf("blue", "green"))
+        val result = CastPaymentProcessor(d.services.zones, d.services.manaSolver, d.services.costHandler,
+            d.services.manaAbilitySideEffectExecutor).processPayment(
+            state, CastSpell(p, p, paymentStrategy = PaymentStrategy.FromPool),
+            ManaCost.parse("{G/U}{X}"), "Restricted X probe", 1,
+            SpellPaymentContext(cardTypes = setOf(CardType.SORCERY)), setOf(Color.BLUE))
+        result.error shouldBe null
+        result.xManaSpentByColor shouldBe mapOf(Color.BLUE to 1)
+        result.state.getEntity(p)!!.get<ManaPoolComponent>()!!.green shouldBe 1
+        result.state.remainingManaObligations(p) shouldBe false
+    }
+    test("scoped mono hybrid can pay the larger alternative to satisfy both activations") {
+        val d = driver(); val p = d.activePlayer!!
+        val state = scoped(d, ManaPoolComponent(restrictedMana = listOf(
+            unit(Color.GREEN, "green"), unit(Color.BLUE, "blue"))), setOf("green", "blue"))
+        val result = pay(d, state, "{2/G}")
+        result.error shouldBe null
+        result.state.remainingManaObligations(p) shouldBe false
+        result.events.filterIsInstance<ManaSpentEvent>().single().let { it.green + it.blue } shouldBe 2
+    }
+    test("scoped mana activation reserves X color while settling prior activations") {
+        val d = driver(); val p = d.activePlayer!!
+        val converter = card("Allocated X Mana Probe") {
+            typeLine = "Land"
+            activatedAbility {
+                cost = Costs.Mana("{G/U}{X}")
+                effect = Effects.AddMana(Color.RED, 1)
+                manaAbility = true
+                xManaRestriction = setOf(Color.BLUE)
+            }
+        }
+        d.registerCards(listOf(converter))
+        val source = d.putLandOnBattlefield(p, converter.name)
+        d.replaceState(scoped(d, ManaPoolComponent(green = 1, restrictedMana = listOf(
+            unit(Color.BLUE, "blue"), unit(Color.GREEN, "green"))), setOf("blue", "green")))
+        val result = d.submit(ActivateAbility(p, source, converter.script.activatedAbilities.first().id,
+            xValue = 1, paymentStrategy = PaymentStrategy.FromPool))
+        result.error shouldBe null
+        d.state.activeManaSpendingScope(p)!!.pendingIds.intersect(setOf("blue", "green")) shouldBe emptySet()
+        d.state.getEntity(p)!!.get<ManaPoolComponent>()!!.green shouldBe 1
+        result.events.filterIsInstance<ManaSpentEvent>().single().let { it.blue + it.green } shouldBe 2
+    }
+
+    test("affordability recognizes a complete restricted-X allocation before partial source planning") {
+        val d = driver(); val p = d.activePlayer!!
+        val state = scoped(d, ManaPoolComponent(restrictedMana = listOf(
+            unit(Color.BLUE, "blue"), unit(Color.GREEN, "green"))), setOf("blue", "green"))
+        d.services.manaSolver.canPay(state, p, ManaCost.parse("{G/U}{X}"), xValue = 1,
+            spellContext = SpellPaymentContext(cardTypes = setOf(CardType.SORCERY)),
+            xManaRestriction = setOf(Color.BLUE)) shouldBe true
+    }
+
 })
