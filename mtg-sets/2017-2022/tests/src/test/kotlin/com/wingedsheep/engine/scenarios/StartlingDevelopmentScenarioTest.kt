@@ -35,6 +35,29 @@ class StartlingDevelopmentScenarioTest : ScenarioTestBase() {
             projected.getSubtypes(bears) shouldBe setOf("Serpent")
         }
 
+        test("it sets base P/T, so a later pump still applies on top") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardInHand(1, "Startling Development")
+                .withCardInHand(1, "Giant Growth")
+                .withLandsOnBattlefield(1, "Island", 2)
+                .withLandsOnBattlefield(1, "Forest", 1)
+                .withCardOnBattlefield(2, "Grizzly Bears")
+                .withActivePlayer(1)
+                .withPriorityPlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val bears = game.findPermanent("Grizzly Bears")!!
+
+            game.castSpell(1, "Startling Development", targetId = bears).error shouldBe null
+            game.resolveStack()
+            game.castSpell(1, "Giant Growth", targetId = bears).error shouldBe null
+            game.resolveStack()
+
+            game.state.projectedState.getPower(bears) shouldBe 7
+            game.state.projectedState.getToughness(bears) shouldBe 7
+        }
+
         test("cycling for {1} discards it and draws a card") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")

@@ -1,11 +1,14 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Scenario tests for Reaper from the Abyss (ISD) — Morbid: at the beginning of each end step, if a
@@ -21,6 +24,7 @@ class ReaperFromTheAbyssScenarioTest : ScenarioTestBase() {
                     .withCardOnBattlefield(1, "Reaper from the Abyss", summoningSickness = false)
                     .withCardOnBattlefield(2, "Grizzly Bears", summoningSickness = false)
                     .withCardOnBattlefield(2, "Hill Giant", summoningSickness = false)
+                    .withCardOnBattlefield(2, "Llanowar Elves", summoningSickness = false)
                     .withCardInHand(1, "Doom Blade")
                     .withLandsOnBattlefield(1, "Swamp", 2)
                     .withActivePlayer(1)
@@ -35,17 +39,18 @@ class ReaperFromTheAbyssScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
                 game.isOnBattlefield("Grizzly Bears") shouldBe false
 
+                val elves = game.findPermanent("Llanowar Elves").shouldNotBeNull()
                 game.passUntilPhase(Phase.ENDING, Step.END)
-                if (game.hasPendingDecision()) {
-                    game.selectTargets(listOf(giant)).error shouldBe null
+                val decision = game.state.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+                withClue("the Reaper is a Demon, so only the non-Demon creatures are legal targets") {
+                    decision.legalTargets[0]!! shouldContainExactlyInAnyOrder listOf(giant, elves)
                 }
+                game.selectTargets(listOf(giant)).error shouldBe null
                 game.resolveStack()
 
                 withClue("morbid is satisfied, so the Hill Giant is destroyed") {
                     game.isOnBattlefield("Hill Giant") shouldBe false
                     game.isInGraveyard(2, "Hill Giant") shouldBe true
-                }
-                withClue("the Reaper is a Demon and is never a legal target") {
                     game.isOnBattlefield("Reaper from the Abyss") shouldBe true
                 }
             }

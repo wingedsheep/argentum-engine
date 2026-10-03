@@ -46,6 +46,29 @@ class PlunderingPredatorScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("with nothing to discard, accepting draws nothing") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Plundering Predator")
+                    .withCardInLibrary(1, "Hill Giant")
+                    .withLandsOnBattlefield(1, "Mountain", 5)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Plundering Predator").error shouldBe null
+                game.resolveStack()
+                if (game.hasPendingDecision()) {
+                    game.answerYesNo(true).error shouldBe null
+                }
+                game.resolveStack()
+
+                withClue("no card was discarded, so no card is drawn") {
+                    game.handSize(1) shouldBe 0
+                    game.librarySize(1) shouldBe 1
+                }
+            }
+
             test("declining neither discards nor draws") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
