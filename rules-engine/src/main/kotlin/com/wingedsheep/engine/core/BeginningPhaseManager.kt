@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageCompone
 import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.CardsInHandAtTurnStartComponent
 import com.wingedsheep.engine.state.components.player.SkipNextUntapStepComponent
@@ -43,13 +44,30 @@ class BeginningPhaseManager(
     private val predicateEvaluator: PredicateEvaluator
 ) {
 
+    fun resumeUntapStepSkipChoice(state: GameState, frame: UntapStepSkipChoiceContinuation,
+        response: DecisionResponse): ExecutionResult {
+        if (response !is OptionChosenResponse || response.optionIndex !in 0..frame.pendingPlayers.size)
+            return ExecutionResult.error(state, "Expected a valid untap-step skip choice")
+        var current = state
+        if (response.optionIndex < frame.pendingPlayers.size) {
+            val player = frame.pendingPlayers[response.optionIndex]
+            val pending = state.getEntity(player)?.get<SkipNextUntapStepComponent>()
+                ?: return ExecutionResult.error(state, "The pending untap-step skip is no longer available")
+            current = current.updateEntity(player) {
+                if (pending.steps > 1) it.with(pending.copy(steps = pending.steps - 1))
+                else it.without<SkipNextUntapStepComponent>()
+            }
+        }
+        return performUntapStep(current, skipChoiceMade = true)
+    }
+
     /**
      * Perform the untap step.
      * - Untap all permanents controlled by the active player
      * - Respects SkipUntapComponent which prevents certain permanents from untapping
      * - No priority is given during untap step
      */
-    fun performUntapStep(state: GameState): ExecutionResult {
+    fun performUntapStep(state: GameState, skipChoiceMade: Boolean = false): ExecutionResult {
         val activePlayer = state.activePlayerId
             ?: return ExecutionResult.error(state, "No active player")
         // CR 805.4 — in a shared team turn both teammates untap (and phase in / lose summoning
@@ -62,8 +80,26 @@ class BeginningPhaseManager(
         // consumed by TurnManager once the step is over (finishUntapStep, or the
         // Step.UNTAP branch of advanceStep). When the whole active team skips, the step never
         // happens at all, so its game-wide actions (day/night, Seedborn untaps) don't either.
+        val standingSkip = activeTeam.any { skipsUntapStep(state, cardRegistry, predicateEvaluator, it) }
+        if (standingSkip && !skipChoiceMade) {
+            val pendingPlayers = state.sharedTurnTeam(activePlayer).filter {
+                state.getEntity(it)?.has<SkipNextUntapStepComponent>() == true
+            }
+            if (pendingPlayers.isNotEmpty()) {
+                val options = pendingPlayers.map { player ->
+                    if (player == activePlayer) "Use your pending untap-step skip"
+                    else "Use ${state.getEntity(player)?.get<PlayerComponent>()?.name ?: "your teammate"}'s pending untap-step skip"
+                } + "Use the standing untap-step skip and keep pending skips"
+                return state.suspendForDecision(
+                    question = { id -> ChooseOptionDecision(id, activePlayer,
+                        "Your untap step will be skipped. Choose which effect to use.",
+                        DecisionContext(phase = DecisionPhase.STATE_BASED), options, defaultSearch = options.first()) },
+                    answer = UntapStepSkipChoiceContinuation(pendingPlayers))
+            }
+        }
         val untappingTeam = activeTeam.filterTo(HashSet()) {
-            state.getEntity(it)?.has<SkipNextUntapStepComponent>() != true
+            state.getEntity(it)?.has<SkipNextUntapStepComponent>() != true &&
+                !standingSkip
         }
         val stepHappens = untappingTeam.isNotEmpty()
 

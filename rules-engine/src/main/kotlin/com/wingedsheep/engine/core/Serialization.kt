@@ -290,6 +290,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PayOrSufferChoiceContinuation::class)
         subclass(AnyPlayerMayPayContinuation::class)
         subclass(UntapChoiceContinuation::class)
+        subclass(UntapStepSkipChoiceContinuation::class)
         subclass(ReturnFromGraveyardContinuation::class)
         subclass(PayOrSufferManaSelectionContinuation::class)
         subclass(ChooseDoorContinuation::class)

@@ -42,7 +42,8 @@ class SacrificeAndPayContinuationResumer(
         resumer(PayOrSufferManaSelectionContinuation::class, ::resumePayOrSufferManaSelection),
         resumer(PayOrSufferChoiceContinuation::class, ::resumePayOrSufferChoice),
         resumer(AnyPlayerMayPayContinuation::class, ::resumeAnyPlayerMayPay),
-        resumer(UntapChoiceContinuation::class, ::resumeUntapChoice)
+        resumer(UntapChoiceContinuation::class, ::resumeUntapChoice),
+        resumer(UntapStepSkipChoiceContinuation::class, ::resumeUntapStepSkipChoice)
     )
 
     fun resumeSacrifice(
@@ -1007,6 +1008,12 @@ class SacrificeAndPayContinuationResumer(
 
         // No player paid - run the "none paid" branch.
         return runAnyPlayerMayPayConsequence(state, continuation, continuation.consequenceIfNonePaid, emptyList(), checkForMore)
+    }
+
+    fun resumeUntapStepSkipChoice(state: GameState, continuation: UntapStepSkipChoiceContinuation,
+        response: DecisionResponse, checkForMore: CheckForMore): ExecutionResult {
+        val result = services.turnManager.beginningPhaseManager.resumeUntapStepSkipChoice(state, continuation, response)
+        return if (result.outcome is Outcome.Done) checkForMore(result.state, result.events) else result
     }
 
     fun resumeUntapChoice(
