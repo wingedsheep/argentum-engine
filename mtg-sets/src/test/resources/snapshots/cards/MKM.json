@@ -913,10 +913,7 @@
                     "type": "ZoneChangeEvent",
                     "to": "Battlefield"
                 },
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                },
+                "effect": "Investigate",
                 "descriptionOverride": "When Alquist Proft enters, investigate."
             }
         ],
@@ -1818,10 +1815,7 @@
                         "name": "t0"
                     }
                 },
-                {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                }
+                "Investigate"
             ]
         },
         "targetRequirements": [
@@ -3654,10 +3648,7 @@
                     "type": "ZoneChangeEvent",
                     "to": "Battlefield"
                 },
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                }
+                "effect": "Investigate"
             },
             {
                 "id": "Case of the Filched Falcon:2",
@@ -5413,10 +5404,7 @@
                                 "Detective"
                             ]
                         },
-                        {
-                            "type": "CreatePredefinedToken",
-                            "tokenType": "Clue"
-                        }
+                        "Investigate"
                     ]
                 },
                 "descriptionOverride": "Whenever one or more creature cards leave your graveyard, create a 2/2 white and blue Detective creature token, then investigate."
@@ -5589,10 +5577,7 @@
                     "from": "Battlefield",
                     "to": "Graveyard"
                 },
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                }
+                "effect": "Investigate"
             }
         ]
     },
@@ -6825,10 +6810,7 @@
                             "player": "Any"
                         }
                     },
-                    "effect": {
-                        "type": "CreatePredefinedToken",
-                        "tokenType": "Clue"
-                    }
+                    "effect": "Investigate"
                 }
             }
         ],
@@ -7165,10 +7147,7 @@
                         "amount": 1
                     }
                 },
-                {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                }
+                "Investigate"
             ]
         }
     },
@@ -7361,9 +7340,11 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue",
-                    "count": 2
+                    "type": "Investigate",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
                 },
                 "descriptionOverride": "When this artifact enters, investigate twice."
             }
@@ -7636,10 +7617,7 @@
                                 "type": "Surveil",
                                 "count": 2
                             },
-                            {
-                                "type": "CreatePredefinedToken",
-                                "tokenType": "Clue"
-                            }
+                            "Investigate"
                         ]
                     }
                 }
@@ -7881,10 +7859,7 @@
         "spellEffect": {
             "type": "Composite",
             "effects": [
-                {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                },
+                "Investigate",
                 {
                     "type": "ForEach",
                     "space": {
@@ -8321,10 +8296,7 @@
                 "id": "Evidence Examiner:2",
                 "trigger": "EvidenceCollectedEvent",
                 "binding": "ANY",
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                },
+                "effect": "Investigate",
                 "descriptionOverride": "Whenever you collect evidence, investigate."
             }
         ]
@@ -8741,9 +8713,11 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue",
-                    "count": 2
+                    "type": "Investigate",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
                 },
                 "descriptionOverride": "When Ezrim enters, investigate twice."
             }
@@ -9275,10 +9249,7 @@
                                 "zone": "Graveyard"
                             }
                         },
-                        {
-                            "type": "CreatePredefinedToken",
-                            "tokenType": "Clue"
-                        }
+                        "Investigate"
                     ]
                 }
             }
@@ -9526,10 +9497,7 @@
                     }
                 },
                 "binding": "ANY",
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                },
+                "effect": "Investigate",
                 "descriptionOverride": "Whenever you cast an artifact spell, investigate."
             }
         ],
@@ -10456,10 +10424,7 @@
                     "type": "ZoneChangeEvent",
                     "to": "Battlefield"
                 },
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                },
+                "effect": "Investigate",
                 "descriptionOverride": "When this creature enters, investigate."
             },
             {
@@ -11325,10 +11290,7 @@
                     "filter": "creature nontoken"
                 },
                 "binding": "ANY",
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                },
+                "effect": "Investigate",
                 "oncePerTurn": true,
                 "descriptionOverride": "Whenever one or more nontoken creatures you control die, investigate. This ability triggers only once each turn."
             }
@@ -11388,10 +11350,7 @@
                                 },
                                 "destination": "Hand"
                             },
-                            {
-                                "type": "CreatePredefinedToken",
-                                "tokenType": "Clue"
-                            }
+                            "Investigate"
                         ]
                     },
                     "otherwise": {
@@ -11958,10 +11917,7 @@
             {
                 "id": "Innocent Bystander:1",
                 "trigger": "DamageReceivedEvent",
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                },
+                "effect": "Investigate",
                 "triggerRestriction": {
                     "type": "Compare",
                     "left": {
@@ -13080,10 +13036,7 @@
                 "spellEffect": {
                     "type": "Composite",
                     "effects": [
-                        {
-                            "type": "CreatePredefinedToken",
-                            "tokenType": "Clue"
-                        },
+                        "Investigate",
                         {
                             "type": "PlayAdditionalLands",
                             "count": 1
@@ -13949,10 +13902,7 @@
                             "destination": "Exile",
                             "linkToSource": true
                         },
-                        {
-                            "type": "CreatePredefinedToken",
-                            "tokenType": "Clue"
-                        }
+                        "Investigate"
                     ]
                 },
                 "targetRequirement": {
@@ -14590,10 +14540,7 @@
                     "type": "ZoneChangeEvent",
                     "to": "Battlefield"
                 },
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                }
+                "effect": "Investigate"
             },
             {
                 "id": "Loxodon Eavesdropper:2",
@@ -15157,10 +15104,7 @@
                     "minAttackers": 3
                 },
                 "binding": "ANY",
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                },
+                "effect": "Investigate",
                 "descriptionOverride": "Whenever you attack with three or more creatures, investigate."
             }
         ]
@@ -15323,10 +15267,7 @@
                             "sourceFilter": "creature ctrl:you"
                         },
                         "binding": "ANY",
-                        "effect": {
-                            "type": "CreatePredefinedToken",
-                            "tokenType": "Clue"
-                        }
+                        "effect": "Investigate"
                     },
                     "duration": "EndOfTurn",
                     "descriptionOverride": "Whenever a creature you control deals combat damage to a player, investigate."
@@ -15822,8 +15763,7 @@
                             }
                         },
                         "then": {
-                            "type": "CreatePredefinedToken",
-                            "tokenType": "Clue",
+                            "type": "Investigate",
                             "controller": "Controller"
                         }
                     }
@@ -15926,10 +15866,7 @@
                     "type": "ZoneChangeEvent",
                     "to": "Battlefield"
                 },
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                }
+                "effect": "Investigate"
             }
         ]
     },
@@ -16026,9 +15963,8 @@
     "oracleText": "This spell costs {W}{U} more to cast for each target beyond the first.\nChoose any number of target players. Investigate X times, where X is the total number of creatures those players control. (To investigate, create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
     "script": {
         "spellEffect": {
-            "type": "CreatePredefinedToken",
-            "tokenType": "Clue",
-            "dynamicCount": {
+            "type": "Investigate",
+            "count": {
                 "type": "Count",
                 "player": "EachTargetedPlayer",
                 "zone": "Battlefield",
@@ -16115,10 +16051,7 @@
                         "target": "IterationEntity"
                     }
                 },
-                {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                }
+                "Investigate"
             ]
         }
     },
@@ -16168,10 +16101,7 @@
                         ]
                     }
                 },
-                {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                }
+                "Investigate"
             ]
         },
         "targetRequirements": [
@@ -16432,10 +16362,7 @@
                     "type": "ZoneChangeEvent",
                     "to": "Battlefield"
                 },
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                },
+                "effect": "Investigate",
                 "descriptionOverride": "When this creature enters, investigate."
             },
             {
@@ -19264,10 +19191,7 @@
                             "count": 1,
                             "target": "Self"
                         },
-                        {
-                            "type": "CreatePredefinedToken",
-                            "tokenType": "Clue"
-                        }
+                        "Investigate"
                     ]
                 },
                 "interveningIf": {
@@ -20374,9 +20298,8 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue",
-                    "dynamicCount": {
+                    "type": "Investigate",
+                    "count": {
                         "type": "TurnTracking",
                         "player": "You",
                         "tracker": "OPPONENTS_WHO_LOST_LIFE"
@@ -20468,10 +20391,7 @@
                         "name": "t0"
                     }
                 },
-                {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                }
+                "Investigate"
             ]
         },
         "targetRequirements": [
@@ -20654,10 +20574,7 @@
                 },
                 "ShuffleLibrary",
                 "EmitLibrarySearchedEvent",
-                {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                }
+                "Investigate"
             ]
         }
     },
@@ -21112,10 +21029,7 @@
                         "type": "Gate.WhenCondition",
                         "condition": "TargetMarkedDamageExceedsToughness"
                     },
-                    "then": {
-                        "type": "CreatePredefinedToken",
-                        "tokenType": "Clue"
-                    }
+                    "then": "Investigate"
                 }
             ]
         },
@@ -21177,10 +21091,7 @@
                         "name": "t0"
                     }
                 },
-                {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                }
+                "Investigate"
             ]
         },
         "targetRequirements": [
@@ -21626,10 +21537,7 @@
                         "player": "Any"
                     }
                 },
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                },
+                "effect": "Investigate",
                 "descriptionOverride": "Whenever this creature deals combat damage to a player, investigate."
             }
         ]
@@ -22652,9 +22560,8 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue",
-                    "dynamicCount": {
+                    "type": "Investigate",
+                    "count": {
                         "type": "CountPlayersWith",
                         "scope": "EachOpponent",
                         "condition": {

@@ -536,6 +536,25 @@ data class ForagedEvent(
 ) : GameEvent
 
 /**
+ * A player investigated once (CR 701.16a) — fires
+ * [com.wingedsheep.sdk.scripting.EventPattern.InvestigatedEvent]. Emitted only by the
+ * `InvestigateExecutor`, one per investigate, so "investigate twice" is two of these and a plain
+ * "create a Clue token" is none.
+ *
+ * @property playerId The player who investigated
+ * @property firstThisTurn true when this is that player's first investigate this turn — read before
+ *   the per-turn marker is set, so of several investigates in one resolution only the first is
+ * @property sourceName Name of the object whose effect made the player investigate, for logs
+ */
+@Serializable
+@SerialName("InvestigatedEvent")
+data class InvestigatedEvent(
+    val playerId: EntityId,
+    val firstThisTurn: Boolean = true,
+    val sourceName: String? = null
+) : GameEvent
+
+/**
  * A permanent just explored (CR 701.44). Fires once per explore, after the reveal + hand/counter
  * resolution is determined. Drives [com.wingedsheep.sdk.scripting.EventPattern.ExploredEvent]
  * triggers ("whenever a creature you control explores [a land / nonland card]").

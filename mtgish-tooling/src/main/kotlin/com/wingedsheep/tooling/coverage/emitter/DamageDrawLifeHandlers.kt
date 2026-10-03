@@ -185,7 +185,7 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
     // `Effects.AddCombatPhase`; importsFor resolves the single `Effects` import (Into the Night).
     simple("BecomeDay", dsl = "Effects.BecomeDay")
     simple("BecomeNight", dsl = "Effects.BecomeNight")
-    // Investigate (keyword action, CR 701.36): create a Clue token. Argument-free constant action
+    // Investigate (keyword action, CR 701.16a): create a Clue token. Argument-free constant action
     // (Malcolm, the Eyes — "investigate"). "Investigate N times" appears as N stacked actions.
     simple("Investigate", dsl = "Effects.Investigate()")
     simple("TakeAnExtraTurn", dsl = "TakeExtraTurnEffect()")

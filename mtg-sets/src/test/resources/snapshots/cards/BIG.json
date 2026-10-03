@@ -943,10 +943,7 @@
                     "player": "Each"
                 },
                 "binding": "ANY",
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                },
+                "effect": "Investigate",
                 "oncePerTurn": true
             }
         ]

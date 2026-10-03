@@ -161,7 +161,7 @@ object PredefinedTokens {
     /**
      * Clue token — an artifact with:
      * "{2}, Sacrifice this token: Draw a card."
-     * Created by the Investigate keyword action ([Effects.Investigate]).
+     * Created by the Investigate keyword action ([Effects.Investigate]) and by "create a Clue token" ([Effects.CreateClue]).
      */
     val Clue = card("Clue") {
         typeLine = "Artifact — Clue"

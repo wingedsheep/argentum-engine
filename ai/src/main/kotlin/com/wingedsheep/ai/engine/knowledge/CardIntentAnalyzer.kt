@@ -282,7 +282,7 @@ object CardIntentAnalyzer {
         is DrawCardsEffect, is DrawUpToEffect -> setOf(IntentTag.DRAW)
         is CounterEffect, is CounterAllOnStackEffect -> setOf(IntentTag.COUNTERSPELL)
         is GainLifeEffect, is DrainLifeEffect -> setOf(IntentTag.LIFEGAIN)
-        is CreateTokenEffect, is CreatePredefinedTokenEffect, is CreateTokenCopyOfTargetEffect,
+        is CreateTokenEffect, is CreatePredefinedTokenEffect, is InvestigateEffect, is CreateTokenCopyOfTargetEffect,
         is CreateTokenCopyOfSourceEffect -> setOf(IntentTag.TOKEN_MAKER)
 
         is AddManaEffect, is AddColorlessManaEffect, is AddDynamicManaEffect,

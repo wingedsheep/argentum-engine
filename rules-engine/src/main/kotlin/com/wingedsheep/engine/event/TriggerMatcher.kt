@@ -687,6 +687,11 @@ class TriggerMatcher(
                 event is com.wingedsheep.engine.core.ForagedEvent &&
                     matchesPlayer(state, trigger.player, event.playerId, controllerId)
             }
+            is EventPattern.InvestigatedEvent -> {
+                event is com.wingedsheep.engine.core.InvestigatedEvent &&
+                    matchesPlayer(state, trigger.player, event.playerId, controllerId) &&
+                    (!trigger.firstTimeEachTurn || event.firstThisTurn)
+            }
             is EventPattern.CaseSolvedEvent -> {
                 // The solving player rides the event (the Case's controller when its "To solve"
                 // trigger resolved), so a Case sacrificed by its own Solved ability still credits
