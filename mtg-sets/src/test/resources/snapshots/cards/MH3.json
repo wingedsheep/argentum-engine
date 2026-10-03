@@ -3488,6 +3488,136 @@
     ]
 }
 
+// Drownyard Lurker
+{
+    "name": "Drownyard Lurker",
+    "manaCost": "{7}",
+    "typeLine": "Creature — Eldrazi Trilobite",
+    "oracleText": "Vigilance\nWhen you cast or cycle Drownyard Lurker, create a 0/1 colorless Eldrazi Spawn creature token with \"Sacrifice this token: Add {C}.\"\nCycling {2}{U} ({2}{U}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Drownyard Lurker:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn"
+                }
+            },
+            {
+                "id": "Drownyard Lurker:2",
+                "trigger": "CycleEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "artist": "Loïc Canavaggia",
+        "flavorText": "When Emrakul arrived on Innistrad, even fossils answered her twisted call.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7faf5812-2067-4386-bb83-150723d67d02.jpg?1783911309",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Drownyard Lurker's triggered ability will resolve before either Drownyard Lurker or its cycling ability does, as appropriate. If Drownyard Lurker or its cycling ability are countered or otherwise leave the stack in response to that triggered ability, the triggered ability will still resolve as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Eldrazi Linebreaker
+{
+    "name": "Eldrazi Linebreaker",
+    "manaCost": "{1}{C}{R}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nTrample\nAt the beginning of combat on your turn, target creature you control gains haste and gets +X/+0 until end of turn, where X is the number of Eldrazi you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eldrazi Linebreaker:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "permanent Eldrazi"
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, target creature you control gains haste and gets +X/+0 until end of turn, where X is the number of Eldrazi you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "RARE",
+        "artist": "Leonardo Santanna",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f67774a1-f5f8-4b7b-871d-88a1b5e57d27.jpg?1783911273"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Eldrazi Ravager
 {
     "name": "Eldrazi Ravager",
@@ -3566,6 +3696,123 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Eldrazi Repurposer
+{
+    "name": "Eldrazi Repurposer",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nWhen you cast this spell and when this creature dies, create a 0/1 colorless Eldrazi Spawn creature token with \"Sacrifice this token: Add {C}.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eldrazi Repurposer:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn"
+                }
+            },
+            {
+                "id": "Eldrazi Repurposer:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Daren Bader",
+        "flavorText": "\"I almost admire their ability to avoid waste. Almost.\"\n—General Tazri, allied commander",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37f79ba7-7b65-4387-b498-f770816ce8dd.jpg?1783911262",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Eldrazi Repurposer's triggered ability will resolve before Eldrazi Repurposer does. If Eldrazi Repurposer is countered or otherwise leaves the stack in response to that triggered ability, the triggered ability will still resolve as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Electrozoa
+{
+    "name": "Electrozoa",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Jellyfish",
+    "oracleText": "Flash\nFlying\nWhen this creature enters, you get {E}{E} (two energy counters).\nAt the beginning of your first main phase, tap this creature unless you pay {E}.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Electrozoa:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Electrozoa:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "PRECOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomPayPlayerCounters",
+                            "counterType": "ENERGY"
+                        }
+                    },
+                    "suffer": {
+                        "type": "TapUntap",
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "Steve Ellis",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f92dce7-45d4-4d9e-abfc-e4bfce9562c9.jpg?1783911291"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Emissary of Soulfire
@@ -3648,6 +3895,48 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "BLUE"
+    ]
+}
+
+// Emrakul's Messenger
+{
+    "name": "Emrakul's Messenger",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Eldrazi Faerie Rogue",
+    "oracleText": "Devoid (This card has no color.)\nFlying\nWhenever you draw your second card each turn, create a 0/1 colorless Eldrazi Spawn creature token with \"Sacrifice this token: Add {C}.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEVOID",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Emrakul's Messenger:1",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "David Álvarez",
+        "flavorText": "\"Obey her will! Don't be a fool! Submit your mind to Emrakul!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0f818d7-320c-47b9-a083-40007f3d91ea.jpg?1783911291"
+    },
+    "colorIdentityOverride": [
         "BLUE"
     ]
 }
@@ -3766,6 +4055,398 @@
     "colorIdentityOverride": []
 }
 
+// Envoy of the Ancestors
+{
+    "name": "Envoy of the Ancestors",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Outlast {W} ({W}, {T}: Put a +1/+1 counter on this creature. Outlast only as a sorcery.)\nModified creatures you control have lifelink. (Equipment, Auras you control, and counters are modifications.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Envoy of the Ancestors:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsModified"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Irina Nordsol",
+        "flavorText": "\"No Abzan has ever stood alone.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc1dfbfc-90e0-48fa-98f1-39929f823619.jpg?1783911304"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Etherium Pteramander
+{
+    "name": "Etherium Pteramander",
+    "manaCost": "{B}",
+    "typeLine": "Artifact Creature — Salamander Drake",
+    "oracleText": "Flying\nThis creature can block only creatures with flying.\n{6}{B}: Adapt 4. This ability costs {1} less to activate for each other artifact you control. (If this creature has no +1/+1 counters on it, put four +1/+1 counters on it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Etherium Pteramander:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        {
+                                            "type": "HasCounter",
+                                            "counterType": "PLUS_ONE_PLUS_ONE"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 4,
+                        "target": "Self"
+                    }
+                },
+                "descriptionOverride": "{6}{B}: Adapt 4. This ability costs {1} less to activate for each other artifact you control.",
+                "genericCostReduction": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "artifact",
+                    "excludeSelf": true
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CanOnlyBlockCreaturesWith",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasKeyword",
+                            "keyword": "FLYING"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "UNCOMMON",
+        "artist": "Kekai Kotaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3abd093b-c1d6-400e-bc26-1aa045fe47b8.jpg?1783911281",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "You can always activate an ability that will cause a creature to adapt. As that ability resolves, if the creature has a +1/+1 counter on it for any reason, you simply won't put any +1/+1 counters on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Eviscerator's Insight
+{
+    "name": "Eviscerator's Insight",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice an artifact or creature.\nDraw two cards.\nFlashback {4}{B} (You may cast this card from your graveyard for its flashback cost and any additional costs. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{4}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "artifact|creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "artist": "Sam White",
+        "flavorText": "\"We're all just the sum of our parts.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b00573bd-5bbb-4531-a0bb-a40f62b92b88.jpg?1783911280"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Evolution Witness
+{
+    "name": "Evolution Witness",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Shaman Mutant",
+    "oracleText": "{1}{G}: Adapt 2. (If this creature has no +1/+1 counters on it, put two +1/+1 counters on it.)\nWhenever one or more +1/+1 counters are put on this creature, return target permanent card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Evolution Witness:2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Evolution Witness:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        {
+                                            "type": "HasCounter",
+                                            "counterType": "PLUS_ONE_PLUS_ONE"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "artist": "Nereida",
+        "flavorText": "She remembers every breakthrough, from the gene's mutation to the new life's propagation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d89283e-9783-4006-9294-4ae0473d2ce6.jpg?1783911262",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "You can always activate an ability that will cause a creature to adapt. As that ability resolves, if the creature has a +1/+1 counter on it for any reason, you simply won't put any +1/+1 counters on it."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a creature somehow loses all of its +1/+1 counters, it can adapt again and get more +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Expanding Ooze
+{
+    "name": "Expanding Ooze",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Creature — Ooze",
+    "oracleText": "{B}{G}: Adapt 1. (If this creature has no +1/+1 counters on it, put a +1/+1 counter on it.)\nWhenever this creature attacks, put a +1/+1 counter on target modified creature you control. (Equipment, Auras you control, and counters are modifications.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Expanding Ooze:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "IsModified"
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Expanding Ooze:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        {
+                                            "type": "HasCounter",
+                                            "counterType": "PLUS_ONE_PLUS_ONE"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "artist": "Randy Gallegos",
+        "flavorText": "\"It eats the royal garbage. Of course it's growing!\"\n—Prince Bolbuss",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbdb095d-b826-4e3e-8c61-0d408e52d6b8.jpg?1783911251"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Faithful Watchdog
 {
     "name": "Faithful Watchdog",
@@ -3797,6 +4478,57 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Fanged Flames
+{
+    "name": "Fanged Flames",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Devoid (This card has no color.)\nFanged Flames deals 4 damage to target creature or planeswalker. If that creature or planeswalker would die this turn, exile it instead.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "artist": "Campbell White",
+        "flavorText": "With Dorble's natural immunity to venom, he'd always taken certain comfort in the knowledge that he wouldn't die of snakebite.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fcfac301-55db-49a7-9a0d-918c907703da.jpg?1783911273"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3910,6 +4642,144 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Fetid Gargantua
+{
+    "name": "Fetid Gargantua",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "{2}{B}: Adapt 2. (If this creature has no +1/+1 counters on it, put two +1/+1 counters on it.)\nWhenever one or more +1/+1 counters are put on this creature, you may draw two cards. If you do, you lose 2 life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fetid Gargantua:2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": "Controller"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Fetid Gargantua:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        {
+                                            "type": "HasCounter",
+                                            "counterType": "PLUS_ONE_PLUS_ONE"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "artist": "Michael C. Hayes",
+        "flavorText": "When the night comes knocking\n—Kessig expression meaning \"in dire times\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0cd368a9-5efe-4755-89be-a05cfa2b71c0.jpg?1783911281"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Flare of Denial
+{
+    "name": "Flare of Denial",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "You may sacrifice a nontoken blue creature rather than pay this spell's mana cost.\nCounter target spell.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{0}",
+            "additionalCosts": [
+                {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature blue nontoken"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "flavorText": "\"I see where you're going with that, and I don't like it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71a98efb-9b0a-496b-ac21-8d70527ea544.jpg?1783911290"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4251,6 +5121,69 @@
     ]
 }
 
+// Ghostfire Slice
+{
+    "name": "Ghostfire Slice",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nThis spell costs {2} less to cast if an opponent controls a multicolored permanent.\nGhostfire Slice deals 4 damage to any target.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "Exists",
+                        "player": "EachOpponent",
+                        "zone": "Battlefield",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsMulticolored"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "flavorText": "Just because you can't see it doesn't mean it won't hurt.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2adea3ee-138f-455b-a001-586883c44758.jpg?1783911271"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Gift of the Viper
 {
     "name": "Gift of the Viper",
@@ -4317,6 +5250,74 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Glaring Fleshraker
+{
+    "name": "Glaring Fleshraker",
+    "manaCost": "{2}{C}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Whenever you cast a colorless spell, create a 0/1 colorless Eldrazi Spawn creature token with \"Sacrifice this token: Add {C}.\"\nWhenever another colorless creature you control enters, this creature deals 1 damage to each opponent.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Glaring Fleshraker:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsColorless"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn"
+                }
+            },
+            {
+                "id": "Glaring Fleshraker:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "triggerRestriction": {
+                    "type": "EntityMatches",
+                    "entity": "TriggeringEntity",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsColorless"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Raph Lomotan",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80c2a3c7-1486-4ff9-88ec-79ec67a437f8.jpg?1783911308"
+    },
+    "colorIdentityOverride": []
 }
 
 // Glyph Elemental
