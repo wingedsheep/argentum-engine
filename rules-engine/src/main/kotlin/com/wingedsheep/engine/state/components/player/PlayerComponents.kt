@@ -1410,6 +1410,16 @@ data class LifeLostAmountThisTurnComponent(val amount: Int = 0) : Component
 data class CardsLeftGraveyardThisTurnComponent(val count: Int = 0) : Component
 
 /**
+ * Tracks the number of permanents (tokens included) put into this player's hand from the
+ * battlefield this turn, keyed on the owner. Cleared at end of turn by CleanupPhaseManager.
+ *
+ * Used for "if a permanent was put into your hand from the battlefield this turn" (Barrin,
+ * Tolarian Archmage).
+ */
+@Serializable
+data class PermanentsPutIntoHandFromBattlefieldThisTurnComponent(val count: Int = 0) : Component
+
+/**
  * Tracks the number of this player's (owned) cards that were put into exile this turn. Tokens are
  * excluded — a token briefly placed in exile isn't a card. Summed across all players it yields the
  * game-wide "cards put into exile this turn" count. Reset to 0 for every player at the start of

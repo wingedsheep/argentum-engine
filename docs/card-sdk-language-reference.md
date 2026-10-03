@@ -12237,6 +12237,9 @@ answer it and would silently return `false`.
 - `OpponentLostLife` — an opponent lost life this turn.
 - `OpponentLostLifeLastTurn` — an opponent lost life during the previous turn, whoever's it was (Feast on
   the Fallen). Backed by `TurnTracker.LIFE_LOST_LAST_TURN`.
+- `PermanentPutIntoYourHandFromBattlefieldThisTurn` — a permanent (token included) was put into your hand
+  from the battlefield this turn, by any effect (Barrin, Tolarian Archmage). Backed by
+  `TurnTracker.PERMANENTS_PUT_INTO_HAND_FROM_BATTLEFIELD`.
 - `PlayerLostLifeThisTurn(player)` — a specific player lost life this turn. Use when the wording
   binds the check to a particular player rather than "an opponent" — Thought-Stalker Warlock's
   "choose target opponent. If THEY lost life this turn, …" is
@@ -14015,6 +14018,9 @@ this turn").
   off the projected type line at sacrifice time. Backs `Conditions.SacrificedArtifactThisTurn`
   (Suspicious Detonation, Furtive Courier).
 - `CARDS_LEFT_GRAVEYARD` — cards leaving your graveyard.
+- `PERMANENTS_PUT_INTO_HAND_FROM_BATTLEFIELD` — permanents (tokens included) put into the player's hand
+  from the battlefield this turn, keyed on the owner. Backs
+  `Conditions.PermanentPutIntoYourHandFromBattlefieldThisTurn` (Barrin, Tolarian Archmage).
 - `DESCENDED` — number of times a player has descended this turn (CR 700.11) — i.e.
   count of nontoken permanent cards put into that player's graveyard from any zone.
   Backs `Conditions.YouDescendedThisTurn(atLeast)` and `DynamicAmounts.descendedThisTurn`

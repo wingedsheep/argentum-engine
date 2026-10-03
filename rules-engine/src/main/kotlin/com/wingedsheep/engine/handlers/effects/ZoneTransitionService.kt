@@ -42,6 +42,7 @@ import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurnComponent
+import com.wingedsheep.engine.state.components.player.PermanentsPutIntoHandFromBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardsPutIntoExileThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ArtifactsDiedThisTurnComponent
@@ -1098,6 +1099,17 @@ class ZoneTransitionService(
         if (actualDestZone == Zone.GRAVEYARD && fromZone != Zone.GRAVEYARD) {
             newState = newState.updateEntity(entityId) { c ->
                 c.with(PutIntoGraveyardThisTurnComponent(fromBattlefield = leavingBattlefield))
+            }
+        }
+
+        // 8b4. "A permanent was put into your hand from the battlefield this turn" (Barrin,
+        // Tolarian Archmage). Keyed on the owner, whose hand it goes to; tokens count — a bounced
+        // token is put into its owner's hand before it ceases to exist.
+        if (leavingBattlefield && actualDestZone == Zone.HAND) {
+            newState = newState.updateEntity(ownerId) { playerContainer ->
+                val existing = playerContainer.get<PermanentsPutIntoHandFromBattlefieldThisTurnComponent>()
+                    ?: PermanentsPutIntoHandFromBattlefieldThisTurnComponent()
+                playerContainer.with(PermanentsPutIntoHandFromBattlefieldThisTurnComponent(existing.count + 1))
             }
         }
 

@@ -1991,6 +1991,13 @@ object Conditions {
         trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.CARDS_LEFT_GRAVEYARD, atLeast = count)
 
     /**
+     * If a permanent was put into your hand from the battlefield this turn (Barrin, Tolarian
+     * Archmage).
+     */
+    val PermanentPutIntoYourHandFromBattlefieldThisTurn: ConditionInterface =
+        trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.PERMANENTS_PUT_INTO_HAND_FROM_BATTLEFIELD)
+
+    /**
      * If you've sacrificed a Food this turn.
      */
     val SacrificedFoodThisTurn: ConditionInterface =

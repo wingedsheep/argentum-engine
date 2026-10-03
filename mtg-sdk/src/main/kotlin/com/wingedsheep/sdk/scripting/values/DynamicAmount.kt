@@ -154,6 +154,14 @@ enum class TurnTracker {
     /** Total cards that left the player's graveyard this turn (Bonecache Overseer). */
     CARDS_LEFT_GRAVEYARD,
     /**
+     * Number of permanents (tokens included) put into the player's hand from the battlefield this
+     * turn — bounced by any effect, keyed on the card's owner, whose hand it goes to. Turn history:
+     * the card leaving the hand again doesn't undo the count. Powers "if a permanent was put into
+     * your hand from the battlefield this turn" (Barrin, Tolarian Archmage) — reach for it via
+     * `Conditions.PermanentPutIntoYourHandFromBattlefieldThisTurn`.
+     */
+    PERMANENTS_PUT_INTO_HAND_FROM_BATTLEFIELD,
+    /**
      * Number of times the player descended this turn (CR 700.11) — count of nontoken
      * permanent cards put into the player's graveyard from any zone. Backs the descend
      * gate and the descend N / fathomless descent ability words.
@@ -330,6 +338,8 @@ enum class TurnTracker {
         SCRIED_OR_SURVEILED -> "whether ${player.description} scried or surveilled this turn"
         ARTIFACT_SACRIFICED -> "whether ${player.description} sacrificed an artifact this turn"
         CARDS_LEFT_GRAVEYARD -> "the number of cards that left ${player.possessive} graveyard this turn"
+        PERMANENTS_PUT_INTO_HAND_FROM_BATTLEFIELD ->
+            "the number of permanents put into ${player.possessive} hand from the battlefield this turn"
         DESCENDED -> "the number of times ${player.description} descended this turn"
         CREATURE_CARDS_PUT_INTO_GRAVEYARD ->
             "the number of creature cards put into ${player.possessive} graveyard this turn"
