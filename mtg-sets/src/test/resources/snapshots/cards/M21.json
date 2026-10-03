@@ -1,3 +1,103 @@
+// Barrin, Tolarian Archmage
+{
+    "name": "Barrin, Tolarian Archmage",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "When Barrin enters, return up to one other target creature or planeswalker to its owner's hand.\nAt the beginning of your end step, if a permanent was put into your hand from the battlefield this turn, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Barrin, Tolarian Archmage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature|planeswalker",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Barrin, Tolarian Archmage:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PERMANENTS_PUT_INTO_HAND_FROM_BATTLEFIELD"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "flavorText": "\"There is no age at which you stop learning.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb078fbb-beb9-4c0b-be93-ed1e73e6f8d8.jpg?1783930730",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "You draw only one card, no matter how many permanents were put into your hand from the battlefield during that turn."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "The permanent that was returned to your hand doesn't have to still be there."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If a token is returned to your hand, it's put there before it ceases to exist."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Barrin's last ability checks the entire turn, even before Barrin was on the battlefield."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If a permanent wasn't put into your hand from the battlefield before your end step begins, Barrin's ability doesn't trigger at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Chandra's Magmutt
 {
     "name": "Chandra's Magmutt",

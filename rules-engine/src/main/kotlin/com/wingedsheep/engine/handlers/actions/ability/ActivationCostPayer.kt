@@ -18,6 +18,8 @@ import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.activeManaSpendingScope
+import com.wingedsheep.engine.state.settleManaObligationPayment
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.NotedCreatureTypesComponent
@@ -152,8 +154,19 @@ internal class ActivationCostPayer(
         val manaCost = if (reducedManaCost == null) null else reducedManaCost.withPhyrexianPaidByLife(phyrexianLifePayments)
             ?: return ActivationPaymentOutcome.Failed("Invalid Phyrexian mana payment")
 
+        val scopedDirect = currentState.activeManaSpendingScope(action.playerId) != null
         if (manaCost != null) {
-            when (val tapped = activateManaAbilities(currentState, activation, manaPool, manaCost, xValue, paymentContext)) {
+            if (scopedDirect &&
+                !manaPool.canPay(manaCost.withXAs(xValue), paymentContext)) {
+                return ActivationPaymentOutcome.Failed("Exact mana-activation allocation is not supported in this scope")
+            }
+            val tapped = if (scopedDirect) {
+                if ((action.paymentStrategy as? PaymentStrategy.Explicit)?.manaAbilitiesToActivate?.isNotEmpty() == true) {
+                    return ActivationPaymentOutcome.Failed("Exact explicit mana allocation is not supported in this scope")
+                }
+                ManaTapOutcome.Tapped(currentState, manaPool, emptyList())
+            } else activateManaAbilities(currentState, activation, manaPool, manaCost, xValue, paymentContext)
+            when (tapped) {
                 is ManaTapOutcome.Failed -> return ActivationPaymentOutcome.Failed(tapped.reason)
                 is ManaTapOutcome.Tapped -> {
                     currentState = tapped.state
@@ -199,8 +212,9 @@ internal class ActivationCostPayer(
 
         // When using Explicit payment, mana sources were already tapped above —
         // strip the Mana portion so payAbilityCost doesn't try to deduct from the pool.
+        // Scoped payments did not tap solver sources and still owe the entire direct pool cost.
         // When convoke was applied, replace the mana portion with the reduced cost.
-        val costForPayment = if (action.paymentStrategy is PaymentStrategy.Explicit) {
+        val costForPayment = if (action.paymentStrategy is PaymentStrategy.Explicit && !scopedDirect) {
             effectiveCost.stripManaCost()
         } else if (manaCost != null && (phyrexianLifePayments.isNotEmpty() ||
                 ((ability.hasConvoke || ability.hasWaterbend) && action.alternativePayment != null && !action.alternativePayment.isEmpty))
@@ -242,8 +256,8 @@ internal class ActivationCostPayer(
 
         // Deduct X mana from the pool. ManaPool.pay() skips X symbols ("handled by caller"),
         // so we must explicitly spend the X portion here (same pattern as CastSpellHandler.autoPay).
-        // Skip for Explicit payment — sources were already tapped to cover the full cost including X.
-        if (action.paymentStrategy !is PaymentStrategy.Explicit && manaCost != null && manaCost.hasX && xValue > 0) {
+        // Unscoped Explicit payment already tapped its sources; scoped Explicit still owes X.
+        if ((action.paymentStrategy !is PaymentStrategy.Explicit || scopedDirect) && manaCost != null && manaCost.hasX && xValue > 0) {
             manaPool = spendXFromPool(manaPool, manaCost, xValue, ability.xManaRestriction, paymentContext)
         }
 
@@ -623,7 +637,7 @@ internal class ActivationCostPayer(
         val finalUnrestricted = manaPool.white + manaPool.blue + manaPool.black +
             manaPool.red + manaPool.green + manaPool.colorless
         val (poolAfterProvenance, _) = manaPool.consumeProvenance(maxOf(0, originalUnrestricted - finalUnrestricted))
-        return state.updateEntity(playerId) { c ->
+        val written = state.updateEntity(playerId) { c ->
             c.with(ManaPoolComponent(
                 white = manaPool.white,
                 blue = manaPool.blue,
@@ -639,5 +653,6 @@ internal class ActivationCostPayer(
                 snowColorless = manaPool.snowColorless
             ))
         }
+        return settleManaObligationPayment(written, playerId, poolComponent.restrictedMana, manaPool.restrictedMana)
     }
 }

@@ -15,6 +15,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.handlers.effects.mana.ManaAbilityResolutionPipeline
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.activeManaSpendingScope
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -193,6 +194,11 @@ internal class ActivatedManaAbilityResolver(
             activatedAbility = ability,
         )
 
+        // Multi-part production needs a single activation identity across every pause; the exact
+        // allocation planner will own that path. Do not record separate obligations for its parts.
+        if (currentState.activeManaSpendingScope(action.playerId) != null && (finalEffect is CompositeEffect || finalEffect is AddDynamicManaEffect)) {
+            return ExecutionResult.error(stateBeforeActivation, "Multi-part or dynamic mana production is not supported in this scope")
+        }
         val stateBeforeEffect = currentState
         val effectResult = effectExecutorRegistry.execute(currentState, finalEffect, context).toExecutionResult()
         // A pause (e.g. choosing colors for "add X mana in any combination of colors") carries
@@ -231,6 +237,12 @@ internal class ActivatedManaAbilityResolver(
         }
 
         val eventsWithMana = if (manaEvent != null) activationEvents + manaEvent else activationEvents
+
+        // Read the production event before tagging moves plain mana into per-unit entries.
+        // Tag before triggered bonuses so those bonuses don't inherit the activation obligation.
+        currentState = com.wingedsheep.engine.state.tagManaObligationProduction(
+            stateBeforeEffect, currentState, action.playerId, action.sourceId,
+        )
 
         // Aura bonuses (Elvish Guidance), global "whenever a matching source is tapped for
         // mana" statics (Lavaleaper, Badgermole Cub, Overabundance), the land-tapped event, and

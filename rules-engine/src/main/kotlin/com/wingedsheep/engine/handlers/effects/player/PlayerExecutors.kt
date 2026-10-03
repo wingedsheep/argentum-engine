@@ -75,6 +75,7 @@ class PlayerExecutors(
         HijackNextTurnExecutor(),
         ControlPlayerDuringResolutionExecutor(),
         WithManaAbilitySourcesExecutor(effectExecutor),
+        WithManaSpendingObligationsExecutor(effectExecutor),
         ControlCombatDeclarationsExecutor(),
         LockLifeGainExecutor(),
         LockLifeLossExecutor(),

@@ -235,6 +235,7 @@ val engineSerializersModule = SerializersModule {
         subclass(FinishResolvingSpellContinuation::class)
         subclass(FinishForcedPlayContinuation::class)
         subclass(ManaAbilitySourcesContinuation::class)
+        subclass(ManaSpendingObligationsContinuation::class)
         subclass(EndResolutionControlContinuation::class)
         subclass(ReplacementResolveContinuation::class)
         subclass(PerformLifeGainContinuation::class)
@@ -264,6 +265,7 @@ val engineSerializersModule = SerializersModule {
     polymorphic(AutomaticContinuation::class) {
         subclass(FinishForcedPlayContinuation::class)
         subclass(ManaAbilitySourcesContinuation::class)
+        subclass(ManaSpendingObligationsContinuation::class)
         subclass(FinishResolvingSpellContinuation::class)
         subclass(EndResolutionControlContinuation::class)
         subclass(ReplacementResolveContinuation::class)
@@ -698,6 +700,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CardsDiscardedThisTurnComponent::class)
         subclass(LandsPlayedThisTurnComponent::class)
         subclass(CardsLeftGraveyardThisTurnComponent::class)
+        subclass(PermanentsPutIntoHandFromBattlefieldThisTurnComponent::class)
         subclass(CardsPutIntoExileThisTurnComponent::class)
         subclass(CreaturesDiedThisTurnComponent::class)
         subclass(ArtifactsDiedThisTurnComponent::class)

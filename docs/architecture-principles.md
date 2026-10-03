@@ -1201,6 +1201,16 @@ not the objects consumed by activation costs. Existing floating mana and trigger
 remain separate from activation eligibility. Pipeline output propagation crosses this transparent
 scope frame without discarding collections or payment metadata.
 
+**Spending identities.** `WithManaSpendingObligations` is the foundation for per-activation
+contribution policies. It converts only an activated ability's own output into exact mana entries,
+before triggered tap bonuses; one consumed entry discharges its activation identity in every
+nested scope. Existing floating mana is never retroactively tagged. Payment-local selection memory
+prefers another outstanding activation before a sibling unit from an already-used activation.
+The immutable scope frames and entries serialize together, and empty identity fields are omitted
+from older replay shapes. Current scope payments are pool-only: aggregate solver production cannot
+prove an allocation through mana chains, so that path explicitly refuses until the allocation
+planner is implemented. A printed card must not use the foundation before that gap is closed.
+
 **Tier 3: Cost Execution (Engine).** The `CostHandler` physically pays costs — tapping permanents,
 deducting from the mana pool, sacrificing creatures, discarding cards, paying life. The `ManaPool`
 data class is immutable:

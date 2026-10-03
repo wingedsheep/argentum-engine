@@ -774,6 +774,11 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurnComponent>()
                             ?.count ?: 0
                     }
+                    TurnTracker.PERMANENTS_PUT_INTO_HAND_FROM_BATTLEFIELD -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.PermanentsPutIntoHandFromBattlefieldThisTurnComponent>()
+                            ?.count ?: 0
+                    }
                     TurnTracker.DESCENDED -> playerIds.sumOf { playerId ->
                         state.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.player.PlayerDescendedThisTurnComponent>()

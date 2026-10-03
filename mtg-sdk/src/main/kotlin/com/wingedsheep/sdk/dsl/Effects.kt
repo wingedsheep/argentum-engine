@@ -4607,6 +4607,10 @@ object Effects {
         caster = caster,
     )
 
+    /** Each activated mana ability must contribute at least one unit to the nested instruction's payments. */
+    fun WithManaSpendingObligations(effect: Effect, player: EffectTarget = EffectTarget.Controller): Effect =
+        com.wingedsheep.sdk.scripting.effects.WithManaSpendingObligationsEffect(effect, player)
+
     /** Source filters are evaluated from the affected player's perspective, at activation time. */
     fun WithManaAbilitySources(
         effect: Effect,

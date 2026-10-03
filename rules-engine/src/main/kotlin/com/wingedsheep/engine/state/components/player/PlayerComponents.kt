@@ -326,7 +326,11 @@ data class RestrictedManaEntry(
     val riders: Set<ManaSpellRider> = emptySet(),
     val expiry: ManaExpiry = ManaExpiry.END_OF_TURN,
     /** The source that produced this unit, snapshotted at production; null when untracked. */
-    val source: ManaSourceTag? = null
+    val source: ManaSourceTag? = null,
+    /** Outstanding per-activation spending identities; spending one unit discharges its siblings. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val obligationIds: Set<String> = emptySet(),
 )
 
 /**
@@ -1408,6 +1412,16 @@ data class LifeLostAmountThisTurnComponent(val amount: Int = 0) : Component
  */
 @Serializable
 data class CardsLeftGraveyardThisTurnComponent(val count: Int = 0) : Component
+
+/**
+ * Tracks the number of permanents (tokens included) put into this player's hand from the
+ * battlefield this turn, keyed on the owner. Cleared at end of turn by CleanupPhaseManager.
+ *
+ * Used for "if a permanent was put into your hand from the battlefield this turn" (Barrin,
+ * Tolarian Archmage).
+ */
+@Serializable
+data class PermanentsPutIntoHandFromBattlefieldThisTurnComponent(val count: Int = 0) : Component
 
 /**
  * Tracks the number of this player's (owned) cards that were put into exile this turn. Tokens are
