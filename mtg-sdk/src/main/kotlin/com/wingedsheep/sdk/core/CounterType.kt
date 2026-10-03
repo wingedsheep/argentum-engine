@@ -639,6 +639,9 @@ value class CounterType(val name: String) {
          */
         val TRAINING = CounterType("TRAINING")
 
+        /** Mire counter: a passive marker used by Cyclopean Tomb; no inherent rule. */
+        val MIRE = CounterType("MIRE")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -753,6 +756,7 @@ value class CounterType(val name: String) {
             DEVOTION,
             THEFT,
             TRAINING,
+            MIRE,
         )
 
         /**

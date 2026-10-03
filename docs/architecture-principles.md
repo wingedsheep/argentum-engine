@@ -589,6 +589,8 @@ pending target/mode/consent frames and stacked triggered abilities. A later visi
 receives no reprieve from an old origin, and removing or declining the last pending ability leaves
 no persistent protection. Other state-based checks ignore this context.
 
+Persistent source-object histories (`GameState.sourceObjectRecords`) associate named lists of public battlefield object references with the originating source object. Each reference carries its visit generation, so blinking either the source or a recorded object creates a distinct identity. Histories remain available after the source leaves or ceases to exist: delayed triggers carry their original `ObjectReferenceEnvironment.origin`, rather than reading bookkeeping from the current entity. Reads exclude objects that have left, ceased to exist, or phased out. Recording emits `SourceObjectsRecordedEvent`; it is internal bookkeeping and produces no separate client event or decision. Histories are retained for the game because future delayed triggers may still read them; they hold no hidden-zone information.
+
 ### 2.3 Rule 613: Base State vs. Projected State
 
 **Principle:** The engine explicitly separates stored state from derived state.

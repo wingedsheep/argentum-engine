@@ -470,6 +470,11 @@ sealed interface SuccessCriterion {
     @Serializable
     data object ControlChanged : SuccessCriterion
 
+    /** Action actually placed at least one counter, after prevention and replacement effects. */
+    @SerialName("SuccessCriterion.CountersAdded")
+    @Serializable
+    data object CountersAdded : SuccessCriterion
+
     /**
      * Action succeeded iff the gated action actually *removed a counter* — at least one
      * `CountersRemovedEvent` with a positive amount was emitted during the action. Use for the

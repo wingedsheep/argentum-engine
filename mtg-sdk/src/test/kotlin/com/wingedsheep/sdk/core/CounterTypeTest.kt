@@ -30,6 +30,7 @@ class CounterTypeTest : DescribeSpec({
             CounterType.DEVOTION.printed shouldBe "devotion"
             CounterType.THEFT.printed shouldBe "theft"
             CounterType.TRAINING.printed shouldBe "training"
+            CounterType.MIRE.printed shouldBe "mire"
         }
     }
 
@@ -98,7 +99,7 @@ class CounterTypeTest : DescribeSpec({
     private companion object {
         /** Kinds named after `object Counters` was retired, so they have no legacy constant. */
         val NEW_KINDS = setOf(CounterType.BLOODLINE, CounterType.INVITATION, CounterType.IMPOSTOR, CounterType.DEVOTION,
-            CounterType.THEFT, CounterType.TRAINING)
+            CounterType.THEFT, CounterType.TRAINING, CounterType.MIRE)
 
         /** The values of the retired `object Counters` string constants, verbatim. */
         val LEGACY_SPELLINGS: Map<CounterType, String> = mapOf(

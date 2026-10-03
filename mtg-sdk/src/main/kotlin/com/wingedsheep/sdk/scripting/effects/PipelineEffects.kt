@@ -44,6 +44,16 @@ sealed interface CardSource {
         } ?: this
     }
 
+    /** Still-current battlefield objects recorded by this source's original battlefield visit. */
+    @SerialName("SourceLinkedBattlefield")
+    @Serializable
+    data class SourceLinkedBattlefield(
+        val key: String,
+        val excludingKey: String? = null,
+    ) : CardSource {
+        override val description: String = "permanents recorded by this source"
+    }
+
     /**
      * Top N cards of a player's library.
      *
@@ -2104,4 +2114,11 @@ data class StoreCardNameEffect(
     val storeAs: String = "chosenCardName"
 ) : Effect {
     override val description: String = "Note the name of that card"
+}
+
+/** Append the current battlefield objects in a pipeline collection to a source-local history slot. */
+@SerialName("RecordSourceObjects")
+@Serializable
+data class RecordSourceObjectsEffect(val from: String, val key: String) : Effect {
+    override val description: String = "record those permanents for this source"
 }

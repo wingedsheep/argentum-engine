@@ -2366,3 +2366,12 @@ data class RemovedFromCombatEvent(val entityId: EntityId) : GameEvent
 @Serializable
 @SerialName("DamagePreventionShieldCreatedEvent")
 data class DamagePreventionShieldCreatedEvent(val entityId: EntityId, val shieldId: EntityId) : GameEvent
+
+/** Public battlefield identities appended to a source visit's history. Internal bookkeeping signal. */
+@Serializable
+@SerialName("SourceObjectsRecordedEvent")
+data class SourceObjectsRecordedEvent(
+    val sourceId: EntityId,
+    val key: String,
+    val objectIds: List<EntityId>,
+) : GameEvent

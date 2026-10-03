@@ -241,6 +241,10 @@ class GatherCardsExecutor(
                 }
             }
 
+            is CardSource.SourceLinkedBattlefield -> {
+                SourceObjectRecords.gather(state, context, source.key, source.excludingKey)
+            }
+
             is CardSource.FromLinkedExile -> {
                 val sourceId = context.sourceId
                     ?: return EffectResult.error(state, "No source entity for FromLinkedExile")

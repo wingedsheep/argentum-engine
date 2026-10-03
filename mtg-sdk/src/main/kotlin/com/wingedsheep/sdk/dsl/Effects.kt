@@ -1076,6 +1076,12 @@ object Effects {
     fun ExileLinkedToSource(target: EffectTarget): Effect =
         MoveToZoneEffect(target, Zone.EXILE, linkToSource = true)
 
+    /** Append current battlefield identities from [from] to this source visit's named history. */
+    fun RecordSourceObjects(from: String, key: String): Effect =
+        com.wingedsheep.sdk.scripting.effects.RecordSourceObjectsEffect(from, key)
+
+    fun RecordSourceObjects(from: CollectionSlot, key: String): Effect = RecordSourceObjects(from.key, key)
+
     /**
      * Record the card selected into the pipeline collection [from] as the source's "last chosen
      * card" (stamps `ChosenLinkedExileComponent`). Pair after a [SelectFromCollection] over the
