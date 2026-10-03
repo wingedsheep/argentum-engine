@@ -72,8 +72,10 @@ class ScurrilousSentryScenarioTest : FunSpec({
 
         d.passPriorityUntil(Step.DECLARE_ATTACKERS)
         d.declareAttackers(you, listOf(sentry), d.player2)
+        val handBefore = d.getHandSize(you)
         d.bothPass() // resolve the attack connive trigger
 
+        d.getHandSize(you) shouldBe handBefore + 1 // connive draws before it discards
         d.discard(land)
         d.getGraveyard(you).contains(land) shouldBe true
         d.plusCounters(sentry) shouldBe 0

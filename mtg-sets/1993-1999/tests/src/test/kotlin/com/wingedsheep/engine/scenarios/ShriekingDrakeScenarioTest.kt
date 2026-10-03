@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -45,9 +46,10 @@ class ShriekingDrakeScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Shrieking Drake").error shouldBe null
                 game.resolveStack()
 
-                game.hasPendingDecision() shouldBe true
+                val decision = game.getPendingDecision() as SelectCardsDecision
                 val bears = game.findPermanent("Grizzly Bears")
                 bears shouldNotBe null
+                decision.options.contains(game.findPermanent("Hill Giant")!!) shouldBe false
                 game.selectCards(listOf(bears!!)).error shouldBe null
 
                 game.isInHand(1, "Grizzly Bears") shouldBe true

@@ -42,9 +42,15 @@ class SpawnGangCommanderScenarioTest : ScenarioTestBase() {
                     .build()
 
                 game.castSpell(1, "Spawn-Gang Commander").error shouldBe null
-                game.resolveStack()
+                game.state.stack shouldHaveSize 2 // the cast trigger sits above the creature spell
 
+                // Resolve only the cast trigger: the Spawn arrive while the Commander is still a spell.
+                game.passPriority()
+                game.passPriority()
                 game.findPermanents("Eldrazi Spawn") shouldHaveSize 3
+                game.isOnBattlefield("Spawn-Gang Commander") shouldBe false
+
+                game.resolveStack()
                 game.isOnBattlefield("Spawn-Gang Commander") shouldBe true
             }
 
