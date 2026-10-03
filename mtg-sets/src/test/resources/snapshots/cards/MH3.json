@@ -5496,6 +5496,104 @@
     ]
 }
 
+// Expel the Unworthy
+{
+    "name": "Expel the Unworthy",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Kicker {2}{W} (You may pay an additional {2}{W} as you cast this spell.)\nChoose target creature with mana value 3 or less. If this spell was kicked, instead choose target creature. Exile the chosen creature, then its controller gains life equal to its mana value.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "ManaValue"
+                    },
+                    "target": "TargetController"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature mv<=3"
+                },
+                "id": "t0"
+            }
+        ],
+        "kickerTargetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t1"
+            }
+        ],
+        "kickerSpellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "numericProperty": "ManaValue"
+                    },
+                    "target": "TargetController"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Exile"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "artist": "Danny Schwartz",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f68baee-f503-407d-931f-2a550470a55f.jpg?1783911302",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Use the creature's mana value as it last existed on the battlefield to determine how much life its controller gains."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Faithful Watchdog
 {
     "name": "Faithful Watchdog",
@@ -6923,6 +7021,78 @@
     ]
 }
 
+// Gravedig
+{
+    "name": "Gravedig",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Target player creates a 2/2 black Zombie creature token.\n• Return target creature card from your graveyard to your hand.\nEntwine {2} (Choose both if you pay the entwine cost.)",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Zombie"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/9/0/909387e1-dc33-446c-825f-07c915ad73ee.jpg?1783911112",
+                        "controller": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target player creates a 2/2 black Zombie creature token"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Return target creature card from your graveyard to your hand"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1,
+            "additionalManaCostPerExtraMode": "{2}"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "Drew Baker",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2b054a9-7565-4fdd-b6a5-2786c5bb5b7e.jpg?1783911278"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Grim Servant
 {
     "name": "Grim Servant",
@@ -7948,6 +8118,86 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Inspired Inventor
+{
+    "name": "Inspired Inventor",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "When this creature enters, choose one —\n• You get {E}{E}{E} (three energy counters).\n• Put a +1/+1 counter on target creature.\n• Create a 1/1 colorless Servo artifact creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Inspired Inventor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "ENERGY",
+                                "count": 3,
+                                "target": "Controller"
+                            },
+                            "description": "You get three energy counters"
+                        },
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Put a +1/+1 counter on target creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [],
+                                "creatureTypes": [
+                                    "Servo"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/2/3/23165814-3eb8-4d94-b9c8-ecc798afe7a0.jpg?1783911109",
+                                "artifactToken": true
+                            },
+                            "description": "Create a 1/1 colorless Servo artifact creature token"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Ryan Valle",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/9143fc7c-f4eb-4f06-97b9-f912237a055f.jpg?1783911300"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -10889,6 +11139,131 @@
     "layout": "MODAL_DFC"
 }
 
+// Planar Genesis
+{
+    "name": "Planar Genesis",
+    "manaCost": "{G}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Look at the top four cards of your library. You may put a land card from among them onto the battlefield tapped. If you don't, put a card from among them into your hand. Put the rest on the bottom of your library in a random order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "land",
+                    "storeSelected": "selected1",
+                    "prompt": "You may put a land card onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped",
+                    "remainderLabel": "Don't put a land onto the battlefield",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "collectionFilter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "selected1"
+                    },
+                    "storeMatching": "matching3"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "selected1",
+                    "ifNotEmpty": {
+                        "type": "MoveCollection",
+                        "from": "matching3",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Library",
+                            "placement": "Bottom"
+                        },
+                        "order": "Random"
+                    },
+                    "ifEmpty": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "matching3",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected6",
+                                "storeRemainder": "remainder6",
+                                "prompt": "Put a card into your hand",
+                                "selectedLabel": "Put into your hand",
+                                "remainderLabel": "Put on the bottom in a random order"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected6",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "remainder6",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Bottom"
+                                },
+                                "order": "Random"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "UNCOMMON",
+        "artist": "Liiga Smilshkalne",
+        "flavorText": "Out of nothing, something was born.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7fc9a10b-c9f9-4129-a671-ced0917ce78b.jpg?1783911246"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Primal Prayers
 {
     "name": "Primal Prayers",
@@ -11134,6 +11509,89 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Pyretic Rebirth
+{
+    "name": "Pyretic Rebirth",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Return target artifact or creature card from your graveyard to your hand. Pyretic Rebirth deals damage equal to that card's mana value to up to one target creature or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "StoreNumber",
+                    "name": "number0",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "ManaValue"
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "number0"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "optional": true,
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "UNCOMMON",
+        "artist": "Richard Kane Ferguson",
+        "flavorText": "Death has never kept Darigaaz down for long.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/5968f641-48b5-4b97-8072-ddd8073cd4d7.jpg?1783911246",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If the target card in your graveyard is an illegal target when Pyretic Rebirth tries to resolve, no damage will be dealt."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If the target creature or planeswalker is an illegal target when Pyretic Rebirth tries to resolve, you'll still return the target artifact or creature card from your graveyard to your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -11409,6 +11867,115 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Refurbished Familiar
+{
+    "name": "Refurbished Familiar",
+    "manaCost": "{3}{B}",
+    "typeLine": "Artifact Creature — Zombie Rat",
+    "oracleText": "Affinity for artifacts (This spell costs {1} less to cast for each artifact you control.)\nFlying\nWhen this creature enters, each opponent discards a card. For each opponent who can't, you draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "AFFINITY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Affinity",
+            "forType": "ARTIFACT"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Refurbished Familiar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "CountPlayersWith",
+                                "scope": "EachOpponent",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Hand"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, each opponent discards a card. For each opponent who can't, you draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Steve Ellis",
+        "flavorText": "When her beloved pet died, the artificer turned to necromancy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b338e078-629c-4cac-bd1d-e1f0a132728d.jpg?1783911277"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -13091,6 +13658,94 @@
     ]
 }
 
+// Skoa, Embermage
+{
+    "name": "Skoa, Embermage",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Legendary Creature — Goblin Wizard",
+    "oracleText": "When Skoa enters, it deals 4 damage to any target.\nGrandeur — Discard another card named Skoa, Embermage, Sacrifice two Mountains: Skoa deals 4 damage to any target.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skoa, Embermage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": "Self"
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Skoa, Embermage:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "filter": "name:Skoa, Embermage"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land Mountain",
+                                "count": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "damageSource": "Self"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Kevin Sidharta",
+        "flavorText": "\"I need kindling. You'll do nicely.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf34b0f8-a68a-428f-9f2c-9556229367ec.jpg?1783911267"
+    }
+}
+
 // Smelted Chargebug
 {
     "name": "Smelted Chargebug",
@@ -14335,6 +14990,85 @@
     "layout": "MODAL_DFC"
 }
 
+// Temperamental Oozewagg
+{
+    "name": "Temperamental Oozewagg",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Ooze Brushwagg",
+    "oracleText": "{2}{G}: Adapt 2. (If this creature has no +1/+1 counters on it, put two +1/+1 counters on it.)\nModified creatures you control have trample. (Equipment, Auras you control, and counters are modifications.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Temperamental Oozewagg:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        {
+                                            "type": "HasCounter",
+                                            "counterType": "PLUS_ONE_PLUS_ONE"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": "Self"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsModified"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "artist": "Pete Venters",
+        "flavorText": "Its position on the food chain causes great confusion in everyone from hunters to other monsters.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/6625df2e-7046-411a-ae86-c46ac0953a0b.jpg?1783911256"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Tempest Harvester
 {
     "name": "Tempest Harvester",
@@ -14433,6 +15167,126 @@
         "flavorText": "\"The Golden City was a trinket compared to the power that lies beneath the waves.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/6/2/62a3fc3f-f5cd-45f1-a3d5-d90c9dd4f6c7.jpg?1783911285"
     }
+}
+
+// Territory Culler
+{
+    "name": "Territory Culler",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nReach\nLandfall — Whenever a land you control enters, look at the top card of your library. If it's a creature card, you may reveal it and put it into your hand. If you don't put the card into your hand, you may put it into your graveyard.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEVOID",
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Territory Culler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Reveal the creature card and put it into your hand?",
+                            "selectedLabel": "Reveal and put into your hand",
+                            "remainderLabel": "Leave it"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "storeRemainder": "remainder3",
+                            "prompt": "Put the card into your graveyard?",
+                            "selectedLabel": "Put into your graveyard",
+                            "remainderLabel": "Leave on top of your library"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, look at the top card of your library. If it's a creature card, you may reveal it and put it into your hand. If you don't put the card into your hand, you may put it into your graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "rarity": "UNCOMMON",
+        "artist": "Tiffany Turrill",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c249aa6-c65c-4572-8e2e-c3899638ecce.jpg?1783911255",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "You don't have to reveal the card even if it's a creature card. You may leave it on top of your library or put it into your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // The Necrobloom
@@ -16097,6 +16951,132 @@
     }
 }
 
+// Utter Insignificance
+{
+    "name": "Utter Insignificance",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nEnchanted creature loses all abilities and has base power and toughness 1/1.\n{2}{C}: Exile enchanted creature.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Utter Insignificance:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{C}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "EnchantedCreature",
+                    "destination": "Exile"
+                },
+                "descriptionOverride": "{2}{C}: Exile enchanted creature."
+            }
+        ],
+        "staticAbilities": [
+            "LoseAllAbilities",
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 1,
+                "toughness": 1
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Lius Lasahido",
+        "flavorText": "\"I used to think my life was meaningless. Now I know for certain.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/3050ac06-4c16-4155-a97f-f6bc92709ee4.jpg?1783911286",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If the enchanted creature gains an ability after Utter Insignificance becomes attached to it, it will keep that ability."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Utter Insignificance overwrites all previous effects that set the creature's base power and toughness to specific values. Any power- or toughness-setting effects that start to apply afterward will overwrite this effect."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Effects that modify the creature's power and/or toughness, such as the effect of Wing It, will apply to the creature no matter when they started to take effect. The same is true for counters that change its power and/or toughness and effects that switch its power and toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Vexing Bauble
+{
+    "name": "Vexing Bauble",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a player casts a spell, if no mana was spent to cast it, counter that spell.\n{1}, {T}, Sacrifice this artifact: Draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vexing Bauble:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Counter",
+                    "targetSource": "CounterTargetSource.TriggeringEntity"
+                },
+                "interveningIf": "TriggeringSpellCastWithoutPayingMana"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Vexing Bauble:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "UNCOMMON",
+        "artist": "Tony Foti",
+        "flavorText": "No one knew who invented it. No one knew its purpose. All anyone knew was they didn't like being anywhere near it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29f11089-658f-42e6-aeb0-09b512ad2479.jpg?1783911242"
+    }
+}
+
 // Voidpouncer
 {
     "name": "Voidpouncer",
@@ -16568,6 +17548,242 @@
         "BLACK"
     ],
     "layout": "MODAL_DFC"
+}
+
+// White Orchid Phantom
+{
+    "name": "White Orchid Phantom",
+    "manaCost": "{W}{W}",
+    "typeLine": "Creature — Spirit Knight",
+    "oracleText": "Flying, first strike\nWhen this creature enters, destroy up to one target nonbasic land. Its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "White Orchid Phantom:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "the destroyed land"
+                                }
+                            },
+                            "body": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Library",
+                                                "filter": "basicland"
+                                            },
+                                            "storeAs": "searchable",
+                                            "search": true
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "searchable",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "found"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "found",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Battlefield",
+                                                "placement": "Tapped"
+                                            }
+                                        },
+                                        "ShuffleLibrary",
+                                        "EmitLibrarySearchedEvent"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsLand",
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsBasicLand"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "flavorText": "His oath required no service beyond death, but his honor demanded it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f8d885c-5b57-457f-a658-fd0b79cf98cc.jpg?1783911295",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If the target land isn't destroyed by White Orchid Phantom's last ability (perhaps because the land has indestructible), its controller still gets to search for a basic land card."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If the target land is an illegal target when White Orchid Phantom's last ability tries to resolve, it won't resolve and none of its effects will happen. That land's controller won't get to search for a basic land card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Wight of the Reliquary
+{
+    "name": "Wight of the Reliquary",
+    "manaCost": "{B}{G}",
+    "typeLine": "Creature — Zombie Knight",
+    "oracleText": "Vigilance\nThis creature gets +1/+1 for each creature card in your graveyard.\n{T}, Sacrifice another creature: Search your library for a land card, put it onto the battlefield tapped, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Wight of the Reliquary:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "land"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "descriptionOverride": "{T}, Sacrifice another creature: Search your library for a land card, put it onto the battlefield tapped, then shuffle."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                },
+                "toughnessBonus": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "RARE",
+        "artist": "Scott Murphy",
+        "flavorText": "Her new demonic overlords prized her knowledge of Bant's landscape.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a15570c0-4210-4959-8584-987ec85f8283.jpg?1783911244"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
 }
 
 // Wing It

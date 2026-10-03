@@ -228,6 +228,95 @@
     "colorIdentityOverride": []
 }
 
+// Reef Worm
+{
+    "name": "Reef Worm",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Worm",
+    "oracleText": "When this creature dies, create a 3/3 blue Fish creature token with \"When this token dies, create a 6/6 blue Whale creature token with 'When this token dies, create a 9/9 blue Kraken creature token.'\"",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reef Worm:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Fish"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f3cea7c-d092-410d-8c32-af0f4c8bc878.jpg?1783938798",
+                    "triggeredAbilities": [
+                        {
+                            "id": "Reef Worm:2",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "from": "Battlefield",
+                                "to": "Graveyard"
+                            },
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 6,
+                                "toughness": 6,
+                                "colors": [
+                                    "BLUE"
+                                ],
+                                "creatureTypes": [
+                                    "Whale"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/c/c/ccd172b9-377a-4dbf-a11a-e4985da62c72.jpg?1783938798",
+                                "triggeredAbilities": [
+                                    {
+                                        "id": "Reef Worm:1",
+                                        "trigger": {
+                                            "type": "ZoneChangeEvent",
+                                            "from": "Battlefield",
+                                            "to": "Graveyard"
+                                        },
+                                        "effect": {
+                                            "type": "CreateToken",
+                                            "power": 9,
+                                            "toughness": 9,
+                                            "colors": [
+                                                "BLUE"
+                                            ],
+                                            "creatureTypes": [
+                                                "Kraken"
+                                            ],
+                                            "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4ed9fe6-50cc-45e2-aeaa-df6e34eb7fe4.jpg?1783938798"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b35e03a9-73e7-4577-a544-d39470678c76.jpg?1783938871"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Unstable Obelisk
 {
     "name": "Unstable Obelisk",
