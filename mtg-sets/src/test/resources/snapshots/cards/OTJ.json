@@ -11283,10 +11283,7 @@
                     "player": "You"
                 },
                 "binding": "ANY",
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                },
+                "effect": "Investigate",
                 "descriptionOverride": "Whenever you cast your second spell each turn, investigate."
             }
         ]

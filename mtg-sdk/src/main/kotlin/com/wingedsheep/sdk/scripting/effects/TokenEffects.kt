@@ -232,6 +232,45 @@ data class CreatePredefinedTokenEffect(
 }
 
 /**
+ * Investigate (keyword action, CR 701.16a): "create a Clue token", performed [count] times.
+ *
+ * A separate effect from `CreatePredefinedTokenEffect("Clue")` because investigating is an *event*
+ * the printed text can watch — "whenever you investigate" (Erdwal Illuminator) — while a card that
+ * merely says "create a Clue token" has not investigated. Each repetition is its own investigate,
+ * so "investigate twice" fires a "whenever you investigate" payoff twice; the action still happened
+ * when a replacement changed or removed the Clue it would have created.
+ *
+ * The Clues are created and published under [CREATED_TOKENS] exactly as the predefined-token
+ * effect does, including token-count replacements and token substitutions.
+ *
+ * @property count How many times to investigate, evaluated once at resolution; zero investigates
+ *   not at all
+ * @property controller Who investigates and controls the Clues (null = the effect's controller)
+ */
+@SerialName("Investigate")
+@Serializable
+data class InvestigateEffect(
+    val count: DynamicAmount = DynamicAmount.Fixed(1),
+    val controller: EffectTarget? = null
+) : Effect {
+    override val description: String = buildString {
+        if (controller != null) append("${controller.description} ")
+        append("Investigate")
+        when (count) {
+            DynamicAmount.Fixed(1) -> {}
+            DynamicAmount.Fixed(2) -> append(" twice")
+            is DynamicAmount.Fixed -> append(" ${count.amount} times")
+            else -> append(" X times")
+        }
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newCount = count.applyTextReplacement(replacer)
+        return if (newCount !== count) copy(count = newCount) else this
+    }
+}
+
+/**
  * Create an Aura Role token of the specified type attached to a target creature.
  *
  * Role tokens are Enchantment — Aura Role tokens defined in PredefinedTokens.

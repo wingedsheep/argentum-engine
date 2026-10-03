@@ -188,6 +188,7 @@ import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
+import com.wingedsheep.sdk.scripting.effects.InvestigateEffect
 import com.wingedsheep.sdk.scripting.effects.CreateRoleTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CounterAllOnStackEffect
 import com.wingedsheep.sdk.scripting.effects.CounterCondition
@@ -3385,14 +3386,16 @@ object Effects {
         CreatePredefinedTokenEffect("Clue", controller = controller, dynamicCount = count)
 
     /**
-     * Investigate (keyword action, CR 701.16): create [count] Clue tokens. Synonymous with
-     * [CreateClue]; named after the keyword action so card text "investigate" maps directly.
+     * Investigate (keyword action, CR 701.16a): create a Clue token, [count] times. Unlike
+     * [CreateClue] this *is* the keyword action, so "whenever you investigate" payoffs see it —
+     * use it exactly when the card text says "investigate", and [CreateClue] when it says "create
+     * a Clue token".
      *
-     * @param count Number of Clue tokens to create (e.g. "investigate twice" → 2)
-     * @param controller Who controls the tokens (null = spell controller)
+     * @param count Number of times to investigate (e.g. "investigate twice" → 2)
+     * @param controller Who investigates and controls the Clues (null = spell controller)
      */
     fun Investigate(count: Int = 1, controller: EffectTarget? = null): Effect =
-        CreatePredefinedTokenEffect("Clue", count, controller)
+        InvestigateEffect(DynamicAmount.Fixed(count), controller)
 
     /**
      * Investigate a dynamic number of times — "investigate once for each …" (Wojek Investigator),
@@ -3400,7 +3403,7 @@ object Effects {
      * all, which is what the wording means when nothing qualifies.
      */
     fun Investigate(count: DynamicAmount, controller: EffectTarget? = null): Effect =
-        CreatePredefinedTokenEffect("Clue", controller = controller, dynamicCount = count)
+        InvestigateEffect(count, controller)
 
     /**
      * Create Lander artifact tokens.

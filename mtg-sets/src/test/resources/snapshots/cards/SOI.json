@@ -1936,6 +1936,45 @@
     "colorIdentityOverride": []
 }
 
+// Erdwal Illuminator
+{
+    "name": "Erdwal Illuminator",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nWhenever you investigate for the first time each turn, investigate an additional time.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Erdwal Illuminator:1",
+                "trigger": {
+                    "type": "InvestigatedEvent",
+                    "firstTimeEachTurn": true
+                },
+                "binding": "ANY",
+                "effect": "Investigate",
+                "descriptionOverride": "Whenever you investigate for the first time each turn, investigate an additional time."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "UNCOMMON",
+        "artist": "Seb McKinnon",
+        "flavorText": "\"When all else fails, follow the geist's lantern.\"\n—Vallon, Thraben inspector",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63df99f9-4f85-4c76-8d76-9075c9ef2b86.jpg?1783937800"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Essence Flux
 {
     "name": "Essence Flux",
@@ -3530,10 +3569,7 @@
                         "CostTap"
                     ]
                 },
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                }
+                "effect": "Investigate"
             }
         ]
     },
@@ -5906,10 +5942,7 @@
                     "step": "UPKEEP"
                 },
                 "binding": "ANY",
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                }
+                "effect": "Investigate"
             }
         ],
         "activatedAbilities": [
@@ -6261,10 +6294,7 @@
                     "type": "ZoneChangeEvent",
                     "to": "Battlefield"
                 },
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                }
+                "effect": "Investigate"
             }
         ]
     },
@@ -6299,10 +6329,7 @@
                     "to": "Battlefield"
                 },
                 "binding": "ANY",
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                },
+                "effect": "Investigate",
                 "descriptionOverride": "Landfall — Whenever a land you control enters, investigate."
             },
             {
@@ -6810,10 +6837,7 @@
                     "to": "Graveyard"
                 },
                 "binding": "ANY",
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Clue"
-                },
+                "effect": "Investigate",
                 "descriptionOverride": "Whenever a nontoken creature you control dies, investigate."
             },
             {

@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
@@ -161,17 +162,17 @@ class TokensTest : StringSpec({
         Grammar.abilityLine.printLine(unknown) shouldBe null
     }
 
-    // CR 701.16a: investigating *is* creating a Clue, so the keyword action reads into the Clue row's
-    // model and prints back as the noun form — one model, one printed form.
-    "investigate is an alternate spelling of creating a Clue" {
+    // CR 701.16a: investigating creates a Clue, but it is its own model — "whenever you
+    // investigate" watches the action, which a plain "create a Clue token" is not.
+    "investigate is its own model, distinct from creating a Clue" {
         fragment("Investigate.").script.spellEffect shouldBe Effects.Investigate()
-        fragment("Investigate.").script.spellEffect shouldBe Effects.CreateClue()
+        fragment("Investigate.").script.spellEffect shouldNotBe Effects.CreateClue()
         fragment("When ~ enters, investigate twice.").script.triggeredAbilities.single().effect shouldBe
             Effects.Investigate(2)
 
-        Grammar.abilityLine.printLine(fragment("Investigate.")) shouldBe "Create a Clue token."
-        Grammar.abilityLine.printLine(fragment("When ~ enters, investigate twice.")) shouldBe
-            "When ~ enters, create two Clue tokens."
+        roundTrips("Investigate.")
+        roundTrips("When ~ enters, investigate twice.")
+        roundTrips("Create a Clue token.")
     }
 
     "the token clause is the same clause inside a trigger" {

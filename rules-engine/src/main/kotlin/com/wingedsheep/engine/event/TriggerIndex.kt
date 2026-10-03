@@ -83,6 +83,7 @@ enum class TriggerCategory {
     DISCOVERED,
     EVIDENCE_COLLECTED,
     FORAGED,
+    INVESTIGATED,
     CASE_SOLVED,
     EXPLORED,
     CONNIVED,
@@ -306,6 +307,7 @@ class TriggerIndex(
                 is SdkGameEvent.DiscoveredEvent -> DISCOVERED_LIST
                 is SdkGameEvent.EvidenceCollectedEvent -> EVIDENCE_COLLECTED_LIST
                 is SdkGameEvent.ForagedEvent -> FORAGED_LIST
+                is SdkGameEvent.InvestigatedEvent -> INVESTIGATED_LIST
                 is SdkGameEvent.CaseSolvedEvent -> CASE_SOLVED_LIST
                 is SdkGameEvent.ExploredEvent -> EXPLORED_LIST
                 is SdkGameEvent.ConnivedEvent -> CONNIVED_LIST
@@ -402,6 +404,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.DiscoveredEvent -> DISCOVERED_LIST
             is com.wingedsheep.engine.core.EvidenceCollectedEvent -> EVIDENCE_COLLECTED_LIST
             is com.wingedsheep.engine.core.ForagedEvent -> FORAGED_LIST
+            is com.wingedsheep.engine.core.InvestigatedEvent -> INVESTIGATED_LIST
             is com.wingedsheep.engine.core.CaseSolvedEvent -> CASE_SOLVED_LIST
             is com.wingedsheep.engine.core.PermanentExploredEvent -> EXPLORED_LIST
             is com.wingedsheep.engine.core.PermanentConnivedEvent -> CONNIVED_LIST
@@ -542,6 +545,7 @@ class TriggerIndex(
         private val DISCOVERED_LIST = listOf(TriggerCategory.DISCOVERED)
         private val EVIDENCE_COLLECTED_LIST = listOf(TriggerCategory.EVIDENCE_COLLECTED)
         private val FORAGED_LIST = listOf(TriggerCategory.FORAGED)
+        private val INVESTIGATED_LIST = listOf(TriggerCategory.INVESTIGATED)
         private val CASE_SOLVED_LIST = listOf(TriggerCategory.CASE_SOLVED)
         private val SCRIED_OR_SURVEILED_LIST = listOf(TriggerCategory.SCRIED, TriggerCategory.SURVEILED)
         private val EXPLORED_LIST = listOf(TriggerCategory.EXPLORED)

@@ -384,6 +384,10 @@ data class TriggerContext(
                 is com.wingedsheep.engine.core.ForagedEvent -> TriggerContext(
                     triggeringPlayerId = event.playerId
                 )
+                // Investigate (CR 701.16a): the investigating player is the triggering player.
+                is com.wingedsheep.engine.core.InvestigatedEvent -> TriggerContext(
+                    triggeringPlayerId = event.playerId
+                )
                 // Solve a Case (CR 719.3a): the solving player is the triggering player, and the
                 // solved Case itself is the triggering entity — so a payoff can name either.
                 is com.wingedsheep.engine.core.CaseSolvedEvent -> TriggerContext(

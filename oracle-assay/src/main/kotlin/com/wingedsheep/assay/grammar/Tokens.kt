@@ -399,15 +399,6 @@ object Tokens {
      * **The token noun is a proper noun.** It stands mid-sentence where [Subtype] words also do, and
      * `SentenceCase` has already lowercased the line's first letter, so the templates are written
      * exactly as printed and the capital is real rather than restored.
-     *
-     * ### A collision this file is deliberately one half of
-     *
-     * "Investigate" (CR 701.16a) *is* "create a Clue token" — `Effects.Investigate` and
-     * `Effects.CreateClue` are the same call — so the two printed forms denote one model. Only the
-     * noun form is registered here. The keyword-action spelling declines, which names the gap; what
-     * it must never become is a second canonical rule, because then one model would have two printed
-     * forms and nothing would decide which the printer emits. So "investigate" is an `alternate`
-     * ([investigate]).
      */
     /**
      * One predefined token noun, and the two facades the SDK gives it.
@@ -462,20 +453,19 @@ object Tokens {
     }
 
     /**
-     * "Investigate." / "investigate twice." — the keyword action (CR 701.16a) that *is* "create a
-     * Clue token". `Effects.Investigate` and `Effects.CreateClue` build the same
-     * `CreatePredefinedTokenEffect`, so these are [alternate]s of the Clue rows: they read into that
-     * one model and print back as the noun form, a `VARIANT`. Making them canonical would give one
-     * model two printed forms with nothing to choose between them.
+     * "Investigate." / "investigate twice." — the keyword action (CR 701.16a). Investigating
+     * creates a Clue, but it is its own model (`InvestigateEffect`) rather than the Clue row's:
+     * "whenever you investigate" (Erdwal Illuminator) watches the action, and a card that only
+     * says "create a Clue token" has not investigated. So both spellings are canonical, each for
+     * its own model.
      */
     private val investigate: List<Phrase<CardScript>> =
         listOf("investigate" to 1, "investigate twice" to 2).map { (text, times) ->
-            alternate(
-                phrase<CardScript>(text, name = text) {
-                    build { CardScript(spellEffect = Effects.Investigate(times)) }
-                    canonical = false
-                }
-            )
+            val script = CardScript(spellEffect = Effects.Investigate(times))
+            phrase<CardScript>(text, name = text) {
+                build { script }
+                match { if (it == script) bind() else null }
+            }
         }
 
     /** One token clause, for the sentences that wrap it — see [Granted]. */

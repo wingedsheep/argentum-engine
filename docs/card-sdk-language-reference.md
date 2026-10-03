@@ -1192,6 +1192,7 @@ serialized shape; the facade for each is:
 | `CounterEffect` | `Effects.CounterSpell()` / `CounterUnlessPays("{N}")` / `CounterTriggeringSpell(destination)` |
 | `CreateDelayedTriggerEffect` | `Effects.CreateDelayedTrigger` |
 | `CreatePredefinedTokenEffect` | `Effects.CreatePredefinedToken(type, count)` (or `CreateTreasure` / `CreateFood` / `CreateMapToken`) |
+| `InvestigateEffect` | `Effects.Investigate(count, controller?)` |
 | `CreateTokenCopyOfChosenPermanentEffect` | `Effects.CreateTokenCopyOfChosenPermanent` |
 | `CreateTokenCopyOfSourceEffect` | `Effects.CreateTokenCopyOfSelf` |
 | `CreateTokenCopyOfTargetEffect` | `Effects.CreateTokenCopyOfTarget` |
@@ -2449,13 +2450,17 @@ vocabulary; this primitive does not provide Word of Command's full mana restrict
   (White Sun's Twilight's X). A predefined token gets its definition's printed keyword components the way
   a card does, so the Mite's toxic 1 is real toxic, not a label.
 - `CreateBlood(count?, controller?)` — Blood tokens (artifact with "{1}, {T}, Discard a card, Sacrifice this artifact: Draw a card."). `count` accepts an `Int` or a `DynamicAmount` (the latter evaluated at resolution, e.g. `CreateBlood(DynamicAmount.EntityProperty(EffectTarget.ContextTarget(0), EntityNumericProperty.ExcessMarkedDamage))` for Lacerate Flesh's "create a number of Blood tokens equal to the amount of excess damage dealt").
-- `CreateClue(count?, controller?)` / `Investigate(count?, controller?)` — Clue tokens (artifact with
-  "{2}, Sacrifice this token: Draw a card."). `Investigate` is the keyword-action spelling (CR 701.36) so
-  card text "investigate" maps directly; both create the same predefined `Clue` token — Malcolm, the Eyes.
-  Both also take a `DynamicAmount` in place of the `Int` for "investigate once for each …" wording
-  whose repetition count is only known at resolution (Wojek Investigator:
-  `Investigate(DynamicAmount.CountPlayersWith(EachOpponent, …))`). A count of zero investigates not at
-  all, which is what the wording means when nothing qualifies.
+- `CreateClue(count?, controller?)` — Clue tokens (artifact with "{2}, Sacrifice this token: Draw a
+  card."), for card text that says "create a Clue token" (Azula, On the Hunt).
+- `Investigate(count?, controller?)` — the keyword action (CR 701.16a), for card text that says
+  "investigate" (Thraben Inspector, Malcolm, the Eyes). Builds `InvestigateEffect`, which creates the
+  same predefined `Clue` token **and** emits one investigated event per investigate, so
+  `Triggers.you.investigates()` sees it; `CreateClue` never does. `controller` is the player who
+  investigates and gets the Clue ("target player investigates", Panther Pounce). `count` also takes a
+  `DynamicAmount` for "investigate once for each …" wording whose repetition count is only known at
+  resolution (Wojek Investigator: `Investigate(DynamicAmount.CountPlayersWith(EachOpponent, …))`),
+  evaluated once. A count of zero investigates not at all, which is what the wording means when
+  nothing qualifies.
 - `CreateShard(count?, controller?)` — Shard tokens (the Clue token's enchantment cousin: colorless
   "Enchantment — Shard" with "{2}, Sacrifice this enchantment: Scry 1, then draw a card."). Niko, Light of Hope.
 - `CreateLander(count?, controller?)` — Lander land tokens.
@@ -6359,7 +6364,7 @@ put on the player by anyone: "whenever you get one or more {E}", `CountersPlaced
 `losesLife()`, `losesGame()`, `sacrifices(filter, batch?)`,
 `sacrificesAnother(filter)`, `taps(filter, batch?)`, `tapsLandForMana(land?)`, `createsToken(token?)`,
 `exploits(nontoken?)`, `commitsCrime()`, `givesAGift()`, `scries()`, `surveils()`, `scriesOrSurveils()`, `proliferates()`,
-`discovers()`, `collectsEvidence()`, `forages()`, `solvesACase()`, `clashes(andWins?)`,
+`discovers()`, `collectsEvidence()`, `forages()`, `investigates(firstTimeEachTurn?)`, `solvesACase()`, `clashes(andWins?)`,
 `isTemptedByTheRing(bearerChosen?)`, `bends(types)`, `manifestsDread()`, `expends(n)`,
 `fullyUnlocksARoom()`, `sagaChapterResolves(finalOnly?)`.
 
@@ -7427,6 +7432,13 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   cast-time additional cost — because every path emits `EventPattern.ForagedEvent` (see § Forage).
   Never fires for a declined forage or one no mode was feasible for. The forager is whoever paid,
   so a forage an opponent pays resolves "you" as that opponent. Corpseberry Cultivator.
+- `Triggers.you.investigates(firstTimeEachTurn?)` — investigate (CR 701.16a,
+  `EventPattern.InvestigatedEvent`). Fires once per investigate performed by `Effects.Investigate`,
+  so "investigate twice" fires it twice; never for a plain `Effects.CreateClue` ("create a Clue
+  token" is not investigating). Still fires when a replacement changed or removed the Clue.
+  `firstTimeEachTurn = true` matches only the player's first investigate this turn (Erdwal
+  Illuminator: "whenever you investigate for the first time each turn, investigate an additional
+  time" — the extra investigate is the turn's second, so it can't retrigger).
 - `Triggers.self.becomesPlotted()` — OTJ Plot (CR 718) — "when this card becomes plotted". SELF binding; fires for the
   very card that was plotted while it sits face up in exile (Aloe Alchemist). Detected by
   `TriggerDetector.detectPlottedCardTriggers` off the plot special action's `CardPlottedEvent`, since

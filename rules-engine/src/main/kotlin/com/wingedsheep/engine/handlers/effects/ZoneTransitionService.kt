@@ -458,6 +458,10 @@ class ZoneTransitionService(
         }
         val lastKnownWasEquipped = lastKnownAttachedTypeLines.any { it.isEquipment }
         val lastKnownWasEnchanted = lastKnownAttachedTypeLines.any { it.isAura }
+        // "Modified" counts only Auras its controller controls (CR 700.9), so freeze the live answer
+        // rather than rebuilding it from wasEquipped/wasEnchanted, which ignore the Aura's controller.
+        val lastKnownWasModified = leavingBattlefield &&
+            com.wingedsheep.engine.handlers.predicates.isModified(state, entityId) { state.projectedState.getController(it) }
 
         val lastKnownSnapshot = if (leavingBattlefield) {
             com.wingedsheep.engine.state.components.stack.EntitySnapshot(
@@ -481,6 +485,7 @@ class ZoneTransitionService(
                 wasEquipped = lastKnownWasEquipped,
                 attachmentIds = lastKnownAttachmentIds,
                 wasEnchanted = lastKnownWasEnchanted,
+                wasModified = lastKnownWasModified,
                 blockingOrBlockedByIds = lastKnownBlockingOrBlockedByIds,
                 wasAttacking = lastKnownWasAttacking,
                 wasBlocking = lastKnownWasBlocking,

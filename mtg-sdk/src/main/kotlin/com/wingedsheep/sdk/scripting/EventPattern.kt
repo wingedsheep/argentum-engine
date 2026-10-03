@@ -613,6 +613,25 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * Whenever [player] investigates — CR 701.16a, "create a Clue token". Fires once per
+     * investigate performed by `InvestigateEffect`, so "investigate twice" is two events; a card
+     * that only says "create a Clue token" never fires it. The investigate counts even when a
+     * replacement changed or removed the Clue it would have created.
+     *
+     * [firstTimeEachTurn] restricts the match to that player's first investigate this turn —
+     * "whenever you investigate for the first time each turn" (Erdwal Illuminator).
+     */
+    @SerialName("InvestigatedEvent")
+    @Serializable
+    data class InvestigatedEvent(
+        val player: Player = Player.You,
+        val firstTimeEachTurn: Boolean = false
+    ) : EventPattern {
+        override val description: String = "${player.description} investigates" +
+            if (firstTimeEachTurn) " for the first time each turn" else ""
+    }
+
+    /**
      * Whenever [player] solves a Case (CR 719.3a) — fires as that Case's "To solve" trigger
      * resolves and the designation is stamped, which is exactly what the printed ruling for Case
      * File Auditor says ("triggers whenever a 'to solve' ability you control resolves").

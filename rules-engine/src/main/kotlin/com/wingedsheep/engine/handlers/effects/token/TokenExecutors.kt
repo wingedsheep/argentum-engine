@@ -24,14 +24,20 @@ class TokenExecutors(
     private val tokenArtRegistry: TokenArtRegistry? = null,
     private val targetFinder: TargetFinder
 ) : ExecutorModule {
-    override fun executors(): List<EffectExecutor<*>> = listOf(
-        CreateTokenExecutor(amountEvaluator, staticAbilityHandler, cardRegistry, tokenArtRegistry),
-        CreatePredefinedTokenExecutor(cardRegistry, staticAbilityHandler, tokenArtRegistry = tokenArtRegistry, amountEvaluator = amountEvaluator),
-        CreateRoleTokenExecutor(zones, cardRegistry, staticAbilityHandler),
-        CreateTokenCopyOfSourceExecutor(cardRegistry, staticAbilityHandler, predicateEvaluator = zones.predicateEvaluator),
-        CreateTokenCopyOfEquippedCreatureExecutor(cardRegistry, staticAbilityHandler, predicateEvaluator = zones.predicateEvaluator),
-        CreateTokenCopyOfChosenPermanentExecutor(cardRegistry, staticAbilityHandler, predicateEvaluator = zones.predicateEvaluator),
-        CreateTokenCopyOfTargetExecutor(amountEvaluator, staticAbilityHandler, cardRegistry, targetFinder = targetFinder),
-        CreateRandomCreatureTokenWithManaValueExecutor(amountEvaluator, staticAbilityHandler, cardRegistry)
-    )
+    override fun executors(): List<EffectExecutor<*>> {
+        val createPredefinedToken = CreatePredefinedTokenExecutor(
+            cardRegistry, staticAbilityHandler, tokenArtRegistry = tokenArtRegistry, amountEvaluator = amountEvaluator
+        )
+        return listOf(
+            CreateTokenExecutor(amountEvaluator, staticAbilityHandler, cardRegistry, tokenArtRegistry),
+            createPredefinedToken,
+            InvestigateExecutor(createPredefinedToken, amountEvaluator),
+            CreateRoleTokenExecutor(zones, cardRegistry, staticAbilityHandler),
+            CreateTokenCopyOfSourceExecutor(cardRegistry, staticAbilityHandler, predicateEvaluator = zones.predicateEvaluator),
+            CreateTokenCopyOfEquippedCreatureExecutor(cardRegistry, staticAbilityHandler, predicateEvaluator = zones.predicateEvaluator),
+            CreateTokenCopyOfChosenPermanentExecutor(cardRegistry, staticAbilityHandler, predicateEvaluator = zones.predicateEvaluator),
+            CreateTokenCopyOfTargetExecutor(amountEvaluator, staticAbilityHandler, cardRegistry, targetFinder = targetFinder),
+            CreateRandomCreatureTokenWithManaValueExecutor(amountEvaluator, staticAbilityHandler, cardRegistry)
+        )
+    }
 }
