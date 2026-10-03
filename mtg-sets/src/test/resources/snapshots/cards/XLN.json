@@ -4189,7 +4189,10 @@
                                     {
                                         "type": "RemoveCounters",
                                         "counterType": "LANDMARK",
-                                        "count": 3,
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        },
                                         "target": "Self"
                                     },
                                     "Transform",

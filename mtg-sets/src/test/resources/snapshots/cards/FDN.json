@@ -3711,7 +3711,10 @@
                         "action": {
                             "type": "RemoveCounters",
                             "counterType": "BAIT",
-                            "count": 1,
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
                             "target": "Self"
                         },
                         "successCriterion": "SuccessCriterion.CountersRemoved"

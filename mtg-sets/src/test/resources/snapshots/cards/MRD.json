@@ -1503,7 +1503,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "PLUS_ONE_PLUS_ONE",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "triggerRestriction": {
@@ -1574,7 +1577,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "PLUS_ONE_PLUS_ONE",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "triggerRestriction": {
@@ -1645,7 +1651,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "PLUS_ONE_PLUS_ONE",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "triggerRestriction": {
@@ -1736,7 +1745,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "PLUS_ONE_PLUS_ONE",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "triggerRestriction": {
@@ -5679,7 +5691,10 @@
                                 "effect": {
                                     "type": "RemoveCounters",
                                     "counterType": "CHARGE",
-                                    "count": 1,
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
                                     "target": "Self"
                                 }
                             }
@@ -13191,7 +13206,10 @@
                                 {
                                     "type": "RemoveCounters",
                                     "counterType": "CHARGE",
-                                    "count": 1,
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
                                     "target": "Self"
                                 },
                                 {

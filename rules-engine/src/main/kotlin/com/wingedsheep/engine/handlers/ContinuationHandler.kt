@@ -22,6 +22,7 @@ class ContinuationHandler(
         val forcedPlayResumer = ForcedPlayResumer(services)
         registerModule(forcedPlayResumer)
         registerAutoResumerModule(forcedPlayResumer)
+        registerAutoResumerModule(ManaAbilitySourcesResumer())
         // Core engine resumers
         registerModule(EffectAndTriggerContinuationResumer(services, effectRunner))
         registerModule(MiscContinuationResumer(services, effectRunner))

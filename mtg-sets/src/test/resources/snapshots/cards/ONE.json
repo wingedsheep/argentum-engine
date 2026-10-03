@@ -606,7 +606,10 @@
                         {
                             "type": "RemoveCounters",
                             "counterType": "OIL",
-                            "count": 1,
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
                             "target": "Self"
                         },
                         {
@@ -1081,7 +1084,10 @@
                     "action": {
                         "type": "RemoveCounters",
                         "counterType": "OIL",
-                        "count": 1,
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
                         "target": "Self"
                     },
                     "reflexiveEffect": {
@@ -4676,7 +4682,10 @@
                         {
                             "type": "RemoveCounters",
                             "counterType": "OIL",
-                            "count": 1,
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
                             "target": "Self"
                         },
                         {
@@ -5603,7 +5612,10 @@
                     "action": {
                         "type": "RemoveCounters",
                         "counterType": "OIL",
-                        "count": 2,
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
                         "target": "Self"
                     },
                     "reflexiveEffect": {
@@ -9342,7 +9354,10 @@
                             "action": {
                                 "type": "RemoveCounters",
                                 "counterType": "OIL",
-                                "count": 1,
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
                                 "target": "Self"
                             },
                             "successCriterion": "SuccessCriterion.CountersRemoved"
@@ -9674,7 +9689,10 @@
                         "then": {
                             "type": "RemoveCounters",
                             "counterType": "OIL",
-                            "count": 2,
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
                             "target": "Self"
                         },
                         "otherwise": {
@@ -10273,7 +10291,10 @@
                                 {
                                     "type": "RemoveCounters",
                                     "counterType": "OIL",
-                                    "count": 2,
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
                                     "target": "Self"
                                 },
                                 {

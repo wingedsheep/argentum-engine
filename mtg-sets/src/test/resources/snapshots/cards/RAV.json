@@ -797,7 +797,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "BLOOD",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "descriptionOverride": "{U}{B}: Remove a blood counter from this artifact."
@@ -11936,7 +11939,10 @@
                             "effect": {
                                 "type": "RemoveCounters",
                                 "counterType": "PLAGUE",
-                                "count": 1,
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
                                 "target": "Self"
                             },
                             "description": "Remove a plague counter from this artifact"

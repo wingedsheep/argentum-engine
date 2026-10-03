@@ -327,6 +327,83 @@
     ]
 }
 
+// Magnanimous Magistrate
+{
+    "name": "Magnanimous Magistrate",
+    "manaCost": "{5}{W}",
+    "typeLine": "Creature — Human Advisor",
+    "oracleText": "This creature enters with five reprieve counters on it.\nWhenever another nontoken creature you control dies, if its mana value was 1 or greater, you may remove that many reprieve counters from this creature. If you do, return that card to the battlefield under its owner's control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Magnanimous Magistrate:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "RemoveCounters",
+                            "counterType": "REPRIEVE",
+                            "count": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "ManaValue"
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Battlefield"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "ManaValue"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "REPRIEVE",
+                "count": 5,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Marie Magny",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6649e6c-bbd8-43db-9f3f-a24b32aed4e4.jpg?1783919194"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Merfolk Pupil
 {
     "name": "Merfolk Pupil",

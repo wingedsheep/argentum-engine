@@ -1958,7 +1958,15 @@ vocabulary; this primitive does not provide Word of Command's full mana restrict
   (default `Duration.EndOfTurn`) via end-of-turn cleanup. Negative `modifier` reduces (floored at 0). Prairie Dog
   (OTJ): "{4}{W}: Until end of turn, if you would put one or more +1/+1 counters on a creature you control, put
   that many plus one +1/+1 counters on it instead." → `GrantCounterPlacementModifier()` with all defaults.
-- `RemoveCounters(type, count, target)` — remove N counters.
+- `RemoveCounters(type, count, target)` — remove N counters. `count` is an `Int` or a `DynamicAmount` evaluated at
+  resolution (`RemoveCountersEffect.count` is a `DynamicAmount`). On its own the effect removes as many as the
+  target carries, up to `count`. As the cost of `Effects.MayPay` it is **all-or-nothing**: the "yes" is only
+  offered while the target carries the full amount, so "you may remove that many … If you do, …" can't be
+  paid partially. Magnanimous Magistrate: "whenever another nontoken creature you control dies, if its mana
+  value was 1 or greater, you may remove that many reprieve counters from this creature. If you do, return that
+  card" → `interveningIf = CompareAmounts(triggeringManaValue(), GTE, 1)`, `effect = MayPay(cost =
+  RemoveCounters(CounterType.REPRIEVE, DynamicAmounts.triggeringManaValue(), Self), then =
+  Move(TriggeringEntity, BATTLEFIELD))`.
 - `RemoveAnyNumberOfCounters(target)` — player removes 0 or more (one prompt per counter kind, no total cap).
 - `RemoveCountersUpTo(maxCount, target)` — player removes **up to `maxCount` counters total across all
   kinds**. The budget-capped form of `RemoveAnyNumberOfCounters` — the *same* `RemoveAnyNumberOfCountersEffect`
@@ -16206,4 +16214,25 @@ Shared-turn teams follow the existing player-control team rule. A later resoluti
 and a completed window reveals the underlying turn control again. Session hotseat routing keeps precedence.
 
 This primitive composes with `Effects.ForcePlay` for mandatory paid card play. Word of Command
-still needs mana-origin/spending restrictions (G31); it is not yet authorable faithfully.
+still needs the produced-mana spending obligation (G40); it is not yet authorable faithfully.
+
+### Scoped mana-ability sources
+
+`Effects.WithManaAbilitySources(effect, sources, player = Controller)` runs a nested instruction
+with a restriction on that player's **activated mana abilities**. Their sources must match the
+`GameObjectFilter` at activation time, using projected characteristics and the affected player's
+perspective. Source-relative references retain the enclosing resolution's context. Nested restrictions
+intersect. Text changes recurse into both the source filter and nested instruction, whose dynamic
+description is preserved. The serializable scope remains active across casting and payment decisions, then expires
+before the next sibling instruction. Other players and existing floating mana are unaffected.
+
+Example: `Effects.WithManaAbilitySources(Effects.ForcePlay(chosen, opponent),
+GameObjectFilter.Land.youControl(), opponent)` limits the forced play's activated mana abilities
+to lands the affected player controls. Granted abilities are tested on the permanent carrying them;
+objects tapped or sacrificed as activation costs do not become the ability's source. Triggered mana
+abilities are not activation choices and are unaffected. Existing mana-source menus, automatic and
+explicit payment, and affordability use the same restriction. No new decision or client field is added.
+
+This is only the source restriction. It does **not** require all newly produced mana to be spent.
+Word of Command still needs the distinct produced-mana spending obligation (G40), including exact
+color/restriction provenance and activation chains, before it can be authored faithfully.

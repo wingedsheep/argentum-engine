@@ -2151,10 +2151,18 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect(counterType = null, target = target)
 
     /**
-     * Remove counters of a given type from a target. No-op if the target has fewer
-     * than `count` counters of that type.
+     * Remove counters of a given type from a target. A target carrying fewer than `count`
+     * counters of that type loses as many as it has.
      */
     fun RemoveCounters(counterType: CounterType, count: Int, target: EffectTarget): Effect =
+        RemoveCountersEffect(counterType, DynamicAmount.Fixed(count), target)
+
+    /**
+     * [RemoveCounters] with a resolution-time count — "remove that many reprieve counters from
+     * this creature" (Magnanimous Magistrate). As a [MayPay] cost it is all-or-nothing: the "yes"
+     * is only offered when the target carries the full amount.
+     */
+    fun RemoveCounters(counterType: CounterType, count: DynamicAmount, target: EffectTarget): Effect =
         RemoveCountersEffect(counterType, count, target)
 
     /**
@@ -4590,10 +4598,18 @@ object Effects {
         caster = caster,
     )
 
+    /** Source filters are evaluated from the affected player's perspective, at activation time. */
+    fun WithManaAbilitySources(
+        effect: Effect,
+        sources: GameObjectFilter,
+        player: EffectTarget = EffectTarget.Controller,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.WithManaAbilitySourcesEffect(effect, sources, player)
+
     /** Instruct [player] to play the first gathered card if able, paying its costs. */
     fun ForcePlay(from: String, player: EffectTarget = EffectTarget.Controller, storePlayedTo: String? = null): Effect =
         com.wingedsheep.sdk.scripting.effects.ForcePlayEffect(from, player, storePlayedTo)
 
+    /** Instruct [player] to play the first gathered card if able, paying its costs. */
     fun ForcePlay(from: CollectionSlot, player: EffectTarget = EffectTarget.Controller, storePlayedTo: CollectionSlot? = null): Effect =
         ForcePlay(from.key, player, storePlayedTo?.key)
 
