@@ -154,7 +154,9 @@ class PlotCardHandler(
             black = poolComponent.black,
             red = poolComponent.red,
             green = poolComponent.green,
-            colorless = poolComponent.colorless
+            colorless = poolComponent.colorless,
+            snowMana = poolComponent.snowMana,
+            snowColorless = poolComponent.snowColorless
         ).withSpendingColors(state, action.playerId)
         val partialResult = pool.payPartial(plotCost)
         val poolAfterPayment = partialResult.newPool
@@ -176,7 +178,9 @@ class PlotCardHandler(
                     black = poolAfterPayment.black,
                     red = poolAfterPayment.red,
                     green = poolAfterPayment.green,
-                    colorless = poolAfterPayment.colorless
+                    colorless = poolAfterPayment.colorless,
+                    snowMana = poolAfterPayment.snowMana,
+                    snowColorless = poolAfterPayment.snowColorless
                 )
             )
         }

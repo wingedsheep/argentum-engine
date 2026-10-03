@@ -250,6 +250,7 @@ internal class SpellCaster(
             manaSpentColorless = manaSpentColorless,
             manaSpentBySubtype = spentManaProvenance.bySubtype,
             manaSpentByCardType = spentManaProvenance.byCardType,
+            manaSpentSnow = spentManaProvenance.snow,
             manaSpentOnXByColor = manaSpentOnXByColor,
             phyrexianLifePips = phyrexianLifePips,
             faceIndex = faceIndex,

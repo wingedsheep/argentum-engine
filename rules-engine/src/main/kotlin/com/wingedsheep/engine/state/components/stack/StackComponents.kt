@@ -187,6 +187,11 @@ data class SpellOnStackComponent(
      */
     val manaSpentByCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap(),
     /**
+     * Mana from snow sources spent to cast this spell — the "{S} spent" of CR 107.4h. Read via
+     * [ManaSpentReader] by `DynamicAmount.SnowManaSpent` (Berg Strider's "if {S} was spent").
+     */
+    val manaSpentSnow: Int = 0,
+    /**
      * Per-color mana spent on the `{X}` portion of this spell, for a color-restricted X
      * (e.g. Soul Burn's "spend only black and/or red mana on X"). Read at resolution via
      * `DynamicAmount.ManaSpentOnX`. Empty when X was unrestricted or the spell has no X.

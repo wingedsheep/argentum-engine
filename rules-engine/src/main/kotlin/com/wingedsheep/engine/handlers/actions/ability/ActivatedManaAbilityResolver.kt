@@ -192,6 +192,7 @@ internal class ActivatedManaAbilityResolver(
             activatedAbility = ability,
         )
 
+        val stateBeforeEffect = currentState
         val effectResult = effectExecutorRegistry.execute(currentState, finalEffect, context).toExecutionResult()
         // A pause (e.g. choosing colors for "add X mana in any combination of colors") carries
         // the activation's own events out with it, so the settle boundary queues the triggers
@@ -210,7 +211,7 @@ internal class ActivatedManaAbilityResolver(
         val dampening = manaPipeline.applyLandManaDampening(
             stateBeforeActivation, currentState, cardComponent, action.playerId
         )
-        currentState = dampening.state
+        currentState = manaPipeline.markSnowProduction(stateBeforeEffect, dampening.state, action.sourceId, action.playerId)
 
         // Emit ManaAddedEvent — if dampened, always emit 1 colorless
         val manaEvent: ManaAddedEvent? = if (dampening.dampened) {

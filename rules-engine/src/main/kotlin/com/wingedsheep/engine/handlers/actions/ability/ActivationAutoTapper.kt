@@ -130,10 +130,7 @@ internal class ActivationAutoTapper(
             currentPool = when {
                 color != null && restriction != null ->
                     currentPool.addRestricted(color, production.amount, restriction)
-                color != null ->
-                    currentPool.add(color, production.amount)
-                else ->
-                    currentPool.addColorless(production.colorless)
+                else -> currentPool.addProduction(production)
             }
         }
 
@@ -169,6 +166,8 @@ internal class ActivationAutoTapper(
                 manaBySubtype = currentPool.manaBySubtype,
                 manaBySource = currentPool.manaBySource,
                 manaByCardType = currentPool.manaByCardType,
+                snowMana = currentPool.snowMana,
+                snowColorless = currentPool.snowColorless
             ))
         }
 

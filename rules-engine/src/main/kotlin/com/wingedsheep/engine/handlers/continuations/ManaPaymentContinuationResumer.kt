@@ -146,7 +146,9 @@ class ManaPaymentContinuationResumer(
                 ?: return ExecutionResult.error(state, "Player has no mana pool")
             val manaPool = ManaPool(
                 manaPoolComponent.white, manaPoolComponent.blue, manaPoolComponent.black,
-                manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless
+                manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless,
+                snowMana = manaPoolComponent.snowMana,
+                snowColorless = manaPoolComponent.snowColorless
             ).withSpendingColors(state, playerId)
             val partialResult = manaPool.payPartial(continuation.manaCost)
 
@@ -158,7 +160,9 @@ class ManaPaymentContinuationResumer(
                     container.with(
                         ManaPoolComponent(
                             white = newPool.white, blue = newPool.blue, black = newPool.black,
-                            red = newPool.red, green = newPool.green, colorless = newPool.colorless
+                            red = newPool.red, green = newPool.green, colorless = newPool.colorless,
+                            snowMana = newPool.snowMana,
+                            snowColorless = newPool.snowColorless
                         )
                     )
                 }
@@ -706,7 +710,9 @@ class ManaPaymentContinuationResumer(
 
         val manaPool = ManaPool(
             manaPoolComponent.white, manaPoolComponent.blue, manaPoolComponent.black,
-            manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless
+            manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless,
+            snowMana = manaPoolComponent.snowMana,
+            snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(currentState, playerId)
 
         val partialResult = manaPool.payPartial(effectiveCost)
@@ -725,11 +731,7 @@ class ManaPaymentContinuationResumer(
                     events.addAll(tapEvents)
                 }
                 for ((_, production) in solution.manaProduced) {
-                    currentPool = if (production.color != null) {
-                        currentPool.add(production.color, production.amount)
-                    } else {
-                        currentPool.addColorless(production.colorless)
-                    }
+                    currentPool = currentPool.addProduction(production)
                 }
             } else {
                 // Split off sources that carry a tap-permanents sub-cost (Springleaf Drum) —
@@ -758,7 +760,9 @@ class ManaPaymentContinuationResumer(
                         container.with(
                             ManaPoolComponent(
                                 white = currentPool.white, blue = currentPool.blue, black = currentPool.black,
-                                red = currentPool.red, green = currentPool.green, colorless = currentPool.colorless
+                                red = currentPool.red, green = currentPool.green, colorless = currentPool.colorless,
+                                snowMana = currentPool.snowMana,
+                                snowColorless = currentPool.snowColorless
                             )
                         )
                     }
@@ -794,7 +798,9 @@ class ManaPaymentContinuationResumer(
             container.with(
                 ManaPoolComponent(
                     white = newPool.white, blue = newPool.blue, black = newPool.black,
-                    red = newPool.red, green = newPool.green, colorless = newPool.colorless
+                    red = newPool.red, green = newPool.green, colorless = newPool.colorless,
+                    snowMana = newPool.snowMana,
+                    snowColorless = newPool.snowColorless
                 )
             )
         }
@@ -972,7 +978,9 @@ class ManaPaymentContinuationResumer(
 
         val manaPool = ManaPool(
             manaPoolComponent.white, manaPoolComponent.blue, manaPoolComponent.black,
-            manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless
+            manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless,
+            snowMana = manaPoolComponent.snowMana,
+            snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(state, playerId)
         val partialResult = manaPool.payPartial(continuation.manaCost)
 
@@ -984,7 +992,9 @@ class ManaPaymentContinuationResumer(
                 container.with(
                     ManaPoolComponent(
                         white = newPool.white, blue = newPool.blue, black = newPool.black,
-                        red = newPool.red, green = newPool.green, colorless = newPool.colorless
+                        red = newPool.red, green = newPool.green, colorless = newPool.colorless,
+                        snowMana = newPool.snowMana,
+                        snowColorless = newPool.snowColorless
                     )
                 )
             }
@@ -1103,7 +1113,9 @@ class ManaPaymentContinuationResumer(
 
         val manaPool = ManaPool(
             manaPoolComponent.white, manaPoolComponent.blue, manaPoolComponent.black,
-            manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless
+            manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless,
+            snowMana = manaPoolComponent.snowMana,
+            snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(currentState, playerId)
 
         val partialResult = manaPool.payPartial(effectiveCost)
@@ -1122,11 +1134,7 @@ class ManaPaymentContinuationResumer(
                     events.addAll(tapEvents)
                 }
                 for ((_, production) in solution.manaProduced) {
-                    currentPool = if (production.color != null) {
-                        currentPool.add(production.color, production.amount)
-                    } else {
-                        currentPool.addColorless(production.colorless)
-                    }
+                    currentPool = currentPool.addProduction(production)
                 }
             } else {
                 val manual = applyManualSourceSelection(
@@ -1149,7 +1157,9 @@ class ManaPaymentContinuationResumer(
             container.with(
                 ManaPoolComponent(
                     white = newPool.white, blue = newPool.blue, black = newPool.black,
-                    red = newPool.red, green = newPool.green, colorless = newPool.colorless
+                    red = newPool.red, green = newPool.green, colorless = newPool.colorless,
+                    snowMana = newPool.snowMana,
+                    snowColorless = newPool.snowColorless
                 )
             )
         }
@@ -1270,7 +1280,9 @@ class ManaPaymentContinuationResumer(
             manaPoolComponent.black,
             manaPoolComponent.red,
             manaPoolComponent.green,
-            manaPoolComponent.colorless
+            manaPoolComponent.colorless,
+            snowMana = manaPoolComponent.snowMana,
+            snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(state, playerId)
 
         // Create a ManaCost of {X} generic mana
@@ -1297,11 +1309,7 @@ class ManaPaymentContinuationResumer(
             }
 
             for ((_, production) in solution.manaProduced) {
-                currentPool = if (production.color != null) {
-                    currentPool.add(production.color)
-                } else {
-                    currentPool.addColorless(production.colorless)
-                }
+                currentPool = currentPool.addProduction(production, coloredAmount = 1)
             }
         }
 
@@ -1317,7 +1325,9 @@ class ManaPaymentContinuationResumer(
                     black = newPool.black,
                     red = newPool.red,
                     green = newPool.green,
-                    colorless = newPool.colorless
+                    colorless = newPool.colorless,
+                    snowMana = newPool.snowMana,
+                    snowColorless = newPool.snowColorless
                 )
             )
         }
@@ -1365,7 +1375,9 @@ class ManaPaymentContinuationResumer(
             manaPoolComponent.black,
             manaPoolComponent.red,
             manaPoolComponent.green,
-            manaPoolComponent.colorless
+            manaPoolComponent.colorless,
+            snowMana = manaPoolComponent.snowMana,
+            snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(state, playerId)
 
         // Try to pay from floating mana first
@@ -1389,11 +1401,7 @@ class ManaPaymentContinuationResumer(
                 }
 
                 for ((_, production) in solution.manaProduced) {
-                    currentPool = if (production.color != null) {
-                        currentPool.add(production.color, production.amount)
-                    } else {
-                        currentPool.addColorless(production.colorless)
-                    }
+                    currentPool = currentPool.addProduction(production)
                 }
             } else {
                 val manual = applyManualSourceSelection(
@@ -1421,7 +1429,9 @@ class ManaPaymentContinuationResumer(
                     black = newPool.black,
                     red = newPool.red,
                     green = newPool.green,
-                    colorless = newPool.colorless
+                    colorless = newPool.colorless,
+                    snowMana = newPool.snowMana,
+                    snowColorless = newPool.snowColorless
                 )
             )
         }
@@ -1686,7 +1696,9 @@ class ManaPaymentContinuationResumer(
             ?: return ExecutionResult.error(state, "Player has no mana pool")
         var pool = ManaPool(
             poolComponent.white, poolComponent.blue, poolComponent.black,
-            poolComponent.red, poolComponent.green, poolComponent.colorless
+            poolComponent.red, poolComponent.green, poolComponent.colorless,
+            snowMana = poolComponent.snowMana,
+            snowColorless = poolComponent.snowColorless
         ).withSpendingColors(currentState, continuation.payingPlayerId)
         pool = if (sourceOption.producesColors.isNotEmpty()) {
             pool.add(sourceOption.producesColors.first())
@@ -1699,7 +1711,9 @@ class ManaPaymentContinuationResumer(
             container.with(
                 ManaPoolComponent(
                     white = pool.white, blue = pool.blue, black = pool.black,
-                    red = pool.red, green = pool.green, colorless = pool.colorless
+                    red = pool.red, green = pool.green, colorless = pool.colorless,
+                    snowMana = pool.snowMana,
+                    snowColorless = pool.snowColorless
                 )
             )
         }
@@ -1737,7 +1751,9 @@ class ManaPaymentContinuationResumer(
             container.with(
                 ManaPoolComponent(
                     white = newPool.white, blue = newPool.blue, black = newPool.black,
-                    red = newPool.red, green = newPool.green, colorless = newPool.colorless
+                    red = newPool.red, green = newPool.green, colorless = newPool.colorless,
+                    snowMana = newPool.snowMana,
+                    snowColorless = newPool.snowColorless
                 )
             )
         }

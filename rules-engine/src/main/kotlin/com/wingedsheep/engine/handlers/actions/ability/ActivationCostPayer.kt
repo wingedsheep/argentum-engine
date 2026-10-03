@@ -119,7 +119,9 @@ internal class ActivationCostPayer(
             // ability activation instead of being wiped (mirrors CastPaymentProcessor's threading).
             manaBySubtype = poolComponent.manaBySubtype,
             manaBySource = poolComponent.manaBySource,
-            manaByCardType = poolComponent.manaByCardType
+            manaByCardType = poolComponent.manaByCardType,
+            snowMana = poolComponent.snowMana,
+            snowColorless = poolComponent.snowColorless
         ).withSpendingColors(state, action.playerId)
 
         // For an VariablePermanents cost, X is the exiled permanents' total mana value (computed at
@@ -632,7 +634,9 @@ internal class ActivationCostPayer(
                 restrictedMana = manaPool.restrictedMana,
                 manaBySubtype = poolAfterProvenance.manaBySubtype,
                 manaBySource = poolAfterProvenance.manaBySource,
-                manaByCardType = poolAfterProvenance.manaByCardType
+                manaByCardType = poolAfterProvenance.manaByCardType,
+                snowMana = manaPool.snowMana,
+                snowColorless = manaPool.snowColorless
             ))
         }
     }

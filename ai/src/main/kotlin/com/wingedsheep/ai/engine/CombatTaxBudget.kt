@@ -106,7 +106,7 @@ object CombatTaxBudget {
     private fun payable(state: GameState, playerId: EntityId, solver: ManaSolver, tax: Int): Boolean {
         if (tax <= 0) return true
         val pool = state.getEntity(playerId)?.get<ManaPoolComponent>()?.let {
-            ManaPool(it.white, it.blue, it.black, it.red, it.green, it.colorless, it.restrictedMana)
+            ManaPool(it.white, it.blue, it.black, it.red, it.green, it.colorless, it.restrictedMana, snowMana = it.snowMana, snowColorless = it.snowColorless)
         } ?: ManaPool()
         val remaining = pool.payPartial(CombatTaxes.genericCost(tax)).remainingCost
         return remaining.isEmpty() || solver.solve(state, playerId, remaining) != null

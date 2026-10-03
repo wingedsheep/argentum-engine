@@ -531,7 +531,9 @@ class CostPaymentService(private val services: EngineServices) {
         val poolComponent = playerEntity.get<ManaPoolComponent>() ?: ManaPoolComponent()
         val pool = ManaPool(
             poolComponent.white, poolComponent.blue, poolComponent.black,
-            poolComponent.red, poolComponent.green, poolComponent.colorless
+            poolComponent.red, poolComponent.green, poolComponent.colorless,
+            snowMana = poolComponent.snowMana,
+            snowColorless = poolComponent.snowColorless
         ).withSpendingColors(state, payerId)
 
         // Spend floating mana first, then tap sources for the remainder.
@@ -548,8 +550,7 @@ class CostPaymentService(private val services: EngineServices) {
             current = afterTaps
             events.addAll(tapEvents)
             for ((_, production) in solution.manaProduced) {
-                combined = if (production.color != null) combined.add(production.color, production.amount)
-                else combined.addColorless(production.colorless)
+                combined = combined.addProduction(production)
             }
             // Bonus mana from AdditionalManaOnTap / AdditionalManaOnSourceTap (e.g. Badgermole
             // Cub's "Whenever you tap a creature for mana, add an additional {G}") and mana auras
@@ -565,7 +566,7 @@ class CostPaymentService(private val services: EngineServices) {
 
         val newPool = combined.pay(manaCost) ?: return CostPaymentExecution(state, emptyList(), false)
         current = current.updateEntity(payerId) {
-            it.with(ManaPoolComponent(newPool.white, newPool.blue, newPool.black, newPool.red, newPool.green, newPool.colorless))
+            it.with(ManaPoolComponent(newPool.white, newPool.blue, newPool.black, newPool.red, newPool.green, newPool.colorless, snowMana = newPool.snowMana, snowColorless = newPool.snowColorless))
         }
 
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "the source"

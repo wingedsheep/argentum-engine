@@ -143,6 +143,9 @@ object DynamicAmounts {
     /** The amount of mana produced by a [subtype] source (a Cave) spent to cast this. */
     fun manaSpentFromSubtype(subtype: Subtype): DynamicAmount = DynamicAmount.ManaSpentFromSubtype(subtype)
 
+    /** The amount of mana from snow sources ("{S}") spent to cast this (CR 107.4h). */
+    fun snowManaSpent(): DynamicAmount = DynamicAmount.SnowManaSpent
+
     /** The amount of unspent mana in [player]'s pool. */
     fun unspentMana(player: Player): DynamicAmount = DynamicAmount.UnspentMana(player)
 

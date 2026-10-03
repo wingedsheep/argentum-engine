@@ -251,6 +251,80 @@
     ]
 }
 
+// Berg Strider
+{
+    "name": "Berg Strider",
+    "manaCost": "{4}{U}",
+    "typeLine": "Snow Creature — Giant Wizard",
+    "oracleText": "When this creature enters, tap target artifact or creature an opponent controls. If {S} was spent to cast this spell, that permanent doesn't untap during its controller's next untap step. ({S} is mana from a snow source.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Berg Strider:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": "SnowManaSpent",
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "DOESNT_UNTAP",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "duration": "UntilAfterAffectedControllersNextUntap"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|artifact ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f3567bdc-450e-4481-9349-a80fe52fe431.jpg?1783928268"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Beskir Shieldmate
 {
     "name": "Beskir Shieldmate",
@@ -1395,6 +1469,47 @@
     "colorIdentityOverride": [
         "BLACK",
         "WHITE"
+    ]
+}
+
+// Frostpeak Yeti
+{
+    "name": "Frostpeak Yeti",
+    "manaCost": "{3}{U}",
+    "typeLine": "Snow Creature — Yeti",
+    "oracleText": "{1}{S}: This creature can't be blocked this turn. ({S} can be paid with one mana from a snow source.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Frostpeak Yeti:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{S}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": "Self"
+                },
+                "descriptionOverride": "{1}{S}: This creature can't be blocked this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Chris Rahn",
+        "flavorText": "Some heroes line their coats with yeti fur. More yetis line their bellies with heroes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f406ce3-dce1-42d3-b76c-8e8c4b2770cb.jpg?1783928264"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

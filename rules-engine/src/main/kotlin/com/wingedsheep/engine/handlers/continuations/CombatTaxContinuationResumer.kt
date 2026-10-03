@@ -191,6 +191,8 @@ class CombatTaxContinuationResumer(
         var pool = ManaPool(
             poolComponent.white, poolComponent.blue, poolComponent.black,
             poolComponent.red, poolComponent.green, poolComponent.colorless,
+            snowMana = poolComponent.snowMana,
+            snowColorless = poolComponent.snowColorless
         ).withSpendingColors(state, playerId)
 
         val partial = pool.payPartial(manaCost)
@@ -208,11 +210,7 @@ class CombatTaxContinuationResumer(
                     events.addAll(tapEvents)
                 }
                 for ((_, production) in solution.manaProduced) {
-                    pool = if (production.color != null) {
-                        pool.add(production.color, production.amount)
-                    } else {
-                        pool.addColorless(production.colorless)
-                    }
+                    pool = pool.addProduction(production)
                 }
             } else {
                 val sourceMap = availableSources.associateBy { it.entityId }
@@ -241,6 +239,8 @@ class CombatTaxContinuationResumer(
                 ManaPoolComponent(
                     white = newPool.white, blue = newPool.blue, black = newPool.black,
                     red = newPool.red, green = newPool.green, colorless = newPool.colorless,
+                    snowMana = newPool.snowMana,
+                    snowColorless = newPool.snowColorless
                 )
             )
         }

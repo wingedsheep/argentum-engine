@@ -240,7 +240,8 @@ class ColorChoiceContinuationResumer(
         }
 
         val finished = manaPipeline.finishTapBonuses(
-            dampening.state, sourceId, sourceCard, tapperId, producedMana, events
+            manaPipeline.markSnowProduction(state, dampening.state, sourceId, tapperId),
+            sourceId, sourceCard, tapperId, producedMana, events
         )
         if (finished.outcome is Outcome.Paused) return finished
         return checkForMore(finished.newState, finished.events.toList())

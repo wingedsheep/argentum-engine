@@ -602,7 +602,9 @@ internal class CastCostPayer(
             red = poolComponent.red,
             green = poolComponent.green,
             colorless = poolComponent.colorless,
-            restrictedMana = poolComponent.restrictedMana
+            restrictedMana = poolComponent.restrictedMana,
+            snowMana = poolComponent.snowMana,
+            snowColorless = poolComponent.snowColorless
         ).withSpendingColors(state, playerId)
     }
 }

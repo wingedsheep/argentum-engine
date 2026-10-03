@@ -70,6 +70,8 @@ data class ManaSource(
     val producesColors: Set<Color>,
     /** Whether this source can produce colorless mana */
     val producesColorless: Boolean = false,
+    /** Whether this source is a snow permanent — its mana pays `{S}` (CR 107.4h). */
+    val isSnow: Boolean = false,
     /** Whether this is a basic land (Plains, Island, Swamp, Mountain, Forest) */
     val isBasicLand: Boolean = false,
     /** Whether this source is a land (any land type) */
@@ -313,7 +315,9 @@ data class BonusManaEntry(
 data class ManaProduction(
     val color: Color? = null,
     val amount: Int = 1,
-    val colorless: Int = 0
+    val colorless: Int = 0,
+    /** The source is a snow permanent, so this mana pays `{S}` once it floats (CR 107.4h). */
+    val snow: Boolean = false
 )
 
 /**
@@ -336,6 +340,9 @@ data class ManaProduction(
  * losing an attacker, never beats tapping a plain land.
  */
 private const val WASTED_MANA_PENALTY = 15
+
+/** How many snow-source reservations [ManaSolver.solve] tries for a cost's `{S}` pips. */
+private const val MAX_SNOW_RESERVATIONS = 64
 
 class ManaSolver(
     private val cardRegistry: CardRegistry,
@@ -376,6 +383,9 @@ class ManaSolver(
          */
         xManaRestriction: Set<Color> = emptySet()
     ): ManaSolution? {
+        if (cost.snowCount > 0) {
+            return solveWithSnow(state, playerId, cost, xValue, excludeSources, spellContext, precomputedSources, xManaRestriction)
+        }
         // Get all untapped mana sources controlled by the player.
         //
         // The cached `precomputedSources` is built without a payment context, so for
@@ -844,6 +854,8 @@ class ManaSolver(
                 is ManaSymbol.Generic, is ManaSymbol.X -> {
                     // Handle in the generic pass below
                 }
+                // solve() hands any cost with {S} to solveWithSnow, which strips the pips.
+                ManaSymbol.Snow -> return null
             }
         }
 
@@ -1037,6 +1049,11 @@ class ManaSolver(
                 ?: return@flatMap if (production.colorless > 0) source.colorlessRiders.toList() else emptyList()
             source.colorRiders[color]?.toList() ?: emptyList()
         }
+        // Every unit a snow source makes is snow mana (CR 107.4h): it pays a {S} once floated and
+        // counts toward "if {S} was spent".
+        for (source in usedSources) {
+            if (source.isSnow) manaProduced.computeIfPresent(source.entityId) { _, p -> p.copy(snow = true) }
+        }
         return ManaSolution(
             usedSources,
             manaProduced,
@@ -1045,6 +1062,93 @@ class ManaSolver(
             xRestrictedManaSpent = xRestrictedSpent,
             bonusManaSpentByColor = bonusManaSpentByColor
         )
+    }
+
+    /**
+     * Solve a cost holding `{S}` pips (CR 107.4h): each pip is paid by tapping its own snow source
+     * for any one kind of mana it makes, and the rest of the cost is solved with those sources
+     * set aside. Snow sources are tried cheapest-first — a colorless or single-color land before a
+     * dual, a land before a creature — and the first reservation whose remainder still solves wins,
+     * so a snow Island isn't spent on `{S}` when it is the only blue source for the `{U}`.
+     *
+     * Sources whose mana ability needs more than a tap (an activation mana cost, a sacrifice, a
+     * tap-a-creature rider) aren't reserved for `{S}`; they still pay the rest of the cost.
+     */
+    private fun solveWithSnow(
+        state: GameState,
+        playerId: EntityId,
+        cost: ManaCost,
+        xValue: Int,
+        excludeSources: Set<EntityId>,
+        spellContext: SpellPaymentContext?,
+        precomputedSources: List<ManaSource>?,
+        xManaRestriction: Set<Color>,
+    ): ManaSolution? {
+        val base = ManaCost(cost.symbols.filterNot { it is ManaSymbol.Snow })
+        val pips = cost.snowCount
+        val sources = if (spellContext != null || precomputedSources == null) {
+            findAvailableManaSources(state, playerId, spellContext)
+        } else precomputedSources
+        val demanded = base.symbols.flatMapTo(mutableSetOf()) { it.colors }
+        fun kindFor(source: ManaSource): Color? = when {
+            source.producesColorless -> null
+            else -> source.availableColorsFor(spellContext).let { colors -> colors.firstOrNull { it !in demanded } ?: colors.first() }
+        }
+        val candidates = sources.filter { source ->
+            source.isSnow && source.entityId !in excludeSources &&
+                !source.requiresSacrifice && source.tapPermanentsSubCost == null &&
+                source.colorActivationManaCost.values.all { it == 0 } &&
+                (source.restriction == null || spellContext == null || source.restriction.isSatisfiedBy(spellContext)) &&
+                (source.producesColorless || source.availableColorsFor(spellContext).isNotEmpty())
+        }.sortedWith(compareBy<ManaSource>(
+            { if (it.producesColorless) 0 else it.availableColorsFor(spellContext).size },
+            { if (it.isLand) 0 else 1 },
+            { if (it.hasNonManaAbilities) 1 else 0 },
+            { it.entityId.value },
+        ))
+        if (candidates.size < pips) return null
+
+        // Lexicographic combinations, cheapest first; bounded so a board of snow lands can't blow up.
+        var tried = 0
+        val chosen = IntArray(pips) { it }
+        while (tried++ < MAX_SNOW_RESERVATIONS) {
+            val reserved = chosen.map { candidates[it] }
+            val rest = if (base.isEmpty() && xValue == 0) ManaSolution(emptyList(), emptyMap())
+                else solve(state, playerId, base, xValue, excludeSources + reserved.map { it.entityId },
+                    spellContext, precomputedSources, xManaRestriction)
+            if (rest != null) {
+                val produced = rest.manaProduced.toMutableMap()
+                val leftovers = rest.remainingBonusMana.toMutableList()
+                val riders = rest.consumedRiders.toMutableList()
+                for (source in reserved) {
+                    val kind = kindFor(source)
+                    val amount = source.amountFor(kind)
+                    produced[source.entityId] = if (kind == null) ManaProduction(colorless = amount, snow = true)
+                        else ManaProduction(color = kind, amount = amount, snow = true)
+                    // One unit pays the {S}; anything more the tap makes floats.
+                    if (amount > 1) {
+                        leftovers += BonusManaEntry(kind ?: Color.WHITE, amount - 1, colorless = kind == null, sourceId = source.entityId)
+                    }
+                    if (source.bonusManaPerTap > 0 && source.bonusManaColor != null) {
+                        leftovers += BonusManaEntry(source.bonusManaColor, source.bonusManaPerTap, sourceId = source.entityId)
+                    }
+                    riders += (if (kind == null) source.colorlessRiders else source.colorRiders[kind].orEmpty())
+                }
+                return rest.copy(
+                    sources = rest.sources + reserved,
+                    manaProduced = produced,
+                    remainingBonusMana = leftovers,
+                    consumedRiders = riders,
+                )
+            }
+            // Advance to the next combination of `pips` indices out of candidates.size.
+            var i = pips - 1
+            while (i >= 0 && chosen[i] == candidates.size - pips + i) i--
+            if (i < 0) return null
+            chosen[i]++
+            for (j in i + 1 until pips) chosen[j] = chosen[j - 1] + 1
+        }
+        return null
     }
 
     /**
@@ -1811,6 +1915,8 @@ class ManaSolver(
             .let { sources ->
                 if (hasDampLandManaProduction(state)) applyLandManaDampening(sources) else sources
             }
+            // CR 205.4g / 107.4h: a snow permanent's mana pays {S} and counts as "{S} spent".
+            .map { source -> if (projected.isSnow(source.entityId)) source.copy(isSnow = true) else source }
             .let { sources ->
                 if (borrowed.isEmpty()) sources
                 else sources.map { source ->
@@ -2467,7 +2573,9 @@ class ManaSolver(
                 red = poolComponent.red,
                 green = poolComponent.green,
                 colorless = poolComponent.colorless,
-                restrictedMana = poolComponent.restrictedMana
+                restrictedMana = poolComponent.restrictedMana,
+                snowMana = poolComponent.snowMana,
+                snowColorless = poolComponent.snowColorless
             ).withSpendingColors(state, playerId)
         } else {
             ManaPool().withSpendingColors(state, playerId)

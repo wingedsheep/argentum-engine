@@ -519,7 +519,8 @@ internal class PermanentEntry(
         if (spellComponent.manaSpentWhite > 0 || spellComponent.manaSpentBlue > 0 ||
             spellComponent.manaSpentBlack > 0 || spellComponent.manaSpentRed > 0 ||
             spellComponent.manaSpentGreen > 0 || spellComponent.manaSpentColorless > 0 ||
-            spellComponent.manaSpentBySubtype.isNotEmpty() || spellComponent.manaSpentByCardType.isNotEmpty()) {
+            spellComponent.manaSpentBySubtype.isNotEmpty() || spellComponent.manaSpentByCardType.isNotEmpty() ||
+            spellComponent.manaSpentSnow > 0) {
             updated = updated.with(com.wingedsheep.engine.state.components.battlefield.CastRecordComponent(
                 whiteSpent = spellComponent.manaSpentWhite,
                 blueSpent = spellComponent.manaSpentBlue,
@@ -528,7 +529,8 @@ internal class PermanentEntry(
                 greenSpent = spellComponent.manaSpentGreen,
                 colorlessSpent = spellComponent.manaSpentColorless,
                 manaSpentBySubtype = spellComponent.manaSpentBySubtype,
-                manaSpentByCardType = spellComponent.manaSpentByCardType
+                manaSpentByCardType = spellComponent.manaSpentByCardType,
+                snowSpent = spellComponent.manaSpentSnow
             ))
         }
         return updated

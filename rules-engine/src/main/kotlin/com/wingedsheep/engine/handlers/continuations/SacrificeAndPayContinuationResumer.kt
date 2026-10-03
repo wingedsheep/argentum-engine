@@ -739,7 +739,9 @@ class SacrificeAndPayContinuationResumer(
             manaPoolComponent.black,
             manaPoolComponent.red,
             manaPoolComponent.green,
-            manaPoolComponent.colorless
+            manaPoolComponent.colorless,
+            snowMana = manaPoolComponent.snowMana,
+            snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(state, playerId)
 
         val currentPool = manaPool
@@ -760,7 +762,9 @@ class SacrificeAndPayContinuationResumer(
                     black = newPool.black,
                     red = newPool.red,
                     green = newPool.green,
-                    colorless = newPool.colorless
+                    colorless = newPool.colorless,
+                    snowMana = newPool.snowMana,
+                    snowColorless = newPool.snowColorless
                 )
             )
         }

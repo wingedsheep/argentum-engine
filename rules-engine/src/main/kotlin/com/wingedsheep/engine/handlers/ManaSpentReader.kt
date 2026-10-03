@@ -50,7 +50,8 @@ object ManaSpentReader {
                 blackSpent = it.manaSpentBlack, redSpent = it.manaSpentRed,
                 greenSpent = it.manaSpentGreen, colorlessSpent = it.manaSpentColorless,
                 manaSpentBySubtype = it.manaSpentBySubtype,
-                manaSpentByCardType = it.manaSpentByCardType
+                manaSpentByCardType = it.manaSpentByCardType,
+                snowSpent = it.manaSpentSnow
             )
         }
         return container.get<CastRecordComponent>() ?: CastRecordComponent()
@@ -89,6 +90,16 @@ object ManaSpentReader {
         container.get<SpellOnStackComponent>()?.let { return it.manaSpentBySubtype[subtype] ?: 0 }
         container.get<CastRecordComponent>()?.let { return it.manaSpentBySubtype[subtype] ?: 0 }
         return 0
+    }
+
+    /**
+     * How much mana from snow sources was spent to cast [entityId] — the "{S} spent" of CR 107.4h —
+     * same stack-then-cast-record read as [subtypeSpent]. Backs `DynamicAmount.SnowManaSpent`.
+     */
+    fun snowSpent(state: GameState, entityId: EntityId): Int {
+        val container = state.getEntity(entityId) ?: return 0
+        return container.get<SpellOnStackComponent>()?.manaSpentSnow
+            ?: container.get<CastRecordComponent>()?.snowSpent ?: 0
     }
 
     /**

@@ -203,9 +203,11 @@ data class SpentManaProvenance(
     val bySubtype: Map<com.wingedsheep.sdk.core.Subtype, Int> = emptyMap(),
     val sourceIds: Set<com.wingedsheep.sdk.model.EntityId> = emptySet(),
     /** Producing-source card type → mana units carrying it (Inga and Esika's "mana from creatures"). */
-    val byCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap()
+    val byCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap(),
+    /** Units produced by a snow source — the "{S} spent" of CR 107.4h. Exact, not proportional. */
+    val snow: Int = 0
 ) {
-    val isEmpty: Boolean get() = bySubtype.isEmpty() && sourceIds.isEmpty() && byCardType.isEmpty()
+    val isEmpty: Boolean get() = bySubtype.isEmpty() && sourceIds.isEmpty() && byCardType.isEmpty() && snow == 0
 
     /**
      * The producing-source subtypes that had at least one mana unit spent. `bySubtype` only ever
@@ -221,7 +223,8 @@ data class SpentManaProvenance(
         else -> SpentManaProvenance(
             bySubtype = sumCounts(bySubtype, other.bySubtype),
             sourceIds = sourceIds + other.sourceIds,
-            byCardType = sumCounts(byCardType, other.byCardType)
+            byCardType = sumCounts(byCardType, other.byCardType),
+            snow = snow + other.snow
         )
     }
 
@@ -238,7 +241,7 @@ data class SpentManaProvenance(
                 tag.subtypes.forEach { bySubtype.merge(it, 1, Int::plus) }
                 tag.cardTypes.forEach { byCardType.merge(it, 1, Int::plus) }
             }
-            return SpentManaProvenance(bySubtype, tags.mapTo(mutableSetOf()) { it.sourceId }, byCardType)
+            return SpentManaProvenance(bySubtype, tags.mapTo(mutableSetOf()) { it.sourceId }, byCardType, tags.count { it.isSnow })
         }
 
         /**
@@ -274,6 +277,16 @@ data class ManaPool(
     val manaBySubtype: Map<com.wingedsheep.sdk.core.Subtype, Int> = emptyMap(),
     val manaBySource: Map<com.wingedsheep.sdk.model.EntityId, Int> = emptyMap(),
     val manaByCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap(),
+    /**
+     * How many of the floating unrestricted units of each color came from a snow source — the
+     * only mana that can pay a `{S}` pip (CR 107.4h). Unlike the proportional provenance counters
+     * this is exact per color, because which unit pays `{S}` matters: invariant
+     * `snowMana[c] <= get(c)` and [snowColorless] `<= colorless`. Spending a color for anything
+     * but `{S}` spends its non-snow units first (see [spend]), so a snow unit survives as long as
+     * any plain unit of its color could have been spent instead.
+     */
+    val snowMana: Map<Color, Int> = emptyMap(),
+    val snowColorless: Int = 0,
     /** Ephemeral payment configuration, never stored in the player's mana component. */
     val spendingColors: Map<Color, Set<Color>> = emptyMap()
 ) {
@@ -370,27 +383,72 @@ data class ManaPool(
         restrictedMana.count { it.restriction.isSatisfiedBy(context) }
 
     /**
-     * Remove mana of a specific color.
+     * Remove mana of a specific color — its non-snow units first, so a snow unit stays available
+     * for a `{S}` pip whenever a plain unit could pay instead.
      */
     fun spend(color: Color, amount: Int = 1): ManaPool? {
         val current = get(color)
         if (current < amount) return null
-        return when (color) {
+        val spent = when (color) {
             Color.WHITE -> copy(white = white - amount)
             Color.BLUE -> copy(blue = blue - amount)
             Color.BLACK -> copy(black = black - amount)
             Color.RED -> copy(red = red - amount)
             Color.GREEN -> copy(green = green - amount)
         }
+        val snow = snowMana[color] ?: 0
+        return if (snow <= current - amount) spent else spent.copy(snowMana = snowMana.withCount(color, current - amount))
     }
 
     /**
-     * Remove colorless mana.
+     * Remove colorless mana — non-snow units first, as [spend] does.
      */
     fun spendColorless(amount: Int = 1): ManaPool? {
         if (colorless < amount) return null
-        return copy(colorless = colorless - amount)
+        return copy(colorless = colorless - amount, snowColorless = minOf(snowColorless, colorless - amount))
     }
+
+    /**
+     * Float what one solver-tapped source produced — [coloredAmount] units of its color, or its
+     * colorless amount — marked as snow when the source was snow, so a `{S}` pip paid from the
+     * pool afterwards can find it.
+     */
+    fun addProduction(production: ManaProduction, coloredAmount: Int = production.amount): ManaPool {
+        val color = production.color
+        val amount = if (color != null) coloredAmount else production.colorless
+        val added = if (color != null) add(color, amount) else addColorless(amount)
+        return if (production.snow) added.markSnow(color, amount) else added
+    }
+
+    /** Total floating units that came from a snow source. */
+    val snowTotal: Int get() = snowColorless + snowMana.values.sum()
+
+    /**
+     * Mark [amount] of the floating units of [color] (null = colorless) as produced by a snow
+     * source. The mana itself must already be in the pool; the mark is capped at what floats.
+     */
+    fun markSnow(color: Color?, amount: Int): ManaPool {
+        if (amount <= 0) return this
+        return if (color == null) copy(snowColorless = minOf(colorless, snowColorless + amount))
+        else copy(snowMana = snowMana.withCount(color, minOf(get(color), (snowMana[color] ?: 0) + amount)))
+    }
+
+    /**
+     * Spend one snow unit to pay a `{S}` pip (CR 107.4h), returning the new pool and the kind
+     * spent (null = colorless), or null if no snow mana floats. Colorless snow goes first — it is
+     * the kind least likely to be wanted by anything else.
+     */
+    fun spendSnow(): Pair<ManaPool, Color?>? {
+        if (snowColorless > 0) {
+            return copy(colorless = colorless - 1, snowColorless = snowColorless - 1) to null
+        }
+        val color = Color.entries.firstOrNull { (snowMana[it] ?: 0) > 0 } ?: return null
+        val unmarked = copy(snowMana = snowMana.withCount(color, snowMana.getValue(color) - 1))
+        return unmarked.spend(color)!! to color
+    }
+
+    private fun Map<Color, Int>.withCount(color: Color, count: Int): Map<Color, Int> =
+        if (count > 0) this + (color to count) else this - color
 
     /**
      * The ordered units of *unrestricted* floating mana this pool would spend to cover up to
@@ -481,6 +539,10 @@ data class ManaPool(
                     // Resolved after strict pips below so a strict pip of the same color claims
                     // its mana first.
                 }
+                ManaSymbol.Snow -> {
+                    // Paid after every colored pip, before generic, so it takes only snow units
+                    // nothing stricter wanted.
+                }
             }
         }
 
@@ -492,6 +554,8 @@ data class ManaPool(
             val spent = remaining.trySpendColored(symbol.color, spellContext)
             if (spent != null) remaining = spent else monoHybridGeneric += symbol.generic
         }
+
+        repeat(cost.snowCount) { remaining = remaining.spendSnow()?.first ?: return false }
 
         // Then, pay generic costs with any remaining mana (restricted first, then unrestricted)
         val genericAmount = cost.genericAmount + monoHybridGeneric
@@ -565,6 +629,9 @@ data class ManaPool(
                 is ManaSymbol.MonocolorHybrid -> {
                     // Resolved after strict pips below (mirrors canPay).
                 }
+                ManaSymbol.Snow -> {
+                    // Paid after the colored pips (mirrors canPay).
+                }
             }
         }
 
@@ -575,6 +642,8 @@ data class ManaPool(
             val spent = remaining.trySpendColored(symbol.color, spellContext)
             if (spent != null) remaining = spent else monoHybridGeneric += symbol.generic
         }
+
+        repeat(cost.snowCount) { remaining = remaining.spendSnow()!!.first }
 
         // Pay generic costs - spend eligible restricted first, then colorless, then colored
         var genericRemaining = cost.genericAmount + monoHybridGeneric
@@ -717,6 +786,19 @@ data class ManaPool(
                 is ManaSymbol.X -> {
                     unpaidSymbols.add(symbol)
                 }
+                ManaSymbol.Snow -> {
+                    // Paid below, once every colored pip has had its claim.
+                }
+            }
+        }
+
+        repeat(cost.snowCount) {
+            val paid = remaining.spendSnow()
+            if (paid == null) {
+                unpaidSymbols.add(ManaSymbol.Snow)
+            } else {
+                remaining = paid.first
+                paid.second?.let(::trackColorSpent) ?: colorlessSpent++
             }
         }
 
@@ -783,7 +865,7 @@ data class ManaPool(
         context: SpellPaymentContext?,
         allowMonoHybridGeneric: Boolean = false
     ): PartialPaymentResult {
-        val symbols = cost.symbols.filter { it !is ManaSymbol.Generic && it !is ManaSymbol.X }
+        val symbols = cost.symbols.filter { it !is ManaSymbol.Generic && it !is ManaSymbol.X && it !is ManaSymbol.Snow }
         fun options(symbol: ManaSymbol): List<Color?> {
             fun colors(color: Color): List<Color> = listOf(color) + spendingColors[color].orEmpty().filter { it != color }
             // Colorless spent as though it were any color comes last: native colors first.
@@ -835,6 +917,15 @@ data class ManaPool(
                 val color = assigned[i]
                 pool = if (color == null) pool.trySpendColorless(context)!! else pool.trySpendColored(color, context)!!
                 spent = if (color == null) spent.addColorless() else spent.add(color)
+            }
+        }
+        repeat(cost.snowCount) {
+            val paid = pool.spendSnow()
+            if (paid == null) {
+                unpaid.add(ManaSymbol.Snow)
+            } else {
+                pool = paid.first
+                spent = paid.second?.let { spent.add(it) } ?: spent.addColorless()
             }
         }
         val genericPartial = pool.payPartial(ManaCost(listOf(ManaSymbol.Generic(generic))), context)

@@ -201,7 +201,7 @@ class KeywordGrammarTest : StringSpec({
     }
 
     "a mana symbol the SDK cannot express declines rather than throwing" {
-        Grammar.abilityLine.parseLine("Cycling {S}").shouldBeInstanceOf<ParseOutcome.Declined>()
+        Grammar.abilityLine.parseLine("Cycling {HW}").shouldBeInstanceOf<ParseOutcome.Declined>()
     }
 
     "every keyword rule can print what it parses" {

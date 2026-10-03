@@ -145,7 +145,9 @@ class TurnFaceUpHandler(
                             red = poolComponent.red,
                             green = poolComponent.green,
                             colorless = poolComponent.colorless,
-                            restrictedMana = poolComponent.restrictedMana
+                            restrictedMana = poolComponent.restrictedMana,
+                            snowMana = poolComponent.snowMana,
+                            snowColorless = poolComponent.snowColorless
                         ).withSpendingColors(state, action.playerId)
                         if (!costHandler.canPayManaCost(pool, withXResolved(manaCost, xValue), faceUpContext)) {
                             return "Insufficient mana in pool to turn this creature face up"
@@ -228,7 +230,9 @@ class TurnFaceUpHandler(
                             red = poolComponent.red,
                             green = poolComponent.green,
                             colorless = poolComponent.colorless,
-                            restrictedMana = poolComponent.restrictedMana
+                            restrictedMana = poolComponent.restrictedMana,
+                            snowMana = poolComponent.snowMana,
+                            snowColorless = poolComponent.snowColorless
                         ).withSpendingColors(currentState, action.playerId)
 
                         val newPool = costHandler.payManaCost(pool, withXResolved(manaCost, xValue), faceUpContext)
@@ -243,7 +247,9 @@ class TurnFaceUpHandler(
                                     red = newPool.red,
                                     green = newPool.green,
                                     colorless = newPool.colorless,
-                                    restrictedMana = newPool.restrictedMana
+                                    restrictedMana = newPool.restrictedMana,
+                                    snowMana = newPool.snowMana,
+                                    snowColorless = newPool.snowColorless
                                 )
                             )
                         }
@@ -273,7 +279,9 @@ class TurnFaceUpHandler(
                             red = poolComponent.red,
                             green = poolComponent.green,
                             colorless = poolComponent.colorless,
-                            restrictedMana = poolComponent.restrictedMana
+                            restrictedMana = poolComponent.restrictedMana,
+                            snowMana = poolComponent.snowMana,
+                            snowColorless = poolComponent.snowColorless
                         ).withSpendingColors(currentState, action.playerId)
 
                         val partialResult = pool.payPartial(manaCost, faceUpContext)
@@ -326,7 +334,9 @@ class TurnFaceUpHandler(
                                     red = poolAfterPayment.red,
                                     green = poolAfterPayment.green,
                                     colorless = poolAfterPayment.colorless,
-                                    restrictedMana = poolAfterPayment.restrictedMana
+                                    restrictedMana = poolAfterPayment.restrictedMana,
+                                    snowMana = poolAfterPayment.snowMana,
+                                    snowColorless = poolAfterPayment.snowColorless
                                 )
                             )
                         }

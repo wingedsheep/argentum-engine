@@ -51,7 +51,14 @@ data class ManaPoolComponent(
      * Producing-source card type → floating units carrying it (Inga and Esika: "mana from
      * creatures"). Same snapshot-at-production, proportional-consumption rules as [manaBySubtype].
      */
-    val manaByCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap()
+    val manaByCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap(),
+    /**
+     * Floating units per color (and [snowColorless]) produced by a snow source — the mana a `{S}`
+     * pip demands (CR 107.4h). Exact, not proportional: see
+     * [com.wingedsheep.engine.mechanics.mana.ManaPool.snowMana] for the invariant and spend order.
+     */
+    val snowMana: Map<Color, Int> = emptyMap(),
+    val snowColorless: Int = 0
 ) : Component {
     /**
      * Add mana of a specific color.
@@ -86,22 +93,39 @@ data class ManaPoolComponent(
      */
     fun spend(color: Color, amount: Int = 1): ManaPoolComponent? {
         val current = getAmount(color)
-        return if (current >= amount) {
-            when (color) {
-                Color.WHITE -> copy(white = white - amount)
-                Color.BLUE -> copy(blue = blue - amount)
-                Color.BLACK -> copy(black = black - amount)
-                Color.RED -> copy(red = red - amount)
-                Color.GREEN -> copy(green = green - amount)
-            }
-        } else null
+        if (current < amount) return null
+        val spent = when (color) {
+            Color.WHITE -> copy(white = white - amount)
+            Color.BLUE -> copy(blue = blue - amount)
+            Color.BLACK -> copy(black = black - amount)
+            Color.RED -> copy(red = red - amount)
+            Color.GREEN -> copy(green = green - amount)
+        }
+        // Non-snow units go first, so the snow mark only shrinks once no plain unit is left.
+        val snow = snowMana[color] ?: 0
+        val left = current - amount
+        return if (snow <= left) spent
+        else spent.copy(snowMana = if (left > 0) snowMana + (color to left) else snowMana - color)
     }
 
     /**
      * Spend colorless mana.
      */
     fun spendColorless(amount: Int): ManaPoolComponent? =
-        if (colorless >= amount) copy(colorless = colorless - amount) else null
+        if (colorless >= amount) copy(colorless = colorless - amount, snowColorless = minOf(snowColorless, colorless - amount)) else null
+
+    /** Floating units that came from a snow source. */
+    val snowTotal: Int get() = snowColorless + snowMana.values.sum()
+
+    /**
+     * Mark [amount] of the floating units of [color] (null = colorless) as snow mana — produced by
+     * a snow source (CR 107.4h). The mana must already be in the pool; the mark is capped at it.
+     */
+    fun markSnow(color: Color?, amount: Int): ManaPoolComponent {
+        if (amount <= 0) return this
+        return if (color == null) copy(snowColorless = minOf(colorless, snowColorless + amount))
+        else copy(snowMana = snowMana + (color to minOf(getAmount(color), (snowMana[color] ?: 0) + amount)))
+    }
 
     /**
      * Total mana available.
@@ -251,8 +275,10 @@ data class ManaPoolComponent(
                 red = if (Color.RED in retain) red else 0,
                 green = if (Color.GREEN in retain) green else 0,
                 colorless = 0,
-                restrictedMana = preserved + lostRestricted.filter { it.color != null && it.color in retain }
-                // Provenance tags do not survive a mana-loss boundary.
+                restrictedMana = preserved + lostRestricted.filter { it.color != null && it.color in retain },
+                // Provenance tags do not survive a mana-loss boundary, but snow is a property of
+                // the retained mana itself (it came from a snow source), so it stays.
+                snowMana = snowMana.filterKeys { it in retain }
             )
             else -> ManaPoolComponent(restrictedMana = preserved)
         }
@@ -304,14 +330,16 @@ data class RestrictedManaEntry(
 )
 
 /**
- * What produced a unit of mana, snapshotted when it was made: the source's id, subtypes and card
- * types. See [com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker].
+ * What produced a unit of mana, snapshotted when it was made: the source's id, subtypes, card
+ * types and whether it was snow. See [com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker].
  */
 @Serializable
 data class ManaSourceTag(
     val sourceId: EntityId,
     val subtypes: Set<com.wingedsheep.sdk.core.Subtype> = emptySet(),
-    val cardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet()
+    val cardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet(),
+    /** The source was a snow permanent, so this mana pays `{S}` and counts as "{S} spent" (CR 107.4h). */
+    val isSnow: Boolean = false
 )
 
 /**

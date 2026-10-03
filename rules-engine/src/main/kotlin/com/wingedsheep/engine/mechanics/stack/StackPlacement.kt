@@ -168,6 +168,7 @@ internal object StackPlacement {
             manaSpentColorless = 0,
             manaSpentBySubtype = emptyMap(),
             manaSpentByCardType = emptyMap(),
+            manaSpentSnow = 0,
             manaSpentOnXByColor = emptyMap(),
             chosenModes = effectiveModes,
             modeTargetsOrdered = effectiveModeTargets,
