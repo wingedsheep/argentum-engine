@@ -320,7 +320,9 @@ class TurnManager(
 
             redirectedState = redirectedState.copy(step = step, phase = phase, priorityPassedBy = emptySet())
             events += PhaseChangedEvent(phase)
-            events += StepChangedEvent(step)
+            if (step != Step.UNTAP || untapStepSkippers(redirectedState, activePlayer).size < redirectedState.sharedTurnTeam(activePlayer).size) {
+                events += StepChangedEvent(step)
+            }
 
             if (next.kind == ExtraPhaseKind.BEGINNING) {
                 return runInsertedUntapStep(redirectedState.copy(priorityPlayerId = null), activePlayer, events)
@@ -341,11 +343,12 @@ class TurnManager(
         events: List<GameEvent>
     ): ExecutionResult {
         val skippers = untapStepSkippers(state, activePlayer)
+        val pendingSkips = pendingUntapSkipsToConsume(state, activePlayer, skippers)
         val untapResult = beginningPhaseManager.performUntapStep(state)
         if (untapResult.error != null) return untapResult
         fun afterUntap(s: GameState) = consumeUntapStepSkips(
             cleanupPhaseManager.expireAffectedControllersNextUntapEffects(s, activePlayer, skippers),
-            skippers
+            pendingSkips
         )
         if (untapResult.outcome is Outcome.Paused) {
             val consumed = untapResult.copy(state = afterUntap(untapResult.state))
@@ -630,19 +633,22 @@ class TurnManager(
             events.add(PhaseChangedEvent(nextPhase))
         }
 
-        events.add(StepChangedEvent(nextStep))
+        if (nextStep != Step.UNTAP || untapStepSkippers(newState, activePlayer).size < newState.sharedTurnTeam(activePlayer).size) {
+            events.add(StepChangedEvent(nextStep))
+        }
 
         // Perform automatic step actions
         when (nextStep) {
             Step.UNTAP -> {
                 val skippers = untapStepSkippers(newState, activePlayer)
+                val pendingSkips = pendingUntapSkipsToConsume(newState, activePlayer, skippers)
                 val untapResult = beginningPhaseManager.performUntapStep(newState)
                 if (untapResult.error != null) return untapResult
                 if (untapResult.outcome is Outcome.Paused) {
-                    val consumed = untapResult.copy(state = consumeUntapStepSkips(untapResult.state, skippers))
+                    val consumed = untapResult.copy(state = consumeUntapStepSkips(untapResult.state, pendingSkips))
                     return parkRestOfTurn(consumed, newState, AdvanceStepContinuation, events + untapResult.events)
                 }
-                newState = consumeUntapStepSkips(untapResult.newState, skippers)
+                newState = consumeUntapStepSkips(untapResult.newState, pendingSkips)
                 events.addAll(untapResult.events)
                 // Immediately advance past untap (no priority). Carry the untap-step events
                 // (untaps, and phase-ins from Rule 702.26) forward on the result so the caller's
@@ -1060,12 +1066,14 @@ class TurnManager(
             events.addAll(result.events)
             if (current.gameOver) return ExecutionResult.success(current, events)
         }
+        val skippers = untapStepSkippers(current, playerId)
+        val pendingSkips = pendingUntapSkipsToConsume(current, playerId, skippers)
         val untapResult = beginningPhaseManager.performUntapStep(current)
         if (untapResult.error != null) return untapResult
         if (untapResult.outcome is Outcome.Paused) {
-            return parkRestOfTurn(untapResult, current, FinishUntapStepContinuation(playerId), events + untapResult.events)
+            return parkRestOfTurn(untapResult, current, FinishUntapStepContinuation(playerId, skippers, pendingSkips), events + untapResult.events)
         }
-        val finished = finishUntapStep(untapResult.newState, playerId)
+        val finished = finishUntapStep(untapResult.newState, playerId, skippers, pendingSkips)
         return finished.copy(events = events + untapResult.events + finished.events)
     }
 
@@ -1075,13 +1083,17 @@ class TurnManager(
      * and the game advances to the upkeep step. Runs inline from [endTurn], or from a
      * [FinishUntapStepContinuation] when the untap step stopped for a choice.
      */
-    fun finishUntapStep(state: GameState, activePlayer: EntityId): ExecutionResult {
-        val skippedUntapStep = untapStepSkippers(state, activePlayer)
+    fun finishUntapStep(
+        state: GameState,
+        activePlayer: EntityId,
+        skippedUntapStep: Set<EntityId>,
+        pendingSkipsToConsume: Set<EntityId>,
+    ): ExecutionResult {
         var postUntapState = cleanupPhaseManager.expireUntilYourNextTurnEffects(state, activePlayer)
         postUntapState = cleanupPhaseManager.expireAffectedControllersNextUntapEffects(
             postUntapState, activePlayer, skippedUntapStep
         )
-        postUntapState = consumeUntapStepSkips(postUntapState, skippedUntapStep)
+        postUntapState = consumeUntapStepSkips(postUntapState, pendingSkipsToConsume)
         // CR 701.15a: goaded designation lasts "until the next turn of the
         // controller of that spell or ability"; same hook as the floating-effect
         // path above so all "until your next turn" semantics share one site.
@@ -1093,21 +1105,31 @@ class TurnManager(
         return advanceResult.copy(events = goadEvents + advanceResult.events)
     }
 
-    /** The active-team members whose untap step this turn was skipped ([SkipNextUntapStepComponent]). */
-    private fun untapStepSkippers(state: GameState, activePlayer: EntityId): Set<EntityId> =
-        state.sharedTurnTeam(activePlayer).filterTo(HashSet()) {
-            state.getEntity(it)?.has<SkipNextUntapStepComponent>() == true
-        }
+    /** A standing skip affecting any member skips the shared team's step. */
+    private fun standingUntapSkip(state: GameState, activePlayer: EntityId): Boolean =
+        state.sharedTurnTeam(activePlayer).any { skipsUntapStep(state, cardRegistry, zones.predicateEvaluator, it) }
 
-    /** Each skipper's untap step has now been skipped: one pending skip is satisfied (CR 614.10a). */
-    private fun consumeUntapStepSkips(state: GameState, skippers: Set<EntityId>): GameState =
-        skippers.fold(state) { s, player ->
+    /** Players whose untap-dependent durations must wait for an actual untap step. */
+    private fun untapStepSkippers(state: GameState, activePlayer: EntityId): Set<EntityId> {
+        val team = state.sharedTurnTeam(activePlayer)
+        if (standingUntapSkip(state, activePlayer)) return team.toSet()
+        return team.filterTo(HashSet()) { state.getEntity(it)?.has<SkipNextUntapStepComponent>() == true }
+    }
+
+    /** Capture before phasing/untapping: a source phasing in cannot retroactively skip this step. */
+    private fun pendingUntapSkipsToConsume(state: GameState, activePlayer: EntityId, skippers: Set<EntityId>): Set<EntityId> =
+        if (standingUntapSkip(state, activePlayer)) emptySet() else skippers
+
+    /** Consume only the one-shot replacements selected before the step's actions. */
+    private fun consumeUntapStepSkips(state: GameState, skippers: Set<EntityId>): GameState {
+        return skippers.fold(state) { s, player ->
             s.updateEntity(player) { container ->
                 val remaining = (container.get<SkipNextUntapStepComponent>()?.steps ?: 1) - 1
                 if (remaining > 0) container.with(SkipNextUntapStepComponent(remaining))
                 else container.without<SkipNextUntapStepComponent>()
             }
         }
+    }
 
     /**
      * A turn-based action of the current step stopped for a choice. Park [rest] beneath every

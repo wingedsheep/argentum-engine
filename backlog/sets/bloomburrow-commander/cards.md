@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 139 / 312
+**Implemented:** 140 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -24,7 +24,7 @@
 - [x] Agate Instigator
 - [x] Alchemist's Talent
 - [ ] An Offer You Can't Refuse
-- [ ] Angel of the Ruins
+- [x] Angel of the Ruins
 - [ ] Ant Queen
 - [ ] Arasta of the Endless Web
 - [x] Arcane Signet

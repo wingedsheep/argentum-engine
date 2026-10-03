@@ -1,3 +1,75 @@
+// Angel of the Ruins
+{
+    "name": "Angel of the Ruins",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Artifact Creature — Angel",
+    "oracleText": "Flying\nWhen this creature enters, exile up to two target artifacts and/or enchantments.\nPlainscycling {2} ({2}, Discard this card: Search your library for a Plains card, reveal it, put it into your hand, then shuffle.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}",
+            "searchFilter": {
+                "cardPredicates": [
+                    {
+                        "type": "HasSubtype",
+                        "subtype": "Plains"
+                    }
+                ]
+            },
+            "displayPrefix": "Plainscycling"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Angel of the Ruins:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Exile"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "artifact|enchantment"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, exile up to two target artifacts and/or enchantments."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Viko Menezes",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea96229a-5c33-4f79-97d4-059947dd7617.jpg?1783927610"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Cursed Mirror
 {
     "name": "Cursed Mirror",

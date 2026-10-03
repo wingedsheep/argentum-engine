@@ -1154,6 +1154,13 @@ data object SkipDrawStep : StaticAbility {
     override val description: String = "Skip your draw step"
 }
 
+/** Standing player-scoped restriction; unlike a next-step marker it is never consumed. */
+@SerialName("SkipUntapStep")
+@Serializable
+data class SkipUntapStep(val player: Player = Player.Each) : StaticAbility {
+    override val description: String = "${player.description} skips their untap steps"
+}
+
 /**
  * Removes the maximum hand size limit for the controller.
  * Used for cards like Thought Vessel and Reliquary Tower: "You have no maximum hand size."

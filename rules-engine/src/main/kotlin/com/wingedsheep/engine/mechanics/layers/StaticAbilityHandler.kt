@@ -1132,6 +1132,7 @@ class StaticAbilityHandler(
             is DamagePersistsThroughCleanup,
             is NoMaximumHandSize,
             is com.wingedsheep.sdk.scripting.SkipDrawStep,
+            is com.wingedsheep.sdk.scripting.SkipUntapStep,
             is SetMaximumHandSize,
             is PreventManaPoolEmptying,
             is ConvertEmptyingMana,

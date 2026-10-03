@@ -49,6 +49,69 @@
     ]
 }
 
+// Buried Alive
+{
+    "name": "Buried Alive",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to three creature cards, put them into your graveyard, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "creature"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "storeSelected": "found"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Horton",
+        "flavorText": "\"Is it worse to walk while dead, or to be buried alive? I have witnessed both.\"\n—Crovax",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/56b92eb5-72b0-46b4-8b16-8a7a7ac80f56.jpg?1783946736",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "You can look in your library and then choose to find any number from zero to three creatures after you look at it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Disrupt
 {
     "name": "Disrupt",

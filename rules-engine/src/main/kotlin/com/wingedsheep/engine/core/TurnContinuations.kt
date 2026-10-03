@@ -19,4 +19,12 @@ data object AdvanceStepContinuation : AutomaticContinuation
  * See `TurnManager.finishUntapStep`.
  */
 @Serializable
-data class FinishUntapStepContinuation(val activePlayerId: EntityId) : AutomaticContinuation
+data class FinishUntapStepContinuation(
+    val activePlayerId: EntityId,
+    val skippedUntapStep: Set<EntityId>,
+    val pendingSkipsToConsume: Set<EntityId>,
+) : AutomaticContinuation
+
+/** Select the replacement for a team's untap: at most one pending skip is spent. */
+@Serializable
+data class UntapStepSkipChoiceContinuation(val pendingPlayers: List<EntityId>) : AnswerContinuation

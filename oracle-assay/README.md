@@ -1283,6 +1283,31 @@ Sygg, River Guide targeted a Merfolk *creature*, where "target Merfolk" is any M
 bare tribal noun, as Sawblade Slinger's Zombie was). Fixed to `GameObjectFilter.Permanent.withSubtype`;
 it is the only card that moved in the golden, and the other seven newly compared cards agree.
 
+## The soulshift band
+
+The twenty-sixth loop band, tail key `Soulshift #`: the Kamigawa keyword line "Soulshift 4". **25
+lines** across the corpus; the probe (→ "Flying") finished 21 cards. It delivered **10 hand-written
+cards read whole (7,554 → 7,564)** — ten of the twelve soulshift cards. Thief of Hope and He Who
+Hungers still decline on a different line each.
+
+### A keyword that is lowered, so the rule calls the lowering
+
+Soulshift is equip's shape and amplify's: one printed line, two card slots. Every hand-written card
+writes `soulshift(n)`, which adds `Numeric(SOULSHIFT, n)` *and* the optional dies trigger CR 702.46a
+spells out ("return target Spirit card with mana value N or less from your graveyard to your hand").
+A `numericKeyword` row would have read the keyword and silently dropped the trigger. So it is a line
+rule in `Grammar` beside `equipLine`, and its build half calls the DSL method itself inside a
+throwaway `card { }` and keeps both halves, re-minting the ability id to a constant. The lowering has
+one definition, and `match` rebuilds the whole fragment for its `n` and compares it, so a keyword
+without its trigger, or with a trigger for a different `n`, refuses to print. The grammar's existing
+trigger rules read the reminder sentence into the same model, which is a useful check that the two
+agree, but the line rule does not depend on it.
+
+### What the differential found
+
+Differential **7,160 compared / 73 divergent → 7,170 / 73**. All ten newly compared cards agree with
+their goldens; no card moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

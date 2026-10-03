@@ -31,7 +31,8 @@ class CoreAutoResumerModule(
             mergeAndContinue(services.turnManager.finishTurnStart(state, continuation.activePlayerId, continuation.followUps), events, checkForMore)
         },
         autoResumer(FinishUntapStepContinuation::class) { state, continuation, events, checkForMore ->
-            mergeAndContinue(services.turnManager.finishUntapStep(state, continuation.activePlayerId), events, checkForMore)
+            mergeAndContinue(services.turnManager.finishUntapStep(state, continuation.activePlayerId,
+                continuation.skippedUntapStep, continuation.pendingSkipsToConsume), events, checkForMore)
         },
         autoResumer(PendingTriggersContinuation::class) { state, continuation, events, checkForMore ->
             val result = services.triggerProcessor.processTriggers(state, continuation.remainingTriggers)

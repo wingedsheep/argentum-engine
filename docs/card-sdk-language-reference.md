@@ -9249,6 +9249,16 @@ staticAbility {
   `ConditionalStaticAbility(LegendRuleDoesNotApplyTo(Permanent.named(n)),
   Compare(AggregateBattlefield(Player.Each, Permanent.named(n)), EQ, Fixed(2)))`; a third copy fails the
   count, so the rule sees all three and the controller keeps one.
+- `SkipUntapStep(player = Player.Each)` — standing player-scoped skip (Stasis). Reads projected
+  controller and active printed/conditional/composite statics, plus duration-gated grants, before
+  any untap-step actions. Supports `Player.You`, `EachOpponent`, `Each` and other resolvable player
+  references. Face-down, phased-out and ability-less printed sources do not apply. Skips phasing,
+  day/night checks, other-player untaps and next-untap expiry; upkeep still occurs. Standing skips
+  overlap with pending one-shot skips through a `ChooseOptionDecision`: the affected player/team
+  chooses the standing effect (preserving pending skips) or spends exactly one pending skip.
+  Captures skip status before phasing/untapping, including across serialized untap continuations;
+  a source phasing in during a real untap cannot retroactively skip it or preserve its durations.
+  Uses the existing option UI for replacement ordering; otherwise turn events advance directly to upkeep.
 - `SkipDrawStep` — "Skip your draw step." Controller-scoped and standing: `DrawPhaseManager` scans the
   projected battlefield (via `RoomFaceStatics`) as the draw step begins and takes no draw for a player
   who controls one, every turn, without consuming anything. The one-shot counterparts are the
