@@ -16214,7 +16214,8 @@ still needs the produced-mana spending obligation (G40); it is not yet authorabl
 with a restriction on that player's **activated mana abilities**. Their sources must match the
 `GameObjectFilter` at activation time, using projected characteristics and the affected player's
 perspective. Source-relative references retain the enclosing resolution's context. Nested restrictions
-intersect. The serializable scope remains active across casting and payment decisions, then expires
+intersect. Text changes recurse into both the source filter and nested instruction, whose dynamic
+description is preserved. The serializable scope remains active across casting and payment decisions, then expires
 before the next sibling instruction. Other players and existing floating mana are unaffected.
 
 Example: `Effects.WithManaAbilitySources(Effects.ForcePlay(chosen, opponent),
