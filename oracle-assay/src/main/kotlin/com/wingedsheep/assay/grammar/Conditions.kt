@@ -222,6 +222,11 @@ object Conditions {
         // subtype-filtered spellings ("a Zombie died this turn") are a different model and stay out.
         constant("a creature died this turn", SdkConditions.CreatureDiedThisTurn),
         constant("a creature died under your control this turn", SdkConditions.ControlledCreatureDiedThisTurn),
+        // Raid's condition — "At the beginning of your end step, if you attacked this turn, …",
+        // "Activate only if you attacked this turn." One whole clause, one facade, past simple its
+        // only printed spelling. "You attacked with N or more creatures this turn" is the counted
+        // sibling, `YouAttackedWithCreaturesThisTurn`, left for a band of its own.
+        constant("you attacked this turn", SdkConditions.YouAttackedThisTurn),
         discardedACardThisTurn,
         eitherControlled,
         countAtLeast(

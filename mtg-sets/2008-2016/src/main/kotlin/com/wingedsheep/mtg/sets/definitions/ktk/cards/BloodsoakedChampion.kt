@@ -34,7 +34,7 @@ val BloodsoakedChampion = card("Bloodsoaked Champion") {
 
     activatedAbility {
         cost = Costs.Mana("{1}{B}")
-        effect = Effects.PutOntoBattlefield(EffectTarget.Self)
+        effect = Effects.PutOntoBattlefieldFromGraveyard(EffectTarget.Self)
         activateFromZone = Zone.GRAVEYARD
         restrictions = listOf(
             ActivationRestriction.OnlyIfCondition(Conditions.YouAttackedThisTurn)
