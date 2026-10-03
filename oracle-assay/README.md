@@ -1439,6 +1439,34 @@ Timely Hordemate returned "from your graveyard to the battlefield" through the u
 counted over `attackingCreaturesYouControl()` — the same number in a duel, a different one when a
 teammate attacks alongside it — and now counts every attacking creature, as Respite does.
 
+## The chosen-type band
+
+The thirty-second loop band, tail key `of the chosen …`: "Creatures you control of the chosen type
+get +1/+1." — Etchings of the Chosen, Cover of Darkness, and every lord over the creature type its
+source chose as it entered — plus the singular noun, "Whenever a permanent you control of the chosen
+type enters, …". **65 lines**; the probe (dropping " of the chosen type") finished 20 cards. It
+delivered **6 hand-written cards read whole (7,687 → 7,693)**, and the family fell to 8 lines, all
+"of the chosen *color*" — a different field. The probe overstated because deleting the qualifier also
+deletes what it qualifies elsewhere on the card: "~ is the chosen type in addition to its other
+types", "enters with an additional +1/+1 counter", "spend this mana only to cast a spell of the
+chosen type", "landwalk of the chosen type" each decline on their own construct.
+
+### One phrase, two fields, split by position
+
+The SDK spells "of the chosen type" twice and the split is by position, not habit. On a plural lord
+it is `GroupFilter.chosenSubtypeKey` — a field on the *group*, which is what every hand-written lord
+writes through `GroupFilter.ChosenSubtypeCreatures()` — so it is a row of the lord product in
+`Statics`, beside "other". On a singular noun (a trigger subject, a target, a sacrifice) it is
+`CardPredicate.HasChosenSubtype` via `withChosenSubtype()`, a `Filters` layer offered in singular
+position only. Offering the layer in plural position too would have given the lord sentence two
+models. Only the default key is printed: a pipeline's own stored choice (Walking Desecration) has a
+key the text does not name and refuses to print.
+
+### What the differential found
+
+Differential **7,292 compared / 73 divergent → 7,293 / 73**. The one newly compared card agrees with
+its golden; no card moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
