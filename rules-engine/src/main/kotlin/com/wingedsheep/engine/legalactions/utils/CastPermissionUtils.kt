@@ -1013,6 +1013,11 @@ class CastPermissionUtils(
      * is `Creature`); abilities of noncreature permanents that animate them into creatures
      * (e.g. Vehicle Crew) are also unaffected by a `Creature` filter because the source isn't
      * yet a creature in projected state when the ability is activated.
+     *
+     * A [sourceId] off the battlefield (a card cycling or channelling from hand, a graveyard or
+     * command-zone ability) is only caught by a prohibition with
+     * [anyZone][PreventActivatedAbilities.anyZone] set — the "sources with the chosen name" wording
+     * of Pithing Needle and its kin. The others speak of permanents only.
      */
     fun isActivationPrevented(
         state: GameState,
@@ -1020,6 +1025,7 @@ class CastPermissionUtils(
         abilityIsManaAbility: Boolean = false
     ): Boolean {
         val projected = state.projectedState
+        val sourceOnBattlefield = sourceId in state.getBattlefield()
         battlefield@ for (entityId in state.getBattlefield()) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
@@ -1028,6 +1034,7 @@ class CastPermissionUtils(
                 val prevent = ability as? PreventActivatedAbilities ?: continue
                 // "… can't be activated unless they're mana abilities" — exempt mana abilities.
                 if (prevent.nonManaAbilitiesOnly && abilityIsManaAbility) continue
+                if (!sourceOnBattlefield && !prevent.anyZone) continue
                 if (context == null) {
                     // Evaluate from the granting permanent's controller's perspective.
                     val granterController = projected.getController(entityId)
@@ -1045,6 +1052,7 @@ class CastPermissionUtils(
         for (grant in state.grantedStaticAbilities) {
             val prevent = grant.ability as? PreventActivatedAbilities ?: continue
             if (prevent.nonManaAbilitiesOnly && abilityIsManaAbility) continue
+            if (!sourceOnBattlefield && !prevent.anyZone) continue
             if (!state.getBattlefield().contains(grant.entityId)) continue
             // Per-frame gate for conditional durations — the mirror of StateProjector's gate
             // for floating effects. EndedDurationExpiryCheck supplies the one-way latch.
@@ -1063,6 +1071,24 @@ class CastPermissionUtils(
         }
         return false
     }
+
+    /**
+     * True when either kind of activation prohibition forbids [activatingPlayerId] from activating
+     * an ability of [sourceId]: a who-blind [PreventActivatedAbilities] lock
+     * ([isActivationPrevented] — Pithing Needle, Cursed Totem) or a who/when-scoped
+     * [PlayersCantActivateAbilities] one ([isActivationPreventedForPlayer] — Grand Abolisher,
+     * Yuriko). The single check for the activation paths that report one reason for both: cycling
+     * and typecycling, crew and saddle, and abilities activated from hand, graveyard, exile or the
+     * command zone.
+     */
+    fun isActivationForbidden(
+        state: GameState,
+        sourceId: EntityId,
+        activatingPlayerId: EntityId,
+        abilityIsManaAbility: Boolean = false
+    ): Boolean =
+        isActivationPrevented(state, sourceId, abilityIsManaAbility) ||
+            isActivationPreventedForPlayer(state, sourceId, activatingPlayerId, abilityIsManaAbility)
 
     /**
      * True when a [PlayersCantActivateAbilities] static forbids [activatingPlayerId] from

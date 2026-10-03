@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CycleCard
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -112,6 +113,23 @@ class CursedTotemScenarioTest : ScenarioTestBase() {
                 withClue("Forest's mana ability should still be available") {
                     (forestActivation != null) shouldBe true
                 }
+            }
+
+            // "Activated abilities of creatures" means creature permanents — a creature card in
+            // hand is not one, so it still cycles.
+            test("A creature card in hand can still cycle") {
+                val game = scenario()
+                    .withPlayers("P1", "P2")
+                    .withCardOnBattlefield(1, "Cursed Totem")
+                    .withCardInHand(1, "Disciple of Law")
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withCardInLibrary(1, "Plains")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                (game.getLegalActions(1).any { it.action is CycleCard }) shouldBe true
+                (game.cycleCard(1, "Disciple of Law").error == null) shouldBe true
             }
         }
     }

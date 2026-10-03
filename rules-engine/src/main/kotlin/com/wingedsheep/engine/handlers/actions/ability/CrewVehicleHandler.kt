@@ -62,8 +62,9 @@ class CrewVehicleHandler(
         }
 
         // Crew is an activated ability of the Vehicle (CR 702.122a), so a "players can't activate
-        // abilities" static (Yuriko, Blade of the Mighty; Grand Abolisher on an artifact) forbids it.
-        if (castPermissionUtils?.isActivationPreventedForPlayer(state, action.vehicleId, action.playerId) == true) {
+        // abilities" static (Yuriko, Blade of the Mighty; Grand Abolisher on an artifact) or a name
+        // lock (Pithing Needle) forbids it.
+        if (castPermissionUtils?.isActivationForbidden(state, action.vehicleId, action.playerId) == true) {
             return "An effect prevents you from activating that ability right now"
         }
 

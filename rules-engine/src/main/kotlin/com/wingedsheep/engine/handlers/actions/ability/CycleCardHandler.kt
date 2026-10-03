@@ -64,8 +64,9 @@ class CycleCardHandler(
         }
 
         // Cycling is an activated ability of the card in hand (CR 702.29a): an any-zone
-        // "players can't activate abilities" (Yuriko, Blade of the Mighty) forbids it.
-        if (castPermissionUtils?.isActivationPreventedForPlayer(state, action.cardId, action.playerId) == true) {
+        // "players can't activate abilities" (Yuriko, Blade of the Mighty) or a name lock on
+        // "sources" (Pithing Needle) forbids it.
+        if (castPermissionUtils?.isActivationForbidden(state, action.cardId, action.playerId) == true) {
             return "An effect prevents you from activating that ability right now"
         }
 

@@ -75,9 +75,10 @@ class ZoneActivatedAbilityEnumerator(private val zone: Zone, private val predica
                 // ability activates from the battlefield, so this only guards future cards.
                 if (context.castPermissionUtils.isPowerUpActivationRestricted(state, ability)) continue
 
-                // An any-zone "players can't activate abilities" (Yuriko, Blade of the Mighty) —
-                // the same check `ActivateAbilityHandler.validate` makes off the battlefield.
-                if (context.castPermissionUtils.isActivationPreventedForPlayer(
+                // An any-zone "players can't activate abilities" (Yuriko, Blade of the Mighty) or
+                // name lock (Pithing Needle) — the same check `ActivateAbilityHandler.validate`
+                // makes off the battlefield.
+                if (context.castPermissionUtils.isActivationForbidden(
                         state, entityId, playerId, abilityIsManaAbility = ability.isManaAbility
                     )
                 ) continue

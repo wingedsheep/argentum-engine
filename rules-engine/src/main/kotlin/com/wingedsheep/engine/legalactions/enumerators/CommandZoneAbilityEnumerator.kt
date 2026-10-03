@@ -52,8 +52,9 @@ class CommandZoneAbilityEnumerator : ActionEnumerator {
                 // too, or the action would be offered and then refused.
                 if (context.castPermissionUtils.isPowerUpActivationRestricted(state, ability)) continue
 
-                // An any-zone "players can't activate abilities" (Yuriko, Blade of the Mighty).
-                if (context.castPermissionUtils.isActivationPreventedForPlayer(
+                // An any-zone "players can't activate abilities" (Yuriko, Blade of the Mighty) or
+                // name lock (Pithing Needle).
+                if (context.castPermissionUtils.isActivationForbidden(
                         state, entityId, playerId, abilityIsManaAbility = ability.isManaAbility
                     )
                 ) continue

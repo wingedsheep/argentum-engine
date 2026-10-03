@@ -9096,12 +9096,19 @@ staticAbility {
 **Global denial statics** (no `filter`/`duration` block — they're singleton-style)
 
 - `PreventCycling` — "Players can't cycle cards." (Stabilizer)
-- `PreventActivatedAbilities(filter, nonManaAbilitiesOnly = false)` — activated abilities of
+- `PreventActivatedAbilities(filter, nonManaAbilitiesOnly = false, anyZone = false)` — activated abilities of
   matching permanents can't be activated; loyalty abilities and animation costs that haven't yet
   produced a creature are unaffected. By default both mana and non-mana abilities are blocked
   (Cursed Totem → `GameObjectFilter.Creature`). With `nonManaAbilitiesOnly = true`, mana abilities
   stay usable and only non-mana abilities are blocked — the "… can't be activated unless they're
   mana abilities" wording (Sharkey, Tyrant of the Shire → `GameObjectFilter.Land.opponentControls()`).
+  With `anyZone = true` the lock also reaches abilities of cards outside the battlefield — cycling
+  and typecycling, channel and other hand abilities, graveyard, exile and command-zone abilities —
+  matched against the card in its zone; crew and saddle are covered either way. That is the
+  "sources with the chosen name" wording (Sorcerous Spyglass, Disruptor Flute, Petrified Hamlet:
+  `PreventActivatedAbilities(GameObjectFilter.Any.namedFromChosenComponent(), nonManaAbilitiesOnly = true, anyZone = true)`).
+  Leave it off for a permanent-scoped filter — Cursed Totem's "activated abilities of creatures"
+  doesn't stop a creature card cycling from hand.
   Also grantable at runtime via `Effects.GrantStaticAbility` (read from `GameState.grantedStaticAbilities`
   by the same activation-legality check, anchored to the holder) — see the `GrantStaticAbility`
   entry in §3 for the durational, targeted form (Braided Net:
@@ -14355,11 +14362,11 @@ any card name"). Set
 enters, immediately before the choice (durable reveal via `RevealedToComponent`, correctly masked to
 show only to the controller; purely informational — it never restricts the name chosen, so an empty
 opposing hand still lets you name any card). Used by Petrified Hamlet ("When this land enters, choose
-a land card name", then two statics — `PreventActivatedAbilities(nonManaAbilitiesOnly = true)` and
+a land card name", then two statics — `PreventActivatedAbilities(nonManaAbilitiesOnly = true, anyZone = true)` and
 `GrantActivatedAbility` of a `{T}: Add {C}` mana ability — both filtered by
 `namedFromChosenComponent()`) and Sorcerous Spyglass (`EntersWithChoice(ChoiceType.CARD_NAME,
 cardNamePool = CardNamePool.ANY, lookAtOpponentHand = true)` +
-`PreventActivatedAbilities(GameObjectFilter.Any.namedFromChosenComponent(), nonManaAbilitiesOnly = true)`), and
+`PreventActivatedAbilities(GameObjectFilter.Any.namedFromChosenComponent(), nonManaAbilitiesOnly = true, anyZone = true)`), and
 `ChoiceType.NUMBER` (set `minValue` / `maxValue`) writes a chosen number into the
 `CastChoicesComponent` under `ChoiceSlot.CHOSEN_NUMBER` as a `ChoiceValue.NumberChoice` — read back
 by a CDA via `DynamicAmount.CastChoice(CHOSEN_NUMBER)`. This is the *as-enters replacement* (CR

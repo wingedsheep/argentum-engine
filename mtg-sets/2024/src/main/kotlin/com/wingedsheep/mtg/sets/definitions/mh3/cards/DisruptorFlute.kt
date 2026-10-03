@@ -26,7 +26,8 @@ import com.wingedsheep.sdk.scripting.SpellCostTarget
  *   durably under `ChoiceSlot.CARD_NAME` (same shape as Sorcerous Spyglass, minus the hand look).
  * - The tax is symmetric — every caster pays it — so [SpellCostTarget.AnyCaster] over the bare
  *   chosen-name predicate ([GameObjectFilter.namedFromChosenComponent]).
- * - The ability lock is [PreventActivatedAbilities]`(nonManaAbilitiesOnly = true)` over the same name.
+ * - The ability lock is [PreventActivatedAbilities]`(nonManaAbilitiesOnly = true, anyZone = true)` over
+ *   the same name — "sources" reaches cards in every zone, so cycling and channel are locked too.
  */
 val DisruptorFlute = card("Disruptor Flute") {
     manaCost = "{2}"
@@ -55,11 +56,12 @@ val DisruptorFlute = card("Disruptor Flute") {
         )
     }
 
-    // Activated abilities of sources with the chosen name can't be activated unless mana abilities.
+    // Activated abilities of sources with the chosen name (in any zone) can't be activated unless mana abilities.
     staticAbility {
         ability = PreventActivatedAbilities(
             filter = GameObjectFilter.Any.namedFromChosenComponent(),
             nonManaAbilitiesOnly = true,
+            anyZone = true,
         )
     }
 
