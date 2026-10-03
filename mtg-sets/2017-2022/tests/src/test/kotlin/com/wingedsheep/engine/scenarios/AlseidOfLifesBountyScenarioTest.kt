@@ -80,4 +80,28 @@ class AlseidOfLifesBountyScenarioTest : FunSpec({
         )
         driver.findPermanent(me, "Alseid of Life's Bounty") shouldBe alseid
     }
+
+    test("can target a noncreature enchantment you control") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val alseid = driver.putCreatureOnBattlefield(me, "Alseid of Life's Bounty")
+        val enchantment = driver.putPermanentOnBattlefield(me, "Test Enchantment")
+
+        driver.giveColorlessMana(me, 1)
+        driver.submit(
+            ActivateAbility(
+                playerId = me,
+                sourceId = alseid,
+                abilityId = abilityId,
+                targets = listOf(ChosenTarget.Permanent(enchantment)),
+            )
+        ).outcome shouldBe Outcome.Done
+
+        driver.bothPass()
+        val decision = driver.pendingDecision
+        decision.shouldBeInstanceOf<ChooseColorDecision>()
+        driver.submitDecision(me, ColorChosenResponse(decision.id, Color.BLUE))
+
+        driver.state.projectedState.hasKeyword(enchantment, "PROTECTION_FROM_BLUE") shouldBe true
+    }
 })

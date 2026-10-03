@@ -17,7 +17,7 @@ import io.kotest.matchers.shouldNotBe
  */
 class TitanicBrawlScenarioTest : ScenarioTestBase() {
     init {
-        fun board(forests: Int, counter: Boolean): TestGame {
+        fun board(forests: Int, counter: Boolean, counterOn: String = "Hill Giant"): TestGame {
             val game = scenario()
                 .withPlayers("P1", "P2")
                 .withCardInHand(1, "Titanic Brawl")
@@ -28,8 +28,8 @@ class TitanicBrawlScenarioTest : ScenarioTestBase() {
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                 .build()
             if (counter) {
-                val giant = game.findPermanent("Hill Giant")!!
-                game.state = game.state.updateEntity(giant) {
+                val holder = game.findPermanent(counterOn)!!
+                game.state = game.state.updateEntity(holder) {
                     it.with(CountersComponent(mapOf(CounterType.PLUS_ONE_PLUS_ONE to 1)))
                 }
             }
@@ -66,6 +66,11 @@ class TitanicBrawlScenarioTest : ScenarioTestBase() {
 
         test("without the counter one Forest is not enough") {
             val game = board(forests = 1, counter = false)
+            cast(game).error shouldNotBe null
+        }
+
+        test("a counter on the opponent's creature gives no discount") {
+            val game = board(forests = 1, counter = true, counterOn = "Grizzly Bears")
             cast(game).error shouldNotBe null
         }
     }

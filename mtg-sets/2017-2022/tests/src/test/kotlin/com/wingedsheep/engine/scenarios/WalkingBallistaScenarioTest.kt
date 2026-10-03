@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * Walking Ballista (AER #181) — enters with X counters for {X}{X}, grows for {4}, and spends a
@@ -36,6 +37,17 @@ class WalkingBallistaScenarioTest : ScenarioTestBase() {
             game.resolveStack()
             counters(game) shouldBe 2
             game.state.projectedState.getPower(game.findPermanent("Walking Ballista")!!) shouldBe 2
+        }
+
+        test("X = 2 can't be paid with three lands — it's {X}{X}, not {X}") {
+            val game = scenario()
+                .withPlayers("P1", "P2")
+                .withCardInHand(1, "Walking Ballista")
+                .withLandsOnBattlefield(1, "Mountain", 3)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.castXSpell(1, "Walking Ballista", 2).error shouldNotBe null
         }
 
         test("{4} adds a counter; removing counters pings face and creatures") {
