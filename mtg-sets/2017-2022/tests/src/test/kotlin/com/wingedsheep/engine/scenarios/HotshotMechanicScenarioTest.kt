@@ -14,8 +14,8 @@ import io.kotest.matchers.shouldNotBe
  *
  *   This creature crews Vehicles as though its power were 2 greater.
  *
- * The boost is crew-only: alone it crews Ballista Charger (crew 3 — 2 + 2), but it can't saddle Caustic Bronco (saddle 3 — its power is 2), because
- * saddling still reads its plain power.
+ * The boost is crew-only: alone it crews Ballista Charger (crew 3 — 2 + 2), but it can't saddle
+ * Caustic Bronco (saddle 3 — its power is 2), because saddling still reads its plain power.
  */
 class HotshotMechanicScenarioTest : ScenarioTestBase() {
 

@@ -1,6 +1,5 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
-import com.wingedsheep.sdk.scripting.CrewSaddleCost
 import com.wingedsheep.engine.core.CrewVehicle
 import com.wingedsheep.engine.handlers.actions.ability.CrewSaddleContributionEvaluator
 import com.wingedsheep.engine.legalactions.ActionEnumerator
@@ -12,6 +11,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CrewSaddleCost
 import com.wingedsheep.sdk.scripting.KeywordAbility
 
 /**

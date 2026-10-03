@@ -14,8 +14,8 @@ import io.kotest.matchers.shouldNotBe
  *
  *   This creature crews Vehicles using its toughness rather than its power.
  *
- * The boost is crew-only: alone it crews Dependable Quinjet (crew 4 — its toughness is 6), but it can't saddle Bridled Bighorn (saddle 2 — its power is 0), because
- * saddling still reads its plain power.
+ * The boost is crew-only: alone it crews Dependable Quinjet (crew 4 — its toughness is 6), but it
+ * can't saddle Bridled Bighorn (saddle 2 — its power is 0), because saddling still reads its plain power.
  */
 class GiantOxScenarioTest : ScenarioTestBase() {
 
