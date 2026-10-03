@@ -5408,6 +5408,109 @@
     ]
 }
 
+// Grim Servant
+{
+    "name": "Grim Servant",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie Warlock",
+    "oracleText": "Menace\nWhen this creature enters, search your library for a card with mana value less than or equal to your devotion to black, reveal it, put it into your hand, then shuffle. You lose 3 life. (Each {B} in the mana costs of permanents you control counts toward your devotion to black.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grim Servant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "ManaValueAtMostDynamic",
+                                            "amount": {
+                                                "type": "DevotionTo",
+                                                "colors": [
+                                                    "BLACK"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "David Astruga",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df9c275d-e8cc-40c2-8baf-7a0d154aa7cf.jpg?1783911279",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Count the number of black mana symbols among the mana costs of permanents you control as Grim Servant's triggered ability resolves to determine your devotion to black. If Grim Servant is still on the battlefield at that time, it will be included in that count."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a card in a player's library has {X} in its mana cost, X is 0 when determining that card's mana value."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Guide of Souls
 {
     "name": "Guide of Souls",
@@ -5624,6 +5727,242 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Hexgold Slith
+{
+    "name": "Hexgold Slith",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Slith",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\nWhenever this creature attacks, you may pay {E}{E}. If you do, it gains first strike until end of turn.\nWhenever this creature deals combat damage to a player, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hexgold Slith:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Hexgold Slith:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "FIRST_STRIKE",
+                        "target": "Self"
+                    }
+                }
+            },
+            {
+                "id": "Hexgold Slith:3",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Michele Giorgi",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20a85b6d-fb2b-4359-9dd6-081d8722e580.jpg?1783911301"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Hope-Ender Coatl
+{
+    "name": "Hope-Ender Coatl",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Eldrazi Snake",
+    "oracleText": "Devoid (This card has no color.)\nFlash\nWhen you cast this spell, counter target spell an opponent controls unless they pay {1}.\nFlying",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEVOID",
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hope-Ender Coatl:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{1}"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "ctrl:opponent",
+                        "zone": "Stack"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26973cad-26d7-4d42-a58a-85c3dce3b9fd.jpg?1783911290",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Hope-Ender Coatl's triggered ability will resolve before Hope-Ender Coatl does. If Hope-Ender Coatl is countered or otherwise leaves the stack in response to that triggered ability, the triggered ability will still resolve as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Horrid Shadowspinner
+{
+    "name": "Horrid Shadowspinner",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "Lifelink\nWhenever this creature attacks, you may draw cards equal to its power. If you do, discard that many cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Horrid Shadowspinner:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Draw cards equal to Horrid Shadowspinner's power, then discard that many?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "StoreNumber",
+                                "name": "number0",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": "Power"
+                                }
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "number0"
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "VariableReference",
+                                                "variableName": "number0"
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose cards to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may draw cards equal to its power. If you do, discard that many cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "UNCOMMON",
+        "artist": "Ben Wootten",
+        "flavorText": "\"The daylight's done, the nightmare's spun. It crawls off the loom, and into your room.\"\n—Kithkin children's rhyme",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62b69aaf-0aae-4f6e-a27f-0129882dfe1d.jpg?1783911250",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "The number of cards you discard is equal to Horrid Shadowspinner's power at the time you chose to draw cards, even if another effect changed the number of cards you drew or in the unusual case where Horrid Shadowspinner's power has changed since you chose to draw cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -6616,6 +6955,148 @@
     ]
 }
 
+// Metastatic Evangel
+{
+    "name": "Metastatic Evangel",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Phyrexian Human Cleric",
+    "oracleText": "Whenever another nontoken creature you control enters, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Metastatic Evangel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"I am no sleeper agent. I am a liberator. It is you who are asleep.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/774e115a-c0dc-4901-9a1f-87754304e378.jpg?1783911299"
+    }
+}
+
+// Mindless Conscription
+{
+    "name": "Mindless Conscription",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters and whenever you draw your third card each turn, amass Zombies 3. (Put three +1/+1 counters on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mindless Conscription:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Amass",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "subtype": "Zombie"
+                }
+            },
+            {
+                "id": "Mindless Conscription:2",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 3
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Amass",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "subtype": "Zombie"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "Warren Mahy",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1af5b195-101a-4265-98a7-522a968cf218.jpg?1783911278"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Muster the Departed
+{
+    "name": "Muster the Departed",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create a 1/1 white Spirit creature token with flying.\nMorbid — At the beginning of your end step, if a creature died this turn, populate. (Create a token that's a copy of a creature token you control.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Muster the Departed:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0aa2f5e-9809-4e97-b9b2-9c9a322a8e21.jpg?1783911118"
+                }
+            },
+            {
+                "id": "Muster the Departed:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateTokenCopyOfChosenPermanent",
+                    "filter": "creature token"
+                },
+                "interveningIf": "CreatureDiedThisTurn",
+                "descriptionOverride": "Morbid — At the beginning of your end step, if a creature died this turn, populate."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "UNCOMMON",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a37510bb-245c-47bc-bbf3-2b202b67d383.jpg?1783911298"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Nadu, Winged Wisdom
 {
     "name": "Nadu, Winged Wisdom",
@@ -6893,6 +7374,72 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Null Elemental Blast
+{
+    "name": "Null Elemental Blast",
+    "manaCost": "{C}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Counter target multicolored spell.\n• Destroy target multicolored permanent.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": "Counter",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsMulticolored"
+                                    ]
+                                },
+                                "zone": "Stack"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Counter target multicolored spell"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsPermanent",
+                                        "IsMulticolored"
+                                    ]
+                                }
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Destroy target multicolored permanent"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "UNCOMMON",
+        "artist": "Milivoj Ćeran",
+        "flavorText": "\"Despite my years, I am still but a student of the Multiverse. How arrogant to think yourself its master.\"\n—Ugin, to Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e259868-d29a-4c03-8ec3-49e914f849fb.jpg"
+    }
 }
 
 // Nulldrifter
@@ -7186,6 +7733,64 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Obstinate Gargoyle
+{
+    "name": "Obstinate Gargoyle",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Artifact Creature — Gargoyle",
+    "oracleText": "This creature has flying as long as it's modified. (Equipment, Auras you control, and counters are modifications.)\nPersist (When this creature dies, if it had no -1/-1 counters on it, return it to the battlefield under its owner's control with a -1/-1 counter on it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "PERSIST"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "SourceIsModified"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "artist": "Craig J Spearing",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40cf39f2-7382-405d-a14b-7eb8726cd38a.jpg?1783911248",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Once Obstinate Gargoyle has been blocked, causing it to gain flying by modifying it won't cause it to stop being blocked."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "An Aura controlled by another player does not cause a creature you control to be modified."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "A creature with a counter on it is considered modified no matter what kind of counter it is or which player put it on that creature."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "A creature that is equipped is considered modified no matter who controls the Equipment that's attached to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -7744,6 +8349,68 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Proud Pack-Rhino
+{
+    "name": "Proud Pack-Rhino",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Rhino",
+    "oracleText": "When this creature enters, choose one —\n• Put a shield counter on target permanent. (If it would be dealt damage or destroyed, remove a shield counter from it instead.)\n• Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Proud Pack-Rhino:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "SHIELD",
+                                "count": 1,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "permanent"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Put a shield counter on target permanent"
+                        },
+                        {
+                            "effect": "Proliferate",
+                            "description": "Proliferate"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "UNCOMMON",
+        "artist": "Ron Spears",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/0821e622-88b8-4b82-a696-954da1dde915.jpg?1783911297"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

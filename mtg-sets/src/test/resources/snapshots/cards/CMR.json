@@ -581,6 +581,65 @@
     ]
 }
 
+// Nadier's Nightblade
+{
+    "name": "Nadier's Nightblade",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Elf Warrior",
+    "oracleText": "Whenever a token you control leaves the battlefield, each opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nadier's Nightblade:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "token ctrl:you",
+                    "from": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a token you control leaves the battlefield, each opponent loses 1 life and you gain 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "Checking around every corner doesn't help if you forget to look up.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11fbba08-0d93-4750-9dd6-d6a2779c6cf3.jpg?1783928832"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Natural Reclamation
 {
     "name": "Natural Reclamation",

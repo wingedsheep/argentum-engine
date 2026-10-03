@@ -60,6 +60,73 @@
     ]
 }
 
+// Ophiomancer
+{
+    "name": "Ophiomancer",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "At the beginning of each upkeep, if you control no Snakes, create a 1/1 black Snake creature token with deathtouch.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ophiomancer:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Snake"
+                    ],
+                    "keywords": [
+                        "DEATHTOUCH"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b9be7c2-efe5-4d37-a43e-ddcd50a77aa9.jpg?1783911114"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Snake",
+                    "negate": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "John Stanko",
+        "flavorText": "\"There are dark, ancient arts that fascinate even me.\"\n—Sorin Markov",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66d80dd1-b944-4cb2-8578-b4dbcabbbc1e.jpg?1783939675",
+        "rulings": [
+            {
+                "date": "2013-10-17",
+                "text": "Ophiomancer's ability considers any creature you control with the creature type Snake, not just the tokens Ophiomancer creates."
+            },
+            {
+                "date": "2013-10-17",
+                "text": "If the ability does trigger, but you control a Snake when it tries to resolve, the ability will do nothing. No Snake token will be created."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Tempt with Discovery
 {
     "name": "Tempt with Discovery",
