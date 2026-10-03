@@ -66,6 +66,7 @@ class LibraryExecutors(
         ChooseOptionPipelineExecutor(cardRegistry = cardRegistry),
         NoteCreatureTypePipelineExecutor(),
         GatherCardsExecutor(zones.predicateEvaluator),
+        RecordSourceObjectsExecutor(),
         CopyCardIntoCollectionExecutor(),
         CopyCollectionIntoCollectionExecutor(),
         GrantSuspendExecutor(),

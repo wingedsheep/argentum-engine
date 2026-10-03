@@ -467,6 +467,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.DrawFailedEvent,
             is com.wingedsheep.engine.core.EnduringStoryGainedEvent,
             is com.wingedsheep.engine.core.GameEndedEvent,
+            is com.wingedsheep.engine.core.SourceObjectsRecordedEvent,
             is com.wingedsheep.engine.core.HandLookedAtEvent,
             is com.wingedsheep.engine.core.HandRevealedEvent,
             is com.wingedsheep.engine.core.KeywordGrantedEvent,

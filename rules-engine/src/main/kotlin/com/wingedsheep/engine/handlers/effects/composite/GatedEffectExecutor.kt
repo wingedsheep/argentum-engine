@@ -909,6 +909,9 @@ class GatedEffectExecutor(
                 (effectContext.pipeline.storedCollections[criterion.name]?.size ?: 0) >= criterion.min
             is SuccessCriterion.DamageDealt -> evaluateDamageDealt(criterion, effectContext, priorEvents)
             is SuccessCriterion.ControlChanged -> evaluateControlChanged(priorEvents)
+            is SuccessCriterion.CountersAdded -> priorEvents.any {
+                it is com.wingedsheep.engine.core.CountersAddedEvent && it.amount > 0
+            }
             is SuccessCriterion.CountersRemoved -> evaluateCountersRemoved(priorEvents)
             is SuccessCriterion.PermanentsSacrificed -> evaluatePermanentsSacrificed(priorEvents)
             is SuccessCriterion.TurnedFaceUp -> evaluateTurnedFaceUp(priorEvents)

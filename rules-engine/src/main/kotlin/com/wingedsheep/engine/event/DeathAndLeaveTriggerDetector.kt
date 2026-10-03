@@ -90,7 +90,7 @@ class DeathAndLeaveTriggerDetector(
         // For "When this creature dies" - the creature might be in graveyard now
         // Look up abilities by card definition
         val abilities = abilityResolver.getDepartedTriggeredAbilities(event, info.cardDefinitionId, state, statics)
-        val controllerId = event.ownerId
+        val controllerId = event.lastKnown?.controllerId ?: event.ownerId
 
         for (ability in abilities) {
             if (!matcher.isDeathTrigger(ability.trigger)) continue
@@ -170,7 +170,7 @@ class DeathAndLeaveTriggerDetector(
             val info = resolveDyingEntity(state, deadEvent) ?: continue
 
             val abilities = abilityResolver.getDepartedTriggeredAbilities(deadEvent, info.cardDefinitionId, state, statics)
-            val controllerId = deadEvent.ownerId
+            val controllerId = deadEvent.lastKnown?.controllerId ?: deadEvent.ownerId
 
             for (ability in abilities) {
                 for (otherDeathEvent in deathEvents) {
@@ -216,7 +216,7 @@ class DeathAndLeaveTriggerDetector(
         val auraEntityId = event.entityId
         val info = resolveDyingEntity(state, event) ?: return
         val abilities = abilityResolver.getDepartedTriggeredAbilities(event, info.cardDefinitionId, state, statics)
-        val controllerId = event.ownerId
+        val controllerId = event.lastKnown?.controllerId ?: event.ownerId
 
         for (ability in abilities) {
             if (ability.binding != TriggerBinding.ATTACHED) continue
@@ -566,7 +566,7 @@ class DeathAndLeaveTriggerDetector(
         val info = resolveDyingEntity(state, event) ?: return
 
         val abilities = abilityResolver.getDepartedTriggeredAbilities(event, info.cardDefinitionId, state, statics)
-        val controllerId = event.ownerId
+        val controllerId = event.lastKnown?.controllerId ?: event.ownerId
 
         for (ability in abilities) {
             val isGenericLeave = matcher.isLeavesBattlefieldTrigger(ability.trigger)
