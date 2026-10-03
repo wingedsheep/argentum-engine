@@ -856,6 +856,14 @@ class StepsTest : StringSpec({
         roundTrips("When ~ enters, the Ring tempts you.")
     }
 
+    "proliferate is a whole sentence with no target" {
+        fragment("Proliferate.") shouldBe
+            CardFragment(script = CardScript(spellEffect = Effects.Proliferate()))
+        roundTrips("Proliferate.")
+        roundTrips("{1}{G}, Sacrifice ~: Proliferate.")
+        roundTrips("Target creature gets -1/-1 until end of turn. Proliferate.")
+    }
+
     // "enchanted creature" is a definite description like `~`, not an anaphor, so the attached
     // instantiation of the retargetable shape reads in a first clause, a later one and a trigger.
     "a clause about the attached creature acts on the source's attachment" {
