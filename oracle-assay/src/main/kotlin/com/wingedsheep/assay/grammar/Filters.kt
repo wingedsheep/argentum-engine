@@ -514,6 +514,26 @@ object Filters {
             }
         }
 
+    /**
+     * "a permanent you control of the chosen type" — Rimefire Torque, Etchings of the Chosen's
+     * sacrifice, Chronicle of Victory's spell: a member must have the creature type its source chose
+     * as it entered, which is `CardPredicate.HasChosenSubtype`.
+     *
+     * **Singular only, and that is the whole point of the restriction.** A plural lord ("Creatures
+     * you control of the chosen type get +1/+1.") prints the same words over a different field —
+     * `GroupFilter.chosenSubtypeKey`, which is what every hand-written lord writes — and the lord
+     * rows in [Statics] own it. Offering this layer in plural position too would give that one
+     * sentence two models, which is ambiguity by construction rather than a second spelling.
+     */
+    private fun ofChosenType(inner: Phrase<GameObjectFilter>, name: String): Phrase<GameObjectFilter> =
+        phrase("{type} of the chosen type", name = name) {
+            slot("type", inner)
+            build { it.value<GameObjectFilter>("type").withChosenSubtype() }
+            match { filter ->
+                filter.stripTop<CardPredicate.HasChosenSubtype>()?.let { (_, rest) -> bind("type" to rest) }
+            }
+        }
+
     /** "creatures with power 2 or greater". */
     private fun withPowerAtLeast(inner: Phrase<GameObjectFilter>, name: String): Phrase<GameObjectFilter> =
         phrase("{type} with power {n} or greater", name = name) {
@@ -686,7 +706,7 @@ object Filters {
             withPowerAtLeast(inner, "a permanent with power at least$label"),
             withPowerAtMost(inner, "a permanent with power at most$label"),
             ManaValues.layer(inner, label),
-        )
+        ) + if (plural) emptyList() else listOf(ofChosenType(inner, "a permanent of the chosen type$label"))
 
         // The opponent clause agrees in number with its noun: "creature an opponent controls" but
         // "creatures **your opponents control**" — 351 plural prints corpus-wide against 26 of

@@ -668,16 +668,22 @@ object Statics {
         // business rather than the shape's, and this is the one place it shows.
         terminator: String = ".",
     ): List<Phrase<A>> {
-        fun rule(prefix: String, canonicalForm: Boolean, excludeSelf: Boolean): Phrase<A> {
-            val inner = phrase<A>("$prefix{filter} $verb {v}$terminator", name = name) {
+        fun rule(prefix: String, canonicalForm: Boolean, excludeSelf: Boolean, chosenType: Boolean): Phrase<A> {
+            val key = if (chosenType) CHOSEN_TYPE_KEY else null
+            val qualifier = if (chosenType) " of the chosen type" else ""
+            val inner = phrase<A>("$prefix{filter}$qualifier $verb {v}$terminator", name = name) {
                 slot("filter", Filters.plural)
                 slot("v", parameter)
                 build {
-                    ability(it.value("v"), GroupFilter(it.value("filter"), excludeSelf = excludeSelf))
+                    ability(
+                        it.value("v"),
+                        GroupFilter(it.value("filter"), excludeSelf = excludeSelf, chosenSubtypeKey = key),
+                    )
                 }
                 match { value ->
                     val (parsed, group) = read(value) ?: return@match null
                     if (group.excludeSelf != excludeSelf) return@match null
+                    if (group.chosenSubtypeKey != key) return@match null
                     if (value != ability(parsed, group)) return@match null
                     bind("filter" to group.baseFilter, "v" to parsed)
                 }
@@ -685,16 +691,29 @@ object Statics {
             }
             return if (canonicalForm) inner else alternate(inner)
         }
-        return listOf(
-            rule("", canonicalForm = true, excludeSelf = false),
-            rule("all ", canonicalForm = false, excludeSelf = false),
-            // "Other creatures you control get +0/+1." — Veteran Armorer, and every lord that leaves
-            // itself out. "Other" is `GroupFilter.excludeSelf`, a field on the *iteration* rather
-            // than on the noun, which is why it is a prefix here and not a [Filters] layer — the
-            // same argument [Steps.otherGroupStep] makes on the effect side.
-            rule("other ", canonicalForm = true, excludeSelf = true),
-        )
+        // "Creatures you control of the chosen type get +1/+1." — Etchings of the Chosen, Cover of
+        // Darkness, and every lord over the creature type its source chose as it entered. The
+        // qualifier is `GroupFilter.chosenSubtypeKey`, a field on the group rather than a predicate
+        // on the noun, which is why it is a row of this product and not a [Filters] layer: the
+        // object-filter spelling of the same words, `CardPredicate.HasChosenSubtype`, is what a
+        // trigger or a target names, and a layer would hand the lord a second printer for one
+        // sentence. Only the default key is spelled — a pipeline's own stored choice (Walking
+        // Desecration) has a key the text does not name, and refuses to print.
+        return listOf(false, true).flatMap { chosenType ->
+            listOf(
+                rule("", canonicalForm = true, excludeSelf = false, chosenType = chosenType),
+                rule("all ", canonicalForm = false, excludeSelf = false, chosenType = chosenType),
+                // "Other creatures you control get +0/+1." — Veteran Armorer, and every lord that leaves
+                // itself out. "Other" is `GroupFilter.excludeSelf`, a field on the *iteration* rather
+                // than on the noun, which is why it is a prefix here and not a [Filters] layer — the
+                // same argument [Steps.otherGroupStep] makes on the effect side.
+                rule("other ", canonicalForm = true, excludeSelf = true, chosenType = chosenType),
+            )
+        }
     }
+
+    /** `GroupFilter.ChosenSubtypeCreatures`' default key — the choice the source made as it entered. */
+    private const val CHOSEN_TYPE_KEY = "chosenCreatureType"
 
     /**
      * What a multi-layer lord gives its group: a base power and toughness, optionally some keywords,
