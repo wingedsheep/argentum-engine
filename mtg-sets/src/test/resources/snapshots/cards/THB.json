@@ -1,3 +1,68 @@
+// Alseid of Life's Bounty
+{
+    "name": "Alseid of Life's Bounty",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment Creature — Nymph",
+    "oracleText": "Lifelink\n{1}, Sacrifice this creature: Target creature or enchantment you control gains protection from the color of your choice until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Alseid of Life's Bounty:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ChooseColorThen",
+                    "then": {
+                        "type": "GrantProtectionFromChosenColor",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature|enchantment ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Target creature or enchantment you control gains protection from the color of your choice until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"Dawn-kissed, he nourishes the golden grain.\"\n—Psemilla, Meletian poet",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36c8c075-9597-412e-9fc4-9d73b4405d12.jpg?1783931603"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Arasta of the Endless Web
 {
     "name": "Arasta of the Endless Web",
@@ -585,6 +650,65 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Dreadful Apathy
+{
+    "name": "Dreadful Apathy",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't attack or block.\n{2}{W}: Exile enchanted creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dreadful Apathy:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "EnchantedCreature",
+                    "destination": "Exile"
+                },
+                "descriptionOverride": "{2}{W}: Exile enchanted creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Mark Zug",
+        "flavorText": "Those whose lives were uninspired are doomed to the wretched tedium of Phylias in death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e20c2369-db77-465e-9f0e-bb009225345a.jpg?1783931599"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2945,6 +3069,89 @@
         "artist": "John Severin Brassell",
         "flavorText": "Chosen by Heliod, Daxos approached the pegasus without fear, and rode it without saddle or reins.",
         "imageUri": "https://cards.scryfall.io/normal/front/5/2/52e28f5a-55ee-4fcc-bc16-e59944592fcd.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Taranika, Akroan Veteran
+{
+    "name": "Taranika, Akroan Veteran",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Vigilance\nWhenever Taranika attacks, untap another target creature you control. Until end of turn, that creature has base power and toughness 4/4 and gains indestructible.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Taranika, Akroan Veteran:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "SetBaseStats",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "power": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    },
+                                    "toughness": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    },
+                                    "duration": "EndOfTurn"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "INDESTRUCTIBLE",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"I like to think Kytheon keeps watch over all of us.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8edd707-5ba3-4978-9a0b-efd0cda367c1.jpg?1783931589"
     },
     "colorIdentityOverride": [
         "WHITE"

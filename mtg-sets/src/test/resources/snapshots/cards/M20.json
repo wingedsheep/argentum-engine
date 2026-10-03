@@ -507,6 +507,102 @@
     ]
 }
 
+// Dread Presence
+{
+    "name": "Dread Presence",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Nightmare",
+    "oracleText": "Whenever a Swamp you control enters, choose one —\n• You draw a card and you lose 1 life.\n• This creature deals 2 damage to any target and you gain 2 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dread Presence:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land Swamp ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": "Controller"
+                                    }
+                                ]
+                            },
+                            "description": "You draw a card and you lose 1 life"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DealDamage",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "AnyTarget",
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "This creature deals 2 damage to any target and you gain 2 life"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a Swamp you control enters, choose one — You draw a card and you lose 1 life; or this creature deals 2 damage to any target and you gain 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "RARE",
+        "artist": "Anthony Palumbo",
+        "flavorText": "It beckons silently, waiting in the darkness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/0430db1a-5cad-4444-ba93-57fb32e65606.jpg?1783932995"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Empyrean Eagle
 {
     "name": "Empyrean Eagle",
