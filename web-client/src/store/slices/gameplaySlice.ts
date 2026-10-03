@@ -152,6 +152,11 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
   submitAction: (action, interactionEpoch) => {
     if (!get().sessionId || !get().gameState) return
     if (!interactionEpoch || interactionEpoch !== get().interactionEpoch) return
+    const play = get().pendingDecision
+    if (play?.type === 'PlayCardDecision' && (action.type === 'CastSpell' || action.type === 'PlayLand')) {
+      action = { type: 'SubmitDecision', playerId: play.playerId,
+        response: { type: 'PlayCardResponse', decisionId: play.id, action } }
+    }
     if (action.type === 'SubmitDecision' && action.response.decisionId !== get().pendingDecision?.id) return
     getWebSocket()?.send(createSubmitActionMessage(action, interactionEpoch))
     set({ selectedCardId: null, targetingState: null })

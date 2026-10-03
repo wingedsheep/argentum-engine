@@ -156,6 +156,7 @@ class Strategist(
         playerId: EntityId
     ): LegalAction {
         val startNanos = if (insightSink != null) System.nanoTime() else 0L
+        val forcedPlay = state.pendingDecision is com.wingedsheep.engine.core.PlayCardDecision
         val evaluationState = stateSampler?.invoke(state, playerId) ?: state
         // Combat declaration steps need the CombatAdvisor to fill in attacker/blocker maps
         // even when there's only one legal action (which is the common case — the enumerator
@@ -183,7 +184,10 @@ class Strategist(
         }
 
         val pass = legalActions.find { it.actionType == "PassPriority" }
-        val affordable = expandXCostAbilities(state, preferKickerVariants(candidatesFrom(legalActions)), playerId)
+        val candidates = if (forcedPlay) {
+            legalActions.filter { it.affordable && !it.hasUnfillableTargetRequirement }
+        } else candidatesFrom(legalActions)
+        val affordable = expandXCostAbilities(state, preferKickerVariants(candidates), playerId)
 
         if (affordable.isEmpty()) return pass ?: legalActions.first()
 
@@ -282,7 +286,9 @@ class Strategist(
         // ── Pass 3: per-card timing and advisor adjustments, in raw evaluator units ──
         val firstCandidate = if (pass != null) 1 else 0
         val adjusted = (firstCandidate until leaves.size).map { i ->
-            Triple(leaves[i], leafScores[i], adjustScore(evaluationState, leaves[i], playerId, leafScores[i], passScore))
+            val adjustment = if (forcedPlay) AdjustedScore(leafScores[i])
+                else adjustScore(evaluationState, leaves[i], playerId, leafScores[i], passScore)
+            Triple(leaves[i], leafScores[i], adjustment)
         }
         val scored = adjusted.map { (action, _, adjustment) -> action to adjustment.score }
 
@@ -301,7 +307,7 @@ class Strategist(
             }
 
         val best = scored.maxByOrNull { it.second }
-        val takeAction = best != null && best.second > adjustedPassScore
+        val takeAction = best != null && (forcedPlay || best.second > adjustedPassScore)
         val chosen = if (takeAction) {
             remember(here)
             // Fill in targets on the returned action so the processor can execute it.
@@ -309,7 +315,10 @@ class Strategist(
             // AI sees the real resolved board, including effects already on the stack.
             best.first
         } else {
-            pass ?: legalActions.first()
+            if (forcedPlay) {
+                val fallback = affordable.first()
+                fallback.copy(action = chooseCommittedTargets(state, fallback, playerId, budget))
+            } else pass ?: legalActions.first()
         }
 
         if (insightSink != null) {

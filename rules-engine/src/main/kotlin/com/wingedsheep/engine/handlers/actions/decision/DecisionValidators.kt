@@ -62,6 +62,8 @@ object DecisionValidators {
      */
     fun validate(decision: PendingDecision, response: DecisionResponse, state: GameState? = null): String? {
         return when (decision) {
+            is com.wingedsheep.engine.core.PlayCardDecision ->
+                if (response is com.wingedsheep.engine.core.PlayCardResponse) null else "Play the instructed card"
             is ChooseTargetsDecision -> validateTargets(decision, response, state)
             is SelectCardsDecision -> validateSelectCards(decision, response, state)
             is YesNoDecision -> validateYesNo(response)

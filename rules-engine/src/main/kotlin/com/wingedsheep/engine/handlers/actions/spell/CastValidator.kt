@@ -198,7 +198,7 @@ internal class CastValidator(
     private val legality: com.wingedsheep.engine.legality.LegalityKernel
 ) {
 
-    fun validate(inputState: GameState, action: CastSpell): String? {
+    fun validate(inputState: GameState, action: CastSpell, duringResolution: Boolean = false): String? {
         if (com.wingedsheep.engine.mechanics.BestowCasts.selected(action) &&
             (action.castFaceDown || action.faceIndex != null)) return "Bestow cannot be combined with another face or face-down casting"
         if (action.castPrototyped) {
@@ -210,7 +210,7 @@ internal class CastValidator(
             if (com.wingedsheep.engine.mechanics.PrototypeCasts.prototypeOf(printed) == null) return "This card has no prototype"
         }
         val state = com.wingedsheep.engine.mechanics.CastCharacteristics.announce(inputState, action, cardRegistry)
-        if (!state.hasPriority(action.playerId)) {
+        if (!duringResolution && !state.hasPriority(action.playerId)) {
             return "You don't have priority"
         }
         val container = state.getEntity(action.cardId)
@@ -224,8 +224,8 @@ internal class CastValidator(
         )
 
         validateAuthority(state, action, cardComponent, cardDef, source)?.let { return it }
-        if (action.castFaceDown) return validateFaceDownCast(state, action, cardDef)
-        validateTiming(state, action, cardComponent, cardDef, source)?.let { return it }
+        if (action.castFaceDown) return validateFaceDownCast(state, action, cardDef, duringResolution)
+        if (!duringResolution) validateTiming(state, action, cardComponent, cardDef, source)?.let { return it }
         validateAlternativeCostSelections(state, action, cardDef)?.let { return it }
         validateAnnouncements(state, action, cardDef)?.let { return it }
         validateOwedCosts(state, action, cardDef)?.let { return it }
@@ -424,14 +424,14 @@ internal class CastValidator(
      * permanent looks like and costs to turn up. Nothing printed on the card applies, so this is the
      * whole check.
      */
-    private fun validateFaceDownCast(state: GameState, action: CastSpell, cardDef: CardDefinition?): String? {
+    private fun validateFaceDownCast(state: GameState, action: CastSpell, cardDef: CardDefinition?, duringResolution: Boolean): String? {
         val castableFaceDown = cardDef?.keywordAbilities?.any {
             it is KeywordAbility.Morph || it is KeywordAbility.Disguise
         } == true
         if (!castableFaceDown) {
             return "This card cannot be cast face down (no morph or disguise ability)"
         }
-        if (!turnManager.canPlaySorcerySpeed(state, action.playerId)) {
+        if (!duringResolution && !turnManager.canPlaySorcerySpeed(state, action.playerId)) {
             return "You can only cast face-down creatures at sorcery speed"
         }
         return castCostPayer.validateManaPayment(state, action, costCalculator.calculateFaceDownCost(state, action.playerId))

@@ -794,6 +794,11 @@ export interface BatchYesNoDecision extends PendingDecisionBase {
 /**
  * Union of all pending decision types.
  */
+export interface PlayCardDecision extends PendingDecisionBase {
+  readonly type: 'PlayCardDecision'
+  readonly cardId: EntityId
+}
+
 export type PendingDecision =
   | SelectCardsDecision
   | YesNoDecision
@@ -808,6 +813,7 @@ export type PendingDecision =
   | BudgetModalDecision
   | DistributeDecision
   | ChooseColorDecision
+  | PlayCardDecision
   | SelectManaSourcesDecision
   | AssignDamageDecision
   | CombatResolutionDecision

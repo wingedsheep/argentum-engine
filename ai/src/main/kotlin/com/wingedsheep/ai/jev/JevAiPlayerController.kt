@@ -45,7 +45,10 @@ class JevAiPlayerController(
         repeat(2) {
             val response = if (pendingDecision != null) {
                 q.context("Pending decision: ${compact(json.encodeToJsonElement<PendingDecision>(pendingDecision))}")
-                ActionResponse.SubmitDecision(playerId, JevDecisions(q, ::label).answer(pendingDecision))
+                ActionResponse.SubmitDecision(playerId, JevDecisions(q, ::label) { play ->
+                    val info = q.pick(play.prompt, legalActions.filter { it.isAffordable }) { it.description }
+                    JevActions(q, view, ::label).complete(info)
+                }.answer(pendingDecision))
             } else {
                 // Auto-pay handles ordinary mana; explicitly offered payment choices remain Jev's.
                 val choices = legalActions.filter { it.isAffordable && !it.isManaAbility }

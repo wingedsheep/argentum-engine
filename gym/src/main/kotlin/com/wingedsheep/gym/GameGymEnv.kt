@@ -137,12 +137,15 @@ class GameGymEnv(
                 failOnRejection(actionId)
             }
             is ResolvedAction.Decision -> {
-                require(params.isEmpty) {
-                    "Action ID $actionId is a folded decision response and takes no step params"
+                val response = if (resolved.response is com.wingedsheep.engine.core.PlayCardResponse) {
+                    resolved.response.copy(action = ActionParameterizer.apply(resolved.response.action, params, environment.state))
+                } else {
+                    require(params.isEmpty) { "Action ID $actionId is a folded decision response and takes no step params" }
+                    resolved.response
                 }
                 val pending = environment.state.pendingDecision
                     ?: throw IllegalStateException("Registry has a decision response but env is not paused")
-                environment.step(SubmitDecision(pending.playerId, resolved.response))
+                environment.step(SubmitDecision(pending.playerId, response))
                 failOnRejection(actionId)
             }
             ResolvedAction.Unknown ->

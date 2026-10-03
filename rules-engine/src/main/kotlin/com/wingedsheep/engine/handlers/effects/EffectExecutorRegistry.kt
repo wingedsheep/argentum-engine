@@ -59,7 +59,8 @@ class EffectExecutorRegistry(
     playLandHandler: () -> PlayLandHandler,
     costPaymentService: () -> com.wingedsheep.engine.mechanics.cost.CostPaymentService,
     private val targetFinder: TargetFinder,
-    private val targetValidator: TargetValidator
+    private val targetValidator: TargetValidator,
+    legalActionEnumerator: () -> com.wingedsheep.engine.legalactions.LegalActionEnumerator
 ) {
     private val predicateEvaluator = zones.predicateEvaluator
     private val executors = mutableMapOf<KClass<out Effect>, EffectExecutor<*>>()
@@ -74,7 +75,7 @@ class EffectExecutorRegistry(
         registerModule(ManaExecutors(amountEvaluator, cardRegistry))
         registerModule(TokenExecutors(zones, amountEvaluator, StaticAbilityHandler(cardRegistry), cardRegistry, tokenArtRegistry, targetFinder = targetFinder))
         registerModule(
-            LibraryExecutors(::recurse, zones, cardRegistry, castSpellHandler, playLandHandler, targetFinder)
+            LibraryExecutors(::recurse, zones, cardRegistry, castSpellHandler, playLandHandler, targetFinder, legalActionEnumerator)
         )
         registerModule(StackExecutors(zones, amountEvaluator, cardRegistry, spellCounterer, targetFinder = targetFinder))
         registerModule(InformationExecutors())

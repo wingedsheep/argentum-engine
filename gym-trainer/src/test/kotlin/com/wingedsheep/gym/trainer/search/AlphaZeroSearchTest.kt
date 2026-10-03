@@ -59,6 +59,32 @@ class AlphaZeroSearchTest : FunSpec({
         result.visits.sum() shouldBe 8
     }
 
+    test("forced play expands normal land choices without a structured resolver") {
+        val env = setupRoot()
+        val player = env.state.activePlayerId!!
+        val land = env.state.getHand(player).first { id ->
+            env.state.getEntity(id)!!.get<com.wingedsheep.engine.state.components.identity.CardComponent>()!!.name == "Mountain"
+        }
+        val services = com.wingedsheep.engine.core.EngineServices(env.cardRegistry)
+        val forced = services.effectExecutorRegistry.execute(env.state,
+            com.wingedsheep.sdk.dsl.Effects.ForcePlay("chosen"),
+            com.wingedsheep.engine.handlers.EffectContext(sourceId = null, controllerId = player,
+                pipeline = com.wingedsheep.engine.handlers.PipelineState(storedCollections = mapOf("chosen" to listOf(land)))))
+        (forced.pendingDecision is com.wingedsheep.engine.core.PlayCardDecision).shouldBeTrue()
+        env.restore(forced.state, env.playerIds)
+        val search = AlphaZeroSearch<StructuralFeatures>(env = env,
+            featurizer = StructuralStateFeaturizer(),
+            actionFeaturizer = DynamicSlotActionFeaturizer(headSize = 128),
+            evaluator = HeuristicEvaluator(), dirichletAlpha = null)
+        val result = search.run(simulations = 2)
+        result.root.edges.shouldNotBeEmpty()
+        result.root.edges.all { edge ->
+            val submit = edge.action as? com.wingedsheep.engine.core.SubmitDecision
+            val play = submit?.response as? com.wingedsheep.engine.core.PlayCardResponse
+            (play?.action as? com.wingedsheep.engine.core.PlayLand)?.cardId == land
+        }.shouldBeTrue()
+    }
+
     test("bestEdge is the most-visited edge") {
         val env = setupRoot()
         val search = AlphaZeroSearch<StructuralFeatures>(

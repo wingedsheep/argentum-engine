@@ -1,0 +1,1237 @@
+{
+  "entities": {
+    "e0": {
+      "com.wingedsheep.engine.state.components.identity.PlayerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.PlayerComponent",
+        "name": "Player 1",
+        "startingLifeTotal": 20
+      },
+      "com.wingedsheep.engine.state.components.identity.LifeTotalComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.LifeTotalComponent",
+        "life": 20
+      },
+      "com.wingedsheep.engine.state.components.player.ManaPoolComponent": {
+        "type": "com.wingedsheep.engine.state.components.player.ManaPoolComponent",
+        "white": 0,
+        "blue": 0,
+        "black": 0,
+        "red": 1,
+        "green": 0,
+        "colorless": 0,
+        "restrictedMana": [],
+        "manaBySubtype": {},
+        "manaBySource": {},
+        "manaByCardType": {},
+        "snowMana": {},
+        "snowColorless": 0
+      },
+      "com.wingedsheep.engine.state.components.player.LandDropsComponent": {
+        "type": "com.wingedsheep.engine.state.components.player.LandDropsComponent",
+        "remaining": 1,
+        "maxPerTurn": 1
+      },
+      "com.wingedsheep.engine.state.components.player.PlayerTurnsTakenComponent": {
+        "type": "com.wingedsheep.engine.state.components.player.PlayerTurnsTakenComponent",
+        "count": 1
+      },
+      "com.wingedsheep.engine.state.components.player.MulliganStateComponent": {
+        "type": "com.wingedsheep.engine.state.components.player.MulliganStateComponent",
+        "mulligansTaken": 0,
+        "hasKept": true,
+        "leylinePhaseStarted": false,
+        "pendingLeylineCardIds": [],
+        "freeMulligan": false
+      }
+    },
+    "e1": {
+      "com.wingedsheep.engine.state.components.identity.PlayerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.PlayerComponent",
+        "name": "Player 2",
+        "startingLifeTotal": 20
+      },
+      "com.wingedsheep.engine.state.components.identity.LifeTotalComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.LifeTotalComponent",
+        "life": 20
+      },
+      "com.wingedsheep.engine.state.components.player.ManaPoolComponent": {
+        "type": "com.wingedsheep.engine.state.components.player.ManaPoolComponent",
+        "white": 0,
+        "blue": 0,
+        "black": 0,
+        "red": 0,
+        "green": 0,
+        "colorless": 0,
+        "restrictedMana": [],
+        "manaBySubtype": {},
+        "manaBySource": {},
+        "manaByCardType": {},
+        "snowMana": {},
+        "snowColorless": 0
+      },
+      "com.wingedsheep.engine.state.components.player.LandDropsComponent": {
+        "type": "com.wingedsheep.engine.state.components.player.LandDropsComponent",
+        "remaining": 1,
+        "maxPerTurn": 1
+      },
+      "com.wingedsheep.engine.state.components.player.PlayerTurnsTakenComponent": {
+        "type": "com.wingedsheep.engine.state.components.player.PlayerTurnsTakenComponent",
+        "count": 0
+      },
+      "com.wingedsheep.engine.state.components.player.MulliganStateComponent": {
+        "type": "com.wingedsheep.engine.state.components.player.MulliganStateComponent",
+        "mulligansTaken": 0,
+        "hasKept": true,
+        "leylinePhaseStarted": false,
+        "pendingLeylineCardIds": [],
+        "freeMulligan": false
+      }
+    },
+    "e35": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e0",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e0"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e0"
+      }
+    },
+    "e12": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e0",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e0"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e0"
+      }
+    },
+    "e24": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e0",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e0"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e0"
+      }
+    },
+    "e13": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e0",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e0"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e0"
+      }
+    },
+    "e17": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e0",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e0"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e0"
+      }
+    },
+    "e37": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e0",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e0"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e0"
+      }
+    },
+    "e16": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e0",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e0"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e0"
+      }
+    },
+    "e6": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e0",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e0"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e0"
+      }
+    },
+    "e4": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e0",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e0"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e0"
+      }
+    },
+    "e40": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e0",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e0"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e0"
+      }
+    },
+    "e53": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e1",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e1"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e1"
+      }
+    },
+    "e59": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e1",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e1"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e1"
+      }
+    },
+    "e81": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e1",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e1"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e1"
+      }
+    },
+    "e44": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e1",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e1"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e1"
+      }
+    },
+    "e57": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e1",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e1"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e1"
+      }
+    },
+    "e63": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e1",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e1"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e1"
+      }
+    },
+    "e48": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e1",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e1"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e1"
+      }
+    },
+    "e47": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e1",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e1"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e1"
+      }
+    },
+    "e67": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e1",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e1"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e1"
+      }
+    },
+    "e69": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Forest#FRA-396",
+        "name": "Forest",
+        "manaCost": "",
+        "typeLine": "Basic Land \u2014 Forest",
+        "oracleText": "({T}: Add {G}.)",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [],
+        "ownerId": "e1",
+        "spellEffect": null,
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d12fc5-c7bd-4734-9259-98fe65241f60.jpg?1788878373",
+        "backFaceImageUri": null,
+        "printingSetCode": "FRA",
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": true,
+        "originalSetCode": "FRA",
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e1"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e1"
+      }
+    },
+    "80648363-5f33-4547-a07b-4ce54e7e9ce0": {
+      "com.wingedsheep.engine.state.components.identity.CardComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.CardComponent",
+        "cardDefinitionId": "Shock",
+        "name": "Shock",
+        "manaCost": "{R}",
+        "typeLine": "Instant",
+        "oracleText": "Shock deals 2 damage to any target.",
+        "baseStats": null,
+        "baseKeywords": [],
+        "baseFlags": [],
+        "colors": [
+          "RED"
+        ],
+        "ownerId": "e0",
+        "spellEffect": {
+          "type": "DealDamage",
+          "amount": {
+            "type": "Fixed",
+            "amount": 2,
+            "description": "2"
+          },
+          "target": {
+            "type": "BoundVariable",
+            "name": "t0",
+            "description": "target"
+          },
+          "cantBePrevented": false,
+          "damageSource": null,
+          "excessToController": false,
+          "excessDamageVariable": null,
+          "description": "Deal 2 damage to target"
+        },
+        "imageUri": null,
+        "backFaceImageUri": null,
+        "printingSetCode": null,
+        "hasNonManaActivatedAbility": false,
+        "hasActivatedAbility": false,
+        "originalSetCode": null,
+        "hasAdventure": false,
+        "isDoubleFaced": false,
+        "manaValueOverride": null,
+        "copyTriggeredAbilities": [],
+        "manaSpendingGrants": []
+      },
+      "com.wingedsheep.engine.state.components.identity.OwnerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.OwnerComponent",
+        "playerId": "e0"
+      },
+      "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
+        "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
+        "playerId": "e0"
+      }
+    }
+  },
+  "zones": [
+    {
+      "ownerId": "e0",
+      "zoneType": "Library"
+    },
+    [
+      "e40",
+      "e16",
+      "e24"
+    ],
+    {
+      "ownerId": "e1",
+      "zoneType": "Library"
+    },
+    [
+      "e47",
+      "e67",
+      "e57"
+    ],
+    {
+      "ownerId": "e0",
+      "zoneType": "Hand"
+    },
+    [
+      "e37",
+      "e17",
+      "e6",
+      "e13",
+      "e4",
+      "e35",
+      "e12",
+      "80648363-5f33-4547-a07b-4ce54e7e9ce0"
+    ],
+    {
+      "ownerId": "e1",
+      "zoneType": "Hand"
+    },
+    [
+      "e44",
+      "e59",
+      "e81",
+      "e48",
+      "e63",
+      "e69",
+      "e53"
+    ]
+  ],
+  "departedLinkedExile": {},
+  "zoneReturns": [],
+  "turnNumber": 1,
+  "activePlayerId": "e0",
+  "controlAtTurnStart": {},
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "priorityPlayerId": "e0",
+  "stack": [],
+  "objectIdentities": {
+    "e35": {
+      "generation": 86,
+      "logicalZone": {
+        "ownerId": "e0",
+        "zoneType": "Hand"
+      }
+    },
+    "e12": {
+      "generation": 87,
+      "logicalZone": {
+        "ownerId": "e0",
+        "zoneType": "Hand"
+      }
+    },
+    "e24": {
+      "generation": 9,
+      "logicalZone": {
+        "ownerId": "e0",
+        "zoneType": "Library"
+      }
+    },
+    "e13": {
+      "generation": 84,
+      "logicalZone": {
+        "ownerId": "e0",
+        "zoneType": "Hand"
+      }
+    },
+    "e17": {
+      "generation": 82,
+      "logicalZone": {
+        "ownerId": "e0",
+        "zoneType": "Hand"
+      }
+    },
+    "e37": {
+      "generation": 81,
+      "logicalZone": {
+        "ownerId": "e0",
+        "zoneType": "Hand"
+      }
+    },
+    "e16": {
+      "generation": 14,
+      "logicalZone": {
+        "ownerId": "e0",
+        "zoneType": "Library"
+      }
+    },
+    "e6": {
+      "generation": 83,
+      "logicalZone": {
+        "ownerId": "e0",
+        "zoneType": "Hand"
+      }
+    },
+    "e4": {
+      "generation": 85,
+      "logicalZone": {
+        "ownerId": "e0",
+        "zoneType": "Hand"
+      }
+    },
+    "e40": {
+      "generation": 40,
+      "logicalZone": {
+        "ownerId": "e0",
+        "zoneType": "Library"
+      }
+    },
+    "e53": {
+      "generation": 94,
+      "logicalZone": {
+        "ownerId": "e1",
+        "zoneType": "Hand"
+      }
+    },
+    "e59": {
+      "generation": 89,
+      "logicalZone": {
+        "ownerId": "e1",
+        "zoneType": "Hand"
+      }
+    },
+    "e81": {
+      "generation": 90,
+      "logicalZone": {
+        "ownerId": "e1",
+        "zoneType": "Hand"
+      }
+    },
+    "e44": {
+      "generation": 88,
+      "logicalZone": {
+        "ownerId": "e1",
+        "zoneType": "Hand"
+      }
+    },
+    "e57": {
+      "generation": 67,
+      "logicalZone": {
+        "ownerId": "e1",
+        "zoneType": "Library"
+      }
+    },
+    "e63": {
+      "generation": 92,
+      "logicalZone": {
+        "ownerId": "e1",
+        "zoneType": "Hand"
+      }
+    },
+    "e48": {
+      "generation": 91,
+      "logicalZone": {
+        "ownerId": "e1",
+        "zoneType": "Hand"
+      }
+    },
+    "e47": {
+      "generation": 76,
+      "logicalZone": {
+        "ownerId": "e1",
+        "zoneType": "Library"
+      }
+    },
+    "e67": {
+      "generation": 77,
+      "logicalZone": {
+        "ownerId": "e1",
+        "zoneType": "Library"
+      }
+    },
+    "e69": {
+      "generation": 93,
+      "logicalZone": {
+        "ownerId": "e1",
+        "zoneType": "Hand"
+      }
+    },
+    "80648363-5f33-4547-a07b-4ce54e7e9ce0": {
+      "generation": 95,
+      "logicalZone": {
+        "ownerId": "e0",
+        "zoneType": "Hand"
+      }
+    }
+  },
+  "nextObjectGeneration": 96,
+  "priorityPassedBy": [],
+  "timestamp": 0,
+  "turnOrder": [
+    "e0",
+    "e1"
+  ],
+  "winnerId": null,
+  "gameOver": false,
+  "floatingEffects": [],
+  "delayedTriggers": [],
+  "grantedTriggeredAbilities": [],
+  "grantedStateTriggeredAbilities": [],
+  "grantedActivatedAbilities": [],
+  "playerActionPermissions": [],
+  "grantedStaticAbilities": [],
+  "grantedReplacementEffects": [],
+  "grantedKeywordAbilities": [],
+  "globalGrantedTriggeredAbilities": [],
+  "continuationStack": [
+    {
+      "type": "com.wingedsheep.engine.core.FinishForcedPlayContinuation",
+      "card": {
+        "entityId": "80648363-5f33-4547-a07b-4ce54e7e9ce0",
+        "generation": 95
+      },
+      "playerId": "e0",
+      "from": "chosen",
+      "storePlayedTo": null,
+      "effectContext": {
+        "sourceId": null,
+        "controllerId": "e0",
+        "effectControllerId": null,
+        "granterId": null,
+        "abilityIdentity": null,
+        "activatedAbility": null,
+        "candidatePlayerId": null,
+        "sourceFaceChanges": null,
+        "sourceBattlefieldTimestamp": null,
+        "sourceReferenceLost": false,
+        "triggeringReferenceLost": false,
+        "iterationReferenceLost": false,
+        "objectReferences": {
+          "captured": false,
+          "origin": null,
+          "source": null,
+          "triggering": null,
+          "resolutionKey": null,
+          "permittedMoves": [],
+          "iteration": null
+        },
+        "targets": [
+          {
+            "type": "Player",
+            "playerId": "e0"
+          }
+        ],
+        "alignedTargets": [],
+        "xValue": null,
+        "totalManaSpent": 0,
+        "manaSpentOnXByColor": {},
+        "declaredCostSlot": null,
+        "wasBlightPaid": false,
+        "wasWaterbendPaid": false,
+        "wasSneaked": false,
+        "wasWebSlung": false,
+        "wasMayhem": false,
+        "sacrificedPermanents": [],
+        "discardedAsCostCards": [],
+        "countersRemovedAsCost": 0,
+        "damageDistribution": null,
+        "chosenModes": [],
+        "modeTargetsOrdered": [],
+        "modeTargetRequirements": {},
+        "exiledCardCount": 0,
+        "additionalCostBlightAmount": 0,
+        "tappedPermanents": [],
+        "exiledAsCostCards": [],
+        "exiledAsCostSnapshots": [],
+        "tappedEntitySnapshots": [],
+        "lastKnownSourceCounters": {},
+        "lastKnownSourceSnapshot": null,
+        "lastKnownSourceAttachments": [],
+        "chosenEntitySnapshots": [],
+        "triggerContext": null,
+        "triggeringEntityId": null,
+        "triggeringPlayerId": null,
+        "defendingPlayerId": null,
+        "manaColorChoice": null,
+        "chosenColor": null,
+        "chosenColors": [],
+        "chosenCreatureType": null,
+        "opponentDeciderId": null,
+        "castFromZone": null,
+        "lookBackGrants": {},
+        "affectedEntityId": null,
+        "pipeline": {
+          "storedCollections": {
+            "chosen": [
+              "80648363-5f33-4547-a07b-4ce54e7e9ce0"
+            ]
+          },
+          "namedTargets": {},
+          "chosenValues": {},
+          "storedNumbers": {},
+          "storedStringLists": {},
+          "storedSubtypeGroups": {}
+        },
+        "resolutionDepth": 0,
+        "entryCopies": {},
+        "entryAuraHosts": {},
+        "entryChoices": {}
+      }
+    },
+    {
+      "type": "com.wingedsheep.engine.core.Suspension",
+      "question": {
+        "type": "PlayCardDecision",
+        "id": "r0",
+        "playerId": "e0",
+        "prompt": "Play the chosen card",
+        "context": {
+          "sourceId": null,
+          "sourceName": null,
+          "phase": "CASTING",
+          "triggeringEntityId": null,
+          "inlineOnTrigger": false,
+          "effectHint": null,
+          "subjectEntityId": "80648363-5f33-4547-a07b-4ce54e7e9ce0",
+          "abilityIdentity": null
+        },
+        "cardId": "80648363-5f33-4547-a07b-4ce54e7e9ce0"
+      },
+      "answer": {
+        "type": "com.wingedsheep.engine.core.ForcedPlayContinuation",
+        "card": {
+          "entityId": "80648363-5f33-4547-a07b-4ce54e7e9ce0",
+          "generation": 95
+        },
+        "playerId": "e0"
+      }
+    }
+  ],
+  "pendingTriggers": [],
+  "spellsCastThisTurn": 0,
+  "playerSpellsCastThisTurn": {},
+  "spellsCastThisTurnByPlayer": {},
+  "dayNight": null,
+  "previousTurnActivePlayerId": null,
+  "previousTurnActiveTeamSpellCounts": {},
+  "pendingSpellCopies": [],
+  "pendingUncounterableSpells": [],
+  "pendingNextSpellAffinities": [],
+  "pendingNextSpellKeywords": [],
+  "pendingFreeCastSpells": [],
+  "turnSpellCostReductions": [],
+  "spellWarpedThisTurn": false,
+  "damageCantBePreventedThisTurn": false,
+  "powerUpRestrictedTurns": [],
+  "nonlandPermanentLeftBattlefieldThisTurn": false,
+  "activeCounterPlacementModifiers": [],
+  "permanentsSacrificedThisTurn": 0,
+  "pendingSacrificeIds": [],
+  "pendingDiscardCauseControllers": {},
+  "playersWhoCommittedCrimeThisTurn": [],
+  "playersDealtNoncombatDamageThisTurn": [],
+  "playersDealtNoncombatDamageLastTurn": [],
+  "playersDealtCombatDamageSinceTheirLastTurn": [],
+  "lastCastSpellColors": null,
+  "lastCardDrawnThisTurnByPlayer": {},
+  "drawStepStartDrawCountByPlayer": {
+    "e0": 0
+  },
+  "format": {
+    "type": "com.wingedsheep.sdk.core.Format.Standard"
+  },
+  "attackMode": "MULTIPLE",
+  "commanderDamage": [],
+  "mayPlayPermissions": [],
+  "rng": {
+    "state": 3813240357457810387
+  },
+  "nextEntityId": 82,
+  "nextRoutingId": 1,
+  "yieldsByPlayer": {},
+  "activeReplacementChain": null,
+  "pendingReplacementRiders": [],
+  "optionalDamageRedirectChoices": {}
+}

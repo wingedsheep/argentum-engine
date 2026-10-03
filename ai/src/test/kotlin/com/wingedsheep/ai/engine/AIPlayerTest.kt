@@ -52,6 +52,73 @@ class AIPlayerTest : FunSpec({
         return Pair(result.state, ActionProcessor(registry))
     }
 
+    test("AI and standalone responders complete a mandatory paid cast without passing") {
+        val d = GameTestDriver()
+        d.registerCards(TestCards.all)
+        d.initMirrorMatch(Deck.of("Mountain" to 40), skipMulligans = true)
+        val player = d.activePlayer!!
+        val chosen = d.putCardInHand(player, "Shock")
+        d.giveMana(player, com.wingedsheep.sdk.core.Color.RED, 1)
+        val forced = d.services.effectExecutorRegistry.execute(d.state, Effects.ForcePlay("chosen"),
+            com.wingedsheep.engine.handlers.EffectContext(sourceId = null, controllerId = player,
+                pipeline = com.wingedsheep.engine.handlers.PipelineState(storedCollections = mapOf("chosen" to listOf(chosen)))))
+        d.replaceState(forced.state)
+        val decision = d.pendingDecision as PlayCardDecision
+        val ai = AIPlayer.create(d.services.cardRegistry, player)
+        val strategic = ai.respondToDecision(d.state, decision) as PlayCardResponse
+        (strategic.action as CastSpell).cardId shouldBe chosen
+        ActionProcessor(d.services).process(d.state, SubmitDecision(player, strategic)).result.error shouldBe null
+        val fallback = DecisionResponder(GameSimulator(d.services.cardRegistry), AIPlayer.defaultEvaluator())
+            .respond(d.state, decision, player) as PlayCardResponse
+        (fallback.action as CastSpell).cardId shouldBe chosen
+        ActionProcessor(d.services).process(d.state, SubmitDecision(player, fallback)).result.error shouldBe null
+    }
+
+    test("mandatory play ranks affordable cost variants through decision submission even below holding") {
+        val kickedLife = card("Forced Kicker Test") {
+            manaCost = "{R}"
+            typeLine = "Instant"
+            keywordAbility(com.wingedsheep.sdk.scripting.KeywordAbility.kicker("{R}"))
+            spell {
+                effect = Effects.If(
+                    com.wingedsheep.sdk.scripting.conditions.WasKicked,
+                    then = Effects.GainLife(3),
+                    otherwise = Effects.GainLife(1),
+                )
+            }
+        }
+        val d = GameTestDriver()
+        d.registerCards(TestCards.all)
+        d.registerCard(kickedLife)
+        d.initMirrorMatch(Deck.of("Mountain" to 40), skipMulligans = true)
+        val player = d.activePlayer!!
+        val chosen = d.putCardInHand(player, kickedLife.name)
+        d.giveMana(player, com.wingedsheep.sdk.core.Color.RED, 2)
+        val forced = d.services.effectExecutorRegistry.execute(d.state, Effects.ForcePlay("chosen"),
+            com.wingedsheep.engine.handlers.EffectContext(sourceId = null, controllerId = player,
+                pipeline = com.wingedsheep.engine.handlers.PipelineState(storedCollections = mapOf("chosen" to listOf(chosen)))))
+        d.replaceState(forced.state)
+        val simulator = GameSimulator(d.services.cardRegistry)
+        val offers = simulator.getLegalActions(d.state, player).filter { it.affordable }
+        offers.any { it.actionType == "CastSpell" }.shouldBeTrue()
+        offers.any { it.actionType == "CastWithKicker" }.shouldBeTrue()
+        val evaluator = BoardEvaluator { state, _, seat ->
+            state.lifeTotal(seat).toDouble() + state.getHand(seat).size * 10.0
+        }
+        val ai = AIPlayer(player, simulator, evaluator,
+            Strategist(simulator, evaluator), DecisionResponder(simulator, evaluator))
+        val response = ai.respondToDecision(d.state, d.pendingDecision!!) as PlayCardResponse
+        val cast = response.action as CastSpell
+        cast.cardId shouldBe chosen
+        cast.declaredCostSlot shouldBe com.wingedsheep.sdk.scripting.ChoiceSlot.KICKED
+        val simulation = simulator.simulate(d.state, cast)
+        simulation.shouldBeInstanceOf<SimulationResult.Terminal>()
+        simulation.state.lifeTotal(player) shouldBe d.state.lifeTotal(player) + 3
+        (evaluator.evaluate(simulation.state, simulation.state.projectedState, player) <
+            evaluator.evaluate(d.state, d.state.projectedState, player)).shouldBeTrue()
+        ActionProcessor(d.services).process(d.state, SubmitDecision(player, response)).result.error shouldBe null
+    }
+
     test("AI can evaluate board state") {
         val registry = createCardRegistry()
         val (state, _) = initGame(registry, Deck.of("Mountain" to 17, "Raging Goblin" to 3))

@@ -654,6 +654,7 @@ object CardLinter {
         put("Discover" to "storeDiscoveredAs", write(Space.COLLECTION))
         put("CopyCardIntoCollection" to "storeAs", write(Space.COLLECTION))
         put("CopyCollectionIntoCollection" to "storeAs", write(Space.COLLECTION))
+        put("ForcePlay" to "storePlayedTo", write(Space.COLLECTION))
         put("CastFromCollectionWithoutPayingCost" to "storeCastTo", write(Space.COLLECTION))
         put("CounterAllOnStack" to "storeCountAs", write(Space.COLLECTION))
         put("Behold" to "storeAs", write(Space.COLLECTION))
@@ -683,7 +684,7 @@ object CardLinter {
             "MakePlotted",
             "GrantPlayWithAdditionalCost", "GrantPlayWithCostIncrease", "FilterCollection",
             "ChooseOnePerCategory",
-            "StoreCardName", "CastFromCollectionWithoutPayingCost", "PlayFromCollectionWithoutPayingCost",
+            "StoreCardName", "ForcePlay", "CastFromCollectionWithoutPayingCost", "PlayFromCollectionWithoutPayingCost",
             "CastAnyNumberFromCollectionWithoutPayingCost", "ExileFromStorage",
             "CopyCollectionIntoCollection", "RecordChosenLinkedExile", "RecordSourceObjects",
             "PairWithSource", "EmitChampionedEvent",

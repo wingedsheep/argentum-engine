@@ -1755,6 +1755,24 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   the chosen card if any, bottom-randomize the rest. Pair with `DynamicAmounts.triggeringManaValue()`
   (= `EntityProperty(TriggeringEntity, ManaValue)`) when both bounds come from the triggering spell.
 
+### Mandatory paid play during resolution
+
+`Effects.ForcePlay(from, player = Controller, storePlayedTo = null)` instructs the named player to
+play the first card in a gathered collection if able. It uses that player's existing zone permissions,
+resources and spell/permanent control. Gather and select first; compose with
+`ControlPlayerDuringResolution` when another player makes the choices. The affected seat receives normal
+server-enumerated casting options (faces, alternative and additional costs, modes, X, targets and
+payment), answered through `PlayCardResponse` carrying a normal `CastSpell` or `PlayLand` action.
+
+The instruction waives type-based timing for this one card, retaining the actual turn, step and stack
+for other restrictions. Land plays still require the affected player's turn and an available land
+play. Prohibitions and costs remain authoritative. No playable offer means no effect. Local casting
+cancellation returns to the mandatory instruction. Only a completed play publishes `storePlayedTo`;
+empty collections, unavailable cards and impossible plays publish nothing. The captured card object
+and serialized continuation prevent a later zone visit from inheriting the instruction. It grants
+no enduring play-from-zone permission. Mana-ability origin/spending restrictions require separate
+vocabulary; this primitive does not provide Word of Command's full mana restriction.
+
 ### Linked exile & play-from-exile permissions
 
 - `ReturnLinkedExile()` — return all from source's linked exile, under controller.
@@ -16176,5 +16194,5 @@ capture their authorized observers before the control window ends, without trans
 Shared-turn teams follow the existing player-control team rule. A later resolution-control grant wins,
 and a completed window reveals the underlying turn control again. Session hotseat routing keeps precedence.
 
-This primitive does not instruct card play or restrict mana sources. Word of Command additionally needs
-forced paid card play (G39) and mana-origin/spending restrictions (G31); it is not yet authorable faithfully.
+This primitive composes with `Effects.ForcePlay` for mandatory paid card play. Word of Command
+still needs mana-origin/spending restrictions (G31); it is not yet authorable faithfully.

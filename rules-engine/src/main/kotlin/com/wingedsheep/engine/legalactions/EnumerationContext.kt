@@ -15,6 +15,7 @@ import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.mana.ManaStaticsIndex
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.forcedPlayFor
 import com.wingedsheep.engine.state.components.player.CantActivateLoyaltyAbilitiesComponent
 import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.engine.state.components.player.CantCastFromNonHandZonesComponent
@@ -94,7 +95,8 @@ class EnumerationContext(
     // Timing flags. CR 805.5a — on a shared team turn either teammate may take sorcery-speed
     // actions, so this is gated on the active *team*, not the single active player.
     val canPlaySorcerySpeed: Boolean by lazy {
-        state.step.isMainPhase && state.stack.isEmpty() && state.isActiveTurnFor(playerId)
+        state.forcedPlayFor(playerId) != null ||
+            (state.step.isMainPhase && state.stack.isEmpty() && state.isActiveTurnFor(playerId))
     }
 
     // Land drop availability (accounts for static ability bonuses like GrantAdditionalLandDrop)
@@ -102,7 +104,7 @@ class EnumerationContext(
         val landDrops = state.getEntity(playerId)?.get<LandDropsComponent>()
         val remaining = landDrops?.remaining ?: 0
         val staticBonus = castPermissionUtils.getAdditionalLandDrops(state, playerId)
-        canPlaySorcerySpeed && (remaining + staticBonus > 0) &&
+        canPlaySorcerySpeed && state.isActiveTurnFor(playerId) && (remaining + staticBonus > 0) &&
             // Worms of the Earth's "players can't play lands". Mirrored in PlayLandHandler: a
             // legal-action list that offers a land drop the handler will refuse is worse than
             // either check alone.

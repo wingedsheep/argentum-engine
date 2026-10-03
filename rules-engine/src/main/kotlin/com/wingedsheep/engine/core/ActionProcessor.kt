@@ -129,6 +129,12 @@ class ActionProcessor(
             return "Unknown player: ${action.playerId}"
         }
 
+        if (state.continuationStack.any { it is FinishForcedPlayContinuation } && state.pendingDecision != null &&
+            action !is SubmitDecision && action !is Concede &&
+            !(action is ActivateAbility && com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow.openFor(state, state.actorFor(action.playerId)) != null)) {
+            return "Answer the current casting decision"
+        }
+
         // Split second (CR 702.61): no spells, no non-mana activated abilities. An ActivateAbility
         // is decided by ActivationValidator, the only place that knows whether it's a mana ability.
         if (action !is ActivateAbility && SplitSecond.forbids(action) &&
