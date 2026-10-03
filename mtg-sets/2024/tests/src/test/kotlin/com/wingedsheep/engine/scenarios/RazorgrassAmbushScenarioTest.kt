@@ -54,6 +54,31 @@ class RazorgrassAmbushScenarioTest : ScenarioTestBase() {
                 game.isInGraveyard(1, "Hill Giant") shouldBe true
             }
 
+            test("deals 3 damage to target blocking creature") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardInHand(1, "Razorgrass Ambush")
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withCardOnBattlefield(1, "Grizzly Bears", summoningSickness = false)
+                    .withCardOnBattlefield(2, "Hill Giant")
+                    .withCardInLibrary(1, "Plains")
+                    .withCardInLibrary(2, "Plains")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Grizzly Bears" to 2)).error shouldBe null
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareBlockers(mapOf("Hill Giant" to listOf("Grizzly Bears"))).error shouldBe null
+                game.passPriority() // blocking player passes; active player gets priority
+
+                val giant = game.findPermanent("Hill Giant")!!
+                game.castSpell(1, "Razorgrass Ambush", targetId = giant).error shouldBe null
+                game.resolveStack()
+
+                game.isInGraveyard(2, "Hill Giant") shouldBe true
+            }
+
             test("can't target a creature that isn't attacking or blocking") {
                 val game = combatGame()
                 game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
@@ -67,7 +92,7 @@ class RazorgrassAmbushScenarioTest : ScenarioTestBase() {
 
         context("Razorgrass Field — the land back") {
 
-            test("paying 3 life has it enter untapped and it taps for W") {
+            test("paying 3 life has it enter untapped") {
                 val game = landGame()
                 val card = game.state.getHand(game.player1Id).single()
                 game.execute(PlayLand(game.player1Id, card, asBackFace = true)).error shouldBe null

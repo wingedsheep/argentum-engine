@@ -2216,15 +2216,13 @@ class TriggerMatcher(
                 counters?.counters?.values?.any { it > 0 } ?: false
             }
         }
-        // "Modified" (has a counter, an attached Equipment, or an attached Aura — CR 122/301/303) on
+        // "Modified" (a counter, an Equipment, or an Aura its controller controls — CR 700.9) on
         // a permanent that has left the battlefield reads last-known info: the live counters and
-        // attachment links are gone by trigger-gating time. Counters come from the snapshot; the
-        // equipped/enchanted legs come from the frozen wasEquipped/wasEnchanted flags captured in
-        // ZoneTransitionService before exit cleanup. For non-leave triggers (ETB) the entity is live.
+        // attachment links are gone by trigger-gating time, so ZoneTransitionService freezes the
+        // answer as `wasModified` before exit cleanup. For non-leave triggers (ETB) the entity is live.
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsModified -> {
             if (event.fromZone == Zone.BATTLEFIELD) {
-                val lk = event.lastKnown
-                (lk?.totalCounters ?: 0) > 0 || lk?.wasEquipped == true || lk?.wasEnchanted == true
+                event.lastKnown?.wasModified == true
             } else {
                 isModified(state, event.entityId) { state.projectedState.getController(it) }
             }

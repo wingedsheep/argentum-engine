@@ -68,8 +68,7 @@ class PearlEarImperialAdvisorScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("an opponent's Aura doesn't modify your creature, and doesn't count for affinity") {
-                // Pacifism at full {1}{W}: two Plains. Opponent's Holy Strength on our Bears.
+            test("an opponent's Aura doesn't count for affinity") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardOnBattlefield(1, "Pearl-Ear, Imperial Advisor")
@@ -85,6 +84,30 @@ class PearlEarImperialAdvisorScenarioTest : ScenarioTestBase() {
                 val bears = game.findPermanent("Grizzly Bears")!!
                 withClue("one Plains can't pay {1}{W}: the opponent's Aura gives no affinity") {
                     game.castSpell(1, "Pacifism", bears).error shouldNotBe null
+                }
+            }
+
+            test("an opponent's Aura doesn't make your creature modified") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Pearl-Ear, Imperial Advisor")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardAttachedTo(2, "Holy Strength", "Grizzly Bears")
+                    .withCardInHand(1, "Pacifism")
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withCardInLibrary(1, "Plains")
+                    .withCardInLibrary(2, "Plains")
+                    .withActivePlayer(1)
+                    .build()
+
+                val bears = game.findPermanent("Grizzly Bears")!!
+                val handBefore = game.handSize(1)
+
+                game.castSpell(1, "Pacifism", bears).error shouldBe null
+                game.resolveStack()
+
+                withClue("no draw: an Aura controlled by another player doesn't modify the Bears") {
+                    game.handSize(1) shouldBe handBefore - 1
                 }
             }
 

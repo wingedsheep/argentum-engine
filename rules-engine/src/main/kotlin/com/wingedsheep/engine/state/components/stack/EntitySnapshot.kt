@@ -124,9 +124,8 @@ data class EntitySnapshot(
     /**
      * True if this permanent had at least one Equipment attached when it left the battlefield. The
      * live attachment links are torn down by the exit cleanup, so leaves/dies triggers asking "was
-     * it modified/equipped?" must read last-known information (CR 608.2h). Backs the last-known leg
-     * of [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEquipped] and (together with
-     * counters / [wasEnchanted]) [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsModified].
+     * it equipped?" must read last-known information (CR 608.2h). Backs the last-known leg of
+     * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEquipped].
      */
     val wasEquipped: Boolean = false,
     /**
@@ -145,9 +144,17 @@ data class EntitySnapshot(
     /**
      * True if this permanent had at least one Aura attached when it left the battlefield (CR 303.4).
      * Last-known counterpart to [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEnchanted];
-     * a leg of the last-known [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsModified].
+     * see [wasModified] for the last-known
+     * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsModified].
      */
     val wasEnchanted: Boolean = false,
+    /**
+     * True if this permanent was modified (CR 700.9) when it left the battlefield: it had a counter,
+     * an Equipment, or an Aura controlled by its own controller. Not derivable from [wasEnchanted],
+     * which counts an opponent's Aura too. Backs the last-known leg of
+     * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsModified].
+     */
+    val wasModified: Boolean = false,
     /** Creatures blocking, or blocked by, this one when it left (CR 509; Abu Ja'far). */
     val blockingOrBlockedByIds: List<EntityId> = emptyList(),
     /**

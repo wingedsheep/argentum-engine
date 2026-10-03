@@ -18,10 +18,11 @@ class GuardianOfTheForgottenScenarioTest : ScenarioTestBase() {
     init {
         context("Guardian of the Forgotten") {
 
-            fun board(vararg creatures: String) = scenario()
+            fun board(vararg creatures: String, aura: Pair<Int, String>? = null) = scenario()
                 .withPlayers("Player", "Opponent")
                 .withCardOnBattlefield(1, "Guardian of the Forgotten")
                 .apply { creatures.forEach { withCardOnBattlefield(1, it) } }
+                .apply { aura?.let { (player, name) -> withCardAttachedTo(player, name, creatures.first()) } }
                 .withCardInHand(1, "Doom Blade")
                 .withLandsOnBattlefield(1, "Swamp", 2)
                 .withCardInLibrary(1, "Forest")
@@ -55,6 +56,28 @@ class GuardianOfTheForgottenScenarioTest : ScenarioTestBase() {
                 game.state.getEntity(topCard)?.get<FaceDownComponent>() shouldBe FaceDownComponent
                 game.state.projectedState.getPower(topCard) shouldBe 2
                 game.state.projectedState.getToughness(topCard) shouldBe 2
+            }
+
+            test("a creature enchanted by your own Aura is modified") {
+                val game = board("Grizzly Bears", aura = 1 to "Holy Strength")
+                val librarySize = game.librarySize(1)
+
+                game.castSpell(1, "Doom Blade", game.findPermanent("Grizzly Bears")!!).error shouldBe null
+                game.resolveStack()
+
+                game.isInGraveyard(1, "Grizzly Bears") shouldBe true
+                game.librarySize(1) shouldBe librarySize - 1
+            }
+
+            test("an opponent's Aura doesn't make your creature modified") {
+                val game = board("Grizzly Bears", aura = 2 to "Pacifism")
+                val librarySize = game.librarySize(1)
+
+                game.castSpell(1, "Doom Blade", game.findPermanent("Grizzly Bears")!!).error shouldBe null
+                game.resolveStack()
+
+                game.isInGraveyard(1, "Grizzly Bears") shouldBe true
+                game.librarySize(1) shouldBe librarySize
             }
 
             test("an unmodified creature dying does nothing") {
