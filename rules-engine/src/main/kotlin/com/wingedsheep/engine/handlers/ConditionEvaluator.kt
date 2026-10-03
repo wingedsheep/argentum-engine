@@ -1093,6 +1093,14 @@ class ConditionEvaluator(
             (ctx as? Resolution)?.let {
                 evaluateDiscardedCardFilterMatch(state, condition.filter, entity.index, it.effectContext)
             } ?: false
+        is EffectTarget.RevealedAsCost ->
+            (ctx as? Resolution)?.let {
+                val cardId = it.effectContext.revealedAsCostSnapshots.getOrNull(entity.index)?.entityId
+                cardId != null && predicates.matches(
+                    state, state.projectedState, cardId, condition.filter,
+                    PredicateContext.fromEffectContext(it.effectContext),
+                )
+            } ?: false
         is EffectTarget.LibraryTop -> {
             val controllerId = ctx.controllerId
             val context = when (ctx) {

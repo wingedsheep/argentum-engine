@@ -344,6 +344,25 @@ sealed interface EffectTarget {
     }
 
     /**
+     * REVEALED AS COST: a card revealed from hand to pay this spell's additional reveal cost
+     * (`Costs.additional.RevealFromHand(...)`, alone or as the leg of `RevealFromHandOrPay`), by
+     * index — "the revealed card". The reveal counterpart of [DiscardedAsCost]. Revealing moves
+     * nothing (CR 701.20b), so the card is usually still in hand at resolution; a value read of it
+     * ("the revealed card's power") uses the characteristics captured as the cost was paid, which is
+     * also its last-known information if the card has left your hand since.
+     *
+     * **Resolution-only** (no projection meaning). Used by Titan's Presence: "Exile target creature if
+     * its power is less than or equal to the revealed card's power."
+     *
+     * @property index Which revealed card to reference (defaults to the first/only one).
+     */
+    @SerialName("RevealedAsCost")
+    @Serializable
+    data class RevealedAsCost(val index: Int = 0) : SingleEntity {
+        override val description: String = "the revealed card"
+    }
+
+    /**
      * SACRIFICED AS COST: a permanent sacrificed to pay this spell/ability's cost, by index —
      * "the sacrificed creature". A value read of it ("damage equal to the sacrificed creature's
      * power") uses the snapshot taken as the cost was paid (CR 608.2h), since the permanent is

@@ -3881,6 +3881,77 @@
     ]
 }
 
+// Titan's Presence
+{
+    "name": "Titan's Presence",
+    "manaCost": "{3}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, reveal a colorless creature card from your hand.\nExile target creature if its power is less than or equal to the revealed card's power.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "EntityProperty",
+                        "entity": "RevealedAsCost",
+                        "numericProperty": "Power"
+                    }
+                }
+            },
+            "then": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "destination": "Exile"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomRevealFromHand",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsColorless"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "Dust and memory are all that remain in Ulamog's wake.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39d5e3ab-9719-4918-af4f-25bda5401191.jpg?1783938222"
+    }
+}
+
 // Tunneling Geopede
 {
     "name": "Tunneling Geopede",

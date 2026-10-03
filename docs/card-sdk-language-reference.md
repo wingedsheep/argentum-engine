@@ -944,7 +944,8 @@ definitions construct these through the facade, e.g. `Costs.additional.Sacrifice
   hand, minus the spell being cast) and the picks come back as
   `additionalCostPayment.revealedCards`. **Paying moves nothing** — CR 701.20b: revealing a card
   doesn't cause it to leave the zone it's in — so the revealed card is still in hand and still
-  castable afterwards; the payment is a `CardsRevealedEvent` and nothing else. As a *mandatory*
+  castable afterwards; the payment is a `CardsRevealedEvent` and nothing else (read "the revealed
+  card" with `EffectTarget.RevealedAsCost`). As a *mandatory*
   cost it fails closed: with no matching card in hand the spell isn't castable at all.
 - `Costs.additional.RevealFromHandOrPay(filter = Filters.Any, alternativeManaCost, count = 1)` —
   "reveal a [filter] card from your hand or pay {mana}" (Lorwyn's tribal cycle: Wren's Run
@@ -4466,6 +4467,16 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   by Grab the Prize ("if the discarded card wasn't a land card, …") and Hisoka, Minamo Sensei ("counter
   target spell if it has the same mana value as the discarded card" =
   `Effects.If(CompareAmounts(targetManaValue(), EQ, manaValueOf(DiscardedAsCost())), Effects.CounterSpell())`).
+- `EffectTarget.RevealedAsCost(index = 0)` — a card revealed from hand to pay this spell's
+  additional reveal cost (`Costs.additional.RevealFromHand(...)`, alone or as the leg of
+  `RevealFromHandOrPay`) — "the revealed card". Revealing moves nothing (CR 701.20b), so the card is
+  usually still in hand; a value read (`DynamicAmounts.powerOf(EffectTarget.RevealedAsCost())`) uses
+  the characteristics captured as the cost was paid — printed fixed P/T, mana value, type line — which
+  is also its last-known information if the card was cast or discarded before resolution ("use its
+  power as it last existed in your hand"). An `EntityMatches` over it tests the card where it is now.
+  Resolution-only and spell-only (an activated ability's `Costs.pay.RevealCard` records nothing). Used
+  by Titan's Presence: `Effects.If(CompareAmounts(powerOf(creature), LTE, powerOf(RevealedAsCost())),
+  Effects.Exile(creature))`.
 - `EffectTarget.SacrificedAsCost(index = 0)` — a permanent **sacrificed to pay this spell's or
   ability's cost** ("the sacrificed creature"). Read as a value it uses the snapshot taken as the cost
   was paid — `EntityProperty(SacrificedAsCost(), ManaValue)` for "the sacrificed creature's mana

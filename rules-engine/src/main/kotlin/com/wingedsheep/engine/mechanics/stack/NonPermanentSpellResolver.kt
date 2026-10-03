@@ -242,6 +242,7 @@ internal class NonPermanentSpellResolver(
             wasMayhem = spellComponent.wasMayhem,
             sacrificedPermanents = spellComponent.sacrificedPermanents,
             discardedAsCostCards = spellComponent.discardedAsCostCards,
+            revealedAsCostSnapshots = spellComponent.revealedAsCostSnapshots,
             exiledAsCostCards = spellComponent.exiledAsCostCards,
             exiledAsCostSnapshots = spellComponent.exiledAsCostSnapshots,
             chosenEntitySnapshots = spellComponent.chosenEntitySnapshots,

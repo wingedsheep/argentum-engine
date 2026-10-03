@@ -80,6 +80,7 @@ internal class StackTextRenderer(
                 wasBlightPaid = spellOnStack.wasBlightPaid,
                 sacrificedPermanents = spellOnStack.sacrificedPermanents,
                 discardedAsCostCards = spellOnStack.discardedAsCostCards,
+                revealedAsCostSnapshots = spellOnStack.revealedAsCostSnapshots,
                 chosenEntitySnapshots = spellOnStack.chosenEntitySnapshots,
                 exiledCardCount = spellOnStack.exiledCardCount,
                 additionalCostBlightAmount = spellOnStack.additionalCostBlightAmount,
@@ -144,6 +145,7 @@ internal class StackTextRenderer(
             xValue = spellOnStack.xValue,
             sacrificedPermanents = spellOnStack.sacrificedPermanents,
             discardedAsCostCards = spellOnStack.discardedAsCostCards,
+            revealedAsCostSnapshots = spellOnStack.revealedAsCostSnapshots,
             exiledCardCount = spellOnStack.exiledCardCount,
             additionalCostBlightAmount = spellOnStack.additionalCostBlightAmount
         )

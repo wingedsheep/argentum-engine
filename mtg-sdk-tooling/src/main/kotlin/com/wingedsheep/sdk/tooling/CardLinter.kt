@@ -1306,6 +1306,7 @@ object CardLinter {
         "TriggeringEntity",
         "IterationEntity",
         "DiscardedAsCost",
+        "RevealedAsCost",
         "LibraryTop",
         "LinkedExiledCard",
     )

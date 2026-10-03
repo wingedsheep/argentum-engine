@@ -42,6 +42,9 @@ fun lkiPolicyFor(reference: EffectTarget.SingleEntity): LkiPolicy = when (refere
     is EffectTarget.SacrificedAsCost,
     is EffectTarget.TappedAsCost,
     is EffectTarget.PipelineTarget,
+    // Never on the battlefield either, but its read is the in-hand capture — its live object may
+    // since have been cast or discarded (Titan's Presence's ruling: "as it last existed in your hand").
+    is EffectTarget.RevealedAsCost,
     -> LkiPolicy.LIVE_THEN_LKI
 
     // Targets are re-validated at resolution (a departed target fizzles, CR 608.2b); iteration and
@@ -79,6 +82,7 @@ fun EffectContext.lkiSnapshotFor(reference: EffectTarget.SingleEntity, entityId:
     when (reference) {
         is EffectTarget.SacrificedAsCost -> sacrificedPermanents.snapshotFor(entityId)
         is EffectTarget.TappedAsCost -> tappedEntitySnapshots.snapshotFor(entityId)
+        is EffectTarget.RevealedAsCost -> revealedAsCostSnapshots.snapshotFor(entityId)
         is EffectTarget.PipelineTarget -> chosenEntitySnapshots.snapshotFor(entityId)
         EffectTarget.Self -> lastKnownSourceSnapshot?.takeIf { it.entityId == entityId }
         else -> null
