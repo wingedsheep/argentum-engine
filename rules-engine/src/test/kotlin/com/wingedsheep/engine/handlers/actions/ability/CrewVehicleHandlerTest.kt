@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
 import com.wingedsheep.engine.core.CrewVehicle
+import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -232,5 +233,10 @@ class CrewVehicleHandlerTest : FunSpec({
         projected.isCreature(vehicle) shouldBe true
         projected.getPower(vehicle) shouldBe 4
         projected.getToughness(vehicle) shouldBe 5
+        // Crew only adds the creature type (CR 702.122a); it never sets P/T, so an earlier base-P/T
+        // effect (Kudo, King Among Bears) is not overwritten by a later crew.
+        driver.state.floatingEffects.none {
+            it.effect.layer == Layer.POWER_TOUGHNESS && vehicle in it.effect.affectedEntities
+        } shouldBe true
     }
 })
