@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.sdk.scripting.CrewSaddleCost
 import com.wingedsheep.engine.core.CrewVehicle
 import com.wingedsheep.engine.handlers.actions.ability.CrewSaddleContributionEvaluator
 import com.wingedsheep.engine.legalactions.ActionEnumerator
@@ -79,7 +80,7 @@ class CrewEnumerator : ActionEnumerator {
                 // power were 2 greater" must read that way here or the client's progress bar would
                 // refuse a crew the engine accepts.
                 val power = CrewSaddleContributionEvaluator.evaluate(
-                    state, projected, context.cardRegistry, creatureId
+                    state, projected, context.cardRegistry, creatureId, CrewSaddleCost.CREW
                 )
                 val creatureName = creatureContainer.get<CardComponent>()?.name ?: "Unknown"
                 val canAttack = canAttackCache.getOrPut(creatureId) {

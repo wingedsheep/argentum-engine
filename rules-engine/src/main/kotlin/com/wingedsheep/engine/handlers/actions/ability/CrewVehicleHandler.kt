@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.sdk.scripting.CrewSaddleCost
 import com.wingedsheep.engine.core.CrewVehicle
 import com.wingedsheep.engine.core.CrewOrSaddleContributionEvent
 import com.wingedsheep.engine.core.CrewOrSaddleKind
@@ -123,7 +124,8 @@ class CrewVehicleHandler(
                 state = state,
                 projected = projected,
                 cardRegistry = cardRegistry,
-                creatureId = creatureId
+                creatureId = creatureId,
+                cost = CrewSaddleCost.CREW
             )
         }
 

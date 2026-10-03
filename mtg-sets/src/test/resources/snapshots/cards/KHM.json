@@ -1753,6 +1753,38 @@
     ]
 }
 
+// Giant Ox
+{
+    "name": "Giant Ox",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Ox",
+    "oracleText": "This creature crews Vehicles using its toughness rather than its power.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 6
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CrewSaddleContribution",
+                "characteristic": "TOUGHNESS",
+                "costs": [
+                    "CREW"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Joe Slucher",
+        "flavorText": "\"How strong is he? Well, I once lost control of the plow, and he carved a furrow right through my house! Didn't even slow down.\"\n—Guldir, Beskir farmer",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc71d8ca-c613-4534-bc9d-bc1e13202a2c.jpg?1783928285"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Glacial Floodplain
 {
     "name": "Glacial Floodplain",

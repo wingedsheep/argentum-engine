@@ -11086,12 +11086,15 @@ composite abilities).
   present on every battlefield Mount) and `ClientCard.isSaddled` (the live designation). Both are
   public — a saddled Mount and an unsaddled one are otherwise identical permanents, and the
   designation expires at cleanup with no event of its own.
-- `CrewSaddleContribution(characteristic = POWER, modifier = 0)` — changes only the numeric value
+- `CrewSaddleContribution(characteristic = POWER, modifier = 0, costs = {CREW, SADDLE})` — changes only the numeric value
   a creature contributes while paying a Crew or Saddle cost; it does not change that creature's
   power or toughness. The selected `characteristic` is read from projected state before `modifier`
   is applied, so counters and continuous effects are honored. Pilot text such as “saddles Mounts
   and crews Vehicles as though its power were 2 greater” uses `modifier = 2`; “using its toughness
-  rather than its power” uses `characteristic = CrewSaddleCharacteristic.TOUGHNESS`. Printed and
+  rather than its power” uses `characteristic = CrewSaddleCharacteristic.TOUGHNESS`. `costs` narrows which cost it
+  changes: text that only "crews Vehicles as though its power were 2 greater" (Hotshot Mechanic) or
+  only "crews Vehicles using its toughness" (Giant Ox) passes `costs = setOf(CrewSaddleCost.CREW)`,
+  so the creature saddles with its plain power. Printed and
   token-granted instances use the same handler path. The Crew and Saddle **enumerators** report each
   candidate's contribution through this same evaluator, so `LegalActionInfo.tapForPowerCreatures[].power`
   is the number the handler charges against, not the creature's printed power — the client's progress
