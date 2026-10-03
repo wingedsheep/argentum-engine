@@ -4272,6 +4272,14 @@ effect = Effects.Pipeline {
 }
 ```
 
+**Library-end sources.** `CardSource.TopOfLibrary(count, player = You, isMill = false)` gathers the top
+`count` cards; `CardSource.BottomOfLibrary(count, player = You)` is its mirror, the bottom `count` cards (in
+library order). Moving a card off the bottom is not a mill (CR 701.17a mills from the top), so it has no
+`isMill` axis and mill replacements never see it. **Cellar Door**: "Target player puts the bottom card of
+their library into their graveyard. If it's a creature card, you create a 2/2 black Zombie" —
+`Pipeline { val bottom = gather(CardSource.BottomOfLibrary(1, player)); toGraveyard(bottom) }` then
+`Effects.If(CollectionContainsMatch(bottom, Creature), CreateToken(…))`.
+
 **Special `gather` sources** (component-backed, no zone scan):
 
 - `CardSource.Self` — the ability's own source card, in whatever zone it currently sits. For a spell that is the

@@ -65,6 +65,15 @@ class GatherCardsExecutor(
                 }
             }
 
+            is CardSource.BottomOfLibrary -> {
+                val count = amountEvaluator.evaluate(state, source.count, context)
+                val playerIds = resolvePlayers(source.player, context, state)
+                    ?: return EffectResult.error(state, "Could not resolve player for GatherCards")
+                playerIds.flatMap { playerId ->
+                    state.getZone(ZoneKey(playerId, Zone.LIBRARY)).takeLast(count.coerceAtLeast(0))
+                }
+            }
+
             is CardSource.FromZone -> {
                 val playerIds = resolvePlayers(source.player, context, state)
                     ?: return EffectResult.error(state, "Could not resolve player for GatherCards")
@@ -435,7 +444,7 @@ class GatherCardsExecutor(
     }
 
     private fun isLibrarySource(source: CardSource): Boolean = when (source) {
-        is CardSource.TopOfLibrary -> true
+        is CardSource.TopOfLibrary, is CardSource.BottomOfLibrary -> true
         is CardSource.FromZone -> source.zone == Zone.LIBRARY
         is CardSource.FromMultipleZones -> source.zones.any { it == Zone.LIBRARY }
         else -> false

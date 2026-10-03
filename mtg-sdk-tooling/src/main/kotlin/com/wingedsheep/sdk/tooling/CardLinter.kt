@@ -266,7 +266,8 @@ object CardLinter {
      */
     private fun crossesLibraryBoundary(tree: JsonElement): Boolean {
         val fromLibrary = anyNode(tree) { node, type ->
-            type == "TopOfLibrary" || (type in ZONE_SOURCE_NODES && namesLibrary(node))
+            type == "TopOfLibrary" || type == "BottomOfLibrary" ||
+                (type in ZONE_SOURCE_NODES && namesLibrary(node))
         }
         val toLibrary = anyNode(tree) { node, type -> type == "ToZone" && namesLibrary(node) }
         if (!fromLibrary && !toLibrary) return false

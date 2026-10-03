@@ -57,7 +57,7 @@ sealed interface CardSource {
      * Top N cards of a player's library.
      *
      * [isMill] marks this gather as the library half of a *mill* (top N → graveyard), so the
-     * count site applies `ModifyMillAmount` replacement effects (CR 701.13 "mill that many plus
+     * count site applies `ModifyMillAmount` replacement effects (CR 701.17 "mill that many plus
      * four instead"). Only the `Patterns.Library.mill(...)` pipeline sets this; other top-N
      * gathers (scry, surveil, exile-top, look-at-top) leave it `false` so they are never affected
      * by mill-amount replacements.
@@ -74,6 +74,25 @@ sealed interface CardSource {
             this(DynamicAmount.Fixed(count), player, isMill)
 
         override val description: String = "the top ${count.description} cards of ${player.possessive} library"
+    }
+
+    /**
+     * Bottom N cards of a player's library — "puts the bottom card of their library into their
+     * graveyard" (Cellar Door). Gathered in library order (the bottommost card last).
+     *
+     * Moving a card off the bottom is not a mill (CR 701.17a mills from the top), so unlike
+     * [TopOfLibrary] there is no `isMill` axis and mill replacements never apply.
+     */
+    @SerialName("BottomOfLibrary")
+    @Serializable
+    data class BottomOfLibrary(
+        val count: DynamicAmount,
+        val player: Player = Player.You
+    ) : CardSource {
+        /** The bottom [count] cards — a constant count ("the bottom card of their library"). */
+        constructor(count: Int, player: Player = Player.You) : this(DynamicAmount.Fixed(count), player)
+
+        override val description: String = "the bottom ${count.description} cards of ${player.possessive} library"
     }
 
     /**

@@ -239,7 +239,7 @@ object Activated {
     private fun crossesLibraryBoundary(effect: Effect): Boolean {
         val fromLibrary = anyEffect(effect) {
             it is GatherCardsEffect && it.source.let { source ->
-                source is CardSource.TopOfLibrary ||
+                source is CardSource.TopOfLibrary || source is CardSource.BottomOfLibrary ||
                     (source is CardSource.FromZone && source.zone == Zone.LIBRARY) ||
                     (source is CardSource.FromMultipleZones && Zone.LIBRARY in source.zones)
             }

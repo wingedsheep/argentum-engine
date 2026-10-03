@@ -906,6 +906,101 @@
     ]
 }
 
+// Cellar Door
+{
+    "name": "Cellar Door",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}, {T}: Target player puts the bottom card of their library into their graveyard. If it's a creature card, you create a 2/2 black Zombie creature token.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cellar Door:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BottomOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "gathered0",
+                                    "filter": "creature"
+                                }
+                            },
+                            "then": {
+                                "type": "CreateToken",
+                                "power": 2,
+                                "toughness": 2,
+                                "colors": [
+                                    "BLACK"
+                                ],
+                                "creatureTypes": [
+                                    "Zombie"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Rob Alexander",
+        "flavorText": "As if anyone needed another reason to avoid dark, dank cellars.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97bdfb00-7773-4af6-895c-c90088a96b07.jpg"
+    }
+}
+
 // Champion of the Parish
 {
     "name": "Champion of the Parish",
