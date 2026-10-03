@@ -36,6 +36,17 @@ class FiltersTest : StringSpec({
         roundTrips(Filters.filter, "artifact or enchantment")
     }
 
+    // Oracle prints the artifact/creature pair in both orders and the cards follow the print, so
+    // each order is its own row and prints itself back rather than normalizing to the other.
+    "the artifact and creature pair keeps its printed order" {
+        read(Filters.filter, "artifact or creature") shouldBe
+            (GameObjectFilter.Artifact or GameObjectFilter.Creature)
+        read(Filters.filter, "creature or artifact") shouldBe GameObjectFilter.CreatureOrArtifact
+        roundTrips(Filters.filter, "artifact or creature")
+        roundTrips(Filters.filter, "creature or artifact")
+        roundTrips(Filters.filter, "artifact or creature you control")
+    }
+
     // The colour layer owns the top of the predicate stack and delegates the rest inward, which is
     // what lets it sit in front of a type phrase that already carries a state predicate.
     "the colour layer wraps any type noun" {

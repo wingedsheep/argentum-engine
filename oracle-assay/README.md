@@ -5263,6 +5263,48 @@ target. Both scenario tests pass unchanged after the fix.
 Corpus-wide the differential is back to its baseline **51** with **15 more cards compared**, so the
 band cost no divergences and closed one.
 
+## The artifact/creature type pair, in both orders
+
+"Destroy target **artifact or creature**", "Sacrifice an **artifact or creature**", "Whenever another
+**creature or artifact** you control dies" — the pair sat in no tail row of its own, because the
+decline landed on whatever followed the noun ("or creature.", "or creature an …", "or artifact you
+…"), so it was ten mid-table families rather than one. `Filters.TYPES` had every other two-type pair
+the corpus prints and not this one.
+
+The band is two rows, and the reason it is two is the finding. The SDK publishes
+`GameObjectFilter.CreatureOrArtifact` and the cards also write the `or` fold `Artifact or Creature`;
+both are an ordered `CardPredicate.Or`, so they are two values, and Oracle prints the pair in both
+orders. The cards nearly follow the print — "artifact or creature" is the fold, "creature or
+artifact" the named filter — so each printed order is the row for its own value, exactly like
+"artifact or enchantment", and neither needs an `alternate`. No plural: "artifacts and creatures" is
+not a spelling the singular says anything about, the same write-off the other pairs carry.
+
+### What it moved
+
+Probe ≈44 whole cards across the ten tail keys; delivered **+44** (7,739 → 7,783 over the
+implemented population).
+
+### What the differential found
+
+Twenty-two new divergences, twenty of them card spellings fixed in the band:
+
+- **Eighteen cards wrote `CreatureOrArtifact` for printed "artifact or creature"** — Putrefy, Cat-Owl,
+  the seven that exile or tap "target artifact or creature an opponent controls",
+  the sacrifice costs, the ONE oil-counter cards. Behaviourally identical (an `Or` is unordered at
+  runtime), but the value is the print-order one, so the goldens move only in member order.
+- **Dreg Recycler [MOM]** used `Effects.DrainLife(1)`, which gains life equal to the life *actually
+  lost*; the card says "you gain 1 life", a fixed amount. Now `LoseLife(EachOpponent) then
+  GainLife(1)`, the spelling every other fixed drain uses.
+- **Dune Drifter [DFT]** and **Lorehold Charm [SOS]** returned a graveyard card with
+  `PutOntoBattlefield`, dropping the graveyard guard `PutOntoBattlefieldFromGraveyard` exists to
+  carry; Lorehold Charm also distributed the mana-value cap over both `Or` members.
+
+Two stay as standing findings: **Tarrian's Soulcleaver** spells its counter target
+`EquippedCreature`, the minority of the attached-creature spellings `SelfSteps` already names; and
+**Dune Drifter**'s "mana value X or less" in an enters trigger is `CastX` on the card (correctly — the
+spell is gone when the trigger resolves) where the grammar reads `ManaValueAtMostX`. The second is a
+grammar finding outside this band: X inside a permanent's own enters trigger means the cast X.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote

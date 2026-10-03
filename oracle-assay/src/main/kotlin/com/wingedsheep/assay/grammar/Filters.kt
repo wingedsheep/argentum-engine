@@ -122,6 +122,11 @@ object Filters {
         TypeNoun("creature or land", "creatures and lands", GameObjectFilter.CreatureOrLand),
         TypeNoun("artifact or enchantment", null, GameObjectFilter.ArtifactOrEnchantment),
         TypeNoun("artifact or land", null, GameObjectFilter.ArtifactOrLand),
+        // Oracle prints this pair in both orders — "target artifact or creature", "another creature
+        // or artifact you control" — and the cards follow the print: the `or` fold for the first,
+        // the published `CreatureOrArtifact` for the second. Two rows, so each order prints itself.
+        TypeNoun("artifact or creature", null, GameObjectFilter.Artifact or GameObjectFilter.Creature),
+        TypeNoun("creature or artifact", null, GameObjectFilter.CreatureOrArtifact),
         TypeNoun("attacking creature", "attacking creatures", GameObjectFilter.Creature.attacking()),
         // A `StatePredicate.Or` of the two, which is one printed phrase and one value — the same
         // shape as the "artifact or enchantment" row above, and enumerated for the same reason.
