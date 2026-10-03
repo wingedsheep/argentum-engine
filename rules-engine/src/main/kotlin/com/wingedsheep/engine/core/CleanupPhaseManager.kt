@@ -1003,6 +1003,16 @@ class CleanupPhaseManager(
             }
         }
 
+        // 5a-ter. Roll "lost life this turn" into "lost life last turn" for every player — unlike
+        // attacking, "last turn" here is the previous turn in the game, whoever's it was. Read off
+        // the incoming `state`: the per-player marker is already stripped above. Backs
+        // TurnTracker.LIFE_LOST_LAST_TURN (Feast on the Fallen).
+        newState = newState.copy(
+            playersWhoLostLifeLastTurn = state.turnOrder
+                .filter { state.getEntity(it)?.has<LifeLostThisTurnComponent>() == true }
+                .toSet()
+        )
+
         // 5a-bis. Roll "attacked this turn" into "attacked last turn" for the *active player only*,
         // before the this-turn set above is gone. Cleanup runs at the end of every turn, so rolling
         // for everyone would let an intervening opponent's turn — during which this player declared

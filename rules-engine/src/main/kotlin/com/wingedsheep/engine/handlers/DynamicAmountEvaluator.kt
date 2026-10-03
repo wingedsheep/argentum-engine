@@ -715,6 +715,7 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComponent>()
                             ?.amount ?: 0
                     }
+                    TurnTracker.LIFE_LOST_LAST_TURN -> playerIds.count { it in state.playersWhoLostLifeLastTurn }
                     TurnTracker.PLAYER_ATTACKED -> playerIds.count { playerId ->
                         state.getEntity(playerId)
                             ?.has<com.wingedsheep.engine.state.components.combat.PlayerAttackedThisTurnComponent>() == true

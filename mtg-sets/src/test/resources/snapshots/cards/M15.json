@@ -678,6 +678,76 @@
     ]
 }
 
+// Feast on the Fallen
+{
+    "name": "Feast on the Fallen",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of each upkeep, if an opponent lost life last turn, put a +1/+1 counter on target creature you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Feast on the Fallen:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "EachOpponent",
+                        "tracker": "LIFE_LOST_LAST_TURN"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "UNCOMMON",
+        "artist": "Dave Kendall",
+        "flavorText": "\"As our numbers dwindle, the ranks of the dead grow ever stronger.\"\n—Thalia, Knight-Cathar",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d96a9227-14ce-4d35-b5e6-0d0c657207c0.jpg?1783939184",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Feast on the Fallen looks at the entire previous turn to determine whether its ability triggers or not. It doesn't matter whether Feast on the Fallen was on the battlefield when the opponent lost life."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Feast on the Fallen checks only if an opponent lost life during the turn, not whether that player's life total decreased over the course of the turn. For example, if an opponent lost 2 life and then gained 8 life last turn, Feast on the Fallen's ability will trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Feral Incarnation
 {
     "name": "Feral Incarnation",

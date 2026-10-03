@@ -348,7 +348,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
         private val POST_CAPTURE_FIELDS = setOf(
             "playerActionPermissions",
             "objectIdentities", "nextObjectGeneration", "zoneReturns", "pendingTriggers", "controlAtTurnStart",
-            "playersDealtNoncombatDamageThisTurn", "playersDealtNoncombatDamageLastTurn",
+            "playersDealtNoncombatDamageThisTurn", "playersDealtNoncombatDamageLastTurn", "playersWhoLostLifeLastTurn",
             "pendingReplacementRiders", "playersDealtCombatDamageSinceTheirLastTurn",
         )
     }

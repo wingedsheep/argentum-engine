@@ -346,6 +346,13 @@ data class GameState(
      */
     val playersDealtNoncombatDamageLastTurn: Set<EntityId> = emptySet(),
     /**
+     * Players (by entity id) who lost life during the previous turn, whoever's turn it was.
+     * Snapshotted from each player's `LifeLostThisTurnComponent` by
+     * `CleanupPhaseManager.cleanupEndOfTurn` just before that marker is cleared. Backs
+     * `TurnTracker.LIFE_LOST_LAST_TURN` (Feast on the Fallen).
+     */
+    val playersWhoLostLifeLastTurn: Set<EntityId> = emptySet(),
+    /**
      * Players (by entity id) who have been dealt combat damage since their own last turn ended.
      * Populated at the combat-damage-to-a-player sites in `CombatDamageManager`; a player leaves
      * the set only when their own turn ends (`TurnManager.startTurn` drops the outgoing turn's

@@ -12178,6 +12178,8 @@ answer it and would silently return `false`.
   `ConditionalStaticAbility` (Bonepicker Skirge), an activation restriction, an intervening-if, `Effects.If`.
 - `YouLostLife` — you lost life this turn.
 - `OpponentLostLife` — an opponent lost life this turn.
+- `OpponentLostLifeLastTurn` — an opponent lost life during the previous turn, whoever's it was (Feast on
+  the Fallen). Backed by `TurnTracker.LIFE_LOST_LAST_TURN`.
 - `PlayerLostLifeThisTurn(player)` — a specific player lost life this turn. Use when the wording
   binds the check to a particular player rather than "an opponent" — Thought-Stalker Warlock's
   "choose target opponent. If THEY lost life this turn, …" is
@@ -13891,6 +13893,9 @@ of `AddMana`. The engine empties pools as each step and phase ends (CR 500.5), s
   and life paid as a cost all accumulate on `LifeLostAmountThisTurnComponent`. Life gained never
   nets against it (Rowan's ruling: gain 3 and lose 3 and the total is still 3). Facade
   `DynamicAmounts.lifeLostThisTurn(player)`; powers Rowan, Scion of War.
+- `LIFE_LOST_LAST_TURN` — `LIFE_LOST` one turn back: the previous turn in the game, whoever's it was,
+  snapshotted onto `GameState.playersWhoLostLifeLastTurn` by `CleanupPhaseManager.cleanupEndOfTurn`.
+  Facade `Conditions.OpponentLostLifeLastTurn` (Feast on the Fallen).
 - `PLAYER_ATTACKED` — whether/how many times you attacked.
 - `DEALT_COMBAT_DAMAGE` — combat damage dealt.
 - `DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE` — indicator (0/1) that the player was dealt combat
