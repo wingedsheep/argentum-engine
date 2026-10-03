@@ -2347,6 +2347,58 @@
     ]
 }
 
+// Urza's Incubator
+{
+    "name": "Urza's Incubator",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "As this artifact enters, choose a creature type.\nCreature spells of the chosen type cost {2} less to cast.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "AnyCaster",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "HasChosenSubtype"
+                        ]
+                    }
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "RARE",
+        "artist": "Pete Venters",
+        "flavorText": "\"Stop thinking like an artificer, Urza, and start thinking like a father!\"\n—Rayne, Academy Chancellor",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bdf96c2c-b3d6-4d84-9572-fb115a795bed.jpg?1783946053",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Multiple Incubators are cumulative."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "You choose a creature type right as it enters, before any continuous effects are applied or trigged abilities trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Voice of Duty
 {
     "name": "Voice of Duty",
