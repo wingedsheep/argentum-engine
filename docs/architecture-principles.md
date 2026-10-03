@@ -1192,6 +1192,15 @@ activated abilities, and pain lands that cost life are tapped last.
    needed for future casts. If you have a red spell and a blue spell in hand with one Mountain and
    one Island, the solver won't tap the Island to pay for the red spell's generic cost.
 
+**Scoped mana-source restrictions.** `WithManaAbilitySources` bounds an activated-mana-ability
+source filter to a nested instruction. Its automatic continuation captures the affected player and
+resolution context, survives payment suspensions, and disappears before outer work resumes. Nested
+filters intersect. The shared activation predicate protects direct actions and menus; the solver also
+filters cached, snow and bonus-affordability paths. Matching reads projected source characteristics,
+not the objects consumed by activation costs. Existing floating mana and triggered mana abilities
+remain separate from activation eligibility. Pipeline output propagation crosses this transparent
+scope frame without discarding collections or payment metadata.
+
 **Tier 3: Cost Execution (Engine).** The `CostHandler` physically pays costs — tapping permanents,
 deducting from the mana pool, sacrificing creatures, discarding cards, paying life. The `ManaPool`
 data class is immutable:

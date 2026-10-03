@@ -76,6 +76,11 @@ fun exposeCollectionsToNextFrame(
         )
 
     return when (val next = state.peekContinuation()) {
+        is com.wingedsheep.engine.core.ManaAbilitySourcesContinuation -> {
+            val (_, popped) = state.popContinuation()
+            exposeCollectionsToNextFrame(popped, collections, numbers, chosenValues, subtypeGroups, sacrificed)
+                .pushContinuation(next)
+        }
         is ForEachContinuation -> {
             val merged = next.effectContext.withMergedCollections()
             var accumulated = next.effectContext.pipeline.storedCollections
