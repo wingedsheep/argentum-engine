@@ -6291,6 +6291,94 @@
     ]
 }
 
+// Infernal Captor
+{
+    "name": "Infernal Captor",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Devil Rogue",
+    "oracleText": "Exploit (When this creature enters, you may sacrifice a creature.)\nWhen this creature exploits a creature, gain control of target artifact or creature until end of turn. Untap that permanent. It gains haste until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "EXPLOIT"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Infernal Captor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "Sacrifice",
+                                "filter": "creature"
+                            },
+                            "EmitExploitedEvent"
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GainControl",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "tap": false
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature|artifact"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may sacrifice a creature"
+                },
+                "descriptionOverride": "Exploit (When this creature enters, you may sacrifice a creature.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "artist": "Josu Hernaiz",
+        "flavorText": "Possession is nine-tenths of the law. His fist is the other tenth.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b30243d-511b-47b8-bbed-0395d3de903d.jpg?1783911270"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Inventor's Axe
 {
     "name": "Inventor's Axe",
@@ -8809,6 +8897,87 @@
     ]
 }
 
+// Riddle Gate Gargoyle
+{
+    "name": "Riddle Gate Gargoyle",
+    "manaCost": "{W}{U}",
+    "typeLine": "Artifact Creature — Gargoyle",
+    "oracleText": "Flying\nWhen this creature enters, you get {E}{E}{E} (three energy counters).\nWhenever you attack, you may pay {E}{E}. When you do, target creature you control gains lifelink until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Riddle Gate Gargoyle:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 3,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Riddle Gate Gargoyle:2",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayExactCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "reflexiveEffect": {
+                        "type": "GrantKeyword",
+                        "keyword": "LIFELINK",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may pay {E}{E}. When you do, target creature you control gains lifelink until end of turn."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "artist": "Bartek Fedyczak",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e72a934-12e0-4e56-af67-566c2d5b01c1.jpg?1783911245",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "You don't choose a target for Riddle Gate Gargoyle's last ability at the time it triggers. Rather, a second \"reflexive\" ability triggers when you pay {E}{E} this way. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Roil Cartographer
 {
     "name": "Roil Cartographer",
@@ -9156,6 +9325,166 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Scurrilous Sentry
+{
+    "name": "Scurrilous Sentry",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Human Knight Rogue",
+    "oracleText": "Menace\nWhenever this creature enters or attacks, it connives. (Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scurrilous Sentry:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Connive",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "connive_hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "connive_hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "connive_discarded",
+                                "prompt": "Choose a card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "connive_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "connive_discarded",
+                                "ifNotEmpty": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "Self"
+                                },
+                                "filter": "nonland"
+                            }
+                        ],
+                        "descriptionOverride": "Connive"
+                    }
+                }
+            },
+            {
+                "id": "Scurrilous Sentry:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Connive",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "connive_hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "connive_hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "connive_discarded",
+                                "prompt": "Choose a card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "connive_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "connive_discarded",
+                                "ifNotEmpty": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "Self"
+                                },
+                                "filter": "nonland"
+                            }
+                        ],
+                        "descriptionOverride": "Connive"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "artist": "Leonardo Santanna",
+        "flavorText": "Queen Marchesa's agents always manage to find the exact evidence they're looking for.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29e2805f-59fa-4a6d-97bc-266191b2aa8d.jpg?1783911276",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If no card is discarded, most likely because that player's hand is empty and an effect says they can't draw cards, the conniving creature does not receive a +1/+1 counter."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a resolving spell or ability instructs a specific creature to connive but that creature has left the battlefield, the creature still connives. If you discard a nonland card this way, you won't put a +1/+1 counter on anything. Abilities that trigger \"when [that creature] connives\" will trigger."
+            }
+        ]
+    }
 }
 
 // Scurry of Gremlins
@@ -9664,6 +9993,104 @@
     ]
 }
 
+// Siege Smash
+{
+    "name": "Siege Smash",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Split second (As long as this spell is on the stack, players can't cast spells or activate abilities that aren't mana abilities.)\nChoose one —\n• Destroy target artifact.\n• Target creature gets +3/+2 and gains trample until end of turn.",
+    "keywords": [
+        "SPLIT_SECOND"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Destroy target artifact"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Target creature gets +3/+2 and gains trample until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "artist": "Joshua Cairos",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f33e3b25-76f5-4263-a309-9ea97f2d8248.jpg?1783911266",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Players still get priority while a spell with split second is on the stack; their options are just limited to mana abilities and certain special actions."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Split second doesn't stop triggered abilities from triggering. If one does, its controller puts it on the stack and chooses targets for it, if any. Those abilities will resolve as normal."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "After a spell with split second resolves (or otherwise leaves the stack), players may again cast spells and activate abilities before the next object on the stack resolves."
+            }
+        ]
+    }
+}
+
 // Six
 {
     "name": "Six",
@@ -9761,6 +10188,100 @@
             }
         ]
     }
+}
+
+// Smelted Chargebug
+{
+    "name": "Smelted Chargebug",
+    "manaCost": "{1}{R}",
+    "typeLine": "Artifact Creature — Insect",
+    "oracleText": "Menace\nWhen this creature enters, you get {E}{E} (two energy counters).\nWhenever this creature attacks, you may pay {E}. If you do, another target attacking creature gets +1/+0 and gains menace until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Smelted Chargebug:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Smelted Chargebug:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "MENACE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature attacking",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7dad40bf-2cd0-47f5-a878-9a289d1d58d0.jpg?1783911266"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Snapping Voidcraw
@@ -10118,6 +10639,84 @@
     ]
 }
 
+// Spawn-Gang Commander
+{
+    "name": "Spawn-Gang Commander",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Eldrazi Goblin",
+    "oracleText": "Devoid (This card has no color.)\nWhen you cast this spell, create three 0/1 colorless Eldrazi Spawn creature tokens with \"Sacrifice this token: Add {C}.\"\n{1}{C}, Sacrifice an Eldrazi: This creature deals 2 damage to any target.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spawn-Gang Commander:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn",
+                    "count": 3
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Spawn-Gang Commander:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{C}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "permanent Eldrazi"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Seaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ecac9885-6f4e-4413-90dc-c8b44f883357.jpg?1783911265"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Springheart Nantuko
 {
     "name": "Springheart Nantuko",
@@ -10426,6 +11025,64 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Strix Serenade
+{
+    "name": "Strix Serenade",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target artifact, creature, or planeswalker spell. Its controller creates a 2/2 blue Bird creature token with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7222593-5ade-4512-bfee-6126d4d0cc19.jpg?1783911117",
+                    "controller": "TargetController"
+                },
+                "Counter"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|creature|planeswalker",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Filipe Pagliuso",
+        "flavorText": "Some birds sing to nature's beauty and the freedom of the skies. Others simply ask questions.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/42ac5ac7-b2f9-4e6f-af41-7e42ac816374.jpg?1783911288",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Strix Serenade can target a spell that can't be countered. That spell won't be countered when Strix Serenade resolves, but its controller will get a Bird token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -10863,6 +11520,71 @@
     ]
 }
 
+// Thriving Skyclaw
+{
+    "name": "Thriving Skyclaw",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Cat Dragon",
+    "oracleText": "Flying\nWhen this creature enters, you get {E}{E}{E} (three energy counters).\nWhenever this creature attacks, you may pay {E}{E}{E}. If you do, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thriving Skyclaw:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 3,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Thriving Skyclaw:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "artist": "Lucas Graciano",
+        "flavorText": "As wild as unbound aether, and just as dangerous.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/465857f2-df08-4f7b-b4fe-b16831ac0eb1.jpg?1783911265"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Tranquil Landscape
 {
     "name": "Tranquil Landscape",
@@ -11164,6 +11886,43 @@
                 "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Tune the Narrative
+{
+    "name": "Tune the Narrative",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw a card. You get {E}{E} (two energy counters).",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "artist": "Nereida",
+        "flavorText": "\"The kami whisper of other worlds, brimming with stories untold. It would take a lifetime to learn them. A lifetime well spent.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40b13321-98f1-4e8c-802d-65498e43ec24.jpg?1783911287"
     },
     "colorIdentityOverride": [
         "BLUE"
