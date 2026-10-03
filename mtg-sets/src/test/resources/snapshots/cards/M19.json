@@ -459,6 +459,52 @@
     ]
 }
 
+// Aviation Pioneer
+{
+    "name": "Aviation Pioneer",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "When this creature enters, create a 1/1 colorless Thopter artifact creature token with flying.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aviation Pioneer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/b/db0041d8-cacd-4057-8f99-37810edb4b7e.jpg?1783916667",
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "artist": "Lake Hurwitz",
+        "flavorText": "\"They say perfection is unattainable, but they said that about flight too.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6966738-b4fc-4854-81b0-09de305854f2.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Blood Divination
 {
     "name": "Blood Divination",

@@ -47,6 +47,70 @@
     ]
 }
 
+// Brightmare
+{
+    "name": "Brightmare",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Unicorn",
+    "oracleText": "When this creature enters, tap up to one target creature. You gain life equal to that creature's power.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brightmare:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "numericProperty": "Power"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "UNCOMMON",
+        "artist": "Steven Belledin",
+        "flavorText": "A ray of hope in the darkest night.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0fc18921-59f5-413f-a221-dc47d31b2ec8.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Chained Brute
 {
     "name": "Chained Brute",

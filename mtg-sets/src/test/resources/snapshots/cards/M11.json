@@ -1836,6 +1836,49 @@
     ]
 }
 
+// Steel Overseer
+{
+    "name": "Steel Overseer",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "{T}: Put a +1/+1 counter on each artifact creature you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Steel Overseer:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "artifact creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "flavorText": "\"The world is already run by all manner of machines. One day, they'll remind us of that fact.\"\n—Sargis Haz, artificer",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9da673d-7cc0-4435-b5a5-5098630f7712.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
 // Stone Golem
 {
     "name": "Stone Golem",

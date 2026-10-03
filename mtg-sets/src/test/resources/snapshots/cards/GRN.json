@@ -3829,6 +3829,56 @@
     ]
 }
 
+// Torch Courier
+{
+    "name": "Torch Courier",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "Haste\nSacrifice this creature: Another target creature gains haste until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Torch Courier:1",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Mark Zug",
+        "flavorText": "\"Light a torch and deliver this letter\" were his instructions, which he unfortunately reversed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4c9fc8c-e68f-4636-84b8-877f6ec04b09.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Vedalken Mesmerist
 {
     "name": "Vedalken Mesmerist",

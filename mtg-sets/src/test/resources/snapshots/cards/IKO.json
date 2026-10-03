@@ -1088,6 +1088,66 @@
     ]
 }
 
+// Go for Blood
+{
+    "name": "Go for Blood",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control fights target creature you don't control. (Each deals damage equal to its power to the other.)\nCycling {1} ({1}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Fight",
+            "target1": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "target2": {
+                "type": "BoundVariable",
+                "name": "t1"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "artist": "Chris Rallis",
+        "flavorText": "Lukka's bond provided not only friendship, but also the most powerful weapon in his arsenal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67315df9-99a1-45ba-8ade-ddc476368a86.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Heightened Reflexes
 {
     "name": "Heightened Reflexes",
@@ -2531,6 +2591,61 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "BLUE"
+    ]
+}
+
+// Startling Development
+{
+    "name": "Startling Development",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature becomes a blue Serpent with base power and toughness 4/4.\nCycling {1} ({1}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "BecomeCreature",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "power": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "toughness": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "creatureTypes": [
+                "Serpent"
+            ],
+            "colors": [
+                "BLUE"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "artist": "Simon Dominic",
+        "flavorText": "Remarkably, dinner continued with no further interruptions.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a12680db-957f-48c1-9062-2edd9115ba26.jpg"
+    },
+    "colorIdentityOverride": [
         "BLUE"
     ]
 }

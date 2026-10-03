@@ -4791,6 +4791,60 @@
     ]
 }
 
+// Prey Upon
+{
+    "name": "Prey Upon",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control fights target creature you don't control. (Each deals damage equal to its power to the other.)",
+    "script": {
+        "spellEffect": {
+            "type": "Fight",
+            "target1": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "target2": {
+                "type": "BoundVariable",
+                "name": "t1"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "artist": "Dave Kendall",
+        "flavorText": "\"You don't find many old werewolf hunters.\"\n—Paulin, trapper of Somberwald",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7b3eaf0-4207-4bac-923d-29f348c95a35.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Purify the Grave
 {
     "name": "Purify the Grave",
@@ -4942,6 +4996,69 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Reaper from the Abyss
+{
+    "name": "Reaper from the Abyss",
+    "manaCost": "{3}{B}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying\nMorbid — At the beginning of each end step, if a creature died this turn, destroy target non-Demon creature.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reaper from the Abyss:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Demon"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": "CreatureDiedThisTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "MYTHIC",
+        "artist": "Matt Stewart",
+        "flavorText": "\"Avacyn has deserted you. I welcome your devotion in her stead.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0d74c3e-8370-419b-808d-96b8d9306024.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

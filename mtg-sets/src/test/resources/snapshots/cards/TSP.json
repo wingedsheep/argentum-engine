@@ -1158,6 +1158,49 @@
     ]
 }
 
+// Eternity Snare
+{
+    "name": "Eternity Snare",
+    "manaCost": "{5}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, draw a card.\nEnchanted creature doesn't untap during its controller's untap step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eternity Snare:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Drew Tucker",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de753839-cf75-48d0-98c3-5765779678c0.jpg"
+    }
+}
+
 // Feebleness
 {
     "name": "Feebleness",
@@ -4090,6 +4133,65 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Urza's Factory
+{
+    "name": "Urza's Factory",
+    "manaCost": "",
+    "typeLine": "Land — Urza's",
+    "oracleText": "{T}: Add {C}.\n{7}, {T}: Create a 2/2 colorless Assembly-Worker artifact creature token.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Urza's Factory:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Urza's Factory:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{7}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Assembly-Worker"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "280",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Tedin",
+        "flavorText": "\"Though their ideals are leagues apart, Urza's and Mishra's creations have a surprising harmony with one another.\"\n—Tocasia, journal entry",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b22d97f3-08cf-4c19-bbe2-5a36096187cd.jpg"
+    },
+    "colorIdentityOverride": []
 }
 
 // Venser's Sliver
