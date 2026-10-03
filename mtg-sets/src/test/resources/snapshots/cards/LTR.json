@@ -2636,7 +2636,10 @@
                                     {
                                         "type": "RemoveCounters",
                                         "counterType": "HOPE",
-                                        "count": 1,
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
                                         "target": "Self"
                                     },
                                     {

@@ -3655,7 +3655,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "DEPLETION",
-                    "count": 2147483647,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2147483647
+                    },
                     "target": "Self"
                 }
             }

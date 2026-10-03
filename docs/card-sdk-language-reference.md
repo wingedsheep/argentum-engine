@@ -1958,7 +1958,15 @@ vocabulary; this primitive does not provide Word of Command's full mana restrict
   (default `Duration.EndOfTurn`) via end-of-turn cleanup. Negative `modifier` reduces (floored at 0). Prairie Dog
   (OTJ): "{4}{W}: Until end of turn, if you would put one or more +1/+1 counters on a creature you control, put
   that many plus one +1/+1 counters on it instead." → `GrantCounterPlacementModifier()` with all defaults.
-- `RemoveCounters(type, count, target)` — remove N counters.
+- `RemoveCounters(type, count, target)` — remove N counters. `count` is an `Int` or a `DynamicAmount` evaluated at
+  resolution (`RemoveCountersEffect.count` is a `DynamicAmount`). On its own the effect removes as many as the
+  target carries, up to `count`. As the cost of `Effects.MayPay` it is **all-or-nothing**: the "yes" is only
+  offered while the target carries the full amount, so "you may remove that many … If you do, …" can't be
+  paid partially. Magnanimous Magistrate: "whenever another nontoken creature you control dies, if its mana
+  value was 1 or greater, you may remove that many reprieve counters from this creature. If you do, return that
+  card" → `interveningIf = CompareAmounts(triggeringManaValue(), GTE, 1)`, `effect = MayPay(cost =
+  RemoveCounters(CounterType.REPRIEVE, DynamicAmounts.triggeringManaValue(), Self), then =
+  Move(TriggeringEntity, BATTLEFIELD))`.
 - `RemoveAnyNumberOfCounters(target)` — player removes 0 or more (one prompt per counter kind, no total cap).
 - `RemoveCountersUpTo(maxCount, target)` — player removes **up to `maxCount` counters total across all
   kinds**. The budget-capped form of `RemoveAnyNumberOfCounters` — the *same* `RemoveAnyNumberOfCountersEffect`

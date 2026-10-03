@@ -217,7 +217,7 @@ class ReflexiveTriggerEffectExecutor(
                 } ?: true
         is com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect ->
             countersOn(state, context, action.target, kind = action.counterType)
-                ?.let { it >= action.count } ?: true
+                ?.let { it >= amountEvaluator.evaluate(state, action.count, context) } ?: true
         // "You may pay {1} up to three times" (Hawkeye, Master Marksman) — the repeated payment's
         // floor is one repetition, so a payer who can't afford even that can't perform the action
         // at all and the may-question must be absent. Without this the executor would raise the

@@ -649,6 +649,13 @@ value class CounterType(val name: String) {
          */
         val COLLECTION = CounterType("COLLECTION")
 
+        /**
+         * Reprieve counter (J22 — Magnanimous Magistrate). A spendable budget with no inherent rule:
+         * the creature enters with five, and its dies trigger removes as many as the dead creature's
+         * mana value to return it.
+         */
+        val REPRIEVE = CounterType("REPRIEVE")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -765,6 +772,7 @@ value class CounterType(val name: String) {
             TRAINING,
             MIRE,
             COLLECTION,
+            REPRIEVE,
         )
 
         /**

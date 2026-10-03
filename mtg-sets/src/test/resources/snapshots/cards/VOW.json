@@ -7150,7 +7150,10 @@
                                         {
                                             "type": "RemoveCounters",
                                             "counterType": "BLOODLINE",
-                                            "count": 3,
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 3
+                                            },
                                             "target": "Self"
                                         },
                                         "Transform"
@@ -18001,7 +18004,10 @@
                         {
                             "type": "RemoveCounters",
                             "counterType": "OMEN",
-                            "count": 1,
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
                             "target": "Self"
                         },
                         {
