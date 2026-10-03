@@ -11,7 +11,10 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.j22.cards.MagnanimousMagistrate
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
@@ -28,8 +31,17 @@ import io.kotest.matchers.shouldBe
  */
 class MagnanimousMagistrateScenarioTest : FunSpec({
 
+    // A mana-value-0 nontoken creature (Ornithopter's shape) — the intervening-if's floor.
+    val zeroDrop = CardDefinition.creature(
+        name = "Zero Drop",
+        manaCost = ManaCost.ZERO,
+        subtypes = setOf(Subtype("Thopter")),
+        power = 0,
+        toughness = 2
+    )
+
     fun setup(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + MagnanimousMagistrate)
+        registerCards(TestCards.all + MagnanimousMagistrate + zeroDrop)
         initMirrorMatch(deck = Deck.of("Plains" to 40))
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -121,5 +133,17 @@ class MagnanimousMagistrateScenarioTest : FunSpec({
 
         d.reprieve(magistrate) shouldBe 5
         d.getGraveyard(d.getOpponent(you)) shouldContain enemy
+    }
+
+    test("a mana-value-0 creature dying doesn't trigger it, so it can't return for free") {
+        val d = setup()
+        val you = d.activePlayer!!
+        val magistrate = d.magistrateWith(you, 5)
+        val thopter = d.putCreatureOnBattlefield(you, "Zero Drop")
+
+        d.boltAndResolve(you, thopter, accept = true) shouldBe false
+
+        d.reprieve(magistrate) shouldBe 5
+        d.getGraveyard(you) shouldContain thopter
     }
 })
