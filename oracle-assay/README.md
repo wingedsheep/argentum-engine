@@ -1467,6 +1467,29 @@ key the text does not name and refuses to print.
 Differential **7,292 compared / 73 divergent → 7,293 / 73**. The one newly compared card agrees with
 its golden; no card moved.
 
+## The targeted drain band
+
+The thirty-third loop band, tail key `opponent loses # …`: "Target opponent loses 2 life and you gain
+2 life." — Highway Robber, Vengeful Bloodwitch, Dakmor Ghoul, Collective Brutality's third mode, and
+the activated and dies-trigger payoffs that print the same clause. **53 lines**; the probe (→"target
+player loses") finished 14 cards. It delivered **10 hand-written cards read whole (7,698 → 7,708)**.
+
+### One row, for the draw's reason
+
+The life rows already read "target player loses {n} life" and "each opponent loses {n} life"; the
+targeted opponent was the missing cell between them. It is a row of its own rather than a widening of
+"target player" because `TargetOpponent` is a requirement of its own, not a narrowing of
+`TargetPlayer` — the draws and the discards made the same split for the same reason — so the subject
+picks the requirement and both rows keep a single printer. Being a `lifeChanges` row, it reaches the
+numeral, the "equal to …" clause and the characteristic forms at once.
+
+### What the differential found
+
+Differential **7,293 compared / 73 divergent → 7,302 / 73**. Both newly compared cards that diverged
+were card bugs, fixed: Diregraf Captain's dies trigger watched "another Zombie *creature*" where a
+bare tribal noun is any Zombie permanent (a kindred Zombie dies too), and Dubious Delicacy's enters
+trigger had dropped "up to one", so the target was mandatory. Only their goldens moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

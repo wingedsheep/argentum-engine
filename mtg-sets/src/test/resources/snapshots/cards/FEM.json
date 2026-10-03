@@ -1316,7 +1316,10 @@
                         {
                             "type": "RemoveCounters",
                             "counterType": "MINUS_TWO_MINUS_TWO",
-                            "count": 1,
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
                             "target": "Self"
                         },
                         {
@@ -3769,7 +3772,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "NET",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "restrictions": [
@@ -6425,7 +6431,10 @@
                         {
                             "type": "RemoveCounters",
                             "counterType": "TIME",
-                            "count": 1,
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
                             "target": "Self"
                         },
                         {

@@ -9,6 +9,8 @@ import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import com.wingedsheep.sdk.dsl.Triggers as SdkTriggers
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -148,6 +150,20 @@ class LifeAndExpendTest : StringSpec({
         // The targeted sibling still declares its requirement; the two never stand in one slot.
         fragment("Target player loses 2 life.").script.targetRequirements.size shouldBe 1
         fragment("Each opponent loses 2 life.").script.targetRequirements.size shouldBe 0
+    }
+
+    // Highway Robber, Vengeful Bloodwitch. "Target opponent" is its own requirement rather than a
+    // narrowing of "target player", so the subject decides which one the script declares.
+    "target opponent loses life declares the opponent requirement" {
+        fragment("Target opponent loses 2 life.").script.targetRequirements.single() shouldBe
+            TargetOpponent(id = Targets.SLOT)
+        fragment("Target player loses 2 life.").script.targetRequirements.single() shouldBe
+            TargetPlayer(id = Targets.SLOT)
+        listOf(
+            "Target opponent loses 2 life.",
+            "Target opponent loses life equal to the number of creatures you control.",
+            "When ~ enters, target opponent loses 1 life. You gain 1 life.",
+        ).forEach { roundTrips(it) }
     }
 
     // Teapot Slinger and Coruscation Mage. The "equal to …" sibling comes from the same call site,

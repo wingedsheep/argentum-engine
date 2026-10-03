@@ -639,6 +639,21 @@ object Steps {
             amount = ::lifeLostAmount,
         ),
         LifeChange(
+            // "Target opponent loses 2 life and you gain 2 life." — the targeted drain (Highway
+            // Robber, Vengeful Bloodwitch, Collective Brutality's third mode). Its own row rather than
+            // a widening of "target player" for [draw]'s reason: `TargetOpponent` is a requirement of
+            // its own, not a narrowing of `TargetPlayer`, so the subject picks the requirement.
+            "target opponent loses {n} life", "target opponent loses life equal to {amount}",
+            "target opponent loses life",
+            script = {
+                CardScript(
+                    spellEffect = Effects.LoseLife(it, Targets.bound()),
+                    targetRequirements = listOf(Targets.opponent()),
+                )
+            },
+            amount = ::lifeLostAmount,
+        ),
+        LifeChange(
             // "Whenever ~ attacks, defending player loses 1 life and you gain 1 life." — Odious
             // Witch and the attack-drain family, plus afflict's reminder text and the
             // becomes-blocked payoffs.

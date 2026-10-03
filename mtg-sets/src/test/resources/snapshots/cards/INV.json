@@ -14775,7 +14775,10 @@
                     "body": {
                         "type": "RemoveCounters",
                         "counterType": "HOURGLASS",
-                        "count": 2147483647,
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2147483647
+                        },
                         "target": "IterationEntity"
                     }
                 }

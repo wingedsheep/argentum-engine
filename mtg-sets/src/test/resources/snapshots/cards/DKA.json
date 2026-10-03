@@ -327,7 +327,7 @@
                 "id": "Diregraf Captain:1",
                 "trigger": {
                     "type": "ZoneChangeEvent",
-                    "filter": "creature Zombie ctrl:you",
+                    "filter": "permanent Zombie ctrl:you",
                     "from": "Battlefield",
                     "to": "Graveyard"
                 },

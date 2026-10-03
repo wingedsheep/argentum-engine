@@ -2701,7 +2701,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "MINUS_ONE_MINUS_ONE",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "triggerRestriction": {
@@ -4286,7 +4289,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "MINUS_ONE_MINUS_ONE",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "interveningIf": {
@@ -6421,7 +6427,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "MINUS_ONE_MINUS_ONE",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "triggerRestriction": {
@@ -9775,7 +9784,10 @@
                         {
                             "type": "RemoveCounters",
                             "counterType": "MINUS_ONE_MINUS_ONE",
-                            "count": 1,
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
                             "target": "Self"
                         }
                     ]
@@ -12391,7 +12403,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "MINUS_ONE_MINUS_ONE",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "triggerRestriction": {
@@ -14279,7 +14294,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "MINUS_ONE_MINUS_ONE",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "triggerRestriction": {
@@ -16037,7 +16055,10 @@
                     "action": {
                         "type": "RemoveCounters",
                         "counterType": "MINUS_ONE_MINUS_ONE",
-                        "count": 1,
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
                         "target": "Self"
                     },
                     "reflexiveEffect": {

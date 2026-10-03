@@ -175,16 +175,25 @@ data class DoubleCountersEffect(
 /**
  * Remove counters effect.
  * "Remove X -1/-1 counters from target creature"
+ *
+ * [count] is a [DynamicAmount], like [RemoveAnyNumberOfCountersEffect]'s bounds and
+ * [AddDynamicCountersEffect.amount]: "remove that many reprieve counters from this creature"
+ * (Magnanimous Magistrate) is evaluated at resolution. On its own the effect removes as many as
+ * the permanent carries, up to [count]; as the cost of a `MayPay` gate it is all-or-nothing — the
+ * "yes" is only offered when the full amount is there.
  */
 @SerialName("RemoveCounters")
 @Serializable
 data class RemoveCountersEffect(
     val counterType: CounterType,
-    val count: Int,
+    val count: DynamicAmount,
     val target: EffectTarget
 ) : Effect {
-    override val description: String =
-        "Remove $count ${counterType.printed} counter${if (count != 1) "s" else ""} from ${target.description}"
+    override val description: String = when (count) {
+        is DynamicAmount.Fixed ->
+            "Remove ${count.amount} ${counterType.printed} counter${if (count.amount != 1) "s" else ""} from ${target.description}"
+        else -> "Remove ${count.description} ${counterType.printed} counters from ${target.description}"
+    }
 }
 
 /**

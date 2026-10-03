@@ -3492,7 +3492,10 @@
                     "effect": {
                         "type": "RemoveCounters",
                         "counterType": "LORE",
-                        "count": 1,
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
                         "target": {
                             "type": "BoundVariable",
                             "name": "t2"
@@ -7466,7 +7469,10 @@
                             "body": {
                                 "type": "RemoveCounters",
                                 "counterType": "LORE",
-                                "count": 1,
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
                                 "target": "IterationEntity"
                             }
                         },

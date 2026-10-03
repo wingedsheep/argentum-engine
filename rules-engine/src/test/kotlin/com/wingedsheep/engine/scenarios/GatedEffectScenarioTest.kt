@@ -2,12 +2,15 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
@@ -15,6 +18,7 @@ import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.Gate
@@ -45,6 +49,37 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
 class GatedEffectScenarioTest : ScenarioTestBase() {
 
     init {
+        // "This creature enters with two charge counters on it. When it enters, you may remove X
+        // charge counters from it, where X is the number of cards in your hand. If you do, draw a
+        // card." → Gate.MayPay over a dynamic-count RemoveCounters cost (Magnanimous Magistrate's shape)
+        cardRegistry.register(
+            CardDefinition.creature(
+                name = "Counter Spender",
+                manaCost = ManaCost.parse("{0}"),
+                subtypes = setOf(Subtype("Wizard")),
+                power = 1,
+                toughness = 1,
+                script = CardScript(
+                    replacementEffects = listOf(
+                        EntersWithCounters(counterType = CounterType.CHARGE, count = 2, selfOnly = true)
+                    ),
+                    triggeredAbilities = listOf(
+                        TriggeredAbility(
+                            id = AbilityId("GatedEffectScenarioTest_counters"),
+                            trigger = Triggers.self.enters().event,
+                            binding = Triggers.self.enters().binding,
+                            effect = Effects.MayPay(
+                                cost = Effects.RemoveCounters(
+                                    CounterType.CHARGE, DynamicAmounts.cardsInYourHand(), EffectTarget.Self
+                                ),
+                                then = DrawCardsEffect(1)
+                            )
+                        )
+                    )
+                )
+            )
+        )
+
         // "When this enters, you may pay 2 life. If you do, draw a card." → Gate.MayPay
         cardRegistry.register(
             CardDefinition.creature(
@@ -294,6 +329,55 @@ class GatedEffectScenarioTest : ScenarioTestBase() {
                 withClue("no card drawn (it cast the creature, so hand is one smaller)") {
                     game.handSize(1) shouldBe handBefore - 1
                 }
+            }
+        }
+
+        context("Gate.MayPay over a dynamic RemoveCounters cost") {
+
+            fun charge(game: TestGame): Int {
+                val id = game.findPermanent("Counter Spender")!!
+                return game.state.getEntity(id)?.get<CountersComponent>()?.getCount(CounterType.CHARGE) ?: 0
+            }
+
+            test("the full amount on the permanent offers the payment and removes exactly that many") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Counter Spender")
+                    .withCardInHand(1, "Target Dummy") // X = 1 once the Spender is cast
+                    .withCardInLibrary(1, "Target Dummy")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Counter Spender").error shouldBe null
+                game.resolveStack()
+
+                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+                game.answerYesNo(true)
+                game.resolveStack()
+
+                withClue("removed X = 1 of its 2 charge counters") { charge(game) shouldBe 1 }
+                withClue("drew a card") { game.handSize(1) shouldBe 2 }
+            }
+
+            test("fewer counters than X is unpayable: no prompt, nothing removed, no payoff") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Counter Spender")
+                    .withCardInHand(1, "Target Dummy")
+                    .withCardInHand(1, "Target Dummy")
+                    .withCardInHand(1, "Target Dummy") // X = 3 > 2 counters
+                    .withCardInLibrary(1, "Target Dummy")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Counter Spender").error shouldBe null
+                game.resolveStack()
+
+                withClue("no yes/no prompt for a partial removal") { game.hasPendingDecision() shouldBe false }
+                withClue("both charge counters stay") { charge(game) shouldBe 2 }
+                withClue("no card drawn") { game.handSize(1) shouldBe 3 }
             }
         }
 

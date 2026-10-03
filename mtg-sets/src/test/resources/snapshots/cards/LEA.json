@@ -760,7 +760,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "PLUS_ONE_PLUS_ZERO",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "interveningIf": {

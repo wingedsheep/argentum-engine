@@ -15,6 +15,7 @@ import com.wingedsheep.engine.mechanics.mana.TapForGeneric
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityEffectAppliedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -33,6 +34,7 @@ import com.wingedsheep.sdk.scripting.effects.Gate
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.PayDynamicLifeEffect
 import com.wingedsheep.sdk.scripting.effects.PayDynamicManaCostEffect
@@ -604,6 +606,10 @@ class GatedEffectExecutor(
                 val amount = dynamicAmountEvaluator.evaluate(state, cost.amount, context).coerceAtLeast(0)
                 "Pay $amount ${cost.counterType.printed} counters"
             }
+            is RemoveCountersEffect -> {
+                val amount = dynamicAmountEvaluator.evaluate(state, cost.count, context).coerceAtLeast(0)
+                "Remove $amount ${cost.counterType.printed} counter${if (amount != 1) "s" else ""}"
+            }
             is PayLifeEffect -> "Pay ${cost.amount} life"
             is PayDynamicLifeEffect -> {
                 val amount = dynamicAmountEvaluator.evaluate(state, cost.amount, context).coerceAtLeast(0)
@@ -668,6 +674,16 @@ class GatedEffectExecutor(
             is CollectEvidenceEffect -> {
                 val collector = TargetResolutionUtils.resolvePlayerRef(cost.player, context, state)
                 collector != null && CollectEvidenceResolver.canCollect(state, collector, cost.amount, predicateEvaluator = predicateEvaluator)
+            }
+            // "You may remove that many reprieve counters from this creature. If you do, …"
+            // (Magnanimous Magistrate) — a cost is paid in full or not at all, so the "yes" exists
+            // only while the permanent carries the whole amount. The executor alone would clamp to
+            // what is there and report a partial removal as success.
+            is RemoveCountersEffect -> {
+                val amount = dynamicAmountEvaluator.evaluate(state, cost.count, context)
+                val holder = context.resolveTarget(cost.target, state)
+                amount <= 0 || (holder != null &&
+                    (state.getEntity(holder)?.get<CountersComponent>()?.getCount(cost.counterType) ?: 0) >= amount)
             }
             is CompositeEffect -> cost.effects.all { canAfford(state, playerId, it, context) }
             // "You may sacrifice [filter]" — payable only if the player controls enough matching
