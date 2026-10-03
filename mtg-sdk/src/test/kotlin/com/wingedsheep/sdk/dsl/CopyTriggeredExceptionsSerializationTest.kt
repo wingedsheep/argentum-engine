@@ -25,4 +25,21 @@ class CopyTriggeredExceptionsSerializationTest : FunSpec({
         exceptions.over(exceptions).addedTriggeredAbilities.size shouldBe 4
         CopyExceptions.None.over(exceptions) shouldBe exceptions
     }
+
+    test("entry-copy exceptions round trip added activated abilities") {
+        val definition = card("Test Copy Activated Data") {
+            typeLine = "Creature — Shapeshifter"
+            power = 0; toughness = 0
+            val ability = grantedActivatedAbility {
+                cost = Costs.Mana("{X}")
+                effect = Effects.GainLife(1)
+            }
+            replacementEffect(EntersAsCopy(exceptions = CopyExceptions(addedActivatedAbilities = listOf(ability))))
+        }
+        val replacement: ReplacementEffect = definition.script.replacementEffects.single()
+        val encoded = Json.encodeToString<ReplacementEffect>(replacement)
+        Json.decodeFromString<ReplacementEffect>(encoded) shouldBe replacement
+        val exceptions = (replacement as EntersAsCopy).exceptions
+        exceptions.over(exceptions).addedActivatedAbilities.size shouldBe 2
+    }
 })

@@ -108,6 +108,11 @@ data class CardComponent(
     val manaValueOverride: Int? = null,
     /** Rules text added by copy effects; copied and restored with the identity, not a layer-six grant. */
     val copyTriggeredAbilities: List<com.wingedsheep.sdk.scripting.TriggeredAbility> = emptyList(),
+    /**
+     * Activated abilities added by a copy exception (Gigantoplasm's "{X}: … X/X"). Copiable like
+     * [copyTriggeredAbilities]; read through [ownActivatedAbilities] alongside the definition's own.
+     */
+    val copyActivatedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
     /** Copiable spending-rule abilities, baked from the active printed statics on entry/unlock. */
     val manaSpendingGrants: List<ManaSpendingGrant> = emptyList(),
 ) : Component {

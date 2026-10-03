@@ -1488,7 +1488,7 @@ class CastPermissionUtils(
                     val sourceCard = sourceEntity.get<CardComponent>() ?: continue
                     val sourceDef = cardRegistry.getCard(sourceCard.cardDefinitionId) ?: continue
                     val sourceClassLevel = sourceEntity.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
-                    for (copied in sourceDef.script.effectiveActivatedAbilities(sourceClassLevel)) {
+                    for (copied in com.wingedsheep.engine.state.components.identity.ownActivatedAbilities(sourceCard, sourceDef, sourceClassLevel)) {
                         if (copied.activateFromZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) continue
                         if (!gain.includeManaAbilities && copied.isManaAbility) continue
                         result.add(StaticGrantedAbility(copied, granterId))

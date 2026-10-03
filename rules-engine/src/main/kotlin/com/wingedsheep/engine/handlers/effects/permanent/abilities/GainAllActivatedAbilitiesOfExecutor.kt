@@ -73,7 +73,7 @@ class GainAllActivatedAbilitiesOfExecutor(
             ?: return EffectResult.success(state)
         val donorClassLevel = donorEntity.get<ClassLevelComponent>()?.currentLevel
 
-        val gained = donorDef.script.effectiveActivatedAbilities(donorClassLevel)
+        val gained = com.wingedsheep.engine.state.components.identity.ownActivatedAbilities(donorCard, donorDef, donorClassLevel)
             .filter { it.activateFromZone == Zone.BATTLEFIELD }
             .map { ability ->
                 GrantedActivatedAbility(

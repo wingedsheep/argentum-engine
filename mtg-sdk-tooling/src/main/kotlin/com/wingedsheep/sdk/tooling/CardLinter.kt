@@ -574,7 +574,7 @@ object CardLinter {
                     checkOpponentChoosers(
                         cardName,
                         value,
-                        withinActivatedAbility || key == "activatedAbilities",
+                        withinActivatedAbility || key == "activatedAbilities" || key == "addedActivatedAbilities",
                         findings,
                         withinTriggeredAbility ||
                             key == "triggeredAbilities" || key == "addedTriggeredAbilities" ||

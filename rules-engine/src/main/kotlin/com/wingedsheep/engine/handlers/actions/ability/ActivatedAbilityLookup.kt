@@ -41,6 +41,9 @@ internal sealed interface ActivatedAbilityLookup {
         val identity: AbilityIdentity,
     ) : ActivatedAbilityLookup
 
+    /** Added to the object's copiable values by a copy exception (CR 707.9a) — no definition owns it. */
+    data class CopyException(override val ability: ActivatedAbility) : ActivatedAbilityLookup
+
     data class RuntimeGranted(override val ability: ActivatedAbility) : ActivatedAbilityLookup
 
     data class StaticGranted(
@@ -59,7 +62,7 @@ internal sealed interface ActivatedAbilityLookup {
         get() = when (this) {
             is DirectDefinition -> identity
             is DefinitionDerivedClass -> identity
-            is RuntimeGranted, is StaticGranted, is EmblemGranted, is Intrinsic -> null
+            is CopyException, is RuntimeGranted, is StaticGranted, is EmblemGranted, is Intrinsic -> null
         }
 }
 
@@ -108,6 +111,10 @@ internal class ActivatedAbilityResolver(
                     AbilityIdentity(cardDefinitionId, it.id),
                 )
             }
+
+        container.get<CardComponent>()?.copyActivatedAbilities
+            ?.firstOrNull { it.id == abilityId }
+            ?.let { return ActivatedAbilityLookup.CopyException(it) }
 
         state.grantedActivatedAbilities
             .firstOrNull { it.entityId == sourceId && it.ability.id == abilityId }

@@ -329,6 +329,38 @@ class CopyExceptionsTest : FunSpec({
         next.copyTriggeredAbilities.map { it.id }.toSet().size shouldBe 3
     }
 
+    test("copy-added activated abilities are copiable, restamped per instance, and stack on a copy of the copy") {
+        val ability = com.wingedsheep.sdk.scripting.AbilityIdScope.within("copy-activated-test") {
+            com.wingedsheep.sdk.dsl.grantedActivatedAbility {
+                cost = com.wingedsheep.sdk.dsl.Costs.Mana("{X}")
+                effect = com.wingedsheep.sdk.dsl.Effects.GainLife(1)
+            }
+        }
+        val exceptions = CopyExceptions(addedActivatedAbilities = listOf(ability))
+        val result = CopyExceptionApplier.apply(legendaryArtifactBear(), exceptions)
+        result.copyActivatedAbilities.single().effect shouldBe ability.effect
+        // A plain later copy keeps the copiable ability (CR 707.9a) without re-adding it.
+        CopyExceptionApplier.apply(result, CopyExceptions.None).copyActivatedAbilities shouldBe result.copyActivatedAbilities
+        val next = CopyExceptionApplier.apply(result, exceptions)
+        next.copyActivatedAbilities.map { it.id }.toSet().size shouldBe 2
+        com.wingedsheep.engine.state.components.identity.ownActivatedAbilities(next, null, null) shouldBe
+            next.copyActivatedAbilities
+        exceptions.clauses().single().startsWith("it has \"{X}") shouldBe true
+    }
+
+    test("a mana ability or a non-battlefield ability can't ride a copy exception") {
+        val mana = com.wingedsheep.sdk.scripting.AbilityIdScope.within("copy-mana-test") {
+            com.wingedsheep.sdk.dsl.grantedActivatedAbility {
+                cost = com.wingedsheep.sdk.dsl.Costs.Tap
+                effect = com.wingedsheep.sdk.dsl.Effects.AddMana(Color.BLUE)
+                manaAbility = true
+            }
+        }
+        io.kotest.assertions.throwables.shouldThrow<IllegalArgumentException> {
+            CopyExceptions(addedActivatedAbilities = listOf(mana))
+        }
+    }
+
     test("numeric keywords ride onto the copy from the source's components, plus the added ones") {
         val toxic2Bushido1 = com.wingedsheep.engine.state.ComponentContainer.of(
             com.wingedsheep.engine.state.components.identity.ToxicComponent(2),

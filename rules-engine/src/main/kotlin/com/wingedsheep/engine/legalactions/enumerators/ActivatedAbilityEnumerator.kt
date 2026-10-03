@@ -107,7 +107,7 @@ class ActivatedAbilityEnumerator(
 
             // If entity lost all abilities — or is face down — suppress its own non-mana abilities
             val ownNonManaAbilities = if (cardDef == null || isFaceDown || projected.hasLostAllAbilities(entityId)) emptyList()
-            else cardDef.script.effectiveActivatedAbilities(classLevel).filter { !it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }
+            else com.wingedsheep.engine.state.components.identity.ownActivatedAbilities(cardComponent, cardDef, classLevel).filter { !it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }
 
             // Generate level-up abilities for Class enchantments
             val levelUpAbilities = if (cardDef != null && classLevelComponent != null && !isFaceDown && !projected.hasLostAllAbilities(entityId)) {
@@ -1209,7 +1209,7 @@ class ActivatedAbilityEnumerator(
             // By definition id, not name — see enumerateOwnPermanents. An opponent's renamed copy
             // of a "any player may activate" permanent must still offer its ability.
             val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
-            val anyPlayerAbilities = cardDef.script.activatedAbilities.filter { ability ->
+            val anyPlayerAbilities = com.wingedsheep.engine.state.components.identity.ownActivatedAbilities(cardComponent, cardDef, classLevel = null).filter { ability ->
                 !ability.isManaAbility && ability.activateFromZone == Zone.BATTLEFIELD &&
                     LegalityKernel.anyPlayerMay(ability)
             }

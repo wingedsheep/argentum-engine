@@ -244,7 +244,7 @@ internal class ActivationValidator(
         // creature face up …'"). Same own-vs-granted split as the lost-all-abilities check below.
         if (container.has<FaceDownComponent>()) {
             val isOwnAbility =
-                cardDef?.script?.effectiveActivatedAbilities(classLevel)?.any { it.id == action.abilityId } == true ||
+                com.wingedsheep.engine.state.components.identity.ownActivatedAbilities(cardComponent, cardDef, classLevel).any { it.id == action.abilityId } ||
                     action.abilityId.value.startsWith("class_level_up_") ||
                     IntrinsicManaAbilities.lookup(action.abilityId) != null
             if (isOwnAbility) {
@@ -285,7 +285,7 @@ internal class ActivationValidator(
             val isIntrinsicMana = IntrinsicManaAbilities.lookup(action.abilityId) != null
             val intrinsicSurvives = isIntrinsicMana &&
                 state.projectedState.hasBasicLandTypesSetByEffect(action.sourceId)
-            val isOwnAbility = (cardDef?.script?.effectiveActivatedAbilities(classLevel)?.any { it.id == action.abilityId } == true)
+            val isOwnAbility = (com.wingedsheep.engine.state.components.identity.ownActivatedAbilities(cardComponent, cardDef, classLevel).any { it.id == action.abilityId })
                 || action.abilityId.value.startsWith("class_level_up_")
                 || isIntrinsicMana
             if (isOwnAbility && !intrinsicSurvives) {

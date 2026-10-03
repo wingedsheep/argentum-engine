@@ -90,7 +90,24 @@ data class CopyExceptions(
     val addedNumericKeywords: List<com.wingedsheep.sdk.scripting.KeywordAbility.Numeric> = emptyList(),
     /** Abilities added as copiable rules text, including multiple identical instances. */
     val addedTriggeredAbilities: List<com.wingedsheep.sdk.scripting.TriggeredAbility> = emptyList(),
+    /**
+     * Activated abilities added as copiable rules text — "except it has '{X}: This creature has base
+     * power and toughness X/X'" (Gigantoplasm). Like [addedTriggeredAbilities] they are copiable
+     * values (CR 707.9a), so a later copy of the copy has them too. Non-mana abilities activated
+     * from the battlefield only: the mana-ability readers (solver, mana enumerator) look at the
+     * printed script, so a mana ability here would be offered nowhere — rejected up front instead.
+     */
+    val addedActivatedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
 ) {
+    init {
+        require(addedActivatedAbilities.none { it.isManaAbility }) {
+            "CopyExceptions.addedActivatedAbilities can't carry a mana ability"
+        }
+        require(addedActivatedAbilities.all { it.activateFromZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD }) {
+            "CopyExceptions.addedActivatedAbilities must be activated from the battlefield"
+        }
+    }
+
     /** True when nothing is modified — a plain copy with no "except" clause. */
     val isEmpty: Boolean get() = this == None
 
@@ -126,14 +143,17 @@ data class CopyExceptions(
             noManaCost = noManaCost || base.noManaCost,
             addedNumericKeywords = base.addedNumericKeywords + addedNumericKeywords,
             addedTriggeredAbilities = base.addedTriggeredAbilities + addedTriggeredAbilities,
+            addedActivatedAbilities = base.addedActivatedAbilities + addedActivatedAbilities,
         )
     }
 
     /** Text changes affect the added rules text before the copy is made. */
     fun applyTextReplacement(replacer: com.wingedsheep.sdk.scripting.text.TextReplacer): CopyExceptions {
-        if (addedTriggeredAbilities.isEmpty()) return this
-        val changed = addedTriggeredAbilities.map { it.applyTextReplacement(replacer) }
-        return if (changed == addedTriggeredAbilities) this else copy(addedTriggeredAbilities = changed)
+        if (addedTriggeredAbilities.isEmpty() && addedActivatedAbilities.isEmpty()) return this
+        val triggered = addedTriggeredAbilities.map { it.applyTextReplacement(replacer) }
+        val activated = addedActivatedAbilities.map { it.applyTextReplacement(replacer) }
+        return if (triggered == addedTriggeredAbilities && activated == addedActivatedAbilities) this
+        else copy(addedTriggeredAbilities = triggered, addedActivatedAbilities = activated)
     }
 
     /**
@@ -179,6 +199,7 @@ data class CopyExceptions(
         for (numeric in addedNumericKeywords) add("it has ${numeric.keyword.displayName.lowercase()} ${numeric.n}")
         if (noManaCost) add("it has no mana cost")
         for (ability in addedTriggeredAbilities) add("it has \"${ability.description}\"")
+        for (ability in addedActivatedAbilities) add("it has \"${ability.description}\"")
     }
 
     /**

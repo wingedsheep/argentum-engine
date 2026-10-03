@@ -86,6 +86,11 @@ object CopyExceptionApplier {
                     "copy:${base.copyTriggeredAbilities.size + index}:${ability.id.value}"
                 ))
             },
+            copyActivatedAbilities = base.copyActivatedAbilities + exceptions.addedActivatedAbilities.mapIndexed { index, ability ->
+                ability.copy(id = com.wingedsheep.sdk.scripting.AbilityId(
+                    "copy_act:${base.copyActivatedAbilities.size + index}:${ability.id.value}"
+                ))
+            },
             typeLine = typeLine(base.typeLine, exceptions),
             baseStats = baseStats(base.baseStats, exceptions),
             baseKeywords = base.baseKeywords + exceptions.addedKeywords,

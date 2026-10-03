@@ -296,7 +296,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
     }
 
     /**
-     * Added copiable rules data postdates the capture; old identities must default both lists empty.
+     * Added copiable rules data postdates the capture; old identities must default those lists empty.
      * Likewise a may-play permission's later `colorlessAsAnyColor` rider must default false.
      */
     private fun withoutPostCaptureCardDefaults(value: JsonElement): JsonElement = when (value) {
@@ -305,8 +305,9 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                     "com.wingedsheep.engine.state.components.identity.CardComponent"
                 )) {
                 value.getValue("copyTriggeredAbilities") shouldBe JsonArray(emptyList())
+                value.getValue("copyActivatedAbilities") shouldBe JsonArray(emptyList())
                 value.getValue("manaSpendingGrants") shouldBe JsonArray(emptyList())
-                value - "copyTriggeredAbilities" - "manaSpendingGrants"
+                value - "copyTriggeredAbilities" - "copyActivatedAbilities" - "manaSpendingGrants"
             } else if (value["type"] == JsonPrimitive(
                     "com.wingedsheep.engine.state.components.player.ManaPoolComponent"
                 )) {

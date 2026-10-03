@@ -804,6 +804,9 @@ internal class CardActiveEffectsProjector(
             for (ability in copyContainer?.get<CardComponent>()?.copyTriggeredAbilities.orEmpty()) {
                 grant("copy_trig_${ability.id.value}", ability.description)
             }
+            for (ability in copyContainer?.get<CardComponent>()?.copyActivatedAbilities.orEmpty()) {
+                grant("copy_act_${ability.id.value}", ability.description)
+            }
         }
         for (granted in state.grantedTriggeredAbilities) {
             if (granted.entityId != entityId) continue
