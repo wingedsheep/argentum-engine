@@ -235,6 +235,7 @@ val engineSerializersModule = SerializersModule {
         subclass(FinishResolvingSpellContinuation::class)
         subclass(FinishForcedPlayContinuation::class)
         subclass(ManaAbilitySourcesContinuation::class)
+        subclass(ManaSpendingObligationsContinuation::class)
         subclass(EndResolutionControlContinuation::class)
         subclass(ReplacementResolveContinuation::class)
         subclass(PerformLifeGainContinuation::class)
@@ -264,6 +265,7 @@ val engineSerializersModule = SerializersModule {
     polymorphic(AutomaticContinuation::class) {
         subclass(FinishForcedPlayContinuation::class)
         subclass(ManaAbilitySourcesContinuation::class)
+        subclass(ManaSpendingObligationsContinuation::class)
         subclass(FinishResolvingSpellContinuation::class)
         subclass(EndResolutionControlContinuation::class)
         subclass(ReplacementResolveContinuation::class)

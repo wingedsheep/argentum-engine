@@ -15,6 +15,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.handlers.effects.mana.ManaAbilityResolutionPipeline
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.activeManaSpendingScope
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -193,6 +194,11 @@ internal class ActivatedManaAbilityResolver(
             activatedAbility = ability,
         )
 
+        // Multi-part production needs a single activation identity across every pause; the exact
+        // allocation planner will own that path. Do not record separate obligations for its parts.
+        if (currentState.activeManaSpendingScope(action.playerId) != null && (finalEffect is CompositeEffect || finalEffect is AddDynamicManaEffect)) {
+            return ExecutionResult.error(stateBeforeActivation, "Multi-part or dynamic mana production is not supported in this scope")
+        }
         val stateBeforeEffect = currentState
         val effectResult = effectExecutorRegistry.execute(currentState, finalEffect, context).toExecutionResult()
         // A pause (e.g. choosing colors for "add X mana in any combination of colors") carries
@@ -212,7 +218,11 @@ internal class ActivatedManaAbilityResolver(
         val dampening = manaPipeline.applyLandManaDampening(
             stateBeforeActivation, currentState, cardComponent, action.playerId
         )
-        currentState = ManaProvenanceTracker.markSnowProduction(stateBeforeEffect, dampening.state, action.sourceId, action.playerId)
+        currentState = com.wingedsheep.engine.state.tagManaObligationProduction(
+            stateBeforeEffect,
+            ManaProvenanceTracker.markSnowProduction(stateBeforeEffect, dampening.state, action.sourceId, action.playerId),
+            action.playerId, action.sourceId,
+        )
 
         // Emit ManaAddedEvent — if dampened, always emit 1 colorless
         val manaEvent: ManaAddedEvent? = if (dampening.dampened) {

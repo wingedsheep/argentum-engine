@@ -240,8 +240,12 @@ class ColorChoiceContinuationResumer(
             producedMana = replacement
         }
 
+        val snowMarked = ManaProvenanceTracker.markSnowProduction(state, dampening.state, sourceId, tapperId)
+        val tracked = if (continuation.baseContext.activatedAbility?.isManaAbility == true)
+            com.wingedsheep.engine.state.tagManaObligationProduction(state, snowMarked, tapperId, sourceId)
+            else snowMarked
         val finished = manaPipeline.finishTapBonuses(
-            ManaProvenanceTracker.markSnowProduction(state, dampening.state, sourceId, tapperId),
+            tracked,
             sourceId, sourceCard, tapperId, producedMana, events
         )
         if (finished.outcome is Outcome.Paused) return finished

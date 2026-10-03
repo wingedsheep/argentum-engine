@@ -76,7 +76,8 @@ fun exposeCollectionsToNextFrame(
         )
 
     return when (val next = state.peekContinuation()) {
-        is com.wingedsheep.engine.core.ManaAbilitySourcesContinuation -> {
+        is com.wingedsheep.engine.core.ManaAbilitySourcesContinuation,
+        is com.wingedsheep.engine.core.ManaSpendingObligationsContinuation -> {
             val (_, popped) = state.popContinuation()
             exposeCollectionsToNextFrame(popped, collections, numbers, chosenValues, subtypeGroups, sacrificed)
                 .pushContinuation(next)

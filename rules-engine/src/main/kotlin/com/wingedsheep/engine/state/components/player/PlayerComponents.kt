@@ -326,7 +326,11 @@ data class RestrictedManaEntry(
     val riders: Set<ManaSpellRider> = emptySet(),
     val expiry: ManaExpiry = ManaExpiry.END_OF_TURN,
     /** The source that produced this unit, snapshotted at production; null when untracked. */
-    val source: ManaSourceTag? = null
+    val source: ManaSourceTag? = null,
+    /** Outstanding per-activation spending identities; spending one unit discharges its siblings. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val obligationIds: Set<String> = emptySet(),
 )
 
 /**

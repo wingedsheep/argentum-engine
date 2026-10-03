@@ -288,7 +288,9 @@ data class ManaPool(
     val snowMana: Map<Color, Int> = emptyMap(),
     val snowColorless: Int = 0,
     /** Ephemeral payment configuration, never stored in the player's mana component. */
-    val spendingColors: Map<Color, Set<Color>> = emptyMap()
+    val spendingColors: Map<Color, Set<Color>> = emptyMap(),
+    /** Payment-local selection memory, never stored in the player component. */
+    val dischargedObligations: Set<String> = emptySet()
 ) {
     /**
      * Whether paying [cost] must go through the substitution-aware matcher: a player-wide
@@ -365,9 +367,24 @@ data class ManaPool(
      * Returns null if no matching restricted mana is available.
      */
     fun spendRestricted(color: Color?, context: SpellPaymentContext): ManaPool? {
-        val index = restrictedMana.indexOfFirst { it.color == color && it.restriction.isSatisfiedBy(context) }
-        if (index == -1) return null
-        return copy(restrictedMana = restrictedMana.toMutableList().apply { removeAt(index) })
+        val index = preferredRestrictedIndex { it.color == color && it.restriction.isSatisfiedBy(context) }
+        if (index < 0) return null
+        return copy(
+            restrictedMana = restrictedMana.toMutableList().apply { removeAt(index) },
+            dischargedObligations = dischargedObligations + restrictedMana[index].obligationIds,
+        )
+    }
+
+    /** Preserve ordinary entry order while preferring an activation not yet used by this payment. */
+    private inline fun preferredRestrictedIndex(eligible: (RestrictedManaEntry) -> Boolean): Int {
+        var first = -1
+        for (index in restrictedMana.indices) {
+            val entry = restrictedMana[index]
+            if (!eligible(entry)) continue
+            if (first < 0) first = index
+            if (entry.obligationIds.any { it !in dischargedObligations }) return index
+        }
+        return first
     }
 
     /**
@@ -438,7 +455,15 @@ data class ManaPool(
      * spent (null = colorless), or null if no snow mana floats. Colorless snow goes first — it is
      * the kind least likely to be wanted by anything else.
      */
-    fun spendSnow(): Pair<ManaPool, Color?>? {
+    fun spendSnow(context: SpellPaymentContext? = null): Pair<ManaPool, Color?>? {
+        if (context != null) {
+            val index = preferredRestrictedIndex { it.source?.isSnow == true && it.restriction.isSatisfiedBy(context) }
+            if (index >= 0) {
+                val entry = restrictedMana[index]
+                return copy(restrictedMana = restrictedMana.toMutableList().apply { removeAt(index) },
+                    dischargedObligations = dischargedObligations + entry.obligationIds) to entry.color
+            }
+        }
         if (snowColorless > 0) {
             return copy(colorless = colorless - 1, snowColorless = snowColorless - 1) to null
         }
@@ -555,7 +580,7 @@ data class ManaPool(
             if (spent != null) remaining = spent else monoHybridGeneric += symbol.generic
         }
 
-        repeat(cost.snowCount) { remaining = remaining.spendSnow()?.first ?: return false }
+        repeat(cost.snowCount) { remaining = remaining.spendSnow(spellContext)?.first ?: return false }
 
         // Then, pay generic costs with any remaining mana (restricted first, then unrestricted)
         val genericAmount = cost.genericAmount + monoHybridGeneric
@@ -643,7 +668,7 @@ data class ManaPool(
             if (spent != null) remaining = spent else monoHybridGeneric += symbol.generic
         }
 
-        repeat(cost.snowCount) { remaining = remaining.spendSnow()!!.first }
+        repeat(cost.snowCount) { remaining = remaining.spendSnow(spellContext)!!.first }
 
         // Pay generic costs - spend eligible restricted first, then colorless, then colored
         var genericRemaining = cost.genericAmount + monoHybridGeneric
@@ -793,7 +818,7 @@ data class ManaPool(
         }
 
         repeat(cost.snowCount) {
-            val paid = remaining.spendSnow()
+            val paid = remaining.spendSnow(spellContext)
             if (paid == null) {
                 unpaidSymbols.add(ManaSymbol.Snow)
             } else {
@@ -920,7 +945,7 @@ data class ManaPool(
             }
         }
         repeat(cost.snowCount) {
-            val paid = pool.spendSnow()
+            val paid = pool.spendSnow(context)
             if (paid == null) {
                 unpaid.add(ManaSymbol.Snow)
             } else {

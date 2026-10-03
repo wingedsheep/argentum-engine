@@ -16214,7 +16214,7 @@ Shared-turn teams follow the existing player-control team rule. A later resoluti
 and a completed window reveals the underlying turn control again. Session hotseat routing keeps precedence.
 
 This primitive composes with `Effects.ForcePlay` for mandatory paid card play. Word of Command
-still needs the produced-mana spending obligation (G40); it is not yet authorable faithfully.
+still needs exact feasible mana-allocation plans (G41); it is not yet authorable faithfully.
 
 ### Scoped mana-ability sources
 
@@ -16233,6 +16233,28 @@ objects tapped or sacrificed as activation costs do not become the ability's sou
 abilities are not activation choices and are unaffected. Existing mana-source menus, automatic and
 explicit payment, and affordability use the same restriction. No new decision or client field is added.
 
-This is only the source restriction. It does **not** require all newly produced mana to be spent.
-Word of Command still needs the distinct produced-mana spending obligation (G40), including exact
-color/restriction provenance and activation chains, before it can be authored faithfully.
+This is only the source restriction. Word of Command requires **at least one unit from each
+activated ability** to contribute to the card or a permitted mana-ability activation; excess may
+remain. Source eligibility alone cannot enforce that obligation.
+
+### Scoped per-activation spending obligations (foundation)
+
+`Effects.WithManaSpendingObligations(effect, player = Controller)` tracks a separate obligation
+for each activated mana ability while the nested instruction runs. Production is represented by
+exact colored/restricted mana entries carrying a deterministic activation identity. Repeated
+activations of the same permanent are separate obligations. Spending one unit on a nested payment
+or mana-ability activation discharges that identity; remaining units keep their restrictions,
+riders, expiry and source metadata and may remain in the pool. Other players and preexisting mana
+are unaffected. Nested scopes observe the same activation and settle together. Scope lifetime and
+pipeline output propagation follow `WithManaAbilitySources`; saved decisions round-trip with their
+outstanding identities. Standard mana-production and mana-spending events continue to describe the
+visible changes. No client field or new decision is introduced.
+
+**This is a foundation, not yet a complete forced-play payment policy.** Scoped casts and
+activations currently accept floating-pool payments; solver-dependent production and multi-part
+activated production return explicit unsupported errors rather than claiming an unproved allocation.
+An unmatched obligation rejects completion atomically. It does not establish forward legality or
+provide recovery from an earlier manual overactivation. G41 must supply exact feasible allocations
+through mana chains, zero-output and bonus-only activations, multi-part production pauses, and
+recoverable payment before a printed card uses this wrapper. Word of Command remains blocked;
+no incomplete canonical is registered.

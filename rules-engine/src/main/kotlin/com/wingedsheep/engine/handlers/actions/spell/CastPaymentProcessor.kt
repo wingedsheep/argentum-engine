@@ -11,6 +11,9 @@ import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
 import com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.activeManaSpendingScope
+import com.wingedsheep.engine.state.remainingManaObligations
+import com.wingedsheep.engine.state.settleManaObligationPayment
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
@@ -153,7 +156,19 @@ class CastPaymentProcessor(
         }
         val manaCost = effectiveCost.withPhyrexianPaidByLife(lifePayments)
             ?: return PaymentResult(state, emptyList(), "Invalid Phyrexian mana payment")
-        val manaResult = when (action.paymentStrategy) {
+        val scoped = state.activeManaSpendingScope(action.playerId) != null
+        if (scoped && (action.paymentStrategy as? PaymentStrategy.Explicit)?.manaAbilitiesToActivate?.isNotEmpty() == true) {
+            return PaymentResult(state, emptyList(), "Exact explicit mana allocation is not supported in this scope")
+        }
+        val rawManaResult = if (scoped && action.paymentStrategy !is PaymentStrategy.FromPool) {
+            // A solver solution currently carries aggregate production, rather than exact units
+            // allocated to the spell and intermediate activations. Until that plan is available,
+            // scoped payments can use already-floating mana but must not auto-activate sources.
+            val fromPool = payFromPool(state, action.playerId, manaCost, cardName, xValue, spellContext, xManaRestriction)
+            if (fromPool.error != null) fromPool.copy(error =
+                "Scoped mana payment requires exact activated-source allocation; use floating mana")
+            else fromPool
+        } else when (action.paymentStrategy) {
             is PaymentStrategy.FromPool -> payFromPool(state, action.playerId, manaCost, cardName, xValue, spellContext, xManaRestriction)
             is PaymentStrategy.AutoPay -> autoPay(state, action.playerId, manaCost, cardName, xValue, spellContext, xManaRestriction = xManaRestriction)
             is PaymentStrategy.Explicit -> explicitPay(
@@ -167,7 +182,17 @@ class CastPaymentProcessor(
                 xManaRestriction
             )
         }
-        if (manaResult.error != null || lifePayments.isEmpty()) return manaResult
+        if (rawManaResult.error != null) return rawManaResult
+        val manaResult = if (scoped) {
+            val before = state.getEntity(action.playerId)?.get<ManaPoolComponent>()?.restrictedMana.orEmpty()
+            val after = rawManaResult.state.getEntity(action.playerId)?.get<ManaPoolComponent>()?.restrictedMana.orEmpty()
+            val settled = settleManaObligationPayment(rawManaResult.state, action.playerId, before, after)
+            if (settled.remainingManaObligations(action.playerId)) {
+                return PaymentResult(state, emptyList(), "Every scoped mana activation must contribute mana to the instructed play")
+            }
+            rawManaResult.copy(state = settled)
+        } else rawManaResult
+        if (lifePayments.isEmpty()) return manaResult
         val lifePayment = LifePaymentService.pay(zones, manaResult.state, action.playerId, lifeToPay)
             ?: return PaymentResult(state, emptyList(), "Unable to pay life for Phyrexian mana")
         return manaResult.copy(
