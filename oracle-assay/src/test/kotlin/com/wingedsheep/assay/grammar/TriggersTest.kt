@@ -154,6 +154,13 @@ class TriggersTest : StringSpec({
         roundTrips("At the beginning of your end step, if a creature died under your control this turn, draw a card.")
     }
 
+    // Raid — one clause, one facade.
+    "you attacked this turn is the raid intervening-if" {
+        ability("At the beginning of your end step, if you attacked this turn, draw a card.").interveningIf shouldBe
+            Conditions.YouAttackedThisTurn
+        roundTrips("At the beginning of your end step, if you attacked this turn, draw a card.")
+    }
+
     // The other half of the split (CR 603.2 vs CR 603.4). A `triggerRestriction` is a different
     // printed shape — "Whenever this creature attacks *while* you control a Dinosaur" — that the
     // engine reads only when the trigger fires. No trigger rule spells it, so an ability carrying

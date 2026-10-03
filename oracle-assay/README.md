@@ -1416,6 +1416,29 @@ controls them" source with the controller folded into the filter — where every
 reduction uses `PermanentsYouControlMatching`. Same behaviour, minority spelling; the card moved to
 the majority one.
 
+## The raid band
+
+The thirty-first loop band, tail key `you attacked this …`: raid's condition — "At the beginning of
+your end step, if you attacked this turn, …", "When ~ enters, if you attacked this turn, …",
+"Activate only if you attacked this turn." **38 lines**; the probe (dropping the "if" clause)
+finished 14 cards. It delivered **11 hand-written cards read whole (7,676 → 7,687)**. The clause is
+one facade, `Conditions.YouAttackedThisTurn`, printed in the past simple only, so it is one
+`constant` row in `Conditions` and reaches every position that slots the vocabulary — the
+intervening-if, the activation restriction and the conditional clause at once. The probe's other
+three cards decline on their payloads ("target opponent discards a card", the mana-value return);
+"you attacked with N or more creatures this turn" is a counted sibling the SDK does not name, and
+stays out.
+
+### What the differential found
+
+Differential **7,281 compared / 73 divergent → 7,292 / 73**. The three newly compared cards that
+diverged were all Khans of Tarkir raid cards, and all three were card bugs. Bloodsoaked Champion and
+Timely Hordemate returned "from your graveyard to the battlefield" through the unguarded
+`PutOntoBattlefield` / bare `Move`, dropping the `fromZone` guard the sentence carries; both moved to
+`Effects.PutOntoBattlefieldFromGraveyard`. Wingmate Roc gained life "for each attacking creature"
+counted over `attackingCreaturesYouControl()` — the same number in a duel, a different one when a
+teammate attacks alongside it — and now counts every attacking creature, as Respite does.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
