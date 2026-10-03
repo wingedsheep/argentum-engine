@@ -14,9 +14,11 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * {T}: This artifact deals 1 damage to target Spirit creature. If that creature would die this
  * turn, exile it instead.
  *
- * Yamabushi's Flame's shape: "that creature" is the target itself (not "a creature dealt damage
- * this way"), so the [Effects.MarkExileOnDeath] mark goes on first — it holds for the rest of the
- * turn even if the damage is prevented, and a Spirit killed by this very ping is exiled.
+ * "That creature" is the target itself (not "a creature dealt damage this way"), so the
+ * [Effects.MarkExileOnDeath] mark holds for the rest of the turn even if the damage is prevented.
+ * It follows the damage in the printed order: the mark is a floating effect and the Spirit only
+ * dies to state-based actions after the ability resolves, so a Spirit killed by this very ping is
+ * still exiled.
  */
 val NineRingedBo = card("Nine-Ringed Bo") {
     manaCost = "{3}"
@@ -28,7 +30,7 @@ val NineRingedBo = card("Nine-Ringed Bo") {
     activatedAbility {
         cost = Costs.Tap
         val t = target(TargetFilter(GameObjectFilter.Creature.withSubtype("Spirit")))
-        effect = Effects.MarkExileOnDeath(t) then Effects.DealDamage(1, t)
+        effect = Effects.DealDamage(1, t) then Effects.MarkExileOnDeath(t)
         description = "{T}: Deal 1 damage to target Spirit creature. If it would die this turn, exile it instead."
     }
 

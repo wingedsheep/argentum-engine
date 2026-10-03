@@ -21,7 +21,7 @@ val BotBashingTime = card("Bot Bashing Time") {
 
     spell {
         val creature = target(TargetFilter.Creature)
-        effect = Effects.MarkExileOnDeath(creature) then Effects.DealDamage(6, creature)
+        effect = Effects.DealDamage(6, creature) then Effects.MarkExileOnDeath(creature)
     }
 
     metadata {
