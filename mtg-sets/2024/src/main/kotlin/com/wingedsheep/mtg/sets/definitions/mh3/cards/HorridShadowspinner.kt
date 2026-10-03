@@ -15,8 +15,7 @@ import com.wingedsheep.sdk.model.Rarity
  * many cards.
  *
  * The power is captured once, as the "may" is accepted, so the discard count stays the number
- * chosen to draw even if the power changes mid-resolution (2024-06-07 ruling). If the creature has
- * left the battlefield, its last-known power is used.
+ * chosen to draw even if the power changes mid-resolution (2024-06-07 ruling).
  */
 val HorridShadowspinner = card("Horrid Shadowspinner") {
     manaCost = "{1}{U}{B}"

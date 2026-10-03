@@ -14,8 +14,8 @@ import io.kotest.matchers.shouldNotBe
  *
  *   Whenever another nontoken creature you control enters, proliferate.
  *
- * Pins the trigger on your own nontoken creature entering, and that neither the Evangel itself
- * nor an opponent's creature triggers it.
+ * Pins the trigger on your own nontoken creature entering, and that neither the Evangel itself,
+ * a creature token, nor an opponent's creature triggers it.
  */
 class MetastaticEvangelScenarioTest : ScenarioTestBase() {
 
@@ -68,6 +68,29 @@ class MetastaticEvangelScenarioTest : ScenarioTestBase() {
             seed(game, giant, CounterType.PLUS_ONE_PLUS_ONE, 1)
 
             game.castSpell(1, "Metastatic Evangel").error shouldBe null
+            game.resolveStack()
+
+            game.state.pendingDecision shouldBe null
+            game.state.stack.isEmpty() shouldBe true
+            count(game, giant, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
+        }
+
+        test("a creature token entering under your control does not trigger") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Metastatic Evangel")
+                .withCardOnBattlefield(1, "Hill Giant")
+                .withCardInHand(1, "Raise the Alarm")
+                .withLandsOnBattlefield(1, "Plains", 2)
+                .withCardInLibrary(1, "Plains")
+                .withCardInLibrary(2, "Plains")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val giant = game.findPermanent("Hill Giant")!!
+            seed(game, giant, CounterType.PLUS_ONE_PLUS_ONE, 1)
+
+            game.castSpell(1, "Raise the Alarm").error shouldBe null
             game.resolveStack()
 
             game.state.pendingDecision shouldBe null

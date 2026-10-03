@@ -96,15 +96,21 @@ class HexgoldSlithScenarioTest : FunSpec({
         d.state.projectedState.hasKeyword(slith, Keyword.FIRST_STRIKE) shouldBe false
     }
 
-    test("blocked: no damage to a player, no counter") {
+    test("combat damage dealt to a blocking creature puts no counter on it") {
         val d = driver()
         val slith = d.putCreatureOnBattlefield(d.player1, HexgoldSlith.name)
-        val wall = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        val bears = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        d.seedEnergy(2)
         d.attackWith(slith)
         d.bothPass()
+        // First strike lets the 2/1 kill the 2/2 blocker and survive to be inspected.
+        d.submitYesNo(d.player1, true).error shouldBe null
         d.passPriorityUntil(Step.DECLARE_BLOCKERS)
-        d.declareBlockers(d.player2, mapOf(wall to listOf(slith))).error shouldBe null
+        d.declareBlockers(d.player2, mapOf(bears to listOf(slith))).error shouldBe null
         d.passPriorityUntil(Step.POSTCOMBAT_MAIN)
         d.getLifeTotal(d.player2) shouldBe 20
+        d.state.getBattlefield().contains(bears) shouldBe false
+        d.state.getBattlefield().contains(slith) shouldBe true
+        d.plusOnes(slith) shouldBe 0
     }
 })

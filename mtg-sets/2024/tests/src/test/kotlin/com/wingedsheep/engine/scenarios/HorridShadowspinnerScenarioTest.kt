@@ -1,9 +1,11 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.mh3.cards.HorridShadowspinner
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
@@ -50,6 +52,30 @@ class HorridShadowspinnerScenarioTest : FunSpec({
 
         driver.getHandSize(me) shouldBe handBefore
         driver.getGraveyard(me).size shouldBe graveyardBefore + 2
+    }
+
+    test("the count follows its current power, not its printed power") {
+        val driver = newDriver()
+        val me = driver.player1
+        val spinner = driver.putCreatureOnBattlefield(me, "Horrid Shadowspinner")
+        driver.removeSummoningSickness(spinner)
+        driver.replaceState(
+            driver.state.updateEntity(spinner) { c ->
+                c.with((c.get<CountersComponent>() ?: CountersComponent()).withAdded(CounterType.PLUS_ONE_PLUS_ONE, 1))
+            }
+        )
+
+        val handBefore = driver.getHandSize(me)
+        val libraryBefore = driver.state.getLibrary(me).size
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(me, listOf(spinner), driver.player2)
+        driver.bothPass()
+        driver.submitYesNo(me, true)
+
+        driver.state.getLibrary(me).size shouldBe libraryBefore - 3
+        driver.submitCardSelection(me, driver.getHand(me).take(3))
+        driver.getHandSize(me) shouldBe handBefore
     }
 
     test("declining draws and discards nothing") {
