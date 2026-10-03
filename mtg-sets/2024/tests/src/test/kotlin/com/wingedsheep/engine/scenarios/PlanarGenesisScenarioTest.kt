@@ -29,6 +29,7 @@ class PlanarGenesisScenarioTest : ScenarioTestBase() {
         .withCardInLibrary(1, "Grizzly Bears")
         .withCardInLibrary(1, "Lightning Bolt")
         .withCardInLibrary(1, "Giant Growth")
+        .withCardInLibrary(1, "Hill Giant")
         .withLandsOnBattlefield(1, "Forest", 1)
         .withLandsOnBattlefield(1, "Island", 1)
         .withActivePlayer(1)
@@ -52,7 +53,8 @@ class PlanarGenesisScenarioTest : ScenarioTestBase() {
             withClue("no card was put into hand — the rest went to the bottom") {
                 game.getPendingDecision() shouldBe null
                 game.handSize(1) shouldBe 0
-                game.librarySize(1) shouldBe 3
+                game.librarySize(1) shouldBe 4
+                game.state.getLibrary(game.player1Id).first() shouldBe game.findCardsInLibrary(1, "Hill Giant").single()
             }
         }
 
@@ -69,7 +71,10 @@ class PlanarGenesisScenarioTest : ScenarioTestBase() {
             game.isInHand(1, "Lightning Bolt") shouldBe true
             game.isOnBattlefield("Swamp") shouldBe false
             game.handSize(1) shouldBe 1
-            game.librarySize(1) shouldBe 3
+            game.librarySize(1) shouldBe 4
+            withClue("the rest went under the untouched fifth card") {
+                game.state.getLibrary(game.player1Id).first() shouldBe game.findCardsInLibrary(1, "Hill Giant").single()
+            }
         }
 
         test("with no land among the four, a card still goes to hand") {
@@ -89,7 +94,10 @@ class PlanarGenesisScenarioTest : ScenarioTestBase() {
 
             game.isInHand(1, "Centaur Courser") shouldBe true
             game.handSize(1) shouldBe 1
-            game.librarySize(1) shouldBe 3
+            game.librarySize(1) shouldBe 4
+            withClue("the rest went under the untouched fifth card") {
+                game.state.getLibrary(game.player1Id).first() shouldBe game.findCardsInLibrary(1, "Hill Giant").single()
+            }
         }
     }
 }

@@ -96,6 +96,30 @@ class UtterInsignificanceScenarioTest : ScenarioTestBase() {
                     game.state.getExile(game.player2Id).contains(bears) shouldBe true
                 }
             }
+
+            test("{2}{C}: colored mana can't pay the {C}") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Utter Insignificance")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withLandsOnBattlefield(1, "Island", 6)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val bears = game.findPermanent("Grizzly Bears")!!
+                game.castSpell(1, "Utter Insignificance", targetId = bears)
+                game.resolveStack()
+
+                val aura = game.findPermanent("Utter Insignificance")!!
+                val exile = game.getLegalActions(1).firstOrNull { la ->
+                    val a = la.action
+                    a is ActivateAbility && a.sourceId == aura && a.abilityId == exileAbilityId
+                }
+                withClue("four untapped Islands can't produce {C}") {
+                    (exile?.isAffordable ?: false) shouldBe false
+                }
+            }
         }
     }
 }

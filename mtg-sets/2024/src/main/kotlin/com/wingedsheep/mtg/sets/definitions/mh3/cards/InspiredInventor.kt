@@ -20,7 +20,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * • Put a +1/+1 counter on target creature.
  * • Create a 1/1 colorless Servo artifact creature token.
  *
- * Only the counter mode targets, so the target is chosen only when that mode is picked (CR 700.2).
+ * Only the counter mode targets, so the target is chosen only when that mode is picked (CR 700.2c).
  */
 val InspiredInventor = card("Inspired Inventor") {
     manaCost = "{2}{W}"

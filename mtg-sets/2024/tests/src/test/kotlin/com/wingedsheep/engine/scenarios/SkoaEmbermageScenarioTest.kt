@@ -90,12 +90,13 @@ class SkoaEmbermageScenarioTest : ScenarioTestBase() {
                 game.findPermanents("Mountain").size shouldBe 1
             }
 
-            test("Grandeur is unaffordable with only one Mountain") {
+            test("Grandeur is unaffordable with only one Mountain and a Forest") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Skoa, Embermage", summoningSickness = false)
                     .withCardInHand(1, "Skoa, Embermage")
                     .withLandsOnBattlefield(1, "Mountain", 1)
+                    .withLandsOnBattlefield(1, "Forest", 1)
                     .withCardInLibrary(1, "Forest")
                     .withCardInLibrary(2, "Forest")
                     .withActivePlayer(1)
