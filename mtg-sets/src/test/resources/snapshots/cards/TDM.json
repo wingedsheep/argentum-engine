@@ -14919,8 +14919,8 @@
                 "modification": {
                     "type": "ReduceGenericBy",
                     "source": {
-                        "type": "PermanentsOnBattlefieldMatching",
-                        "filter": "creature pow>=4 ctrl:you"
+                        "type": "PermanentsYouControlMatching",
+                        "filter": "creature pow>=4"
                     }
                 }
             }
