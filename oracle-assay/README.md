@@ -1318,7 +1318,7 @@ It delivered **16 hand-written cards read whole (7,564 → 7,580)** — more tha
 
 ### A keyword action that is an existing noun
 
-CR 701.36a defines investigating as creating a Clue token, and `Effects.Investigate` and
+CR 701.16a defines investigating as creating a Clue token, and `Effects.Investigate` and
 `Effects.CreateClue` build the same `CreatePredefinedTokenEffect("Clue")`. `Tokens` already printed
 that model as "create a Clue token" and its KDoc had reserved the keyword spelling for this: the two
 rows ("investigate", "investigate twice") are `alternate`s beside the predefined-token rows, so they
@@ -2081,7 +2081,7 @@ a number word, "X") and the keyword rider — plus a colour *run* with `keywordR
 keywords print in `Keyword`'s declaration order: both are `Color`/`Keyword`'s own, and a card that
 built its set the other way round still prints the sentence Oracle prints. The predefined nouns
 (Food, Treasure, Clue, Blood, Map, Lander, Shard) are a second family, each row calling the facade
-the SDK publishes for it — with "investigate" deliberately left out, because CR 701.36a makes it the
+the SDK publishes for it — with "investigate" deliberately left out, because CR 701.16a makes it the
 same model as "create a Clue token" and two canonical spellings would leave printing undecided.
 
 **An ability word is printed shape, and belongs to normalization.** CR 207.2c: *"they have no

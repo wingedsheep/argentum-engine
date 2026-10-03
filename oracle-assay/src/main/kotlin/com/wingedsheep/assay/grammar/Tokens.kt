@@ -402,7 +402,7 @@ object Tokens {
      *
      * ### A collision this file is deliberately one half of
      *
-     * "Investigate" (CR 701.36a) *is* "create a Clue token" — `Effects.Investigate` and
+     * "Investigate" (CR 701.16a) *is* "create a Clue token" — `Effects.Investigate` and
      * `Effects.CreateClue` are the same call — so the two printed forms denote one model. Only the
      * noun form is registered here. The keyword-action spelling declines, which names the gap; what
      * it must never become is a second canonical rule, because then one model would have two printed
@@ -462,7 +462,7 @@ object Tokens {
     }
 
     /**
-     * "Investigate." / "investigate twice." — the keyword action (CR 701.36a) that *is* "create a
+     * "Investigate." / "investigate twice." — the keyword action (CR 701.16a) that *is* "create a
      * Clue token". `Effects.Investigate` and `Effects.CreateClue` build the same
      * `CreatePredefinedTokenEffect`, so these are [alternate]s of the Clue rows: they read into that
      * one model and print back as the noun form, a `VARIANT`. Making them canonical would give one

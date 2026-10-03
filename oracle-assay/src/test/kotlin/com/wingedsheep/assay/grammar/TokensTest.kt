@@ -161,7 +161,7 @@ class TokensTest : StringSpec({
         Grammar.abilityLine.printLine(unknown) shouldBe null
     }
 
-    // CR 701.36a: investigating *is* creating a Clue, so the keyword action reads into the Clue row's
+    // CR 701.16a: investigating *is* creating a Clue, so the keyword action reads into the Clue row's
     // model and prints back as the noun form — one model, one printed form.
     "investigate is an alternate spelling of creating a Clue" {
         fragment("Investigate.").script.spellEffect shouldBe Effects.Investigate()
