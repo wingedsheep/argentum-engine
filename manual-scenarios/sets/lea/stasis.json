@@ -1,0 +1,75 @@
+{
+  "player1Name": "Stasis Controller",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Stasis",
+      "Twiddle"
+    ],
+    "battlefield": [
+      {
+        "name": "Stasis"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island",
+        "tapped": true
+      },
+      {
+        "name": "Grizzly Bears",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Island",
+      "Island",
+      "Island",
+      "Island",
+      "Island",
+      "Island",
+      "Island",
+      "Island"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Disenchant"
+    ],
+    "battlefield": [
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Grizzly Bears",
+        "tapped": true
+      }
+    ],
+    "library": [
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains"
+    ]
+  },
+  "phase": "ENDING",
+  "step": "END",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [
+    "UPKEEP"
+  ],
+  "player2StopAtSteps": [
+    "UPKEEP"
+  ]
+}

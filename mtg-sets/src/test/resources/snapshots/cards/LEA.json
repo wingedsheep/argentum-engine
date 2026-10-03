@@ -5893,6 +5893,56 @@
     ]
 }
 
+// Stasis
+{
+    "name": "Stasis",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Players skip their untap steps.\nAt the beginning of your upkeep, sacrifice this enchantment unless you pay {U}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stasis:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{U}"
+                        }
+                    },
+                    "suffer": "SacrificeSelf"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "SkipUntapStep"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "RARE",
+        "artist": "Fay Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b6cef408-5b4b-49f6-9531-be544815b93f.jpg?1783948701",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Does not prevent cards from being untapped outside the untap step."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Since there is no untap step, Phasing in/out won't happen."
+            }
+        ]
+    }
+}
+
 // Steal Artifact
 {
     "name": "Steal Artifact",
