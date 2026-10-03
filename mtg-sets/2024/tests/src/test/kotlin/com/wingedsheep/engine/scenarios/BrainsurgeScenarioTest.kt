@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Brainsurge (MH3 #53) — {2}{U} Instant.
@@ -42,15 +43,13 @@ class BrainsurgeScenarioTest : FunSpec({
         val drawn = d.state.getHand(me).first { it != oldCard }
         d.submitCardSelection(me, listOf(oldCard, drawn))
 
-        val reorder = d.pendingDecision as? ReorderLibraryDecision
-        if (reorder != null) {
-            d.submitOrderedResponse(me, listOf(oldCard, drawn))
-        }
+        d.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
+        d.submitOrderedResponse(me, listOf(oldCard, drawn))
 
         d.state.getHand(me).size shouldBe handBefore - 1 + 4 - 2
         d.state.getLibrary(me).size shouldBe libraryBefore - 4 + 2
         d.state.getLibrary(me).take(2).toSet() shouldBe setOf(oldCard, drawn)
-        if (reorder != null) d.state.getLibrary(me).first() shouldBe oldCard
+        d.state.getLibrary(me).first() shouldBe oldCard
         d.getGraveyardCardNames(me) shouldBe listOf("Brainsurge")
     }
 })

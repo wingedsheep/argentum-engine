@@ -8,6 +8,8 @@ import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.mh3.cards.Dreadmobile
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
@@ -21,10 +23,11 @@ import io.kotest.matchers.shouldBe
 class DreadmobileScenarioTest : FunSpec({
 
     val abilityId = Dreadmobile.activatedAbilities.first().id
+    val widget = CardDefinition.artifact(name = "Test Widget", manaCost = ManaCost.parse("{1}"))
 
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Dreadmobile))
+        driver.registerCards(TestCards.all + listOf(Dreadmobile, widget))
         driver.initMirrorMatch(deck = Deck.of("Swamp" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -61,6 +64,29 @@ class DreadmobileScenarioTest : FunSpec({
         projected.isCreature(mobile) shouldBe true
         projected.getPower(mobile) shouldBe 4
         projected.getToughness(mobile) shouldBe 4
+    }
+
+    test("a noncreature artifact can be sacrificed too") {
+        val driver = newDriver()
+        val me = driver.player1
+
+        val mobile = driver.putPermanentOnBattlefield(me, "Dreadmobile")
+        val fodder = driver.putPermanentOnBattlefield(me, "Test Widget")
+
+        driver.giveColorlessMana(me, 1)
+        driver.submit(
+            ActivateAbility(
+                playerId = me,
+                sourceId = mobile,
+                abilityId = abilityId,
+                costPayment = AdditionalCostPayment(sacrificedPermanents = listOf(fodder))
+            )
+        ).outcome shouldBe Outcome.Done
+        while (driver.state.stack.isNotEmpty()) driver.bothPass()
+
+        driver.state.getBattlefield().contains(fodder) shouldBe false
+        driver.state.getEntity(mobile)?.get<CountersComponent>()
+            ?.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
     }
 
     test("the Vehicle cannot sacrifice itself to its own ability") {
