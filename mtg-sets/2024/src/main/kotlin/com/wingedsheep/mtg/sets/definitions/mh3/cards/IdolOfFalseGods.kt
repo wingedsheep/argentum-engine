@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantCardType
 import com.wingedsheep.sdk.scripting.KeywordAbility
@@ -27,8 +28,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Modelling notes:
  *  - "Another Eldrazi" is a bare tribal noun, so it is a *permanent* filter: the ruling confirms a
  *    noncreature Eldrazi (e.g. a kindred artifact) going to the graveyard also triggers it.
- *  - The animation is three statics sharing one counter-count condition: Layer 4 adds CREATURE,
- *    Layer 7b sets base P/T 0/0 (the counters then make it N/N), and annihilator 2.
+ *  - The animation is one multi-layer static gated on the counter count: Layer 4 adds CREATURE and
+ *    Layer 7b sets base P/T 0/0 (the counters then make it N/N). Annihilator 2 is lowered separately.
  *  - Annihilator is display-only in the SDK, so it is lowered to its attack trigger (as on
  *    Nulldrifter). "It has annihilator 2" only while the condition holds, so the trigger carries
  *    the condition as a trigger-time restriction, not an intervening-if: once triggered it resolves
@@ -53,14 +54,16 @@ val IdolOfFalseGods = card("Idol of False Gods") {
         effect = Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
     }
 
+    // One multi-layer static (CR 613.6): it began applying in Layer 4, so losing all abilities
+    // later (Layer 6) doesn't switch off its 0/0 — the Idol stays an N/N creature.
     staticAbility {
         condition = Conditions.SourceCounterCountAtLeast(CounterType.PLUS_ONE_PLUS_ONE, 8)
-        ability = GrantCardType("CREATURE", GroupFilter.source())
-    }
-
-    staticAbility {
-        condition = Conditions.SourceCounterCountAtLeast(CounterType.PLUS_ONE_PLUS_ONE, 8)
-        ability = SetBasePowerToughnessStatic(0, 0, GroupFilter.source())
+        ability = CompositeStaticAbility(
+            listOf(
+                GrantCardType("CREATURE", GroupFilter.source()),
+                SetBasePowerToughnessStatic(0, 0, GroupFilter.source()),
+            )
+        )
     }
 
     keywordAbility(KeywordAbility.annihilator(2))

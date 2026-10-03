@@ -8,8 +8,12 @@ import com.wingedsheep.mtg.sets.definitions.mh3.cards.IdolOfFalseGods
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.LoseAllAbilities
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -35,7 +39,18 @@ class IdolOfFalseGodsScenarioTest : ScenarioTestBase() {
         }
     }
 
+    // Strips every artifact's abilities, without itself touching type or P/T.
+    private val mutingField = card("Test Muting Field") {
+        manaCost = "{2}"
+        typeLine = "Enchantment"
+        staticAbility {
+            ability = LoseAllAbilities(GroupFilter(GameObjectFilter.Artifact))
+        }
+    }
+
     init {
+        cardRegistry.register(mutingField)
+
         context("Idol of False Gods") {
 
             test("{1}{C}, {T} creates an Eldrazi Spawn token") {
@@ -156,6 +171,24 @@ class IdolOfFalseGodsScenarioTest : ScenarioTestBase() {
 
                 game.givePlusOnes(idol, 1)
                 withClue("eight counters animate it as a 0/0 plus eight +1/+1 counters") {
+                    game.state.projectedState.isCreature(idol) shouldBe true
+                    game.state.projectedState.getPower(idol) shouldBe 8
+                    game.state.projectedState.getToughness(idol) shouldBe 8
+                }
+            }
+
+            test("losing all abilities after it animated leaves it an 8/8 creature (CR 613.6)") {
+                val game = scenario()
+                    .withPlayers("Player1", "Opponent")
+                    .withCardOnBattlefield(1, "Idol of False Gods")
+                    .withCardOnBattlefield(2, "Test Muting Field")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val idol = game.findPermanent("Idol of False Gods")!!
+
+                game.givePlusOnes(idol, 8)
+                withClue("the Layer 4 type grant and its Layer 7b 0/0 survive the Layer 6 ability loss") {
                     game.state.projectedState.isCreature(idol) shouldBe true
                     game.state.projectedState.getPower(idol) shouldBe 8
                     game.state.projectedState.getToughness(idol) shouldBe 8

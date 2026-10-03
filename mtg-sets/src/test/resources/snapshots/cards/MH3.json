@@ -9544,36 +9544,22 @@
             {
                 "type": "ConditionalStaticAbility",
                 "ability": {
-                    "type": "GrantCardType",
-                    "cardType": "CREATURE"
-                },
-                "condition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "EntityProperty",
-                        "entity": "Self",
-                        "numericProperty": {
-                            "type": "CounterCount",
-                            "counterType": "PLUS_ONE_PLUS_ONE"
+                    "type": "CompositeStaticAbility",
+                    "abilities": [
+                        {
+                            "type": "GrantCardType",
+                            "cardType": "CREATURE"
+                        },
+                        {
+                            "type": "SetBasePowerToughnessStatic",
+                            "power": 0,
+                            "toughness": 0,
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
                         }
-                    },
-                    "operator": "GTE",
-                    "right": {
-                        "type": "Fixed",
-                        "amount": 8
-                    }
-                }
-            },
-            {
-                "type": "ConditionalStaticAbility",
-                "ability": {
-                    "type": "SetBasePowerToughnessStatic",
-                    "power": 0,
-                    "toughness": 0,
-                    "filter": {
-                        "baseFilter": "permanent",
-                        "scope": "Self"
-                    }
+                    ]
                 },
                 "condition": {
                     "type": "Compare",
