@@ -332,6 +332,7 @@ class PredicateEvaluator(
             CardPredicate.IsBattle -> typeLine?.isBattle
             CardPredicate.IsPermanent -> typeLine?.isPermanent
             CardPredicate.IsLegendary -> typeLine?.isLegendary
+            CardPredicate.IsSnow -> typeLine?.isSnow
             CardPredicate.IsNonlegendary -> typeLine?.isLegendary?.not()
             CardPredicate.IsToken -> snapshot.wasToken
             CardPredicate.IsNontoken -> !snapshot.wasToken
@@ -723,6 +724,7 @@ class PredicateEvaluator(
             CardPredicate.IsToken -> container.has<TokenComponent>()
             CardPredicate.IsNontoken -> !container.has<TokenComponent>()
             CardPredicate.IsLegendary -> "LEGENDARY" in types
+            CardPredicate.IsSnow -> "SNOW" in types
             CardPredicate.IsNonlegendary -> "LEGENDARY" !in types
             CardPredicate.HasNonManaActivatedAbility -> card.hasNonManaActivatedAbility
             CardPredicate.HasActivatedAbility -> card.hasActivatedAbility
@@ -2488,6 +2490,7 @@ class PredicateEvaluator(
             CardPredicate.IsToken -> false // cast spells are never tokens
             CardPredicate.IsNontoken -> true
             CardPredicate.IsLegendary -> typeLine.isLegendary
+            CardPredicate.IsSnow -> typeLine.isSnow
             CardPredicate.IsNonlegendary -> !typeLine.isLegendary
 
             // Color predicates

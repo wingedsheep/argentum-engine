@@ -3466,3 +3466,68 @@
         "BLUE"
     ]
 }
+
+// Winter's Rest
+{
+    "name": "Winter's Rest",
+    "manaCost": "{1}{U}",
+    "typeLine": "Snow Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature.\nAs long as you control another snow permanent, enchanted creature doesn't untap during its controller's untap step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Winter's Rest:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                },
+                "descriptionOverride": "When this Aura enters, tap enchanted creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP"
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            "IsSnow"
+                        ]
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Mila Pesic",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1fdaf6b6-aca7-49e5-a4da-bf8c08b4a055.jpg?1783933134",
+        "rulings": [
+            {
+                "date": "2019-06-14",
+                "text": "If you lose control of all of your other snow permanents, then control a new one, the effect of Winter's Rest will apply to the enchanted creature again."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}

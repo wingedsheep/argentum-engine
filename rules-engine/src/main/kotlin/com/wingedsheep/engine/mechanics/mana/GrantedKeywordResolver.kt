@@ -196,6 +196,7 @@ class GrantedKeywordResolver(
             CardPredicate.IsLand -> cardDef.typeLine.isLand
             CardPredicate.IsNonland -> !cardDef.typeLine.isLand
             CardPredicate.IsLegendary -> cardDef.typeLine.isLegendary
+            CardPredicate.IsSnow -> cardDef.typeLine.isSnow
             CardPredicate.IsNonlegendary -> !cardDef.typeLine.isLegendary
             CardPredicate.IsPermanent -> cardDef.typeLine.isPermanent
             CardPredicate.IsNonenchantment -> !cardDef.typeLine.isEnchantment

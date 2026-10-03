@@ -5241,6 +5241,11 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   the land base (`GameObjectFilter.Land.nonbasic()`), or use the named constant `GameObjectFilter.NonbasicLand`
   / `TargetFilter.NonbasicLand` (Rocket Volley, Shivan Harvest, Encroaching Wastes). `TargetFilter.Land.nonbasic()`
   is the target-side passthrough.
+- `.snow()` — appends `CardPredicate.IsSnow`, the snow supertype (CR 205.4g): "snow land", "snow
+  permanent", "snow creature". Reads projected types on the battlefield (so a gained or lost snow
+  supertype counts) and the printed type line elsewhere. `GameObjectFilter.Land.snow().youControl()` —
+  Avalanche Caller; `Conditions.YouControl(GameObjectFilter.Permanent.snow(), excludeSelf = true)` for
+  "as long as you control another snow permanent" — Winter's Rest.
 - `GameObjectFilter.LandWithBasicLandType` — a land with one of the five basic land types
   (CR 205.3i): "a land card with a basic land type" (Boseiju, Who Endures). Deliberately *not*
   `GameObjectFilter.BasicLand` — a shockland (`Land — Forest Island`) or Dryad Arbor qualifies, and a

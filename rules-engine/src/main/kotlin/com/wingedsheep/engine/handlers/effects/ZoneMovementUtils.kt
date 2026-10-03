@@ -958,6 +958,7 @@ object ZoneMovementUtils {
                 CardPredicate.IsNonartifact -> !cardComponent.typeLine.isArtifact
                 CardPredicate.IsPermanent -> cardComponent.typeLine.isPermanent
                 CardPredicate.IsLegendary -> cardComponent.typeLine.isLegendary
+                CardPredicate.IsSnow -> cardComponent.typeLine.isSnow
                 CardPredicate.IsNonlegendary -> !cardComponent.typeLine.isLegendary
                 CardPredicate.IsDoubleFaced -> cardComponent.isDoubleFaced
                 else -> true // For unhandled predicates, don't filter out

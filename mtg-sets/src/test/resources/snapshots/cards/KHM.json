@@ -75,6 +75,88 @@
     ]
 }
 
+// Avalanche Caller
+{
+    "name": "Avalanche Caller",
+    "manaCost": "{1}{U}",
+    "typeLine": "Snow Creature — Human Wizard",
+    "oracleText": "{2}: Target snow land you control becomes a 4/4 Elemental creature with hexproof and haste until end of turn. It's still a land. (A creature with hexproof can't be the target of spells or abilities your opponents control.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Avalanche Caller:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "keywords": [
+                        "HEXPROOF",
+                        "HASTE"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsLand",
+                                    "IsSnow"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89cef049-6a47-4264-b2bc-b9d291a09c4c.jpg?1783928269",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A land that becomes a creature because of Avalanche Caller's activated ability will retain any other supertypes, card types, subtypes, and abilities it had. In particular, it will be a snow creature land."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The activated ability doesn't cause the target snow land to become tapped or untapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Axgard Cavalry
 {
     "name": "Axgard Cavalry",

@@ -329,6 +329,9 @@ interface ObjectFilterBuilder<out Self> {
     /** Must not be legendary */
     fun nonlegendary() = withCardPredicate(CardPredicate.IsNonlegendary)
 
+    /** Must have the snow supertype — "snow land", "snow permanent" (CR 205.4g). */
+    fun snow() = withCardPredicate(CardPredicate.IsSnow)
+
     /** Must not be a basic land ("nonbasic land", e.g. Rocket Volley, Shivan Harvest). */
     fun nonbasic() = withCardPredicate(CardPredicate.Not(CardPredicate.IsBasicLand))
 
