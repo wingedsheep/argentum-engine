@@ -307,6 +307,13 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value.getValue("copyTriggeredAbilities") shouldBe JsonArray(emptyList())
                 value.getValue("manaSpendingGrants") shouldBe JsonArray(emptyList())
                 value - "copyTriggeredAbilities" - "manaSpendingGrants"
+            } else if (value["type"] == JsonPrimitive(
+                    "com.wingedsheep.engine.state.components.player.ManaPoolComponent"
+                )) {
+                // Snow-mana tracking (CR 107.4h) postdates the capture.
+                value.getValue("snowMana") shouldBe JsonObject(emptyMap())
+                value.getValue("snowColorless") shouldBe JsonPrimitive(0)
+                value - "snowMana" - "snowColorless"
             } else if ("colorlessAsAnyColor" in value && "singleUse" in value) {
                 // MayPlayPermission's colorless-as-any-color rider postdates the capture.
                 value.getValue("colorlessAsAnyColor") shouldBe JsonPrimitive(false)

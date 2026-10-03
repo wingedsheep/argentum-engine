@@ -60,6 +60,73 @@
     ]
 }
 
+// Ophiomancer
+{
+    "name": "Ophiomancer",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "At the beginning of each upkeep, if you control no Snakes, create a 1/1 black Snake creature token with deathtouch.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ophiomancer:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Snake"
+                    ],
+                    "keywords": [
+                        "DEATHTOUCH"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b9be7c2-efe5-4d37-a43e-ddcd50a77aa9.jpg?1783911114"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Snake",
+                    "negate": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "John Stanko",
+        "flavorText": "\"There are dark, ancient arts that fascinate even me.\"\n—Sorin Markov",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66d80dd1-b944-4cb2-8578-b4dbcabbbc1e.jpg?1783939675",
+        "rulings": [
+            {
+                "date": "2013-10-17",
+                "text": "Ophiomancer's ability considers any creature you control with the creature type Snake, not just the tokens Ophiomancer creates."
+            },
+            {
+                "date": "2013-10-17",
+                "text": "If the ability does trigger, but you control a Snake when it tries to resolve, the ability will do nothing. No Snake token will be created."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Tempt with Discovery
 {
     "name": "Tempt with Discovery",
@@ -244,5 +311,61 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Toxic Deluge
+{
+    "name": "Toxic Deluge",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, pay X life.\nAll creatures get -X/-X until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Multiply",
+                    "amount": "XValue",
+                    "multiplier": -1
+                },
+                "toughnessModifier": {
+                    "type": "Multiply",
+                    "amount": "XValue",
+                    "multiplier": -1
+                },
+                "target": "IterationEntity"
+            }
+        },
+        "additionalCosts": [
+            "PayXLife"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"It's a difficult task to quarantine a plague that moves with the clouds.\"\n—Esara, healer adept",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/564caf57-4ba5-4993-a35e-945699c94eb7.jpg?1783939672",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "All creatures on the battlefield when Toxic Deluge resolves are affected. Ones that enter the battlefield or become creatures later in the turn are not."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If you cast Toxic Deluge without paying its mana cost, you'll still choose a value for X and pay X life. This is because it doesn't have {X} in its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }

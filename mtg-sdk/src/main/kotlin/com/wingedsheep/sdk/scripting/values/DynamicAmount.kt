@@ -843,6 +843,22 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * The amount of mana from snow sources spent to cast the current spell — the "{S} spent" of
+     * CR 107.4h, which counts snow mana spent on *any* part of the cost, not only on `{S}` pips.
+     * Berg Strider's "if {S} was spent to cast this spell" is `Compare(SnowManaSpent, GTE, 1)`;
+     * "for each {S} spent" reads it directly.
+     *
+     * Like [ManaSpentFromSubtype] it reads the source entity's recorded payment, so it resolves
+     * while the spell is on the stack and as the permanent's enters ability resolves; a permanent
+     * put onto the battlefield without being cast spent no mana, so this is 0 for it.
+     */
+    @SerialName("SnowManaSpent")
+    @Serializable
+    data object SnowManaSpent : DynamicAmount {
+        override val description: String = "the amount of {S} spent to cast this"
+    }
+
+    /**
      * The number of distinct *colors* of mana spent to cast the source spell (0–5).
      *
      * Backs the **Converge** ability word — "Converge — … for each color of mana spent to

@@ -2980,6 +2980,56 @@
     ]
 }
 
+// Meltdown
+{
+    "name": "Meltdown",
+    "manaCost": "{X}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy each artifact with mana value X or less.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsArtifact",
+                                {
+                                    "type": "ManaValueAtMostDynamic",
+                                    "amount": "XValue"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "UNCOMMON",
+        "artist": "Donato Giancola",
+        "flavorText": "Catastrophes happened so often at the mana rig that the viashino language had a special word to describe them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e7a967a-35a0-4e5c-a32b-123a9cfdb79e.jpg?1783946327"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Monk Idealist
 {
     "name": "Monk Idealist",

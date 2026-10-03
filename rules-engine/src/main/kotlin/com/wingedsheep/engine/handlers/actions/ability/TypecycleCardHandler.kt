@@ -123,7 +123,9 @@ class TypecycleCardHandler(
             black = poolComponent.black,
             red = poolComponent.red,
             green = poolComponent.green,
-            colorless = poolComponent.colorless
+            colorless = poolComponent.colorless,
+            snowMana = poolComponent.snowMana,
+            snowColorless = poolComponent.snowColorless
         ).withSpendingColors(currentState, action.playerId)
 
         val partialResult = pool.payPartial(variant.cost)
@@ -146,7 +148,9 @@ class TypecycleCardHandler(
                     black = poolAfterPayment.black,
                     red = poolAfterPayment.red,
                     green = poolAfterPayment.green,
-                    colorless = poolAfterPayment.colorless
+                    colorless = poolAfterPayment.colorless,
+                    snowMana = poolAfterPayment.snowMana,
+                    snowColorless = poolAfterPayment.snowColorless
                 )
             )
         }

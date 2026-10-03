@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
 import com.wingedsheep.engine.handlers.effects.mana.ManaAbilityResolutionPipeline
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
@@ -240,7 +241,8 @@ class ColorChoiceContinuationResumer(
         }
 
         val finished = manaPipeline.finishTapBonuses(
-            dampening.state, sourceId, sourceCard, tapperId, producedMana, events
+            ManaProvenanceTracker.markSnowProduction(state, dampening.state, sourceId, tapperId),
+            sourceId, sourceCard, tapperId, producedMana, events
         )
         if (finished.outcome is Outcome.Paused) return finished
         return checkForMore(finished.newState, finished.events.toList())

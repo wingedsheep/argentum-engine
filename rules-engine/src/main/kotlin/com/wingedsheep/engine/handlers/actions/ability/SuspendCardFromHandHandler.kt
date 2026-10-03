@@ -131,7 +131,9 @@ class SuspendCardFromHandHandler(
                 black = poolComponent.black,
                 red = poolComponent.red,
                 green = poolComponent.green,
-                colorless = poolComponent.colorless
+                colorless = poolComponent.colorless,
+                snowMana = poolComponent.snowMana,
+                snowColorless = poolComponent.snowColorless
             ).withSpendingColors(state, action.playerId)
             val remainingCost = pool.payPartial(suspend.cost).remainingCost
             if (!remainingCost.isEmpty()) {
@@ -170,7 +172,9 @@ class SuspendCardFromHandHandler(
             black = poolComponent.black,
             red = poolComponent.red,
             green = poolComponent.green,
-            colorless = poolComponent.colorless
+            colorless = poolComponent.colorless,
+            snowMana = poolComponent.snowMana,
+            snowColorless = poolComponent.snowColorless
         ).withSpendingColors(state, action.playerId)
         val partialResult = pool.payPartial(suspend.cost)
         val poolAfterPayment = partialResult.newPool
@@ -192,7 +196,9 @@ class SuspendCardFromHandHandler(
                     black = poolAfterPayment.black,
                     red = poolAfterPayment.red,
                     green = poolAfterPayment.green,
-                    colorless = poolAfterPayment.colorless
+                    colorless = poolAfterPayment.colorless,
+                    snowMana = poolAfterPayment.snowMana,
+                    snowColorless = poolAfterPayment.snowColorless
                 )
             )
         }

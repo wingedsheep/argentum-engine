@@ -16347,8 +16347,13 @@
                             {
                                 "type": "Or",
                                 "predicates": [
-                                    "IsArtifact",
-                                    "IsEnchantment",
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsArtifact",
+                                            "IsEnchantment"
+                                        ]
+                                    },
                                     {
                                         "type": "And",
                                         "predicates": [

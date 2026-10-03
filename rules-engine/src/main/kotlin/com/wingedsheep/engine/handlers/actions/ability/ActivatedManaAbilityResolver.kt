@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
 import com.wingedsheep.engine.core.AbilityActivatedEvent
+import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
@@ -192,6 +193,7 @@ internal class ActivatedManaAbilityResolver(
             activatedAbility = ability,
         )
 
+        val stateBeforeEffect = currentState
         val effectResult = effectExecutorRegistry.execute(currentState, finalEffect, context).toExecutionResult()
         // A pause (e.g. choosing colors for "add X mana in any combination of colors") carries
         // the activation's own events out with it, so the settle boundary queues the triggers
@@ -210,7 +212,7 @@ internal class ActivatedManaAbilityResolver(
         val dampening = manaPipeline.applyLandManaDampening(
             stateBeforeActivation, currentState, cardComponent, action.playerId
         )
-        currentState = dampening.state
+        currentState = ManaProvenanceTracker.markSnowProduction(stateBeforeEffect, dampening.state, action.sourceId, action.playerId)
 
         // Emit ManaAddedEvent — if dampened, always emit 1 colorless
         val manaEvent: ManaAddedEvent? = if (dampening.dampened) {

@@ -5,6 +5,8 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.ManaSourceTag
 import com.wingedsheep.sdk.core.CardType
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Supertype
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -43,7 +45,37 @@ object ManaProvenanceTracker {
         } else {
             typeLine?.cardTypes ?: emptySet()
         }
-        return ManaSourceTag(sourceId, typeLine?.subtypes?.toSet() ?: emptySet(), cardTypes)
+        return ManaSourceTag(sourceId, typeLine?.subtypes?.toSet() ?: emptySet(), cardTypes, isSnowSource(state, sourceId))
+    }
+
+    /**
+     * Whether [sourceId] is a snow source (CR 205.4g), so its mana pays `{S}` (CR 107.4h). Reads the
+     * projected supertypes while the source is on the battlefield — a permanent made snow by an
+     * effect makes snow mana — and the base type line once it has left.
+     */
+    fun isSnowSource(state: GameState, sourceId: EntityId): Boolean =
+        if (state.projectedState.getTypes(sourceId).isNotEmpty()) state.projectedState.isSnow(sourceId)
+        else state.getEntity(sourceId)?.get<CardComponent>()?.typeLine?.supertypes?.contains(Supertype.SNOW) == true
+
+    /**
+     * Snow mana (CR 107.4h): when [sourceId] is a snow source, mark every unit its mana ability
+     * just added to [tapperId]'s pool — the per-kind increase from [stateBeforeEffect] to [state] —
+     * as snow, so a later `{S}` pip can be paid with it. Reads the pool delta rather than the
+     * effect, so every mana executor (fixed, chosen, dynamic, dampened) is covered by this one call.
+     */
+    fun markSnowProduction(
+        stateBeforeEffect: GameState,
+        state: GameState,
+        sourceId: EntityId?,
+        tapperId: EntityId,
+    ): GameState {
+        if (sourceId == null || !isSnowSource(state, sourceId)) return state
+        val before = stateBeforeEffect.getEntity(tapperId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
+        val after = state.getEntity(tapperId)?.get<ManaPoolComponent>() ?: return state
+        val marked = Color.entries.fold(after) { pool, color ->
+            pool.markSnow(color, after.getAmount(color) - before.getAmount(color))
+        }.markSnow(null, after.colorless - before.colorless)
+        return if (marked == after) state else state.updateEntity(tapperId) { it.with(marked) }
     }
 
     /**

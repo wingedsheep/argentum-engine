@@ -953,6 +953,7 @@ internal class AffectsFilterResolver(
         CardPredicate.IsToken -> container.has<com.wingedsheep.engine.state.components.identity.TokenComponent>()
         CardPredicate.IsNontoken -> !container.has<com.wingedsheep.engine.state.components.identity.TokenComponent>()
         CardPredicate.IsLegendary -> "LEGENDARY" in types
+        CardPredicate.IsSnow -> "SNOW" in types
         CardPredicate.IsNonlegendary -> "LEGENDARY" !in types
         CardPredicate.HasNonManaActivatedAbility -> card.hasNonManaActivatedAbility
         CardPredicate.HasActivatedAbility -> card.hasActivatedAbility

@@ -153,7 +153,7 @@ object ManaPaymentWindow {
                 val source = solution.sources.firstOrNull { it.entityId == sourceId }
                 val restriction = p.color?.let { source?.colorRestrictions?.get(it) } ?: source?.restriction
                 produced = if (restriction != null) produced.addRestricted(p.color, if (p.color != null) p.amount else p.colorless, restriction)
-                    else if (p.color != null) produced.add(p.color, p.amount) else produced.addColorless(p.colorless)
+                    else produced.addProduction(p)
             }
             // Bonus mana from mana auras / "whenever you tap for mana" riders isn't in
             // manaProduced; credit it or the cost comes up short (mirrors CostPaymentService.payMana).
@@ -181,7 +181,7 @@ object ManaPaymentWindow {
                     color != null -> produced.add(color, source.manaAmount)
                     source.producesColorless -> produced.addColorless(source.manaAmount)
                     else -> produced
-                }
+                }.let { if (actual.isSnow && restriction == null) it.markSnow(color, source.manaAmount) else it }
             }
         }
 
@@ -231,7 +231,7 @@ object ManaPaymentWindow {
         val pool = state.getEntity(playerId)
             ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
             ?: return cost
-        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless, restrictedMana = pool.restrictedMana).withSpendingColors(state, playerId)
+        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless, restrictedMana = pool.restrictedMana, snowMana = pool.snowMana, snowColorless = pool.snowColorless).withSpendingColors(state, playerId)
             .payPartial(cost, spellContext).remainingCost
     }
 
@@ -248,7 +248,11 @@ object ManaPaymentWindow {
                     red = pool.red + produced.red,
                     green = pool.green + produced.green,
                     colorless = pool.colorless + produced.colorless,
-                    restrictedMana = pool.restrictedMana + produced.restrictedMana
+                    restrictedMana = pool.restrictedMana + produced.restrictedMana,
+                    snowMana = (pool.snowMana.keys + produced.snowMana.keys).associateWith {
+                        (pool.snowMana[it] ?: 0) + (produced.snowMana[it] ?: 0)
+                    },
+                    snowColorless = pool.snowColorless + produced.snowColorless
                 )
             )
         }
@@ -359,7 +363,7 @@ object ManaPaymentWindow {
         val pool = state.getEntity(playerId)
             ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
             ?: return false
-        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless).withSpendingColors(state, playerId)
+        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless, snowMana = pool.snowMana, snowColorless = pool.snowColorless).withSpendingColors(state, playerId)
             .payPartial(cost)
             .remainingCost
             .isEmpty()
@@ -375,7 +379,7 @@ object ManaPaymentWindow {
         val pool = state.getEntity(decision.playerId)
             ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
             ?: return cost
-        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless).withSpendingColors(state, decision.playerId)
+        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless, snowMana = pool.snowMana, snowColorless = pool.snowColorless).withSpendingColors(state, decision.playerId)
             .payPartial(cost)
             .remainingCost
     }

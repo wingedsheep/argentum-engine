@@ -66,6 +66,12 @@ section; do not let SDK additions land without a corresponding doc update.
   and both colours; CR 107.4f; `ManaSymbol.HybridPhyrexian`), and monocolored hybrid / "twobrid" (`{2/B}` — two
   generic **or** one mana of the colour; mana value counts the generic side per CR 202.3f).
   Gurmag Nightwatch's `{2/B}{2/G}{2/U}` is the canonical twobrid example.
+  Snow (`{S}`, `ManaSymbol.Snow`, CR 107.4h) is a one-mana pip payable only with mana of any type
+  produced by a snow source; it works in mana costs and activation costs alike (Frostpeak Yeti's
+  `Costs.Mana("{1}{S}")`). Generic reductions never touch it, and a reduction *by* `{S}` reduces
+  generic (CR 118.7g). The floating pool tracks snow units per color (marked when a snow source's
+  mana ability resolves) and auto-tap reserves one snow source per `{S}`, cheapest first. "If {S}
+  was spent" reads `DynamicAmount.SnowManaSpent`.
 - `typeLine: String` — full type line including supertypes and subtypes. A `Legendary Instant` /
   `Legendary Sorcery` automatically gets the CR 205.4e casting restriction (can be cast only while
   its controller controls a legendary creature or legendary planeswalker) — the engine enforces this
@@ -5235,6 +5241,11 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   the land base (`GameObjectFilter.Land.nonbasic()`), or use the named constant `GameObjectFilter.NonbasicLand`
   / `TargetFilter.NonbasicLand` (Rocket Volley, Shivan Harvest, Encroaching Wastes). `TargetFilter.Land.nonbasic()`
   is the target-side passthrough.
+- `.snow()` — appends `CardPredicate.IsSnow`, the snow supertype (CR 205.4g): "snow land", "snow
+  permanent", "snow creature". Reads projected types on the battlefield (so a gained or lost snow
+  supertype counts) and the printed type line elsewhere. `GameObjectFilter.Land.snow().youControl()` —
+  Avalanche Caller; `Conditions.YouControl(GameObjectFilter.Permanent.snow(), excludeSelf = true)` for
+  "as long as you control another snow permanent" — Winter's Rest.
 - `GameObjectFilter.LandWithBasicLandType` — a land with one of the five basic land types
   (CR 205.3i): "a land card with a basic land type" (Boseiju, Who Endures). Deliberately *not*
   `GameObjectFilter.BasicLand` — a shockland (`Land — Forest Island`) or Dryad Arbor qualifies, and a
@@ -12927,6 +12938,11 @@ forbids `DynamicAmount.X` in card definitions.
   on the stack, the resolved permanent's `CastRecordComponent.manaSpentBySubtype` as it enters), so an
   enters-the-battlefield payoff reads it correctly. The subtype is snapshotted at production. 0 for a
   permanent that wasn't cast. See `SpellCastPredicate.PaidWithManaFromSubtype` for the boolean form.
+- `SnowManaSpent` — how much mana from snow sources was spent to cast the current spell: the "{S}
+  spent" of CR 107.4h, counting snow mana spent on *any* part of the cost, not only `{S}` pips.
+  Berg Strider's "**if {S} was spent to cast this spell**" is
+  `Conditions.CompareAmounts(DynamicAmounts.snowManaSpent(), GTE, 1)`. Same source-entity read as
+  `ManaSpentFromSubtype` (and a cast trigger's own payment snapshot); 0 for a permanent that wasn't cast.
 - `DevotionTo(colors, player = You)` — a player's **devotion** to one or more colors (CR 700.5):
   the number of mana symbols of those colors among the mana costs of permanents the player controls.
   One color = "devotion to red"; several = devotion to that combination ("white and black"), where a

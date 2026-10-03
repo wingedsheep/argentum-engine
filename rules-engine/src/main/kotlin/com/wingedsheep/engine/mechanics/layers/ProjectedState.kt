@@ -222,6 +222,9 @@ class ProjectedState(
 
     fun isLegendary(entityId: EntityId): Boolean = hasType(entityId, "LEGENDARY")
 
+    /** CR 205.4g — a snow permanent; its mana is the only mana that pays `{S}` (CR 107.4h). */
+    fun isSnow(entityId: EntityId): Boolean = hasType(entityId, "SNOW")
+
     fun getSubtypes(entityId: EntityId): Set<String> = projectedValues[entityId]?.subtypes ?: emptySet()
 
     /**

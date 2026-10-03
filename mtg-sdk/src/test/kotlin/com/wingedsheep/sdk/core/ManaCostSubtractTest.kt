@@ -126,6 +126,10 @@ class ManaCostSubtractTest : StringSpec({
     }
     "an X in the cost is never consumed by a colored reduction" { check("{X}{G}", "{G}", "{X}") }
 
+    // ── {S} ───────────────────────────────────────────────────────────────────────────────
+
+    "a reduction by {S} reduces generic, never a {S} pip (CR 118.7g)" { check("{1}{S}", "{S}", "{S}") }
+
     // ── Degenerate inputs ─────────────────────────────────────────────────────────────────
 
     "subtracting nothing is identity" { check("{2}{U}", "", "{2}{U}") }

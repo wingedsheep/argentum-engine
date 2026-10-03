@@ -312,7 +312,9 @@ data class CastRecordComponent(
      */
     val manaSpentBySubtype: Map<com.wingedsheep.sdk.core.Subtype, Int> = emptyMap(),
     /** Producing-source card type → count of mana carrying it spent to cast this permanent. */
-    val manaSpentByCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap()
+    val manaSpentByCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap(),
+    /** Mana from snow sources spent to cast this permanent ("{S} spent", CR 107.4h). */
+    val snowSpent: Int = 0
 ) : Component
 
 /**

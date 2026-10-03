@@ -51,6 +51,10 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
     val xCount: Int
         get() = symbols.count { it is ManaSymbol.X }
 
+    /** How many `{S}` pips this cost holds — each payable only with mana from a snow source (CR 107.4h). */
+    val snowCount: Int
+        get() = symbols.count { it is ManaSymbol.Snow }
+
     /**
      * The pips payable with 2 life instead of mana (CR 107.4f) — Phyrexian `{B/P}` and hybrid
      * Phyrexian `{R/G/P}` — in cost order.
@@ -210,6 +214,8 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
         val unmatched = mutableListOf<ManaSymbol>()
         for (symbol in reduction.symbols) {
             if (symbol is ManaSymbol.Generic || symbol is ManaSymbol.X) continue
+            // CR 118.7g: a reduction by {S} reduces generic, never a {S} pip in the cost.
+            if (symbol is ManaSymbol.Snow) { genericReduction += 1; continue }
             val index = remaining.indexOfFirst { it == symbol }
             if (index >= 0) remaining.removeAt(index) else unmatched.add(symbol)
         }
@@ -269,7 +275,7 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
      * relaxed tier of [subtract]. A hybrid pays either colored half (CR 118.7e) and a Phyrexian
      * pays its color (CR 118.7f); a colored pip pays a Phyrexian pip of the same color, since that
      * pip is a requirement for that color. Colorless and generic never relax — they spill to
-     * generic instead (CR 118.7a/d).
+     * generic instead (CR 118.7a/d), as does a snow `{S}` (CR 118.7g).
      */
     private fun paysFor(reductionSymbol: ManaSymbol, costSymbol: ManaSymbol): Boolean =
         when (reductionSymbol) {
@@ -383,7 +389,8 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
                 // monocolored hybrid's colored side ({B} in {2/B}) is 1 mana of any type.
                 is ManaSymbol.Colored, is ManaSymbol.Hybrid, is ManaSymbol.Phyrexian,
                 is ManaSymbol.HybridPhyrexian, is ManaSymbol.Colorless, is ManaSymbol.MonocolorHybrid -> addedGeneric++
-                is ManaSymbol.Generic, is ManaSymbol.X -> keptSymbols.add(symbol)
+                // {S} still demands snow mana — "any type" relaxes the type, not the source.
+                is ManaSymbol.Generic, is ManaSymbol.X, ManaSymbol.Snow -> keptSymbols.add(symbol)
             }
         }
         val existingGeneric = keptSymbols.filterIsInstance<ManaSymbol.Generic>().sumOf { it.amount }
@@ -433,6 +440,7 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
                     content == "G" -> ManaSymbol.G
                     content == "C" -> ManaSymbol.C
                     content == "X" -> ManaSymbol.X
+                    content == "S" -> ManaSymbol.S
                     content.toIntOrNull() != null -> ManaSymbol.generic(content.toInt())
                     // Monocolored hybrid ("twobrid") mana: {2/B}, {2/G}, etc. — pay generic OR
                     // one mana of the color. Must precede the two-color hybrid branch below, which

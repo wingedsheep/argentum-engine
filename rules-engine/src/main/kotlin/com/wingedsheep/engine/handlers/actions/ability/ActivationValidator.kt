@@ -654,6 +654,8 @@ internal class ActivationValidator(
             green = poolComponent.green,
             colorless = poolComponent.colorless,
             restrictedMana = poolComponent.restrictedMana,
+            snowMana = poolComponent.snowMana,
+            snowColorless = poolComponent.snowColorless
         ).withSpendingColors(state, playerId)
         return when (cost) {
             is AbilityCost.Atom -> {

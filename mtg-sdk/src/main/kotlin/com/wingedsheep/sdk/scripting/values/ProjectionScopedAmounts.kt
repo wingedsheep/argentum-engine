@@ -31,9 +31,9 @@ import kotlinx.serialization.json.encodeToJsonElement
  *    `context.targets`, so they are chosen-target reads despite naming no target type.
  *  - `VariableReference` reads the resolution pipeline's stored numbers, which the projector has no
  *    copy of.
- * And two that look unsafe but are not, so they are deliberately absent: `DistinctColorsManaSpent`
- * and `ManaSpentFromSubtype` read components stamped on the source entity, not the context, as do
- * the `CraftedMaterials*` amounts.
+ * And three that look unsafe but are not, so they are deliberately absent: `DistinctColorsManaSpent`,
+ * `ManaSpentFromSubtype` and `SnowManaSpent` read components stamped on the source entity, not the
+ * context, as do the `CraftedMaterials*` amounts.
  */
 private val CONTEXT_SCOPED_SERIAL_NAMES: Set<String> = setOf(
     // DynamicAmount

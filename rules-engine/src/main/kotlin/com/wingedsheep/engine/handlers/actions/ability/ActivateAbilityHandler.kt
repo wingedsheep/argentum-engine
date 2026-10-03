@@ -191,7 +191,9 @@ class ActivateAbilityHandler(
             if (mana != null && !ManaPaymentWindow.floatingManaCovers(state, action.playerId, mana)) {
                 val pool = state.getEntity(action.playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
                 val remaining = ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless,
-                    restrictedMana = pool.restrictedMana).withSpendingColors(state, action.playerId).payPartial(mana, paymentContext).remainingCost
+                    restrictedMana = pool.restrictedMana,
+                    snowMana = pool.snowMana,
+                    snowColorless = pool.snowColorless).withSpendingColors(state, action.playerId).payPartial(mana, paymentContext).remainingCost
                 val excluded = if (activation.effectiveCost.hasTapCost()) setOf(action.sourceId) else emptySet()
                 if (manaSolver.solve(state, action.playerId, remaining, excludeSources = excluded, spellContext = paymentContext) == null) {
                     return state.suspendForDecision(
@@ -538,7 +540,9 @@ class ActivateAbilityHandler(
                 colorless = repeatPoolComponent.colorless,
                 manaBySubtype = repeatPoolComponent.manaBySubtype,
                 manaBySource = repeatPoolComponent.manaBySource,
-                manaByCardType = repeatPoolComponent.manaByCardType
+                manaByCardType = repeatPoolComponent.manaByCardType,
+                snowMana = repeatPoolComponent.snowMana,
+                snowColorless = repeatPoolComponent.snowColorless
             ).withSpendingColors(currentState, action.playerId)
 
             // Auto-tap for mana cost
@@ -587,7 +591,9 @@ class ActivateAbilityHandler(
                     colorless = repeatPool.colorless,
                     manaBySubtype = repeatPoolAfterProvenance.manaBySubtype,
                     manaBySource = repeatPoolAfterProvenance.manaBySource,
-                    manaByCardType = repeatPoolAfterProvenance.manaByCardType
+                    manaByCardType = repeatPoolAfterProvenance.manaByCardType,
+                    snowMana = repeatPool.snowMana,
+                    snowColorless = repeatPool.snowColorless
                 ))
             }
 

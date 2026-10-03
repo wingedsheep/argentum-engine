@@ -28,7 +28,7 @@ sealed interface ManaSymbol {
             is Phyrexian -> setOf(color)
             is HybridPhyrexian -> setOf(color1, color2)
             is MonocolorHybrid -> setOf(color)
-            is Generic, Colorless, X -> emptySet()
+            is Generic, Colorless, X, Snow -> emptySet()
         }
 
     /**
@@ -59,6 +59,18 @@ sealed interface ManaSymbol {
     data object Colorless : ManaSymbol {
         override val cmc: Int = 1
         override fun toString(): String = "{C}"
+    }
+
+    /**
+     * The snow mana symbol `{S}` (CR 107.4h): a one-mana cost payable only with mana of any type
+     * produced by a snow source. Snow is neither a color nor a type of mana, so the symbol is no
+     * color, and effects that reduce generic mana don't reduce it. Paid by a snow unit in the
+     * floating pool or by tapping a snow source; "if {S} was spent" reads `DynamicAmount.SnowManaSpent`.
+     */
+    @Serializable
+    data object Snow : ManaSymbol {
+        override val cmc: Int = 1
+        override fun toString(): String = "{S}"
     }
 
     @Serializable
@@ -132,6 +144,7 @@ sealed interface ManaSymbol {
         val R = Colored(Color.RED)
         val G = Colored(Color.GREEN)
         val C = Colorless
+        val S = Snow
 
         fun generic(amount: Int): ManaSymbol = Generic(amount)
     }
