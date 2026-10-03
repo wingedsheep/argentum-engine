@@ -95,7 +95,13 @@ class ContinuationHandler(
         }
 
         val (_, stateAfterPop) = state.popContinuation()
-        return registry.resume(stateAfterPop, suspension.answer, suspension.question, response, ::checkForMoreContinuations)
+        val result = registry.resume(stateAfterPop, suspension.answer, suspension.question, response, ::checkForMoreContinuations)
+        // Casting resumers can finish a local picker without draining enclosing work.
+        // A mandatory play must then retry the card or resume the original resolution.
+        return if (result.outcome is Outcome.Done &&
+            result.state.continuationStack.any { it is FinishForcedPlayContinuation }) {
+            checkForMoreContinuations(result.state, result.events)
+        } else result
     }
 
     /**

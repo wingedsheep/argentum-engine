@@ -11,6 +11,7 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.emerge
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -81,8 +82,23 @@ class ForcedPlayTest : FunSpec({
             }
         }
     }
+    val emergeProbe = card("Forced Emerge Probe") {
+        manaCost = "{8}{G}"; typeLine = "Creature — Horror"; power = 5; toughness = 5
+        emerge("{4}{G}")
+    }
+    val costBody = card("Forced Cost Body") {
+        manaCost = "{4}"; typeLine = "Creature — Beast"; power = 2; toughness = 2
+    }
+    val splitProbe = card("Forced Split Second Probe") {
+        manaCost = "{0}"; typeLine = "Instant"; keywords(Keyword.SPLIT_SECOND)
+        spell { effect = Effects.GainLife(1) }
+    }
+    val manaGrant = card("Forced Entry Counters Grant") {
+        manaCost = "{0}"; typeLine = "Enchantment"
+        staticAbility { ability = com.wingedsheep.sdk.scripting.AdditionalManaForEntryCounters(GameObjectFilter.Creature) }
+    }
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(paid, instruction, modal, kicked, evoked, xspell, faceDown, later, controlInstruction))
+        it.registerCards(TestCards.all + listOf(paid, instruction, modal, kicked, evoked, xspell, faceDown, later, controlInstruction, emergeProbe, costBody, splitProbe, manaGrant))
         it.initMirrorMatch(Deck.of("Forest" to 40), skipMulligans = true)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -268,6 +284,68 @@ class ForcedPlayTest : FunSpec({
         d.submitYesNo(affected, false).error shouldBe null
         d.state.actorFor(affected) shouldBe affected
         d.state.resolutionControls shouldBe emptyList()
+    }
+
+    test("split second prevents both offering and executing an instructed cast") {
+        val d = driver(); val p = d.activePlayer!!
+        val lock = d.putCardInHand(p, splitProbe.name)
+        d.castSpell(p, lock).error shouldBe null
+        val chosen = d.putCardInHand(p, paid.name); d.giveMana(p, Color.GREEN, 1)
+        val before = d.state
+        force(d, chosen).pendingDecision shouldBe null
+        d.state shouldBe before
+        d.services.castSpellHandler.executeDuringResolution(d.state, CastSpell(p, chosen)).error shouldBe
+            com.wingedsheep.engine.mechanics.SplitSecond.REJECTION
+        (chosen in d.state.getHand(p)) shouldBe true
+    }
+
+    test("an instruction offers emerge when the printed cost is unaffordable") {
+        val d = driver(); val p = d.getOpponent(d.activePlayer!!)
+        val body = d.putCreatureOnBattlefield(p, costBody.name)
+        val chosen = d.putCardInHand(p, emergeProbe.name); d.giveMana(p, Color.GREEN, 1)
+        force(d, chosen, p).pendingDecision!!.playerId shouldBe p
+        val offer = d.services.legalActionEnumerator.enumerate(d.state, p).single { legal ->
+            (legal.action as? CastSpell)?.alternativeCostType == AlternativeCostType.EMERGE
+        }
+        val action = (offer.action as CastSpell).copy(additionalCostPayment =
+            com.wingedsheep.sdk.scripting.AdditionalCostPayment(sacrificedPermanents = listOf(body)))
+        play(d, action).error shouldBe null
+        (body in d.state.getGraveyard(p)) shouldBe true
+        (chosen in d.state.stack) shouldBe true
+        d.state.getEntity(p)!!.get<ManaPoolComponent>()!!.total shouldBe 0
+    }
+
+    test("instructed casts retain optional entry counter mana annotations") {
+        val d = driver(); val p = d.activePlayer!!
+        d.putPermanentOnBattlefield(p, manaGrant.name)
+        val chosen = d.putCardInHand(p, costBody.name); d.giveMana(p, Color.GREEN, 6)
+        force(d, chosen)
+        d.services.legalActionEnumerator.enumerate(d.state, p).single().maxAdditionalManaForCounters shouldBe 2
+    }
+
+    test("cancelling a nested modal picker returns to the mandatory instruction") {
+        val d = driver(); val p = d.activePlayer!!
+        val chosen = d.putCardInHand(p, modal.name); d.giveMana(p, Color.GREEN, 1)
+        force(d, chosen)
+        play(d, CastSpell(p, chosen)).error shouldBe null
+        (d.pendingDecision is ChooseOptionDecision) shouldBe true
+        d.submitDecision(p, CancelDecisionResponse(d.pendingDecision!!.id)).error shouldBe null
+        (d.pendingDecision is PlayCardDecision) shouldBe true
+        d.state.getEntity(p)!!.get<ManaPoolComponent>()!!.total shouldBe 1
+        play(d, CastSpell(p, chosen, chosenModes = listOf(0))).error shouldBe null
+        (chosen in d.state.stack) shouldBe true
+        d.state.continuationStack shouldBe emptyList()
+    }
+
+    test("answering a nested modal picker completes the forced play continuation") {
+        val d = driver(); val p = d.activePlayer!!
+        val chosen = d.putCardInHand(p, modal.name); d.giveMana(p, Color.GREEN, 1)
+        force(d, chosen)
+        play(d, CastSpell(p, chosen)).error shouldBe null
+        (d.pendingDecision is ChooseOptionDecision) shouldBe true
+        d.submitDecision(p, OptionChosenResponse(d.pendingDecision!!.id, 0)).error shouldBe null
+        (chosen in d.state.stack) shouldBe true
+        d.state.continuationStack shouldBe emptyList()
     }
 
 })

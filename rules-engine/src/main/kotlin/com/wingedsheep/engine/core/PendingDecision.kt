@@ -700,7 +700,7 @@ sealed interface DecisionResponse {
         is OrderedResponse -> copy(decisionId = newId)
         is PilesSplitResponse -> copy(decisionId = newId)
         is PlayCardResponse -> copy(decisionId = newId)
-    is OptionChosenResponse -> copy(decisionId = newId)
+        is OptionChosenResponse -> copy(decisionId = newId)
         is ReplacementChosenResponse -> copy(decisionId = newId)
         is BudgetModalResponse -> copy(decisionId = newId)
         is DamageAssignmentResponse -> copy(decisionId = newId)

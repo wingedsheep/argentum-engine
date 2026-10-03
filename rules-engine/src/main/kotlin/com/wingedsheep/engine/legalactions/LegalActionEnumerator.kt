@@ -87,25 +87,20 @@ class LegalActionEnumerator(
             mode = mode
         )
 
-        state.forcedPlayFor(playerId)?.let { forced ->
-            return enumerators.filter { it is CastSpellEnumerator || it is MorphCastEnumerator ||
-                it is AnnouncedCharacteristicsCastEnumerator || it is PlayLandEnumerator || it is CastFromZoneEnumerator }
-                .flatMap { it.enumerate(context) }.filter { offer ->
-                    when (val action = offer.action) {
-                        is com.wingedsheep.engine.core.CastSpell -> action.cardId == forced.card.entityId
-                        is com.wingedsheep.engine.core.PlayLand -> action.cardId == forced.card.entityId
-                        else -> false
-                    }
-                }
-        }
-
-        // Combat declaration steps are exclusive — only combat actions, no spells/abilities/pass
-        if (combatEnumerator.isCombatDeclarationStep(context)) {
+        val forced = state.forcedPlayFor(playerId)
+        // A resolving instruction can play its card during a combat declaration step.
+        if (forced == null && combatEnumerator.isCombatDeclarationStep(context)) {
             return combatEnumerator.enumerate(context)
         }
 
         // Normal priority: enumerate all action categories
-        val offers = enumerators.flatMap { it.enumerate(context) }
+        val offers = enumerators.flatMap { it.enumerate(context) }.filter { offer ->
+            forced == null || when (val action = offer.action) {
+                is com.wingedsheep.engine.core.CastSpell -> action.cardId == forced.card.entityId
+                is com.wingedsheep.engine.core.PlayLand -> action.cardId == forced.card.entityId
+                else -> false
+            }
+        }
         // Split second (CR 702.61): while a spell with it is on the stack, withhold every spell and
         // non-mana activated ability — the same verdict ActionProcessor.validate reaches.
         val permitted = if (SplitSecond.isLocked(state, cardRegistry)) {

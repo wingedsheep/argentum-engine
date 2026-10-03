@@ -4590,17 +4590,18 @@ object Effects {
         caster = caster,
     )
 
-    /**
-     * Play the (0..1) card stored under [from] immediately during resolution without paying its
-     * mana cost. Unlike [CastFromCollectionWithoutPayingCost], this also supports lands; playing
-     * one consumes a land play and is impossible when none remain.
-     */
+    /** Instruct [player] to play the first gathered card if able, paying its costs. */
     fun ForcePlay(from: String, player: EffectTarget = EffectTarget.Controller, storePlayedTo: String? = null): Effect =
         com.wingedsheep.sdk.scripting.effects.ForcePlayEffect(from, player, storePlayedTo)
 
     fun ForcePlay(from: CollectionSlot, player: EffectTarget = EffectTarget.Controller, storePlayedTo: CollectionSlot? = null): Effect =
         ForcePlay(from.key, player, storePlayedTo?.key)
 
+    /**
+     * Play the (0..1) card stored under [from] immediately during resolution without paying its
+     * mana cost. Unlike [CastFromCollectionWithoutPayingCost], this also supports lands; playing
+     * one consumes a land play and is impossible when none remain.
+     */
     fun PlayFromCollectionWithoutPayingCost(from: String): Effect =
         PlayFromCollectionWithoutPayingCostEffect(from = from)
 

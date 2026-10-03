@@ -54,7 +54,9 @@ class AIPlayer(
 ) {
     init {
         responder.forcedPlayPicker = { state, seat ->
-            strategist.chooseAction(state, simulator.getLegalActions(state, seat), seat).action
+            val plays = simulator.getLegalActions(state, seat)
+                .filter { it.affordable && !it.hasUnfillableTargetRequirement }
+            strategist.chooseAction(state, plays, seat).action
         }
     }
 

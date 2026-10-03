@@ -193,6 +193,9 @@ class CastSpellHandler(
     override fun validate(state: GameState, action: CastSpell): String? = castValidator.validate(state, action)
 
     fun executeDuringResolution(state: GameState, action: CastSpell): ExecutionResult {
+        if (com.wingedsheep.engine.mechanics.SplitSecond.isLocked(state, cardRegistry)) {
+            return ExecutionResult.error(state, com.wingedsheep.engine.mechanics.SplitSecond.REJECTION)
+        }
         val error = castValidator.validate(state, action, duringResolution = true)
         return if (error != null) ExecutionResult.error(state, error) else execute(state, action)
     }

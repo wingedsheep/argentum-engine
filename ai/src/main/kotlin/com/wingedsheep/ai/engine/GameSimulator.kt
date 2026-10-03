@@ -87,7 +87,11 @@ class GameSimulator(
      * [SimulationResult.StoppedAtLimit], never as successful completion.
      */
     fun simulate(state: GameState, action: GameAction): SimulationResult {
-        val result = processor.process(state, action).result
+        val play = state.pendingDecision as? PlayCardDecision
+        val submission = if (play != null && (action is CastSpell || action is PlayLand)) {
+            SubmitDecision(play.playerId, PlayCardResponse(play.id, action))
+        } else action
+        val result = processor.process(state, submission).result
         return resolveToQuietState(result)
     }
 
