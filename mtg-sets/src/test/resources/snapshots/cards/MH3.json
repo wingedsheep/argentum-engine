@@ -70,6 +70,105 @@
     ]
 }
 
+// Accursed Marauder
+{
+    "name": "Accursed Marauder",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie Warrior",
+    "oracleText": "When this creature enters, each player sacrifices a nontoken creature of their choice.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Accursed Marauder:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature nontoken",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "artist": "Paolo Parente",
+        "flavorText": "The Accursed are ever drawn to the Hekma, as though its presence provides a brief respite in their lives of eternal torment.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5da14d86-0780-4821-a799-96f64b377df4.jpg?1783911284"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Aerie Auxiliary
+{
+    "name": "Aerie Auxiliary",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Bird Soldier",
+    "oracleText": "Flying\nWhen this creature enters, support 2. (Put a +1/+1 counter on each of up to two other target creatures.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aerie Auxiliary:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, support 2 — put a +1/+1 counter on each of up to two other target creatures."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "artist": "Donato Giancola",
+        "flavorText": "The hordechief's ground tactics were unsurpassed. If only he'd thought to watch the skies.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e4c134b-a416-467e-a158-def84c92c6af.jpg?1783911304"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Aether Revolt
 {
     "name": "Aether Revolt",
@@ -1207,6 +1306,70 @@
     ]
 }
 
+// Breathe Your Last
+{
+    "name": "Breathe Your Last",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature or planeswalker. You gain 1 life for each of its colors.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "StoreNumber",
+                    "name": "number0",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "ColorCount"
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "number0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "artist": "Drew Baker",
+        "flavorText": "\"Bodies are so much more cooperative with the soul out of the way.\"\n—Liliana",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50eac71d-54f9-46c2-aa1d-c04c37e61f74.jpg?1783911284",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If the target is a colorless creature or planeswalker, you won't gain any life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Chthonian Nightmare
 {
     "name": "Chthonian Nightmare",
@@ -1360,6 +1523,57 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Consuming Corruption
+{
+    "name": "Consuming Corruption",
+    "manaCost": "{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Consuming Corruption deals X damage to target creature or planeswalker and you gain X life, where X is the number of Swamps you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Swamp"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Swamp"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "UNCOMMON",
+        "artist": "Andrew Theophilopoulos",
+        "flavorText": "While crossing the mire, Lort the Sneaky found the perfect shortcut to the end of his life.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/9068b3a4-9130-42d8-a26b-52010b7daa8b.jpg?1783911283"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2450,6 +2664,86 @@
     ]
 }
 
+// Eldrazi Ravager
+{
+    "name": "Eldrazi Ravager",
+    "manaCost": "{5}{C}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Annihilator 1 (Whenever this creature attacks, defending player sacrifices a permanent of their choice.)\nSacrifice two Eldrazi: Return this card from your graveyard to your hand.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "ANNIHILATOR"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "ANNIHILATOR",
+            "n": 1
+        },
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eldrazi Ravager:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "permanent",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    }
+                },
+                "descriptionOverride": "Annihilator 1"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Eldrazi Ravager:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "permanent Eldrazi",
+                        "count": 2
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "UNCOMMON",
+        "artist": "Martin de Diego Sádaba",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0ce97bb8-b0ee-4473-8c26-a3ec91abec97.jpg?1783911308",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Annihilator abilities trigger and resolve during the declare attackers step. The defending player sacrifices the required number of permanents of their choice before they declare blockers. Any creatures sacrificed this way won't be able to block."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a creature with annihilator is attacking a planeswalker, and the defending player chooses to sacrifice that planeswalker, the attacking creature continues to attack. It may be blocked. If it isn't blocked, it simply won't deal combat damage to anything."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Emissary of Soulfire
 {
     "name": "Emissary of Soulfire",
@@ -3130,6 +3424,74 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Gift of the Viper
+{
+    "name": "Gift of the Viper",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Put a +1/+1 counter, a reach counter, and a deathtouch counter on target creature. Untap it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "REACH",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "DEATHTOUCH",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "artist": "Madeline Boni",
+        "flavorText": "Ohran mages willingly endure the bites of vipers, believing the snakes bestow great power on those who survive their venom.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17fa0b62-d474-4dc7-9631-9d0a9d99e5e2.jpg?1783911260"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4157,6 +4519,69 @@
     ]
 }
 
+// Kudo, King Among Bears
+{
+    "name": "Kudo, King Among Bears",
+    "manaCost": "{G}{W}",
+    "typeLine": "Legendary Creature — Bear",
+    "oracleText": "Other creatures have base power and toughness 2/2 and are Bears in addition to their other types.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CompositeStaticAbility",
+                "abilities": [
+                    {
+                        "type": "SetBasePowerToughnessStatic",
+                        "power": 2,
+                        "toughness": 2,
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        }
+                    },
+                    {
+                        "type": "GrantSubtype",
+                        "subtype": "Bear",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "RARE",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "Born from the greatest granite boulder, nursed on the sweetest honey, crowned amid a raging blizzard.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/585e4e02-4873-4a65-a9ad-30cf0d5b6f79.jpg?1783911248",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Kudo, King Among Bears's ability overwrites any effects that set a creature's power and toughness. Any existing effects or counters that raise, lower, or switch a creature's power and/or toughness continue to apply to the creature's newly set power and toughness. Any power- or toughness-setting effects that start to apply after Kudo enters the battlefield will overwrite this effect."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If an effect causes a noncreature permanent to become a creature and sets its power and toughness as it does so, that creature will have that power and toughness; it won't be 2/2. Notably, crewing a Vehicle does not set its power and toughness, so a Vehicle will be a 2/2 creature once crewed."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to creatures may become lethal if Kudo enters or leaves the battlefield during that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Lethal Throwdown
 {
     "name": "Lethal Throwdown",
@@ -5154,6 +5579,67 @@
     ]
 }
 
+// Petrifying Meddler
+{
+    "name": "Petrifying Meddler",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nWhen you cast this spell, tap up to one target creature and put a stun counter on it. (If a permanent with a stun counter would become untapped, remove one from it instead.)\nReach",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEVOID",
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Petrifying Meddler:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "STUN",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0f2bdfd-1cbc-456e-aba7-4e0b6485cf8a.jpg?1783911290"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Phlage, Titan of Fire's Fury
 {
     "name": "Phlage, Titan of Fire's Fury",
@@ -5774,6 +6260,60 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Retrofitted Transmogrant
+{
+    "name": "Retrofitted Transmogrant",
+    "manaCost": "{B}",
+    "typeLine": "Artifact Creature — Zombie",
+    "oracleText": "{3}{B}: Return this card from your graveyard to the battlefield tapped with two +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Retrofitted Transmogrant:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "placement": "Tapped",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "artist": "Kekai Kotaki",
+        "flavorText": "\"Repair it again! I need reinforcements by tomorrow.\"\n—Ashnod",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/12c1b83d-710b-4680-855a-02ba1f72abf0.jpg?1783911276"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -6729,6 +7269,71 @@
             }
         ]
     }
+}
+
+// Snapping Voidcraw
+{
+    "name": "Snapping Voidcraw",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Eldrazi Turtle",
+    "oracleText": "Devoid (This card has no color.)\n{T}: Add {C}{C}.\n{3}{C}, {T}: Draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Snapping Voidcraw:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Snapping Voidcraw:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{C}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "artist": "Camille Alquier",
+        "flavorText": "Once considered a delicacy, turtle soup is no longer served in Nephalia's inns.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/9185371c-2dde-48ad-ab27-08be04b3c522.jpg?1783911245"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
 }
 
 // Sneaky Snacker
@@ -8563,6 +9168,93 @@
     ]
 }
 
+// Urza's Cave
+{
+    "name": "Urza's Cave",
+    "manaCost": "",
+    "typeLine": "Land — Urza's Cave",
+    "oracleText": "{T}: Add {C}.\n{3}, {T}, Sacrifice this land: Search your library for a land card, put it onto the battlefield tapped, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Urza's Cave:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Urza's Cave:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "land"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Poole",
+        "flavorText": "No matter how deep Urza delved, he couldn't escape his regrets.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/926916ed-2f22-4ba9-9427-194886ad6c1e.jpg?1783911233"
+    }
+}
+
 // Volatile Stormdrake
 {
     "name": "Volatile Stormdrake",
@@ -8880,6 +9572,87 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Wither and Bloom
+{
+    "name": "Wither and Bloom",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -3/-3 until end of turn.\n{1}{B}, Exile this card from your graveyard: Put a +1/+1 counter on target creature you control. Activate only as a sorcery.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "Fixed",
+                "amount": -3
+            },
+            "toughnessModifier": {
+                "type": "Fixed",
+                "amount": -3
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Wither and Bloom:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Richard Kane Ferguson",
+        "flavorText": "\"Death itself is nothing to cry about. The real tragedy is letting a death go to waste.\"\n—Dina, Witherbloom mage-student",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95c2390f-71f1-4e42-83da-d603ca86a8d0.jpg?1783911274"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

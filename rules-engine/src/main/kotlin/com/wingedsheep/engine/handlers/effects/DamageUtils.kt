@@ -143,6 +143,13 @@ data class PreventionShieldResult(
     val lifeGains: Map<EntityId, Int> = emptyMap(),
 )
 
+/** Partial prevention whose counter removal must be emitted even for unpreventable damage. */
+data class CounterPreventionResult(
+    val state: GameState,
+    val remainingDamage: Int,
+    val events: List<EngineGameEvent>,
+)
+
 /**
  * Utility functions for dealing damage, applying damage prevention/amplification/redirection,
  * tracking damage for triggers, and checking life gain prevention.
@@ -416,6 +423,13 @@ object DamageUtils {
                 gainEvent?.let { preventionLifeEvents.add(it) }
             }
         }
+        val perPoint = applyPerPointCounterPrevention(
+            newState, targetId, effectiveAmount, sourceId, isCombatDamage, zones.predicateEvaluator,
+            cantBePrevented = cantBePrevented
+        )
+        newState = perPoint.state
+        effectiveAmount = perPoint.remainingDamage
+        shieldCounterEvents = shieldCounterEvents + perPoint.events
         if (effectiveAmount <= 0) return EffectResult.success(newState, shieldCounterEvents + reflectEvents + preventionLifeEvents)
 
         val events = mutableListOf<EngineGameEvent>()
@@ -2088,6 +2102,67 @@ object DamageUtils {
         // with it" — resolve against it.
         PredicateContext(controllerId = hostControllerId, sourceId = hostId),
     )
+
+    /**
+     * Counter-bounded, per-point prevention. Floating shields run first so a paid prevention
+     * shield can preserve counters. Each matching ability is applied once to the remaining
+     * damage; unpreventable damage still spends counters (CR 615.12).
+     */
+    fun applyPerPointCounterPrevention(
+        state: GameState,
+        targetId: EntityId,
+        damageAmount: Int,
+        sourceId: EntityId?,
+        isCombatDamage: Boolean,
+        predicateEvaluator: PredicateEvaluator,
+        cantBePrevented: Boolean = false,
+    ): CounterPreventionResult {
+        // Most damage recipients have no counters. Avoid a battlefield replacement scan (and
+        // prevention-shutoff scan) entirely in that common path.
+        if (damageAmount <= 0 ||
+            state.getEntity(targetId)?.get<CountersComponent>()?.counters?.values?.any { it > 0 } != true ||
+            targetId !in state.getBattlefield()
+        ) {
+            return CounterPreventionResult(state, damageAmount, emptyList())
+        }
+        var newState = state
+        var remaining = damageAmount
+        val events = mutableListOf<EngineGameEvent>()
+        var preventionDisabled: Boolean? = if (cantBePrevented) true else null
+        for (active in com.wingedsheep.engine.replacement.ActiveReplacements.all(state)) {
+            val effect = active.effect as? com.wingedsheep.sdk.scripting.PreventDamagePerCounter ?: continue
+            if (remaining <= 0) break
+            val projected = newState.projectedState
+            if (!active.granted && (projected.hasLostAllAbilities(active.sourceId) || projected.isFaceDown(active.sourceId))) continue
+            val pattern = effect.appliesTo
+            val damageTypeMatches = when (pattern.damageType) {
+                DamageType.Any -> true
+                DamageType.Combat -> isCombatDamage
+                DamageType.NonCombat -> !isCombatDamage
+            }
+            if (!damageTypeMatches || !pattern.amount.matches(remaining)) continue
+            if (!damageSourceMatches(newState, projected, pattern.source, sourceId,
+                    active.sourceId, active.controllerId, targetId, predicateEvaluator)) continue
+            if (!damageRecipientMatches(newState, projected, pattern.recipient, targetId,
+                    active.sourceId, active.controllerId, predicateEvaluator)) continue
+            val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: continue
+            val present = counters.getCount(effect.counterType)
+            val removed = minOf(present, remaining)
+            if (removed <= 0) continue
+            newState = newState.updateEntity(targetId) { it.with(counters.withRemoved(effect.counterType, removed)) }
+            events.add(com.wingedsheep.engine.core.CountersRemovedEvent(
+                targetId, effect.counterType, removed,
+                if (projected.isFaceDown(targetId)) "Face-down permanent"
+                else newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Permanent",
+                remainingCount = present - removed, byDamagePrevention = true
+            ))
+            val disabled = preventionDisabled ?: isDamagePreventionDisabled(
+                state, targetId, sourceId, predicateEvaluator = predicateEvaluator
+            ).also { preventionDisabled = it }
+            if (!disabled) remaining -= removed
+        }
+        return CounterPreventionResult(newState, remaining, events)
+    }
 
     /**
      * Whether a [DoubleDamage]'s source filter is attachment-scoped — "damage *equipped/enchanted

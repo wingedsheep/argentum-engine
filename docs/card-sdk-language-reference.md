@@ -14440,6 +14440,22 @@ The priority groups are (CR 616.1a–f):
   damage to any target" must not fire for a counter paid as a cost or removed by an opponent. The
   payoff amount is `ContextPropertyKey.TRIGGER_COUNTERS_REMOVED_AMOUNT` (the removal mirror of
   `TRIGGER_COUNTERS_PLACED_AMOUNT`), i.e. the counters **removed** — not the damage that was prevented.
+- `PreventDamagePerCounter(counterType, appliesTo = DamageEvent(recipient = Self))` — for each
+  point of matching damage to a permanent, remove one counter of the named type from that permanent
+  and prevent that point (Rock Hydra). Prevents at most the number of counters actually removed;
+  damage above that count is dealt normally. With no counters it does nothing. Unpreventable damage
+  still removes up to that many counters, but the full damage is dealt. Honors projected recipient
+  and source filters, amount and combat/noncombat scope, ability loss, face-down state, and
+  duration-scoped replacement grants. Counter removal emits `CountersRemovedEvent` with
+  `byDamagePrevention = true`, including when damage cannot be prevented; face-down recipients use
+  their public label in counter events. Combat consumes counters
+  across assignments without intervening state-based actions; only surviving damage is marked,
+  triggers damage abilities, or supplies lifelink. Floating prevention shields apply first, so
+  Rock Hydra's paid one-point shields preserve its counters. Uses the existing damage pipeline's
+  fixed prevention ordering; choosing arbitrary orders among different prevention families remains
+  a shared limitation. Distinct from `PreventDamageByRemovingCounter` because its removal and
+  prevention are both bounded per point; Magma Pummeler prevents the whole event even when counters
+  run out. New Assay grammar coverage belongs to a measured grammar band.
 - `CapDamage(maxAmount, appliesTo)` — clamp matching damage to `maxAmount` (a *replacement* distinct
   from prevent/modify; applied after all amplification). Divine Presence: `CapDamage(3, DamageEvent(recipient = Any))`.
 - `SetMinimumDamage(minAmount = 0, dynamicMinimum?, appliesTo)` — the **floor** mirror of `CapDamage`:

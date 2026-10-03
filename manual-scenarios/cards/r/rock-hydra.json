@@ -1,0 +1,100 @@
+{
+  "player1Name": "Hydra",
+  "player2Name": "Damage",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Rock Hydra"
+    ],
+    "battlefield": [
+      {
+        "name": "Rock Hydra",
+        "counters": {
+          "PLUS_ONE_PLUS_ONE": 4
+        }
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Shock",
+      "Lightning Bolt"
+    ],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "BEGINNING",
+  "step": "UPKEEP",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "UPKEEP",
+    "DECLARE_BLOCKERS"
+  ],
+  "player2StopAtSteps": [
+    "UPKEEP"
+  ],
+  "player1OpponentStopAtSteps": [
+    "DECLARE_BLOCKERS"
+  ]
+}
