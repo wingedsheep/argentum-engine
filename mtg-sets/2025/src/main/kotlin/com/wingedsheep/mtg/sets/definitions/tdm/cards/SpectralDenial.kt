@@ -19,8 +19,8 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Counter target spell unless its controller pays {X}.
  *
  * The cost reduction counts only creatures the caster controls with power 4 or greater
- * (PermanentsYouControlMatching, the "you control" source), and the counter resolves against the spell's chosen X via the same XValue pump used by
- * Mindswipe.
+ * (PermanentsYouControlMatching, the "you control" source), and the counter resolves against
+ * the spell's chosen X via the same XValue pump used by Mindswipe.
  */
 val SpectralDenial = card("Spectral Denial") {
     manaCost = "{X}{U}"
