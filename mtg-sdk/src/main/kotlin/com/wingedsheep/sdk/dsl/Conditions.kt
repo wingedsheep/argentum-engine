@@ -1326,6 +1326,14 @@ object Conditions {
     val SourceIsRenowned: ConditionInterface =
         SourceMatches(com.wingedsheep.sdk.scripting.GameObjectFilter.Any.renowned())
 
+    /**
+     * If this permanent is monstrous (CR 701.37b) — "as long as this creature is monstrous"
+     * (Sinuous Vermin, Domesticated Hydra). Negated by [Not] it is the "if this permanent isn't
+     * monstrous" inside `Effects.Monstrosity`.
+     */
+    val SourceIsMonstrous: ConditionInterface =
+        SourceMatches(com.wingedsheep.sdk.scripting.GameObjectFilter.Any.monstrous())
+
     /** If this creature is soulbond-paired with another creature (CR 702.95b). */
     val SourceIsPaired: ConditionInterface =
         SourceMatches(com.wingedsheep.sdk.scripting.GameObjectFilter.Any.paired())

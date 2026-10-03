@@ -631,7 +631,12 @@ internal fun EmitCtx.staticAbilityExpr(ruleName: String, ruleNode: JsonObject): 
                 ?.get("args")
                 .asInt()
             if (modifier == null) return null
-            return call("CrewSaddleContribution", arg("modifier", "$modifier"))
+            val cost = if (ruleName.startsWith("Crews")) "CREW" else "SADDLE"
+            return call(
+                "CrewSaddleContribution",
+                arg("modifier", "$modifier"),
+                arg("costs", "setOf(CrewSaddleCost.$cost)")
+            )
         }
         "CantBlock" -> return call("CantBlock")
         "CantBeBlockedByMoreThanOne" -> return call("CantBeBlockedByMoreThan", arg("maxBlockers", "1"))

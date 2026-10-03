@@ -642,6 +642,13 @@ value class CounterType(val name: String) {
         /** Mire counter: a passive marker used by Cyclopean Tomb; no inherent rule. */
         val MIRE = CounterType("MIRE")
 
+        /**
+         * Collection counter (MH3 — Charitable Levy). A passive accumulate-then-threshold counter
+         * with no inherent rule, like [JUDGMENT]: the card's own cast trigger adds one and its
+         * threshold gate reads the tally back to sacrifice the enchantment.
+         */
+        val COLLECTION = CounterType("COLLECTION")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -757,6 +764,7 @@ value class CounterType(val name: String) {
             THEFT,
             TRAINING,
             MIRE,
+            COLLECTION,
         )
 
         /**

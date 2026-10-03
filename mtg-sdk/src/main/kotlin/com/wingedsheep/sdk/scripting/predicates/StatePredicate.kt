@@ -1164,6 +1164,26 @@ sealed interface StatePredicate {
     }
 
     // =============================================================================
+    // Monstrous (Entity)
+    // =============================================================================
+
+    /**
+     * Permanent that currently has the monstrous designation (CR 701.37b, Theros). Set by
+     * `Effects.BecomeMonstrous` as the last step of `Effects.Monstrosity(n)`.
+     *
+     * Component-backed (the engine's `MonstrousComponent`) for the same reason as [IsRenowned]:
+     * sticky until the permanent leaves the battlefield, neither an ability nor a copiable value.
+     *
+     * Read by monstrosity's own "if this permanent isn't monstrous" (negated) and by the payoffs
+     * "as long as this creature is monstrous" (Sinuous Vermin, Domesticated Hydra, Chillerpillar).
+     */
+    @SerialName("IsMonstrous")
+    @Serializable
+    data object IsMonstrous : Entity {
+        override val description: String = "monstrous"
+    }
+
+    // =============================================================================
     // Saddle (Entity)
     // =============================================================================
 

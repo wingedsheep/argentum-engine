@@ -45,6 +45,7 @@ import com.wingedsheep.sdk.scripting.effects.BecomePreparedEffect
 import com.wingedsheep.sdk.scripting.effects.UnprepareEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeSaddledEffect
 import com.wingedsheep.sdk.scripting.effects.AllowLoyaltyActivationsThisTurnEffect
+import com.wingedsheep.sdk.scripting.effects.BecomeMonstrousEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeRenownedEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeSolvedEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
@@ -6455,6 +6456,41 @@ object Effects {
      */
     fun BecomeRenowned(target: EffectTarget = EffectTarget.Self): Effect =
         BecomeRenownedEffect(target)
+
+    /**
+     * Target permanent becomes monstrous (CR 701.37b). Sticky and one-way; see
+     * [com.wingedsheep.sdk.scripting.effects.BecomeMonstrousEffect]. Cards write [Monstrosity].
+     */
+    fun BecomeMonstrous(target: EffectTarget = EffectTarget.Self): Effect =
+        BecomeMonstrousEffect(target)
+
+    /**
+     * "Monstrosity N" (CR 701.37a): "If this permanent isn't monstrous, put N +1/+1 counters on it
+     * and it becomes monstrous." The resolving effect of an activated ability such as
+     * `{3}{B}{B}: Monstrosity 3.` The monstrous check happens at resolution, so activating it
+     * again while the first activation is on the stack does nothing once the first resolves.
+     */
+    fun Monstrosity(n: Int): Effect = Monstrosity(DynamicAmount.Fixed(n))
+
+    /**
+     * "Monstrosity X" — [amount] is usually [DynamicAmount.XValue], the X paid in the ability's
+     * cost (Domesticated Hydra). A permanent still becomes monstrous when X is 0.
+     */
+    fun Monstrosity(amount: DynamicAmount): Effect {
+        val counters = (amount as? DynamicAmount.Fixed)?.amount
+        val counterText = when (counters) {
+            null -> "X +1/+1 counters"
+            1 -> "a +1/+1 counter"
+            else -> "$counters +1/+1 counters"
+        }
+        return If(
+            condition = Conditions.Not(Conditions.SourceIsMonstrous),
+            then = AddDynamicCounters(CounterType.PLUS_ONE_PLUS_ONE, amount, EffectTarget.Self) then
+                BecomeMonstrous(EffectTarget.Self),
+            descriptionOverride = "Monstrosity ${counters ?: "X"}. (If this creature isn't monstrous, " +
+                "put $counterText on it and it becomes monstrous.)",
+        )
+    }
 
     /**
      * [target] becomes prepared (Secrets of Strixhaven). The target must be a PREPARE-layout

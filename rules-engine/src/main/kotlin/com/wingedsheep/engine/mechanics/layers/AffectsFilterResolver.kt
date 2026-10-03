@@ -777,6 +777,10 @@ internal class AffectsFilterResolver(
         // (Goblin Glory Chaser) be a plain conditional static.
         StatePredicate.IsRenowned ->
             container.has<com.wingedsheep.engine.state.components.battlefield.RenownedComponent>()
+        // Monstrous (CR 701.37b) — component-backed like renowned, which is what lets "as long as
+        // this creature is monstrous, it has trample" (Domesticated Hydra) be a conditional static.
+        StatePredicate.IsMonstrous ->
+            container.has<com.wingedsheep.engine.state.components.battlefield.MonstrousComponent>()
         // Suspected (CR 701.60a) is itself a Layer-ability modification, so it is read off the
         // values accumulated so far in this projection pass — the same source `ProjectedState`
         // exposes as `isSuspected`, and the same self-referential caveat as IsModified above.

@@ -3700,7 +3700,8 @@
                         "NameEqualsChosenComponent"
                     ]
                 },
-                "nonManaAbilitiesOnly": true
+                "nonManaAbilitiesOnly": true,
+                "anyZone": true
             }
         ],
         "replacementEffects": [

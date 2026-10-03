@@ -560,6 +560,9 @@ class BeginningPhaseManager(
         // survives the turn boundary — so "untap each renowned creature" is answered exactly.
         StatePredicate.IsRenowned ->
             container.has<com.wingedsheep.engine.state.components.battlefield.RenownedComponent>()
+        // Monstrous (CR 701.37b) — sticky per-entity state like renowned.
+        StatePredicate.IsMonstrous ->
+            container.has<com.wingedsheep.engine.state.components.battlefield.MonstrousComponent>()
         is StatePredicate.Or -> predicate.predicates.any { matchesStatePredicateForUntap(state, projected, entityId, it, container) }
         is StatePredicate.And -> predicate.predicates.all { matchesStatePredicateForUntap(state, projected, entityId, it, container) }
         is StatePredicate.Not -> !matchesStatePredicateForUntap(state, projected, entityId, predicate.predicate, container)

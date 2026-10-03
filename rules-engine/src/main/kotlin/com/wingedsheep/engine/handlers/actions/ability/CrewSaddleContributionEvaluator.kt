@@ -7,6 +7,7 @@ import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CrewSaddleCharacteristic
 import com.wingedsheep.sdk.scripting.CrewSaddleContribution
+import com.wingedsheep.sdk.scripting.CrewSaddleCost
 
 /**
  * Reads the value a creature contributes toward a crew or saddle cost.
@@ -14,13 +15,15 @@ import com.wingedsheep.sdk.scripting.CrewSaddleContribution
  * Printed and granted instances are both considered: printed abilities cover ordinary cards, while
  * token text is stored in [GameState.grantedStaticAbilities]. Multiple instances do not stack; each
  * is an alternative way to determine the contribution, so the controller gets the greatest value.
+ * Only instances whose `costs` include [cost] apply — a crew-only boost leaves saddling untouched.
  */
 internal object CrewSaddleContributionEvaluator {
     fun evaluate(
         state: GameState,
         projected: ProjectedState,
         cardRegistry: CardRegistry,
-        creatureId: EntityId
+        creatureId: EntityId,
+        cost: CrewSaddleCost
     ): Int {
         val printed = state.getEntity(creatureId)
             ?.get<CardComponent>()
@@ -33,6 +36,7 @@ internal object CrewSaddleContributionEvaluator {
             .map { it.ability }
             .toList()
         val alternatives = (printed + granted).filterIsInstance<CrewSaddleContribution>()
+            .filter { cost in it.costs }
 
         val actualPower = projected.getPower(creatureId) ?: 0
         if (alternatives.isEmpty()) return actualPower

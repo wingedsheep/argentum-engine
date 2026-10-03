@@ -27,11 +27,12 @@ import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
  *       any card. Masking is automatic: the hand shows only to the controller.
  *   The pick is stored durably on the permanent's `CastChoicesComponent` under `ChoiceSlot.CARD_NAME`.
  * - "Activated abilities of sources with the chosen name can't be activated unless they're mana
- *   abilities" → [PreventActivatedAbilities]`(filter, nonManaAbilitiesOnly = true)`. "Sources" is any
- *   object, so the filter is the bare chosen-name predicate ([GameObjectFilter.namedFromChosenComponent],
+ *   abilities" → [PreventActivatedAbilities]`(filter, nonManaAbilitiesOnly = true, anyZone = true)`.
+ *   "Sources" is any object, so the filter is the bare chosen-name predicate ([GameObjectFilter.namedFromChosenComponent],
  *   → `CardPredicate.NameEqualsChosenComponent`), which keys off this permanent's durable choice and
  *   is static-projection / activation-legality safe. Mana abilities of the named source still work;
- *   the lock covers every battlefield source sharing the chosen name (matched via projected state).
+ *   the lock covers every source sharing the chosen name — permanents (matched via projected state)
+ *   and, through `anyZone`, cards in hand, graveyard or exile (cycling, channel, …).
  * - Same static shape as Petrified Hamlet ("choose a land card name"); this card only differs by the
  *   wider name pool and the look-at-hand clause.
  */
@@ -56,6 +57,7 @@ val SorcerousSpyglass = card("Sorcerous Spyglass") {
         ability = PreventActivatedAbilities(
             filter = GameObjectFilter.Any.namedFromChosenComponent(),
             nonManaAbilitiesOnly = true,
+            anyZone = true,
         )
     }
 

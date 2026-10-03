@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CrewSaddleCost
 import com.wingedsheep.sdk.scripting.KeywordAbility
 
 /**
@@ -49,6 +50,10 @@ class SaddleEnumerator : ActionEnumerator {
                 .filterIsInstance<KeywordAbility.Numeric>()
                 .firstOrNull { it.keyword == Keyword.SADDLE } ?: continue
 
+            // Saddle is an activated ability (CR 702.171a) — mirror `SaddleMountHandler`'s
+            // activation-prohibition check so it's never offered and then refused.
+            if (context.castPermissionUtils.isActivationForbidden(state, entityId, playerId)) continue
+
             // Find all other untapped creatures the player controls that can saddle this mount.
             val validSaddleCreatures = mutableListOf<TapForPowerCreatureData>()
             var totalAvailablePower = 0
@@ -62,7 +67,7 @@ class SaddleEnumerator : ActionEnumerator {
                 // 2 greater" must read that way here or the client's progress bar would refuse a
                 // saddle the engine accepts.
                 val power = CrewSaddleContributionEvaluator.evaluate(
-                    state, projected, context.cardRegistry, creatureId
+                    state, projected, context.cardRegistry, creatureId, CrewSaddleCost.SADDLE
                 )
                 val creatureName = creatureContainer.get<CardComponent>()?.name ?: "Unknown"
                 val canAttack = canAttackCache.getOrPut(creatureId) {

@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.CrewSaddleCost
 import com.wingedsheep.sdk.scripting.effects.BecomeSaddledEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
@@ -36,6 +37,7 @@ import kotlin.reflect.KClass
 class SaddleMountHandler(
     private val cardRegistry: CardRegistry,
     private val stackResolver: StackResolver,
+    private val castPermissionUtils: com.wingedsheep.engine.legalactions.utils.CastPermissionUtils? = null,
 ) : ActionHandler<SaddleMount> {
     override val actionType: KClass<SaddleMount> = SaddleMount::class
 
@@ -64,6 +66,12 @@ class SaddleMountHandler(
         val projected = state.projectedState
         if (projected.getController(action.mountId) != action.playerId) {
             return "You don't control this permanent"
+        }
+
+        // Saddle is an activated ability of the Mount (CR 702.171a), so a "players can't activate
+        // abilities" static (Grand Abolisher) or a name lock (Pithing Needle) forbids it.
+        if (castPermissionUtils?.isActivationForbidden(state, action.mountId, action.playerId) == true) {
+            return "An effect prevents you from activating that ability right now"
         }
 
         val cardDef = cardRegistry.getCard(mountCard.cardDefinitionId)
@@ -107,7 +115,8 @@ class SaddleMountHandler(
                 state = state,
                 projected = projected,
                 cardRegistry = cardRegistry,
-                creatureId = creatureId
+                creatureId = creatureId,
+                cost = CrewSaddleCost.SADDLE
             )
         }
 
@@ -185,6 +194,7 @@ class SaddleMountHandler(
             return SaddleMountHandler(
                 services.cardRegistry,
                 services.stackResolver,
+                services.castPermissionUtils,
             )
         }
     }

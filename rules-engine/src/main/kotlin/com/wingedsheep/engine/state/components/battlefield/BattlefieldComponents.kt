@@ -179,6 +179,19 @@ data object SolvedComponent : Component
 data object RenownedComponent : Component
 
 /**
+ * Marks a permanent as monstrous (CR 701.37b) — the designation a permanent gains when a
+ * monstrosity ability resolves on it. Read via
+ * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsMonstrous] to gate monstrosity's own
+ * "if this permanent isn't monstrous" and the "as long as this creature is monstrous" payoffs.
+ *
+ * Sticky like [RenownedComponent]: survives cleanup and stays until the permanent leaves the
+ * battlefield (stripped in `ZoneMovementUtils.stripBattlefieldComponents`). Not a copiable value,
+ * so a copy of a monstrous creature enters not monstrous.
+ */
+@Serializable
+data object MonstrousComponent : Component
+
+/**
  * Records the distinct creatures that have crewed (CR 702.122) or saddled (CR 702.171) this
  * permanent during the current turn — the creatures tapped to pay a Crew or Saddle cost on it.
  * A permanent is only ever a Vehicle (crew) or a Mount (saddle), so one set covers both keywords.

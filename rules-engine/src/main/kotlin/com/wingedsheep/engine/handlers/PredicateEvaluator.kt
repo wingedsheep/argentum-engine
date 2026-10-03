@@ -29,6 +29,7 @@ import com.wingedsheep.engine.state.components.battlefield.PreparedComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.SaddledComponent
 import com.wingedsheep.engine.state.components.battlefield.SolvedComponent
+import com.wingedsheep.engine.state.components.battlefield.MonstrousComponent
 import com.wingedsheep.engine.state.components.battlefield.RenownedComponent
 import com.wingedsheep.engine.state.components.combat.AttackedThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisTurnComponent
@@ -2305,6 +2306,9 @@ class PredicateEvaluator(
             // Renowned marker — set by BecomeRenownedExecutor when a renown trigger resolves
             // (CR 702.112b). Sticky until the permanent leaves the battlefield.
             StatePredicate.IsRenowned -> container.has<RenownedComponent>()
+            // Monstrous marker — set by BecomeMonstrousExecutor when a monstrosity ability
+            // resolves (CR 701.37b). Sticky until the permanent leaves the battlefield.
+            StatePredicate.IsMonstrous -> container.has<MonstrousComponent>()
 
             // Suspected designation (CR 701.60a) — a Layer-ability floating effect, so the answer
             // lives in the projection rather than on a component. Unlike saddled it never expires.

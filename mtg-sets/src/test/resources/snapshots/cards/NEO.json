@@ -1115,6 +1115,39 @@
     "colorIdentityOverride": []
 }
 
+// Hotshot Mechanic
+{
+    "name": "Hotshot Mechanic",
+    "manaCost": "{W}",
+    "typeLine": "Artifact Creature — Fox Pilot",
+    "oracleText": "This creature crews Vehicles as though its power were 2 greater.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CrewSaddleContribution",
+                "modifier": 2,
+                "costs": [
+                    "CREW"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Julio Reyna",
+        "flavorText": "\"If your mech is factory standard, you might as well be walking.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a70e8fa-b71d-441e-b049-dacb09a9a7af.jpg?1783923922"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Imperial Oath
 {
     "name": "Imperial Oath",

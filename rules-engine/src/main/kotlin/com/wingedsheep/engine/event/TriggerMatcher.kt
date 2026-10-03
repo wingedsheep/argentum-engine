@@ -452,6 +452,22 @@ class TriggerMatcher(
                     )
                 } else true
             }
+            is EventPattern.BecameMonstrousEvent -> {
+                // A monstrous permanent stays on the battlefield (CR 701.37b), so this matches in
+                // the regular battlefield trigger loop, like renowned. SELF binding must match the
+                // permanent that became monstrous (Ember Swallower).
+                if (event !is com.wingedsheep.engine.core.BecameMonstrousEvent) return false
+                if (binding == TriggerBinding.SELF && event.entityId != sourceId) return false
+                if (trigger.filter != GameObjectFilter.Any) {
+                    val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+                        controllerId = controllerId,
+                        sourceId = sourceId
+                    )
+                    predicateEvaluator.matches(
+                        state, state.projectedState, event.entityId, trigger.filter, predicateContext
+                    )
+                } else true
+            }
             is EventPattern.CrewsEvent ->
                 event is com.wingedsheep.engine.core.CrewOrSaddleContributionEvent &&
                     event.kind == com.wingedsheep.engine.core.CrewOrSaddleKind.CREW &&
@@ -2297,6 +2313,10 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsRenowned ->
             state.getEntity(entityId)
                 ?.has<com.wingedsheep.engine.state.components.battlefield.RenownedComponent>() == true
+        // Monstrous (CR 701.37b) — plain per-entity state, evaluable here like renowned.
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsMonstrous ->
+            state.getEntity(entityId)
+                ?.has<com.wingedsheep.engine.state.components.battlefield.MonstrousComponent>() == true
         // Soulbond pairing (CR 702.95b) — plain per-entity state, evaluable here, so a
         // "whenever a paired creature …" trigger filter gates correctly instead of failing open.
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsPaired ->

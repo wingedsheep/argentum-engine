@@ -527,6 +527,7 @@ internal class CardProjector(
             isSuspected = frame.projectedValues?.isSuspected == true,
             isSolved = container.has<SolvedComponent>(),
             isRenowned = container.has<RenownedComponent>(),
+            isMonstrous = container.has<MonstrousComponent>(),
             saddleRequirement = zoneStatus.saddleRequirement,
             isSaddled = zoneStatus.isSaddled,
             isPlotted = zoneStatus.isPlotted,

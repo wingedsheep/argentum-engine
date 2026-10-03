@@ -22,21 +22,35 @@ import kotlinx.serialization.Serializable
  * A Pilot that "saddles Mounts and crews Vehicles as though its power were 2 greater" uses
  * `CrewSaddleContribution(modifier = 2)`. A creature that uses its toughness rather than its power
  * uses `CrewSaddleContribution(characteristic = CrewSaddleCharacteristic.TOUGHNESS)`.
+ *
+ * [costs] names which of the two costs the ability changes. A creature that only "crews Vehicles as
+ * though its power were 2 greater" (Giant Ox, Hotshot Mechanic) uses
+ * `CrewSaddleContribution(modifier = 2, costs = setOf(CrewSaddleCost.CREW))` and contributes its
+ * plain power when saddling.
  */
 @SerialName("CrewSaddleContribution")
 @Serializable
 data class CrewSaddleContribution(
     val characteristic: CrewSaddleCharacteristic = CrewSaddleCharacteristic.POWER,
-    val modifier: Int = 0
+    val modifier: Int = 0,
+    val costs: Set<CrewSaddleCost> = CrewSaddleCost.entries.toSet()
 ) : StaticAbility {
-    override val description: String = when {
-        characteristic == CrewSaddleCharacteristic.TOUGHNESS && modifier == 0 ->
-            "This creature saddles Mounts and crews Vehicles using its toughness rather than its power"
-        characteristic == CrewSaddleCharacteristic.POWER && modifier > 0 ->
-            "This creature saddles Mounts and crews Vehicles as though its power were $modifier greater"
-        else ->
-            "This creature's crew and saddle contribution uses its ${characteristic.name.lowercase()} with a ${modifier.signed()} modifier"
-    }
+    override val description: String
+        get() {
+            val verbs = when (costs) {
+                setOf(CrewSaddleCost.CREW) -> "crews Vehicles"
+                setOf(CrewSaddleCost.SADDLE) -> "saddles Mounts"
+                else -> "saddles Mounts and crews Vehicles"
+            }
+            return when {
+                characteristic == CrewSaddleCharacteristic.TOUGHNESS && modifier == 0 ->
+                    "This creature $verbs using its toughness rather than its power"
+                characteristic == CrewSaddleCharacteristic.POWER && modifier > 0 ->
+                    "This creature $verbs as though its power were $modifier greater"
+                else ->
+                    "This creature's contribution when it $verbs uses its ${characteristic.name.lowercase()} with a ${modifier.signed()} modifier"
+            }
+        }
 
     private fun Int.signed(): String = if (this >= 0) "+$this" else toString()
 }
@@ -45,6 +59,13 @@ data class CrewSaddleContribution(
 enum class CrewSaddleCharacteristic {
     POWER,
     TOUGHNESS
+}
+
+/** The tap-creatures costs a [CrewSaddleContribution] can change: Crew (CR 702.122) and Saddle (CR 702.171). */
+@Serializable
+enum class CrewSaddleCost {
+    CREW,
+    SADDLE
 }
 
 /**
@@ -841,12 +862,19 @@ data object PreventCycling : StaticAbility {
  * @property filter Which permanents' activated abilities are locked (matched via projected state).
  * @property nonManaAbilitiesOnly When true, mana abilities are exempt; only non-mana abilities
  *   are blocked. Defaults to false (block everything, the Cursed Totem shape).
+ * @property anyZone When true, the lock also reaches abilities of cards outside the battlefield —
+ *   cycling and typecycling, channel and other hand abilities, graveyard and command-zone
+ *   abilities — matched against the card in its zone. This is the "sources with the chosen name"
+ *   wording (Pithing Needle, Sorcerous Spyglass, Disruptor Flute): a source is any object, not
+ *   only a permanent. Off (the default), the filter speaks of permanents only — Cursed Totem's
+ *   "activated abilities of creatures" never stops a creature card cycling from hand.
  */
 @SerialName("PreventActivatedAbilities")
 @Serializable
 data class PreventActivatedAbilities(
     val filter: GameObjectFilter,
-    val nonManaAbilitiesOnly: Boolean = false
+    val nonManaAbilitiesOnly: Boolean = false,
+    val anyZone: Boolean = false
 ) : StaticAbility {
     override val description: String =
         if (nonManaAbilitiesOnly)
