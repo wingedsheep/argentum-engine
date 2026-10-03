@@ -4070,7 +4070,10 @@
                             {
                                 "type": "RemoveCounters",
                                 "counterType": "PLUS_ONE_PLUS_ONE",
-                                "count": 1,
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
                                 "target": {
                                     "type": "PipelineTarget",
                                     "collectionName": "selected1"
@@ -4079,7 +4082,10 @@
                             {
                                 "type": "RemoveCounters",
                                 "counterType": "PLUS_ONE_PLUS_ONE",
-                                "count": 1,
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
                                 "target": {
                                     "type": "PipelineTarget",
                                     "collectionName": "selected1",
@@ -16323,7 +16329,10 @@
                                 "effect": {
                                     "type": "RemoveCounters",
                                     "counterType": "CHARGE",
-                                    "count": 10,
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 10
+                                    },
                                     "target": {
                                         "type": "BoundVariable",
                                         "name": "t0"

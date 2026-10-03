@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Suspend (CR 702.62) as a composable, content-agnostic primitive.
@@ -63,7 +64,7 @@ object Suspend {
         interveningIf = hasTimeCounter,
         effect = CompositeEffect(
             listOf(
-                RemoveCountersEffect(CounterType.TIME, 1, EffectTarget.Self),
+                RemoveCountersEffect(CounterType.TIME, DynamicAmount.Fixed(1), EffectTarget.Self),
                 Effects.If(
                     condition = NotCondition(hasTimeCounter),
                     // CR 702.62f — "they may play it without paying its mana cost." The optional

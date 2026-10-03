@@ -2929,7 +2929,10 @@
                                     {
                                         "type": "RemoveCounters",
                                         "counterType": "TIME",
-                                        "count": 7,
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 7
+                                        },
                                         "target": "Self"
                                     },
                                     {
@@ -12917,7 +12920,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "TIME",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "interveningIf": {
@@ -13191,7 +13197,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "TIME",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "interveningIf": {
@@ -13342,7 +13351,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "TIME",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "interveningIf": {
@@ -13554,7 +13566,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "TIME",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "interveningIf": {
@@ -13686,7 +13701,10 @@
                 "effect": {
                     "type": "RemoveCounters",
                     "counterType": "TIME",
-                    "count": 1,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
                     "target": "Self"
                 },
                 "interveningIf": {

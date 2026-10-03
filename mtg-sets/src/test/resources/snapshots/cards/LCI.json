@@ -2229,7 +2229,10 @@
                                     {
                                         "type": "RemoveCounters",
                                         "counterType": "BORE",
-                                        "count": 3,
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        },
                                         "target": "Self"
                                     },
                                     "Transform"
@@ -12581,7 +12584,10 @@
                             {
                                 "type": "RemoveCounters",
                                 "counterType": "TIME",
-                                "count": 1,
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
                                 "target": "Self"
                             }
                         ]

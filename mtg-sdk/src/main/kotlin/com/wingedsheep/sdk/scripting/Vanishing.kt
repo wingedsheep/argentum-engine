@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Vanishing N (CR 702.62) as pure data — the three abilities every vanishing permanent has and
@@ -66,7 +67,7 @@ object Vanishing {
         binding = TriggerBinding.SELF,
         activeZones = setOf(Zone.BATTLEFIELD),
         interveningIf = hasTimeCounter,
-        effect = RemoveCountersEffect(CounterType.TIME, 1, EffectTarget.Self),
+        effect = RemoveCountersEffect(CounterType.TIME, DynamicAmount.Fixed(1), EffectTarget.Self),
         descriptionOverride = "At the beginning of your upkeep, remove a time counter from " +
             "this permanent.",
     )
