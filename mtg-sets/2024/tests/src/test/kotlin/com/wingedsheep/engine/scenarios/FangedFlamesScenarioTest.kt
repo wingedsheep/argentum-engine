@@ -36,13 +36,14 @@ class FangedFlamesScenarioTest : ScenarioTestBase() {
                 game.isInGraveyard(2, "Hill Giant") shouldBe false
             }
 
-            test("a creature that survives the damage but dies later this turn is still exiled") {
+            test("a creature that survives the damage but is destroyed later this turn is still exiled") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardOnBattlefield(2, "Enormous Baloth") // 7/7
                     .withCardInHand(1, "Fanged Flames")
-                    .withCardInHand(1, "Fanged Flames")
-                    .withLandsOnBattlefield(1, "Mountain", 4)
+                    .withCardInHand(1, "Murder")
+                    .withLandsOnBattlefield(1, "Mountain", 2)
+                    .withLandsOnBattlefield(1, "Swamp", 3)
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
@@ -52,10 +53,10 @@ class FangedFlamesScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
                 withClue("4 damage doesn't kill a 7/7") { game.isOnBattlefield("Enormous Baloth") shouldBe true }
 
-                game.castSpell(1, "Fanged Flames", baloth).error shouldBe null
+                game.castSpell(1, "Murder", baloth).error shouldBe null
                 game.resolveStack()
 
-                withClue("8 total damage this turn kills it, and it is exiled instead") {
+                withClue("destroyed by Murder the same turn, it is exiled instead") {
                     game.isInExile(2, "Enormous Baloth") shouldBe true
                     game.isInGraveyard(2, "Enormous Baloth") shouldBe false
                 }

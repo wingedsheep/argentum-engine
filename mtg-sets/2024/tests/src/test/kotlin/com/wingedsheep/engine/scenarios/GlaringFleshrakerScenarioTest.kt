@@ -57,6 +57,23 @@ class GlaringFleshrakerScenarioTest : ScenarioTestBase() {
                 game.getLifeTotal(2) shouldBe 20
             }
 
+            test("its own entry does not trigger it — the creature must be another") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardInHand(1, "Glaring Fleshraker")
+                    .withLandsOnBattlefield(1, "Rogue's Passage", 3)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Glaring Fleshraker").error shouldBe null
+                game.resolveStack()
+
+                game.findPermanent("Glaring Fleshraker") shouldNotBe null
+                game.findPermanents("Eldrazi Spawn") shouldHaveSize 0
+                game.getLifeTotal(2) shouldBe 20
+            }
+
             test("an opponent's colorless creature entering does not trigger") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")

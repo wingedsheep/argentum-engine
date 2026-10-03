@@ -624,12 +624,26 @@ object ZoneMovementUtils {
             return applyUmbraArmor(zones, state, entityId, auraId, canRegenerate)
         }
 
-        // Delegate to ZoneTransitionService
+        // "If it would die this turn, exile it instead" (Fanged Flames) covers destruction by effect too.
+        val exiledState = consumeExileOnDeath(state, entityId)
         val result = zones.moveToZone(
-            state, entityId, Zone.GRAVEYARD,
+            exiledState ?: state, entityId, if (exiledState != null) Zone.EXILE else Zone.GRAVEYARD,
             ZoneEntryOptions(lookBackGrants = lookBackGrants)
         )
         return EffectResult.success(result.state, result.events)
+    }
+
+    /**
+     * If [entityId] carries an ExileOnDeath mark, returns the state with that mark consumed — the
+     * caller then moves the permanent to exile instead of the graveyard. Null when there is no mark.
+     */
+    fun consumeExileOnDeath(state: GameState, entityId: EntityId): GameState? {
+        val index = state.floatingEffects.indexOfFirst { effect ->
+            effect.effect.modification is com.wingedsheep.engine.mechanics.layers.SerializableModification.ExileOnDeath &&
+                entityId in effect.effect.affectedEntities
+        }
+        if (index == -1) return null
+        return state.copy(floatingEffects = state.floatingEffects.toMutableList().apply { removeAt(index) })
     }
 
     /**
