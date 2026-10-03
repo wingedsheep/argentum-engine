@@ -85,6 +85,26 @@ class UginsBindingScenarioTest : ScenarioTestBase() {
                 game.findPermanent("Ornithopter") shouldNotBe null
             }
 
+            test("a colored spell with mana value 7 does not trigger it") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardInGraveyard(1, "Ugin's Binding")
+                    .withCardInHand(1, "Whiptail Wurm")
+                    .withLandsOnBattlefield(1, "Wastes", 6)
+                    .withLandsOnBattlefield(1, "Forest", 1)
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Whiptail Wurm").error shouldBe null
+                game.resolveStack()
+
+                game.getPendingDecision() shouldBe null
+                game.isInGraveyard(1, "Ugin's Binding") shouldBe true
+                game.findPermanent("Grizzly Bears") shouldNotBe null
+            }
+
             test("a colorless spell with mana value below 7 does not trigger it") {
                 val game = graveyardSetup(bigSpell = "Ornithopter", lands = 0)
 

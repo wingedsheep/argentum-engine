@@ -16,8 +16,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  * Whenever you sacrifice a nontoken permanent, create a 0/1 colorless Eldrazi Spawn creature token
  * with "Sacrifice this token: Add {C}."
  *
- * "a nontoken permanent" is the per-permanent template (CR 603.2c) with the ANY binding, so the
- * Precursor sacrificing itself also triggers.
+ * "a nontoken permanent" is the per-permanent template (CR 603.2c) with the ANY binding.
  */
 val SkitteringPrecursor = card("Skittering Precursor") {
     manaCost = "{2}{R}"
