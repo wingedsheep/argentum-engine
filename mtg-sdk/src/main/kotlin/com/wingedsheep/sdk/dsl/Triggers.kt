@@ -998,6 +998,13 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     /** "forages" (CR 701.59a) — never for a declined forage. */
     fun forages(): TriggerSpec = spec(ForagedEvent(player))
 
+    /**
+     * "investigates [for the first time each turn]" (CR 701.16a) — once per investigate, never for
+     * a plain "create a Clue token".
+     */
+    fun investigates(firstTimeEachTurn: Boolean = false): TriggerSpec =
+        spec(InvestigatedEvent(player, firstTimeEachTurn = firstTimeEachTurn))
+
     /** "solves a Case" (CR 719.3a) — once per Case, ever. */
     fun solvesACase(): TriggerSpec = spec(CaseSolvedEvent(player))
 

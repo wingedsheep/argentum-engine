@@ -1360,6 +1360,15 @@ data class OpponentCreaturesExiledThisTurnComponent(
 ) : Component
 
 /**
+ * Marks that this player has investigated (CR 701.16a) during the current turn. Set by the
+ * `InvestigateExecutor` after each investigate and cleared at end of turn by CleanupPhaseManager;
+ * read to compute `InvestigatedEvent.firstThisTurn` ("whenever you investigate for the first time
+ * each turn", Erdwal Illuminator).
+ */
+@Serializable
+data object InvestigatedThisTurnComponent : Component
+
+/**
  * Tracks whether this player has gained life during the current turn.
  * Set whenever life is gained by this player.
  * Cleared at end of turn by CleanupPhaseManager.

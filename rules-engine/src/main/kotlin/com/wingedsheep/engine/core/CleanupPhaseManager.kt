@@ -68,6 +68,7 @@ import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardFromL
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LifeGainedAmountThisTurnComponent
+import com.wingedsheep.engine.state.components.player.InvestigatedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LifeGainedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent
@@ -837,6 +838,9 @@ class CleanupPhaseManager(
                 }
                 if (result.has<TurnedPermanentFaceUpThisTurnComponent>()) {
                     result = result.without<TurnedPermanentFaceUpThisTurnComponent>()
+                }
+                if (result.has<InvestigatedThisTurnComponent>()) {
+                    result = result.without<InvestigatedThisTurnComponent>()
                 }
                 if (result.has<LifeGainedThisTurnComponent>()) {
                     result = result.without<LifeGainedThisTurnComponent>()
