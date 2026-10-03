@@ -16266,7 +16266,9 @@ visible changes. No client field or new decision is introduced.
 activations currently accept floating-pool payments; solver-dependent production and multi-part
 activated production return explicit unsupported errors rather than claiming an unproved allocation.
 An unmatched obligation rejects completion atomically. It does not establish forward legality or
-provide recovery from an earlier manual overactivation. G41 must supply exact feasible allocations
+provide recovery from an earlier manual overactivation. Floating-pool selection remains greedy:
+for example, it can spend a tagged snow unit on a colored pip before a later snow pip needs it.
+G41 must supply exact feasible allocations
 through mana chains, zero-output and bonus-only activations, multi-part production pauses, and
 recoverable payment before a printed card uses this wrapper. Word of Command remains blocked;
 no incomplete canonical is registered.

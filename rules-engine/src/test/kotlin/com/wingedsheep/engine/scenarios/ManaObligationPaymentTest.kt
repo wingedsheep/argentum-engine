@@ -167,6 +167,43 @@ class ManaObligationPaymentTest : FunSpec({
         result.error shouldBe null
         result.state.getEntity(forest)!!.has<TappedComponent>() shouldBe true
     }
+    test("synchronous chosen-color production keeps mirror-color tap bonuses outside its obligation") {
+        val d = driver(); val p = d.activePlayer!!
+        val sourceCard = card("Scoped Chosen Mana Probe") {
+            typeLine = "Land"
+            activatedAbility {
+                cost = Costs.Tap
+                effect = Effects.AddAnyColorMana()
+                manaAbility = true
+            }
+        }
+        val bonusCard = card("Scoped Mirror Mana Probe") {
+            typeLine = "Enchantment"
+            staticAbility {
+                ability = com.wingedsheep.sdk.scripting.AdditionalManaOnSourceTap(
+                    sourceFilter = com.wingedsheep.sdk.scripting.GameObjectFilter.Land,
+                    color = null,
+                )
+            }
+        }
+        d.registerCards(listOf(sourceCard, bonusCard))
+        val source = d.putLandOnBattlefield(p, sourceCard.name)
+        d.putPermanentOnBattlefield(p, bonusCard.name)
+        d.replaceState(scoped(d, ManaPoolComponent(), emptySet()))
+        val result = d.submit(ActivateAbility(p, source, sourceCard.script.activatedAbilities.first().id,
+            manaColorChoice = Color.BLUE))
+        result.error shouldBe null
+        val pool = d.state.getEntity(p)!!.get<ManaPoolComponent>()!!
+        pool.blue shouldBe 1
+        pool.restrictedMana.single().color shouldBe Color.BLUE
+        pool.restrictedMana.single().obligationIds shouldBe d.state.activeManaSpendingScope(p)!!.pendingIds
+        result.events.filterIsInstance<ManaAddedEvent>().any {
+            it.sourceId == source && it.blue == 1
+        } shouldBe true
+        result.events.filterIsInstance<ManaAddedEvent>().any {
+            it.sourceId != source && it.blue == 1
+        } shouldBe true
+    }
     test("tagged snow units pay snow alongside a color-spending substitution") {
         val context = SpellPaymentContext(cardTypes = setOf(CardType.SORCERY))
         val snow = ManaSourceTag(com.wingedsheep.sdk.model.EntityId("snow"), isSnow = true)

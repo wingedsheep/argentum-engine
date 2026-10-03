@@ -218,11 +218,7 @@ internal class ActivatedManaAbilityResolver(
         val dampening = manaPipeline.applyLandManaDampening(
             stateBeforeActivation, currentState, cardComponent, action.playerId
         )
-        currentState = com.wingedsheep.engine.state.tagManaObligationProduction(
-            stateBeforeEffect,
-            ManaProvenanceTracker.markSnowProduction(stateBeforeEffect, dampening.state, action.sourceId, action.playerId),
-            action.playerId, action.sourceId,
-        )
+        currentState = ManaProvenanceTracker.markSnowProduction(stateBeforeEffect, dampening.state, action.sourceId, action.playerId)
 
         // Emit ManaAddedEvent — if dampened, always emit 1 colorless
         val manaEvent: ManaAddedEvent? = if (dampening.dampened) {
@@ -241,6 +237,12 @@ internal class ActivatedManaAbilityResolver(
         }
 
         val eventsWithMana = if (manaEvent != null) activationEvents + manaEvent else activationEvents
+
+        // Read the production event before tagging moves plain mana into per-unit entries.
+        // Tag before triggered bonuses so those bonuses don't inherit the activation obligation.
+        currentState = com.wingedsheep.engine.state.tagManaObligationProduction(
+            stateBeforeEffect, currentState, action.playerId, action.sourceId,
+        )
 
         // Aura bonuses (Elvish Guidance), global "whenever a matching source is tapped for
         // mana" statics (Lavaleaper, Badgermole Cub, Overabundance), the land-tapped event, and
