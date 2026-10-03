@@ -1386,6 +1386,36 @@ run carries, and none when they differ.
 Differential **7,223 compared / 73 divergent → 7,262 / 73**. All thirty-nine newly compared cards
 agree with their goldens; no card moved.
 
+## The soft-counter band
+
+The thirtieth loop band, tail key `unless its controller …`: "Counter target spell unless its
+controller pays {2}." — Mana Leak, Lose Focus, Wizard Replica, Spectral Denial's `{X}`, and
+Syncopate's "If that spell is countered this way, exile it instead …" rider. **116 lines**; the
+probe (dropping " unless its controller pays {N}") finished 55 cards. It delivered **19 hand-written
+cards read whole (7,657 → 7,676)**. The probe overstated by the usual mechanism: deleting the tax
+also deletes what the tax is *paid by* — "{1} for each Wizard", "{X}, where X is ~'s power", "mana
+equal to …" — and the "If they do, …" riders (Divert Disaster, Don't Make a Sound) that stay on the
+counter as `onPaid`.
+
+### Three facades, split on the model
+
+The cards spell a soft counter two ways, and the split is not habit. A fixed tax is a mana cost,
+`Effects.CounterUnlessPays("{2}")` (33 cards). `{X}` is the spell's own X (CR 107.3a), a *number*, so
+it is `CounterUnlessDynamicPays(xValue())`. And the exile rider exists only on the dynamic facade, so
+a riding fixed tax is `CounterUnlessDynamicPays(fixed(3), exileOnCounter = true)` — No More Lies. One
+rule per rider reads all three; its `match` maps the condition back to the printed cost and rebuilds,
+so a fixed tax spelled dynamically *without* the rider (Reasonable Doubt, still declining on its
+suspect line) refuses to print rather than becoming a second reading. Any other X declines.
+
+### What the differential found
+
+Differential **7,263 compared / 73 divergent → 7,281 / 73**. One newly compared card diverged, on
+its *other* line: Spectral Denial counted "each creature you control with power 4 or greater" with
+`PermanentsOnBattlefieldMatching(Creature.youControl().powerAtLeast(4))` — the "regardless of who
+controls them" source with the controller folded into the filter — where every other "you control"
+reduction uses `PermanentsYouControlMatching`. Same behaviour, minority spelling; the card moved to
+the majority one.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
