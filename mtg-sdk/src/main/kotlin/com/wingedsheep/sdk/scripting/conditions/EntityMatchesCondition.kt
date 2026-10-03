@@ -38,6 +38,8 @@ import kotlinx.serialization.Serializable
  * - [EffectTarget.DiscardedAsCost] — a card discarded to pay this spell's or ability's discard cost;
  *   **resolution-only**, matched against that card's graveyard characteristics (CR 608.2), where it
  *   lives by the time the spell resolves (Grab the Prize, via `Conditions.DiscardedCardMatches`).
+ * - [EffectTarget.RevealedAsCost] — a card revealed from hand to pay this spell's reveal cost;
+ *   **resolution-only**, matched against the card where it is now (usually still in hand).
  * - [EffectTarget.LibraryTop] — the current library top; dual-mode, false for an empty library.
  * - [EffectTarget.LinkedExiledCard] — a card exiled with the source (its imprint / "exiled with
  *   this" pile); **dual-mode**, matched against that card's printed characteristics in exile. This
@@ -69,6 +71,8 @@ data class EntityMatches(
             "if it's ${filter.description.ifEmpty { "a matching" }} spell"
         is EffectTarget.DiscardedAsCost ->
             "if the discarded card is ${filter.description}"
+        is EffectTarget.RevealedAsCost ->
+            "if the revealed card is ${filter.description}"
         is EffectTarget.LinkedExiledCard ->
             "as long as the exiled card is ${filter.description}"
         else -> "if ${entity.description} matches ${filter.description}"

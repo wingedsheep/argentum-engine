@@ -19,6 +19,7 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ExiledFromZoneComponent
+import com.wingedsheep.engine.state.components.stack.captureCardInHandSnapshots
 import com.wingedsheep.engine.state.components.stack.captureEntitySnapshots
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
@@ -844,10 +845,13 @@ internal object RevealFromHandCostKind : SpellCostKind<CostAtom.RevealFromHand> 
     }
 
     // Revealing publishes the cards and moves nothing, so paying is the event alone — the cards
-    // stay in hand and are still castable later.
+    // stay in hand and are still castable later. Each card's in-hand characteristics are captured
+    // too, for "the revealed card's power" (`EffectTarget.RevealedAsCost`): its ruling reads the
+    // power the card last had in hand if it has left by resolution.
     override fun pay(ledger: SpellCostLedger, cost: CostAtom.RevealFromHand): String? {
         val revealed = ledger.payment.revealedCards
         if (revealed.isNotEmpty()) {
+            ledger.revealedAsCostSnapshots.addAll(captureCardInHandSnapshots(ledger.state, revealed))
             ledger.events.add(
                 CardsRevealedEvent(
                     revealingPlayerId = ledger.playerId,

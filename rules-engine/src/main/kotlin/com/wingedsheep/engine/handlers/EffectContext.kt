@@ -166,6 +166,12 @@ data class EffectContext(
      */
     val discardedAsCostCards: List<EntityId> = emptyList(),
     /**
+     * Cards revealed from hand to pay this spell's additional reveal cost, captured as the cost was
+     * paid. [EffectTarget.RevealedAsCost] resolves to the card's id; a value read uses the captured
+     * in-hand characteristics (the card's last-known information once it has left the hand).
+     */
+    val revealedAsCostSnapshots: List<EntitySnapshot> = emptyList(),
+    /**
      * How many counters the resolving activated ability's costs removed — read by
      * [com.wingedsheep.sdk.scripting.values.DynamicAmount.CountersRemovedAsCost] ("the number of
      * aim counters removed this way", Hankyu). Zero for spells and triggered abilities.

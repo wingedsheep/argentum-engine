@@ -209,6 +209,9 @@ class SpellCostLedger(
     /** Discarded to pay — read at resolution as `EffectTarget.DiscardedAsCost`. */
     val discardedAsCostCards = mutableListOf<EntityId>()
 
+    /** Revealed from hand to pay, captured as paid — read at resolution as `EffectTarget.RevealedAsCost`. */
+    val revealedAsCostSnapshots = mutableListOf<EntitySnapshot>()
+
     /**
      * Exiled to pay — named at resolution by `CardSource.ExiledAsCost`. Snapshots are only taken for
      * battlefield exiles (see `SpellOnStackComponent.exiledAsCostSnapshots`).

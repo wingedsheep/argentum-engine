@@ -142,6 +142,14 @@ data class SpellOnStackComponent(
      */
     val discardedAsCostCards: List<EntityId> = emptyList(),
     /**
+     * Cards revealed from hand to pay this spell's additional reveal cost
+     * (`Costs.additional.RevealFromHand(...)`), each captured with its in-hand characteristics as
+     * the cost was paid. Read at resolution via
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.RevealedAsCost] — Titan's Presence's
+     * "the revealed card's power". Empty when the spell carried no reveal cost.
+     */
+    val revealedAsCostSnapshots: List<EntitySnapshot> = emptyList(),
+    /**
      * Entity ids of the cards exiled to pay this spell's additional exile cost
      * (`Costs.additional.ExileCards(...)`), recorded at payment time (CR 601.2h). The spell
      * counterpart of [ActivatedAbilityOnStackComponent.exiledAsCostCards] — read at resolution by

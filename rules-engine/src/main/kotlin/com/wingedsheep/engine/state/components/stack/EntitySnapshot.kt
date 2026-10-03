@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.TypeLine
+import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.Serializable
 
@@ -311,6 +312,27 @@ fun captureEntitySnapshots(
             ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()?.timestamp,
         wasToken = container?.has<TokenComponent>() ?: false,
         name = container?.get<CardComponent>()?.name,
+    )
+}
+
+/**
+ * Each card's characteristics as it sits in a hidden zone — a card revealed from hand to pay a cost
+ * (`EffectTarget.RevealedAsCost`). Off the battlefield there is no projection, so power and
+ * toughness are the printed fixed values; a characteristic-defining `*` is left null so a read falls
+ * through to evaluating it live. The type line rides along so a power read of a noncreature card
+ * answers 0, as it would in hand.
+ */
+fun captureCardInHandSnapshots(state: GameState, ids: List<EntityId>): List<EntitySnapshot> = ids.map { id ->
+    val card = state.getEntity(id)?.get<CardComponent>()
+    EntitySnapshot(
+        entityId = id,
+        objectRef = state.objectRef(id),
+        name = card?.name,
+        manaValue = card?.manaValue ?: 0,
+        power = (card?.baseStats?.power as? CharacteristicValue.Fixed)?.value,
+        toughness = (card?.baseStats?.toughness as? CharacteristicValue.Fixed)?.value,
+        typeLine = card?.typeLine,
+        cardDefinitionId = card?.cardDefinitionId,
     )
 }
 
