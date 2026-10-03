@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ScriedEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.ScriedOrSurveiledThisTurnComponent
@@ -37,7 +38,9 @@ class EmitScriedEventExecutor : EffectExecutor<EmitScriedEventEffect> {
         // which case the trigger still fires per CR 701.22d.
         val count = context.pipeline.storedCollections[effect.gatherCollection]?.size ?: 0
 
-        val playerId = context.controllerId
+        // The scrying player — the target of "Target player scries X", else the controller.
+        val playerId = TargetResolutionUtils.resolvePlayerRef(effect.player, context, state)
+            ?: context.controllerId
         val sourceName = context.sourceId
             ?.let { state.getEntity(it)?.get<CardComponent>()?.name }
             ?: "Scry"

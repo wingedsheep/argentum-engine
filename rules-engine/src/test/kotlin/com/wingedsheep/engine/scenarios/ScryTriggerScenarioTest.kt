@@ -12,7 +12,10 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Patterns
@@ -42,6 +45,23 @@ class ScryTriggerScenarioTest : FunSpec({
     val ScryOne = scrySpell("Scry One", 1)
     val ScryThree = scrySpell("Scry Three", 3)
     val ScryZero = scrySpell("Scry Zero", 0)
+
+    // Dynamic-count scry drivers: "Scry X." and "Target player scries X."
+    val ScryX = card("Scry X") {
+        manaCost = "{X}"
+        typeLine = "Sorcery"
+        oracleText = "Scry X."
+        spell { effect = Effects.Scry(DynamicAmounts.xValue()) }
+    }
+    val TargetScryX = card("Target Scry X") {
+        manaCost = "{X}"
+        typeLine = "Sorcery"
+        oracleText = "Target player scries X."
+        spell {
+            val player = target(Targets.Player)
+            effect = Effects.Scry(DynamicAmounts.xValue(), player)
+        }
+    }
 
     // "Whenever you scry, put a +1/+1 counter on Scry Watcher." — fires once per scry,
     // regardless of how many cards were looked at.
@@ -73,7 +93,7 @@ class ScryTriggerScenarioTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(ScryOne, ScryThree, ScryZero, ScryWatcher, ScryCounter))
+        driver.registerCards(TestCards.all + listOf(ScryOne, ScryThree, ScryZero, ScryX, TargetScryX, ScryWatcher, ScryCounter))
         return driver
     }
 
@@ -112,6 +132,30 @@ class ScryTriggerScenarioTest : FunSpec({
                 else -> return
             }
         }
+    }
+
+    // Cast an X scry spell and answer each scry decision as whoever it is put to (keep all on top),
+    // recording who was asked.
+    fun GameTestDriver.castScryX(player: EntityId, cardName: String, x: Int, targets: List<EntityId> = emptyList()): List<EntityId> {
+        giveMana(player, Color.RED, x)
+        val cardId = putCardInHand(player, cardName)
+        castXSpell(player, cardId, x, targets)
+        bothPass()
+        val askedTo = mutableListOf<EntityId>()
+        repeat(4) {
+            when (val decision = pendingDecision) {
+                is SelectCardsDecision -> {
+                    askedTo += decision.playerId
+                    submitDecision(decision.playerId, CardsSelectedResponse(decision.id, emptyList()))
+                }
+                is ReorderLibraryDecision -> {
+                    askedTo += decision.playerId
+                    submitDecision(decision.playerId, OrderedResponse(decision.id, decision.cards))
+                }
+                else -> return askedTo
+            }
+        }
+        return askedTo
     }
 
     test("scry emits a ScriedEvent with the count looked at") {
@@ -215,5 +259,57 @@ class ScryTriggerScenarioTest : FunSpec({
 
         driver.events.drop(before).filterIsInstance<ScriedEvent>() shouldBe emptyList()
         driver.plusOneCounters(watcher) shouldBe 0
+    }
+
+    test("scry X looks at X cards and emits one ScriedEvent") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
+        val active = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val before = driver.events.size
+        driver.castScryX(active, "Scry X", 2)
+
+        val scried = driver.events.drop(before).filterIsInstance<ScriedEvent>().single()
+        scried.playerId shouldBe active
+        scried.count shouldBe 2
+    }
+
+    test("scry X with X = 0 is no scry — no decision, no event, no trigger (CR 701.22b)") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
+        val active = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val watcher = driver.putCreatureOnBattlefield(active, "Scry Watcher")
+        val before = driver.events.size
+        val askedTo = driver.castScryX(active, "Scry X", 0)
+        driver.resolveStack()
+
+        askedTo shouldBe emptyList()
+        driver.events.drop(before).filterIsInstance<ScriedEvent>() shouldBe emptyList()
+        driver.plusOneCounters(watcher) shouldBe 0
+    }
+
+    test("target player scries X: they decide, and it is their scry that triggers") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
+        val active = driver.activePlayer!!
+        val opponent = driver.getOpponent(active)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val myWatcher = driver.putCreatureOnBattlefield(active, "Scry Watcher")
+        val theirWatcher = driver.putCreatureOnBattlefield(opponent, "Scry Watcher")
+
+        val before = driver.events.size
+        val askedTo = driver.castScryX(active, "Target Scry X", 3, targets = listOf(opponent))
+        driver.resolveStack()
+
+        askedTo.toSet() shouldBe setOf(opponent)
+        val scried = driver.events.drop(before).filterIsInstance<ScriedEvent>().single()
+        scried.playerId shouldBe opponent
+        scried.count shouldBe 3
+        driver.plusOneCounters(theirWatcher) shouldBe 1
+        driver.plusOneCounters(myWatcher) shouldBe 0
     }
 })

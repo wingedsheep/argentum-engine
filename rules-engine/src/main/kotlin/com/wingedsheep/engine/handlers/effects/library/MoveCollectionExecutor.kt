@@ -442,12 +442,13 @@ class MoveCollectionExecutor(
         val destZone = destination.zone
 
         // ControllerChooses ordering: pause for player to see/reorder cards going to library
-        if (order == CardOrder.ControllerChooses && destZone == Zone.LIBRARY) {
+        if ((order == CardOrder.ControllerChooses || order == CardOrder.OwnerChooses) && destZone == Zone.LIBRARY) {
             val isBottom = destination.placement == ZonePlacement.Bottom
             // For top placement: always pause (even for 1 card, so player can see it)
             // For bottom placement: only pause when there are multiple cards to order
             if (!isBottom || cards.size > 1) {
-                return pauseForOrderDecision(state, context, cards, destZone, destPlayerId, destination.placement)
+                val chooserId = if (order == CardOrder.OwnerChooses) destPlayerId else context.controllerId
+                return pauseForOrderDecision(state, context, cards, destZone, destPlayerId, destination.placement, chooserId)
             }
         }
 
@@ -485,9 +486,9 @@ class MoveCollectionExecutor(
         cards: List<EntityId>,
         destZone: Zone,
         destPlayerId: EntityId,
-        placement: ZonePlacement = ZonePlacement.Top
+        placement: ZonePlacement = ZonePlacement.Top,
+        playerId: EntityId = context.controllerId
     ): EffectResult {
-        val playerId = context.controllerId
 
         // Build card info map for the UI
         val cardInfoMap = cards.associateWith { cardId ->
@@ -505,7 +506,7 @@ class MoveCollectionExecutor(
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         }
 
-        val isOwnLibrary = destPlayerId == context.controllerId
+        val isOwnLibrary = destPlayerId == playerId
         val libraryOwner = if (isOwnLibrary) "your" else "their"
         val promptText = when (placement) {
             ZonePlacement.Bottom -> "Put the revealed cards on the bottom of $libraryOwner library in any order."

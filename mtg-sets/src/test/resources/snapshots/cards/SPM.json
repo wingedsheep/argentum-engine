@@ -10198,7 +10198,29 @@
                                     },
                                     "order": "ControllerChooses"
                                 },
-                                "EmitSurveiledEvent"
+                                {
+                                    "type": "Gated",
+                                    "gate": {
+                                        "type": "Gate.WhenCondition",
+                                        "condition": {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "EntityProperty",
+                                                "entity": "TriggeringEntity",
+                                                "numericProperty": {
+                                                    "type": "CounterCount",
+                                                    "counterType": null
+                                                }
+                                            },
+                                            "operator": "GT",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 0
+                                            }
+                                        }
+                                    },
+                                    "then": "EmitSurveiledEvent"
+                                }
                             ]
                         }
                     ]

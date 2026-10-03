@@ -4093,9 +4093,15 @@
                                             },
                                             "placement": "Top"
                                         },
-                                        "order": "ControllerChooses"
+                                        "order": "OwnerChooses"
                                     },
-                                    "EmitScriedEvent"
+                                    {
+                                        "type": "EmitScriedEvent",
+                                        "player": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
                                 ]
                             },
                             "targetRequirements": [

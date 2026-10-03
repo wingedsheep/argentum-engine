@@ -616,6 +616,15 @@ object Effects {
     fun Scry(count: Int, target: EffectTarget): Effect = LibraryPatterns.scry(count, target)
 
     /**
+     * "Scry X" / "Target player scries X" with a dynamic count (CR 701.22) — X resolved at
+     * resolution (Kozilek's Command: "Target player scries X, then draws a card."). The scrying
+     * player is [target] (default: the controller); X = 0 is no scry event (CR 701.22b). See
+     * [LibraryPatterns.scry].
+     */
+    fun Scry(amount: DynamicAmount, target: EffectTarget = EffectTarget.Controller): Effect =
+        LibraryPatterns.scry(amount, target)
+
+    /**
      * "Surveil [count]" (CR 701.25): look at the top [count] cards of your library, put any number
      * into your graveyard and the rest on top in any order. The surveil twin of [Scry]; see
      * [LibraryPatterns.surveil].
