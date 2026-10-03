@@ -27,7 +27,7 @@ val AgateAssault = card("Agate Assault") {
         modal(chooseCount = 1) {
             mode("Agate Assault deals 4 damage to target creature. If that creature would die this turn, exile it instead") {
                 val creature = target(TargetFilter.Creature)
-                effect = Effects.MarkExileOnDeath(creature) then Effects.DealDamage(4, creature)
+                effect = Effects.DealDamage(4, creature) then Effects.MarkExileOnDeath(creature)
             }
             mode("Exile target artifact") {
                 val artifact = target(TargetFilter.Artifact)

@@ -732,18 +732,18 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "MarkExileOnDeath",
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    },
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
                     }
                 },
                 {
-                    "type": "DealDamage",
-                    "amount": {
-                        "type": "Fixed",
-                        "amount": 6
-                    },
+                    "type": "MarkExileOnDeath",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"

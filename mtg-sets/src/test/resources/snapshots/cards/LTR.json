@@ -16448,6 +16448,17 @@
             "type": "Composite",
             "effects": [
                 {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
                     "type": "RemoveKeyword",
                     "keyword": "INDESTRUCTIBLE",
                     "target": {
@@ -16457,17 +16468,6 @@
                 },
                 {
                     "type": "MarkExileOnDeath",
-                    "target": {
-                        "type": "BoundVariable",
-                        "name": "t0"
-                    }
-                },
-                {
-                    "type": "DealDamage",
-                    "amount": {
-                        "type": "Fixed",
-                        "amount": 3
-                    },
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"

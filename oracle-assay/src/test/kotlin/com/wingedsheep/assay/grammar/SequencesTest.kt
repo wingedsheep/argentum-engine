@@ -192,6 +192,20 @@ class SequencesTest : StringSpec({
         roundTrips("Put a +1/+1 counter on target creature. It gains vigilance until end of turn.")
     }
 
+    // The removal spell's death replacement is a member of the same vocabulary: its object is the
+    // creature the damage or the shrink was aimed at, and Oracle's "that creature" is a variant of
+    // the pronoun the run canonicalizes on.
+    "the exile-instead rider marks the earlier clause's target" {
+        fragment("~ deals 3 damage to target creature. If that creature would die this turn, exile it instead.")
+            .script.spellEffect shouldBe (
+            Effects.DealDamage(3, Targets.bound()) then Effects.MarkExileOnDeath(Targets.bound())
+        )
+        roundTrips("Target creature gets -5/-5 until end of turn. If it would die this turn, exile it instead.")
+        Grammar.abilityLine.printLine(
+            fragment("~ deals 2 damage to target creature. If that creature would die this turn, exile it instead.")
+        ) shouldBe "~ deals 2 damage to target creature. If it would die this turn, exile it instead."
+    }
+
     // A pronoun with nothing to point at is not a model — Creeping Tar Pit spells "it" about the
     // permanent the same clause animated, and reading it as a target would round-trip perfectly.
     "a run that reads the target slot without declaring it declines" {

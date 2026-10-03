@@ -109,6 +109,17 @@ object SelfSteps {
             // the rule instead of in the slot.
             move("tap {self}", "tap$tag", Effects.Tap(target), subject),
             move("regenerate {self}", "regenerate$tag", RegenerateEffect(target), subject),
+            // "If that creature would die this turn, exile it instead." — Puncturing Blow, Scorching
+            // Dragonfire, Bleed Dry: the turn-long death replacement (CR 614) a removal spell leaves
+            // on its target, as the sentence after the damage or the -X/-X. A row because its object
+            // is the clause's object, exactly as regenerate's shield is; the inner "it" is the same
+            // creature again and carries nothing a slot could vary.
+            move(
+                "if {self} would die this turn, exile it instead",
+                "exile$tag instead if it would die",
+                Effects.MarkExileOnDeath(target),
+                subject,
+            ),
             // "Transform ~." — CR 701.28, the verb a double-faced permanent's own ability uses on
             // itself: the daybound/nightbound upkeep triggers (62 lines), the "{5}{G}{G}: Transform
             // ~." activated flips, and every Innistrad front face that turns over on a condition.

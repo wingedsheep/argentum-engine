@@ -1510,6 +1510,33 @@ Powerful Broker) is printed as a different sentence and is left to its own rule.
 Differential **7,302 compared / 73 divergent → 7,322 / 73**. All twenty newly compared cards agree
 with their hand-written models; nothing to classify.
 
+## The exile-instead band
+
+The thirty-fifth loop band, tail key `that creature would …`: "~ deals 5 damage to target creature.
+**If that creature would die this turn, exile it instead.**" — Puncturing Blow, Scorching
+Dragonfire, Obliterating Bolt, Bleed Dry's -13/-13, Nine-Ringed Bo's ping. **19 lines**; the probe
+(drop the sentence) finished 15 cards. It delivered **9 hand-written cards read whole (7,728 →
+7,737)**; the rest of the probe's cards decline again on their own payload once the rider reads.
+
+### A row of the later clause, not a sentence of its own
+
+`Effects.MarkExileOnDeath(target)` is a turn-long death replacement (CR 614) on the object the
+earlier clause aimed at, so it is a member of `SelfSteps.retargetable` beside "regenerate {self}":
+the subject is the family's slot and the inner "it" is the same object again, with nothing a slot
+could vary. As a later clause the subject is the target pronoun, so Oracle's "that creature" reads
+as a variant of the canonical "it" — the measurement the later clause already made for every verb.
+
+### What the differential found
+
+Differential **7,322 compared / 73 divergent → 7,331 / 73**. Five newly compared cards diverged, all
+five on order, all card spellings, fixed to the printed order: **Agate Assault, Bot Bashing Time,
+Feed the Flames, Nine-Ringed Bo** placed the mark before the damage, and **Smite the Deathless**
+put both its indestructible removal and the mark first. The mark is a floating effect and the
+creature dies only to state-based actions after the spell finishes resolving (CR 704.3), so both
+orders do the same thing — and twenty-two other cards already wrote the printed one. Two of the
+five carried comments asserting the opposite; those were corrected with the code. Only their
+goldens moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216
