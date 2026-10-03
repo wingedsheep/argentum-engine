@@ -761,12 +761,15 @@ sealed interface CostReductionSource {
      * the spell. Prefer [Fixed] for a literal amount — `Dynamic(DynamicAmount.Fixed(n))` is the same
      * reduction spelled the long way.
      *
-     * Only meaningful for a battlefield-sourced target ([SpellCostTarget.YouCast],
-     * [SpellCostTarget.AnyCaster], the from-zone variants). Under [SpellCostTarget.SelfCast] there
-     * is no source permanent — the card is the spell being cast — so a source-relative amount
-     * contributes 0.
+     * Under [SpellCostTarget.SelfCast] there is no source permanent — the card is the spell being
+     * cast — so "you" is the caster and a source-relative amount (`EffectTarget.Self`'s power)
+     * contributes 0. Player-scoped amounts work: Deem Inferior's "costs {1} less for each card
+     * you've drawn this turn" is `Dynamic(DynamicAmounts.cardsDrawnThisTurn())`, Bloodsoaked
+     * Insight's "for each 1 life your opponents have lost this turn" is
+     * `Dynamic(DynamicAmounts.lifeLostThisTurn(Player.EachOpponent))`.
      *
-     * @property amount The reduction, evaluated at cast time against the source permanent
+     * @property amount The reduction, evaluated at cast time against the source permanent (or,
+     *   for a self-cast reduction, the caster)
      */
     @SerialName("Dynamic")
     @Serializable

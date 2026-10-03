@@ -2691,6 +2691,62 @@
     ]
 }
 
+// Deem Inferior
+{
+    "name": "Deem Inferior",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell costs {1} less to cast for each card you've drawn this turn.\nThe owner of target nonland permanent puts it into their library second from the top or on the bottom.",
+    "script": {
+        "spellEffect": {
+            "type": "PutOnLibraryPositionOfChoice",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "positions": [
+                "SecondFromTop",
+                "Bottom"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "CARDS_DRAWN"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Steven Russell Black",
+        "flavorText": "Forced to behold such a pitiful demonstration of scholarship, Archmage Jeven could hold his tongue no longer.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc0835c7-58ca-4f16-984a-c590ce6a229a.jpg?1783911291"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Depth Defiler
 {
     "name": "Depth Defiler",

@@ -95,7 +95,7 @@ class CostCalculator(
             if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot)) continue
             applyToSpellCast(
                 // A self-cast modifier has no source *permanent*: the card is the spell being cast,
-                // so source-relative reduction sources read nothing.
+                // so source-relative reduction sources read nothing and "you" is the caster.
                 state, cardDef, casterId, ability.modification, chosenTargets, sourceId = null,
                 addGenericReduction = { totalReduction += it },
                 addGenericIncrease = { totalIncrease += it },
@@ -759,8 +759,10 @@ class CostCalculator(
      * what CR 107.1b describes: each modifier is its own calculation, so one shrunk source can never
      * eat another source's discount.
      *
-     * [sourceId] is null only for a self-cast modifier, where there is no source permanent at all
-     * (the card is the spell being cast) — that contributes 0.
+     * [sourceId] is null for a self-cast modifier, where there is no source permanent at all (the
+     * card is the spell being cast). "You" is then the caster — Deem Inferior's "for each card
+     * you've drawn this turn", Bloodsoaked Insight's "each 1 life your opponents have lost this
+     * turn" — and source-relative reads (`EffectTarget.Self`'s power) find no source and yield 0.
      */
     private fun dynamicReductionValue(
         state: GameState,
@@ -768,14 +770,11 @@ class CostCalculator(
         casterId: EntityId,
         amount: DynamicAmount
     ): Int {
-        if (sourceId == null) return 0
+        val controllerId = sourceId?.let { state.projectedState.getController(it) } ?: casterId
         return dynamicAmountEvaluator.evaluate(
             state,
             amount,
-            EffectContext(
-                sourceId = sourceId,
-                controllerId = state.projectedState.getController(sourceId) ?: casterId,
-            ),
+            EffectContext(sourceId = sourceId, controllerId = controllerId),
         ).coerceAtLeast(0)
     }
 
