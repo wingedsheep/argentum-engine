@@ -27,7 +27,7 @@ val Mechanozoa = card("Mechanozoa") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        val artifactOrCreatureOpponentControls = target(TargetFilter(GameObjectFilter.CreatureOrArtifact.opponentControls()))
+        val artifactOrCreatureOpponentControls = target(TargetFilter((GameObjectFilter.Artifact or GameObjectFilter.Creature).opponentControls()))
         effect = Effects.Tap(artifactOrCreatureOpponentControls) then
             Effects.AddCounters(CounterType.STUN, 1, artifactOrCreatureOpponentControls)
     }

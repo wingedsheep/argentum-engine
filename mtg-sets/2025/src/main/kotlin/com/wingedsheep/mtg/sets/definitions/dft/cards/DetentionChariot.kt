@@ -31,7 +31,7 @@ val DetentionChariot = card("Detention Chariot") {
     toughness = 6
     triggeredAbility {
         trigger = Triggers.self.enters()
-        val t = target(TargetFilter(GameObjectFilter.CreatureOrArtifact.opponentControls()))
+        val t = target(TargetFilter((GameObjectFilter.Artifact or GameObjectFilter.Creature).opponentControls()))
         effect = Effects.ExileUntilLeaves(t)
     }
     keywordAbility(KeywordAbility.crew(3))

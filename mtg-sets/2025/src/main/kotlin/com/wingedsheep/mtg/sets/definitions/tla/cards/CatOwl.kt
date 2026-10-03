@@ -4,6 +4,7 @@
 
 package com.wingedsheep.mtg.sets.definitions.tla.cards
 
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -30,7 +31,7 @@ val CatOwl = card("Cat-Owl") {
     keywords(Keyword.FLYING)
     triggeredAbility {
         trigger = Triggers.self.attacks()
-        val t = target(TargetFilter.CreatureOrArtifact)
+        val t = target(TargetFilter(GameObjectFilter.Artifact or GameObjectFilter.Creature))
         effect = Effects.Untap(t)
     }
     metadata {

@@ -31,7 +31,7 @@ val KingpinsEnforcers = card("Kingpin's Enforcers") {
     activatedAbility {
         cost = Costs.Composite(
             Costs.Mana("{2}{B}"),
-            Costs.Sacrifice(GameObjectFilter.CreatureOrArtifact)
+            Costs.Sacrifice(GameObjectFilter.Artifact or GameObjectFilter.Creature)
         )
         effect = Effects.DrawCards(1)
     }

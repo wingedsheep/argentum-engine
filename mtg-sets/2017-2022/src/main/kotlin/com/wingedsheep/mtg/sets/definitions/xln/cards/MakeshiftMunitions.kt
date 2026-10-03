@@ -24,7 +24,7 @@ val MakeshiftMunitions = card("Makeshift Munitions") {
     typeLine = "Enchantment"
     oracleText = "{1}, Sacrifice an artifact or creature: This enchantment deals 1 damage to any target."
     activatedAbility {
-        cost = Costs.Composite(Costs.Mana("{1}"), Costs.Sacrifice(GameObjectFilter.CreatureOrArtifact))
+        cost = Costs.Composite(Costs.Mana("{1}"), Costs.Sacrifice(GameObjectFilter.Artifact or GameObjectFilter.Creature))
         val t = target(Targets.Any)
         effect = Effects.DealDamage(1, t)
     }

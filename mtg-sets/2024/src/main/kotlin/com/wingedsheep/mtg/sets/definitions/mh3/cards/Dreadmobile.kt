@@ -35,7 +35,7 @@ val Dreadmobile = card("Dreadmobile") {
     activatedAbility {
         cost = Costs.Composite(
             Costs.Mana("{1}"),
-            Costs.SacrificeAnother(GameObjectFilter.CreatureOrArtifact),
+            Costs.SacrificeAnother(GameObjectFilter.Artifact or GameObjectFilter.Creature),
         )
         effect = Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
         description = "{1}, Sacrifice another artifact or creature: Put a +1/+1 counter on this Vehicle."

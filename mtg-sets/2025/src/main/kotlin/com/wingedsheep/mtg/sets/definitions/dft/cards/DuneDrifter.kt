@@ -43,13 +43,13 @@ val DuneDrifter = card("Dune Drifter") {
         trigger = Triggers.self.enters()
         val card = target(
             TargetFilter(
-                baseFilter = GameObjectFilter.CreatureOrArtifact
+                baseFilter = (GameObjectFilter.Artifact or GameObjectFilter.Creature)
                     .ownedByYou()
                     .manaValueAtMostDynamic(DynamicAmounts.castX()),
                 zone = Zone.GRAVEYARD
             ),
         )
-        effect = Effects.PutOntoBattlefield(card)
+        effect = Effects.PutOntoBattlefieldFromGraveyard(card)
         description = "When this Vehicle enters, return target artifact or creature card with mana " +
             "value X or less from your graveyard to the battlefield."
     }

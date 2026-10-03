@@ -4424,7 +4424,7 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "creature|artifact ctrl:opponent"
+                        "baseFilter": "artifact|creature ctrl:opponent"
                     },
                     "id": "t0"
                 }
@@ -4926,7 +4926,8 @@
                         "type": "BoundVariable",
                         "name": "t0"
                     },
-                    "destination": "Battlefield"
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
@@ -4936,8 +4937,8 @@
                                 {
                                     "type": "Or",
                                     "predicates": [
-                                        "IsCreature",
-                                        "IsArtifact"
+                                        "IsArtifact",
+                                        "IsCreature"
                                     ]
                                 },
                                 {

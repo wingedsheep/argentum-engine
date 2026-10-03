@@ -4833,11 +4833,27 @@
                     ]
                 },
                 "effect": {
-                    "type": "DrainLife",
-                    "amount": {
-                        "type": "Fixed",
-                        "amount": 1
-                    }
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
                 }
             }
         ]

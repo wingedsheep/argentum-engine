@@ -35,7 +35,7 @@ val AnnexSentry = card("Annex Sentry") {
     triggeredAbility {
         trigger = Triggers.self.enters()
         val permanent = target(
-            TargetFilter(GameObjectFilter.CreatureOrArtifact.opponentControls().manaValueAtMost(3))
+            TargetFilter((GameObjectFilter.Artifact or GameObjectFilter.Creature).opponentControls().manaValueAtMost(3))
         )
         effect = Effects.ExileUntilLeaves(permanent)
     }

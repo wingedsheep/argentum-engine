@@ -27,7 +27,7 @@ val CutthroatCenturion = card("Cutthroat Centurion") {
     toughness = 2
 
     activatedAbility {
-        cost = Costs.SacrificeAnother(GameObjectFilter.CreatureOrArtifact)
+        cost = Costs.SacrificeAnother(GameObjectFilter.Artifact or GameObjectFilter.Creature)
         effect = Effects.ModifyStats(2, 2, EffectTarget.Self)
         restrictions = listOf(ActivationRestriction.OncePerTurn)
     }

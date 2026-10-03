@@ -335,7 +335,7 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "creature|artifact mv<=3 ctrl:opponent"
+                        "baseFilter": "artifact|creature mv<=3 ctrl:opponent"
                     },
                     "id": "t0"
                 }
@@ -4010,7 +4010,7 @@
                     "type": "CostAtomWrapper",
                     "atom": {
                         "type": "AtomSacrifice",
-                        "filter": "creature|artifact",
+                        "filter": "artifact|creature",
                         "excludeSelf": true
                     }
                 },
@@ -5850,7 +5850,7 @@
                     {
                         "type": "TargetObject",
                         "filter": {
-                            "baseFilter": "creature|artifact ctrl:you"
+                            "baseFilter": "artifact|creature ctrl:you"
                         },
                         "id": "t0"
                     }
@@ -17046,7 +17046,7 @@
                     {
                         "type": "TargetObject",
                         "filter": {
-                            "baseFilter": "creature|artifact ctrl:you"
+                            "baseFilter": "artifact|creature ctrl:you"
                         },
                         "id": "t0"
                     }
@@ -18407,7 +18407,7 @@
                 "id": "Vat of Rebirth:1",
                 "trigger": {
                     "type": "ZoneChangeEvent",
-                    "filter": "creature|artifact ctrl:you",
+                    "filter": "artifact|creature ctrl:you",
                     "from": "Battlefield",
                     "to": "Graveyard"
                 },

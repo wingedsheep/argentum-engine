@@ -4634,7 +4634,7 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "creature|artifact"
+                        "baseFilter": "artifact|creature"
                     },
                     "id": "t0"
                 }

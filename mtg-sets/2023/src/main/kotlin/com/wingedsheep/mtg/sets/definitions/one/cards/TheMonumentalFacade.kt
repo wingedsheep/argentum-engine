@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.one.cards
 
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
@@ -42,7 +43,7 @@ val TheMonumentalFacade = card("The Monumental Facade") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Tap, Costs.RemoveCounterFromSelf(CounterType.OIL, 1))
-        val recipient = target(TargetFilter.CreatureOrArtifact.youControl())
+        val recipient = target(TargetFilter(GameObjectFilter.Artifact or GameObjectFilter.Creature).youControl())
         effect = Effects.AddCounters(CounterType.OIL, 1, recipient)
         timing = TimingRule.SorcerySpeed
     }
