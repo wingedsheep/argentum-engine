@@ -16134,7 +16134,7 @@ later visits of the same card do not inherit it.
 Paused targets, costs, searches and other decisions retain the window until the whole resolution ends.
 The affected player still owns the resources and controls their spells and permanents. Existing
 `actorFor` routing supplies private views and decision input to the controlling player; sideboards stay private.
-Hand identities seen in the window and explicitly looked-at cards retain the existing reveal-memory semantics;
+Hand identities seen in the window, explicitly looked-at cards, and known library placements retain the existing reveal-memory semantics;
 later unseen hand cards stay hidden, and library shuffles clear library knowledge. Draw and hand-look events
 capture their authorized observers before the control window ends, without transferring resource ownership.
 Shared-turn teams follow the existing player-control team rule. A later resolution-control grant wins,

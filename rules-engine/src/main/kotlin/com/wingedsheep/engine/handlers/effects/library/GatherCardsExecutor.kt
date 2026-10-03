@@ -96,7 +96,8 @@ class GatherCardsExecutor(
                     ?: return EffectResult.error(state, "Could not resolve player for GatherCards")
                 val allCards = playerIds.flatMap { playerId ->
                     source.zones.flatMap { zone ->
-                        state.getZone(ZoneKey(playerId, zone))
+                        if (zone == Zone.SIDEBOARD && state.isPlayerControlledByEffect(playerId)) emptyList()
+                        else state.getZone(ZoneKey(playerId, zone))
                     }
                 }
                 if (source.filter != GameObjectFilter.Any) {

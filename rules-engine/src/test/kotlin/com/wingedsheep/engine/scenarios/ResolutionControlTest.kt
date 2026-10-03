@@ -192,9 +192,12 @@ class ResolutionControlTest : FunSpec({
         val effect = GatherCardsEffect(CardSource.FromZone(Zone.SIDEBOARD, Player.You), "outside")
         val ctx = EffectContext(sourceId = null, controllerId = victim)
         gather.execute(d.state, effect, ctx).updatedCollections["outside"] shouldBe emptyList()
+        val mixed = GatherCardsEffect(CardSource.FromMultipleZones(listOf(Zone.LIBRARY, Zone.SIDEBOARD), Player.You), "mixed")
+        gather.execute(d.state, mixed, ctx).updatedCollections["mixed"] shouldBe d.state.getLibrary(victim)
         d.submitYesNo(victim, false); d.submitYesNo(victim, false)
         d.replaceState(d.state.updateEntity(victim) { it.with(HotseatControlComponent(owner)) })
         gather.execute(d.state, effect, ctx).updatedCollections["outside"] shouldBe listOf(side)
+        gather.execute(d.state, mixed, ctx).updatedCollections["mixed"] shouldBe d.state.getLibrary(victim) + side
         visibility(d).isZoneVisibleTo(d.state, ZoneKey(victim, Zone.SIDEBOARD), owner) shouldBe true
     }
     test("latest grant wins and ending resolution restores underlying turn control") {
@@ -340,6 +343,29 @@ class ResolutionControlTest : FunSpec({
         d.replaceState(result.state); d.submitYesNo(victim, false); d.submitYesNo(victim, false)
         com.wingedsheep.engine.view.ClientEventTransformer.transform(listOf(event), owner, d.state).size shouldBe 1
         com.wingedsheep.engine.view.ClientEventTransformer.transform(listOf(event), com.wingedsheep.sdk.model.EntityId.generate(), d.state) shouldBe emptyList()
+    }
+    test("known library placements retain controller knowledge while shuffled placements remain hidden") {
+        val d = driver(); val owner = d.activePlayer!!; val victim = d.getOpponent(owner)
+        cast(d); d.bothPass()
+        val known = d.putCardInHand(victim, "Shock")
+        val hidden = d.putCardInHand(victim, "Grizzly Bears")
+        val shuffled = d.services.zones.moveToZone(d.state, hidden, Zone.LIBRARY,
+            com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(
+                libraryPlacement = com.wingedsheep.engine.handlers.effects.LibraryPlacement.Shuffled,
+                libraryMoverId = victim))
+        val placed = d.services.zones.moveToZone(shuffled.state, known, Zone.LIBRARY,
+            com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(
+                libraryPlacement = com.wingedsheep.engine.handlers.effects.LibraryPlacement.Top,
+                libraryMoverId = victim))
+        d.replaceState(placed.state)
+        d.submitYesNo(victim, false); d.submitYesNo(victim, false)
+        val v = visibility(d)
+        v.isCardIdentityVisibleTo(d.state, Zone.LIBRARY, known, owner) shouldBe true
+        v.isCardIdentityVisibleTo(d.state, Zone.LIBRARY, known, victim) shouldBe true
+        v.isCardIdentityVisibleTo(d.state, Zone.LIBRARY, known, com.wingedsheep.sdk.model.EntityId.generate()) shouldBe false
+        v.isCardIdentityVisibleTo(d.state, Zone.LIBRARY, hidden, owner) shouldBe false
+        val shuffledAgain = com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils.clearLibraryReveals(d.state, victim)
+        v.isCardIdentityVisibleTo(shuffledAgain, Zone.LIBRARY, known, owner) shouldBe false
     }
     test("session hotseat precedence remains even during a resolution grant") {
         val d = driver(); val owner = d.activePlayer!!; val victim = d.getOpponent(owner)
