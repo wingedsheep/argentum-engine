@@ -1546,7 +1546,11 @@ class ManaSolver(
                                     // treatment as SacrificeSelf — auto-pay refuses to silently
                                     // consume the secondary tap target; manual menus offer the
                                     // source and the resumer prompts for the creature.
-                                    is CostAtom.TapPermanents -> {
+                                    // The sub-cost can't carry the shared-creature-type group rule,
+                                    // so such a cost stays an explicit ActivateAbility entry.
+                                    is CostAtom.TapPermanents -> if (atom.sharedCreatureType) {
+                                        hasUnsupportedSubCost = true
+                                    } else {
                                         abilityTapPermanentsSubCost = TapPermanentsSubCost(
                                             count = atom.count,
                                             filter = atom.filter,
