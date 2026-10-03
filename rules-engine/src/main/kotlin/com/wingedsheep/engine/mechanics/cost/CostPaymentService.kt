@@ -918,8 +918,10 @@ class CostPaymentService(private val services: EngineServices) {
                 is CostAtom.ReturnToHand ->
                     if (atom.youControl) controlledMatching(state, payerId, atom.filter, sourceId, predicateEvaluator = predicateEvaluator)
                     else anyMatching(state, payerId, atom.filter, sourceId, predicateEvaluator = predicateEvaluator)
-                is CostAtom.TapPermanents ->
+                is CostAtom.TapPermanents -> SharedCreatureTypeTapCost.eligible(
+                    state, atom,
                     controlledUntapped(state, payerId, atom.filter, if (atom.excludeSelf) sourceId else null, predicateEvaluator = predicateEvaluator)
+                )
                 // The source is in the pool unless the filter says "other" (`notSourceItself()`,
                 // Tekuthal), which the source id lets the evaluator see. Self-removal picks nothing.
                 is CostAtom.RemoveCounters ->

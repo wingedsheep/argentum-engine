@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
+import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
@@ -473,8 +474,11 @@ class PayOrSufferExecutor(
         controllerId: EntityId
     ): EffectResult {
         // Untapped permanents the player controls that match the filter.
-        val validPermanents = findValidUntappedPermanentsOnBattlefield(
-            state, controllerId, cost.filter, selfExclusion(cost.excludeSelf, sourceId), sourceId
+        val validPermanents = SharedCreatureTypeTapCost.eligible(
+            state, cost,
+            findValidUntappedPermanentsOnBattlefield(
+                state, controllerId, cost.filter, selfExclusion(cost.excludeSelf, sourceId), sourceId
+            )
         )
 
         // If the player doesn't have enough untapped permanents, automatically suffer.
@@ -493,6 +497,7 @@ class PayOrSufferExecutor(
             sufferEffect = effect.suffer,
             requiredCount = cost.count,
             filter = cost.filter,
+            sharedCreatureType = cost.sharedCreatureType,
             random = false,
             targets = context.targets,
             namedTargets = context.pipeline.namedTargets,
@@ -1002,8 +1007,11 @@ class PayOrSufferExecutor(
                 }
                 is CostAtom.Mana -> ManaSolver(cardRegistry, predicateEvaluator).canPay(state, playerId, atom.cost)
                 is CostAtom.ExileFrom -> findValidCardsInZone(state, playerId, atom.filter, atom.zone, sourceId).size >= atom.count
-                is CostAtom.TapPermanents -> findValidUntappedPermanentsOnBattlefield(
-                    state, playerId, atom.filter, selfExclusion(atom.excludeSelf, sourceId), sourceId
+                is CostAtom.TapPermanents -> SharedCreatureTypeTapCost.eligible(
+                    state, atom,
+                    findValidUntappedPermanentsOnBattlefield(
+                        state, playerId, atom.filter, selfExclusion(atom.excludeSelf, sourceId), sourceId
+                    )
                 ).size >= atom.count
                 is CostAtom.ReturnToHand ->
                     findBounceCandidates(state, playerId, atom, sourceId).size >= atom.count

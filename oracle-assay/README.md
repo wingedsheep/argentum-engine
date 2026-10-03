@@ -1490,6 +1490,26 @@ were card bugs, fixed: Diregraf Captain's dies trigger watched "another Zombie *
 bare tribal noun is any Zombie permanent (a kindred Zombie dies too), and Dubious Delicacy's enters
 trigger had dropped "up to one", so the target was mandatory. Only their goldens moved.
 
+## The proliferate band
+
+The thirty-fourth loop band, tail key `Proliferate.`: "Proliferate." on its own, after a mana or
+tap-sacrifice cost (Contagion Clasp, Copper Longlegs, High Perfect Morcant), and as the last sentence
+of a spell or a mode (Unnatural Restoration, Whisper of the Dross). **27 lines**; the probe
+(→"Draw a card.") finished 23 cards. It delivered **20 hand-written cards read whole (7,708 →
+7,728)**.
+
+### One constant clause
+
+Proliferate (CR 701.34) has no variable: the permanents and players are chosen on resolution, so
+`Effects.Proliferate()` carries no target, and the sentence is the unit — a `sentenceClauses` row
+beside "the Ring tempts you". The targeted single-object form (`Effects.Proliferate(target)`,
+Powerful Broker) is printed as a different sentence and is left to its own rule.
+
+### What the differential found
+
+Differential **7,302 compared / 73 divergent → 7,322 / 73**. All twenty newly compared cards agree
+with their hand-written models; nothing to classify.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

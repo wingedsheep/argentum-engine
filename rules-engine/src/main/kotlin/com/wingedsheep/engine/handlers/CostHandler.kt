@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
@@ -701,6 +702,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
         is CostAtom.TapPermanents -> {
             val candidates = findUntappedMatchingPermanentsUnified(state, controllerId, atom.filter)
                 .let { targets -> if (atom.excludeSelf) targets.filter { it != sourceId } else targets }
+                .let { SharedCreatureTypeTapCost.eligible(state, atom, it) }
             candidates.size >= atom.count
         }
         is CostAtom.ReturnToHand ->
@@ -1332,6 +1334,9 @@ class CostHandler(private val zones: ZoneTransitionService) {
             if (!predicateEvaluator.matches(state, projected, permanentId, atom.filter, context)) {
                 return CostPaymentResult.failure("Permanent to tap does not match ${atom.filter.description}")
             }
+        }
+        if (!SharedCreatureTypeTapCost.satisfiedBy(state, atom, toTap)) {
+            return CostPaymentResult.failure("Permanents to tap must share a creature type")
         }
 
         var newState = state

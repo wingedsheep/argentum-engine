@@ -786,6 +786,10 @@ object Steps {
         // "The Ring tempts you" (CR 701.54) — a keyword action with no variable; the tempted player
         // is the controller, the effect's default.
         constantClause("the Ring tempts you", "the Ring tempts you", Effects.TheRingTemptsYou()),
+        // "Proliferate" (CR 701.34) — the untargeted keyword action; the permanents and players are
+        // chosen on resolution, so the effect carries no target. The targeted single-object form
+        // (Powerful Broker) is printed as its own sentence and is not this row.
+        constantClause("proliferate", "proliferate", Effects.Proliferate()),
         // Willbender. `Targets.SpellOrAbilityWithSingleTarget` is a whole requirement rather than a
         // filter — a spell *or* an ability is not an object the noun-phrase cascade can name — so
         // the requirement is slotted verbatim and the effect reads nothing from it.
