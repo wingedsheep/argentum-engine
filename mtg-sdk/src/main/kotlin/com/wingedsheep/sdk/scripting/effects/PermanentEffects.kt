@@ -329,6 +329,28 @@ data class BecomeRenownedEffect(
 }
 
 /**
+ * Target permanent becomes monstrous (CR 701.37b) — the designation half of the monstrosity
+ * keyword action. Stamps the engine's `MonstrousComponent`, which monstrosity payoffs read back
+ * through `Conditions.SourceIsMonstrous` / `StatePredicate.IsMonstrous`.
+ *
+ * Sticky and one-way like [BecomeRenownedEffect]: once a permanent becomes monstrous it stays
+ * monstrous until it leaves the battlefield. Monstrous is neither an ability nor part of the
+ * permanent's copiable values (CR 701.37b), so a copy of a monstrous creature is not monstrous.
+ *
+ * Authored through `Effects.Monstrosity(n)` rather than called directly; the [target] is
+ * parameterized so an outside effect could reuse it.
+ *
+ * @property target The permanent to give the monstrous designation
+ */
+@SerialName("BecomeMonstrous")
+@Serializable
+data class BecomeMonstrousEffect(
+    val target: EffectTarget = EffectTarget.Self
+) : Effect {
+    override val description: String = "${target.description} becomes monstrous"
+}
+
+/**
  * "You may activate loyalty abilities of [target] [times] times this turn rather than only once"
  * — a one-shot, per-planeswalker relaxation of the once-per-turn loyalty rule (CR 606.3) for the
  * rest of the turn (Kaito, Dancing Shadow). The per-permanent sibling of the controller-wide

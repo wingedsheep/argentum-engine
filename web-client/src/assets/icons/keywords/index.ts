@@ -77,6 +77,10 @@ export const keywordManaClass: Record<string, string> = {
    *  ClientCard.isRenowned — it marks a creature whose renown has already resolved, so renown
    *  can't trigger again and its "as long as this creature is renowned" payoffs are live. */
   RENOWNED: 'ability-renowned',
+  /** Monstrous designation (CR 701.37b). Same synthetic-pseudo-keyword trick, from
+   *  ClientCard.isMonstrous — its monstrosity has resolved and its "as long as it's monstrous"
+   *  payoffs are live. */
+  MONSTROUS: 'ability-monstrous',
 }
 
 export const displayableKeywords = new Set([

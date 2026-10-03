@@ -1350,6 +1350,21 @@ data class BecameRenownedEvent(
 ) : GameEvent
 
 /**
+ * A permanent became monstrous (CR 701.37b) — a monstrosity ability resolved on a permanent that
+ * wasn't yet monstrous. Fires once per permanent: the designation is sticky and monstrosity does
+ * nothing to a permanent that is already monstrous. Matches "when this creature becomes
+ * monstrous" (Ember Swallower) payoffs.
+ */
+@Serializable
+@SerialName("BecameMonstrousEvent")
+data class BecameMonstrousEvent(
+    val entityId: EntityId,
+    val entityName: String,
+    /** The monstrous permanent's controller as the ability resolved, for "you control" filters. */
+    val controllerId: EntityId
+) : GameEvent
+
+/**
  * An Aura, Equipment, or Fortification became attached to a permanent (CR 603.2f). Emitted only
  * at the moment of attaching — when the attachment moves onto a new host — not when an
  * already-attached state persists, and not on phasing in/out (CR 702.26j). Emitted from every

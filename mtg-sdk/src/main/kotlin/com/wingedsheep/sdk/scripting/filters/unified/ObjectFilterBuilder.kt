@@ -867,6 +867,9 @@ interface ObjectFilterBuilder<out Self> {
     /** Must have the renowned designation (CR 702.112b) — see [StatePredicate.IsRenowned]. */
     fun renowned() = withStatePredicate(StatePredicate.IsRenowned)
 
+    /** Must have the monstrous designation (CR 701.37b) — see [StatePredicate.IsMonstrous]. */
+    fun monstrous() = withStatePredicate(StatePredicate.IsMonstrous)
+
     /**
      * Must have crewed (CR 702.122) or saddled (CR 702.171) the effect's source permanent this
      * turn. Source-relative — see [StatePredicate.CrewedOrSaddledSourceThisTurn].

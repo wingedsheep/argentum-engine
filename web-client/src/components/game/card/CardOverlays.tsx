@@ -63,6 +63,7 @@ export function KeywordIcons({
   isSuspected,
   isSolved,
   isRenowned,
+  isMonstrous,
   topOffset,
   size,
 }: {
@@ -80,6 +81,8 @@ export function KeywordIcons({
   isSolved?: boolean
   /** Whether the creature has the renowned designation (CR 702.112b). */
   isRenowned?: boolean
+  /** Whether the permanent has the monstrous designation (CR 701.37b). */
+  isMonstrous?: boolean
   /** Override the column's top offset (px) so it can clear the ring-bearer badge in the same corner. */
   topOffset?: number
   size: number
@@ -109,8 +112,9 @@ export function KeywordIcons({
   const hasSuspected = isSuspected === true
   const hasSolved = isSolved === true
   const hasRenowned = isRenowned === true
+  const hasMonstrous = isMonstrous === true
 
-  if (!hasKeywords && !hasProtections && !hasHexproofFrom && !hasSuspected && !hasSolved && !hasRenowned) return null
+  if (!hasKeywords && !hasProtections && !hasHexproofFrom && !hasSuspected && !hasSolved && !hasRenowned && !hasMonstrous) return null
 
   return (
     <div style={topOffset === undefined ? styles.keywordIconsContainer : { ...styles.keywordIconsContainer, top: topOffset }}>
@@ -127,6 +131,11 @@ export function KeywordIcons({
       {hasRenowned && (
         <div key="renowned" style={styles.keywordIconWrapper} title="Renowned (its renown has resolved and can't trigger again)">
           <KeywordGlyph name="RENOWNED" size={size} />
+        </div>
+      )}
+      {hasMonstrous && (
+        <div key="monstrous" style={styles.keywordIconWrapper} title="Monstrous (its monstrosity has resolved and can't happen again)">
+          <KeywordGlyph name="MONSTROUS" size={size} />
         </div>
       )}
       {filteredKeywords.map((keyword) => (

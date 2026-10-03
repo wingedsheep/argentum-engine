@@ -315,6 +315,9 @@ export interface ClientCard {
    * and its renown payoffs are on). Battlefield only. */
   readonly isRenowned?: boolean
 
+  /** Whether this permanent has the monstrous designation (CR 701.37b). Battlefield only. */
+  readonly isMonstrous?: boolean
+
   /** Whether this card is plotted in exile (CR 718 — Plot keyword, castable for free on a later turn). Exile only. */
   readonly isPlotted?: boolean
 

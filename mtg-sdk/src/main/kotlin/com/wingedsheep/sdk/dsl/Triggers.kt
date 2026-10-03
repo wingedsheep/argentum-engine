@@ -484,6 +484,9 @@ class ObjectTriggerSubject internal constructor(
     /** "becomes renowned" (CR 702.112b). */
     fun becomesRenowned(): TriggerSpec = spec(BecameRenownedEvent(filter = filterOrAny))
 
+    /** "becomes monstrous" (CR 701.37b). */
+    fun becomesMonstrous(): TriggerSpec = spec(BecameMonstrousEvent(filter = filterOrAny))
+
     /** "becomes plotted" (CR 718) — fires for the plotted card itself, face up in exile. */
     fun becomesPlotted(): TriggerSpec {
         unfiltered("becomesPlotted")
