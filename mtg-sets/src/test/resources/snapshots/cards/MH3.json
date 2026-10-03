@@ -1784,6 +1784,102 @@
     ]
 }
 
+// Colossal Dreadmask
+{
+    "name": "Colossal Dreadmask",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Living weapon (When this Equipment enters, create a 0/0 black Phyrexian Germ creature token, then attach this to it.)\nEquipped creature gets +6/+6 and has trample.\nEquip {3}{G}{G}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Colossal Dreadmask:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 0,
+                            "toughness": 0,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Phyrexian",
+                                "Germ"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/5/e/5ec719dc-6b07-4b1d-a79c-84ebced33422.jpg?1783911115"
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Living weapon (When this Equipment enters, create a 0/0 black Phyrexian Germ creature token, then attach this to it.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Colossal Dreadmask:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 6,
+                "toughnessBonus": 6
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            }
+        ]
+    },
+    "equipCost": "{3}{G}{G}",
+    "metadata": {
+        "collectorNumber": "148",
+        "artist": "Caio Monteiro",
+        "flavorText": "No legs to quake, no lungs to bellow, but if you see its teeth, it's still too late.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98164430-64c1-465f-b786-45753c965f44.jpg?1783911264"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Conduit Goblin
 {
     "name": "Conduit Goblin",
@@ -2504,6 +2600,110 @@
     ]
 }
 
+// Cranial Ram
+{
+    "name": "Cranial Ram",
+    "manaCost": "{B}{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Living weapon (When this Equipment enters, create a 0/0 black Phyrexian Germ creature token, then attach this to it.)\nEquipped creature gets +X/+1, where X is the number of artifacts you control.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cranial Ram:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 0,
+                            "toughness": 0,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Phyrexian",
+                                "Germ"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/5/e/5ec719dc-6b07-4b1d-a79c-84ebced33422.jpg?1783911115"
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Living weapon (When this Equipment enters, create a 0/0 black Phyrexian Germ creature token, then attach this to it.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Cranial Ram:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "artifact"
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "180",
+        "artist": "Allen Williams",
+        "flavorText": "To ensure proper fit, the mandibles can be inserted directly into the ears.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62993aa2-4804-43cc-910a-c51e794f8508.jpg?1783911253"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Cursed Wombat
 {
     "name": "Cursed Wombat",
@@ -3122,6 +3322,59 @@
     }
 }
 
+// Disruptor Flute
+{
+    "name": "Disruptor Flute",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Flash\nAs this artifact enters, choose a card name.\nSpells with the chosen name cost {3} more to cast.\nActivated abilities of sources with the chosen name can't be activated unless they're mana abilities.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "AnyCaster",
+                    "filter": {
+                        "cardPredicates": [
+                            "NameEqualsChosenComponent"
+                        ]
+                    }
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 3
+                }
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "NameEqualsChosenComponent"
+                    ]
+                },
+                "nonManaAbilitiesOnly": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CARD_NAME",
+                "cardNamePool": "ANY"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "RARE",
+        "artist": "Xavier Ribeiro",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cad8671-4761-4014-a8a3-af45627e6e79.jpg?1783911243"
+    },
+    "colorIdentityOverride": []
+}
+
 // Dog Umbra
 {
     "name": "Dog Umbra",
@@ -3378,6 +3631,51 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Dreamtide Whale
+{
+    "name": "Dreamtide Whale",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Whale",
+    "oracleText": "Vanishing 2 (This creature enters with two time counters on it. At the beginning of your upkeep, remove a time counter from it. When the last is removed, sacrifice it.)\nWhenever a player casts their second spell each turn, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 5
+    },
+    "keywords": [
+        "VANISHING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "VANISHING",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dreamtide Whale:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 2
+                },
+                "binding": "ANY",
+                "effect": "Proliferate",
+                "descriptionOverride": "Whenever a player casts their second spell each turn, proliferate."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "RARE",
+        "artist": "Ron Spears",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd7dc03e-2a61-482a-b7eb-6cdb7f375fd8.jpg?1783911291"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4740,6 +5038,102 @@
     ]
 }
 
+// Flare of Cultivation
+{
+    "name": "Flare of Cultivation",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "You may sacrifice a nontoken green creature rather than pay this spell's mana cost.\nSearch your library for up to two basic land cards, reveal those cards, put one onto the battlefield tapped and the other into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search your library for up to two basic land cards"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "selected1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "storeRemainder": "remainder2",
+                    "prompt": "Choose which basic land enters the battlefield tapped; the other goes to your hand.",
+                    "selectedLabel": "Onto the battlefield tapped",
+                    "remainderLabel": "Into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary"
+            ]
+        },
+        "selfAlternativeCost": {
+            "manaCost": "{0}",
+            "additionalCosts": [
+                {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature green nontoken"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "RARE",
+        "artist": "Billy Christian",
+        "flavorText": "\"You need to expand your horizons.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bda2fa87-81c0-41ac-8831-556ce392c058.jpg?1783911261"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Flare of Denial
 {
     "name": "Flare of Denial",
@@ -4780,6 +5174,61 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Flare of Duplication
+{
+    "name": "Flare of Duplication",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "You may sacrifice a nontoken red creature rather than pay this spell's mana cost.\nCopy target instant or sorcery spell. You may choose new targets for the copy.",
+    "script": {
+        "spellEffect": {
+            "type": "CopyTargetSpell",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "instant|sorcery",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{0}",
+            "additionalCosts": [
+                {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature red nontoken"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "RARE",
+        "artist": "Olivier Bernard",
+        "flavorText": "\"Decent. But let me show you what mastery looks like.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/497a10c6-131b-464e-95e4-e47708a24d48.jpg?1783911272",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "The controller of a copy can't choose to pay any alternative or additional costs for the copy. However, effects based on any alternative or additional costs that were paid for the original spell are copied as though those same costs were paid for the copy."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4855,6 +5304,87 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Flare of Malice
+{
+    "name": "Flare of Malice",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "You may sacrifice a nontoken black creature rather than pay this spell's mana cost.\nEach opponent sacrifices a creature or planeswalker with the greatest mana value among creatures and planeswalkers they control.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "EachOpponent"
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "ControlledPermanents",
+                            "filter": "creature|planeswalker"
+                        },
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "gathered0",
+                        "collectionFilter": "GreatestManaValue",
+                        "storeMatching": "matching1"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "matching1",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "selected2",
+                        "prompt": "Choose a creature or planeswalker with the greatest mana value to sacrifice",
+                        "useTargetingUI": true
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "selected2",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard"
+                        },
+                        "moveType": "Sacrifice"
+                    }
+                ]
+            }
+        },
+        "selfAlternativeCost": {
+            "manaCost": "{0}",
+            "additionalCosts": [
+                {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature black nontoken"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "RARE",
+        "artist": "David Palumbo",
+        "flavorText": "\"Suffer as I have suffered. Lose as I have lost.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19efb9ce-62eb-4cbf-b01e-979f3fd09ba6.jpg?1783911280"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4956,6 +5486,81 @@
         "BLACK",
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Fowl Strike
+{
+    "name": "Fowl Strike",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature with flying.\nReinforce 2—{2}{G} ({2}{G}, Discard this card: Put two +1/+1 counters on target creature.)",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature kw:flying"
+                },
+                "id": "t0"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Fowl Strike:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Reinforce 2—{2}{G}: Put two +1/+1 counters on target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "artist": "Warren Mahy",
+        "flavorText": "With a resounding wallop, the ancient battle between buzzard and druid was finally finished.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/83b6c7ab-f42f-40d2-9cb6-89291d57e27f.jpg?1783911260"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5631,6 +6236,63 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Harbinger of the Seas
+{
+    "name": "Harbinger of the Seas",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "Nonbasic lands are Islands.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SetLandTypesForGroup",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsLand",
+                            {
+                                "type": "Not",
+                                "predicate": "IsBasicLand"
+                            }
+                        ]
+                    }
+                },
+                "landTypes": [
+                    "Island"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "flavorText": "The rising moon calls mercilessly to the waves, commanding the sea to rise high enough to devour mountains.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00212714-a410-4cbc-bf1c-f90d7d77378c.jpg?1783911289",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Nonbasic lands lose any other land types and abilities they had. They gain the land type Island and gain the ability \"{T}: Add {U}.\""
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Harbinger of the Seas doesn't affect names or supertypes. It won't turn any land into a basic land or remove the legendary supertype from a legendary land, and the lands won't be named \"Island.\""
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a nonbasic land has an ability that causes it to enter the battlefield tapped, it will lose that ability before it can apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6545,6 +7207,64 @@
     }
 }
 
+// It That Heralds the End
+{
+    "name": "It That Heralds the End",
+    "manaCost": "{1}{C}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Colorless spells you cast with mana value 7 or greater cost {1} less to cast.\nOther colorless creatures you control get +1/+1.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsColorless",
+                            {
+                                "type": "ManaValueAtLeast",
+                                "min": 7
+                            }
+                        ]
+                    }
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsColorless"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Konstad",
+        "flavorText": "\"At first we ignored the little ones. By the time we realized our error, it was too late.\"\n—General Tazri, allied commander",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c8c47679-0fac-466f-be3c-794f23576e55.jpg?1783911307"
+    },
+    "colorIdentityOverride": []
+}
+
 // Izzet Generatorium
 {
     "name": "Izzet Generatorium",
@@ -6768,6 +7488,78 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Kozilek's Unsealing
+{
+    "name": "Kozilek's Unsealing",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Devoid (This card has no color.)\nWhenever you cast a creature spell with mana value 4, 5, or 6, create two 0/1 colorless Eldrazi Spawn creature tokens with \"Sacrifice this token: Add {C}.\"\nWhenever you cast a creature spell with mana value 7 or greater, draw three cards.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kozilek's Unsealing:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "ManaValueAtLeast",
+                                "min": 4
+                            },
+                            {
+                                "type": "ManaValueAtMost",
+                                "max": 6
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Eldrazi Spawn",
+                    "count": 2
+                }
+            },
+            {
+                "id": "Kozilek's Unsealing:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "ManaValueAtLeast",
+                                "min": 7
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "UNCOMMON",
+        "artist": "Raph Lomotan",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6b44ffe-db9e-4db5-9806-098411c9ece0.jpg?1783911288"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -7043,6 +7835,102 @@
     ]
 }
 
+// Mandibular Kite
+{
+    "name": "Mandibular Kite",
+    "manaCost": "{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Living weapon (When this Equipment enters, create a 0/0 black Phyrexian Germ creature token, then attach this to it.)\nEquipped creature gets +1/+1 and has flying.\nEquip {3}{W}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mandibular Kite:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 0,
+                            "toughness": 0,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Phyrexian",
+                                "Germ"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/5/e/5ec719dc-6b07-4b1d-a79c-84ebced33422.jpg?1783911115"
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Living weapon (When this Equipment enters, create a 0/0 black Phyrexian Germ creature token, then attach this to it.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Mandibular Kite:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            }
+        ]
+    },
+    "equipCost": "{3}{W}",
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Bruno Biazotto",
+        "flavorText": "The Machine Orthodoxy finds skin impure, and will not sully their creations with impure material.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b922f71-18e6-4a74-b792-d477d4a1deca.jpg?1783911299"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Metastatic Evangel
 {
     "name": "Metastatic Evangel",
@@ -7125,6 +8013,170 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Mogg Mob
+{
+    "name": "Mogg Mob",
+    "manaCost": "{R}{R}{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "Sacrifice this creature: It deals 3 damage divided as you choose among one, two, or three targets.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mogg Mob:1",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "DividedDamage",
+                    "totalDamage": 3
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "count": 3,
+                        "minCount": 1
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Weston",
+        "flavorText": "There was absolutely nothing suspicious about three moggs carrying barrels of explosives—or so they told everyone who would listen.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1457aa8-9f70-4586-b595-6a722879f6ae.jpg?1783911270"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Monumental Henge
+{
+    "name": "Monumental Henge",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless you control a Plains.\n{T}: Add {W}.\n{2}{W}{W}, {T}: Look at the top five cards of your library. You may reveal a historic card from among them and put it into your hand. Put the rest on the bottom of your library in a random order. (Artifacts, legendaries, and Sagas are historic.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Monumental Henge:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Monumental Henge:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsArtifact",
+                                            "IsLegendary",
+                                            {
+                                                "type": "HasSubtype",
+                                                "subtype": "Saga"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a historic card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "land Plains"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62907e7b-e531-4f51-9a69-7e60ae525775.jpg?1783911239"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
