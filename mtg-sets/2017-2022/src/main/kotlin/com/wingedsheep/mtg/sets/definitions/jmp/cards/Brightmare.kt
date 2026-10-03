@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Brightmare
@@ -32,7 +31,7 @@ val Brightmare = card("Brightmare") {
         trigger = Triggers.self.enters()
         val creature = target(TargetFilter.Creature, optional = true)
         effect = Effects.Tap(creature) then
-            Effects.GainLife(DynamicAmounts.powerOf(EffectTarget.ContextTarget(0)))
+            Effects.GainLife(DynamicAmounts.powerOf(creature))
     }
 
     metadata {

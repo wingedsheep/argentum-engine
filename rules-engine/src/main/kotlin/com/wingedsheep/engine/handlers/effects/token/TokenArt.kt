@@ -32,6 +32,9 @@ object TokenArt {
             "Angel" to "https://cards.scryfall.io/art_crop/front/c/7/c7f3264a-7b4a-4fef-af73-d4241742a4e8.jpg?1561758046",
             "Ape" to "https://cards.scryfall.io/art_crop/front/8/3/8343e00c-5fc6-46a0-a238-3759338dced4.jpg?1562542388",
             "Assassin" to "https://cards.scryfall.io/art_crop/front/8/9/89eb9f92-d189-4438-b6fe-cb253055d63e.jpg?1562539812",
+            // Assembly-Worker (TSP — Urza's Factory). Time Spiral printed no token cards; this is
+            // Time Spiral Remastered's Assembly-Worker token, the same 2/2 artifact creature.
+            "Assembly-Worker" to "https://cards.scryfall.io/art_crop/front/e/7/e72daa68-0680-431c-a616-b3693fd58813.jpg?1783927692",
             "Bat" to "https://cards.scryfall.io/art_crop/front/1/0/100c0127-49dd-4a78-9c88-1881e7923674.jpg?1721425184",
             "Bear" to "https://cards.scryfall.io/art_crop/front/0/a/0a21bc37-6f21-4dda-a313-a0d75696f7fc.jpg?1561756625",
             "Beast" to "https://cards.scryfall.io/art_crop/front/c/e/ce45e037-5efb-4735-afee-12d7dc3127d1.jpg?1561758106",

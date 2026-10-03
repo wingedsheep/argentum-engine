@@ -80,8 +80,8 @@
                             "amount": {
                                 "type": "EntityProperty",
                                 "entity": {
-                                    "type": "ContextTarget",
-                                    "index": 0
+                                    "type": "BoundVariable",
+                                    "name": "t0"
                                 },
                                 "numericProperty": "Power"
                             }
