@@ -17737,7 +17737,7 @@
 {"name":"Magmatic Sinkhole"},
 {"name":"Magmatic Sprinter","kind":"LINE_DECLINED","line":"When ~ enters, put two oil counters on target artifact or creature you control."},
 {"name":"Magmaw"},
-{"name":"Magnanimous Magistrate","kind":"LINE_DECLINED","line":"~ enters with five reprieve counters on it."},
+{"name":"Magnanimous Magistrate","kind":"LINE_DECLINED","line":"Whenever another nontoken creature you control dies, if its mana value was 1 or greater, you may remove that many reprie"},
 {"name":"Magnetic Flux"},
 {"name":"Magnetic Mine","kind":"LINE_DECLINED","line":"Whenever another artifact is put into a graveyard from the battlefield, ~ deals 2 damage to that artifact's controller."},
 {"name":"Magnetic Mountain","kind":"LINE_DECLINED","line":"Blue creatures don't untap during their controllers' untap steps."},
