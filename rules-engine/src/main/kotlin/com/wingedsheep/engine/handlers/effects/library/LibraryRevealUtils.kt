@@ -91,14 +91,17 @@ object LibraryRevealUtils {
         playerIds: Collection<EntityId>
     ): GameState {
         if (cardIds.isEmpty() || playerIds.isEmpty()) return state
+        // Knowledge is acquired now, while the control window is active, even if that window
+        // ends before the next client update. Library shuffles still clear this reveal memory.
+        val observers = playerIds.toSet() + playerIds.map(state::actorFor)
         var newState = state
         for (cardId in cardIds) {
             newState = newState.updateEntity(cardId) { container ->
                 val existing = container.get<RevealedToComponent>()
                 val merged = if (existing == null) {
-                    RevealedToComponent(playerIds.toSet())
+                    RevealedToComponent(observers)
                 } else {
-                    existing.copy(playerIds = existing.playerIds + playerIds)
+                    existing.copy(playerIds = existing.playerIds + observers)
                 }
                 container.with(merged)
             }

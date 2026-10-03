@@ -1572,7 +1572,10 @@ data class CardsDrawnEvent(
     val playerId: EntityId,
     val count: Int,
     val cardIds: List<EntityId>,
-    val cardNames: List<String> = emptyList()
+    val cardNames: List<String> = emptyList(),
+    /** Additional players entitled to this identity at the moment of the draw. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val identityViewers: Set<EntityId> = emptySet(),
 ) : GameEvent
 
 /**
@@ -1932,7 +1935,9 @@ data class ManaSpentEvent(
 data class HandLookedAtEvent(
     val viewingPlayerId: EntityId,
     val targetPlayerId: EntityId,
-    val cardIds: List<EntityId>
+    val cardIds: List<EntityId>,
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val identityViewers: Set<EntityId> = emptySet(),
 ) : GameEvent
 
 /**
@@ -2375,3 +2380,15 @@ data class SourceObjectsRecordedEvent(
     val key: String,
     val objectIds: List<EntityId>,
 ) : GameEvent
+
+
+/** Internal authority lifecycle. Client routing is derived from actorFor; never exposes the captured card. */
+@Serializable
+@SerialName("ResolutionControlEvent")
+data class ResolutionControlEvent(
+    val control: com.wingedsheep.engine.state.ResolutionControl,
+    val stage: Stage,
+) : GameEvent {
+    @Serializable
+    enum class Stage { GRANTED, STARTED, ENDED }
+}

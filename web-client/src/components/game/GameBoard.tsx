@@ -1215,7 +1215,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
             : (() => {
                 const otherId = youAreHijacking ?? youAreHijackedBy
                 const otherName = gameState.players.find((p) => p.playerId === otherId)?.name ?? 'opponent'
-                return isHijacking ? `Controlling ${otherName}'s turn` : `${otherName} controls your turn`
+                return isHijacking ? `You control ${otherName}'s choices` : `${otherName} controls your choices`
               })()
           return (
             <div

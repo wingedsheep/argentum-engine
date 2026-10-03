@@ -139,7 +139,7 @@ object DrawLoop {
         var newState = state.copy(activeReplacementChain = null)
         if (drawnCards.isNotEmpty()) {
             val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-            events.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards, cardNames))
+            events.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards, cardNames, setOf(state.actorFor(playerId)) - playerId))
             newState = newState.copy(
                 lastCardDrawnThisTurnByPlayer = newState.lastCardDrawnThisTurnByPlayer + (playerId to drawnCards.last())
             )
@@ -165,7 +165,7 @@ object DrawLoop {
         var pausedState = pauseResult.state.copy(activeReplacementChain = null)
         if (drawnCards.isNotEmpty()) {
             val cardNames = drawnCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-            allEvents.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames))
+            allEvents.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames, setOf(state.actorFor(playerId)) - playerId))
             pausedState = pausedState.copy(
                 lastCardDrawnThisTurnByPlayer = pausedState.lastCardDrawnThisTurnByPlayer + (playerId to drawnCards.last())
             )

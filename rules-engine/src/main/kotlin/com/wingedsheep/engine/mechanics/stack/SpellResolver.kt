@@ -10,6 +10,7 @@ import com.wingedsheep.engine.mechanics.FlashbackGrants
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.engine.state.beginResolutionControl
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
@@ -89,8 +90,9 @@ internal class SpellResolver(
             alignedResolvedTargets = resolvedTargets
         }
 
-        var newState = state
-        val events = mutableListOf<GameEvent>()
+        val started = state.beginResolutionControl(spellId)
+        var newState = started.state
+        val events = started.events.toMutableList()
 
         // Check if permanent or non-permanent.
         // Adventure / split face cast (CR 715 / 709) — when the spell was cast as a face, route

@@ -42,22 +42,13 @@ class LookAtTargetHandExecutor : EffectExecutor<LookAtTargetHandEffect> {
             )
         }
 
-        // Mark each card as revealed to the viewing player
-        var newState = state
-        for (cardId in handCards) {
-            newState = newState.updateEntity(cardId) { container ->
-                val existing = container.get<RevealedToComponent>()
-                if (existing != null) {
-                    container.with(existing.withPlayer(viewingPlayerId))
-                } else {
-                    container.with(RevealedToComponent.to(viewingPlayerId))
-                }
-            }
-        }
+        val identityViewers = setOf(state.actorFor(viewingPlayerId)) - viewingPlayerId
+        val newState = com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils.markRevealed(
+            state, handCards, identityViewers + viewingPlayerId)
 
         return EffectResult.success(
             newState,
-            listOf(HandLookedAtEvent(viewingPlayerId, targetPlayerId, handCards))
+            listOf(HandLookedAtEvent(viewingPlayerId, targetPlayerId, handCards, identityViewers))
         )
     }
 }

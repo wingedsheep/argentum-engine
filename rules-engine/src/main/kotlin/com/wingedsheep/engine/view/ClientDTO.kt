@@ -78,14 +78,14 @@ data class ClientGameState(
     val dayNight: com.wingedsheep.sdk.core.DayNight? = null,
 
     /**
-     * If non-null, the affected player whose turn the viewing player is currently
-     * driving (Mindslaver-style hijack). Drives UI cues such as the controller banner
+     * If non-null, the affected player whose choices the viewing player is currently
+     * driving during turn, combat or stack-resolution control. Drives UI cues such as the controller banner
      * and promoting the affected player's hand to face-up.
      */
     val youAreHijacking: EntityId? = null,
 
     /**
-     * If non-null, the controller currently driving the viewing player's turn.
+     * If non-null, the controller currently driving the viewing player's choices.
      * Drives UI cues such as the affected-player banner and disabling click handlers.
      */
     val youAreHijackedBy: EntityId? = null,
@@ -94,7 +94,7 @@ data class ClientGameState(
      * True when the viewing player controls *every* seat for the whole game — the
      * single-client "hotseat" / play-against-yourself mode. Drives the "controlling both
      * players" banner and lets the client act for whichever seat currently has priority.
-     * Distinct from [youAreHijacking], which is the per-turn Mindslaver effect; the two are
+     * Distinct from [youAreHijacking], which is temporary rules control; the two are
      * never set together.
      */
     val hotseat: Boolean = false,

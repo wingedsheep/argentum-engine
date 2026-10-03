@@ -60,6 +60,10 @@ data class GameState(
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val sourceObjectRecords: Map<String, SourceObjectRecord> = emptyMap(),
 
+    /** Captured stack-object control windows, inactive until that object resolves. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val resolutionControls: List<ResolutionControl> = emptyList(),
+
     /** Outstanding zone-return one-shot effects, independent of the source's current abilities. */
     val zoneReturns: List<ZoneReturn> = emptyList(),
 
@@ -1113,7 +1117,7 @@ data class GameState(
     /**
      * Returns the player who currently has *input authority* for [playerId] — that is,
      * who clicks the buttons and answers the decisions. Normally this is [playerId]
-     * itself; during a Mindslaver-style hijacked turn this resolves to the hijacker.
+     * itself; during turn, combat or stack-resolution control this resolves to the controller.
      *
      * Resource ownership (mana, cards, life) is unaffected — it always stays with
      * [playerId]. This helper is consulted at input and private-view routing seams: legal action
@@ -1127,6 +1131,8 @@ data class GameState(
     fun actorFor(playerId: EntityId): EntityId {
         val entity = getEntity(playerId) ?: return playerId
         entity.get<com.wingedsheep.engine.state.components.player.HotseatControlComponent>()
+            ?.let { return it.controllerId }
+        resolutionControls.lastOrNull { it.playerId == playerId && isResolving(it.resolvingObject) }
             ?.let { return it.controllerId }
         val hijack = entity
             .get<com.wingedsheep.engine.state.components.player.PlayerTurnHijackedComponent>()
@@ -1178,7 +1184,12 @@ data class GameState(
      * spell leaves through [popFromStack] instead and keeps them on the permanent it becomes.
      */
     fun removeFromStack(entityId: EntityId): GameState =
-        copy(stack = stack - entityId).withoutObjectGrants(entityId)
+        copy(
+            stack = stack - entityId,
+            resolutionControls = resolutionControls.filterNot {
+                it.resolvingObject.entityId == entityId && !isResolving(it.resolvingObject)
+            },
+        ).withoutObjectGrants(entityId)
 
     /**
      * Drop the triggered, state-triggered and activated abilities granted to [entityId] — the
