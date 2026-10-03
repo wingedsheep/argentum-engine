@@ -1361,6 +1361,31 @@ outside the fold; it now writes the fold like its eight siblings. Behaviour is u
 engine matches both shapes the same way. Mutant Chain Reaction writes the same raw shape but is not
 yet compared (its token line declines), so it is left for the band that reaches it.
 
+## The two-symbol mana band
+
+The twenty-ninth loop band, tail key `{§}{§}.`: an "Add" of **different** mana symbols — Nantuko
+Elder's "{T}: Add {C}{G}.", the Signets' "{1}, {T}: Add {W}{U}.", the karoos and the Ice Age
+sacrifice lands' "Add {W}{B}." **52 lines**; the probe (collapsing the pair to "{G}.") finished 31
+cards. It delivered **39 hand-written cards read whole (7,617 → 7,656)** — more than the probe,
+because the same leaf now reads three-symbol strings and the restricted form below.
+
+### One leaf, one effect per run
+
+`Mana.production` was a run of one symbol and declined a mixed string rather than read its first
+symbol. The cards spell the mixed string one way only: one effect per run of a symbol, in printed
+order, chained with `then` — `Effects.AddColorlessMana(1) then Effects.AddMana(Color.GREEN, 1)`. The
+leaf now splits the string into runs and builds exactly that, and writes a plain `CompositeEffect` of
+writable runs back as their concatenation. Two adjacent runs of the same symbol print as one run and
+read back as one effect, so the token's own re-read refuses them; a composite carrying
+`stopOnError` or a description override refuses the same way. "Add {R}{G}. Spend this mana only to
+cast face-down spells …" rides along: a restriction over a composite is the one restriction every
+run carries, and none when they differ.
+
+### What the differential found
+
+Differential **7,223 compared / 73 divergent → 7,262 / 73**. All thirty-nine newly compared cards
+agree with their goldens; no card moved.
+
 ## The later clause
 
 The `.` family came back to the top of the tail ranking — **213 cards, 129 of them solely, over 216

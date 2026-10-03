@@ -78,6 +78,20 @@ class ActivatedTest : StringSpec({
             SdkCosts.Composite(SdkCosts.Mana("{2}"), AbilityCost.Tap)
     }
 
+    // Nantuko Elder: a string of different symbols is one effect per run, chained in printed order.
+    "a string of different mana symbols reads as the runs chained with then" {
+        listOf(
+            "{T}: Add {C}{G}.",
+            "{T}, Sacrifice ~: Add {W}{B}.",
+            "{T}: Add {G}{G}{W}.",
+        ).forEach { roundTrips(it) }
+
+        fragment("{T}: Add {C}{G}.").script.activatedAbilities.single().effect shouldBe
+            (Effects.AddColorlessMana(1) then Effects.AddMana(Color.GREEN, 1))
+        fragment("{T}: Add {G}{G}{W}.").script.activatedAbilities.single().effect shouldBe
+            (Effects.AddMana(Color.GREEN, 2) then Effects.AddMana(Color.WHITE, 1))
+    }
+
     // The whole reason the effect clause is a Steps slot: every step rule reaches this sentence
     // without this file knowing any of them.
     "the clause after the colon is the same grammar a spell prints" {
@@ -146,12 +160,6 @@ class ActivatedTest : StringSpec({
             )
         )
         Grammar.abilityLine.printLine(relabelled) shouldBe null
-    }
-
-    // A run of *different* symbols is a composite effect the SDK spells another way; reading the
-    // first symbol and dropping the rest would round-trip and mean something else.
-    "a mixed run of symbols declines rather than reading the first one" {
-        Grammar.abilityLine.parseLine("{T}: Add {W}{U}.").shouldBeInstanceOf<ParseOutcome.Declined>()
     }
 
     // The differential's answer for these is `ManaColorSet.Specific`, which the grammar deliberately

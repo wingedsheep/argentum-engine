@@ -74,6 +74,7 @@ class ManaSpendingTest : StringSpec({
             "{T}: Add {U}. Spend this mana only to cast instant or sorcery spells.",
             "{T}: Add {C}{C}. Spend this mana only to cast legendary spells.",
             "{T}: Add {G}{G}. Spend this mana only to cast kicked spells.",
+            "{T}: Add {R}{G}. Spend this mana only to cast creature spells.",
             "{T}: Add {C}{C}. Spend this mana only to activate abilities.",
             "{T}: Add {R}. Spend this mana only to activate equip abilities.",
             "{T}: Add {C}. Spend this mana only to turn permanents face up.",

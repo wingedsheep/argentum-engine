@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -49,13 +50,15 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 object Mana {
 
     /**
-     * "{G}", "{G}{G}", "{C}" — a repeated run of **one** mana symbol, as the effect it produces.
+     * "{G}", "{G}{G}", "{C}", "{C}{G}" — a string of mana symbols, as the effect it produces.
      *
      * One leaf rather than a symbol phrase plus a count, for the reason [Primitives.statModifiers]
      * is one leaf: the printed form repeats the symbol and the model holds a number, so neither
-     * half can be written without seeing the other. A run of *different* symbols ("Add {W}{U}") is
-     * a different effect the SDK spells as a composite, and this leaf declines it rather than
-     * reading the first symbol and dropping the rest.
+     * half can be written without seeing the other. A string of *different* symbols ("Add {W}{U}",
+     * Nantuko Elder's "{C}{G}") is how the cards spell it: one effect per run of a symbol, chained
+     * with `then` — `Effects.AddColorlessMana(1) then Effects.AddMana(Color.GREEN, 1)` — in printed
+     * order. Two adjacent runs of the same symbol are not a spelling of anything; they print as one
+     * run, read back as one effect and refuse.
      *
      * The two halves are checked against each other by [token] itself, which re-reads what it
      * writes on every call — so an `AddManaEffect` carrying a restriction, a rider or a non-default
@@ -341,6 +344,8 @@ object Mana {
         is AddColorlessManaEffect -> effect.restriction
         is AddManaOfChoiceEffect -> effect.restriction
         is AddDynamicManaEffect -> effect.restriction
+        // "Add {R}{G}. Spend this mana only …" restricts every run alike; differing runs say no sentence.
+        is CompositeEffect -> effect.effects.map(::restrictionOf).distinct().singleOrNull()
         else -> null
     }
 
@@ -357,6 +362,7 @@ object Mana {
         is AddColorlessManaEffect -> effect.copy(restriction = restriction)
         is AddManaOfChoiceEffect -> effect.copy(restriction = restriction)
         is AddDynamicManaEffect -> effect.copy(restriction = restriction)
+        is CompositeEffect -> effect.copy(effects = effect.effects.map { withRestriction(it, restriction) ?: return null })
         else -> null
     }
 
@@ -370,14 +376,31 @@ object Mana {
      */
     private fun readProduction(symbols: String): Effect? {
         val letters = symbols.filter { it in "WUBRGC" }
-        val symbol = letters.firstOrNull() ?: return null
-        if (letters.any { it != symbol }) return null
-        val count = letters.length
-        if (symbol == 'C') return Effects.AddColorlessMana(count)
-        return Effects.AddMana(Color.fromSymbol(symbol) ?: return null, count)
+        if (letters.isEmpty()) return null
+        val runs = mutableListOf<Effect>()
+        var start = 0
+        while (start < letters.length) {
+            val symbol = letters[start]
+            var end = start
+            while (end < letters.length && letters[end] == symbol) end++
+            runs += readRun(symbol, end - start) ?: return null
+            start = end
+        }
+        return runs.reduce { chain, next -> chain then next }
     }
 
+    private fun readRun(symbol: Char, count: Int): Effect? =
+        if (symbol == 'C') Effects.AddColorlessMana(count)
+        else Effects.AddMana(Color.fromSymbol(symbol) ?: return null, count)
+
     private fun writeProduction(effect: Effect): String? = when (effect) {
+        is CompositeEffect -> effect.effects.takeIf { it.size >= 2 }
+            ?.map { (it as? CompositeEffect)?.let { return null } ?: writeRun(it) ?: return null }
+            ?.joinToString("")
+        else -> writeRun(effect)
+    }
+
+    private fun writeRun(effect: Effect): String? = when (effect) {
         is AddManaEffect -> effect.amount.fixed()?.let { "{${effect.color.symbol}}".repeat(it) }
         is AddColorlessManaEffect -> effect.amount.fixed()?.let { "{C}".repeat(it) }
         else -> null
