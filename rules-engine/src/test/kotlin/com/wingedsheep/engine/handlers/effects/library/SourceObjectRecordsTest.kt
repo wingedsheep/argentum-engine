@@ -61,9 +61,17 @@ class SourceObjectRecordsTest : FunSpec({
     )
     fun record(state: GameState, ctx: EffectContext, key: String = "marked") =
         recorder.execute(state, RecordSourceObjectsEffect("input", key), ctx)
-    fun gather(state: GameState, ctx: EffectContext, excluding: String? = null) =
-        gatherer.execute(state, GatherCardsEffect(CardSource.SourceLinkedBattlefield("marked", excluding), "out"), ctx)
-            .updatedCollections["out"]
+    fun gather(state: GameState, ctx: EffectContext, excluding: String? = null): List<EntityId>? {
+        val marked = gatherer.execute(state, GatherCardsEffect(CardSource.SourceLinkedBattlefield("marked"), "out"), ctx)
+            .updatedCollections["out"] ?: return null
+        if (excluding == null) return marked
+        val omitted = gatherer.execute(state, GatherCardsEffect(CardSource.SourceLinkedBattlefield(excluding), "omitted"), ctx)
+            .updatedCollections["omitted"].orEmpty()
+        return FilterCollectionExecutor(evaluator).execute(state, FilterCollectionEffect(
+            from = "out", collectionFilter = CollectionFilter.ExcludeOtherCollection("omitted"), storeMatching = "remaining"
+        ), ctx.copy(pipeline = PipelineState(storedCollections = mapOf("out" to marked, "omitted" to omitted))))
+            .updatedCollections["remaining"]
+    }
     fun blink(state: GameState, id: EntityId): GameState = state
         .moveToZone(id, ZoneKey(owner, Zone.BATTLEFIELD), ZoneKey(owner, Zone.EXILE))
         .moveToZone(id, ZoneKey(owner, Zone.EXILE), ZoneKey(owner, Zone.BATTLEFIELD))
@@ -91,6 +99,56 @@ class SourceObjectRecordsTest : FunSpec({
         val late = record(returned, old.copy(pipeline = PipelineState(storedCollections = mapOf("input" to listOf(otherTarget))))).state
         gather(late, old) shouldBe listOf(target, otherTarget)
         gather(late, context(returned).copy(sourceBattlefieldTimestamp = null)) shouldBe emptyList()
+    }
+    test("entry and departure triggers share the entered visit even when entry resolves after departure") {
+        val definition = com.wingedsheep.sdk.dsl.card("Land 0") {
+            typeLine = "Land"
+            triggeredAbility {
+                trigger = com.wingedsheep.sdk.dsl.Triggers.self.enters()
+                effect = com.wingedsheep.sdk.dsl.Effects.DrawCards(1)
+            }
+            triggeredAbility {
+                trigger = com.wingedsheep.sdk.dsl.Triggers.self.dies()
+                effect = com.wingedsheep.sdk.dsl.Effects.DrawCards(1)
+            }
+        }
+        val registry = com.wingedsheep.engine.registry.CardRegistry().also { it.register(definition) }
+        val detector = com.wingedsheep.engine.event.TriggerDetector(registry,
+            predicateEvaluator = evaluator, conditionEvaluator = evaluator.conditions)
+        val before = initial().moveToZone(source, ZoneKey(owner, Zone.BATTLEFIELD), ZoneKey(owner, Zone.HAND))
+        val entered = before.moveToZone(source, ZoneKey(owner, Zone.HAND), ZoneKey(owner, Zone.BATTLEFIELD))
+            .updateEntity(source) { it.with(BattlefieldEntryTimestampComponent(100)) }
+        val entry = com.wingedsheep.engine.core.ZoneChangeEvent(source, definition.name, Zone.HAND,
+            Zone.BATTLEFIELD, owner, oldObject = before.objectRef(source), newObject = entered.objectRef(source),
+            enteredBattlefieldTimestamp = 100)
+        val entryTrigger = detector.detectTriggers(entered, listOf(entry)).single()
+        entryTrigger.objectReferences.origin shouldBe entered.objectRef(source)
+        val entryContext = EffectContext(sourceId = source, controllerId = owner,
+            sourceBattlefieldTimestamp = entryTrigger.sourceBattlefieldTimestamp,
+            objectReferences = entryTrigger.objectReferences,
+            pipeline = PipelineState(storedCollections = mapOf("input" to listOf(target))))
+        val markedOnEntry = record(entered, entryContext).state
+        gather(markedOnEntry, context(markedOnEntry)) shouldBe listOf(target)
+        val departed = markedOnEntry.moveToZone(source, ZoneKey(owner, Zone.BATTLEFIELD), ZoneKey(owner, Zone.GRAVEYARD))
+        val death = com.wingedsheep.engine.core.ZoneChangeEvent(source, definition.name, Zone.BATTLEFIELD,
+            Zone.GRAVEYARD, owner, oldObject = entered.objectRef(source), newObject = departed.objectRef(source),
+            lastKnown = com.wingedsheep.engine.state.components.stack.EntitySnapshot.fromProjection(source, markedOnEntry)
+                .copy(cardDefinitionId = definition.name))
+        val deathTrigger = detector.detectTriggers(departed, listOf(death)).single()
+        val deathContext = EffectContext(sourceId = source, controllerId = owner,
+            sourceBattlefieldTimestamp = deathTrigger.sourceBattlefieldTimestamp,
+            objectReferences = deathTrigger.objectReferences)
+        gather(departed, deathContext) shouldBe listOf(target)
+        val late = record(departed, entryContext.copy(pipeline = PipelineState(
+            storedCollections = mapOf("input" to listOf(otherTarget))))).state
+        gather(late, deathContext) shouldBe listOf(target, otherTarget)
+        val delayed = com.wingedsheep.engine.handlers.effects.composite.CreateDelayedTriggerExecutor(evaluator.amounts)
+            .execute(late, CreateDelayedTriggerEffect(step = com.wingedsheep.sdk.core.Step.UPKEEP,
+                effect = GatherCardsEffect(CardSource.SourceLinkedBattlefield("marked"), "remembered")), entryContext).state
+        val delayedTrigger = detector.detectDelayedTriggers(delayed.copy(turnNumber = 2), com.wingedsheep.sdk.core.Step.UPKEEP)
+            .first.single()
+        gather(delayed, EffectContext(sourceId = source, controllerId = owner,
+            objectReferences = delayedTrigger.objectReferences)) shouldBe listOf(target, otherTarget)
     }
     test("source and target token disappearance do not lose source history or resurrect target") {
         val state = initial()
@@ -170,7 +228,7 @@ class SourceObjectRecordsTest : FunSpec({
         gather(restored, json.decodeFromString<EffectContext>(json.encodeToString(ctx))) shouldBe listOf(target)
         val effect: Effect = RecordSourceObjectsEffect("input", "marked")
         json.decodeFromString<Effect>(json.encodeToString(effect)) shouldBe effect
-        val source: CardSource = CardSource.SourceLinkedBattlefield("marked", "cleaned")
+        val source: CardSource = CardSource.SourceLinkedBattlefield("marked")
         json.decodeFromString<CardSource>(json.encodeToString(source)) shouldBe source
         val event = result.events.single()
         json.decodeFromString<com.wingedsheep.engine.core.GameEvent>(json.encodeToString(event)) shouldBe event

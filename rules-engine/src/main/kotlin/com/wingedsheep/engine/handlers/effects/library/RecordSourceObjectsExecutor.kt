@@ -37,13 +37,12 @@ internal object SourceObjectRecords {
 
     fun scopeKey(source: ObjectRef): String = "${source.entityId}:${source.generation}"
 
-    fun gather(state: GameState, context: EffectContext, key: String, excludingKey: String?): List<EntityId> {
+    fun gather(state: GameState, context: EffectContext, key: String): List<EntityId> {
         val source = sourceReference(state, context) ?: return emptyList()
         val slots = state.sourceObjectRecords[scopeKey(source)]?.slots ?: return emptyList()
-        val excluded = excludingKey?.let { slots[it].orEmpty().toSet() }.orEmpty()
         val battlefield = state.getBattlefield().toSet() // Phased-out objects are absent from this view.
         return slots[key].orEmpty().filter {
-            it !in excluded && it.entityId in battlefield && state.isCurrentObject(it)
+            it.entityId in battlefield && state.isCurrentObject(it)
         }.map { it.entityId }
     }
 }

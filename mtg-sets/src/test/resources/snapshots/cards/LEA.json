@@ -1201,14 +1201,30 @@
                                 "type": "GatherCards",
                                 "source": {
                                     "type": "SourceLinkedBattlefield",
-                                    "key": "marked",
-                                    "excludingKey": "cleaned"
+                                    "key": "marked"
                                 },
                                 "storeAs": "gathered0"
                             },
                             {
-                                "type": "SelectFromCollection",
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "SourceLinkedBattlefield",
+                                    "key": "cleaned"
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "FilterCollection",
                                 "from": "gathered0",
+                                "collectionFilter": {
+                                    "type": "ExcludeOtherCollection",
+                                    "otherCollectionName": "gathered1"
+                                },
+                                "storeMatching": "matching2"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "matching2",
                                 "selection": {
                                     "type": "ChooseExactly",
                                     "count": {
@@ -1217,7 +1233,7 @@
                                     }
                                 },
                                 "filter": "land",
-                                "storeSelected": "selected1",
+                                "storeSelected": "selected3",
                                 "prompt": "Choose a land marked by this Cyclopean Tomb to remove all mire counters",
                                 "useTargetingUI": true
                             },
@@ -1225,7 +1241,7 @@
                                 "type": "ForEach",
                                 "space": {
                                     "type": "IterationSpace.Collection",
-                                    "collection": "selected1"
+                                    "collection": "selected3"
                                 },
                                 "body": {
                                     "type": "Gated",
@@ -1236,14 +1252,14 @@
                                             "counterType": "MIRE",
                                             "target": {
                                                 "type": "PipelineTarget",
-                                                "collectionName": "selected1"
+                                                "collectionName": "selected3"
                                             }
                                         },
                                         "successCriterion": "SuccessCriterion.CountersRemoved"
                                     },
                                     "then": {
                                         "type": "RecordSourceObjects",
-                                        "from": "selected1",
+                                        "from": "selected3",
                                         "key": "cleaned"
                                     }
                                 }

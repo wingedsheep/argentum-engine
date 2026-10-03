@@ -41,8 +41,10 @@ val CyclopeanTomb = card("Cyclopean Tomb") {
             repeatAtEachMatchingStep = true,
             expiry = DelayedTriggerExpiry.Never,
             effect = Effects.Pipeline {
-                val marked = gather(CardSource.SourceLinkedBattlefield("marked", excludingKey = "cleaned"))
-                val land = chooseExactly(1, marked, filter = GameObjectFilter.Land,
+                val marked = gather(CardSource.SourceLinkedBattlefield("marked"))
+                val cleaned = gather(CardSource.SourceLinkedBattlefield("cleaned"))
+                val eligible = exclude(marked, cleaned)
+                val land = chooseExactly(1, eligible, filter = GameObjectFilter.Land,
                     prompt = "Choose a land marked by this Cyclopean Tomb to remove all mire counters",
                     useTargetingUI = true)
                 run(Effects.ForEachInCollection(land, Effects.IfYouDo(

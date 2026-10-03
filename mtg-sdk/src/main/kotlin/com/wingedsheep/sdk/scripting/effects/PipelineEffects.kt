@@ -49,7 +49,6 @@ sealed interface CardSource {
     @Serializable
     data class SourceLinkedBattlefield(
         val key: String,
-        val excludingKey: String? = null,
     ) : CardSource {
         override val description: String = "permanents recorded by this source"
     }

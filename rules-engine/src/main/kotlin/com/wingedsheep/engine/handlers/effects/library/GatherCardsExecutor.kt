@@ -242,7 +242,7 @@ class GatherCardsExecutor(
             }
 
             is CardSource.SourceLinkedBattlefield -> {
-                SourceObjectRecords.gather(state, context, source.key, source.excludingKey)
+                SourceObjectRecords.gather(state, context, source.key)
             }
 
             is CardSource.FromLinkedExile -> {
