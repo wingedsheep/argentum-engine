@@ -1278,10 +1278,10 @@ choice", "the chosen player" — is different SDK shapes and not in this band.
 
 ### What the differential found
 
-Differential **7,113 compared / 72 divergent → 7,121 / 73**. The one new divergence was a card bug:
+Differential **7,113 compared / 72 divergent → 7,121 / 72**. The one new divergence was a card bug:
 Sygg, River Guide targeted a Merfolk *creature*, where "target Merfolk" is any Merfolk permanent (the
 bare tribal noun, as Sawblade Slinger's Zombie was). Fixed to `GameObjectFilter.Permanent.withSubtype`;
-it is the only card that moved in the golden.
+it is the only card that moved in the golden, and the other seven newly compared cards agree.
 
 ## The later clause
 
