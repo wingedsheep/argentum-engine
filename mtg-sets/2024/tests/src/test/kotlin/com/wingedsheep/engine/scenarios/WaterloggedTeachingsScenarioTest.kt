@@ -46,7 +46,7 @@ class WaterloggedTeachingsScenarioTest : ScenarioTestBase() {
                 offered shouldContainExactlyInAnyOrder listOf("Lightning Bolt", "Faerie Harbinger")
             }
 
-            game.selectCards(listOf(game.findCardsInLibrary(1, "Faerie Harbinger").single()))
+            game.selectCards(listOf(game.findCardsInLibrary(1, "Faerie Harbinger").single())).error shouldBe null
             game.resolveStack()
 
             game.isInHand(1, "Faerie Harbinger") shouldBe true

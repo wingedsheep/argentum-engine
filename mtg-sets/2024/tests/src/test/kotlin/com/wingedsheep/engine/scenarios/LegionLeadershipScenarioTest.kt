@@ -56,6 +56,18 @@ class LegionLeadershipScenarioTest : ScenarioTestBase() {
                 game.state.projectedState.getPower(giant) shouldBe 12
                 game.state.projectedState.getToughness(giant) shouldBe 6
             }
+
+            test("the bonus is locked in at resolution; a later pump isn't doubled") {
+                val game = castGame()
+                val giant = game.findPermanent("Hill Giant")!!
+                game.castSpell(1, "Legion Leadership", giant).error shouldBe null
+                game.resolveStack()
+                game.castSpell(1, "Giant Growth", giant).error shouldBe null
+                game.resolveStack()
+
+                game.state.projectedState.getPower(giant) shouldBe 9
+                game.state.projectedState.getToughness(giant) shouldBe 6
+            }
         }
 
         context("Legion Stronghold — the land back") {

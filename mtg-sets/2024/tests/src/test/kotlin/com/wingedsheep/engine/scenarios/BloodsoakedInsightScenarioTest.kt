@@ -45,6 +45,12 @@ class BloodsoakedInsightScenarioTest : ScenarioTestBase() {
             game.castSpellTargetingPlayer(1, "Bloodsoaked Insight", 2).error shouldBe null
             game.resolveStack()
 
+            val untappedMountains = game.state.getBattlefield().count { id ->
+                val e = game.state.getEntity(id)!!
+                e.get<CardComponent>()!!.name == "Mountain" && !e.has<TappedComponent>()
+            }
+            untappedMountains shouldBe 2
+
             game.state.getLibrary(game.player2Id).size shouldBe 0
             val exiled = game.state.getExile(game.player2Id)
             exiled.size shouldBe 3

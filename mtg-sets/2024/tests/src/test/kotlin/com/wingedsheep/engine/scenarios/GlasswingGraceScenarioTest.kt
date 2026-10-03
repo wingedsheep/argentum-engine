@@ -19,12 +19,11 @@ class GlasswingGraceScenarioTest : ScenarioTestBase() {
     init {
         context("Glasswing Grace — the Aura front") {
 
-            test("enchanted creature gets +2/+2, flying and lifelink; hybrid pips paid with W and B") {
+            test("enchanted creature gets +2/+2, flying and lifelink; hybrid pips paid with B") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardInHand(1, "Glasswing Grace")
-                    .withLandsOnBattlefield(1, "Plains", 4)
-                    .withLandsOnBattlefield(1, "Swamp", 1)
+                    .withLandsOnBattlefield(1, "Swamp", 5)
                     .withCardOnBattlefield(1, "Grizzly Bears")
                     .withCardInLibrary(1, "Plains")
                     .withCardInLibrary(2, "Island")

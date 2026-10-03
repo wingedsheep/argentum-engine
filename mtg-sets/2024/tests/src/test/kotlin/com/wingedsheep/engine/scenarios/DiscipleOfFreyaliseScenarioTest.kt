@@ -24,8 +24,10 @@ class DiscipleOfFreyaliseScenarioTest : ScenarioTestBase() {
         .withPlayers("Player", "Opponent")
         .withCardInHand(1, "Disciple of Freyalise")
         .withLandsOnBattlefield(1, "Forest", 6)
-        .withCardOnBattlefield(1, "Centaur Courser")
+        .withCardOnBattlefield(1, "Craw Wurm") // power 6, unlike Disciple's own 3
         .withCardOnBattlefield(2, "Grizzly Bears")
+        .withCardInLibrary(1, "Forest")
+        .withCardInLibrary(1, "Forest")
         .withCardInLibrary(1, "Forest")
         .withCardInLibrary(1, "Forest")
         .withCardInLibrary(1, "Forest")
@@ -47,23 +49,23 @@ class DiscipleOfFreyaliseScenarioTest : ScenarioTestBase() {
     init {
         context("Disciple of Freyalise — enters trigger") {
 
-            test("sacrificing a 3-power creature gains 3 life and draws 3 cards") {
+            test("sacrificing a 6-power creature gains 6 life and draws 6 cards") {
                 val game = castDisciple()
-                val courser = game.findPermanent("Centaur Courser")!!
+                val wurm = game.findPermanent("Craw Wurm")!!
                 game.castSpell(1, "Disciple of Freyalise").error shouldBe null
                 game.resolveStack()
 
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<SelectCardsDecision>()
                 withClue("only another creature you control is offered") {
-                    decision.options shouldContainExactlyInAnyOrder listOf(courser)
+                    decision.options shouldContainExactlyInAnyOrder listOf(wurm)
                 }
-                game.selectCards(listOf(courser)).error shouldBe null
+                game.selectCards(listOf(wurm)).error shouldBe null
                 game.resolveStack()
 
-                game.isInGraveyard(1, "Centaur Courser") shouldBe true
-                game.getLifeTotal(1) shouldBe 23
-                game.state.getHand(game.player1Id).size shouldBe 3
+                game.isInGraveyard(1, "Craw Wurm") shouldBe true
+                game.getLifeTotal(1) shouldBe 26
+                game.state.getHand(game.player1Id).size shouldBe 6
                 game.isOnBattlefield("Disciple of Freyalise") shouldBe true
             }
 
@@ -74,7 +76,7 @@ class DiscipleOfFreyaliseScenarioTest : ScenarioTestBase() {
                 game.skipSelection().error shouldBe null
                 game.resolveStack()
 
-                game.isOnBattlefield("Centaur Courser") shouldBe true
+                game.isOnBattlefield("Craw Wurm") shouldBe true
                 game.getLifeTotal(1) shouldBe 20
                 game.state.getHand(game.player1Id).size shouldBe 0
             }
