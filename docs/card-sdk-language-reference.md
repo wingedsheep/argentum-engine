@@ -16244,7 +16244,7 @@ Shared-turn teams follow the existing player-control team rule. A later resoluti
 and a completed window reveals the underlying turn control again. Session hotseat routing keeps precedence.
 
 This primitive composes with `Effects.ForcePlay` for mandatory paid card play. Word of Command
-still needs exact feasible mana-allocation plans (G41); it is not yet authorable faithfully.
+still needs feasible activated-source plans and recoverable payment (G42); it is not yet authorable faithfully.
 
 ### Scoped mana-ability sources
 
