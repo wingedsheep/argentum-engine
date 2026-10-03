@@ -1011,6 +1011,11 @@ class GameSession(
             return legalActionEnricher.enrich(manaActions, state, window.playerId)
         }
 
+        (state.pendingDecision as? com.wingedsheep.engine.core.PlayCardDecision)?.let { play ->
+            if (state.actorFor(play.playerId) != playerId) return emptyList()
+            return legalActionEnricher.enrich(legalActionEnumerator.enumerate(state, play.playerId), state, play.playerId)
+        }
+
         val priorityPlayer = state.priorityPlayerId ?: return emptyList()
         // The seat this connection may act as right now. Normally the priority player, or — when
         // their turn is hijacked — whoever this connection is the actor for. Legal actions are

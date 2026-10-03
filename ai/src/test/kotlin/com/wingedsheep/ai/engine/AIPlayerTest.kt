@@ -52,6 +52,28 @@ class AIPlayerTest : FunSpec({
         return Pair(result.state, ActionProcessor(registry))
     }
 
+    test("AI and standalone responders complete a mandatory paid cast without passing") {
+        val d = GameTestDriver()
+        d.registerCards(TestCards.all)
+        d.initMirrorMatch(Deck.of("Mountain" to 40), skipMulligans = true)
+        val player = d.activePlayer!!
+        val chosen = d.putCardInHand(player, "Shock")
+        d.giveMana(player, com.wingedsheep.sdk.core.Color.RED, 1)
+        val forced = d.services.effectExecutorRegistry.execute(d.state, Effects.ForcePlay("chosen"),
+            com.wingedsheep.engine.handlers.EffectContext(sourceId = null, controllerId = player,
+                pipeline = com.wingedsheep.engine.handlers.PipelineState(storedCollections = mapOf("chosen" to listOf(chosen)))))
+        d.replaceState(forced.state)
+        val decision = d.pendingDecision as PlayCardDecision
+        val ai = AIPlayer.create(d.services.cardRegistry, player)
+        val strategic = ai.respondToDecision(d.state, decision) as PlayCardResponse
+        (strategic.action as CastSpell).cardId shouldBe chosen
+        ActionProcessor(d.services).process(d.state, SubmitDecision(player, strategic)).result.error shouldBe null
+        val fallback = DecisionResponder(GameSimulator(d.services.cardRegistry), AIPlayer.defaultEvaluator())
+            .respond(d.state, decision, player) as PlayCardResponse
+        (fallback.action as CastSpell).cardId shouldBe chosen
+        ActionProcessor(d.services).process(d.state, SubmitDecision(player, fallback)).result.error shouldBe null
+    }
+
     test("AI can evaluate board state") {
         val registry = createCardRegistry()
         val (state, _) = initGame(registry, Deck.of("Mountain" to 17, "Raging Goblin" to 3))

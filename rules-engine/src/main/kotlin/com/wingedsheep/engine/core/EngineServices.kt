@@ -94,7 +94,7 @@ class EngineServices(
      * from this whole graph, so it receives them as providers of [castSpellHandler],
      * [playLandHandler] and [costPaymentService], which are only read once an effect executes.
      */
-    val effectExecutorRegistry = EffectExecutorRegistry(
+    val effectExecutorRegistry: EffectExecutorRegistry = EffectExecutorRegistry(
         zones,
         cardRegistry = cardRegistry,
         tokenArtRegistry = tokenArtRegistry,
@@ -104,7 +104,8 @@ class EngineServices(
         playLandHandler = { playLandHandler },
         costPaymentService = { costPaymentService },
         targetFinder = targetFinder,
-        targetValidator = targetValidator
+        targetValidator = targetValidator,
+        legalActionEnumerator = { legalActionEnumerator }
     )
     val manaAbilitySideEffectExecutor = ManaAbilitySideEffectExecutor(
         zones,
@@ -141,7 +142,7 @@ class EngineServices(
         effectExecutor = effectExecutorRegistry::execute,
         replacementProcessor = replacementEffectProcessor
     )
-    val legalActionEnumerator = LegalActionEnumerator(
+    val legalActionEnumerator: LegalActionEnumerator = LegalActionEnumerator(
         cardRegistry, manaSolver, costCalculator, predicateEvaluator, conditionEvaluator, turnManager
     )
     val continuationHandler = ContinuationHandler(this)

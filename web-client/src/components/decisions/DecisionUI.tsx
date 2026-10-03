@@ -24,6 +24,7 @@ import { SplitPilesUI } from './SplitPilesUI'
 import { ManaSourceSelectionUI } from './ManaSourceSelectionUI'
 import { isLoneTargetRequirement, partitionTargetsByZone } from '@/utils/targeting.ts'
 import styles from './DecisionUI.module.css'
+import { PlayCardDecisionUI } from './PlayCardDecisionUI'
 
 /**
  * Check if a ChooseTargetsDecision is a single player-only requirement asking for one target.
@@ -57,6 +58,7 @@ export function DecisionUI() {
   }, [pendingDecision?.id])
 
   if (!pendingDecision) return null
+  if (pendingDecision.type === 'PlayCardDecision') return <PlayCardDecisionUI />
 
   // A prompt raised once per object names its subject on the minimized button too, so a player
   // who stepped out to read the board knows which creature they are coming back to answer for.

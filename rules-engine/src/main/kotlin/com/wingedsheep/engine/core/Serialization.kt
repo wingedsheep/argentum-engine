@@ -194,6 +194,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DistributeDecision::class)
         subclass(OrderObjectsDecision::class)
         subclass(SplitPilesDecision::class)
+        subclass(PlayCardDecision::class)
         subclass(ChooseOptionDecision::class)
         subclass(ChooseReplacementDecision::class)
         subclass(BudgetModalDecision::class)
@@ -216,6 +217,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DistributionResponse::class)
         subclass(OrderedResponse::class)
         subclass(PilesSplitResponse::class)
+        subclass(PlayCardResponse::class)
         subclass(OptionChosenResponse::class)
         subclass(ReplacementChosenResponse::class)
         subclass(BudgetModalResponse::class)
@@ -230,6 +232,7 @@ val engineSerializersModule = SerializersModule {
     polymorphic(ContinuationFrame::class) {
         subclass(Suspension::class)
         subclass(FinishResolvingSpellContinuation::class)
+        subclass(FinishForcedPlayContinuation::class)
         subclass(EndResolutionControlContinuation::class)
         subclass(ReplacementResolveContinuation::class)
         subclass(PerformLifeGainContinuation::class)
@@ -257,6 +260,7 @@ val engineSerializersModule = SerializersModule {
     }
 
     polymorphic(AutomaticContinuation::class) {
+        subclass(FinishForcedPlayContinuation::class)
         subclass(FinishResolvingSpellContinuation::class)
         subclass(EndResolutionControlContinuation::class)
         subclass(ReplacementResolveContinuation::class)
@@ -360,6 +364,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ReturnFromLinkedExileContinuation::class)
         subclass(CascadeMayCastContinuation::class)
         subclass(DiscoverMayCastContinuation::class)
+        subclass(ForcedPlayContinuation::class)
         subclass(CastFromCollectionTargetsContinuation::class)
         subclass(CastAnyNumberFromCollectionContinuation::class)
         subclass(LeylineDecisionContinuation::class)

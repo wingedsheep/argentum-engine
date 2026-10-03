@@ -51,6 +51,7 @@ fun GameState.restoreSuspension(suspension: Suspension): GameState {
 }
 
 private fun PendingDecision.requestEventType(): String = when (this) {
+    is PlayCardDecision -> "PLAY_CARD"
     is ChooseTargetsDecision -> "CHOOSE_TARGETS"
     is SelectCardsDecision -> "SELECT_CARDS"
     is SearchLibraryDecision -> "SEARCH_LIBRARY"

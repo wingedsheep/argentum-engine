@@ -244,7 +244,8 @@ class GameEnvironment private constructor(
      * Uses [EnumerationMode.ACTIONS_ONLY] to skip expensive auto-tap preview
      * computation (not needed for AI/MCTS).
      *
-     * If a [PendingDecision] is active, returns an empty list — use
+     * A forced-play decision exposes its normal cast/land templates. For other decisions this
+     * returns an empty list — use
      * [decisionOptions] instead to get the available decision responses,
      * or construct a [SubmitDecision] manually.
      *
@@ -252,7 +253,7 @@ class GameEnvironment private constructor(
      */
     fun legalActions(): List<LegalAction> {
         val playerId = agentToAct ?: return emptyList()
-        if (state.pendingDecision != null) return emptyList()
+        if (state.pendingDecision != null && state.pendingDecision !is com.wingedsheep.engine.core.PlayCardDecision) return emptyList()
         if (state.gameOver) return emptyList()
         return enumerator.enumerate(state, playerId, EnumerationMode.ACTIONS_ONLY)
     }
@@ -357,7 +358,12 @@ class GameEnvironment private constructor(
             val player = agentToAct ?: break
             val selector = agents[player]
 
-            val action = if (pendingDecision != null) {
+            val action = if (pendingDecision is PlayCardDecision) {
+                val decision = pendingDecision as PlayCardDecision
+                val actions = legalActions().filter { it.affordable && !it.hasUnfillableTargetRequirement }
+                val chosen = selector?.selectAction(state, actions) ?: actions.first().action
+                SubmitDecision(player, PlayCardResponse(decision.id, chosen))
+            } else if (pendingDecision != null) {
                 val decision = pendingDecision!!
                 // A selector signals "I don't handle decisions" by throwing
                 // UnsupportedOperationException (see RandomActionSelector); fall back to the

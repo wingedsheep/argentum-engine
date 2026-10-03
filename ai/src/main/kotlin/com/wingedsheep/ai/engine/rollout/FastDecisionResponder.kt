@@ -71,6 +71,8 @@ class FastDecisionResponder(private val intents: IntentCatalog = IntentCatalog.N
     fun respond(state: GameState, decision: PendingDecision, playerId: EntityId): DecisionResponse {
         TrivialDecisions.responseFor(decision)?.let { return it }
         return when (decision) {
+            is com.wingedsheep.engine.core.PlayCardDecision ->
+                error("Forced play must use the rollout's ordinary action policy")
             // Rank by the same heuristic the Strategist's cheap path uses. Not "first legal": a
             // playout that aims every removal spell at the nearest 1/1 systematically undervalues
             // removal, which is a bias in the leaf the whole phase exists to improve.

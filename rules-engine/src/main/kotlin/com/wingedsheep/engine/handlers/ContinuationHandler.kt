@@ -19,6 +19,9 @@ class ContinuationHandler(
     private val effectRunner = EffectContinuationRunner(services.effectExecutorRegistry)
 
     private val registry = ContinuationResumerRegistry().apply {
+        val forcedPlayResumer = ForcedPlayResumer(services)
+        registerModule(forcedPlayResumer)
+        registerAutoResumerModule(forcedPlayResumer)
         // Core engine resumers
         registerModule(EffectAndTriggerContinuationResumer(services, effectRunner))
         registerModule(MiscContinuationResumer(services, effectRunner))

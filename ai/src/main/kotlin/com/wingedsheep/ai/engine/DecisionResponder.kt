@@ -46,6 +46,8 @@ class DecisionResponder(
      */
     private val intents: IntentCatalog = IntentCatalog.NONE,
 ) {
+    var forcedPlayPicker: (GameState, EntityId) -> GameAction = simulator::completeForcedPlay
+
     fun respond(state: GameState, decision: PendingDecision, playerId: EntityId): DecisionResponse {
         // Try card-specific advisor first
         val sourceName = decision.context.sourceName
@@ -67,6 +69,8 @@ class DecisionResponder(
 
         // Fall through to generic logic
         return when (decision) {
+            is PlayCardDecision -> PlayCardResponse(decision.id,
+                forcedPlayPicker(state, decision.playerId))
             is ChooseTargetsDecision ->
                 respondTargets(state, decision, playerId, budgetPolicy.budgetForDecision(state, playerId))
             is SelectCardsDecision -> respondSelectCards(state, decision, playerId)

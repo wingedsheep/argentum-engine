@@ -4,11 +4,12 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.sdk.model.EntityId
 
 /** Typed assembly only: Jev makes the choices, the engine validates the completed response. */
-internal class JevDecisions(private val q: JevChoices, private val label: (EntityId) -> String) {
+internal class JevDecisions(private val q: JevChoices, private val label: (EntityId) -> String, private val playCard: ((PlayCardDecision) -> GameAction)? = null) {
     private fun cards(prompt: String, ids: List<EntityId>, min: Int, max: Int) =
         q.select(prompt, ids, min, max, label)
 
     fun answer(d: PendingDecision): DecisionResponse = when (d) {
+        is PlayCardDecision -> PlayCardResponse(d.id, requireNotNull(playCard)(d))
         is YesNoDecision -> YesNoResponse(d.id, q.pick(d.prompt, listOf(true, false)) { if (it) d.yesText else d.noText })
         is BatchYesNoDecision -> BatchYesNoResponse(d.id,
             q.pick(d.prompt, listOf(true, false)) { if (it) d.yesText else d.noText }, applyToAll = false)

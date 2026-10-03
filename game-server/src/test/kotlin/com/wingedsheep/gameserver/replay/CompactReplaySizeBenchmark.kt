@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.replay
 
 import com.wingedsheep.ai.engine.buildHeuristicSealedDeck
+import com.wingedsheep.ai.engine.TargetSelection
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import kotlinx.serialization.builtins.ListSerializer
@@ -223,7 +224,11 @@ private fun playRandomGame(
 
         val pendingDecision = state.pendingDecision
         val action: GameAction = if (pendingDecision != null) {
-            SubmitDecision(pendingDecision.playerId, randomDecisionResponse(pendingDecision, rng))
+            SubmitDecision(pendingDecision.playerId, if (pendingDecision is PlayCardDecision) {
+                    val choices = enumerator.enumerate(state, pendingDecision.playerId).filter { it.affordable && !it.hasUnfillableTargetRequirement }
+                    PlayCardResponse(pendingDecision.id, TargetSelection.fillHeuristically(
+                        state, choices.random(rng), pendingDecision.playerId, fillPartialRequirements = true))
+                } else randomDecisionResponse(pendingDecision, rng))
         } else {
             val priorityPlayer = state.priorityPlayerId ?: break
             val affordable = enumerator.enumerate(state, priorityPlayer).filter { it.affordable }
@@ -251,6 +256,7 @@ private fun playRandomGame(
 /** A random but valid response for any pending decision. */
 private fun randomDecisionResponse(decision: PendingDecision, rng: Random): DecisionResponse {
     return when (decision) {
+            is PlayCardDecision -> error("Forced play requires the replay harness action enumerator")
         is ChooseTargetsDecision -> {
             val targets = decision.targetRequirements.associate { req ->
                 val valid = decision.legalTargets[req.index] ?: emptyList()

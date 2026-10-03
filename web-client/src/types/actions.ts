@@ -370,6 +370,8 @@ export interface ChooseManaColorAction {
 
 export interface DecisionResponse {
   readonly decisionId: string
+  readonly type?: string
+  readonly action?: GameAction
   readonly selectedEntityIds?: readonly EntityId[]
   readonly selectedIndex?: number
   readonly confirmed?: boolean

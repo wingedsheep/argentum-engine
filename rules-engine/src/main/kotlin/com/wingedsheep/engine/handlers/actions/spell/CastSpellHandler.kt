@@ -192,6 +192,11 @@ class CastSpellHandler(
 
     override fun validate(state: GameState, action: CastSpell): String? = castValidator.validate(state, action)
 
+    fun executeDuringResolution(state: GameState, action: CastSpell): ExecutionResult {
+        val error = castValidator.validate(state, action, duringResolution = true)
+        return if (error != null) ExecutionResult.error(state, error) else execute(state, action)
+    }
+
     /** Each cost the caster owes, reduced to the leg they took (see [SpellCosts.reduceAlternatives]). */
     private fun reduceCostAlternatives(
         costs: List<AdditionalCost>,

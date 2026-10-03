@@ -123,6 +123,13 @@ class GameSimulator(
             .map { action -> ActionOutcome(action, simulate(state, action.action)) }
     }
 
+    /** Cheap completion for a forced play when no strategic picker is installed. */
+    internal fun completeForcedPlay(state: GameState, playerId: EntityId): GameAction {
+        val offer = getLegalActions(state, playerId).first { it.affordable && !it.hasUnfillableTargetRequirement }
+        val bound = XCostSelection.bindBestX(state, offer)
+        return TargetSelection.fillHeuristically(state, bound, playerId, fillPartialRequirements = true)
+    }
+
     /**
      * Resolve to a "quiet" state: auto-pass priority for both players and
      * auto-resolve trivial decisions until the stack is empty or a real
@@ -176,7 +183,9 @@ class GameSimulator(
                         // it beats stopping: an abandoned resolution scores a board with the ward
                         // unpaid or the combat damage unassigned — a position the game never
                         // actually reaches.
-                        fallbackResponder.respond(current.state, decision, decision.playerId)
+                        if (decision is PlayCardDecision) {
+                            PlayCardResponse(decision.id, completeForcedPlay(current.state, decision.playerId))
+                        } else fallbackResponder.respond(current.state, decision, decision.playerId)
                     } else {
                         try {
                             isResolving = true

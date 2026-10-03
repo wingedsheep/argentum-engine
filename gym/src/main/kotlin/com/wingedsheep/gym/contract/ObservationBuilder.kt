@@ -105,14 +105,25 @@ class ObservationBuilder(
 
         val pendingDecisionAndRegistry = state.pendingDecision
             ?.let { buildPendingDecision(it) }
-        val pendingDecisionView = pendingDecisionAndRegistry?.first
+        val canSeePlay = state.pendingDecision?.let { revealAll || perspectivePlayerId == it.playerId ||
+            perspectivePlayerId == state.actorFor(it.playerId) } ?: false
+        val pendingDecisionView = pendingDecisionAndRegistry?.first?.let {
+            if (canSeePlay) it else it.copy(subjectEntityId = null)
+        }
         val decisionRegistry = pendingDecisionAndRegistry?.second ?: ActionRegistry.EMPTY
 
         // Build legal-action views and their registry. When mid-decision the
         // engine's `legalActions` is empty — we use the decision options instead.
         val legalActionViews: List<LegalActionView>
         val actionRegistry: ActionRegistry
-        if (state.pendingDecision != null) {
+        if (state.pendingDecision is com.wingedsheep.engine.core.PlayCardDecision) {
+            val play = state.pendingDecision as com.wingedsheep.engine.core.PlayCardDecision
+            val visiblePlays = if (canSeePlay) legalActions else emptyList()
+            legalActionViews = visiblePlays.mapIndexed { idx, la -> legalActionToView(idx, la).copy(isDecisionOption = true) }
+            actionRegistry = ActionRegistry.ofDecisionResponses(visiblePlays.map {
+                com.wingedsheep.engine.core.PlayCardResponse(play.id, it.action)
+            })
+        } else if (state.pendingDecision != null) {
             val responses = decisionRegistry.decisionResponses.map { it.second }
             legalActionViews = buildDecisionOptionViews(state.pendingDecision!!, responses)
             actionRegistry = decisionRegistry
@@ -506,6 +517,9 @@ class ObservationBuilder(
                 val view = baseView(decision, PendingDecisionKind.CHOOSE_COLOR, shape, structured = false)
                 view to ActionRegistry.ofDecisionResponses(responses)
             }
+            is com.wingedsheep.engine.core.PlayCardDecision ->
+                baseView(decision, PendingDecisionKind.PLAY_CARD, baseShape, structured = true)
+                    .copy(subjectEntityId = decision.cardId) to ActionRegistry.EMPTY
             is ChooseOptionDecision -> {
                 val responses = decision.options.indices.map {
                     OptionChosenResponse(decision.id, it)

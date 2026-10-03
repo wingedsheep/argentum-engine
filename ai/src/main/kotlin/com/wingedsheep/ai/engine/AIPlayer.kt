@@ -52,6 +52,12 @@ class AIPlayer(
      */
     private val useMeaningfulFilter: Boolean = false,
 ) {
+    init {
+        responder.forcedPlayPicker = { state, seat ->
+            strategist.chooseAction(state, simulator.getLegalActions(state, seat), seat).action
+        }
+    }
+
     /**
      * Choose the best action from the current legal actions.
      * Returns the [GameAction] to submit to the [ActionProcessor].

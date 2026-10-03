@@ -352,6 +352,7 @@ data class PendingDecisionView(
     val sourceEntityId: EntityId? = null,
     val sourceName: String? = null,
     val triggeringEntityId: EntityId? = null,
+    val subjectEntityId: EntityId? = null,
     val effectHint: String? = null,
     /** True when no LegalActionView options were generated; structured response required. */
     val requiresStructuredResponse: Boolean = false,
@@ -371,6 +372,7 @@ enum class PendingDecisionKind {
     ORDER_OBJECTS,
     SPLIT_PILES,
     CHOOSE_OPTION,
+    PLAY_CARD,
     CHOOSE_REPLACEMENT,
     SEARCH_LIBRARY,
     REORDER_LIBRARY,

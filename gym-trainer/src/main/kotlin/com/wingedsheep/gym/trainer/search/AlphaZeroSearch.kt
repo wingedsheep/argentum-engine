@@ -235,12 +235,15 @@ class AlphaZeroSearch<T>(
         val pending = node.pendingDecision
         val ctx = TrainerContext(node.state, acting, pending)
 
-        if (pending == null) {
+        if (pending == null || pending is com.wingedsheep.engine.core.PlayCardDecision) {
             workingEnv.restore(node.state, node.playerIds, 0)
             val legal = workingEnv.legalActions()
-            return legal.map { la ->
+            return legal.filter { pending == null || (it.affordable && !it.hasUnfillableTargetRequirement) }.map { la ->
+                val action = if (pending is com.wingedsheep.engine.core.PlayCardDecision)
+                    SubmitDecision(pending.playerId, com.wingedsheep.engine.core.PlayCardResponse(pending.id, la.action))
+                    else la.action
                 MctsEdge(
-                    action = la.action,
+                    action = action,
                     legalAction = la,
                     slot = actionFeaturizer.slot(la.action, ctx)
                 )
@@ -352,6 +355,7 @@ class AlphaZeroSearch<T>(
             if (d.minSelections == 1 && d.maxSelections == 1 && !d.ordered)
                 d.options.map { CardsSelectedResponse(d.id, listOf(it)) }
             else null
+        is com.wingedsheep.engine.core.PlayCardDecision,
         is ChooseTargetsDecision,
         is ChooseReplacementDecision,
         is DistributeDecision,

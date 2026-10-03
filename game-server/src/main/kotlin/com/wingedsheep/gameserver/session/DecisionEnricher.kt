@@ -120,6 +120,7 @@ class DecisionEnricher(private val cardRegistry: CardRegistry) {
     ): ServerMessage.OpponentDecisionStatus {
         val displayText = when (decision) {
             is SelectCardsDecision -> "Selecting cards"
+            is com.wingedsheep.engine.core.PlayCardDecision -> "Playing a card"
             is ChooseTargetsDecision -> "Choosing targets"
             is YesNoDecision -> "Making a choice"
             is BatchYesNoDecision -> "Making a choice"

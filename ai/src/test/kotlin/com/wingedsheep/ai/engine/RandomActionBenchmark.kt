@@ -165,7 +165,11 @@ private fun playRandomGame(
                 val pendingDecision = state.pendingDecision
                 val action = if (pendingDecision != null) {
                     val t0 = System.nanoTime()
-                    val response = randomDecisionResponse(pendingDecision, rng)
+                    val response = if (pendingDecision is PlayCardDecision) {
+                        val choices = enumerator.enumerate(state, pendingDecision.playerId).filter { it.affordable }
+                        PlayCardResponse(pendingDecision.id, TargetSelection.fillHeuristically(
+                            state, choices.random(rng), pendingDecision.playerId, fillPartialRequirements = true))
+                    } else randomDecisionResponse(pendingDecision, rng)
                     decisionNs += System.nanoTime() - t0
                     SubmitDecision(pendingDecision.playerId, response)
                 } else {
@@ -224,6 +228,7 @@ private fun playRandomGame(
  */
 internal fun randomDecisionResponse(decision: PendingDecision, rng: Random): DecisionResponse {
     return when (decision) {
+        is PlayCardDecision -> error("Forced play requires the benchmark action enumerator")
         is ChooseTargetsDecision -> {
             val targets = decision.targetRequirements.associate { req ->
                 val valid = decision.legalTargets[req.index] ?: emptyList()

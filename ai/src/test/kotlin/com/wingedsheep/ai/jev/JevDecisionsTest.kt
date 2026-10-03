@@ -14,7 +14,7 @@ class JevDecisionsTest : FunSpec({
     val context = DecisionContext()
     fun chooser(last: Boolean = false) = JevDecisions(JevChoices(JevChoiceClient { _, _, choices, _ ->
         if (last) choices.keys.last() else choices.keys.first()
-    }, "state", 1000)) { it.value }
+    }, "state", 1000), label = { it.value })
 
     val decisions = listOf<PendingDecision>(
         YesNoDecision("d", player, "May", context),

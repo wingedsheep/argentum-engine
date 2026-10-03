@@ -10,6 +10,7 @@ import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.forcedPlayFor
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
@@ -71,6 +72,9 @@ class LegalActionEnumerator(
         playerId: EntityId,
         mode: EnumerationMode = EnumerationMode.FULL
     ): List<LegalAction> {
+        if (state.continuationStack.any { it is com.wingedsheep.engine.core.FinishForcedPlayContinuation } &&
+            state.pendingDecision != null && (state.pendingDecision !is com.wingedsheep.engine.core.PlayCardDecision ||
+                state.pendingDecision?.playerId != playerId)) return emptyList()
         val context = EnumerationContext(
             state = state,
             playerId = playerId,
@@ -82,6 +86,18 @@ class LegalActionEnumerator(
             turnManager = turnManager,
             mode = mode
         )
+
+        state.forcedPlayFor(playerId)?.let { forced ->
+            return enumerators.filter { it is CastSpellEnumerator || it is MorphCastEnumerator ||
+                it is AnnouncedCharacteristicsCastEnumerator || it is PlayLandEnumerator || it is CastFromZoneEnumerator }
+                .flatMap { it.enumerate(context) }.filter { offer ->
+                    when (val action = offer.action) {
+                        is com.wingedsheep.engine.core.CastSpell -> action.cardId == forced.card.entityId
+                        is com.wingedsheep.engine.core.PlayLand -> action.cardId == forced.card.entityId
+                        else -> false
+                    }
+                }
+        }
 
         // Combat declaration steps are exclusive — only combat actions, no spells/abilities/pass
         if (combatEnumerator.isCombatDeclarationStep(context)) {
