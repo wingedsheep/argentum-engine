@@ -19,6 +19,8 @@ import com.wingedsheep.sdk.scripting.EntersWithRevealCounters
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.soulshift
 import com.wingedsheep.sdk.dsl.Triggers as SdkTriggers
 import com.wingedsheep.sdk.serialization.CardSerialization
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -353,6 +355,41 @@ object Grammar {
     }
 
     /**
+     * "Soulshift 4" — the third line whose two halves land in **two different card slots**: the
+     * printed `Numeric(SOULSHIFT, n)` keyword *and* the triggered ability CR 702.46a says it means.
+     *
+     * The same shape as [equipLine], and built the same way for the same reason: the SDK lowers
+     * soulshift at authoring time, so the second half is a lowering to reproduce rather than a
+     * sentence to read, and a second copy of it here would agree with the cards only until someone
+     * edits one of them. Unlike equip there is no factory to call — the lowering lives in the
+     * `CardBuilder.soulshift` DSL method every soulshift card uses — so the rule calls *that*,
+     * inside a throwaway `card { }`, and keeps what it produced. The id is re-minted to a constant
+     * because no printed word determines it; the differential renames both sides by position.
+     */
+    private val soulshiftLine: Phrase<CardFragment> = run {
+        val soulshiftId = AbilityId("soulshift")
+        fun fragmentFor(n: Int): CardFragment {
+            val lowered = card("Soulshift") { soulshift(n) }
+            return CardFragment(
+                keywordAbilities = lowered.keywordAbilities,
+                script = CardScript(
+                    triggeredAbilities = lowered.script.triggeredAbilities.map { it.copy(id = soulshiftId) },
+                ),
+            )
+        }
+        phrase("soulshift {n}", name = "soulshift") {
+            slot("n", Primitives.cardinal)
+            build { fragmentFor(it.int("n")) }
+            match { fragment ->
+                val keyword = fragment.keywordAbilities.singleOrNull() as? KeywordAbility.Numeric
+                    ?: return@match null
+                if (keyword.keyword != Keyword.SOULSHIFT || fragment != fragmentFor(keyword.n)) return@match null
+                bind("n" to keyword.n)
+            }
+        }
+    }
+
+    /**
      * A line that is replacement effects and nothing else — "~ enters tapped.", and the kicker
      * sentence whose two halves are two effects ([Replacements.replacements]).
      */
@@ -581,6 +618,7 @@ object Grammar {
         semicolonKeywordLine,
         amplifyLine,
         equipLine,
+        soulshiftLine,
         spellLine,
         triggerLine,
         activatedLine,
