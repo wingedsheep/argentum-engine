@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.usg.cards
 
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Meltdown
@@ -22,7 +22,7 @@ val Meltdown = card("Meltdown") {
 
     spell {
         effect = Effects.DestroyAll(
-            GameObjectFilter.Artifact.manaValueAtMostDynamic(DynamicAmount.XValue)
+            GameObjectFilter.Artifact.manaValueAtMostDynamic(DynamicAmounts.xValue())
         )
     }
 
