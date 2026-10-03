@@ -492,3 +492,57 @@
         "GREEN"
     ]
 }
+
+// Weight of Conscience
+{
+    "name": "Weight of Conscience",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't attack.\nTap two untapped creatures you control that share a creature type: Exile enchanted creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Weight of Conscience:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "count": 2,
+                        "filter": "creature",
+                        "sharedCreatureType": true
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "EnchantedCreature",
+                    "destination": "Exile"
+                },
+                "descriptionOverride": "Tap two untapped creatures you control that share a creature type: Exile enchanted creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "Heather Hudson",
+        "flavorText": "Sometimes the weight of the world on your shoulders is a literal one.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/396c8c41-70b4-4189-9160-8b7367a817a2.jpg?1783942802"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}

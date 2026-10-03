@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -180,9 +181,12 @@ class ManaAbilityEnumerator(
                     is AbilityCost.Atom -> when (val atom = effectiveCost.atom) {
                         is CostAtom.TapPermanents -> {
                             tapCost = atom
-                            tapTargets = context.costUtils.findAbilityTapTargets(
-                                state, playerId, atom.filter,
-                                if (atom.excludeSelf) entityId else null
+                            tapTargets = SharedCreatureTypeTapCost.eligible(
+                                state, atom,
+                                context.costUtils.findAbilityTapTargets(
+                                    state, playerId, atom.filter,
+                                    if (atom.excludeSelf) entityId else null
+                                )
                             )
                             if (tapTargets.size < atom.count) affordable = false
                         }
@@ -270,9 +274,12 @@ class ManaAbilityEnumerator(
                                     }
                                     is CostAtom.TapPermanents -> {
                                         tapCost = atom
-                                        tapTargets = context.costUtils.findAbilityTapTargets(
-                                            state, playerId, atom.filter,
-                                            if (atom.excludeSelf) entityId else null
+                                        tapTargets = SharedCreatureTypeTapCost.eligible(
+                                            state, atom,
+                                            context.costUtils.findAbilityTapTargets(
+                                                state, playerId, atom.filter,
+                                                if (atom.excludeSelf) entityId else null
+                                            )
                                         )
                                         if (tapTargets.size < atom.count) {
                                             affordable = false; break

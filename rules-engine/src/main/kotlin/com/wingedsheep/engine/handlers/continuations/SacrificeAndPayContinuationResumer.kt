@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.continuations
 
+import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
@@ -443,8 +444,11 @@ class SacrificeAndPayContinuationResumer(
 
         val selectedPermanents = response.selectedCards
 
-        // If player didn't select enough untapped permanents, execute the suffer effect.
-        if (selectedPermanents.size < continuation.requiredCount) {
+        // If player didn't select enough untapped permanents (or ones that don't share a creature
+        // type when the cost demands it), execute the suffer effect.
+        if (selectedPermanents.size < continuation.requiredCount ||
+            !SharedCreatureTypeTapCost.satisfiedBy(state, continuation.sharedCreatureType, selectedPermanents)
+        ) {
             return executePayOrSufferConsequence(state, continuation, checkForMore)
         }
 

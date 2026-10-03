@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.cost.spell
 
+import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.CountersRemovedEvent
@@ -510,21 +511,25 @@ internal object ExileFromGraveyardForTotalCostKind : SpellCostKind<CostAtom.Exil
 /** "Tap an untapped artifact you control" (Zahid, Guardian of the Great Door). */
 internal object TapPermanentsCostKind : SpellCostKind<CostAtom.TapPermanents> {
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.TapPermanents, costHandler: CostHandler) =
-        costHandler.findUntappedMatchingPermanentsUnified(state, payerId, cost.filter).size >= cost.count
+        SharedCreatureTypeTapCost.eligible(
+            state, cost, costHandler.findUntappedMatchingPermanentsUnified(state, payerId, cost.filter)
+        ).size >= cost.count
 
     // Mirrors ReturnToHand's selection model — permanents you control, chosen by the caster — but
     // the payment taps instead of bouncing.
     override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.TapPermanents, offer: SpellCostOffer): Boolean {
-        val validTapTargets = env.costUtils.findAbilityTapTargets(env.state, env.playerId, cost.filter)
-            .let { if (cost.excludeSelf) it.filter { id -> id != env.castCardId } else it }
+        val validTapTargets = candidates(env, cost)
         offer.tapTargets = validTapTargets
         offer.tapCount = cost.count
         return validTapTargets.size >= cost.count
     }
 
     override fun candidates(env: SpellCostEnumeration, cost: CostAtom.TapPermanents) =
-        env.costUtils.findAbilityTapTargets(
-            env.state, env.playerId, cost.filter, if (cost.excludeSelf) env.castCardId else null
+        SharedCreatureTypeTapCost.eligible(
+            env.state, cost,
+            env.costUtils.findAbilityTapTargets(
+                env.state, env.playerId, cost.filter, if (cost.excludeSelf) env.castCardId else null
+            )
         )
 
     override fun selectionCount(cost: CostAtom.TapPermanents) = cost.selectionCount
@@ -565,6 +570,9 @@ internal object TapPermanentsCostKind : SpellCostKind<CostAtom.TapPermanents> {
             if (!check.predicateEvaluator.matches(state, projected, permId, cost.filter, context)) {
                 return "${permCard.name} doesn't match the required filter: ${cost.filter.description}"
             }
+        }
+        if (!SharedCreatureTypeTapCost.satisfiedBy(state, cost, tapped)) {
+            return "The tapped permanents must share a creature type"
         }
         return null
     }

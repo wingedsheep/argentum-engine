@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.continuations
 
+import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.CostPaymentContinuation
@@ -230,6 +231,12 @@ class CostPaymentContinuationResumer(
         // must be paid in full and legally). The chosen permanents must be pairwise distinctly named.
         if (atom is CostAtom.Sacrifice && atom.distinctNames &&
             !CostPaymentService.allDistinctNames(state, response.selectedCards)
+        ) {
+            return declined(state, continuation, checkForMore)
+        }
+        // "Tap two untapped creatures you control that share a creature type" — same shape.
+        if (atom is CostAtom.TapPermanents &&
+            !SharedCreatureTypeTapCost.satisfiedBy(state, atom, response.selectedCards)
         ) {
             return declined(state, continuation, checkForMore)
         }
