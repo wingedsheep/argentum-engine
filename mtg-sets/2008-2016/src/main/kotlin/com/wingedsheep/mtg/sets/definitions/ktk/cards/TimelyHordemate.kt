@@ -30,7 +30,7 @@ val TimelyHordemate = card("Timely Hordemate") {
         trigger = Triggers.self.enters()
         interveningIf = Conditions.YouAttackedThisTurn
         val t = target(TargetFilter(GameObjectFilter.Creature.manaValueAtMost(2).ownedByYou(), zone = Zone.GRAVEYARD))
-        effect = Effects.Move(t, Zone.BATTLEFIELD)
+        effect = Effects.PutOntoBattlefieldFromGraveyard(t)
     }
 
     metadata {

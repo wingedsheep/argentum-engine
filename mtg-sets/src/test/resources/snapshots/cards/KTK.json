@@ -1786,7 +1786,8 @@
                 "effect": {
                     "type": "MoveToZone",
                     "target": "Self",
-                    "destination": "Battlefield"
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
                 },
                 "restrictions": [
                     {
@@ -12485,7 +12486,8 @@
                         "type": "BoundVariable",
                         "name": "t0"
                     },
-                    "destination": "Battlefield"
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
@@ -13680,7 +13682,7 @@
                     "type": "GainLife",
                     "amount": {
                         "type": "AggregateBattlefield",
-                        "player": "You",
+                        "player": "Each",
                         "filter": "creature attacking"
                     }
                 }
