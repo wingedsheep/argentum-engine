@@ -162,6 +162,10 @@ section; do not let SDK additions land without a corresponding doc update.
   today: "up to N target creature cards of the creature type of your choice" (Aphetto Dredging) is spelled as
   real targets with `TargetObject(sameCreatureType = true)` instead.
 - `cantBeCountered: Boolean` — spell is uncounterable.
+- `cantBeCounteredIf: Condition?` — "If …, this spell can't be countered." Evaluated against the spell *on the
+  stack* each time something tries to counter it: `DynamicAmounts.xValue()` reads its locked-in X and `Player.You` is
+  its caster (Banefire: `Conditions.CompareAmounts(DynamicAmounts.xValue(), GTE, 5)`). Pair it with an `Effects.If`
+  over the same condition when the rider also changes the effect ("…and the damage can't be prevented").
 - `cantBeCopied: Boolean` — spell can't be copied (CR 707.10); copy effects that name it create no copy (Display of Power).
 - `conditionalFlash: Condition?` — gains flash while condition holds.
 - `layout: CardLayout` — physical layout shape (see §2).
@@ -841,6 +845,7 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   the beginning of the next end step (not exiled — unlike warp, dash has no later recast).
 - `conditionalFlash` — flash while condition holds.
 - `cantBeCountered` — spell is uncounterable.
+- `cantBeCounteredIf = condition` — uncounterable only while `condition` holds for the spell on the stack (Banefire).
 - `cantBeCopied` — spell can't be copied (CR 707.10).
 - `xManaRestriction = setOf(Color.BLACK, Color.RED)` — "spend only [colors] on X." Restricts which
   mana may pay the `{X}` portion of the cost (the fixed colored/generic portion is unaffected).

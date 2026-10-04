@@ -287,6 +287,73 @@
     ]
 }
 
+// Banefire
+{
+    "name": "Banefire",
+    "manaCost": "{X}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Banefire deals X damage to any target.\nIf X is 5 or more, this spell can't be countered and the damage can't be prevented.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": "XValue",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            },
+            "then": {
+                "type": "DealDamage",
+                "amount": "XValue",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "cantBePrevented": true
+            },
+            "otherwise": {
+                "type": "DealDamage",
+                "amount": "XValue",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "cantBeCounteredIf": {
+            "type": "Compare",
+            "left": "XValue",
+            "operator": "GTE",
+            "right": {
+                "type": "Fixed",
+                "amount": 5
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "RARE",
+        "artist": "Raymond Swanland",
+        "flavorText": "For Sarkhan Vol, the dragon is the purest expression of life's savage splendor.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b188c68a-e9df-4803-a722-1993dd88f833.jpg?1783942480"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Beacon Behemoth
 {
     "name": "Beacon Behemoth",

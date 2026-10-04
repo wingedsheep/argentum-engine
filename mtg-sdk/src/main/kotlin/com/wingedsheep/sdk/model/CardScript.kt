@@ -205,6 +205,14 @@ data class CardScript(
     val cantBeCountered: Boolean = false,
 
     /**
+     * "If [condition], this spell can't be countered." Checked against the spell *on the stack*
+     * whenever something tries to counter it — the condition reads the spell's own cast-time
+     * values (its X, mana spent) and its caster as `Player.You` (Banefire: X is 5 or more).
+     * Use [cantBeCountered] for the unconditional form.
+     */
+    val cantBeCounteredIf: @Serializable Condition? = null,
+
+    /**
      * Whether this spell can't be copied (CR 707.10). When true, any effect that would
      * copy this spell on the stack creates no copy.
      */

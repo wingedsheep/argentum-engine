@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics.stack
 
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils
@@ -78,13 +79,7 @@ class SpellCounterer(
 
         val cardComponent = container.get<CardComponent>()
 
-        // Check if the spell can't be countered (tag component)
-        if (container.has<CantBeCounteredComponent>()) {
-            return ExecutionResult.success(state)
-        }
-
-        // Check if any permanent on the battlefield grants "can't be countered" to this spell
-        if (isGrantedCantBeCountered(state, spellId)) {
+        if (isUncounterable(state, spellId, container)) {
             return ExecutionResult.success(state)
         }
 
@@ -189,7 +184,7 @@ class SpellCounterer(
     fun wouldReachCounterDestination(state: GameState, spellId: EntityId, countererId: EntityId?): Boolean {
         val container = state.getEntity(spellId) ?: return false
         if (spellId !in state.stack) return false
-        if (container.has<CantBeCounteredComponent>() || isGrantedCantBeCountered(state, spellId)) return false
+        if (isUncounterable(state, spellId, container)) return false
         if (counterRiderZone(container) != null) return false
         return findExileInsteadReplacement(state, countererId) == null
     }
@@ -234,7 +229,7 @@ class SpellCounterer(
 
         val cardComponent = container.get<CardComponent>()
 
-        if (container.has<CantBeCounteredComponent>() || isGrantedCantBeCountered(state, spellId)) {
+        if (isUncounterable(state, spellId, container)) {
             return ExecutionResult.success(state)
         }
 
@@ -317,7 +312,7 @@ class SpellCounterer(
         val cardComponent = container.get<CardComponent>()
 
         // Check if the spell can't be countered
-        if (container.has<CantBeCounteredComponent>() || isGrantedCantBeCountered(state, spellId)) {
+        if (isUncounterable(state, spellId, container)) {
             return ExecutionResult.success(state)
         }
 
@@ -636,6 +631,33 @@ class SpellCounterer(
             }
         }
         return null
+    }
+
+    /**
+     * Whether [spellId] can't be countered right now: tagged uncounterable (its printed
+     * `cantBeCountered`, a Cavern-style mana rider), its own `cantBeCounteredIf` holds, or a
+     * permanent or player grant covers it.
+     */
+    private fun isUncounterable(state: GameState, spellId: EntityId, container: ComponentContainer): Boolean =
+        container.has<CantBeCounteredComponent>() ||
+            ownConditionMakesUncounterable(state, spellId, container) ||
+            isGrantedCantBeCountered(state, spellId)
+
+    /**
+     * The spell's own "if …, this spell can't be countered" (Banefire's "if X is 5 or more").
+     * Evaluated against the spell as it sits on the stack: its locked-in X and its caster as `You`,
+     * so a copy (which copies X, CR 707.10) is judged on its own values.
+     */
+    private fun ownConditionMakesUncounterable(state: GameState, spellId: EntityId, container: ComponentContainer): Boolean {
+        val spell = container.get<SpellOnStackComponent>() ?: return false
+        val definitionId = container.get<CardComponent>()?.cardDefinitionId ?: return false
+        val condition = cardRegistry.getCard(definitionId)?.script?.cantBeCounteredIf ?: return false
+        val context = EffectContext(
+            sourceId = spellId,
+            controllerId = spell.casterId,
+            xValue = spell.xValue ?: spell.additionalCostPayXLifeAmount,
+        )
+        return predicateEvaluator.conditions.evaluate(state, condition, context)
     }
 
     private fun isGrantedCantBeCountered(state: GameState, spellId: EntityId): Boolean {
