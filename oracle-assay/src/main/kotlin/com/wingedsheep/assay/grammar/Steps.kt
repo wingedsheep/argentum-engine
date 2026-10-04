@@ -26,6 +26,11 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.SelectionMode
+import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.ChooseNumberThenEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -2429,6 +2434,73 @@ object Steps {
     }
 
     /**
+     * "When this land enters, return a land you control to its owner's hand." — the ten Karoo
+     * bounce lands, Zell Dincht, Shrieking Drake, Emancipation Angel.
+     *
+     * The **untargeted** sibling of the "return target {filter} to its owner's hand" row, and the
+     * article is the whole difference, as it is for [Graveyard]'s "exile a card from a graveyard":
+     * only the word "target" makes a target (CR 115.10a), so the permanent is chosen as the ability
+     * resolves, a shroud or hexproof permanent of your own is a legal choice, and there is nothing
+     * to become illegal and fizzle the ability. It declares no `TargetRequirement` and collects the
+     * candidates itself — gather your permanents of the kind, choose exactly one, move it — which is
+     * the pipeline Shrieking Drake was already hand-written as.
+     *
+     * "You control" is the gather's `player`, not a controller predicate on the filter. Both mean
+     * the same thing to `BattlefieldMatching`, and the player is the spelling the hand-written cards
+     * use for a pipeline that gathers one player's permanents. `useTargetingUI` is set because the
+     * candidates are permanents on the battlefield, and picking them there is how every other
+     * battlefield choice in the client looks.
+     *
+     * Singular and uncounted. "Return two lands you control" is a different sentence, and the cost
+     * form — "{2}, Return a land you control to its owner's hand:" — is [Costs]' `returnToHand`.
+     */
+    private val returnOneYouControlToHand: Phrase<CardScript> = run {
+        fun scriptFor(filter: GameObjectFilter) = CardScript(
+            spellEffect = CompositeEffect(
+                listOf(
+                    GatherCardsEffect(
+                        source = CardSource.BattlefieldMatching(filter = filter, player = Player.You),
+                        storeAs = YOUR_PERMANENTS,
+                    ),
+                    SelectFromCollectionEffect(
+                        from = YOUR_PERMANENTS,
+                        selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                        storeSelected = RETURNED,
+                        prompt = "Return a permanent you control to its owner's hand",
+                        useTargetingUI = true,
+                    ),
+                    MoveCollectionEffect(
+                        from = RETURNED,
+                        destination = CardDestination.ToZone(Zone.HAND),
+                    ),
+                )
+            )
+        )
+        phrase(
+            "return {filter} you control to its owner's hand",
+            name = "return a chosen permanent you control to hand",
+        ) {
+            slot("filter", Filters.indefinite)
+            build { scriptFor(it.value("filter")) }
+            match { script ->
+                val steps = (script.spellEffect as? CompositeEffect)?.effects ?: return@match null
+                val gather = steps.firstOrNull() as? GatherCardsEffect ?: return@match null
+                val source = gather.source as? CardSource.BattlefieldMatching ?: return@match null
+                if (script != scriptFor(source.filter)) return@match null
+                bind("filter" to source.filter)
+            }
+        }
+    }
+
+    /**
+     * [returnOneYouControlToHand]'s two collection names: wiring no printed word determines. The
+     * differential renames generated pipeline keys, so the hand-written `gathered0`/`selected1`
+     * compare equal to these.
+     */
+    private const val YOUR_PERMANENTS = "your_permanents"
+    private const val RETURNED = "returned"
+
+    /**
      * "Put a +1/+1 counter on each creature you control." — Abzan Ascendancy, Cathars' Crusade,
      * Leader's Talent.
      *
@@ -2480,6 +2552,7 @@ object Steps {
         otherGroupStep("tap all other {filter}", "tap all other") { Effects.Tap(it) },
         otherGroupStep("untap all other {filter}", "untap all other") { Effects.Untap(it) },
         returnOtherGroupToHand,
+        returnOneYouControlToHand,
         destroyAllNoRegenerate,
         parameterizedGroupStep(
             "{filter} get {v} until end of turn", "a group gets",
