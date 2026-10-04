@@ -178,6 +178,34 @@ class SequencesTest : StringSpec({
         )
     }
 
+    // The doesn't-untap band. The rider is a `SelfSteps.retargetable` member, so the demonstrative
+    // reads in the later position (Stitched Mangler) and prints back as the pronoun.
+    "the doesn't-untap rider reads the demonstrative and prints the pronoun" {
+        val line = "Tap target creature. That creature doesn't untap during its controller's next untap step."
+        fragment(line) shouldBe
+            fragment("Tap target creature. It doesn't untap during its controller's next untap step.")
+        Grammar.abilityLine.printLine(fragment(line)) shouldBe
+            "Tap target creature. It doesn't untap during its controller's next untap step."
+    }
+
+    // …and about the source it says "your", which is the spelling the CHK pain-free duals print after
+    // their coloured mana: one ability per colour, each `AddMana then` the same freeze.
+    "the source doesn't untap during your next untap step" {
+        fragment("~ doesn't untap during your next untap step.") shouldBe CardFragment(
+            script = CardScript(
+                spellEffect = Effects.GrantKeyword(
+                    AbilityFlag.DOESNT_UNTAP,
+                    EffectTarget.Self,
+                    Duration.UntilAfterAffectedControllersNextUntap,
+                )
+            )
+        )
+        roundTrips("{T}: Add {U} or {B}. ~ doesn't untap during your next untap step.")
+        // The source's controller is "you", so the other possessive is not the source's spelling.
+        Grammar.abilityLine.parseLine("~ doesn't untap during its controller's next untap step.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+    }
+
     // The `.` decline band. The name is not an anaphor — it denotes the card in any sentence — so a
     // later clause can spell it, and ninety-four lines were dying on their own full stop for want of
     // that one membership.

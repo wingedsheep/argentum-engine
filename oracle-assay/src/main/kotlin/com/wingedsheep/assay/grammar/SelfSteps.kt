@@ -6,6 +6,7 @@ import com.wingedsheep.assay.syntax.alternate
 import com.wingedsheep.assay.syntax.bind
 import com.wingedsheep.assay.syntax.constant
 import com.wingedsheep.assay.syntax.phrase
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
@@ -109,6 +110,27 @@ object SelfSteps {
             // the rule instead of in the slot.
             move("tap {self}", "tap$tag", Effects.Tap(target), subject),
             move("regenerate {self}", "regenerate$tag", RegenerateEffect(target), subject),
+            // "That creature doesn't untap during its controller's next untap step." — the freeze
+            // after a tap (Stitched Mangler, Crippling Chill), and "~ doesn't untap during your
+            // next untap step." after the CHK pain-free duals' coloured mana. One model in every
+            // position: `AbilityFlag.DOESNT_UNTAP` over `UntilAfterAffectedControllersNextUntap`,
+            // the duration whose KDoc names this clause. Only the possessive moves — the source's
+            // controller is the reader, so Oracle says "your" of the source and "its controller's"
+            // of anything else, and each position prints the one its cards print.
+            move(
+                if (target == EffectTarget.Self) {
+                    "{self} doesn't untap during your next untap step"
+                } else {
+                    "{self} doesn't untap during its controller's next untap step"
+                },
+                "doesn't untap next untap step$tag",
+                Effects.GrantKeyword(
+                    AbilityFlag.DOESNT_UNTAP,
+                    target,
+                    Duration.UntilAfterAffectedControllersNextUntap,
+                ),
+                subject,
+            ),
             // "If that creature would die this turn, exile it instead." — Puncturing Blow, Scorching
             // Dragonfire, Bleed Dry: the turn-long death replacement (CR 614) a removal spell leaves
             // on its target, as the sentence after the damage or the -X/-X. A row because its object

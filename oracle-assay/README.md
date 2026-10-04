@@ -5360,6 +5360,38 @@ One new divergence, a standing finding: **Visions of Villainy [MSH]** writes its
 you control a Villain" as `ReduceGenericBy(FixedIfControlFilter)`, the `FixedIf…` half of the
 `FixedIf…` / `OnlyIf` split the spell-cost band recorded. No card bugs.
 
+## Doesn't untap during the next untap step
+
+"Tap target creature an opponent controls. **That creature doesn't untap during its controller's
+next untap step.**" (Stitched Mangler) and "{T}: Add {U} or {B}. **~ doesn't untap during your next
+untap step.**" (Waterveil Cavern and the other four Champions of Kamigawa duals). The grammar read
+exactly one spelling of the freeze — "It doesn't …" as a `Continuations` row with the pronoun frozen
+into its template — so the demonstrative and the source both died on the sentence. Tail key "doesn't
+untap during …".
+
+The fix is the `.` band's third question applied: the row spelled by hand what its family
+parameterizes. It is now a `SelfSteps.retargetable` member, one model in every position —
+`GrantKeyword(DOESNT_UNTAP, target, UntilAfterAffectedControllersNextUntap)` — so the later position
+reads "it" / "that creature" / "that permanent" and prints the pronoun, and the source position reads
+the name. Only the possessive moves with the position: the source's controller is the reader, so
+Oracle says "your next untap step" of the source and "its controller's" of anything else, and each
+instantiation takes the one its cards print. The mana half needed nothing: `Activated.choiceWithRider`
+already copies any step onto each colour's ability, which is how the painlands landed.
+
+### What it moved
+
+Probe 46 lines / 22 whole cards corpus-wide (dropping the sentence; 18 for the "next untap step"
+subset). Over the implemented population delivered **+6** (7,798 → 7,804): the five CHK duals and
+Stitched Mangler. The rest of the family is other sentences — "tap that creature" over a trigger's
+subject (Kashi-Tribe Warriors, Mercurial Kite), the plural "They don't untap during their
+controller's …", the static "during its controller's untap step" with a condition — and declines on
+them.
+
+### What the differential found
+
+Nothing new: compared 7,385 → 7,391, divergent unchanged at 76, and the six cards agree. The
+hand-written spellings were already the SDK's one model for the clause.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote
