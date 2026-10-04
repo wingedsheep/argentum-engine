@@ -27,7 +27,7 @@ val DiabolicIntent = card("Diabolic Intent") {
     additionalCost(Costs.additional.SacrificePermanent(GameObjectFilter.Creature))
     spell {
         effect = Patterns.Library.searchLibrary(
-            filter = GameObjectFilter.Creature,
+            filter = GameObjectFilter.Any,
             destination = SearchDestination.HAND
         )
     }

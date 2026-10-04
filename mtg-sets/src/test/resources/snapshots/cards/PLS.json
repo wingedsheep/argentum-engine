@@ -459,8 +459,7 @@
                     "type": "GatherCards",
                     "source": {
                         "type": "FromZone",
-                        "zone": "Library",
-                        "filter": "creature"
+                        "zone": "Library"
                     },
                     "storeAs": "searchable",
                     "search": true
