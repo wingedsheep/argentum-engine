@@ -92,6 +92,24 @@ internal object Slots {
             else -> false
         }
 
+    /**
+     * Whether [script] names [player] anywhere — a `Player` reference such as `TriggeringPlayer`,
+     * however deeply nested. A JSON walk for [readsPropertyOf]'s reason; the one caller is
+     * [Steps]' `renumbered`, which carries the reason it asks.
+     */
+    fun namesPlayer(script: CardScript, player: String): Boolean {
+        val tree = runCatching {
+            CardSerialization.json.encodeToJsonElement(CardScript.serializer(), script)
+        }.getOrNull() ?: return false
+        return names(tree, player)
+    }
+
+    private fun names(element: JsonElement, player: String): Boolean = when (element) {
+        is JsonObject -> element["type"].text() == player || element.values.any { names(it, player) }
+        is JsonArray -> element.any { names(it, player) }
+        else -> false
+    }
+
     /** Whether [script] refers to slot [name] anywhere — a clause reading a target it did not declare. */
     fun references(script: CardScript, name: String): Boolean {
         val tree = runCatching {

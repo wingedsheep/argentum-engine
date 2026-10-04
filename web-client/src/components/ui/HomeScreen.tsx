@@ -28,6 +28,7 @@ import { LoginModal } from '@/components/auth/LoginModal'
 import { DeckMigrationPrompt } from '@/components/auth/DeckMigrationPrompt'
 import { AccountBenefitsCallout } from '@/components/auth/AccountBenefitsCallout'
 import { LearnCallout } from '@/components/learn/LearnCallout'
+import { WhatsNew } from '@/components/whatsNew/WhatsNew'
 import { FullscreenButton } from './FullscreenButton'
 import { PlayWizard } from './PlayWizard'
 import { SetupRail } from './SetupRail'
@@ -314,6 +315,7 @@ export function HomeScreen({
           >
             ? Help
           </button>
+          <WhatsNew />
         </div>
         <AuthWidget />
       </div>
