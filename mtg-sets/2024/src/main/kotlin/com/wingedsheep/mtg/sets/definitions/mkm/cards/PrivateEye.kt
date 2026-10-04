@@ -28,7 +28,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * sacrificed for extra draws — this reliably fires on the turn you crack one.
  *
  * "Target Detective" is unrestricted by controller: it may be an opponent's Detective, which is
- * rarely what you want but is what the card says. Evasion is granted with the
+ * rarely what you want but is what the card says. It is also a *permanent* filter, not a creature
+ * one — a bare subtype names a permanent with that subtype (CR 109.2), so a noncreature Kindred
+ * Detective is a legal target too. Evasion is granted with the
  * [AbilityFlag.CANT_BE_BLOCKED] grant rather than a keyword, since "can't be blocked" is not a
  * keyword ability.
  */
@@ -54,7 +56,7 @@ val PrivateEye = card("Private Eye") {
 
     triggeredAbility {
         trigger = Triggers.you.drawsNth(2)
-        val detective = target(TargetFilter.Creature.withSubtype(Subtype.DETECTIVE))
+        val detective = target(TargetFilter(GameObjectFilter.Permanent.withSubtype(Subtype.DETECTIVE)))
         effect = Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED, detective)
         description = "Whenever you draw your second card each turn, target Detective can't be " +
             "blocked this turn."
