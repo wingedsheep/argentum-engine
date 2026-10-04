@@ -5594,6 +5594,37 @@ One new divergence and no card bug. **Brightspear Zealot [EOE]** holds its "+2/+
 `GrantDynamicStats` spelling the gate has already recorded as one concept with two spellings, neither
 broken. Divergent 77 → 78.
 
+## When you control no Islands
+
+"**When you control no Islands**, sacrifice ~." (Dandân, Pirate Ship, Sea Serpent, Vodalian Knights)
+and Drop of Honey's "When there are no creatures on the battlefield, sacrifice ~." Tail key "When you
+control …". A state trigger (CR 603.8) is not an event trigger and the SDK does not pretend it is:
+`StateTriggeredAbility(condition, effect)` lives in `CardScript.stateTriggeredAbilities`, a list the
+grammar had never filled. So the band is a new fragment slot — `CardFragment.merge`, the
+differential's modelled slots and its id canonicalization, and the compiler's id re-mint all widened
+together — and one template, `StateTriggers.line`, "when {condition}, {effect}" over the shared
+`Conditions` and `Steps.step`. Two rows join `Conditions`: "you control no {plural}" and "there are no
+{plural} on the battlefield", both the `negate` flag on `YouControl` / `AnyPlayerControls` because that
+is how 55 goldens spell it against 6 `Not` wrappers. "Whenever" (Homarid's tide counters) and a
+targeted payoff decline: the first has nothing in the model to choose its word, the second has no
+requirement field to land in.
+
+### What it moved
+
+Probe 28 lines / 18 whole cards corpus-wide by replacing the whole line, which overstated because the
+conditions vary (phylactery counters, the chosen player's colour). Over the implemented population
+delivered **+8** (7,882 → 7,890), compared 7,467 → 7,475.
+
+### What the differential found
+
+Seven new readings to classify. **Goblins of the Flarg [DRK]** watched for a *creature* Dwarf where it
+prints "a Dwarf"; a bare subtype names a permanent (CR 109.2), fixed. The other six, Goblins
+included, are one standing SDK finding: the cards spell the sacrifice `SacrificeTarget(Self)` (58 card
+sources) where the grammar reads "sacrifice ~" as `SacrificeSelfEffect` (201). They are not the same
+value to the engine either — `SacrificeTargetExecutor` honours `CANT_BE_SACRIFICED`, Sigarda's
+immunity and the projected controller, and `SacrificeSelfExecutor` does none of that — so the cards
+were left as written rather than moved onto the weaker executor. Divergent 78 → 84.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote

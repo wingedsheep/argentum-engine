@@ -144,6 +144,9 @@ data class CardFragment(
                 // them, since "{T}: Add {B} or {G}." is two — for static abilities, which is how an
                 // aura's two payoff lines fold, and for replacement effects.
                 triggeredAbilities = script.triggeredAbilities + other.script.triggeredAbilities,
+                // CR 603.8's state triggers are a list of their own in the SDK, beside the event
+                // triggers rather than inside them, and accumulate for the same reason.
+                stateTriggeredAbilities = script.stateTriggeredAbilities + other.script.stateTriggeredAbilities,
                 activatedAbilities = script.activatedAbilities + other.script.activatedAbilities,
                 staticAbilities = script.staticAbilities + other.script.staticAbilities,
                 replacementEffects = script.replacementEffects + other.script.replacementEffects,
@@ -253,7 +256,7 @@ data class CardFragment(
             setOf("LinkedExiledCard", "SharedCardTypesWithLinkedExile", "ExiledWithSource")
 
         const val MODELLED_SLOTS_NOTE =
-            "spellEffect, targetRequirements, triggeredAbilities, activatedAbilities, " +
+            "spellEffect, targetRequirements, triggeredAbilities, stateTriggeredAbilities, activatedAbilities, " +
                 "staticAbilities, replacementEffects, auraTarget, castRestrictions, additionalCosts, " +
                 "cantBeCountered, conditionalFlash"
     }
