@@ -9,6 +9,9 @@ import com.wingedsheep.engine.state.*
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+import com.wingedsheep.engine.state.components.identity.TextReplacement
+import com.wingedsheep.engine.state.components.identity.TextReplacementCategory
+import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.RestrictedManaEntry
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
@@ -311,6 +314,25 @@ class ScopedManaCostChoicePlanningTest : FunSpec({
         r.state.getEntity(source)!!.has<TappedComponent>() shouldBe true
         r.state.remainingManaObligations(p) shouldBe false
         s.getEntity(source)!!.has<TappedComponent>() shouldBe false
+    }
+
+    test("fixed tap choice uses the source's text-changed subtype") {
+        val d = driver(); val p = d.activePlayer!!
+        val sourceCard = producer("Choice Changed Tap",
+            Costs.TapPermanents(1, GameObjectFilter.Creature.withSubtype(Subtype("Elf"))))
+        val goblin = card("Choice Goblin") { typeLine = "Creature — Goblin"; power = 1; toughness = 1 }
+        d.registerCards(listOf(sourceCard, goblin))
+        val source = d.putLandOnBattlefield(p, sourceCard.name)
+        val victim = d.putCreatureOnBattlefield(p, goblin.name)
+        d.replaceState(d.state.updateEntity(source) { it.with(
+            TextReplacementComponent(listOf(
+                TextReplacement("Elf", "Goblin",
+                    TextReplacementCategory.CREATURE_TYPE)))) })
+        val before = scoped(d); val r = pay(d, before, "{U}")
+        r.error shouldBe null
+        r.state.getEntity(victim)!!.has<TappedComponent>() shouldBe true
+        r.state.remainingManaObligations(p) shouldBe false
+        before.getEntity(victim)!!.has<TappedComponent>() shouldBe false
     }
 
 })

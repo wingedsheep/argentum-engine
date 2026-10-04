@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.actions.decision.DecisionValidators
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.activeManaSpendingScope
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
@@ -138,7 +139,9 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                         }
                         (candidate.minX..maximum).asSequence()
                     } else sequenceOf(null)
-                    val tap = fixedTapCost(ability.cost)
+                    val tapCost = TextChanges.of(current, base.sourceId)
+                        ?.let { ability.cost.applyTextReplacement(it) } ?: ability.cost
+                    val tap = fixedTapCost(tapCost)
                     val taps = if (tap == null) sequenceOf(emptyList()) else {
                         val options = services.costHandler.findMatchingCardsUnified(
                             current, current.controlledBattlefield(player), tap.filter, player, sourceId = base.sourceId)

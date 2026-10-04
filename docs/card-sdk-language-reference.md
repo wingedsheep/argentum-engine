@@ -16434,6 +16434,7 @@ battlefield sacrifices, fixed other-permanent taps, tap-X number/object choices,
 and mana-X. The planner branches through the handler's existing sacrifice, variable-permanent and
 number/tap-selection questions; self-counter X and fixed taps ride the ordinary activation action.
 It uses projected cost filters and control, distinct subsets and each cost's own exclusions.
+Fixed tap selection applies the source’s current text changes to its filter.
 Source-relative fixed tap costs retain their source through selection, affordability and payment;
 real action validation takes precedence over a choice preview that lacks that context. X and the selected
 set are then paid and measured by the real handler. Mana resolution uses the announced/measured
