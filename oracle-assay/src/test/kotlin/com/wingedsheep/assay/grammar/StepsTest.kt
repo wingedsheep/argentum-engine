@@ -547,10 +547,10 @@ class StepsTest : StringSpec({
         fragment("Creatures you control get +1/+1 until end of turn.") shouldBe CardFragment(
             script = CardScript(
                 spellEffect = Effects.ForEachInGroup(
-                    com.wingedsheep.sdk.scripting.filters.unified.GroupFilter(
+                    GroupFilter(
                         GameObjectFilter.Creature.youControl()
                     ),
-                    Effects.ModifyStats(1, 1, com.wingedsheep.sdk.scripting.targets.EffectTarget.IterationEntity),
+                    Effects.ModifyStats(1, 1, EffectTarget.IterationEntity),
                 )
             )
         )
@@ -561,6 +561,27 @@ class StepsTest : StringSpec({
         roundTrips("Untap all creatures you control.")
         roundTrips("Tap all other creatures.")
         roundTrips("~ deals 1 damage to each attacking creature.")
+    }
+
+    // "Other" is GroupFilter.excludeSelf on the same iteration, so the pump rows carry it as a flag
+    // and the plain rows refuse to print a group that leaves the source out.
+    "a group pump that leaves the source out reads other as excludeSelf" {
+        fragment("When ~ enters, other creatures you control get +0/+1 until end of turn.") shouldNotBe
+            fragment("When ~ enters, creatures you control get +0/+1 until end of turn.")
+        fragment("Other creatures you control get +1/+1 until end of turn.") shouldBe CardFragment(
+            script = CardScript(
+                spellEffect = Effects.ForEachInGroup(
+                    GroupFilter(
+                        GameObjectFilter.Creature.youControl(),
+                        excludeSelf = true,
+                    ),
+                    Effects.ModifyStats(1, 1, EffectTarget.IterationEntity),
+                )
+            )
+        )
+        roundTrips("Whenever ~ attacks, other creatures you control get +1/+1 until end of turn.")
+        roundTrips("When ~ enters, other creatures you control gain vigilance until end of turn.")
+        roundTrips("Whenever ~ attacks, other creatures you control get +1/+0 and gain deathtouch until end of turn.")
     }
 
     // `noRegenerate` is a field on the same iteration rather than a second effect, so the rule spans
