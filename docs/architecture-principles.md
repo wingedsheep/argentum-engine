@@ -1251,8 +1251,16 @@ or client contract is added. Standalone
 solvers and intermediate-ability affordability retain the independent fixed-output proof. Face-down
 boards retain a uniform source-proof boundary because legacy enumeration inspects hidden printed
 statics; complete floating payments still work. Hidden-zone/distributed-counter cost choices and
-other unsupported mana-ability execution shapes remain explicit uncertainty. Atomic manual-overactivation
-recovery and closing those proof boundaries remain required before a printed card uses the foundation.
+other unsupported mana-ability execution shapes remain explicit uncertainty. Announced fixed-price
+forced-cast payment windows now validate each accepted manual activation/answer prefix at the public
+action boundary. The planner finishes paused production above the payment-restoration frame before
+proving future contribution coverage; speculative future work is discarded. Impossible or uncertain
+prefixes reject with the original input state, costs, question and no events. This lets the player
+retry a failed source or color without a serialized checkpoint or reverse events. Payment-menu
+confirmation reuses the exact cast allocator instead of legacy menu floating. Unscoped payments and
+scopes without a forced cast are unaffected. Captured X-color/Phyrexian choices, reachable mandatory
+mana windows, other casting-cost resources and the remaining proof boundaries still need completion before a printed card uses
+the foundation.
 
 **Tier 3: Cost Execution (Engine).** The `CostHandler` physically pays costs — tapping permanents,
 deducting from the mana pool, sacrificing creatures, discarding cards, paying life. The `ManaPool`
