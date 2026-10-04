@@ -385,6 +385,50 @@ class ReplacementsTest : StringSpec({
         }
     }
 
+    // Goblin Boarders, Blacksnag Buzzard, the Myojin: the plain entry with its `condition` set.
+    "a trailing if-clause on a self-entry is the condition field" {
+        fragment("~ enters with a +1/+1 counter on it if you attacked this turn.") shouldBe CardFragment(
+            script = CardScript(
+                replacementEffects = listOf(
+                    EntersWithCounters(count = 1, selfOnly = true, condition = Conditions.YouAttackedThisTurn)
+                )
+            )
+        )
+        fragment("~ enters with a divinity counter on it if you cast it from your hand.") shouldBe CardFragment(
+            script = CardScript(
+                replacementEffects = listOf(
+                    EntersWithCounters(
+                        counterType = CounterType.DIVINITY,
+                        count = 1,
+                        selfOnly = true,
+                        condition = Conditions.WasCastFromHand,
+                    )
+                )
+            )
+        )
+        fragment("~ enters with two +1/+1 counters on it if you've cast two or more spells this turn.")
+            .script.replacementEffects.single() shouldBe
+            EntersWithCounters(count = 2, selfOnly = true, condition = Conditions.YouCastSpellsThisTurn(2))
+        listOf(
+            "~ enters with a +1/+1 counter on it if you attacked this turn.",
+            "~ enters with a +1/+1 counter on it if a creature died this turn.",
+            "~ enters with a +1/+1 counter on it if an opponent lost life this turn.",
+            "~ enters with a +1/+1 counter on it if you control a permanent with mana value 4 or greater.",
+            "~ enters with two +1/+1 counters on it if you've cast two or more spells this turn.",
+            "~ enters with two -1/-1 counters on it if you cast it from your hand.",
+            "~ enters with eight revival counters on it if you cast it.",
+        ).forEach(::roundTrips)
+    }
+
+    // The kicker sentence fronts its condition and owns `WasKicked`; "it's bargained" is a cost-position
+    // tense. Neither is printed as a trailing clause, and the unconditional rule never takes a condition.
+    "a self-entry condition the trailing clause does not print refuses" {
+        Grammar.abilityLine.printLine(fragment("If ~ was kicked, it enters with two +1/+1 counters on it.")) shouldBe
+            "If ~ was kicked, it enters with two +1/+1 counters on it."
+        declines("~ enters with two +1/+1 counters on it if it was kicked.")
+        declines("~ enters with two +1/+1 counters on it if it's bargained.")
+    }
+
     "every as-it-enters choice rule prints what it parses" {
         listOf(
             "As ~ enters, choose a color.",

@@ -5539,6 +5539,61 @@ fail to find only when the search names a stated quality, so an unqualified "sea
 find one if the library has one — every `searchLibrary(filter = Any)` tutor, Demonic Tutor included,
 can currently fail to find. Divergent 76 → 77.
 
+## Your second card each turn
+
+"**Whenever you draw your second card each turn**, put a +1/+1 counter on ~." (Knights of Dol Amroth,
+Erudite Wizard, Tiger-Seal, Thopter Fabricator). Tail key "you draw your …". `Triggers` already read
+the ordinal *cast* trigger — `nthCastRule`, the caster baked into each row with its possessive and
+`Cardinals.ordinal` as the one slot — and the draw trigger is the same shape over
+`Triggers.<player>.drawsNth(n)`: three rows ("you draw your", "an opponent draws their", "a player draws
+their") into `NthCardDrawnEvent`. The one difference is the payoff's cascade. A draw event binds no
+object, so "it" in the effect can only be the source and the rule slots `Steps.step`, as the expend
+trigger does, rather than the triggered-object cascade the cast rule needs. Lady Octopus's "your first
+**or** second card" is one ability over two events and stays declined.
+
+### What it moved
+
+The ledger's first probe said 58 lines and **0** cards, because it substituted "you draw a card" — a
+trigger the grammar does not read either. Re-probed with a prefix it does read, the family measured
+30 lines / 15 whole cards over the implemented population, and delivered exactly that: **+15**
+(7,854 → 7,869), compared 7,439 → 7,454. A probe whose stand-in is itself unreadable measures nothing.
+
+### What the differential found
+
+One new divergence, a card. **Private Eye [MKM]** targeted a *creature* Detective where it prints
+"target Detective" — a bare subtype names a permanent (CR 109.2), the same finding as Diregraf
+Captain's and Sygg's. Fixed; divergent back to 77.
+
+## Entering with a counter, if
+
+"~ enters with a +1/+1 counter on it **if you attacked this turn**." (raid, morbid, the Myojin's "if
+you cast it from your hand"). Tail key "counter on it …". `Replacements` already read the bare
+sentence into `EntersWithCounters(selfOnly = true)` and refused any value with a `condition`; the
+conditional form is the same two rules with a trailing `{cond}` slot, so a null condition prints bare
+and a non-null one trails — disjoint halves of one field. The slot is `Conditions.condition` plus two
+rows whose "it" is the entering permanent ("you cast it", "you cast it from your hand"), kept out of
+the shared vocabulary because the pronoun is positional: The Sibsig Ceremony's "Whenever a creature
+you control enters, if you cast it" is `TriggeringEntityWasCast`. `WasKicked` (fronted by the kicker
+sentence) and `WasBargained` (a cost-position tense) are refused as trailing clauses. One row joins
+`Conditions` itself — "you've cast {n} or more spells this turn", `YouCastSpellsThisTurn(n)` from two
+up — which every position slotting the vocabulary picks up.
+
+### What it moved
+
+Probe 29 lines / 16 whole cards corpus-wide by dropping the clause, which overstated: revolt ("a
+permanent left the battlefield under your control"), "if you control a modified creature" and
+Epochrasite's next line still decline. Over the implemented population delivered **+13** (7,869 →
+7,882), compared 7,454 → 7,467; the baked ledger moved 10,948 → 10,969, with Loan Shark and Xerex
+Strobe-Knight finished by the spell-count row in their own positions. Six Myojin now stop on "~ has
+indestructible as long as it has a divinity counter on it.", the family's next row.
+
+### What the differential found
+
+One new divergence and no card bug. **Brightspear Zealot [EOE]** holds its "+2/+0 as long as" as
+`GrantDynamicStats` over two fixed amounts where the grammar reads `ModifyStats` — the fixed-bonus
+`GrantDynamicStats` spelling the gate has already recorded as one concept with two spellings, neither
+broken. Divergent 77 → 78.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote

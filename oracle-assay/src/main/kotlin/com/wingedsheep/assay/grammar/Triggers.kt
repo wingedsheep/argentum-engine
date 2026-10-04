@@ -490,6 +490,40 @@ object Triggers {
         Steps.triggeredStep,
     )
 
+    /**
+     * "Whenever you draw your second card each turn, …" — the ordinal draw trigger, and
+     * [nthCastRule]'s twin over `NthCardDrawnEvent`.
+     *
+     * The same shape for the same reasons: the drawer is a parameter of the event, so it is a row
+     * with its possessive baked into the prefix ("you draw **your**", "an opponent draws **their**")
+     * rather than a subject vocabulary, and the ordinal is the one slot. What differs is the effect
+     * clause. A draw event names **no object** — CR 121.2 makes every draw its own event, so the
+     * trigger counts draws and never binds the drawn card — so "it" in the payoff can only be the source, and
+     * the payoff is [Steps.step]'s source cascade, as the expend row's is. [Steps.triggeredStep]
+     * would offer a third anaphor with nothing behind it.
+     *
+     * "Whenever you draw your **first or second** card each turn" (Lady Octopus) is not a row: it is
+     * one ability over two events, which this surface's single ordinal cannot spell.
+     */
+    private fun nthDrawRule(prefix: String, name: String, player: Player): Prefix = Prefix(
+        phrase("$prefix {ordinal} card each turn", name = name) {
+            slot("ordinal", Cardinals.ordinal)
+            build { SdkTriggers.player(player).drawsNth(it.int("ordinal")) }
+            match { spec ->
+                val event = spec.event as? EventPattern.NthCardDrawnEvent ?: return@match null
+                if (SdkTriggers.player(player).drawsNth(event.nthCard) != spec) return@match null
+                bind("ordinal" to event.nthCard)
+            }
+        },
+        Steps.step,
+    )
+
+    private val drawPrefixes: List<Prefix> = listOf(
+        nthDrawRule("whenever you draw your", "whenever you draw your nth card", Player.You),
+        nthDrawRule("whenever an opponent draws their", "whenever an opponent draws their nth card", Player.EachOpponent),
+        nthDrawRule("whenever a player draws their", "whenever a player draws their nth card", Player.Each),
+    )
+
     // ---------------------------------------------------------------------------------------
     // Batch triggers — CR 603.2c's "one or more …"
     // ---------------------------------------------------------------------------------------
@@ -1035,7 +1069,7 @@ object Triggers {
      * drift the kernel's [com.wingedsheep.assay.syntax.PhraseBuilder.alsoSpelled] exists to make
      * impossible one rule at a time and this list makes impossible across a whole family.
      */
-    private val prefixes: List<Prefix> = eventPrefixes + castPrefixes + phasePrefixes + batchPrefixes
+    private val prefixes: List<Prefix> = eventPrefixes + castPrefixes + drawPrefixes + phasePrefixes + batchPrefixes
 
     /** The `when` clause vocabulary as one alternation, for the contexts that slot it. */
     private val event: Phrase<TriggerSpec> = oneOf("a trigger event", prefixes.map { it.phrase })
