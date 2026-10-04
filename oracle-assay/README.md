@@ -5513,6 +5513,32 @@ previously confirmed card moved. The other three were cards: **Headhunter** and 
 two-player and wrong in multiplayer — and **Unnerve [USG]** discarded one card where it prints two.
 All three are fixed; divergent is back to 76.
 
+## The tutor's "put that card"
+
+"Search your library for a card, **put that card into your hand**, then shuffle." (Demonic Tutor,
+Diabolic Tutor, Planar Portal) and "…**put that card into your graveyard**, then shuffle." (Entomb,
+Vile Entomber). Tail key ", put that …". `Library.search` already had a row per destination with the
+anaphor as an `alternate` for the battlefield and the reveal clause; the hand had only the pronoun,
+and the graveyard had no row at all. Three rows over `Patterns.Library.searchLibrary`: "put that card
+into your hand" as the alternate of "put it" (Oracle prints the pronoun 372 times to 20), and the
+graveyard destination in both spellings — split 7 to 6 in Oracle, so the pronoun stays canonical for
+agreement with every other destination.
+
+### What it moved
+
+Probe 19 lines / 11 whole cards corpus-wide. Over the implemented population delivered **+7**
+(7,847 → 7,854), compared 7,432 → 7,439. Gamble's "…put that card into your hand, discard a card at
+random, then shuffle" is a different sentence and stays declined.
+
+### What the differential found
+
+Two new divergences. **Diabolic Intent [PLS]** searched for a *creature* card where it prints "a
+card"; fixed. **Grim Tutor [S99]** is a standing SDK finding, and the card is the right half of it:
+it chooses exactly one card where `searchLibrary` always chooses up to one. CR 701.23b lets a player
+fail to find only when the search names a stated quality, so an unqualified "search for a card" must
+find one if the library has one — every `searchLibrary(filter = Any)` tutor, Demonic Tutor included,
+can currently fail to find. Divergent 76 → 77.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote

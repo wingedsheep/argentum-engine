@@ -457,6 +457,29 @@ object Library {
             "search your library for a card to your hand",
             destination = SearchDestination.HAND,
         ),
+        // The unrevealed tutor prints its anaphor both ways too — Demonic Tutor and Diabolic Tutor
+        // say "put that card into your hand", roughly one printing in twenty — so the noun is the
+        // alternate of the pronoun here, as in the reveal clause below.
+        search(
+            "search your library for {filter}, put that card into your hand, then shuffle",
+            "search your library for a card to your hand (that card)",
+            canonicalForm = false,
+            destination = SearchDestination.HAND,
+        ),
+        // The graveyard search — Entomb, Vile Entomber — is the same recipe again, and Oracle splits
+        // it almost evenly between the pronoun and the noun, so the pronoun keeps canonical for
+        // agreement with every other destination.
+        search(
+            "search your library for {filter}, put it into your graveyard, then shuffle",
+            "search your library for a card to your graveyard",
+            destination = SearchDestination.GRAVEYARD,
+        ),
+        search(
+            "search your library for {filter}, put that card into your graveyard, then shuffle",
+            "search your library for a card to your graveyard (that card)",
+            canonicalForm = false,
+            destination = SearchDestination.GRAVEYARD,
+        ),
         search(
             "search your library for {filter}, reveal it, put it into your hand, then shuffle",
             "search your library for a card, revealed, to your hand",
