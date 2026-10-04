@@ -142,7 +142,7 @@ sealed interface ReplacementEffect : TextReplaceable<ReplacementEffect> {
      *
      * Types that carry a `restrictions` field (e.g. [ModifyDrawAmount],
      * [PreventDamage], [DoubleDamage], [ModifyLifeGain], [ModifyLifeLoss],
-     * [ModifyMillAmount], [LifeLossFloor]) override this automatically.
+     * [ModifyMillAmount], [ModifyScryAmount], [LifeLossFloor]) override this automatically.
      */
     val restrictions: List<Condition> get() = emptyList()
 }
@@ -1323,6 +1323,49 @@ data class ModifyMillAmount(
         }
         append(appliesTo.description)
         append(", they mill that many cards plus $modifier instead")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        val newRestrictions = restrictions.map { it.applyTextReplacement(replacer) }
+        val anyChanged = newAppliesTo !== appliesTo ||
+            newRestrictions.zip(restrictions).any { (n, o) -> n !== o }
+        return if (anyChanged) copy(appliesTo = newAppliesTo, restrictions = newRestrictions) else this
+    }
+}
+
+/**
+ * Modify how many cards a player scries (CR 701.22) — the scry twin of [ModifyMillAmount]. A
+ * [modifier] of `+1` makes a player who would scry N instead scry `N + 1`; negative values reduce
+ * it (clamped to ≥ 0 by the caller). Applied once at the scry announcement — the scry pipeline's
+ * gather — so a paused-and-resumed scry never double-modifies, and the bigger look carries
+ * through to the top/bottom choice and the `ScriedEvent` count. A scry 0 is no scry event
+ * (CR 701.22b) and is never modified.
+ *
+ * The [appliesTo] [EventPattern.ScryEvent] gates which player's scries are affected relative to
+ * the source's controller. [restrictions] are additional [Condition]s evaluated against the
+ * scrying player as controller; ALL must hold.
+ *
+ * Example — Kenessos, Priest of Thassa: "If you would scry a number of cards, scry that many cards
+ * plus one instead" → `ModifyScryAmount(1)`.
+ */
+@SerialName("ModifyScryAmount")
+@Serializable
+data class ModifyScryAmount(
+    val modifier: Int,
+    override val restrictions: List<Condition> = emptyList(),
+    override val appliesTo: EventPattern = EventPattern.ScryEvent()
+) : ReplacementEffect {
+    override val description: String = buildString {
+        val restrictionDesc = restrictions.joinToString(" and ") { it.description.removePrefix("if ") }
+        if (restrictionDesc.isNotEmpty()) {
+            append(restrictionDesc.replaceFirstChar { it.uppercase() })
+            append(", if ")
+        } else {
+            append("If ")
+        }
+        append(appliesTo.description)
+        append(", they scry that many cards plus $modifier instead")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {

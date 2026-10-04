@@ -506,12 +506,16 @@ object LibraryPatterns {
     ): CompositeEffect = CompositeEffect(
         listOfNotNull(
             GatherCardsEffect(
-                source = CardSource.TopOfLibrary(count, player),
+                // isScry: the gather is the scry announcement, where ModifyScryAmount
+                // ("scry that many plus one") replacements resize the look.
+                source = CardSource.TopOfLibrary(count, player, isScry = true),
                 storeAs = "scried"
             ),
             SelectFromCollectionEffect(
                 from = "scried",
-                selection = SelectionMode.ChooseUpTo(count),
+                // Any number of the cards actually looked at — the gather already bounds the
+                // collection, and a scry replacement can make it larger than [count].
+                selection = SelectionMode.ChooseAnyNumber,
                 chooser = chooser,
                 storeSelected = "toBottom",
                 storeRemainder = "toTop",

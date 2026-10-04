@@ -10372,17 +10372,15 @@
                                     "player": {
                                         "type": "BoundVariable",
                                         "name": "t1"
-                                    }
+                                    },
+                                    "isScry": true
                                 },
                                 "storeAs": "scried"
                             },
                             {
                                 "type": "SelectFromCollection",
                                 "from": "scried",
-                                "selection": {
-                                    "type": "ChooseUpTo",
-                                    "count": "XValue"
-                                },
+                                "selection": "ChooseAnyNumber",
                                 "chooser": "TargetPlayer",
                                 "storeSelected": "toBottom",
                                 "storeRemainder": "toTop",

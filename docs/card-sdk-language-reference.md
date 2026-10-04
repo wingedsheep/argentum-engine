@@ -4316,10 +4316,10 @@ effect = Effects.Pipeline {
 }
 ```
 
-**Library-end sources.** `CardSource.TopOfLibrary(count, player = You, isMill = false)` gathers the top
+**Library-end sources.** `CardSource.TopOfLibrary(count, player = You, isMill = false, isScry = false)` gathers the top
 `count` cards; `CardSource.BottomOfLibrary(count, player = You)` is its mirror, the bottom `count` cards (in
 library order). Moving a card off the bottom is not a mill (CR 701.17a mills from the top), so it has no
-`isMill` axis and mill replacements never see it. **Cellar Door**: "Target player puts the bottom card of
+`isMill` axis and mill replacements never see it (`isScry` is the scry pipeline's twin marker for `ModifyScryAmount`). **Cellar Door**: "Target player puts the bottom card of
 their library into their graveyard. If it's a creature card, you create a 2/2 black Zombie" —
 `Pipeline { val bottom = gather(CardSource.BottomOfLibrary(1, player)); toGraveyard(bottom) }` then
 `Effects.If(CollectionContainsMatch(bottom, Creature), CreateToken(…))`.
@@ -15130,6 +15130,16 @@ The priority groups are (CR 616.1a–f):
   instances sum. Use for "if an opponent would mill one or more cards, they mill that many cards plus
   four instead" (The Water Crystal:
   `ModifyMillAmount(modifier = 4, appliesTo = EventPattern.MillEvent(player = Player.EachOpponent))`).
+- `ModifyScryAmount(modifier, restrictions, appliesTo)` — the scry twin of `ModifyMillAmount` (CR 701.22):
+  a player who would scry N instead scries `N + modifier`, clamped to ≥ 0. `appliesTo` is the
+  replacement-only `EventPattern.ScryEvent(player)` (default `Player.You`, relative to the source's
+  controller); "whenever you scry" triggers stay on `ScriedEvent`. Applied once at the scry
+  announcement — the scry pipeline's gather, `CardSource.TopOfLibrary(isScry = true)`, which only
+  `Patterns.Library.scry` / `Effects.Scry` sets — so the larger look carries through to the
+  top/bottom choice (which selects any number of the looked-at cards) and to the `ScriedEvent`
+  count. A scry 0 is no scry event (CR 701.22b) and is never modified. Multiple instances sum.
+  Kenessos, Priest of Thassa: "If you would scry a number of cards, scry that many cards plus one
+  instead" → `ModifyScryAmount(modifier = 1)`.
 - `ModifyKeywordAction(prefixEffect, appliesTo)` — insert an extra effect *in front of* a keyword
   action (CR 614): replaces "[a matching permanent] <acts>" with "[prefixEffect], then that permanent
   <acts>". One type across keyword actions rather than one per action — `appliesTo` carries which

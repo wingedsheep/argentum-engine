@@ -56,10 +56,12 @@ class GatherCardsExecutor(
                 playerIds.flatMap { playerId ->
                     // For a mill, apply ModifyMillAmount replacement effects to the announced
                     // count per milling player (CR 701.13 — "mill that many plus four instead").
-                    val effectiveCount = if (source.isMill) {
-                        MillAmountModifier.apply(state, playerId, count, predicateEvaluator = predicateEvaluator)
-                    } else {
-                        count
+                    // A scry likewise applies ModifyScryAmount (CR 701.22 — "scry that many
+                    // cards plus one instead").
+                    val effectiveCount = when {
+                        source.isMill -> MillAmountModifier.apply(state, playerId, count, predicateEvaluator)
+                        source.isScry -> ScryAmountModifier.apply(state, playerId, count, predicateEvaluator)
+                        else -> count
                     }
                     state.getZone(ZoneKey(playerId, Zone.LIBRARY)).take(effectiveCount)
                 }

@@ -4048,20 +4048,15 @@
                                             "player": {
                                                 "type": "BoundVariable",
                                                 "name": "t0"
-                                            }
+                                            },
+                                            "isScry": true
                                         },
                                         "storeAs": "scried"
                                     },
                                     {
                                         "type": "SelectFromCollection",
                                         "from": "scried",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 3
-                                            }
-                                        },
+                                        "selection": "ChooseAnyNumber",
                                         "chooser": "TargetPlayer",
                                         "storeSelected": "toBottom",
                                         "storeRemainder": "toTop",

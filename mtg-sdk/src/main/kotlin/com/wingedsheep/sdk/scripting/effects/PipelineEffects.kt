@@ -61,14 +61,23 @@ sealed interface CardSource {
      * four instead"). Only the `Patterns.Library.mill(...)` pipeline sets this; other top-N
      * gathers (scry, surveil, exile-top, look-at-top) leave it `false` so they are never affected
      * by mill-amount replacements.
+     *
+     * [isScry] is the scry twin (CR 701.22): set only by the scry pipeline
+     * (`Patterns.Library.scryPipeline`), it makes the count site apply `ModifyScryAmount`
+     * replacement effects ("scry that many cards plus one instead"). At most one of the two is set.
      */
     @SerialName("TopOfLibrary")
     @Serializable
     data class TopOfLibrary(
         val count: DynamicAmount,
         val player: Player = Player.You,
-        val isMill: Boolean = false
+        val isMill: Boolean = false,
+        val isScry: Boolean = false
     ) : CardSource {
+        init {
+            require(!(isMill && isScry)) { "TopOfLibrary can't be both a mill and a scry" }
+        }
+
         /** The top [count] cards — a constant count ("look at the top three cards"). */
         constructor(count: Int, player: Player = Player.You, isMill: Boolean = false) :
             this(DynamicAmount.Fixed(count), player, isMill)

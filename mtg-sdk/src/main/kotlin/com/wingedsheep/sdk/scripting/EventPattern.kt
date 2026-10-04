@@ -327,6 +327,21 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * When a player would scry a number of cards (CR 701.22). Replacement-only, like [MillEvent]:
+     * used by [com.wingedsheep.sdk.scripting.ModifyScryAmount] to adjust the count at the scry
+     * announcement (Kenessos, Priest of Thassa: "If you would scry a number of cards, scry that
+     * many cards plus one instead"). Never matches a triggered ability — "whenever you scry" is
+     * [ScriedEvent].
+     */
+    @SerialName("ScryEvent")
+    @Serializable
+    data class ScryEvent(
+        val player: Player = Player.You
+    ) : EventPattern {
+        override val description: String = "${player.description} would scry a number of cards"
+    }
+
+    /**
      * Fires on a `CardsDrawnEvent` when the drawing player's per-turn draw count
      * crosses the specified threshold (CR 121.2 — each card drawn is an individual
      * draw, so a single multi-card draw fires at most once when the Nth card lands

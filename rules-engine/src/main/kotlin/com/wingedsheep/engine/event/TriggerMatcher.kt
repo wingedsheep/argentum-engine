@@ -83,6 +83,9 @@ class TriggerMatcher(
             // MillEvent is a replacement-only pattern (ModifyMillAmount); it never matches a
             // triggered ability. Applied at the mill announcement by MillAmountModifier.
             is EventPattern.MillEvent -> false
+            // ScryEvent is likewise replacement-only (ModifyScryAmount), applied at the scry
+            // announcement by ScryAmountModifier; "whenever you scry" is ScriedEvent.
+            is EventPattern.ScryEvent -> false
             // DrawCardsEvent is a replacement-only pattern (ModifyDrawAmount for "N or more" draws);
             // it never matches a triggered ability. Checked at the draw announcement by
             // DrawReplacementDispatcher.checkDrawAmount.
