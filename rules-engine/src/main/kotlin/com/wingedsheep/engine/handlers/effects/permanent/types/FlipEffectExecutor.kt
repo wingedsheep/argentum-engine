@@ -75,6 +75,7 @@ internal fun flipPermanent(
         spellEffect = flipDef.spellEffect,
         hasNonManaActivatedAbility = flipDef.hasNonManaActivatedAbility,
         hasActivatedAbility = flipDef.hasActivatedAbility,
+        hasCycling = flipDef.hasCycling,
     )
 
     val staticAbilityHandler = StaticAbilityHandler(cardRegistry)

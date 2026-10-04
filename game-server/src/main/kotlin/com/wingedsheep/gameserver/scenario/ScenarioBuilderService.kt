@@ -498,6 +498,7 @@ class ScenarioBuilderService(
                 // craft material filter). Omitting them made scenario permanents look ability-less.
                 hasNonManaActivatedAbility = cardDef.hasNonManaActivatedAbility,
                 hasActivatedAbility = cardDef.hasActivatedAbility,
+                hasCycling = cardDef.hasCycling,
                 // Mirror CardEntityFactory so CardPredicate.HasAdventure (Frantic Firebolt's
                 // graveyard tally) sees adventurer cards created in dev scenarios.
                 hasAdventure = cardDef.isAdventure,

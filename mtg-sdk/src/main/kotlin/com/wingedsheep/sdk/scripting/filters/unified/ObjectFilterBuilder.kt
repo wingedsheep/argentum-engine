@@ -120,6 +120,9 @@ interface ObjectFilterBuilder<out Self> {
     fun withCardPredicate(predicate: CardPredicate): Self =
         mapObjectFilter { it.copy(cardPredicates = it.cardPredicates + predicate) }
 
+    /** Restrict to cards with a cycling ability, typecycling included ("card with a cycling ability"). */
+    fun withCycling() = withCardPredicate(CardPredicate.HasCycling)
+
     /** Add a keyword requirement */
     fun withKeyword(keyword: Keyword) = withCardPredicate(CardPredicate.HasKeyword(keyword))
 

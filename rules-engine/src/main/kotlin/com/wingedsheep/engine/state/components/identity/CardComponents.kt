@@ -60,6 +60,11 @@ data class CardComponent(
      */
     val hasActivatedAbility: Boolean = false,
     /**
+     * Precomputed from the card definition: does this card have a cycling ability (plain or
+     * typecycling)? Read by `CardPredicate.HasCycling` (Rooting Moloch). Printed abilities only.
+     */
+    val hasCycling: Boolean = false,
+    /**
      * The set this card was *originally printed* in (the canonical [CardDefinition.setCode], not the
      * specific printing the player owns). Read by `CardPredicate.OriginallyPrintedInSet` to model
      * "permanent with a name originally printed in [set]" (Golgothian Sylex, ARN City in a Bottle).

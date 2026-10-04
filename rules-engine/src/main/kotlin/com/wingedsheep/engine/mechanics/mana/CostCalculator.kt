@@ -1260,6 +1260,7 @@ class CostCalculator(
             CardPredicate.IsNonlegendary -> !typeLine.isLegendary
             CardPredicate.HasNonManaActivatedAbility -> cardDef.hasNonManaActivatedAbility
             CardPredicate.HasActivatedAbility -> cardDef.hasActivatedAbility
+            CardPredicate.HasCycling -> cardDef.hasCycling
 
             is CardPredicate.HasColor -> predicate.color in cardDef.colors
             is CardPredicate.NotColor -> predicate.color !in cardDef.colors

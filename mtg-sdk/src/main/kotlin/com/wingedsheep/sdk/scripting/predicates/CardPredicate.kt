@@ -1324,6 +1324,18 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
+     * Matches a card with a cycling ability — plain cycling or any typecycling variant
+     * (typecycling is a variant of cycling, CR 702.29e). Backed by the precomputed
+     * `CardComponent.hasCycling` flag stamped from the card's printed keyword abilities. Used by
+     * Rooting Moloch: "exile target card with a cycling ability from your graveyard."
+     */
+    @SerialName("HasCycling")
+    @Serializable
+    data object HasCycling : CardPredicate {
+        override val description: String = "with a cycling ability"
+    }
+
+    /**
      * Matches a spell or ability on the stack at least one of whose chosen targets
      * matches [subfilter]. Player targets are skipped (they aren't card-like and have
      * no game-object filter to match against). Used by cards like Teferi's Response

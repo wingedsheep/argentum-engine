@@ -366,6 +366,7 @@ class PredicateEvaluator(
             is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl,
             is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl,
             CardPredicate.HasActivatedAbility,
+            CardPredicate.HasCycling,
             CardPredicate.HasAdventure,
             is CardPredicate.HasAnyOfSubtypes,
             is CardPredicate.HasBasicLandType,
@@ -729,6 +730,7 @@ class PredicateEvaluator(
             CardPredicate.IsNonlegendary -> "LEGENDARY" !in types
             CardPredicate.HasNonManaActivatedAbility -> card.hasNonManaActivatedAbility
             CardPredicate.HasActivatedAbility -> card.hasActivatedAbility
+            CardPredicate.HasCycling -> card.hasCycling
 
             // Color predicates - use projected colors
             is CardPredicate.HasColor -> predicate.color.name in colors
@@ -2614,6 +2616,7 @@ class PredicateEvaluator(
             // A cast-spell record has no battlefield permanent to inspect for activated abilities.
             CardPredicate.HasNonManaActivatedAbility -> false
             CardPredicate.HasActivatedAbility -> false
+            CardPredicate.HasCycling -> false
 
             // Stack-relative targeting predicate — historical cast records have no
             // chosen-target snapshot, so this always returns false here.

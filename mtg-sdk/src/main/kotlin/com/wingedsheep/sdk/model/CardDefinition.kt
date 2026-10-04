@@ -500,6 +500,13 @@ data class CardDefinition(
                 it.activateFromZone == com.wingedsheep.sdk.core.Zone.GRAVEYARD
         }
 
+    /**
+     * Does this card have a cycling ability — plain cycling or any typecycling variant (CR 702.29e)?
+     * Printed abilities only. Backs `CardPredicate.HasCycling` via `CardComponent.hasCycling`.
+     */
+    val hasCycling: Boolean
+        get() = keywordAbilities.any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Cycling }
+
     /** Static abilities (continuous effects) on this card */
     val staticAbilities get() = script.staticAbilities
 

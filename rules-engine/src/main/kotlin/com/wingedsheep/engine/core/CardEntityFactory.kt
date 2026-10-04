@@ -81,6 +81,7 @@ object CardEntityFactory {
                 printingSetCode = printing?.setCode ?: cardDef.setCode,
                 hasNonManaActivatedAbility = cardDef.hasNonManaActivatedAbility,
                 hasActivatedAbility = cardDef.hasActivatedAbility,
+                hasCycling = cardDef.hasCycling,
                 // Original-printing set (canonical, not the pinned printing) — "originally printed in X".
                 originalSetCode = cardDef.setCode,
                 hasAdventure = cardDef.isAdventure,

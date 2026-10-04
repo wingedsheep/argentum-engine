@@ -1973,6 +1973,87 @@
     ]
 }
 
+// Rooting Moloch
+{
+    "name": "Rooting Moloch",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "When this creature enters, exile target card with a cycling ability from your graveyard. Until the end of your next turn, you may play that card.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rooting Moloch:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "moved1",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "HasCycling"
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, exile target card with a cycling ability from your graveyard. Until the end of your next turn, you may play that card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "UNCOMMON",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "Their feeding habits leave them with gizzards full of tumbled gems.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc2fd581-5cf8-4154-90dd-922afddcd556.jpg?1783931044"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Rumbling Rockslide
 {
     "name": "Rumbling Rockslide",

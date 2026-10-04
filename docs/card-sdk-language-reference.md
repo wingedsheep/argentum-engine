@@ -5303,6 +5303,10 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   whether the object has *any* instance of it: toxic projects only as `TOXIC_<n>` (printed toxic 2 is `TOXIC_2`,
   each "gains toxic 1" adds a `TOXIC_1`), and "a creature with toxic" (Compleat Devotion, Slaughter Singer)
   matches all of them. `.withoutKeyword(k)` is the exact negation.
+- `.withCycling()` — `CardPredicate.HasCycling`: a card with a cycling ability, plain cycling or any
+  typecycling (CR 702.29e). Read off the card's printed keyword abilities (stamped as
+  `CardComponent.hasCycling`), so it works in any zone — "target card with a cycling ability from your
+  graveyard" (Rooting Moloch).
 - `.ofColor(c)` / `.ofColors(set)` — color predicate.
 - `.withColor(c)` / `.withAnyColor(c…)` / `.notColor(c)` — fixed-color predicates (`CardPredicate.HasColor`/`NotColor`).
 - `.nonartifact()` — appends `CardPredicate.IsNonartifact` ("nonartifact creature", the Terror template);
