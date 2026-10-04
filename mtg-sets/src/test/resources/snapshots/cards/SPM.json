@@ -13568,7 +13568,7 @@
                     "space": {
                         "type": "IterationSpace.Group",
                         "filter": {
-                            "baseFilter": "creature Villain ctrl:you",
+                            "baseFilter": "permanent Villain ctrl:you",
                             "excludeSelf": true
                         }
                     },
