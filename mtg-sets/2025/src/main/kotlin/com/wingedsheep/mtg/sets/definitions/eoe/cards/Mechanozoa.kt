@@ -5,8 +5,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
  * Mechanozoa
@@ -27,7 +27,7 @@ val Mechanozoa = card("Mechanozoa") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        val artifactOrCreatureOpponentControls = target(TargetFilter(GameObjectFilter.CreatureOrArtifact.opponentControls()))
+        val artifactOrCreatureOpponentControls = target(TargetFilter((GameObjectFilter.Artifact or GameObjectFilter.Creature).opponentControls()))
         effect = Effects.Tap(artifactOrCreatureOpponentControls) then
             Effects.AddCounters(CounterType.STUN, 1, artifactOrCreatureOpponentControls)
     }

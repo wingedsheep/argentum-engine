@@ -150,8 +150,10 @@ internal object StackPlacement {
         // Clone cast-time state; per 707.10 the copy inherits every decision made for
         // the original. The data-class copy preserves: xValue, declaredCostSlot, wasBlightPaid,
         // wasWarped, wasEvoked, sacrificedPermanents (snapshots of P/T + subtypes), damageDistribution,
-        // chosenCreatureType, exiledCardCount, castFromZone, beheldCards, convokedCreatures (CR 707.10: an
+        // chosenCreatureType, exiledCardCount, beheldCards, convokedCreatures (CR 707.10: an
         // effect of the copy that refers to objects used to pay its costs uses the original's).
+        // castFromZone is cleared: a copy isn't cast (707.10), so it wasn't cast from any zone —
+        // "if this spell was cast from a graveyard" is false for it (Sevinne's Reclamation ruling).
         // Actual mana payment is not a copied decision: no mana was spent to cast the copy.
         // Clear every payment bucket and provenance map while retaining choices such as X.
         // The caster and modal fields may also change. Payment events (ManaSpentEvent, SpellCastEvent) are
@@ -159,6 +161,7 @@ internal object StackPlacement {
         // was spent on the copy, so a mana rider's entry keyword grant stays with the original.
         val copiedSpellComp = sourceSpell.copy(
             casterId = copyController,
+            castFromZone = null,
             entryKeywordGrants = emptyList(),
             manaSpentWhite = 0,
             manaSpentBlue = 0,

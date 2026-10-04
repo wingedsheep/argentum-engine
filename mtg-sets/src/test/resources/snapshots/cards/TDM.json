@@ -15169,7 +15169,7 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "creature|artifact ctrl:opponent"
+                        "baseFilter": "artifact|creature ctrl:opponent"
                     },
                     "id": "t0"
                 }

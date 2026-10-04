@@ -6111,7 +6111,7 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "creature|artifact ctrl:opponent"
+                        "baseFilter": "artifact|creature ctrl:opponent"
                     },
                     "id": "t0"
                 }
@@ -6148,7 +6148,7 @@
                 "type": "AdditionalAtom",
                 "atom": {
                     "type": "AtomSacrifice",
-                    "filter": "creature|artifact"
+                    "filter": "artifact|creature"
                 }
             }
         ]
@@ -6793,7 +6793,7 @@
                 "type": "AdditionalAtom",
                 "atom": {
                     "type": "AtomSacrifice",
-                    "filter": "creature|artifact"
+                    "filter": "artifact|creature"
                 }
             }
         ]
@@ -21902,7 +21902,7 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "creature|artifact ctrl:opponent"
+                        "baseFilter": "artifact|creature ctrl:opponent"
                     },
                     "id": "t0"
                 },

@@ -33,7 +33,7 @@ val IceFlan = card("Ice Flan") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        val t = target(TargetFilter(GameObjectFilter.CreatureOrArtifact.opponentControls()))
+        val t = target(TargetFilter((GameObjectFilter.Artifact or GameObjectFilter.Creature).opponentControls()))
         effect = Effects.Tap(t) then Effects.AddCounters(CounterType.STUN, 1, t)
     }
 

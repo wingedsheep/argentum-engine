@@ -38,12 +38,11 @@ val LoreholdCharm = card("Lorehold Charm") {
             mode("Return target artifact or creature card with mana value 2 or less from your graveyard to the battlefield") {
                 val t = target(
                     TargetFilter(
-                        GameObjectFilter.Artifact.ownedByYou().manaValueAtMost(2)
-                            .or(GameObjectFilter.Creature.ownedByYou().manaValueAtMost(2)),
+                        (GameObjectFilter.Artifact or GameObjectFilter.Creature).ownedByYou().manaValueAtMost(2),
                         zone = Zone.GRAVEYARD
                     ),
                 )
-                effect = Effects.PutOntoBattlefield(t)
+                effect = Effects.PutOntoBattlefieldFromGraveyard(t)
             }
             mode("Creatures you control get +1/+1 and gain trample until end of turn") {
                 effect = Patterns.Group.pumpAndGrantToAll(

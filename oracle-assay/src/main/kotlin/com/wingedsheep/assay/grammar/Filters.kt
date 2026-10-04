@@ -122,6 +122,11 @@ object Filters {
         TypeNoun("creature or land", "creatures and lands", GameObjectFilter.CreatureOrLand),
         TypeNoun("artifact or enchantment", null, GameObjectFilter.ArtifactOrEnchantment),
         TypeNoun("artifact or land", null, GameObjectFilter.ArtifactOrLand),
+        // Oracle prints this pair in both orders — "target artifact or creature", "another creature
+        // or artifact you control" — and the cards follow the print: the `or` fold for the first,
+        // the published `CreatureOrArtifact` for the second. Two rows, so each order prints itself.
+        TypeNoun("artifact or creature", null, GameObjectFilter.Artifact or GameObjectFilter.Creature),
+        TypeNoun("creature or artifact", null, GameObjectFilter.CreatureOrArtifact),
         TypeNoun("attacking creature", "attacking creatures", GameObjectFilter.Creature.attacking()),
         // A `StatePredicate.Or` of the two, which is one printed phrase and one value — the same
         // shape as the "artifact or enchantment" row above, and enumerated for the same reason.
@@ -558,6 +563,30 @@ object Filters {
             }
         }
 
+    /** "creatures with toughness 4 or greater" — the toughness sibling of [withPowerAtLeast]. */
+    private fun withToughnessAtLeast(inner: Phrase<GameObjectFilter>, name: String): Phrase<GameObjectFilter> =
+        phrase("{type} with toughness {n} or greater", name = name) {
+            slot("type", inner)
+            slot("n", Primitives.cardinal)
+            build { it.value<GameObjectFilter>("type").toughnessAtLeast(it.int("n")) }
+            match { filter ->
+                filter.stripTop<CardPredicate.ToughnessAtLeast>()
+                    ?.let { (predicate, rest) -> bind("type" to rest, "n" to predicate.min) }
+            }
+        }
+
+    /** "creatures with toughness 2 or less" — the toughness sibling of [withPowerAtMost]. */
+    private fun withToughnessAtMost(inner: Phrase<GameObjectFilter>, name: String): Phrase<GameObjectFilter> =
+        phrase("{type} with toughness {n} or less", name = name) {
+            slot("type", inner)
+            slot("n", Primitives.cardinal)
+            build { it.value<GameObjectFilter>("type").toughnessAtMost(it.int("n")) }
+            match { filter ->
+                filter.stripTop<CardPredicate.ToughnessAtMost>()
+                    ?.let { (predicate, rest) -> bind("type" to rest, "n" to predicate.max) }
+            }
+        }
+
     /**
      * "nontoken Elf" — the token/nontoken layer.
      *
@@ -705,6 +734,8 @@ object Filters {
             withCounter(inner, plural, "a permanent with a counter$label"),
             withPowerAtLeast(inner, "a permanent with power at least$label"),
             withPowerAtMost(inner, "a permanent with power at most$label"),
+            withToughnessAtLeast(inner, "a permanent with toughness at least$label"),
+            withToughnessAtMost(inner, "a permanent with toughness at most$label"),
             ManaValues.layer(inner, label),
         ) + if (plural) emptyList() else listOf(ofChosenType(inner, "a permanent of the chosen type$label"))
 

@@ -31,7 +31,7 @@ val WaylayingPirates = card("Waylaying Pirates") {
     triggeredAbility {
         trigger = Triggers.self.enters()
         interveningIf = Conditions.YouControl(GameObjectFilter.Artifact)
-        val t = target(TargetFilter(GameObjectFilter.CreatureOrArtifact.opponentControls()))
+        val t = target(TargetFilter((GameObjectFilter.Artifact or GameObjectFilter.Creature).opponentControls()))
         effect = Effects.Tap(t) then
             Effects.AddCounters(counterType = CounterType.STUN, count = 1, target = t)
     }

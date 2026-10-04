@@ -9817,7 +9817,7 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomSacrifice",
-                                "filter": "creature|artifact"
+                                "filter": "artifact|creature"
                             }
                         }
                     ]

@@ -36,6 +36,17 @@ class FiltersTest : StringSpec({
         roundTrips(Filters.filter, "artifact or enchantment")
     }
 
+    // Oracle prints the artifact/creature pair in both orders and the cards follow the print, so
+    // each order is its own row and prints itself back rather than normalizing to the other.
+    "the artifact and creature pair keeps its printed order" {
+        read(Filters.filter, "artifact or creature") shouldBe
+            (GameObjectFilter.Artifact or GameObjectFilter.Creature)
+        read(Filters.filter, "creature or artifact") shouldBe GameObjectFilter.CreatureOrArtifact
+        roundTrips(Filters.filter, "artifact or creature")
+        roundTrips(Filters.filter, "creature or artifact")
+        roundTrips(Filters.filter, "artifact or creature you control")
+    }
+
     // The colour layer owns the top of the predicate stack and delegates the rest inward, which is
     // what lets it sit in front of a type phrase that already carries a state predicate.
     "the colour layer wraps any type noun" {
@@ -61,6 +72,17 @@ class FiltersTest : StringSpec({
         roundTrips(Filters.plural, "creatures with flying")
         roundTrips(Filters.plural, "creatures without flying")
         roundTrips(Filters.plural, "creatures with power 2 or greater")
+    }
+
+    "the toughness qualities are the power ones' siblings" {
+        read(Filters.filter, "creature with toughness 4 or greater") shouldBe
+            GameObjectFilter.Creature.toughnessAtLeast(4)
+        read(Filters.plural, "creatures you control with toughness 2 or less") shouldBe
+            GameObjectFilter.Creature.youControl().toughnessAtMost(2)
+
+        roundTrips(Filters.filter, "creature with toughness 4 or greater")
+        roundTrips(Filters.plural, "creatures with toughness 3 or greater")
+        roundTrips(Filters.plural, "creatures you control with toughness 2 or less")
     }
 
     // Colour then controller then quality, which is both the printed order and — for the colour

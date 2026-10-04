@@ -75,6 +75,11 @@ class FacadeBoundaryTest : FunSpec({
             "CreateDelayedTriggerEffect.carryCollections names the collections the delayed trigger remembers",
         "mh3/cards/GlimpseTheImpossible.kt" to
             "CreateDelayedTriggerEffect.carryCollections names the collections the delayed trigger remembers",
+        "mh3/cards/PheliaExuberantShepherd.kt" to
+            "CreateDelayedTriggerEffect.carryCollections names the collections the delayed trigger remembers",
+        "mh3/cards/WheelOfPotential.kt" to
+            "the per-player May runs its own pipeline, so its tracked move names the slot the enclosing " +
+                "forEachPlayerCollecting aggregates — a handle minted inside the May lambda can't be returned out of it",
         "dsk/cards/MonstrousEmergence.kt" to
             "the cost's ChooseEntity storeAs is read by the spell effect — a cost is not inside any pipeline",
         "eoe/cards/CloseEncounter.kt" to

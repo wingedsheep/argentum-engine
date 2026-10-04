@@ -32,7 +32,7 @@ val VatOfRebirth = card("Vat of Rebirth") {
         "your graveyard to the battlefield. Activate only as a sorcery."
 
     triggeredAbility {
-        trigger = Triggers.another(GameObjectFilter.CreatureOrArtifact.youControl()).dies()
+        trigger = Triggers.another((GameObjectFilter.Artifact or GameObjectFilter.Creature).youControl()).dies()
         effect = Effects.AddCounters(CounterType.OIL, 1, EffectTarget.Self)
     }
 

@@ -1277,6 +1277,14 @@ class DynamicAmountEvaluator(
                     resolveCardNumericProperty(state, projection, it, prop)
                 }.size
             }
+            // "<N> or more <group> with the same name as one another" (Mechanized Production):
+            // bucket by name and take the biggest bucket. The projected name wins where a
+            // name-changing effect set one, as in the Yenna name predicate. A face-down permanent
+            // has no name (CR 708.2a), so it shares one with nothing.
+            Aggregation.LARGEST_SAME_NAME_GROUP -> matchingEntities.mapNotNull { entityId ->
+                if (state.getEntity(entityId)?.has<FaceDownComponent>() == true) return@mapNotNull null
+                projection.getName(entityId) ?: state.getEntity(entityId)?.get<CardComponent>()?.name
+            }.groupingBy { it }.eachCount().values.maxOrNull() ?: 0
         }
     }
 
@@ -1380,6 +1388,10 @@ class DynamicAmountEvaluator(
                     resolveCardNumericProperty(state, null, it, prop)
                 }.size
             }
+            // Off the battlefield there is no projection, so the printed name is the only one.
+            Aggregation.LARGEST_SAME_NAME_GROUP -> matchingEntities.mapNotNull { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name
+            }.groupingBy { it }.eachCount().values.maxOrNull() ?: 0
         }
     }
 

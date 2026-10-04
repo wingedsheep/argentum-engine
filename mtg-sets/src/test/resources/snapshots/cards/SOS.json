@@ -6596,7 +6596,7 @@
             {
                 "type": "TargetObject",
                 "filter": {
-                    "baseFilter": "creature|artifact"
+                    "baseFilter": "artifact|creature"
                 },
                 "id": "t0"
             }
@@ -8783,42 +8783,14 @@
                             "type": "BoundVariable",
                             "name": "t0"
                         },
-                        "destination": "Battlefield"
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
                     },
                     "targetRequirements": [
                         {
                             "type": "TargetObject",
                             "filter": {
-                                "baseFilter": {
-                                    "cardPredicates": [
-                                        {
-                                            "type": "Or",
-                                            "predicates": [
-                                                {
-                                                    "type": "And",
-                                                    "predicates": [
-                                                        "IsArtifact",
-                                                        {
-                                                            "type": "ManaValueAtMost",
-                                                            "max": 2
-                                                        }
-                                                    ]
-                                                },
-                                                {
-                                                    "type": "And",
-                                                    "predicates": [
-                                                        "IsCreature",
-                                                        {
-                                                            "type": "ManaValueAtMost",
-                                                            "max": 2
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ],
-                                    "controllerPredicate": "OwnedByYou"
-                                },
+                                "baseFilter": "artifact|creature mv<=2 own:you",
                                 "zone": "Graveyard"
                             },
                             "id": "t0"

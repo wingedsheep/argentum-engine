@@ -4691,7 +4691,7 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomSacrifice",
-                                "filter": "creature|artifact",
+                                "filter": "artifact|creature",
                                 "excludeSelf": true
                             }
                         }
@@ -9644,6 +9644,142 @@
     }
 }
 
+// Imskir Iron-Eater
+{
+    "name": "Imskir Iron-Eater",
+    "manaCost": "{6}{B}{R}",
+    "typeLine": "Legendary Creature — Demon",
+    "oracleText": "Affinity for artifacts (This spell costs {1} less to cast for each artifact you control.)\nWhen Imskir enters, you draw X cards and you lose X life, where X is half the number of artifacts you control, rounded down.\n{3}{R}, Sacrifice an artifact: Imskir deals damage equal to the sacrificed artifact's mana value to any target.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "AFFINITY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Affinity",
+            "forType": "ARTIFACT"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Imskir Iron-Eater:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "number0",
+                            "amount": {
+                                "type": "Divide",
+                                "numerator": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "artifact"
+                                },
+                                "denominator": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "roundUp": false
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "number0"
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "number0"
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Imskir Iron-Eater:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{R}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "SacrificedAsCost",
+                        "numericProperty": "ManaValue"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{3}{R}, Sacrifice an artifact: Imskir deals damage equal to the sacrificed artifact's mana value to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "RARE",
+        "artist": "Xavier Ribeiro",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/541209fa-38b6-4d61-a72d-26bfb6ad5ead.jpg?1783911250",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "The value of X is calculated only once, as Imskir Iron-Eater's triggered ability resolves."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Use the mana value of the sacrificed artifact as it last existed on the battlefield to determine how much damage is dealt."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If an artifact on the battlefield has {X} in its mana cost, X is 0 when determining its mana value."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Indebted Spirit
 {
     "name": "Indebted Spirit",
@@ -10647,6 +10783,125 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Kozilek, the Broken Reality
+{
+    "name": "Kozilek, the Broken Reality",
+    "manaCost": "{9}",
+    "typeLine": "Legendary Creature — Eldrazi",
+    "oracleText": "When you cast this spell, up to two target players each manifest two cards from their hands. For each card manifested this way, you draw a card. (To manifest a card, put it onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)\nOther colorless creatures you control get +3/+2.",
+    "creatureStats": {
+        "power": 9,
+        "toughness": 9
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kozilek, the Broken Reality:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachTargetedPlayer"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "gathered1"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered1",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 2
+                                            }
+                                        },
+                                        "storeSelected": "selected2",
+                                        "prompt": "Choose two cards from your hand to manifest"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected2",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        },
+                                        "faceDown": "MANIFEST",
+                                        "storeMovedAs": "moved3"
+                                    }
+                                ]
+                            },
+                            "collectCollections": {
+                                "moved3": "collected4"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "collected4_count"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "count": 2,
+                    "optional": true,
+                    "id": "t0"
+                },
+                "descriptionOverride": "When you cast this spell, up to two target players each manifest two cards from their hands. For each card manifested this way, you draw a card."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 2,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsColorless"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "MYTHIC",
+        "artist": "Brent Hollowell",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04066abb-44d2-4730-9cc3-2584bc4c7d8c.jpg?1783911307",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Kozilek, the Broken Reality's triggered ability will resolve before Kozilek does. If Kozilek is countered or otherwise leaves the stack in response to that triggered ability, the triggered ability will still resolve as normal."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a targeted player has only one card in hand as Kozilek's triggered ability resolves, they manifest that card."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Kudo, King Among Bears
@@ -12478,6 +12733,235 @@
     ]
 }
 
+// Ondu Knotmaster
+{
+    "name": "Ondu Knotmaster",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Creature — Kor Rogue",
+    "oracleText": "Lifelink\nWhenever another modified creature you control dies, put two +1/+1 counters on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ondu Knotmaster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsModified"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever another modified creature you control dies, put two +1/+1 counters on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "UNCOMMON",
+        "artist": "Jarel Threat",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27912e61-97ef-406b-bb88-4fe89a54726e.jpg?1783911248",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "You choose how the counters will be distributed as you cast Throw a Line. Each target must receive at least one +1/+1 counter."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If you choose two targets for Throw a Line, and one of the creatures is an illegal target as Throw a Line tries to resolve, the original distribution of counters still applies and the counter that would have been put on the illegal target are lost."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "An Aura controlled by another player does not cause a creature you control to be modified."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "A creature with a counter on it is considered modified no matter what kind of counter it is or which player put it on that creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Throw a Line",
+            "manaCost": "{W}{B}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Distribute two +1/+1 counters among one or two target creatures. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "DistributeCountersAmongTargets",
+                    "totalCounters": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "minCount": 1,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        }
+    ]
+}
+
+// Party Thrasher
+{
+    "name": "Party Thrasher",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Lizard Wizard",
+    "oracleText": "Noncreature spells you cast from exile have convoke. (Each creature you tap while casting a noncreature spell from exile pays for {1} or one mana of that creature's color.)\nAt the beginning of your first main phase, you may discard a card. If you do, exile the top two cards of your library, then choose one of them. You may play that card this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Party Thrasher:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "PRECOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "gathered0",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    }
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected2",
+                                    "prompt": "Choose a card you may play this turn"
+                                },
+                                {
+                                    "type": "GrantMayPlayFromExile",
+                                    "from": "selected2"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeywordToOwnSpells",
+                "keyword": "CONVOKE",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "IsNoncreature"
+                    ]
+                },
+                "fromZone": "Exile"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "RARE",
+        "artist": "Leanna Crossan",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7f8bb8d-c46a-4531-9525-6981a222b468.jpg?1783911269"
+    }
+}
+
 // Path of Annihilation
 {
     "name": "Path of Annihilation",
@@ -12818,6 +13302,116 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Phelia, Exuberant Shepherd
+{
+    "name": "Phelia, Exuberant Shepherd",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Creature — Dog",
+    "oracleText": "Flash\nWhenever Phelia attacks, exile up to one other target nonland permanent. At the beginning of the next end step, return that card to the battlefield under its owner's control. If it entered under your control, put a +1/+1 counter on Phelia.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Phelia, Exuberant Shepherd:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        },
+                                        "storeMovedAs": "moved2",
+                                        "underOwnersControl": true
+                                    },
+                                    {
+                                        "type": "ConditionalOnCollection",
+                                        "collection": "moved2",
+                                        "ifNotEmpty": {
+                                            "type": "AddCounters",
+                                            "counterType": "PLUS_ONE_PLUS_ONE",
+                                            "count": 1,
+                                            "target": "Self"
+                                        },
+                                        "filter": "ctrl:you"
+                                    }
+                                ]
+                            },
+                            "carryCollections": [
+                                "gathered0"
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "nonland permanent",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "RARE",
+        "artist": "Rudy Siswanto",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/55707746-da6e-46e5-a5ca-7ac843fdc38e.jpg?1783911298",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "The exiled card will return to the battlefield at the beginning of the end step even if Phelia is no longer on the battlefield."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If the permanent that returns to the battlefield has any abilities that trigger at the beginning of the end step, those abilities won't trigger that turn."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Auras attached to the exiled permanent will be put into their owners' graveyards. Equipment attached to the exiled permanent will become unattached and remain on the battlefield. Any counters on the exiled permanent will cease to exist. Once the exiled permanent returns, it's considered a new object with no relation to the object that it was."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -13269,6 +13863,112 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Powerbalance
+{
+    "name": "Powerbalance",
+    "manaCost": "{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an opponent casts a spell, you may reveal the top card of your library. If you do, you may cast that card without paying its mana cost if the two spells have the same mana value.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Powerbalance:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Reveal the top card of your library?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeAs": "gathered0",
+                                "revealed": true
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered0",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsNonland",
+                                        {
+                                            "type": "ManaValueEqualsDynamic",
+                                            "amount": {
+                                                "type": "ContextProperty",
+                                                "key": "TRIGGERING_SPELL_MANA_VALUE"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "storeMatching": "matching1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "matching1",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected2",
+                                "selectedLabel": "Cast without paying its mana cost"
+                            },
+                            {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "selected2"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "RARE",
+        "artist": "Steve Ellis",
+        "flavorText": "For every action, a reaction. For every force, a firestorm.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/aff7c0bb-1210-4aeb-b5f8-1387eb633b0f.jpg?1783911268",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If an opponent casts a spell with {X} in its mana cost, use the value of X that was chosen when it was cast to determine its mana value."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "You choose whether or not to cast the exiled card as Powerbalance's triggered ability resolves. If you do, you do so as part of the resolution of that ability. You can't wait to cast it later in the turn. Timing restrictions based on the card's type are ignored."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If the revealed card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the spell has any mandatory additional costs, those must be paid to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -14605,6 +15305,110 @@
     ]
 }
 
+// Ripples of Undeath
+{
+    "name": "Ripples of Undeath",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your first main phase, mill three cards. Then you may pay {1} and 3 life. If you do, put a card from among those cards into your hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ripples of Undeath:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "PRECOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "storeMovedAs": "milled"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.MayPay",
+                                "cost": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "PayManaCost",
+                                            "cost": "{1}"
+                                        },
+                                        {
+                                            "type": "PayLife",
+                                            "amount": 3
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "milled",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected2",
+                                        "prompt": "Put a card from among the milled cards into your hand",
+                                        "selectedLabel": "Put in hand",
+                                        "remainderLabel": "Leave in graveyard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected2",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    }
+                                ]
+                            },
+                            "descriptionOverride": "Pay {1} and 3 life to put a card from among the milled cards into your hand?"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "RARE",
+        "artist": "Ben Wootten",
+        "flavorText": "As the monster lay dying, it stared into the eyes of the human who slew it. Decades later, it has yet to break its gaze.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a201d1bc-e3fe-4f59-bd48-3683996ac308.jpg?1783911276"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Roil Cartographer
 {
     "name": "Roil Cartographer",
@@ -15847,6 +16651,258 @@
         "RED",
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Shifting Woodland
+{
+    "name": "Shifting Woodland",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless you control a Forest.\n{T}: Add {G}.\nDelirium — {2}{G}{G}: This land becomes a copy of target permanent card in your graveyard until end of turn. Activate only if there are four or more card types among cards in your graveyard.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shifting Woodland:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Shifting Woodland:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "EachPermanentBecomesCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn",
+                    "affected": "Self",
+                    "sourceFromAnyZone": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateZone",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "aggregation": "DISTINCT_TYPES"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Delirium — {2}{G}{G}: This land becomes a copy of target permanent card in your graveyard until end of turn. Activate only if there are four or more card types among cards in your graveyard."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "land Forest"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/059164e1-894d-4586-9800-e60d6fbd6eb6.jpg?1783911237",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "You must already control a Forest as Shifting Woodland enters the battlefield for it to enter untapped. If it enters the battlefield at the same time as a Forest when you control no other Forests, it will enter tapped."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Shifting Woodland copies exactly what was printed on the original card and nothing else. It doesn't copy any information about the object the card was before it was put into your graveyard."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Any effects that applied to Shifting Woodland before it becomes a copy of another card will continue to apply after it becomes a copy. The same is true of any counters that are on Shifting Woodland."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a card in your graveyard has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Because Shifting Woodland isn't entering the battlefield when it becomes a copy of a card, any \"When [this creature] enters the battlefield\" or \"[This creature] enters the battlefield with\" abilities of the copied card won't apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Shilgengar, Sire of Famine
+{
+    "name": "Shilgengar, Sire of Famine",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Elder Demon",
+    "oracleText": "Flying\nSacrifice another creature: Create a Blood token. If you sacrificed an Angel this way, create a number of Blood tokens equal to its toughness instead.\n{W/B}{W/B}{W/B}, Sacrifice six Blood tokens: Return each creature card from your graveyard to the battlefield with a finality counter on it. Those creatures are Vampires in addition to their other types.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shilgengar, Sire of Famine:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SacrificedPermanentHadSubtype",
+                            "subtype": "Angel"
+                        }
+                    },
+                    "then": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Blood",
+                        "dynamicCount": {
+                            "type": "EntityProperty",
+                            "entity": "SacrificedAsCost",
+                            "numericProperty": "Toughness"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Blood"
+                    }
+                },
+                "descriptionOverride": "Sacrifice another creature: Create a Blood token. If you sacrificed an Angel this way, create a number of Blood tokens equal to its toughness instead."
+            },
+            {
+                "id": "Shilgengar, Sire of Famine:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W/B}{W/B}{W/B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact Blood token",
+                                "count": 6
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "storeMovedAs": "moved1",
+                            "addCounterType": "FINALITY"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "moved1"
+                            },
+                            "body": {
+                                "type": "AddCreatureType",
+                                "subtype": "Vampire",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{W/B}{W/B}{W/B}, Sacrifice six Blood tokens: Return each creature card from your graveyard to the battlefield with a finality counter on it. Those creatures are Vampires in addition to their other types."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e6aba35-bee5-4058-a2df-d73506d225c2.jpg?1783911275",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If you sacrificed an Angel to pay the cost of Shilgengar's second ability, use the toughness of that Angel as it last existed on the battlefield to determine how many Blood tokens to create."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Finality counters work on any permanent, not only creatures. If a permanent with a finality counter on it would go to a graveyard from the battlefield, exile it instead."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "You can't sacrifice a Blood token to pay multiple costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -17722,6 +18778,150 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ],
+    "layout": "MODAL_DFC"
+}
+
+// Suppression Ray
+{
+    "name": "Suppression Ray",
+    "manaCost": "{3}{W/U}{W/U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Tap all creatures target player controls. You may pay any amount of {E}. If you do, choose up to that many creatures tapped this way. Put a stun counter on each of them. (If a permanent with a stun counter would become untapped, remove one from it instead.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature untapped",
+                        "player": "TargetPlayer"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "TapUntapCollection",
+                    "collectionName": "gathered0"
+                },
+                {
+                    "type": "PayCounters",
+                    "counterType": "ENERGY",
+                    "storeAmountAs": "storedNumber2"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "VariableReference",
+                                "variableName": "storedNumber2"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "VariableReference",
+                                        "variableName": "storedNumber2"
+                                    }
+                                },
+                                "storeSelected": "selected3",
+                                "prompt": "Choose creatures tapped this way to put a stun counter on",
+                                "selectedLabel": "Stun",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "AddCountersToCollection",
+                                "collectionName": "selected3",
+                                "counterType": "STUN"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Orderly Plaza",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {W} or {U}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Orderly Plaza:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "WHITE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "Orderly Plaza:2",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLUE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "260",
+            "rarity": "UNCOMMON",
+            "artist": "Gabor Szikszai",
+            "flavorText": "\"Chaos fuels the flames of violence. Only through order can peace be assured.\"\n—Dovin Baan",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/c/0cccd328-457a-48ab-97fb-4bc319db2e60.jpg?1783911225"
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "260",
+        "rarity": "UNCOMMON",
+        "artist": "Gabor Szikszai",
+        "flavorText": "The Consulate's aether spotlights have a setting to incapacitate trespassers on contact.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0cccd328-457a-48ab-97fb-4bc319db2e60.jpg?1783911225",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "\"Creatures tapped this way\" means creatures that became tapped as a result of Suppression Ray's effect, not creatures that were already tapped before Suppression Ray began to resolve. For example, if a player controls two tapped creatures and one untapped creature and you cast Suppression Ray targeting that player, you'll only be able to choose the creature that was untapped to get a stun counter (as long as you paid at least one {E})."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ],
     "layout": "MODAL_DFC"
 }
@@ -19988,6 +21188,116 @@
     ]
 }
 
+// Voltstorm Angel
+{
+    "name": "Voltstorm Angel",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhen this creature enters, you get {E}{E}{E} (three energy counters).\nAt the beginning of combat on your turn, you may pay {E}{E}. When you do, choose one —\n• This creature gains vigilance and lifelink until end of turn.\n• Other creatures you control get +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Voltstorm Angel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 3,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Voltstorm Angel:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayExactCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "reflexiveEffect": {
+                        "type": "Modal",
+                        "modes": [
+                            {
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GrantKeyword",
+                                            "keyword": "VIGILANCE",
+                                            "target": "Self"
+                                        },
+                                        {
+                                            "type": "GrantKeyword",
+                                            "keyword": "LIFELINK",
+                                            "target": "Self"
+                                        }
+                                    ]
+                                },
+                                "description": "This creature gains vigilance and lifelink until end of turn"
+                            },
+                            {
+                                "effect": {
+                                    "type": "ForEach",
+                                    "space": {
+                                        "type": "IterationSpace.Group",
+                                        "filter": {
+                                            "baseFilter": "creature ctrl:you",
+                                            "excludeSelf": true
+                                        }
+                                    },
+                                    "body": {
+                                        "type": "ModifyStats",
+                                        "powerModifier": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "toughnessModifier": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": "IterationEntity"
+                                    }
+                                },
+                                "description": "Other creatures you control get +1/+1 until end of turn"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may pay {E}{E}. When you do, choose one — this creature gains vigilance and lifelink until end of turn; or other creatures you control get +1/+1 until end of turn."
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, you may pay {E}{E}. When you do, choose one — this creature gains vigilance and lifelink until end of turn; or other creatures you control get +1/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "UNCOMMON",
+        "artist": "Andrew Theophilopoulos",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5495f34-423e-4012-808c-b267e6fabf2c.jpg?1783911295"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Warped Tusker
 {
     "name": "Warped Tusker",
@@ -20284,6 +21594,134 @@
         "BLACK"
     ],
     "layout": "MODAL_DFC"
+}
+
+// Wheel of Potential
+{
+    "name": "Wheel of Potential",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "You get {E}{E}{E} (three energy counters), then you may pay any amount of {E}.\nEach player may exile their hand and draw a number of cards equal to the amount of {E} paid this way. If seven or more {E} was paid this way, you may play cards you own exiled this way until the end of your next turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 3,
+                    "target": "Controller"
+                },
+                {
+                    "type": "PayCounters",
+                    "counterType": "ENERGY",
+                    "storeAmountAs": "paid"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "ActivePlayerFirst"
+                            },
+                            "body": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Hand"
+                                            },
+                                            "storeAs": "gathered1"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "gathered1",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Exile"
+                                            },
+                                            "storeMovedAs": "wheelOfPotentialExiledHand"
+                                        },
+                                        {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "VariableReference",
+                                                "variableName": "paid"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "decisionMaker": "Controller"
+                            },
+                            "collectCollections": {
+                                "wheelOfPotentialExiledHand": "collected5"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "collected5",
+                            "filter": "own:you",
+                            "storeMatching": "matching6"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "paid"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 7
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "matching6",
+                                "expiry": {
+                                    "type": "UntilControllerStep",
+                                    "step": "CLEANUP",
+                                    "includeCurrentTurn": false
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "RARE",
+        "artist": "Drew Baker",
+        "flavorText": "The wheel only has one sure output: chaos.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4eb9a82-91f7-4741-a029-a07a3ff6af78.jpg?1783911264",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Players decide and announce in turn order, starting with the active player, whether or not they want to exile their hand. Then, all players who chose to do so exile their hands and draw X cards. Players later in the turn order will know if players before them are exiling their hands, but they don't get to see what those players will exile to help them decide whether to exile their hands themselves."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "You pay all costs and follow all normal timing rules for cards played this way. For example, if one of the exiled cards is a land card, you may play it only during your main phase while the stack is empty."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // White Orchid Phantom

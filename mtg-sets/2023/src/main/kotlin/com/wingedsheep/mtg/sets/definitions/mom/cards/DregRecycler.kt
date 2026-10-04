@@ -5,6 +5,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Dreg Recycler {1}{B}
@@ -25,7 +27,7 @@ val DregRecycler = card("Dreg Recycler") {
             Costs.Tap,
             Costs.Sacrifice(GameObjectFilter.Artifact or GameObjectFilter.Creature)
         )
-        effect = Effects.DrainLife(1)
+        effect = Effects.LoseLife(1, EffectTarget.PlayerRef(Player.EachOpponent)) then Effects.GainLife(1)
     }
 
     metadata {

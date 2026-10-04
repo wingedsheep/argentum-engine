@@ -143,7 +143,7 @@ class StormCopyInheritsAllDecisionsTest : FunSpec({
         copy.damageDistribution shouldBe mapOf(damageTarget to 3)
         copy.chosenCreatureType shouldBe "Elf"
         copy.exiledCardCount shouldBe 2
-        copy.castFromZone shouldBe Zone.HAND
+        copy.castFromZone shouldBe null // a copy isn't cast (707.10)
         copy.beheldCards shouldBe listOf(beheldCard)
         copy.manaSpentWhite shouldBe 0
         copy.manaSpentBlue shouldBe 0

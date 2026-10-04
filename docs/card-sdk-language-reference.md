@@ -162,6 +162,10 @@ section; do not let SDK additions land without a corresponding doc update.
   today: "up to N target creature cards of the creature type of your choice" (Aphetto Dredging) is spelled as
   real targets with `TargetObject(sameCreatureType = true)` instead.
 - `cantBeCountered: Boolean` — spell is uncounterable.
+- `cantBeCounteredIf: Condition?` — "If …, this spell can't be countered." Evaluated against the spell *on the
+  stack* each time something tries to counter it: `DynamicAmounts.xValue()` reads its locked-in X and `Player.You` is
+  its caster (Banefire: `Conditions.CompareAmounts(DynamicAmounts.xValue(), GTE, 5)`). Pair it with an `Effects.If`
+  over the same condition when the rider also changes the effect ("…and the damage can't be prevented").
 - `cantBeCopied: Boolean` — spell can't be copied (CR 707.10); copy effects that name it create no copy (Display of Power).
 - `conditionalFlash: Condition?` — gains flash while condition holds.
 - `layout: CardLayout` — physical layout shape (see §2).
@@ -841,6 +845,7 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   the beginning of the next end step (not exiled — unlike warp, dash has no later recast).
 - `conditionalFlash` — flash while condition holds.
 - `cantBeCountered` — spell is uncounterable.
+- `cantBeCounteredIf = condition` — uncounterable only while `condition` holds for the spell on the stack (Banefire).
 - `cantBeCopied` — spell can't be copied (CR 707.10).
 - `xManaRestriction = setOf(Color.BLACK, Color.RED)` — "spend only [colors] on X." Restricts which
   mana may pay the `{X}` portion of the cost (the fixed colored/generic portion is unaffected).
@@ -12334,7 +12339,11 @@ answer it and would silently return `false`.
   *non-self* `EntersWithCounters` (`selfOnly = false`), whose condition is evaluated against the
   entering creature — Leonardo, Sewer Samurai ("creatures you cast from your graveyard enter with a
   finality counter") and Mikey & Don ("creatures you cast from the top of your library enter with an
-  extra +1/+1 counter", `WasCastFromZone(Zone.LIBRARY)`).
+  extra +1/+1 counter", `WasCastFromZone(Zone.LIBRARY)`). A **copy** of a spell is never cast
+  (CR 707.10), so it carries no cast-origin and every `WasCastFromZone` is false for it — Sevinne's
+  Reclamation's "if this spell was cast from a graveyard, you may copy this spell" (`Effects.If(
+  WasCastFromZone(GRAVEYARD), Effects.May(Effects.CopyTargetSpell(EffectTarget.Self)))`) copies once,
+  and the copy never copies itself.
 - `SourceInZone(vararg zones)` — where the source object is **right now**. A live zone-membership
   lookup, so unlike `WasCastFromZone` (frozen at cast time) it answers differently once the source
   moves; it reads identically at resolution and under projection. Its job is CR 603.4's
@@ -12974,7 +12983,7 @@ forbids `DynamicAmount.X` in card definitions.
 - **Named reads**: `xValue()`, `castX()`, `castChoice(slot)`, `convokedCreatureCount()` (the creatures that convoked this object, CR 702.51c), `storedNumber(name)` (a number a
   non-pipeline effect stored), `count(player, zone, filter)`, `battlefield(player, filter,
   excludeSelf).count() / sumPower() / sumToughness() / sumManaValue() / maxPower() / maxToughness() /
-  maxManaValue() / minToughness() / distinctValues(p) / distinctNames() / distinctColors() /
+  maxManaValue() / minToughness() / distinctValues(p) / distinctNames() / largestSameNameGroup() / distinctColors() /
   distinctTypes() / totalCounters(type) / totalCounters()` (no type = every kind of counter,
   `CardNumericProperty.COUNTERS` — Hydra Trainer's "the number of counters on permanents you control"), `zone(player, zone, filter).count() / distinctTypes() / …`,
   `lifeTotal(player)`, `yourLifeTotal()`, `startingLifeTotal(player)`, `playerCount(scope)`,
@@ -13104,6 +13113,11 @@ forbids `DynamicAmount.X` in card definitions.
   `DISTINCT_NAMES` counts *differently named* matched permanents (two sharing a name count once) —
   "the number of differently named lands you control" (Emil, Vastlands Roamer) via
   `DynamicAmounts.battlefield(Player.You, GameObjectFilter.Land).distinctNames()`.
+  `LARGEST_SAME_NAME_GROUP` is the size of the biggest group of matched permanents sharing one
+  name (projected name where a name-changing effect set one; a face-down permanent has no name and
+  joins no group, CR 201.2a) — "eight or more artifacts with the same name as one another"
+  (Mechanized Production) via
+  `DynamicAmounts.battlefield(Player.You, GameObjectFilter.Artifact).largestSameNameGroup()`.
   `DISTINCT_COLOR_PAIRS` counts the *color pairs* the group contributes: one unordered pair per
   matched permanent that is exactly two colors (CR 105.2c), the same pair on several permanents
   counting once, so the value is bounded by the ten pairs in Magic. Mono-colored, three-or-more

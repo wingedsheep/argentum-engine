@@ -41,6 +41,59 @@
     "colorIdentityOverride": []
 }
 
+// Flusterstorm
+{
+    "name": "Flusterstorm",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target instant or sorcery spell unless its controller pays {1}.\nStorm (When you cast this spell, copy it for each spell cast before it this turn. You may choose new targets for the copies.)",
+    "keywords": [
+        "STORM"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysMana",
+                "cost": "{1}"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "instant|sorcery",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Erica Yang",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e2e09bf-e7c8-4f13-bcee-f9c8cbc57993.jpg?1783941241",
+        "rulings": [
+            {
+                "date": "2022-12-08",
+                "text": "Spells cast from zones other than a player's hand and spells that were countered are counted by the storm ability."
+            },
+            {
+                "date": "2022-12-08",
+                "text": "The copies are put directly onto the stack. They aren't cast and won't be counted by other spells with storm cast later in the turn."
+            },
+            {
+                "date": "2022-12-08",
+                "text": "A copy of a spell can be countered like any other spell, but it must be countered individually. Countering a spell with storm won't affect the copies."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Hornet Queen
 {
     "name": "Hornet Queen",

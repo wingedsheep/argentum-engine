@@ -28,11 +28,11 @@ val DuskRoseReliquary = card("Dusk Rose Reliquary") {
     colorIdentity = "W"
     typeLine = "Artifact"
     oracleText = "As an additional cost to cast this spell, sacrifice an artifact or creature.\nWard {2}\nWhen this artifact enters, exile target artifact or creature an opponent controls until this artifact leaves the battlefield."
-    additionalCost(Costs.additional.SacrificePermanent(GameObjectFilter.CreatureOrArtifact))
+    additionalCost(Costs.additional.SacrificePermanent(GameObjectFilter.Artifact or GameObjectFilter.Creature))
     keywordAbility(KeywordAbility.Ward(WardCost.Mana("{2}")))
     triggeredAbility {
         trigger = Triggers.self.enters()
-        val t = target(TargetFilter(GameObjectFilter.CreatureOrArtifact.opponentControls()))
+        val t = target(TargetFilter((GameObjectFilter.Artifact or GameObjectFilter.Creature).opponentControls()))
         effect = Effects.ExileUntilLeaves(t)
     }
     triggeredAbility {

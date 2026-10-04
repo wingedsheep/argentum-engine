@@ -50,7 +50,7 @@ val StaticSnare = card("Static Snare") {
     // ETB: exile target artifact or creature an opponent controls until this leaves.
     triggeredAbility {
         trigger = Triggers.self.enters()
-        val permanent = target(TargetFilter(GameObjectFilter.CreatureOrArtifact.opponentControls()))
+        val permanent = target(TargetFilter((GameObjectFilter.Artifact or GameObjectFilter.Creature).opponentControls()))
         effect = Effects.ExileUntilLeaves(permanent)
     }
 
