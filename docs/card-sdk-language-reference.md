@@ -16289,6 +16289,8 @@ unsupported error rather than claiming an unproved allocation. Multipart and dyn
 production now share one serialized completion boundary: all fixed, split and pip-by-pip output
 receives one activation identity after the final part, before separate triggered tap bonuses.
 Source/snow metadata is captured before production; part choices do not finish the tap pipeline.
+Part reports stay internal across all resumed effect-tree pauses; completion emits the single
+aggregate production report after any whole-production dampening.
 Zero output retains an unsatisfied obligation, and a bonus cannot satisfy the base activation.
 An unmatched obligation rejects completion atomically. Complete floating-pool payments now
 assign exact units to fixed pips and X together. The matcher reserves snow units, reassigns flexible

@@ -135,6 +135,40 @@ class ScopedManaProductionTest : FunSpec({
         assertBatch(d, 3)
         events.filterIsInstance<ManaAddedEvent>().single().let { it.white shouldBe 1; it.blue shouldBe 1; it.green shouldBe 1 }
     }
+    for (dampened in listOf(false, true)) {
+        test("resumed siblings report only final production with dampening=$dampened") {
+            val d = driver(); val p = d.activePlayer!!
+            val producer = card("Scoped Interleaved Producer") {
+                typeLine = "Snow Land"
+                activatedAbility { cost = Costs.Tap
+                    effect = Effects.AddDynamicMana(DynamicAmount.Fixed(2), Color.entries.toSet()) then
+                        Effects.AddAnyColorMana(1) then
+                        Effects.AddDynamicMana(DynamicAmount.Fixed(2), Color.entries.toSet())
+                    manaAbility = true }
+            }
+            d.registerCards(listOf(producer))
+            if (dampened) d.putPermanentOnBattlefield(p, damp.name)
+            scope(d, pauseAfter = true)
+            val source = d.putLandOnBattlefield(p, producer.name)
+            val events = mutableListOf<GameEvent>()
+            val activation = d.submit(ActivateAbility(p, source, producer.script.activatedAbilities.first().id,
+                manaColorChoice = Color.GREEN))
+            activation.error shouldBe null; events += activation.events
+            repeat(4) { index ->
+                roundTrip(d)
+                events.filterIsInstance<ManaAddedEvent>() shouldBe emptyList()
+                val decision = d.pendingDecision as ChooseColorDecision
+                val answer = d.submitDecision(p, ColorChosenResponse(decision.id, Color.GREEN))
+                answer.error shouldBe null; events += answer.events
+                if (index < 3) answer.events.filterIsInstance<ManaAddedEvent>() shouldBe emptyList()
+            }
+            assertBatch(d, if (dampened) 1 else 5)
+            events.filterIsInstance<ManaAddedEvent>().single().let {
+                it.green shouldBe if (dampened) 0 else 5
+                it.colorless shouldBe if (dampened) 1 else 0
+            }
+        }
+    }
     test("dampening sees all fixed parts before tagging the one replacement unit") {
         val d = driver(); d.putPermanentOnBattlefield(d.activePlayer!!, damp.name); scope(d)
         activate(d, fixed).error shouldBe null

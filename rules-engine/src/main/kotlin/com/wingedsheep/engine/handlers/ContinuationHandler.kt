@@ -101,10 +101,17 @@ class ContinuationHandler(
         val result = registry.resume(stateAfterPop, suspension.answer, suspension.question, response, ::checkForMoreContinuations)
         // Casting resumers can finish a local picker without draining enclosing work.
         // A mandatory play must then retry the card or resume the original resolution.
-        return if (result.outcome is Outcome.Done &&
+        val completed = if (result.outcome is Outcome.Done &&
             result.state.continuationStack.any { it is FinishForcedPlayContinuation }) {
             checkForMoreContinuations(result.state, result.events)
         } else result
+        // Any resumed effect tree can produce mana and pause again before the activation boundary.
+        val productions = completed.state.continuationStack.filterIsInstance<ScopedManaProductionContinuation>()
+        return if (productions.isEmpty()) completed else completed.copy(events = completed.events.filterNot { event ->
+            event is ManaAddedEvent && productions.any {
+                it.sourceId == event.sourceId && it.playerId == event.playerId
+            }
+        })
     }
 
     /**
