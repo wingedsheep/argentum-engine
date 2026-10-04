@@ -3,6 +3,7 @@ package com.wingedsheep.engine.core
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.player.CountersRemovedFromYourPermanentsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsWithCountersPutIntoGraveyardThisTurnComponent
+import com.wingedsheep.engine.state.components.player.PlusOneCountersPutOnYourCreaturesThisTurnComponent
 import com.wingedsheep.engine.state.components.stack.EntitySnapshot
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -19,8 +20,8 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 
 /**
- * Turn history of counters leaving permanents: [CounterHistory] credits removals at the settle
- * boundary, and the zone-transition funnel records the counters on permanents put into graveyards.
+ * Turn history of counters arriving on and leaving permanents: [CounterHistory] credits placements
+ * and removals at the settle boundary, and the zone-transition funnel records the counters on permanents put into graveyards.
  * Read by `CounterRemovedFromPermanentYouControlledThisTurn` and
  * `PermanentWithCounterPutIntoGraveyardThisTurn` (Churning Reservoir).
  */
@@ -174,6 +175,49 @@ class CounterHistoryTest : FunSpec({
             setOf(CounterType.OIL, CounterType.PLUS_ONE_PLUS_ONE, CounterType.MINUS_ONE_MINUS_ONE)
     }
 
+    fun GameTestDriver.plusOnesPut(player: EntityId): Int =
+        state.getEntity(player)?.get<PlusOneCountersPutOnYourCreaturesThisTurnComponent>()?.count ?: 0
+
+    test("+1/+1 counters are tallied per counter, for the placer, only on creatures the placer controls") {
+        val d = newDriver()
+        val mine = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val theirs = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        val artifact = d.putPermanentOnBattlefield(d.player1, "Oil Flask")
+        val recorded = CounterHistory.recordPlacements(
+            d.state,
+            listOf(
+                CountersAddedEvent(mine, CounterType.PLUS_ONE_PLUS_ONE, 2, placedBy = d.player1),
+                CountersAddedEvent(mine, CounterType.PLUS_ONE_PLUS_ONE, 1, placedBy = d.player1),
+                // Another kind, an opponent's creature, a noncreature, an unattributed placement,
+                // and the opponent putting one on my creature all count for no one.
+                CountersAddedEvent(mine, CounterType.OIL, 1, placedBy = d.player1),
+                CountersAddedEvent(theirs, CounterType.PLUS_ONE_PLUS_ONE, 1, placedBy = d.player1),
+                CountersAddedEvent(artifact, CounterType.PLUS_ONE_PLUS_ONE, 1, placedBy = d.player1),
+                CountersAddedEvent(mine, CounterType.PLUS_ONE_PLUS_ONE, 1),
+                CountersAddedEvent(mine, CounterType.PLUS_ONE_PLUS_ONE, 1, placedBy = d.player2),
+            )
+        )
+        recorded.getEntity(d.player1)?.get<PlusOneCountersPutOnYourCreaturesThisTurnComponent>()?.count shouldBe 3
+        recorded.getEntity(d.player2)?.get<PlusOneCountersPutOnYourCreaturesThisTurnComponent>() shouldBe null
+    }
+
+    test("a creature that left in the same action is judged by its last-known controller and type") {
+        val d = newDriver()
+        val gone = d.putCardInGraveyard(d.player1, "Grizzly Bears")
+        val creature = com.wingedsheep.sdk.core.TypeLine.parse("Creature — Bear")
+        val recorded = CounterHistory.recordPlacements(
+            d.state,
+            listOf(
+                CountersAddedEvent(gone, CounterType.PLUS_ONE_PLUS_ONE, 2, placedBy = d.player1),
+                ZoneChangeEvent(
+                    gone, "Grizzly Bears", Zone.BATTLEFIELD, Zone.GRAVEYARD, d.player1,
+                    lastKnown = EntitySnapshot(entityId = gone, controllerId = d.player1, typeLine = creature)
+                ),
+            )
+        )
+        recorded.getEntity(d.player1)?.get<PlusOneCountersPutOnYourCreaturesThisTurnComponent>()?.count shouldBe 2
+    }
+
     test("the history is cleared at end of turn") {
         val d = newDriver()
         val flask = d.putPermanentOnBattlefield(d.player1, "Oil Flask")
@@ -188,7 +232,16 @@ class CounterHistoryTest : FunSpec({
         d.removed(d.player1) shouldBe setOf(CounterType.OIL)
         d.graveyarded(d.player2) shouldBe setOf(CounterType.OIL)
 
+        val mine = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        d.replaceState(
+            CounterHistory.recordPlacements(
+                d.state, listOf(CountersAddedEvent(mine, CounterType.PLUS_ONE_PLUS_ONE, 1, placedBy = d.player1))
+            )
+        )
+        d.plusOnesPut(d.player1) shouldBe 1
+
         d.passPriorityUntil(Step.UPKEEP)
+        d.plusOnesPut(d.player1) shouldBe 0
         d.removed(d.player1) shouldBe emptySet()
         d.graveyarded(d.player2) shouldBe emptySet()
     }

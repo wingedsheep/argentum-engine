@@ -724,6 +724,14 @@ object DynamicAmounts {
     fun creaturesDiedThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.CREATURES_DIED)
 
+    /**
+     * The number of +1/+1 counters [player] has put on creatures under their control this turn,
+     * entering-with counters included — "for each +1/+1 counter you've put on creatures under your
+     * control this turn" (Iridescent Hornbeetle).
+     */
+    fun plusOneCountersPutOnYourCreaturesThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.PLUS_ONE_COUNTERS_PUT_ON_YOUR_CREATURES)
+
     /** The number of cards [player] has drawn this turn. */
     fun cardsDrawnThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.CARDS_DRAWN)

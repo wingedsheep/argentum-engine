@@ -1813,6 +1813,20 @@ data class CountersRemovedFromYourPermanentsThisTurnComponent(
 }
 
 /**
+ * How many +1/+1 counters this player has put on creatures they controlled this turn. Cleared at end
+ * of turn by CleanupPhaseManager. Recorded by `CounterHistory.recordPlacements` at the settle boundary
+ * from every `CountersAddedEvent` whose placer controls the creature, so no placement path has to
+ * remember to call it — entering-with counters (CR 122.6a), moved counters (CR 122.5) and
+ * proliferate all arrive the same way. Backs
+ * [com.wingedsheep.sdk.scripting.values.TurnTracker.PLUS_ONE_COUNTERS_PUT_ON_YOUR_CREATURES]
+ * (Iridescent Hornbeetle).
+ */
+@Serializable
+data class PlusOneCountersPutOnYourCreaturesThisTurnComponent(
+    val count: Int = 0
+) : Component
+
+/**
  * How many counters of each kind were removed from this player themself this turn — energy paid
  * as a cost or lost to an effect, poison removed, and so on. Cleared at end of turn by
  * CleanupPhaseManager. Recorded by `CounterHistory.recordRemovals` at the settle boundary from every

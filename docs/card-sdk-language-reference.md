@@ -14142,6 +14142,14 @@ this turn").
   the settle boundary from every `CountersRemovedEvent` on the player (so no payment path has to remember
   it), tallied per counter kind on `PlayerCountersRemovedThisTurnComponent` and cleared at end of turn.
   Wrapped by `Conditions.YouPaidOrLostEnergyThisTurn(atLeast)` (Izzet Generatorium).
+- `PLUS_ONE_COUNTERS_PUT_ON_YOUR_CREATURES` — how many +1/+1 counters the player put on creatures they
+  controlled this turn, counted per counter. Counters a creature entered with count (CR 122.6a — its
+  controller puts them there), as do moved counters and proliferate; counters on an opponent's creature or a
+  noncreature don't. Turn history: the counters leaving, or the creature dying, doesn't undo it. Recorded by
+  `CounterHistory.recordPlacements` at the settle boundary from every `CountersAddedEvent` with a `placedBy`,
+  on `PlusOneCountersPutOnYourCreaturesThisTurnComponent`, cleared at end of turn. Facade
+  `DynamicAmounts.plusOneCountersPutOnYourCreaturesThisTurn(player)` — Iridescent Hornbeetle's
+  `Effects.CreateToken(count = …, 1, 1, GREEN, "Insect")`.
 - `RED_NONCOMBAT_DAMAGE_DEALT` — total noncombat damage red sources a player controlled dealt this turn
   (controller-scoped). Backed by the per-player `RedNoncombatDamageDealtThisTurnComponent`, incremented in
   `DamageUtils.dealDamageToTarget` on the source's controller whenever a red source deals positive noncombat

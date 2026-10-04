@@ -892,6 +892,57 @@
     ]
 }
 
+// Iridescent Hornbeetle
+{
+    "name": "Iridescent Hornbeetle",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "At the beginning of your end step, create a 1/1 green Insect creature token for each +1/+1 counter you've put on creatures under your control this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Iridescent Hornbeetle:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLUS_ONE_COUNTERS_PUT_ON_YOUR_CREATURES"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Insect"
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your end step, create a 1/1 green Insect creature token for each +1/+1 counter you've put on creatures under your control this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "UNCOMMON",
+        "artist": "Simon Dominic",
+        "flavorText": "The hatchlings will fill the jungles of Murasa in a glittering tide.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/214ef641-b08c-42d0-94a5-3054fa7fcebc.jpg?1783929341"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Luminarch Aspirant
 {
     "name": "Luminarch Aspirant",
