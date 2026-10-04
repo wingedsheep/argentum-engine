@@ -227,6 +227,34 @@ data class DividedDamageEffect(
 }
 
 /**
+ * [damageSource] deals [amount] damage divided among the permanents in pipeline collection
+ * [collectionName] — **not targets** — with the division made at resolution by [chooser].
+ *
+ * The non-targeted sibling of [DividedDamageEffect]: because nothing in the collection is
+ * targeted, nothing is announced on the stack (CR 601.2d covers only targets), so the split is
+ * chosen as the effect resolves (CR 608.2d). Only collection members still on the battlefield are
+ * eligible; "among any number of those" means a member may be left out (`minPerTarget = 0`), but
+ * the whole amount is dealt while any member remains. With exactly one eligible member it takes all
+ * of it and nothing is asked. A missing [damageSource] or a non-positive [amount] deals nothing.
+ *
+ * Master of the Wild Hunt: "That creature deals damage equal to its power divided as its controller
+ * chooses among any number of those Wolves" =
+ * `DistributeDamageAmongCollection(powerOf(target), wolves, damageSource = target,
+ * chooser = Chooser.ControllerOfTarget)`.
+ */
+@SerialName("DistributeDamageAmongCollection")
+@Serializable
+data class DistributeDamageAmongCollectionEffect(
+    val amount: DynamicAmount,
+    val collectionName: String,
+    val damageSource: EffectTarget,
+    val chooser: Chooser = Chooser.Controller
+) : Effect {
+    override val description: String =
+        "${damageSource.description} deals damage equal to ${amount.description} divided among those permanents"
+}
+
+/**
  * Two creatures fight — each deals damage equal to its power to the other.
  * Used for fight abilities like Contested Cliffs and the fight keyword action.
  *
