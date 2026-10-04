@@ -5421,6 +5421,32 @@ and it is the spelling the other "When this creature enters, it deals …" cards
 skips the damage when that fails, where the null path falls back to last-known information. The card
 now writes the null default.
 
+## Other creatures you control, until end of turn
+
+"Whenever this creature attacks, **other creatures you control** get +1/+1 until end of turn." (Syr
+Alin, Drogskol Shieldmate, Loxodon Sergeant, Syr Vondam). Tail key "other creatures you …". The
+grammar read the mass pump and the mass keyword grant over a plain group, and "tap all other
+creatures" over a group that leaves the source out — but not the pumps with the word "other", so the
+sentence died on it. The model is the one the plain rows build with `GroupFilter.excludeSelf` set,
+and that field is a fact about the iteration's relation to the source rather than about what a
+member is, so it is a flag on `parameterizedGroupStep` and `groupPumpAndGrant` — the shape
+`otherGroupStep` already had — not a `Filters` layer. Three rows: "get", "gain", "get … and gain".
+The plain rows' reconstruct-and-compare already refused a group carrying `excludeSelf`, which is why
+nothing printed the wrong sentence before.
+
+### What it moved
+
+Probe 28 lines / 16 whole cards corpus-wide (dropping "other"). Over the implemented population
+delivered **+7** (7,810 → 7,817), compared 7,396 → 7,403. The rest of the family is a quoted granted
+ability, a power-qualified group ("with power 4 or greater"), perpetual effects, and counted amounts.
+
+### What the differential found
+
+Two new divergences, both card bugs of the bare-tribal-noun kind earlier bands fixed: **Hamlet
+Captain [ISD]** ("other Humans you control") and **Vulture, Scheming Scavenger [SPM]** ("other
+Villains you control") filtered on creatures, where a bare subtype noun names permanents of that
+type. Both now write `GameObjectFilter.Permanent.withSubtype(…)`; divergent back to 76.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote

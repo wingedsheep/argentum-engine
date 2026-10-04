@@ -307,7 +307,18 @@ enum class TurnTracker {
      * four or more {E} this turn" (Izzet Generatorium) — reach for it via
      * `Conditions.YouPaidOrLostEnergyThisTurn`.
      */
-    ENERGY_PAID_OR_LOST;
+    ENERGY_PAID_OR_LOST,
+    /**
+     * How many +1/+1 counters the player has put on creatures they controlled this turn — counted
+     * per counter, not per placement, with counters a creature entered with included (CR 122.6a:
+     * its controller puts them there). Turn history: the counters leaving, or the creature dying or
+     * changing control afterwards, doesn't undo the count. Backed by
+     * `PlusOneCountersPutOnYourCreaturesThisTurnComponent`, recorded at the settle boundary from
+     * every `CountersAddedEvent` and cleared at end of turn. Powers "create a 1/1 green Insect
+     * creature token for each +1/+1 counter you've put on creatures under your control this turn"
+     * (Iridescent Hornbeetle) — reach for it via `DynamicAmounts.plusOneCountersPutOnYourCreaturesThisTurn()`.
+     */
+    PLUS_ONE_COUNTERS_PUT_ON_YOUR_CREATURES;
 
     fun descriptionFor(player: Player): String = when (this) {
         CREATURES_DIED -> "the number of creatures that died under ${player.possessive} control this turn"
@@ -367,6 +378,9 @@ enum class TurnTracker {
         CARDS_IN_HAND_AT_TURN_START ->
             "the number of cards ${player.description} had in hand at the beginning of this turn"
         ENERGY_PAID_OR_LOST -> "the amount of {E} ${player.description} paid or lost this turn"
+        PLUS_ONE_COUNTERS_PUT_ON_YOUR_CREATURES ->
+            "the number of +1/+1 counters ${player.description} put on creatures under " +
+                "${player.possessive} control this turn"
         LOYALTY_ABILITIES_ACTIVATED ->
             "the number of loyalty abilities ${player.description} activated this turn"
     }

@@ -2234,9 +2234,13 @@ object Steps {
         member: (V, EffectTarget) -> Effect,
         read: (Effect) -> V?,
         canonicalForm: Boolean = true,
+        other: Boolean = false,
     ): Phrase<CardScript> {
         fun scriptFor(value: V, filter: GameObjectFilter) = CardScript(
-            spellEffect = Effects.ForEachInGroup(GroupFilter(filter), member(value, EffectTarget.IterationEntity)),
+            spellEffect = Effects.ForEachInGroup(
+                GroupFilter(filter, excludeSelf = other),
+                member(value, EffectTarget.IterationEntity),
+            ),
         )
         val rule = phrase<CardScript>(template, name = name) {
             // This shape carries durational and non-durational sentences alike — "{filter} get {v}
@@ -2273,14 +2277,19 @@ object Steps {
      * reported every one of the eight, which is what a claim like that looks like when it is wrong.
      * Two passes also gather twice, and nothing in the printed line says to.
      */
-    private fun groupPumpAndGrant(prefix: String, name: String, canonicalForm: Boolean): Phrase<CardScript> {
+    private fun groupPumpAndGrant(
+        prefix: String,
+        name: String,
+        canonicalForm: Boolean,
+        other: Boolean = false,
+    ): Phrase<CardScript> {
         fun scriptFor(
             modifiers: Pair<Int, Int>,
             keywords: List<Keyword>,
             filter: GameObjectFilter,
         ) = CardScript(
             spellEffect = Effects.ForEachInGroup(
-                GroupFilter(filter),
+                GroupFilter(filter, excludeSelf = other),
                 Effects.Composite(
                     listOf(Effects.ModifyStats(modifiers.first, modifiers.second, EffectTarget.IterationEntity)) +
                         keywords.map { Effects.GrantKeyword(it, EffectTarget.IterationEntity) }
@@ -2510,6 +2519,26 @@ object Steps {
         ),
         groupPumpAndGrant("", "a group gets and gains", canonicalForm = true),
         groupPumpAndGrant("all ", "all of a group gets and gains", canonicalForm = false),
+        // "When ~ enters, other creatures you control get +0/+1 until end of turn." — Drogskol
+        // Shieldmate, Syr Alin, Loxodon Sergeant. The same three pumps over a group that leaves the
+        // source out. "Other" is `GroupFilter.excludeSelf` — a fact about the iteration's relation to
+        // the source, not about what a member is — so it is a flag on the shape, as on
+        // [otherGroupStep], rather than a [Filters] layer.
+        parameterizedGroupStep(
+            "other {filter} get {v} until end of turn", "other members of a group get",
+            parameter = Primitives.statModifiers, plural = true,
+            member = { (power, toughness), target -> Effects.ModifyStats(power, toughness, target) },
+            read = ::fixedModifiers,
+            other = true,
+        ),
+        parameterizedGroupStep(
+            "other {filter} gain {v} until end of turn", "other members of a group gain a keyword",
+            parameter = Keywords.keyword, plural = true,
+            member = { keyword, target -> Effects.GrantKeyword(keyword, target) },
+            read = ::grantedKeyword,
+            other = true,
+        ),
+        groupPumpAndGrant("other ", "other members of a group get and gain", canonicalForm = true, other = true),
     ) + groupCounters
 
     // ---------------------------------------------------------------------------------------

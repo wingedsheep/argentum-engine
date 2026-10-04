@@ -3,16 +3,67 @@ package com.wingedsheep.engine.core
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.CountersRemovedFromYourPermanentsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PlayerCountersRemovedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.PlusOneCountersPutOnYourCreaturesThisTurnComponent
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 
 /**
- * Turn history of counters leaving permanents, recorded from events rather than at each removal.
+ * Turn history of counters arriving on and leaving permanents, recorded from events rather than at
+ * each placement or removal.
  *
  * Counters leave permanents along more than twenty paths — costs, effects, moves, +1/+1 and -1/-1
- * annihilation, shield and stun counters — and every one of them emits a [CountersRemovedEvent]. The
- * [Settler] sees every event, so recording here covers them all, including a path added later.
+ * annihilation, shield and stun counters — and every one of them emits a [CountersRemovedEvent];
+ * placements likewise all emit a [CountersAddedEvent]. The [Settler] sees every event, so recording
+ * here covers them all, including a path added later.
  */
 object CounterHistory {
+
+    /** Both directions of [events]' counter history: [recordPlacements] then [recordRemovals]. */
+    fun record(state: GameState, events: List<GameEvent>): GameState =
+        recordRemovals(recordPlacements(state, events), events)
+
+    /**
+     * Tally the +1/+1 counters each player put on creatures they controlled — "for each +1/+1
+     * counter you've put on creatures under your control this turn" (Iridescent Hornbeetle).
+     *
+     * The placer is the event's [CountersAddedEvent.placedBy] (CR 122.6a: a permanent entering with
+     * counters has them put on it by its controller); a placement with no attributed placer counts
+     * for no one. The creature has to be the placer's: its projected controller and type when it is
+     * still on the battlefield, or — when the same action already moved it off — the last-known ones
+     * its [ZoneChangeEvent] carries.
+     */
+    fun recordPlacements(state: GameState, events: List<GameEvent>): GameState {
+        var result = state
+        for (event in events) {
+            if (event !is CountersAddedEvent || event.amount <= 0) continue
+            if (event.counterType != CounterType.PLUS_ONE_PLUS_ONE) continue
+            val placerId = event.placedBy ?: continue
+            if (!isCreatureControlledBy(state, event.entityId, placerId, events)) continue
+            result = result.updateEntity(placerId) { container ->
+                val existing = container.get<PlusOneCountersPutOnYourCreaturesThisTurnComponent>()
+                    ?: PlusOneCountersPutOnYourCreaturesThisTurnComponent()
+                container.with(existing.copy(count = existing.count + event.amount))
+            }
+        }
+        return result
+    }
+
+    private fun isCreatureControlledBy(
+        state: GameState,
+        entityId: com.wingedsheep.sdk.model.EntityId,
+        playerId: com.wingedsheep.sdk.model.EntityId,
+        events: List<GameEvent>
+    ): Boolean {
+        if (entityId in state.getBattlefield()) {
+            val projected = state.projectedState
+            return projected.isCreature(entityId) && projected.getController(entityId) == playerId
+        }
+        val departure = events.firstOrNull {
+            it is ZoneChangeEvent && it.entityId == entityId && it.fromZone == Zone.BATTLEFIELD
+        } as ZoneChangeEvent? ?: return false
+        val lastKnown = departure.lastKnown ?: return false
+        return lastKnown.typeLine?.isCreature == true && lastKnown.controllerId == playerId
+    }
 
     /**
      * Credit each counter kind removed in [events] to the controller of the permanent it left — "an

@@ -861,6 +861,11 @@ class DynamicAmountEvaluator(
                             ?.get<PlayerCountersRemovedThisTurnComponent>()
                             ?.count(CounterType.ENERGY) ?: 0
                     }
+                    TurnTracker.PLUS_ONE_COUNTERS_PUT_ON_YOUR_CREATURES -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.PlusOneCountersPutOnYourCreaturesThisTurnComponent>()
+                            ?.count ?: 0
+                    }
                 }
             }
 
