@@ -26,7 +26,6 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
         if (state.activeManaSpendingScope(player) == null) return null
         // The existing public proof boundary is uniform on boards with hidden printed statics.
         if (state.getBattlefield().any { state.getEntity(it)?.has<FaceDownComponent>() == true }) return null
-        var remainingNodes = nodeLimit
         fun complete(current: GameState): Boolean {
             val component = current.getEntity(player)?.get<ManaPoolComponent>() ?: return false
             val pool = ManaPool(component.white, component.blue, component.black, component.red,
@@ -38,39 +37,49 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                 .filter { it.playerId == player }.flatMap { it.pendingIds }.toSet()
             return allocation.pool.dischargedObligations.containsAll(required)
         }
-        fun search(current: GameState, used: Set<EntityId>, events: List<GameEvent>): ExecutionResult? {
-            if (remainingNodes-- <= 0) return null
-            if (complete(current)) return ExecutionResult.success(current, events)
-            // New activations cannot produce a unit bearing an earlier zero-output identity.
-            val liveIds = current.getEntity(player)?.get<ManaPoolComponent>()?.restrictedMana
-                .orEmpty().flatMap { it.obligationIds }.toSet()
-            if (current.continuationStack.filterIsInstance<ManaSpendingObligationsContinuation>()
-                    .any { it.playerId == player && !liveIds.containsAll(it.pendingIds) }) return null
-            val candidates = services.legalActionEnumerator.enumerateManaAbilities(current, player)
-            for (candidate in candidates) {
-                val base = candidate.action as? ActivateAbility ?: continue
-                if (!candidate.affordable || candidate.hasXCost || base.sourceId in used ||
-                    base.sourceId in excludeSources) continue
-                val ability = resolver.lookup(current, base.sourceId, base.abilityId)?.ability ?: continue
-                if (!safeCost(ability.cost) || !manaOnly(ability.effect)) continue
-                val colors: List<Color?> = if (candidate.requiresManaColorChoice)
-                    candidate.availableManaColors ?: Color.entries else listOf(null)
-                for (color in colors) {
-                    val action = base.copy(manaColorChoice = color, paymentStrategy = PaymentStrategy.FromPool)
-                    if (handler.validate(current, action) != null) continue
-                    val result = handler.execute(current, action)
-                    // Choice-bearing bonuses/production belong to a future resumable planner.
-                    // No rejected branch, pause, or intermediate events escape the transaction.
-                    if (result.outcome !is Outcome.Done || result.state.pendingDecision != null || result.state.gameOver) continue
-                    search(result.state, used + base.sourceId, events + result.events)?.let { return it }
-                    if (remainingNodes <= 0) return null
+        data class Prefix(val state: GameState, val used: Set<EntityId>, val events: List<GameEvent>)
+        fun search(initial: GameState): ExecutionResult? {
+            if (nodeLimit <= 0) return null
+            val pending = ArrayDeque<Prefix>()
+            pending.add(Prefix(initial, emptySet(), emptyList()))
+            var admitted = 1
+            // Short proofs must precede permutations of irrelevant taps. Bound queued states too.
+            while (pending.isNotEmpty()) {
+                val (current, used, events) = pending.removeFirst()
+                if (complete(current)) return ExecutionResult.success(current, events)
+                if (admitted >= nodeLimit) continue
+                // New activations cannot produce a unit bearing an earlier zero-output identity.
+                val liveIds = current.getEntity(player)?.get<ManaPoolComponent>()?.restrictedMana
+                    .orEmpty().flatMap { it.obligationIds }.toSet()
+                if (current.continuationStack.filterIsInstance<ManaSpendingObligationsContinuation>()
+                        .any { it.playerId == player && !liveIds.containsAll(it.pendingIds) }) continue
+                val candidates = services.legalActionEnumerator.enumerateManaAbilities(current, player)
+                for (candidate in candidates) {
+                    val base = candidate.action as? ActivateAbility ?: continue
+                    if (!candidate.affordable || candidate.hasXCost || base.sourceId in used ||
+                        base.sourceId in excludeSources) continue
+                    val ability = resolver.lookup(current, base.sourceId, base.abilityId)?.ability ?: continue
+                    if (!safeCost(ability.cost) || !manaOnly(ability.effect)) continue
+                    val colors: List<Color?> = if (candidate.requiresManaColorChoice)
+                        candidate.availableManaColors ?: Color.entries else listOf(null)
+                    for (color in colors) {
+                        if (admitted >= nodeLimit) break
+                        val action = base.copy(manaColorChoice = color, paymentStrategy = PaymentStrategy.FromPool)
+                        if (handler.validate(current, action) != null) continue
+                        val result = handler.execute(current, action)
+                        // Choice-bearing bonuses/production belong to a future resumable planner.
+                        // No rejected branch, pause, or intermediate events escape the transaction.
+                        if (result.outcome !is Outcome.Done || result.state.pendingDecision != null || result.state.gameOver) continue
+                        pending.add(Prefix(result.state, used + base.sourceId, events + result.events))
+                        admitted++
+                    }
                 }
             }
             return null
         }
         val suspended = state.continuationStack.lastOrNull() as? Suspension
         val searchState = if (suspended == null) state else state.copy(continuationStack = state.continuationStack.dropLast(1))
-        val result = search(searchState, emptySet(), emptyList()) ?: return null
+        val result = search(searchState) ?: return null
         return result.copy(state = result.state.copy(
             continuationStack = result.state.continuationStack + listOfNotNull(suspended),
             priorityPlayerId = state.priorityPlayerId, priorityPassedBy = state.priorityPassedBy))

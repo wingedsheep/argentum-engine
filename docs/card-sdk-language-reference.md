@@ -16373,7 +16373,8 @@ source provenance and excess survive production and payment. Existing unscoped p
 This planner uses each source once, with only a tap cost or tap plus fixed mana costs, and direct
 fixed/dynamic-amount colored, colorless, chosen-color or composite mana effects. It declines X activation
 choices, other cost atoms, non-mana effect leaves, and any production or bonus that pauses. Search
-is limited to 256 prefixes per query; exhaustion declines a proof. The face-down public-board
+visits shorter activation plans first and bounds both admitted prefixes and queued states to 256 per
+query; exhaustion declines a proof. The face-down public-board
 boundary remains uniform, while complete existing floating payments still work. Intermediate ability
 affordability keeps the independent proof and actual intermediate payment uses the floating pool.
 The standalone solver's independent proof remains available when no engine execution provider exists.

@@ -213,6 +213,35 @@ class ScopedManaActivationPlannerTest : FunSpec({
         d.state.remainingManaObligations(p) shouldBe false
         d.state.pendingDecision shouldBe null
     }
+    test("forced explicit casting validates the complete selected paid chain") {
+        val d = driver(); val p = d.activePlayer!!
+        val paid = card("Scoped Explicit Forced Probe") {
+            typeLine = "Sorcery"; manaCost = "{U}"
+            spell { effect = Effects.GainLife(1) }
+        }
+        d.registerCards(listOf(paid))
+        val feeder = d.putLandOnBattlefield(p, "Forest")
+        val sink = d.putLandOnBattlefield(p, converter.name)
+        val id = d.putCardInHand(p, paid.name)
+        val ctx = EffectContext(sourceId = null, controllerId = p,
+            pipeline = com.wingedsheep.engine.handlers.PipelineState(storedCollections = mapOf("chosen" to listOf(id))))
+        val forced = d.services.effectExecutorRegistry.execute(scoped(d), Effects.ForcePlay("chosen"), ctx)
+        d.replaceState(forced.state)
+        val question = d.pendingDecision as PlayCardDecision
+        val before = d.state
+        val rejected = d.submitDecision(p, PlayCardResponse(question.id,
+            CastSpell(p, id, paymentStrategy = PaymentStrategy.Explicit(listOf(sink)))))
+        rejected.error.isNullOrEmpty() shouldBe false
+        d.state shouldBe before
+        val accepted = d.submitDecision(p, PlayCardResponse(question.id,
+            CastSpell(p, id, paymentStrategy = PaymentStrategy.Explicit(listOf(feeder, sink)))))
+        accepted.error shouldBe null
+        (id in d.state.stack) shouldBe true
+        d.state.getEntity(feeder)!!.has<TappedComponent>() shouldBe true
+        d.state.getEntity(sink)!!.has<TappedComponent>() shouldBe true
+        d.state.remainingManaObligations(p) shouldBe false
+        d.state.pendingDecision shouldBe null
+    }
     test("a bonus that pauses is declined without exposing its taps or new question") {
         val d = driver(); val p = d.activePlayer!!
         val pausing = card("Scoped Pausing Bonus Probe") {
@@ -241,6 +270,19 @@ class ScopedManaActivationPlannerTest : FunSpec({
         r.error shouldBe null
         r.state.remainingManaObligations(p) shouldBe false
         r.state.getEntity(p)!!.get<ManaPoolComponent>()!!.restrictedMana shouldBe listOf(other)
+    }
+    test("a short proof wins before permutations of unrelated taps exhaust the budget") {
+        val d = driver(); val p = d.activePlayer!!
+        val unrelated = List(5) { d.putLandOnBattlefield(p, "Mountain") }
+        val needed = d.putLandOnBattlefield(p, "Forest")
+        val s = scoped(d)
+        d.services.manaSolver.canPay(s, p, ManaCost.parse("{G}"), spellContext = context) shouldBe true
+        val r = pay(d, s, "{G}")
+        r.error shouldBe null
+        r.state.getEntity(needed)!!.has<TappedComponent>() shouldBe true
+        unrelated.forEach { r.state.getEntity(it)!!.has<TappedComponent>() shouldBe false }
+        r.events.filterIsInstance<AbilityActivatedEvent>().size shouldBe 1
+        r.state.remainingManaObligations(p) shouldBe false
     }
     test("budget exhaustion is a declined proof and leaves input immutable") {
         val d = driver(); val p = d.activePlayer!!

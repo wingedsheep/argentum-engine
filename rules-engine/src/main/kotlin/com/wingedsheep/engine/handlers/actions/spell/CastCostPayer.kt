@@ -31,6 +31,7 @@ import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.mechanics.mana.spellPaymentContextFor
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.activeManaSpendingScope
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -563,6 +564,14 @@ internal class CastCostPayer(
                     if (sourceContainer.has<TappedComponent>()) {
                         return "Mana source is already tapped: $sourceId"
                     }
+                }
+                if (state.activeManaSpendingScope(action.playerId) != null) {
+                    val chosen = action.paymentStrategy.manaAbilitiesToActivate.toSet()
+                    val excluded = state.getBattlefield().filter { it !in chosen }.toSet()
+                    return if (manaSolver.canPay(state, action.playerId, validationCost, xValue,
+                            spellContext = spellCtx, xManaRestriction = xManaRestriction, excludeSources = excluded,
+                            allowPhyrexianLife = false))
+                        null else "Selected mana sources cannot pay this spell's cost"
                 }
                 // Mirror what [CastPaymentProcessor.autoPay] actually does: pay from the floating
                 // pool first, then verify the chosen sources can cover the rest. Otherwise a player
