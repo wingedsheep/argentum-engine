@@ -2210,10 +2210,10 @@ class TriggerMatcher(
             // gone; gate against the counters captured on the event (LKI). For non-leave triggers
             // (e.g. ETB, to=BATTLEFIELD) the entity is live, so read its current counters.
             if (event.fromZone == Zone.BATTLEFIELD) {
-                (event.lastKnown?.counters?.get(predicate.counterType) ?: 0) > 0
+                (event.lastKnown?.counters?.get(predicate.counterType) ?: 0) >= predicate.minCount
             } else {
                 val counters = state.getEntity(event.entityId)?.get<CountersComponent>()
-                (counters?.getCount(predicate.counterType) ?: 0) > 0
+                (counters?.getCount(predicate.counterType) ?: 0) >= predicate.minCount
             }
         }
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasAnyCounter -> {

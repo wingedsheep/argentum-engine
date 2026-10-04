@@ -546,7 +546,7 @@ class BeginningPhaseManager(
         StatePredicate.BecameTappedOnlyOnceThisTurn -> false
         is StatePredicate.HasCounter -> {
             val countersComponent = container.get<CountersComponent>()
-            countersComponent != null && countersComponent.getCount(predicate.counterType) > 0
+            countersComponent != null && countersComponent.getCount(predicate.counterType) >= predicate.minCount
         }
         // Soulbond pairing (CR 702.95b) is plain per-entity state, so unlike the fail-open group
         // below it can be answered exactly here — an "untap each paired creature" filter must not

@@ -5684,6 +5684,11 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `.prepared()` — `StatePredicate.IsPrepared`: the permanent is prepared (Secrets of Strixhaven
   prepare — its `PreparedComponent` names a castable exile copy of its prepare spell). Only a card
   with a prepare spell can be prepared, so it matches nothing else.
+- `.withCounter(type, atLeast = 1)` — a counter of a specific kind; `atLeast` is the threshold form, "creatures you
+  control with three or more +1/+1 counters on them have haste" (**Runadi, Behemoth Caller**:
+  `GrantKeyword(HASTE, GroupFilter(Creature.youControl().withCounter(PLUS_ONE_PLUS_ONE, atLeast = 3)))`) — the
+  filter-level twin of `Conditions.SourceCounterCountAtLeast`. Read live, on every `HasCounter` reader (filters,
+  group statics, zone-change triggers against last-known counters).
 - `.withCounter(type)` / `.withoutCounter(type)` / `.withAnyCounter()` / `.withoutCounters()` — counter presence: a specific kind,
   absence of one specific kind while permitting others, any kind, or no counters at all. The named
   negative form models clauses such as Oblivion Stone's “without a fate counter on it.”
@@ -6198,7 +6203,8 @@ work for abilities-on-stack (which carry no `CardComponent`).
   transformed (a Siege's back face on the stack) isn't a permanent yet; modal double-faced and
   melded permanents never match (MOM release notes). Read live — a zone-change trigger off the
   battlefield has no last-known "was transformed" field yet, so it answers false there.
-- `HasCounter(type)` — has at least one counter of `type`.
+- `HasCounter(type, minCount = 1)` — has at least `minCount` counters of `type`; the default is "with a [kind] counter
+  on it", a larger `minCount` the threshold form (builder `withCounter(type, atLeast = n)`).
 - `IsEquipped` (filter builder `equipped()`) — has at least one Equipment attached.
 - `IsEnchanted` (filter builder `enchanted()`) — has at least one **Aura** attached, i.e. the MTG
   adjective "enchanted" (CR 303.4). The Aura mirror of `IsEquipped`, and strictly narrower than

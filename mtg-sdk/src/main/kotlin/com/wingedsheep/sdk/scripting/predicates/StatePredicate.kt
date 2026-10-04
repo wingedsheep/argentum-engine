@@ -861,11 +861,22 @@ sealed interface StatePredicate {
     // Counters (Entity)
     // =============================================================================
 
-    /** Has a counter of the specified type */
+    /**
+     * Has at least [minCount] counters of the specified type. The default `1` is "with a [kind]
+     * counter on it"; a larger [minCount] is the threshold form, "creatures you control with three
+     * or more +1/+1 counters on them" (Runadi, Behemoth Caller) — the filter-level twin of
+     * `Conditions.SourceCounterCountAtLeast`.
+     */
     @SerialName("HasCounter")
     @Serializable
-    data class HasCounter(val counterType: CounterType) : Entity {
-        override val description: String = "with a ${counterType.printed} counter"
+    data class HasCounter(val counterType: CounterType, val minCount: Int = 1) : Entity {
+        init {
+            require(minCount >= 1) { "HasCounter.minCount must be at least 1, was $minCount" }
+        }
+
+        override val description: String =
+            if (minCount == 1) "with a ${counterType.printed} counter"
+            else "with $minCount or more ${counterType.printed} counters"
     }
 
     /** Has any counter of any type */

@@ -441,6 +441,9 @@ object Filters {
             build { it.value<GameObjectFilter>("type").withCounter(it.value("kind")) }
             match { filter ->
                 filter.stripTopState<StatePredicate.HasCounter>()
+                    // A threshold ("three or more +1/+1 counters") is a different sentence; this
+                    // template only renders the at-least-one test.
+                    ?.takeIf { (predicate, _) -> predicate.minCount == 1 }
                     ?.let { (predicate, rest) -> bind("type" to rest, "kind" to predicate.counterType) }
             }
         }

@@ -915,8 +915,12 @@ interface ObjectFilterBuilder<out Self> {
      */
     fun withDisguise() = withStatePredicate(StatePredicate.HasDisguiseAbility)
 
-    /** Must have a counter of the specified type */
-    fun withCounter(counterType: CounterType) = withStatePredicate(StatePredicate.HasCounter(counterType))
+    /**
+     * Must have a counter of the specified type — or, with [atLeast], that many or more of them
+     * ("with three or more +1/+1 counters on them": `withCounter(PLUS_ONE_PLUS_ONE, atLeast = 3)`).
+     */
+    fun withCounter(counterType: CounterType, atLeast: Int = 1) =
+        withStatePredicate(StatePredicate.HasCounter(counterType, atLeast))
 
     /** Must not have a counter of the specified type. Other counter types are allowed. */
     fun withoutCounter(counterType: CounterType) =

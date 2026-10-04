@@ -1021,6 +1021,97 @@
     ]
 }
 
+// Runadi, Behemoth Caller
+{
+    "name": "Runadi, Behemoth Caller",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Cat Shaman",
+    "oracleText": "Whenever you cast a creature spell with mana value 5 or greater, that creature enters with X additional +1/+1 counters on it, where X is its mana value minus 4.\nCreatures you control with three or more +1/+1 counters on them have haste.\n{T}: Add {G}.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Runadi, Behemoth Caller:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "ManaValueAtLeast",
+                                "min": 5
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "Subtract",
+                        "left": {
+                            "type": "EntityProperty",
+                            "entity": "TriggeringEntity",
+                            "numericProperty": "ManaValue"
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "target": "TriggeringEntity"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Runadi, Behemoth Caller:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "minCount": 3
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Billy Christian",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f4f5500f-e82c-44f3-8be8-cee4c86824b1.jpg?1783919179"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Spectral Hunt-Caller
 {
     "name": "Spectral Hunt-Caller",
