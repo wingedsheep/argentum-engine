@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
+import com.wingedsheep.sdk.scripting.conditions.PlayerCastSpellsThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PutCounterKindOnCreatureThisTurn
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 import com.wingedsheep.sdk.scripting.references.Player
@@ -227,6 +228,7 @@ object Conditions {
         // only printed spelling. "You attacked with N or more creatures this turn" is the counted
         // sibling, `YouAttackedWithCreaturesThisTurn`, left for a band of its own.
         constant("you attacked this turn", SdkConditions.YouAttackedThisTurn),
+        spellsCastThisTurn(),
         discardedACardThisTurn,
         eitherControlled,
         countAtLeast(
@@ -416,6 +418,28 @@ object Conditions {
                 val kind = condition.counterType ?: return@match null
                 if (value != SdkConditions.PutCounterKindOnCreatureThisTurn(kind)) return@match null
                 bind("kind" to kind)
+            }
+        }
+
+    /**
+     * "you've cast two or more spells this turn" — Effortless Master, Loan Shark, Illvoi Infiltrator.
+     *
+     * The count is the slot and the rest is the facade's default: any spell, from any zone, cast by
+     * you. A golden carrying a filter or a zone ("…instant and sorcery spells…", the Prairie Dog
+     * cycle's "from your hand") is a different sentence and the reconstruct-and-compare refuses to
+     * print it here. The threshold starts at two because that is where the printed shape starts —
+     * a single spell is "you've cast another spell this turn", whose "another" depends on whether
+     * the spell asking is itself on the stack, which is a question this row cannot answer.
+     */
+    private fun spellsCastThisTurn(): Phrase<Condition> =
+        phrase("you've cast {n} or more spells this turn", name = "you cast a count of spells this turn") {
+            slot("n", Cardinals.word)
+            build { SdkConditions.YouCastSpellsThisTurn(it.int("n")) }
+            match { value ->
+                val atLeast = (value as? PlayerCastSpellsThisTurn)?.atLeast ?: return@match null
+                if (atLeast < 2 || !Cardinals.spellable(atLeast)) return@match null
+                if (value != SdkConditions.YouCastSpellsThisTurn(atLeast)) return@match null
+                bind("n" to atLeast)
             }
         }
 
