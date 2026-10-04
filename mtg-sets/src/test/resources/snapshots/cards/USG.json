@@ -4876,7 +4876,7 @@
                             "type": "ChooseExactly",
                             "count": {
                                 "type": "Fixed",
-                                "amount": 1
+                                "amount": 2
                             }
                         },
                         "storeSelected": "discarded"
