@@ -13281,6 +13281,13 @@ both spellings, and the ability its bare-noun line grants says "Regenerate this 
   models the original Innistrad werewolf front-face trigger, while `>= 2` models its back-face
   trigger. It is deliberately turn-global rather than controller-scoped, matching "no spells were
   cast last turn" and "a player cast two or more spells last turn."
+- `CardsCycledThisGame(player = Player.You, cardName = null)` (facade
+  `DynamicAmounts.cardsCycledThisGame(cardName, player)`) — how many times `player` has cycled a card
+  **this game**, typecycling included (CR 702.29f). Counted when the card is discarded to pay the cost,
+  before `CardCycledEvent`, so a "when you cycle this card" trigger already sees its own cycle. `cardName`
+  narrows to cards with that exact name — every physical copy counts, not just the source object. Yidaro,
+  Wandering Monster: `Conditions.CompareAmounts(DynamicAmounts.cardsCycledThisGame("Yidaro, Wandering
+  Monster"), GTE, Fixed(4))`. Backed by the never-cleared per-player `CardsCycledThisGameComponent`.
 - `CraftedMaterialsTotalPower` — total printed power of the cards exiled to craft the source
   permanent (CR 702.167c). Reads the source's `CraftedFromExiledComponent`. Used for the
   `*`-power CDA on Mastercraft Raptor (Saheeli's Lattice back face). Evaluates to 0 when the

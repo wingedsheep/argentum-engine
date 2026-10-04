@@ -931,6 +931,14 @@ object DynamicAmounts {
         DynamicAmount.PlayerCounterCount(counterType, player)
 
     /**
+     * Times [player] has cycled a card this game (typecycling included), narrowed to cards named
+     * [cardName] when set — "if you've cycled a card named Yidaro, Wandering Monster four or more
+     * times this game".
+     */
+    fun cardsCycledThisGame(cardName: String? = null, player: Player = Player.You): DynamicAmount =
+        DynamicAmount.CardsCycledThisGame(player, cardName)
+
+    /**
      * A player's current energy counter total (CR 107.14) — "where X is the number of energy
      * counters you have" (Longtusk Cub, Electrostatic Pummeler).
      */

@@ -640,6 +640,21 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * How many times a player has cycled a card this game — every cycling activation, typecycling
+     * included (CR 702.29f), counted when the card is discarded to pay the cost. [cardName] narrows
+     * the count to cards with that exact name: "if you've cycled a card named Yidaro, Wandering
+     * Monster four or more times this game" counts every physical copy, not just this object.
+     * `null` counts every card cycled. A multi-player [player] scope sums across those players.
+     */
+    @SerialName("CardsCycledThisGame")
+    @Serializable
+    data class CardsCycledThisGame(val player: Player = Player.You, val cardName: String? = null) : DynamicAmount {
+        override val description: String =
+            if (cardName == null) "the number of times ${player.description} cycled a card this game"
+            else "the number of times ${player.description} cycled a card named $cardName this game"
+    }
+
+    /**
      * The starting life total of a player (e.g., 20 in standard, 40 in commander).
      * Used for conditions like "life total ≤ half your starting life total".
      */

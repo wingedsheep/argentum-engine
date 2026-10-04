@@ -1423,6 +1423,24 @@ data class LifeLostAmountThisTurnComponent(val amount: Int = 0) : Component
 data class CardsLeftGraveyardThisTurnComponent(val count: Int = 0) : Component
 
 /**
+ * Counts the cards this player has cycled this game, keyed on the cycled card's name. Never
+ * cleared — the scope is the whole game. Bumped by the cycling and typecycling handlers when the
+ * card is discarded to pay the cost (CR 702.29f: typecycling is cycling).
+ *
+ * Backs [com.wingedsheep.sdk.scripting.values.DynamicAmount.CardsCycledThisGame] — "if you've
+ * cycled a card named Yidaro, Wandering Monster four or more times this game".
+ */
+@Serializable
+data class CardsCycledThisGameComponent(val countsByName: Map<String, Int> = emptyMap()) : Component {
+    val total: Int get() = countsByName.values.sum()
+
+    fun count(cardName: String?): Int = if (cardName == null) total else countsByName[cardName] ?: 0
+
+    fun record(cardName: String): CardsCycledThisGameComponent =
+        CardsCycledThisGameComponent(countsByName + (cardName to (countsByName[cardName] ?: 0) + 1))
+}
+
+/**
  * Tracks the number of permanents (tokens included) put into this player's hand from the
  * battlefield this turn, keyed on the owner. Cleared at end of turn by CleanupPhaseManager.
  *

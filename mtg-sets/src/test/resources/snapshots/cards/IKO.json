@@ -3108,6 +3108,77 @@
     ]
 }
 
+// Yidaro, Wandering Monster
+{
+    "name": "Yidaro, Wandering Monster",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Legendary Creature — Dinosaur Turtle",
+    "oracleText": "Trample, haste\nCycling {1}{R} ({1}{R}, Discard this card: Draw a card.)\nWhen you cycle this card, shuffle it into your library from your graveyard. If you've cycled a card named Yidaro, Wandering Monster four or more times this game, put it onto the battlefield from your graveyard instead. (Do this before you draw.)",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Yidaro, Wandering Monster:1",
+                "trigger": "CycleEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "CardsCycledThisGame",
+                                "cardName": "Yidaro, Wandering Monster"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    },
+                    "otherwise": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Library",
+                        "placement": "Shuffled",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "descriptionOverride": "When you cycle this card, shuffle it into your library from your graveyard. If you've cycled a card named Yidaro, Wandering Monster four or more times this game, put it onto the battlefield from your graveyard instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "RARE",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b540c7c6-5b9e-4606-ac84-e583a62a3647.jpg?1783931041"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Zagoth Crystal
 {
     "name": "Zagoth Crystal",
