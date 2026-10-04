@@ -195,4 +195,42 @@ class ScopedManaAffordabilityTest : FunSpec({
         canPay(d, "{G}") shouldBe false
     }
 
+    test("context-free mixed sources cannot erase a colorless production restriction") {
+        val d = driver(); val p = d.activePlayer!!
+        val producer = card("Mixed Restricted Colorless") {
+            typeLine = "Land"
+            activatedAbility {
+                cost = Costs.Tap
+                effect = Effects.AddColorlessMana(1, restriction = ManaRestriction.CreatureSpellsOnly)
+                manaAbility = true
+            }
+            activatedAbility { cost = Costs.Tap; effect = Effects.AddMana(Color.GREEN); manaAbility = true }
+        }
+        d.registerCards(listOf(producer)); d.putLandOnBattlefield(p, producer.name); scope(d)
+        d.services.manaSolver.canPay(d.state, p, ManaCost.parse("{C}")) shouldBe false
+        canPay(d, "{C}") shouldBe false
+        canPay(d, "{G}") shouldBe true
+        d.services.manaSolver.canPay(d.state, p, ManaCost.parse("{C}"),
+            spellContext = SpellPaymentContext(cardTypes = setOf(CardType.CREATURE), isCreature = true)) shouldBe true
+    }
+
+    test("context-free mixed sources cannot use a restricted ability's larger amount") {
+        val d = driver(); val p = d.activePlayer!!
+        val producer = card("Mixed Restricted Amount") {
+            typeLine = "Land"
+            activatedAbility { cost = Costs.Tap; effect = Effects.AddMana(Color.GREEN); manaAbility = true }
+            activatedAbility {
+                cost = Costs.Tap
+                effect = Effects.AddMana(Color.GREEN, 2, restriction = ManaRestriction.CreatureSpellsOnly)
+                manaAbility = true
+            }
+        }
+        d.registerCards(listOf(producer)); d.putLandOnBattlefield(p, producer.name); scope(d)
+        d.services.manaSolver.canPay(d.state, p, ManaCost.parse("{G}{G}")) shouldBe false
+        canPay(d, "{G}{G}") shouldBe false
+        canPay(d, "{G}") shouldBe true
+        d.services.manaSolver.canPay(d.state, p, ManaCost.parse("{G}{G}"),
+            spellContext = SpellPaymentContext(cardTypes = setOf(CardType.CREATURE), isCreature = true)) shouldBe true
+    }
+
 })

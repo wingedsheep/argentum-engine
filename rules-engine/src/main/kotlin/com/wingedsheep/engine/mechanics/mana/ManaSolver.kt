@@ -1898,7 +1898,13 @@ class ManaSolver(
                         rawManaAbilities.isNotEmpty() && rawManaAbilities.all { ability ->
                         ability.cost == AbilityCost.Tap && ability.restrictions.isEmpty() &&
                             ability.targetRequirements.isEmpty() &&
-                            isIndependentFixedMana(ability.effect)
+                            isIndependentFixedMana(ability.effect) &&
+                            // Without a context, aggregation can pair one ability's amount or
+                            // colorless output with another ability's unrestricted production.
+                            (spellContext != null || extractManaRestriction(
+                                ability.effect, state, entityId, playerId).let {
+                                it == null || it == ManaRestriction.AnySpend
+                            })
                     },
                 )
             }

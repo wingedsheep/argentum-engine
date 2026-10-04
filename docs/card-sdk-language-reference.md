@@ -16271,7 +16271,7 @@ Shared-turn teams follow the existing player-control team rule. A later resoluti
 and a completed window reveals the underlying turn control again. Session hotseat routing keeps precedence.
 
 This primitive composes with `Effects.ForcePlay` for mandatory paid card play. Word of Command
-still needs feasible activated-source plans and recoverable payment (G43); it is not yet authorable faithfully.
+still needs feasible activated-source plans and recoverable payment (G44); it is not yet authorable faithfully.
 
 ### Scoped mana-ability sources
 
@@ -16331,7 +16331,9 @@ allowed. Projected source eligibility and explicit exclusions are honored. Trigg
 are usable here only once they are floating; their aggregate preview cannot discharge the base
 activation. Intrinsic land abilities and direct fixed-output tap abilities are proven; dynamic,
 compound, condition-restricted, paid, sacrificed, multiplied and dampened production is deliberately
-outside this planner. Boards with floating/granted static or replacement effects, unclassified
+outside this planner. Without a payment context, direct sources containing restricted production
+also require execution-backed planning because aggregation can combine incompatible ability outputs.
+Boards with floating/granted static or replacement effects, unclassified
 battlefield statics/continuous effects, or stateful scoped source predicates also require
 execution-backed planning: a tap may change the next source's eligibility or output. Boards
 containing face-down permanents also require execution-backed planning because legacy production
