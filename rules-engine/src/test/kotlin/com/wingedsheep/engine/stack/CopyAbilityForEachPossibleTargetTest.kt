@@ -22,6 +22,8 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.assertions.withClue
@@ -115,7 +117,17 @@ class CopyAbilityForEachPossibleTargetTest : FunSpec({
         keywords(Keyword.SHROUD)
     }
 
-    val extras: List<CardDefinition> = listOf(observer, pumper, doublePumper, creatureAndPlayer, pumpSpell, shrouded)
+    /** Protection reads the targeting object's kind — a copy of an activated ability is one. */
+    val wardedFromAbilities = card("Ability Warded Bear") {
+        manaCost = "{1}{G}"
+        typeLine = "Creature — Bear"
+        power = 2
+        toughness = 2
+        keywordAbility(KeywordAbility.Protection(ProtectionScope.ActivatedAbilities))
+    }
+
+    val extras: List<CardDefinition> =
+        listOf(observer, pumper, doublePumper, creatureAndPlayer, pumpSpell, shrouded, wardedFromAbilities)
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
@@ -255,6 +267,23 @@ class CopyAbilityForEachPossibleTargetTest : FunSpec({
         driver.resolveStack()
         driver.counters(bear) shouldBe 1
         driver.counters(shroudBear) shouldBe 0
+    }
+
+    test("a creature with protection from activated abilities gets no copy of one") {
+        val driver = createDriver()
+        val p1 = driver.player1
+        val agrus = driver.putCreatureOnBattlefield(p1, "Sole Target Copier")
+        val bear = driver.putCreatureOnBattlefield(p1, "Grizzly Bears")
+        val warded = driver.putCreatureOnBattlefield(p1, "Ability Warded Bear")
+        val wand = driver.putPermanentOnBattlefield(p1, "Counter Wand")
+
+        driver.activate(p1, wand, pumper, listOf(ChosenTarget.Permanent(agrus))).error shouldBe null
+        driver.bothPass()
+        driver.activatedOnStack() shouldHaveSize 2
+
+        driver.resolveStack()
+        driver.counters(bear) shouldBe 1
+        driver.counters(warded) shouldBe 0
     }
 
     test("an opponent's ability is copied for the observer's controller, onto that player's creatures") {

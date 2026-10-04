@@ -1008,7 +1008,10 @@ data class CopyForEachOtherPossibleTargetEffect(
         if (copier != Player.You) append("${copier.description.replaceFirstChar { it.uppercase() }} copies ")
         else append("Copy ")
         append(if (target == EffectTarget.TargetingSource) "that ability" else "that spell")
-        append(" for each other ${candidates.description} it could target")
+        // [candidates] reads "you" as the copier, so another copier is "they".
+        val phrase = TargetFilter(candidates).targetPhrase()
+        val candidateText = if (copier == Player.You) phrase else phrase.replace("you control", "they control")
+        append(" for each other $candidateText it could target")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect =

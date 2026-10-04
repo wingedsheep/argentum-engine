@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.TargetFinder
+import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.mechanics.stack.StackPlacement
@@ -49,7 +50,7 @@ import kotlin.reflect.KClass
  * simultaneously-created copies — so they go on in battlefield order rather than costing the player a
  * decision.
  *
- * An object flagged can't-be-copied (CR 707.10, 707.10e) yields no copies at all.
+ * An object flagged can't-be-copied yields no copies at all.
  */
 class CopyForEachOtherPossibleTargetExecutor(
     private val targetFinder: TargetFinder,
@@ -92,8 +93,15 @@ class CopyForEachOtherPossibleTargetExecutor(
         // itself, or the permanent an ability came from (what protection and "another target"
         // read).
         val targetingSourceId = triggered?.sourceId ?: activated?.sourceId ?: originalId
+        // Protection / hexproof "from activated (or triggered) abilities" reads the kind of object
+        // doing the targeting, so a copy can't be aimed past it (707.10d: "is just ignored").
+        val targetingSourceType = when {
+            triggered != null -> TargetingSourceType.TRIGGERED_ABILITY
+            activated != null -> TargetingSourceType.ACTIVATED_ABILITY
+            else -> TargetingSourceType.SPELL
+        }
         val candidates = candidatesFor(
-            state, effect, requirements, targetsComponent, copierId, targetingSourceId
+            state, effect, requirements, targetsComponent, copierId, targetingSourceId, targetingSourceType
         )
         if (candidates.isEmpty()) return EffectResult.success(state)
 
@@ -120,17 +128,20 @@ class CopyForEachOtherPossibleTargetExecutor(
         requirements: List<TargetRequirement>,
         targetsComponent: TargetsComponent?,
         copierId: EntityId,
-        targetingSourceId: EntityId
+        targetingSourceId: EntityId,
+        targetingSourceType: TargetingSourceType
     ): List<EntityId> {
         // Legal for *every* instance of "target" — intersect the per-requirement legal sets, keeping
         // the first requirement's ordering so the copies go on the stack deterministically.
         var couldTarget: List<EntityId> = targetFinder.findLegalTargets(
-            state, requirements.first(), controllerId = copierId, sourceId = targetingSourceId
+            state, requirements.first(), controllerId = copierId, sourceId = targetingSourceId,
+            targetingSourceType = targetingSourceType
         )
         for (requirement in requirements.drop(1)) {
             if (couldTarget.isEmpty()) break
             val legal = targetFinder.findLegalTargets(
-                state, requirement, controllerId = copierId, sourceId = targetingSourceId
+                state, requirement, controllerId = copierId, sourceId = targetingSourceId,
+                targetingSourceType = targetingSourceType
             ).toSet()
             couldTarget = couldTarget.filter { it in legal }
         }

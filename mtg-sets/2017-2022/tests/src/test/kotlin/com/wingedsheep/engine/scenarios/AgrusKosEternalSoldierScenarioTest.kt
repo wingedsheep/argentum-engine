@@ -9,6 +9,7 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.gpt.cards.GhostWarden
 import com.wingedsheep.mtg.sets.definitions.j22.cards.AgrusKosEternalSoldier
 import com.wingedsheep.mtg.sets.definitions.lea.cards.GrizzlyBears
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
@@ -118,5 +119,47 @@ class AgrusKosEternalSoldierScenarioTest : FunSpec({
 
         driver.power(bear) shouldBe 3
         driver.power(agrus) shouldBe 3
+    }
+
+    test("an opponent's ability is copied for Agrus Kos's controller, onto that player's creatures") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val opponent = driver.getOpponent(me)
+        val theirWarden = driver.putCreatureOnBattlefield(opponent, "Ghost Warden")
+        driver.removeSummoningSickness(theirWarden)
+        val (agrus, warden, bear) = driver.board()
+
+        driver.passPriority(me)
+        driver.submit(
+            ActivateAbility(
+                playerId = opponent,
+                sourceId = theirWarden,
+                abilityId = GhostWarden.activatedAbilities.first().id,
+                targets = listOf(ChosenTarget.Permanent(agrus))
+            )
+        ).error shouldBe null
+        driver.resolveAll(pay = true) shouldBe 1
+
+        driver.power(agrus) shouldBe 4
+        withClue("the copies are Agrus Kos's controller's, aimed at that player's creatures") {
+            driver.power(warden) shouldBe 2
+            driver.power(bear) shouldBe 3
+        }
+        withClue("the opponent's creature is not one of yours") { driver.power(theirWarden) shouldBe 1 }
+        withClue("Agrus Kos's controller paid {1}{R/W}") { driver.getUntappedLands(me) shouldHaveSize 0 }
+    }
+
+    test("a spell targeting only Agrus Kos doesn't trigger it") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val (agrus, _, bear) = driver.board()
+        val growth = driver.putCardInHand(me, "Giant Growth")
+        driver.giveMana(me, Color.GREEN)
+
+        driver.castSpellWithTargets(me, growth, listOf(ChosenTarget.Permanent(agrus))).error shouldBe null
+        driver.resolveAll(pay = true) shouldBe 0
+
+        driver.power(agrus) shouldBe 6
+        driver.power(bear) shouldBe 2
     }
 })
