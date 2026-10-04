@@ -22,11 +22,13 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
 import com.wingedsheep.sdk.scripting.effects.Gate
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
+import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.isConsentGate
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
@@ -1321,6 +1323,8 @@ class TriggerProcessor(
             is SelectionMode.ChooseExactly -> sel.count
             else -> null
         }
+        // A scry's selection is "any number of the looked-at cards", so its X lives on the gather.
+        is GatherCardsEffect -> (effect.source as? CardSource.TopOfLibrary)?.takeIf { it.isScry }?.count
         is CompositeEffect -> effect.effects.firstNotNullOfOrNull { findSelectionAmount(it) }
         // Library macros (scry/surveil) are opaque nodes — expand to their pipeline before walking.
         else -> LibraryPatterns.expandMacro(effect)?.let { findSelectionAmount(it) }
