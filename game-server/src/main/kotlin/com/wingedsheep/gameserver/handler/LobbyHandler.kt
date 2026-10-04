@@ -743,7 +743,7 @@ class LobbyHandler(
             aiAssistEnabled = message.aiAssistEnabled,
             gameMode = gameMode,
             attackMode = runCatching { com.wingedsheep.sdk.core.AttackMode.valueOf(message.attackMode.uppercase()) }
-                .getOrDefault(com.wingedsheep.sdk.core.AttackMode.MULTIPLE),
+                .getOrDefault(com.wingedsheep.sdk.core.AttackMode.LEFT),
             // Ranked only applies to a TOURNAMENT-mode bracket (its matches are 1v1).
             ranked = message.ranked && gameMode == LobbyGameMode.TOURNAMENT,
         )

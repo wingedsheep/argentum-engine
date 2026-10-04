@@ -58,6 +58,11 @@ data class ScenarioRequest(
      * field maps to null, which `FAIL_ON_NULL_FOR_PRIMITIVES` would reject for a bare `Boolean`.
      */
     val teamVsTeam: Boolean? = false,
+    /**
+     * Free-for-All attack rule for an N-player pod (CR 802 / 803): `LEFT`, `RIGHT` or `MULTIPLE`.
+     * Null keeps the engine default (`MULTIPLE`), so existing scenarios are unchanged.
+     */
+    val attackMode: com.wingedsheep.sdk.core.AttackMode? = null,
     val phase: Phase? = null,
     val step: Step? = null,
     val activePlayer: Int? = null,

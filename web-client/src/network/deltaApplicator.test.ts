@@ -41,6 +41,16 @@ function baseState(over: Partial<ClientGameState> = {}): ClientGameState {
 const emptyDelta: StateDelta = { players: [] }
 
 describe('applyStateDelta', () => {
+  it.each(['LEFT', 'RIGHT', null] as const)('preserves the fixed attack mode %s across deltas', (attackMode) => {
+    const next = applyStateDelta(baseState({ attackMode }), { ...emptyDelta, turnNumber: 2 })
+    expect(next.attackMode).toBe(attackMode)
+    expect(applyStateDelta(next, emptyDelta).attackMode).toBe(attackMode)
+  })
+
+  it('defaults a missing attack mode from an older snapshot to unrestricted attacks', () => {
+    expect(applyStateDelta(baseState(), emptyDelta).attackMode).toBeNull()
+  })
+
   it('keeps the deck tracker when the delta omits it (nothing was drawn)', () => {
     const next = applyStateDelta(baseState({ deck: [bolt] }), emptyDelta)
     expect(next.deck).toEqual([bolt])

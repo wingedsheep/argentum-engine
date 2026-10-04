@@ -78,6 +78,15 @@ data class ClientGameState(
     val dayNight: com.wingedsheep.sdk.core.DayNight? = null,
 
     /**
+     * The Free-for-All attack restriction (CR 803 — attack left / attack right), or `null` when
+     * every opponent may be attacked (CR 802.2, and every two-player game). Fixed for the whole
+     * game and public, so never masked and never carried in a delta. Drives the rail's attack
+     * direction header and the "target" / "attacks you" seat tags; the server's
+     * `validAttackTargets` stays the authority on what a declaration may actually name.
+     */
+    val attackMode: com.wingedsheep.sdk.core.AttackMode? = null,
+
+    /**
      * If non-null, the affected player whose choices the viewing player is currently
      * driving during turn, combat or stack-resolution control. Drives UI cues such as the controller banner
      * and promoting the affected player's hand to face-up.

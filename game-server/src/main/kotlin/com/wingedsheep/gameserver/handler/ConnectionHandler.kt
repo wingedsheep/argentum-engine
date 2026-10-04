@@ -731,7 +731,9 @@ class ConnectionHandler(
                 setCode = card.setCode,
                 collectorNumber = card.metadata.collectorNumber,
                 layout = card.layout.name,
-                isLandscape = card.isLandscapePrint
+                isLandscape = card.isLandscapePrint,
+                cmc = card.cmc,
+                keywords = card.keywords.map { it.name }.sorted()
             )
         }
     }

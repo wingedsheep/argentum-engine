@@ -11,6 +11,10 @@ import { SetSynergiesButton, type Archetype } from '../draft/SetSynergiesOverlay
 import { DeckbuilderChatPanel } from './DeckbuilderChatPanel'
 import { fetchAdvisors, type AdvisorInfo } from '@/api/aiAssist'
 import { buildArenaDeckList } from './arenaExport'
+import { poolCardToSummary } from './poolCardSummary'
+import { parseQuery } from '../deckbuilder/query'
+import { SearchHelp } from '../deckbuilder/browser/SearchBar'
+import type { CardSummary } from '../deckbuilder/cardFilter'
 import {
   CARD_TYPE_COLORS,
   cardTypeLabel,
@@ -176,6 +180,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const [colorMode, setColorMode] = useState<ColorOp>('<=')
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
   const [searchText, setSearchText] = useState('')
+  const [searchHelpOpen, setSearchHelpOpen] = useState(false)
   const [creatureTypeFilter, setCreatureTypeFilter] = useState<string | null>(null)
   const [archetypeFilter, setArchetypeFilter] = useState<Archetype | null>(null)
   // Restrict the pool view to cards inside the chosen commander's colour identity. Defaults to
@@ -379,6 +384,17 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
     return { symbols, total }
   }, [state.cardPool])
 
+  // The search box speaks the constructed deckbuilder's Scryfall-style query language. Each pool
+  // card is adapted to that language's `CardSummary` once per pool, not once per keystroke.
+  const searchQuery = useMemo(() => parseQuery(searchText), [searchText])
+  const poolSummaries = useMemo(() => {
+    const summaries = new Map<string, CardSummary>()
+    for (const card of state.cardPool) {
+      if (!summaries.has(card.name)) summaries.set(card.name, poolCardToSummary(card))
+    }
+    return summaries
+  }, [state.cardPool])
+
   // Group and sort pool cards
   const poolCardGroups = useMemo(() => {
     const deckCardCounts = state.deck.reduce<Record<string, number>>((acc, name) => {
@@ -444,8 +460,9 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         if (creatureTypeFilter) {
           if (!matchesCreatureTypeFilter(card, creatureTypeFilter)) continue
         }
-        if (searchText) {
-          if (!matchesSearch(card, searchText)) continue
+        if (searchQuery.ast) {
+          const summary = poolSummaries.get(name)
+          if (!summary || !searchQuery.predicate(summary)) continue
         }
         groups.push({ card, availableCount, inDeckCount })
       }
@@ -460,7 +477,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         return getRarityOrder(a.card) - getRarityOrder(b.card) || getCmc(a.card) - getCmc(b.card)
       }
     })
-  }, [state.cardPool, state.deck, state.poolPlay, sortBy, colorFilter, colorMode, typeFilter, creatureTypeFilter, searchText, archetypeFilter, commanderIdentity, restrictToCommanderIdentity])
+  }, [state.cardPool, state.deck, state.poolPlay, sortBy, colorFilter, colorMode, typeFilter, creatureTypeFilter, searchQuery, poolSummaries, archetypeFilter, commanderIdentity, restrictToCommanderIdentity])
 
   // "Cards left to add" is only a meaningful total when the pool is finite. In Pool Play every card
   // is always available, so count distinct cards on offer instead of copies.
@@ -784,9 +801,10 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
             minWidth: 0,
           }}
         >
-          {/* Sort + Filter toolbar */}
+          {/* Sort + Filter toolbar — positioned so the search-syntax popover anchors to it */}
           <div
             style={{
+              position: 'relative',
               padding: '6px 12px',
               backgroundColor: '#2a2a2a',
               borderBottom: '1px solid #333',
@@ -920,16 +938,22 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 type="text"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                placeholder="Search cards..."
+                placeholder="Search — t:creature cmc<=3 o:flying"
+                title="Scryfall-style search: t:, o:, c:, cmc:, pow:, r:, kw:, is:, or / - / ( ). Click ? for the syntax."
+                aria-invalid={searchQuery.errors.length > 0}
+                aria-describedby={searchQuery.errors.length > 0 ? 'pool-search-errors' : undefined}
                 style={{
                   padding: '3px 24px 3px 8px',
                   fontSize: 12,
+                  fontFamily: 'var(--font-mono, monospace)',
                   backgroundColor: '#333',
                   color: '#ddd',
-                  border: searchText ? '1px solid #4fc3f7' : '1px solid #555',
+                  border: searchQuery.errors.length > 0
+                    ? '1px solid #d96c5e'
+                    : searchText ? '1px solid #4fc3f7' : '1px solid #555',
                   borderRadius: 4,
                   outline: 'none',
-                  width: 150,
+                  width: responsive.isMobile ? 170 : 240,
                 }}
               />
               {searchText && (
@@ -952,7 +976,67 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                   ×
                 </button>
               )}
+              {searchQuery.errors.length > 0 && (
+                <ul
+                  id="pool-search-errors"
+                  role="alert"
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    marginTop: 4,
+                    minWidth: '100%',
+                    maxWidth: 360,
+                    width: 'max-content',
+                    listStyle: 'none',
+                    padding: '4px 8px',
+                    backgroundColor: '#3a2622',
+                    border: '1px solid rgba(217, 108, 94, 0.5)',
+                    borderRadius: 4,
+                    fontSize: 11,
+                    color: '#eee',
+                    zIndex: 80,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                  }}
+                >
+                  {searchQuery.errors.map((e, i) => (
+                    <li key={i} style={{ display: 'flex', gap: 6, alignItems: 'baseline' }}>
+                      <code style={{ color: '#ffd0c8', flexShrink: 0 }}>
+                        {searchText.slice(e.span.start, e.span.end) || '·'}
+                      </code>
+                      <span>{e.message}{e.suggestion ? ` ${e.suggestion}` : ''}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
+            <button
+              onClick={() => setSearchHelpOpen((v) => !v)}
+              title="Search syntax"
+              aria-label="Show search syntax help"
+              type="button"
+              style={{
+                width: 20,
+                height: 20,
+                borderRadius: '50%',
+                padding: 0,
+                fontSize: 11,
+                fontWeight: 700,
+                fontFamily: 'var(--font-mono, monospace)',
+                backgroundColor: searchHelpOpen ? '#4fc3f7' : '#444',
+                color: searchHelpOpen ? '#000' : '#ccc',
+                border: 'none',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              ?
+            </button>
+            {searchHelpOpen && (
+              <SearchHelp onClose={() => setSearchHelpOpen(false)} onInsert={setSearchText} />
+            )}
 
             <span
               style={{ color: '#666', fontSize: 12, marginLeft: 'auto' }}
@@ -2504,15 +2588,6 @@ function suggestLands(
   const result = suggestBasicLands({ entries, availableBasics, minDeckSize: 40 })
 
   for (const land of state.basicLands) setLandCount(land.name, result[land.name] ?? 0)
-}
-
-function matchesSearch(card: SealedCardInfo, query: string): boolean {
-  const q = query.toLowerCase()
-  return (
-    card.name.toLowerCase().includes(q) ||
-    card.typeLine.toLowerCase().includes(q) ||
-    (card.oracleText != null && card.oracleText.toLowerCase().includes(q))
-  )
 }
 
 function matchesTypeFilter(card: SealedCardInfo, filter: string): boolean {

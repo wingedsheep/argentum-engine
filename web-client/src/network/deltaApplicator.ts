@@ -92,6 +92,8 @@ export function applyStateDelta(
     winnerId: delta.winnerId !== undefined ? delta.winnerId : current.winnerId,
     // Carried forward: a null delta value means unchanged (the game never reverts to neither, CR 731.1).
     dayNight: delta.dayNight ?? current.dayNight ?? null,
+    // Fixed for the whole game, so only the full state carries it.
+    attackMode: current.attackMode ?? null,
     voidActive: delta.voidActive ?? current.voidActive ?? false,
     combat,
     gameLog,

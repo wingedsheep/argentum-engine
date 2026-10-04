@@ -25,11 +25,12 @@ class StateDeltaTest : FunSpec({
     fun transformer(d: GameTestDriver): ClientStateTransformer =
         ClientStateTransformer(cardRegistry = d.cardRegistry, predicateEvaluator = PredicateEvaluator(cardRegistry = null))
 
-    test("every snapshot field is carried by the delta") {
+    test("every mutable snapshot field is carried by the delta") {
         // Fields a delta carries in another shape: cards as added/updated/removed, zones as the
-        // changed ones, the log as its new entries. The viewer never changes on a connection.
+        // changed ones, the log as its new entries. The viewer never changes on a connection,
+        // and the attack mode is fixed for the whole game; clients retain both from the snapshot.
         val carriedAs = mapOf("cards" to "addedCards", "zones" to "updatedZones", "gameLog" to "newLogEntries")
-        val fixed = setOf("viewingPlayerId")
+        val fixed = setOf("viewingPlayerId", "attackMode")
         val deltaFields = StateDelta.serializer().descriptor.elementNames.toSet()
 
         ClientGameState.serializer().descriptor.elementNames
