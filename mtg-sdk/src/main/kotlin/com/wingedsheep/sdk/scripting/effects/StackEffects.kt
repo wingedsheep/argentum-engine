@@ -849,7 +849,9 @@ data class ChangeTriggeringObjectTargetsEffect(
  * each copy.
  *
  * @property copyCount Number of copies to create
- * @property spellEffect The effect of the original spell to copy
+ * @property spellEffect The effect of the original spell to copy; null for a permanent spell, whose
+ *   copies resolve into token permanents (CR 707.10f) rather than through an effect. An Aura spell's
+ *   enchant target is one of its [spellTargetRequirements], so each copy may choose a new host.
  * @property spellTargetRequirements Target requirements from the original spell (empty if untargeted)
  * @property spellName Name of the original spell for display
  */
@@ -857,7 +859,7 @@ data class ChangeTriggeringObjectTargetsEffect(
 @Serializable
 data class StormCopyEffect(
     val copyCount: Int,
-    val spellEffect: Effect,
+    val spellEffect: Effect?,
     val spellTargetRequirements: List<TargetRequirement> = emptyList(),
     val spellName: String
 ) : Effect {
@@ -868,7 +870,7 @@ data class StormCopyEffect(
         val newReqs = spellTargetRequirements.map {
             val n = it.applyTextReplacement(replacer); if (n !== it) changed = true; n
         }
-        val newSpellEffect = spellEffect.applyTextReplacement(replacer)
+        val newSpellEffect = spellEffect?.applyTextReplacement(replacer)
         if (newSpellEffect !== spellEffect) changed = true
         return if (changed) copy(spellEffect = newSpellEffect, spellTargetRequirements = newReqs) else this
     }
