@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.ChooseColorDecision
 import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.engine.state.components.player.PlayerNoMaximumHandSizeComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Color
@@ -141,6 +142,13 @@ class TamiyoInquisitiveStudentScenarioTest : ScenarioTestBase() {
                 game.state.projectedState.getPower(bears) shouldBe 1
                 game.state.projectedState.getToughness(bears) shouldBe 2
             }
+
+            game.passUntilPhase(Phase.ENDING, Step.END)
+            game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            game.state.activePlayerId shouldBe game.player1Id
+            withClue("the -1/-0 lasted only until end of turn") {
+                game.state.projectedState.getPower(bears) shouldBe 2
+            }
         }
 
         test("−3 returns a non-green instant without adding mana") {
@@ -210,6 +218,9 @@ class TamiyoInquisitiveStudentScenarioTest : ScenarioTestBase() {
             withClue("5 cards in library → draw 3") { game.handSize(1) shouldBe handBefore + 3 }
             game.librarySize(1) shouldBe 2
             loyalty(game, tamiyo) shouldBe 1
+            withClue("the emblem removes the maximum hand size") {
+                game.state.getEntity(game.player1Id)?.has<PlayerNoMaximumHandSizeComponent>() shouldBe true
+            }
         }
     }
 }

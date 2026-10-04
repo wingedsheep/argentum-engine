@@ -8936,7 +8936,18 @@
                 "id": "Grist, Voracious Larva:1",
                 "trigger": {
                     "type": "ZoneChangeEvent",
-                    "filter": "creature ctrl:you",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerAnd",
+                            "predicates": [
+                                "ControlledByYou",
+                                "OwnedByYou"
+                            ]
+                        }
+                    },
                     "to": "Battlefield"
                 },
                 "binding": "ANY",

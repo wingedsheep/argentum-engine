@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -12,6 +13,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
@@ -105,6 +107,33 @@ class GristVoraciousLarvaScenarioTest : ScenarioTestBase() {
                 game.state.stack.isEmpty() shouldBe true
             }
             game.findPermanent("Llanowar Elves") shouldNotBe null
+            game.findPermanent(front) shouldNotBe null
+        }
+
+        test("a creature reanimated from an opponent's graveyard doesn't trigger Grist") {
+            val game = scenario()
+                .withPlayers("Alice", "Bob")
+                .withCardOnBattlefield(1, front)
+                .withCardInGraveyard(2, "Grizzly Bears")
+                .withCardInHand(1, "Vat Emergence")
+                .withLandsOnBattlefield(1, "Swamp", 5)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val bears = game.findCardsInGraveyard(2, "Grizzly Bears").single()
+            val spell = game.state.getHand(game.player1Id).single {
+                game.state.getEntity(it)?.get<CardComponent>()?.name == "Vat Emergence"
+            }
+            game.execute(
+                CastSpell(game.player1Id, spell, listOf(ChosenTarget.Card(bears, game.player2Id, Zone.GRAVEYARD)))
+            ).error shouldBe null
+            game.resolveStack()
+
+            game.findPermanent("Grizzly Bears") shouldNotBe null
+            withClue("no may-pay prompt: the Bears came from Bob's graveyard, not Alice's") {
+                game.getPendingDecision() shouldBe null
+                game.state.stack.isEmpty() shouldBe true
+            }
             game.findPermanent(front) shouldNotBe null
         }
 

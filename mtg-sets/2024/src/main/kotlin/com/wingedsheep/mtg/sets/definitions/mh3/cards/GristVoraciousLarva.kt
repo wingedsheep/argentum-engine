@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -27,9 +28,10 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *  - Front: "Grist or another creature you control enters" is [Triggers.a] over creatures you
  *    control (the ANY binding includes Grist itself). "If it entered from your graveyard or you cast
  *    it from your graveyard" is the intervening-if
- *    [Conditions.TriggeringEntityEnteredOrWasCastFromGraveyard] (CR 603.4) — the only graveyard a
- *    creature you control can come from or be cast from (by you) is one you could legally use; the
- *    condition reads the entering object's own provenance markers. The flip is
+ *    [Conditions.TriggeringEntityEnteredOrWasCastFromGraveyard] (CR 603.4), which only knows "a
+ *    graveyard"; a card is only ever in its owner's graveyard, so the trigger filter also requires
+ *    that you own the creature (a creature reanimated from an opponent's graveyard doesn't count).
+ *    The flip is
  *    [Effects.MayPay] `{G}` into [Effects.ExileAndReturnTransformed]; if Grist has left the
  *    battlefield by then, nothing is exiled or returned (ruling).
  *  - +1: the token is published as `CREATED_TOKENS`; the mill is its own collection, and a black
@@ -54,7 +56,11 @@ private val GristVoraciousLarvaFront = card("Grist, Voracious Larva") {
     keywords(Keyword.DEATHTOUCH)
 
     triggeredAbility {
-        trigger = Triggers.a(GameObjectFilter.Creature.youControl()).enters()
+        trigger = Triggers.a(
+            GameObjectFilter.Creature.withControllerPredicate(
+                ControllerPredicate.And(listOf(ControllerPredicate.ControlledByYou, ControllerPredicate.OwnedByYou))
+            )
+        ).enters()
         interveningIf = Conditions.TriggeringEntityEnteredOrWasCastFromGraveyard
         effect = Effects.MayPay(
             cost = ManaCost.parse("{G}"),
