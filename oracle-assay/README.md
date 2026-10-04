@@ -5539,6 +5539,31 @@ fail to find only when the search names a stated quality, so an unqualified "sea
 find one if the library has one — every `searchLibrary(filter = Any)` tutor, Demonic Tutor included,
 can currently fail to find. Divergent 76 → 77.
 
+## Your second card each turn
+
+"**Whenever you draw your second card each turn**, put a +1/+1 counter on ~." (Knights of Dol Amroth,
+Erudite Wizard, Tiger-Seal, Thopter Fabricator). Tail key "you draw your …". `Triggers` already read
+the ordinal *cast* trigger — `nthCastRule`, the caster baked into each row with its possessive and
+`Cardinals.ordinal` as the one slot — and the draw trigger is the same shape over
+`Triggers.<player>.drawsNth(n)`: three rows ("you draw your", "an opponent draws their", "a player draws
+their") into `NthCardDrawnEvent`. The one difference is the payoff's cascade. A draw event binds no
+object, so "it" in the effect can only be the source and the rule slots `Steps.step`, as the expend
+trigger does, rather than the triggered-object cascade the cast rule needs. Lady Octopus's "your first
+**or** second card" is one ability over two events and stays declined.
+
+### What it moved
+
+The ledger's first probe said 58 lines and **0** cards, because it substituted "you draw a card" — a
+trigger the grammar does not read either. Re-probed with a prefix it does read, the family measured
+30 lines / 15 whole cards over the implemented population, and delivered exactly that: **+15**
+(7,854 → 7,869), compared 7,439 → 7,454. A probe whose stand-in is itself unreadable measures nothing.
+
+### What the differential found
+
+One new divergence, a card. **Private Eye [MKM]** targeted a *creature* Detective where it prints
+"target Detective" — a bare subtype names a permanent (CR 109.2), the same finding as Diregraf
+Captain's and Sygg's. Fixed; divergent back to 77.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote
