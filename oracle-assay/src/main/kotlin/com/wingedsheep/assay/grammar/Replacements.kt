@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.scripting.ModifyLifeGain
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -248,6 +249,25 @@ object Replacements {
     )
 
     /**
+     * The condition a self-entry replacement trails — [Conditions.condition] plus the two clauses
+     * whose "it" is the entering permanent itself.
+     *
+     * "if you cast it" (`WasCast`, Nine-Lives Familiar) and "if you cast it from your hand"
+     * (`WasCastFromHand`, the Myojin, Patched Plaything) live here rather than in the shared
+     * vocabulary because the pronoun is positional. In this sentence it can only be the source, but
+     * in a trigger whose event names a filter it is the object that matched — The Sibsig Ceremony's
+     * "Whenever a creature you control enters, if you cast it" is `TriggeringEntityWasCast`, and Wild
+     * Pair's "Whenever a creature enters, if you cast it from your hand" has no source-side reading at
+     * all. A row in [Conditions.condition] would read both as the source, byte-perfect and wrong.
+     */
+    private val conditionalEntry: Phrase<Condition> = oneOf(
+        "an entry condition",
+        Conditions.condition,
+        constant("you cast it", SdkConditions.WasCast),
+        constant("you cast it from your hand", SdkConditions.WasCastFromHand),
+    )
+
+    /**
      * "~ enters with a +1/+1 counter on it.", "~ enters with three -1/-1 counters on it."
      *
      * ### Why `selfOnly` is spelled by the rule and not by a slot
@@ -260,34 +280,63 @@ object Replacements {
      * sentence and the reconstruct-and-compare refuses to print it. That last one matters here:
      * the kicker cards ("If ~ was kicked, it enters with two +1/+1 counters on it") carry a
      * `condition` and decline rather than losing the clause that makes them worth playing.
+     *
+     * ### The trailing "if …" is the `condition` field, and the kicker one is not
+     *
+     * "~ enters with a +1/+1 counter on it **if you attacked this turn**." (raid, morbid, the Myojin)
+     * is the same value with `condition` set, so it is the same two rules with a [conditionalEntry]
+     * slot after the counters rather than a sibling family. A `null` condition is the bare sentence
+     * and a non-null one is the trailing clause — disjoint halves of one field, so the four rules
+     * cannot print one value twice. The two cast-choice conditions are carved out of the conditional
+     * half. `WasKicked`'s printed sentence fronts the condition ("If ~ was kicked, it enters with …",
+     * [kickedEntry]), so a second printer here would be two rules for one value; and the shared
+     * vocabulary spells `WasBargained` "it's bargained", its *cost*-position tense, which no entry
+     * sentence prints.
      */
     private val entersWithCounters: List<Phrase<ReplacementEffect>> = run {
-        fun effectFor(kind: CounterType, count: Int): ReplacementEffect = EntersWithCounters(
+        val notTrailing = setOf(SdkConditions.WasKicked, SdkConditions.WasBargained)
+        fun effectFor(kind: CounterType, count: Int, condition: Condition?): ReplacementEffect = EntersWithCounters(
             counterType = kind,
             count = count,
             selfOnly = true,
+            condition = condition,
         )
-        fun rule(template: String, name: String, quantity: Phrase<*>?) =
-            phrase(template, name = name) {
+        fun rule(template: String, name: String, quantity: Phrase<*>?, conditional: Boolean) =
+            phrase(if (conditional) template.removeSuffix(".") + " if {cond}." else template, name = name) {
                 slot("self", Primitives.self)
                 slot("kind", if (quantity == null) Primitives.singularCounterKind else Primitives.counterKind)
                 if (quantity != null) slot("n", quantity)
-                build { effectFor(it.value("kind"), if (quantity == null) 1 else it.int("n")) }
+                if (conditional) slot("cond", conditionalEntry)
+                build {
+                    val condition: Condition? = if (conditional) it.value("cond") else null
+                    if (condition in notTrailing) return@build null
+                    effectFor(it.value("kind"), if (quantity == null) 1 else it.int("n"), condition)
+                }
                 match { effect ->
                     val enters = effect as? EntersWithCounters ?: return@match null
                     val kind = enters.counterType
+                    val condition = enters.condition
+                    if ((condition != null) != conditional || condition in notTrailing) return@match null
                     if (quantity == null && enters.count != 1) return@match null
                     if (quantity != null && !(enters.count >= 2 && Cardinals.spellable(enters.count))) {
                         return@match null
                     }
-                    if (enters != effectFor(kind, enters.count)) return@match null
-                    bind("self" to Unit, "kind" to kind, "n" to enters.count)
+                    if (enters != effectFor(kind, enters.count, condition)) return@match null
+                    bind("self" to Unit, "kind" to kind, "n" to enters.count, "cond" to condition)
                 }
             }
-        listOf(
-            rule("{self} enters with {kind} counter on it.", "enters with a counter", null),
-            rule("{self} enters with {n} {kind} counters on it.", "enters with counters", Cardinals.word),
-        )
+        listOf(false, true).flatMap { conditional ->
+            val suffix = if (conditional) " if a condition holds" else ""
+            listOf(
+                rule("{self} enters with {kind} counter on it.", "enters with a counter$suffix", null, conditional),
+                rule(
+                    "{self} enters with {n} {kind} counters on it.",
+                    "enters with counters$suffix",
+                    Cardinals.word,
+                    conditional,
+                ),
+            )
+        }
     }
 
     /**
