@@ -23,11 +23,13 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
     fun plan(
         state: GameState, player: EntityId, cost: ManaCost, context: SpellPaymentContext?,
         xAmount: Int = 0, xColors: Set<Color> = emptySet(), excludeSources: Set<EntityId> = emptySet(),
+        reservedLife: Int = 0,
     ): ExecutionResult? {
         if (state.activeManaSpendingScope(player) == null) return null
         // The existing public proof boundary is uniform on boards with hidden printed statics.
         if (state.getBattlefield().any { state.getEntity(it)?.has<FaceDownComponent>() == true }) return null
         fun complete(current: GameState): Boolean {
+            if (reservedLife > 0 && current.lifeTotal(player) < reservedLife) return false
             val component = current.getEntity(player)?.get<ManaPoolComponent>() ?: return false
             val pool = ManaPool(component.white, component.blue, component.black, component.red,
                 component.green, component.colorless, restrictedMana = component.restrictedMana,

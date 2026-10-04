@@ -570,6 +570,7 @@ internal class CastCostPayer(
                     val excluded = state.getBattlefield().filter { it !in chosen }.toSet()
                     return if (manaSolver.canPay(state, action.playerId, validationCost, xValue,
                             spellContext = spellCtx, xManaRestriction = xManaRestriction, excludeSources = excluded,
+                            phyrexianLifePipsCommitted = action.paymentStrategy.phyrexianLifePayments.size,
                             allowPhyrexianLife = false))
                         null else "Selected mana sources cannot pay this spell's cost"
                 }

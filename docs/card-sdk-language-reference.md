@@ -16290,7 +16290,7 @@ Shared-turn teams follow the existing player-control team rule. A later resoluti
 and a completed window reveals the underlying turn control again. Session hotseat routing keeps precedence.
 
 This primitive composes with `Effects.ForcePlay` for mandatory paid card play. Word of Command
-still needs resumable activation choices and recoverable payment (G45); it is not yet authorable faithfully.
+still needs resumable activation choices and recoverable payment (G46); it is not yet authorable faithfully.
 
 ### Scoped mana-ability sources
 
@@ -16385,7 +16385,9 @@ self-counter removal with a named counter type, including composites of these co
 the same source repeatedly or use several of its abilities: each prefix pays real costs and
 re-enumerates availability, so life and counters are shared resources, tapped sources cannot repay a
 tap cost, and sacrificed sources leave the candidate pool. Every repeated activation receives its own
-contribution identity. Self-sacrifice output retains last-known source/snow provenance; excess remains
+contribution identity. Phyrexian pips paid with life reserve their life budget during both affordability
+and production planning, so activation costs cannot consume the life committed to the spell.
+Self-sacrifice output retains last-known source/snow provenance; excess remains
 available after its identity is discharged. It supports direct fixed/dynamic-amount colored, colorless,
 chosen-color or composite mana effects. It declines X activation choices, zero/free costs,
 object-selection or unnamed-counter costs, non-mana effect leaves, and production or bonuses that pause. Search

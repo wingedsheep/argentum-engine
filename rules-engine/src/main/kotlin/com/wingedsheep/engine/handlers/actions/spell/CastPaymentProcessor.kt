@@ -152,7 +152,7 @@ class CastPaymentProcessor(
         }
         val lifeToPay = lifePayments.size * 2
         val currentLife = state.lifeTotal(action.playerId)
-        if (lifeToPay > currentLife) {
+        if (lifeToPay > 0 && lifeToPay > currentLife) {
             return PaymentResult(state, emptyList(), "Insufficient life for Phyrexian mana payment")
         }
         val manaCost = effectiveCost.withPhyrexianPaidByLife(lifePayments)
@@ -163,7 +163,7 @@ class CastPaymentProcessor(
             val chosen = (action.paymentStrategy as? PaymentStrategy.Explicit)?.manaAbilitiesToActivate?.toSet()
             val excluded = if (chosen == null) emptySet() else state.getBattlefield().filter { it !in chosen }.toSet()
             val plan = manaSolver.planScopedActivations(state, action.playerId, manaCost, spellContext,
-                xValue * manaCost.xCount.coerceAtLeast(1), xManaRestriction, excluded)
+                xValue * manaCost.xCount.coerceAtLeast(1), xManaRestriction, excluded, reservedLife = lifeToPay)
             if (plan == null) {
                 // A standalone solver without an execution provider still supports floating payments.
                 payFromPool(state, action.playerId, manaCost, cardName, xValue, spellContext, xManaRestriction)

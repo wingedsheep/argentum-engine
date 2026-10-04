@@ -2051,9 +2051,10 @@ class ManaSolver(
 
     /** A successful result contains actual production; the caller still pays the exact floating allocation. */
     fun planScopedActivations(state: GameState, player: EntityId, cost: ManaCost,
-        context: SpellPaymentContext?, xAmount: Int, xColors: Set<Color>, excludeSources: Set<EntityId> = emptySet()
+        context: SpellPaymentContext?, xAmount: Int, xColors: Set<Color>, excludeSources: Set<EntityId> = emptySet(),
+        reservedLife: Int = 0
     ): com.wingedsheep.engine.core.ExecutionResult? =
-        scopedPlanner?.invoke()?.plan(state, player, cost, context, xAmount, xColors, excludeSources)
+        scopedPlanner?.invoke()?.plan(state, player, cost, context, xAmount, xColors, excludeSources, reservedLife)
 
     private fun independentTapEnvironment(state: GameState, playerId: EntityId): Boolean {
         // Tapping can change another source's abilities, costs or eligible production. Such
@@ -2575,7 +2576,8 @@ class ManaSolver(
                 val reduced = cost.withPhyrexianPaidByLife(choice) ?: continue
                 if (canPay(
                         state, playerId, reduced, xValue, excludeSources, spellContext,
-                        xManaRestriction = xManaRestriction, allowPhyrexianLife = false
+                        xManaRestriction = xManaRestriction, phyrexianLifePipsCommitted = lifePips,
+                        allowPhyrexianLife = false
                     )) return choice
             }
         }
@@ -2622,6 +2624,7 @@ class ManaSolver(
         // Paying down to exactly 0 is legal, though state-based actions will make the player lose.
         // CR 119.8 — a player who can't lose life pays no Phyrexian pip with life.
         val life = if (state.isLifeLossLocked(playerId)) 0 else state.lifeTotal(playerId)
+        if (phyrexianLifePipsCommitted > 0 && phyrexianLifePipsCommitted * 2 > life) return false
         if (allowPhyrexianLife && (phyrexianLifePipsCommitted + 1) * 2 <= life) {
             val triedColors = mutableSetOf<Color>()
             for (pip in cost.phyrexianSymbols) {
@@ -2663,7 +2666,8 @@ class ManaSolver(
             if (floating?.pool?.dischargedObligations?.containsAll(pending) == true) return true
             if (spellContext?.isAbilityActivation != true && scopedPlanner != null) {
                 return scopedPlanner.invoke().plan(state, playerId, cost, spellContext,
-                    xValue * cost.xCount.coerceAtLeast(1), xManaRestriction, excludeSources) != null
+                    xValue * cost.xCount.coerceAtLeast(1), xManaRestriction, excludeSources,
+                    reservedLife = phyrexianLifePipsCommitted * 2) != null
             }
             val sources = if (independentTapEnvironment(state, playerId))
                 findAvailableManaSources(state, playerId, spellContext).filter {

@@ -88,6 +88,97 @@ class ScopedManaActivationCostsTest : FunSpec({
         repeat(2) { d.putLandOnBattlefield(p, life.name) }; d.setLifeTotal(p, 3)
         assertRejected(d, scoped(d), "{G}{G}")
     }
+    test("mana activation and Phyrexian pip cannot spend the same life") {
+        val d = driver(); val p = d.activePlayer!!
+        d.putLandOnBattlefield(p, life.name); d.setLifeTotal(p, 3)
+        assertRejected(d, scoped(d), "{G}{U/P}")
+    }
+    test("ordinary mana payment reserves no life even at a negative life total") {
+        val d = driver(); val p = d.activePlayer!!
+        val source = d.putLandOnBattlefield(p, "Forest"); d.setLifeTotal(p, -1)
+        val s = scoped(d)
+        d.services.manaSolver.canPay(s, p, ManaCost.parse("{G}"), spellContext = context) shouldBe true
+        val r = pay(d, s, "{G}")
+        r.error shouldBe null
+        r.state.getEntity(p)!!.get<LifeTotalComponent>()!!.life shouldBe -1
+        r.state.getEntity(source)!!.has<TappedComponent>() shouldBe true
+        r.phyrexianLifePips shouldBe 0
+        r.state.remainingManaObligations(p) shouldBe false
+    }
+    test("mana activation and Phyrexian pip may together spend exactly the remaining life") {
+        val d = driver(); val p = d.activePlayer!!
+        val source = d.putLandOnBattlefield(p, life.name); d.setLifeTotal(p, 4)
+        val s = scoped(d)
+        d.services.manaSolver.canPay(s, p, ManaCost.parse("{G}{U/P}"), spellContext = context) shouldBe true
+        val r = pay(d, s, "{G}{U/P}")
+        r.error shouldBe null
+        r.state.getEntity(p)!!.get<LifeTotalComponent>()!!.life shouldBe 0
+        r.phyrexianLifePips shouldBe 1
+        r.events.filterIsInstance<AbilityActivatedEvent>().map { it.sourceId } shouldBe listOf(source)
+        r.state.remainingManaObligations(p) shouldBe false
+        s.getEntity(p)!!.get<LifeTotalComponent>()!!.life shouldBe 4
+    }
+    test("Phyrexian payment finds a counter source after declining a life consuming source") {
+        val d = driver(); val p = d.activePlayer!!
+        val producer = card("Scoped Green Counter Producer") {
+            typeLine = "Land"
+            activatedAbility {
+                cost = Costs.RemoveXCounters(CounterType.CHARGE, DynamicAmount.Fixed(1), self = true)
+                effect = Effects.AddMana(Color.GREEN, 1); manaAbility = true
+            }
+        }
+        d.registerCards(listOf(producer))
+        val lifeSource = d.putLandOnBattlefield(p, life.name)
+        val counterSource = d.putLandOnBattlefield(p, producer.name)
+        counters(d, counterSource, 1); d.setLifeTotal(p, 3)
+        val s = scoped(d)
+        d.services.manaSolver.canPay(s, p, ManaCost.parse("{G}{U/P}"), spellContext = context) shouldBe true
+        val r = pay(d, s, "{G}{U/P}")
+        r.error shouldBe null
+        r.state.getEntity(p)!!.get<LifeTotalComponent>()!!.life shouldBe 1
+        r.state.getEntity(counterSource)!!.get<CountersComponent>()!!.getCount(CounterType.CHARGE) shouldBe 0
+        r.events.filterIsInstance<AbilityActivatedEvent>().map { it.sourceId } shouldBe listOf(counterSource)
+        r.state.getEntity(lifeSource)!!.has<TappedComponent>() shouldBe false
+        r.state.remainingManaObligations(p) shouldBe false
+    }
+    test("forced explicit Phyrexian payment reserves life within the selected sources") {
+        val d = driver(); val p = d.activePlayer!!
+        val producer = card("Scoped Explicit Green Counter Producer") {
+            typeLine = "Land"
+            activatedAbility {
+                cost = Costs.RemoveXCounters(CounterType.CHARGE, DynamicAmount.Fixed(1), self = true)
+                effect = Effects.AddMana(Color.GREEN, 1); manaAbility = true
+            }
+        }
+        val paid = card("Scoped Phyrexian Payment") {
+            typeLine = "Sorcery"; manaCost = "{G}{U/P}"
+            spell { effect = Effects.GainLife(1) }
+        }
+        d.registerCards(listOf(producer, paid))
+        val lifeSource = d.putLandOnBattlefield(p, life.name)
+        val counterSource = d.putLandOnBattlefield(p, producer.name)
+        counters(d, counterSource, 1); d.setLifeTotal(p, 3)
+        val id = d.putCardInHand(p, paid.name)
+        val forced = d.services.effectExecutorRegistry.execute(scoped(d), Effects.ForcePlay("chosen"),
+            EffectContext(sourceId = null, controllerId = p,
+                pipeline = PipelineState(storedCollections = mapOf("chosen" to listOf(id)))))
+        d.replaceState(forced.state)
+        val question = d.pendingDecision as PlayCardDecision
+        val before = d.state
+        val rejected = d.submitDecision(p, PlayCardResponse(question.id, CastSpell(p, id,
+            paymentStrategy = PaymentStrategy.Explicit(listOf(lifeSource), phyrexianLifePayments = listOf(Color.BLUE)))))
+        rejected.error.isNullOrEmpty() shouldBe false
+        d.state shouldBe before
+        rejected.events shouldBe emptyList()
+        val accepted = d.submitDecision(p, PlayCardResponse(question.id, CastSpell(p, id,
+            paymentStrategy = PaymentStrategy.Explicit(listOf(counterSource), phyrexianLifePayments = listOf(Color.BLUE)))))
+        accepted.error shouldBe null
+        (id in d.state.stack) shouldBe true
+        d.state.getEntity(p)!!.get<LifeTotalComponent>()!!.life shouldBe 1
+        d.state.getEntity(counterSource)!!.get<CountersComponent>()!!.getCount(CounterType.CHARGE) shouldBe 0
+        d.state.remainingManaObligations(p) shouldBe false
+        d.state.pendingDecision shouldBe null
+    }
     test("self sacrifice keeps excess snow provenance after the source leaves") {
         val d = driver(); val p = d.activePlayer!!
         val source = d.putLandOnBattlefield(p, sacrifice.name)
