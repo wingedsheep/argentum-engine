@@ -85,6 +85,18 @@ class FiltersTest : StringSpec({
         roundTrips(Filters.plural, "creatures you control with toughness 2 or less")
     }
 
+    "the damage-history quality trails the controller clause, in the singular only" {
+        read(Filters.filter, "creature that was dealt damage this turn") shouldBe
+            GameObjectFilter.Creature.wasDealtDamageThisTurn()
+        read(Filters.filter, "creature an opponent controls that was dealt damage this turn") shouldBe
+            GameObjectFilter.Creature.opponentControls().wasDealtDamageThisTurn()
+
+        roundTrips(Filters.filter, "creature that was dealt damage this turn")
+        roundTrips(Filters.filter, "creature or planeswalker an opponent controls that was dealt damage this turn")
+        Filters.plural.parseText("creatures that was dealt damage this turn")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+    }
+
     // Colour then controller then quality, which is both the printed order and — for the colour
     // half — the order the SDK's fluent builders append in, the reason "strip the top of the stack"
     // is well defined. The controller clause is not in that stack at all: it is its own field, so

@@ -446,6 +446,24 @@ object Filters {
         }
     }
 
+    /**
+     * "creature that was dealt damage this turn", "creature an opponent controls that was dealt
+     * damage this turn" — the damage-history quality, landing on `StatePredicate.WasDealtDamageThisTurn`
+     * the way Crushing Pain and Stingblade Assassin write it.
+     *
+     * Singular only: Oracle never prints the plural ("creatures that were dealt damage this turn")
+     * on a card, so there is no form to agree with and no reading to offer.
+     */
+    private fun wasDealtDamage(inner: Phrase<GameObjectFilter>, name: String): Phrase<GameObjectFilter> =
+        phrase("{type} that was dealt damage this turn", name = name) {
+            slot("type", inner)
+            build { it.value<GameObjectFilter>("type").wasDealtDamageThisTurn() }
+            match { filter ->
+                filter.stripTopState<StatePredicate.WasDealtDamageThisTurn>()
+                    ?.let { (_, rest) -> bind("type" to rest) }
+            }
+        }
+
     /** "white creature" — one colour, as an adjective in front of the type noun. */
     private fun colour(inner: Phrase<GameObjectFilter>, name: String): Phrase<GameObjectFilter> =
         phrase("{color} {type}", name = name) {
@@ -737,7 +755,14 @@ object Filters {
             withToughnessAtLeast(inner, "a permanent with toughness at least$label"),
             withToughnessAtMost(inner, "a permanent with toughness at most$label"),
             ManaValues.layer(inner, label),
-        ) + if (plural) emptyList() else listOf(ofChosenType(inner, "a permanent of the chosen type$label"))
+        ) + if (plural) {
+            emptyList()
+        } else {
+            listOf(
+                ofChosenType(inner, "a permanent of the chosen type$label"),
+                wasDealtDamage(inner, "a permanent dealt damage this turn$label"),
+            )
+        }
 
         // The opponent clause agrees in number with its noun: "creature an opponent controls" but
         // "creatures **your opponents control**" — 351 plural prints corpus-wide against 26 of

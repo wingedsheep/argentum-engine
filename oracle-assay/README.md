@@ -5392,6 +5392,35 @@ them.
 Nothing new: compared 7,385 → 7,391, divergent unchanged at 76, and the six cards agree. The
 hand-written spellings were already the SDK's one model for the clause.
 
+## That was dealt damage this turn
+
+"Destroy target creature **that was dealt damage this turn**." (Crushing Pain, Initiate of Blood,
+Stingblade Assassin, Unsparing Boltcaster and the rest). Tail key "that was dealt …". The SDK has one
+spelling — `StatePredicate.WasDealtDamageThisTurn`, written through the `wasDealtDamageThisTurn()`
+builder — so the band is one quality row in `Filters`, beside the counter and power/toughness rows.
+It is a trailing clause and sits after the controller clause, which is where Oracle prints it
+("creature an opponent controls that was dealt damage this turn"), and it strips the top of the
+*state* predicate stack the way `withCounter` does.
+
+Singular only. No card prints the plural ("creatures that were dealt damage this turn"), so the
+plural cascade has no row for it.
+
+### What it moved
+
+Probe 23 lines / 19 whole cards corpus-wide (dropping the clause). Over the implemented population
+delivered **+6** (7,804 → 7,810), compared 7,391 → 7,396. The rest of the family is
+"any target that was dealt damage this turn" (Needle Drop; "any target" has no filter to qualify),
+the cost-reduction "if it targets a creature that …", and cards with a second unread line.
+
+### What the differential found
+
+One new divergence, a card bug, fixed: **Unsparing Boltcaster [TDM]** wrote "it deals 5 damage" as
+`DealDamage(5, t, damageSource = Self)`. A null `damageSource` already means the ability's source,
+and it is the spelling the other "When this creature enters, it deals …" cards use. The explicit
+`Self` is also not quite the same thing: the executor resolves an explicit source at resolution and
+skips the damage when that fails, where the null path falls back to last-known information. The card
+now writes the null default.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote
