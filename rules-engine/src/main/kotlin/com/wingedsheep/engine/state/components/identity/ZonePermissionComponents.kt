@@ -160,18 +160,24 @@ data class PlayWithAdditionalCostComponent(
 ) : Component
 
 /**
- * Marks a card in exile as costing more to cast for the specified player.
+ * Marks a card as costing more to cast for the specified player.
  * Used by effects like Soul Partition that let a card's owner play it from exile
- * but tax opponents of the effect's controller.
+ * but tax opponents of the effect's controller, and by a resolution-time cast "by paying {R}{R}
+ * in addition to its other costs" (Ogre Battlecaster) — an additional mana cost (CR 601.2f), so it
+ * is added on top of whichever base the cast uses.
  *
  * @param controllerId The player who has this cost increase when casting.
- * @param amount Generic mana added to the spell's cost.
+ * @param cost Mana added to the spell's cost — generic for a tax, colored for an additional cost.
  */
 @Serializable
 data class PlayWithCostIncreaseComponent(
     val controllerId: EntityId,
-    val amount: Int
-) : Component
+    val cost: com.wingedsheep.sdk.core.ManaCost,
+) : Component {
+    /** A generic-mana tax of [amount] (Soul Partition's {2}). */
+    constructor(controllerId: EntityId, amount: Int) :
+        this(controllerId, com.wingedsheep.sdk.core.ManaCost.parse("{$amount}"))
+}
 
 /**
  * Marks a card in exile as castable for a *fixed alternative* mana cost — paid **instead of**

@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -382,6 +383,12 @@ data class ExileLibraryUntilManaValueEffect(
  * caster can't afford it (CR 601.2h), and the cast handler charges it like any spell cost, so it
  * can't be skipped. The cost is stamped on the card for this one cast only and removed if the cast
  * never initiates. Mutually exclusive with [payManaCost].
+ *
+ * **Paying more on top.** Set [additionalManaCost] (with [payManaCost]) for "you may cast that card
+ * by paying {R}{R} in addition to its other costs" — Ogre Battlecaster. It is an additional cost
+ * (CR 601.2f): added to the mana cost and to every other cost increase, stamped on the card for this
+ * one cast only, and removed if the cast never initiates. A caster who can't pay the total simply
+ * doesn't cast it (CR 601.2h).
  */
 @SerialName("CastFromCollectionWithoutPayingCost")
 @Serializable
@@ -410,10 +417,15 @@ data class CastFromCollectionWithoutPayingCostEffect(
     val caster: Chooser = Chooser.Controller,
     /** The non-mana cost paid rather than the mana cost, or null — see the class KDoc. */
     val alternativeCost: AdditionalCost? = null,
+    /** Mana owed on top of the mana cost, or null — see the class KDoc. */
+    val additionalManaCost: ManaCost? = null,
 ) : Effect {
     init {
         require(alternativeCost == null || !payManaCost) {
             "An alternative cost replaces the mana cost; it can't be combined with payManaCost"
+        }
+        require(additionalManaCost == null || payManaCost) {
+            "An additional mana cost is paid on top of the mana cost; it needs payManaCost"
         }
     }
 
@@ -426,6 +438,7 @@ data class CastFromCollectionWithoutPayingCostEffect(
                     " rather than paying its mana cost"
             )
             !payManaCost -> append(" without paying its mana cost")
+            additionalManaCost != null -> append(" by paying $additionalManaCost in addition to its other costs")
         }
         insteadOfGraveyard?.let { append(it.riderText) }
     }

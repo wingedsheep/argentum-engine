@@ -712,6 +712,104 @@
     ]
 }
 
+// Ogre Battlecaster
+{
+    "name": "Ogre Battlecaster",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Ogre Shaman",
+    "oracleText": "First strike\nWhenever this creature attacks, you may cast target instant or sorcery card from your graveyard by paying {R}{R} in addition to its other costs. If that spell would be put into a graveyard, exile it instead. When you cast that spell, this creature gets +X/+0 until end of turn, where X is that spell's mana value.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ogre Battlecaster:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.DoAction",
+                                    "action": {
+                                        "type": "CastFromCollectionWithoutPayingCost",
+                                        "from": "gathered0",
+                                        "payManaCost": true,
+                                        "storeCastTo": "battlecasterCast",
+                                        "insteadOfGraveyard": "EXILE",
+                                        "additionalManaCost": "{R}{R}"
+                                    },
+                                    "successCriterion": {
+                                        "type": "SuccessCriterion.CollectionNonEmpty",
+                                        "name": "battlecasterCast"
+                                    }
+                                },
+                                "then": {
+                                    "type": "ReflexiveTrigger",
+                                    "action": {
+                                        "type": "Composite",
+                                        "effects": []
+                                    },
+                                    "optional": false,
+                                    "reflexiveEffect": {
+                                        "type": "ModifyStats",
+                                        "powerModifier": {
+                                            "type": "StoredCardManaValue",
+                                            "collectionName": "battlecasterCast"
+                                        },
+                                        "toughnessModifier": {
+                                            "type": "Fixed",
+                                            "amount": 0
+                                        },
+                                        "target": "Self"
+                                    },
+                                    "descriptionOverride": "This creature gets +X/+0 until end of turn, where X is that spell's mana value."
+                                }
+                            },
+                            "descriptionOverride": "You may cast target instant or sorcery card from your graveyard by paying {R}{R} in addition to its other costs."
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may cast target instant or sorcery card from your graveyard by paying {R}{R} in addition to its other costs. If that spell would be put into a graveyard, exile it instead. When you cast that spell, this creature gets +X/+0 until end of turn, where X is that spell's mana value."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "RARE",
+        "artist": "Javier Charro",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/298f1ab2-4c66-4d91-8f6a-1bad230632df.jpg?1783919183",
+        "rulings": [
+            {
+                "date": "2022-12-02",
+                "text": "You must cast the spell as Ogre Battlecaster's triggered ability resolves. You can't wait and cast it later."
+            }
+        ]
+    }
+}
+
 // Plundering Predator
 {
     "name": "Plundering Predator",
