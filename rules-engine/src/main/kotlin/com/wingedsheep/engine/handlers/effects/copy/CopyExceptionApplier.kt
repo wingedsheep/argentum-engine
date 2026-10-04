@@ -75,13 +75,20 @@ object CopyExceptionApplier {
      *
      * A no-op fast path when the exceptions are empty, so a plain copy allocates nothing.
      */
-    fun apply(base: CardComponent, exceptions: CopyExceptions): CardComponent {
+    fun apply(
+        base: CardComponent,
+        exceptions: CopyExceptions,
+        resolvingTrigger: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
+    ): CardComponent {
         if (exceptions.isEmpty) return base
+        val addedTriggers = exceptions.addedTriggeredAbilities +
+            if (exceptions.retainResolvingTriggeredAbility && resolvingTrigger != null) listOf(resolvingTrigger)
+            else emptyList()
         return base.copy(
             name = exceptions.nameOverride ?: base.name,
             // Each instance gets its own identity, including two copies of a once-per-turn
             // trigger. Plain subsequent copies retain these ids rather than adding instances.
-            copyTriggeredAbilities = base.copyTriggeredAbilities + exceptions.addedTriggeredAbilities.mapIndexed { index, ability ->
+            copyTriggeredAbilities = base.copyTriggeredAbilities + addedTriggers.mapIndexed { index, ability ->
                 ability.copy(id = com.wingedsheep.sdk.scripting.AbilityId(
                     "copy:${base.copyTriggeredAbilities.size + index}:${ability.id.value}"
                 ))

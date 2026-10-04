@@ -141,6 +141,7 @@ class EffectAndTriggerContinuationResumer(
         //    Fall through to the regular put-on-stack path with `selectedTargets = []`.
         if (selectedTargets.isEmpty() && continuation.elseEffect != null) {
             val elseComponent = TriggeredAbilityOnStackComponent(
+                resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
                 sourceId = continuation.sourceId,
                 sourceName = continuation.sourceName,
                 sourceBattlefieldTimestamp = continuation.sourceBattlefieldTimestamp,
@@ -195,6 +196,7 @@ class EffectAndTriggerContinuationResumer(
         }
 
         val abilityComponent = TriggeredAbilityOnStackComponent(
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
             sourceName = continuation.sourceName,
             sourceBattlefieldTimestamp = continuation.sourceBattlefieldTimestamp,
@@ -279,6 +281,7 @@ class EffectAndTriggerContinuationResumer(
         ) }
 
         val distributionContinuation = TriggerDamageDistributionContinuation(
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
             sourceName = continuation.sourceName,
             sourceBattlefieldTimestamp = continuation.sourceBattlefieldTimestamp,
@@ -313,6 +316,7 @@ class EffectAndTriggerContinuationResumer(
         }
 
         val abilityComponent = TriggeredAbilityOnStackComponent(
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
             sourceName = continuation.sourceName,
             sourceBattlefieldTimestamp = continuation.sourceBattlefieldTimestamp,

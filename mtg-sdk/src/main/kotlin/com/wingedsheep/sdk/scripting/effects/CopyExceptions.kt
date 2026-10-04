@@ -26,7 +26,7 @@ import kotlinx.serialization.Serializable
  * are frozen — **a new copy exception goes here, never onto another flat rider.**
  *
  * Everything here is a *copiable* value (CR 707.2): anything that later copies the copy sees these
- * modifications too. Riders that are **not** characteristics — "and this ability", "it enters
+ * modifications too. Riders that are **not** characteristics — "it enters
  * tapped", "it enters with a +1/+1 counter" — deliberately stay on the individual effects.
  *
  * Add/override pairs follow Magic's own templating, which the rules make load-bearing: a stated
@@ -88,6 +88,8 @@ data class CopyExceptions(
     val toughnessOverride: Int? = null,
     val noManaCost: Boolean = false,
     val addedNumericKeywords: List<com.wingedsheep.sdk.scripting.KeywordAbility.Numeric> = emptyList(),
+    /** Add the frozen resolving trigger as copiable rules text; no-op outside a triggered ability. */
+    val retainResolvingTriggeredAbility: Boolean = false,
     /** Abilities added as copiable rules text, including multiple identical instances. */
     val addedTriggeredAbilities: List<com.wingedsheep.sdk.scripting.TriggeredAbility> = emptyList(),
     /**
@@ -142,6 +144,7 @@ data class CopyExceptions(
             toughnessOverride = toughnessOverride ?: base.toughnessOverride,
             noManaCost = noManaCost || base.noManaCost,
             addedNumericKeywords = base.addedNumericKeywords + addedNumericKeywords,
+            retainResolvingTriggeredAbility = base.retainResolvingTriggeredAbility || retainResolvingTriggeredAbility,
             addedTriggeredAbilities = base.addedTriggeredAbilities + addedTriggeredAbilities,
             addedActivatedAbilities = base.addedActivatedAbilities + addedActivatedAbilities,
         )
@@ -198,6 +201,7 @@ data class CopyExceptions(
         }
         for (numeric in addedNumericKeywords) add("it has ${numeric.keyword.displayName.lowercase()} ${numeric.n}")
         if (noManaCost) add("it has no mana cost")
+        if (retainResolvingTriggeredAbility) add("it has this ability")
         for (ability in addedTriggeredAbilities) add("it has \"${ability.description}\"")
         for (ability in addedActivatedAbilities) add("it has \"${ability.description}\"")
     }

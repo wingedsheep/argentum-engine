@@ -62,6 +62,8 @@ data class EffectContext(
      * Null for spells, triggers, and synthesized activations without an ActivatedAbility.
      */
     val activatedAbility: com.wingedsheep.sdk.scripting.ActivatedAbility? = null,
+    /** Frozen triggered rules text, including target requirements and optionality. */
+    val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
     /**
      * The player currently under consideration as a target, bound while evaluating a
      * `TargetPlayer.restriction` / `TargetOpponent.restriction` (CR 115). Resolves
@@ -555,6 +557,7 @@ data class EffectContext(
             targets: List<ChosenTarget> = emptyList(),
             targetRequirements: List<TargetRequirement> = emptyList()
         ): EffectContext = EffectContext(
+            resolvingTriggeredAbility = ability.resolvingTriggeredAbility,
             sourceId = ability.sourceId,
             controllerId = ability.controllerId,
             granterId = ability.granterId,

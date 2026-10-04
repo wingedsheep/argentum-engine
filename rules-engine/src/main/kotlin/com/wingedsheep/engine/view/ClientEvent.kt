@@ -1456,6 +1456,7 @@ is PermanentsSacrificedEvent -> {
             is ManaSpentEvent,
             is ManaPoolChangedEvent,
             is StaticAbilityGrantedEvent,
+            is CopiableTriggeredAbilityAddedEvent,
             is DamagePreventionShieldCreatedEvent,
             is BlockerDeclarationPolicyChangedEvent,
             is TextChangedEvent,

@@ -190,7 +190,7 @@ class CreateTokenCopyOfTargetExecutor(
         // (CR 707.2 lists them; layout isn't one). A token copy of a double-faced permanent is a
         // double-faced *token* and can still transform (CR 707.8a / 712.9), which is what the
         // DoubleFacedComponent copied below is for.
-        val tokenCard = CopyExceptionApplier.apply(targetCard, exceptions)
+        val tokenCard = CopyExceptionApplier.apply(targetCard, exceptions, context.resolvingTriggeredAbility)
             .copy(ownerId = controllerId, isDoubleFaced = false)
 
         val cappedCount = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(count, "target-copy tokens")

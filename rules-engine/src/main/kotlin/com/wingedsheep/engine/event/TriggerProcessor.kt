@@ -802,6 +802,7 @@ class TriggerProcessor(
             legalTargets = allLegalTargets,
             effectHint = effectHint,
             answer = TriggeredAbilityContinuation(
+                resolvingTriggeredAbility = trigger.rulesText,
                 sourceId = trigger.sourceId,
                 sourceName = trigger.sourceName,
                 sourceBattlefieldTimestamp = trigger.sourceBattlefieldTimestamp,
@@ -843,6 +844,7 @@ class TriggerProcessor(
         val ability = trigger.ability
 
         val abilityComponent = TriggeredAbilityOnStackComponent(
+            resolvingTriggeredAbility = trigger.rulesText,
             sourceId = trigger.sourceId,
             sourceBattlefieldTimestamp = trigger.sourceBattlefieldTimestamp,
             objectReferences = trigger.objectReferences,

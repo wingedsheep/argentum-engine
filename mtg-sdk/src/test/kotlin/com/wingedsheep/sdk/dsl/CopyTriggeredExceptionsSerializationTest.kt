@@ -8,6 +8,15 @@ import io.kotest.matchers.shouldBe
 import kotlinx.serialization.json.Json
 
 class CopyTriggeredExceptionsSerializationTest : FunSpec({
+    test("retained resolving trigger exception round trips and composes") {
+        val exception = CopyExceptions(retainResolvingTriggeredAbility = true)
+        Json.decodeFromString<CopyExceptions>(Json.encodeToString(exception)) shouldBe exception
+        exception.over(CopyExceptions(addedKeywords = setOf(com.wingedsheep.sdk.core.Keyword.FLYING)))
+            .retainResolvingTriggeredAbility shouldBe true
+        CopyExceptions.None.over(exception) shouldBe exception
+        exception.clauses() shouldBe listOf("it has this ability")
+    }
+
     test("entry-copy exceptions round trip nested triggered abilities and preserve duplicates") {
         val definition = card("Test Copy Data") {
             typeLine = "Creature — Shapeshifter"

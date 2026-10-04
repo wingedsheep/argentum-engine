@@ -65,6 +65,7 @@ val engineSerializersModule = SerializersModule {
         subclass(AbilityActivatedEvent::class)
         subclass(PlayerActionTakenEvent::class)
         subclass(StaticAbilityGrantedEvent::class)
+        subclass(CopiableTriggeredAbilityAddedEvent::class)
         subclass(DamagePreventionShieldCreatedEvent::class)
         subclass(BlockerDeclarationPolicyChangedEvent::class)
         subclass(PlayerActionPermissionsChangedEvent::class)
