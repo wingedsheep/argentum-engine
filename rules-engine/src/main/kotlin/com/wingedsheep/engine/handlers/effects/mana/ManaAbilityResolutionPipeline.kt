@@ -76,8 +76,9 @@ class ManaAbilityResolutionPipeline(
         state: GameState,
         sourceCard: CardComponent?,
         tapperId: EntityId,
+        sourceIsLand: Boolean = sourceCard?.typeLine?.isLand == true,
     ): Dampening {
-        if (sourceCard?.typeLine?.isLand != true) return Dampening(state, false)
+        if (!sourceIsLand) return Dampening(state, false)
         if (!hasDampLandManaProduction(state)) return Dampening(state, false)
 
         val oldPool = stateBeforeEffect.getEntity(tapperId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
@@ -87,7 +88,8 @@ class ManaAbilityResolutionPipeline(
             (newPool.black - oldPool.black) +
             (newPool.red - oldPool.red) +
             (newPool.green - oldPool.green) +
-            (newPool.colorless - oldPool.colorless)
+            (newPool.colorless - oldPool.colorless) +
+            (newPool.restrictedMana.size - oldPool.restrictedMana.size)
         if (totalManaProduced < 2) return Dampening(state, false)
 
         // Replace with 1 colorless mana: revert to old pool + 1 colorless.

@@ -194,10 +194,25 @@ internal class ActivatedManaAbilityResolver(
             activatedAbility = ability,
         )
 
-        // Multi-part production needs a single activation identity across every pause; the exact
-        // allocation planner will own that path. Do not record separate obligations for its parts.
-        if (currentState.activeManaSpendingScope(action.playerId) != null && (finalEffect is CompositeEffect || finalEffect is AddDynamicManaEffect)) {
-            return ExecutionResult.error(stateBeforeActivation, "Multi-part or dynamic mana production is not supported in this scope")
+        if (currentState.activeManaSpendingScope(action.playerId) != null) {
+            val frame = com.wingedsheep.engine.core.ScopedManaProductionContinuation(
+                action.playerId, action.sourceId, sourceName, cardComponent,
+                currentState.getEntity(action.playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent(),
+                ManaProvenanceTracker.sourceTag(
+                    if (action.sourceId in currentState.getBattlefield()) currentState else stateBeforeActivation,
+                    action.sourceId,
+                ), costsTap,
+            )
+            val result = effectExecutorRegistry.execute(currentState.pushContinuation(frame), finalEffect, context).toExecutionResult()
+            if (result.outcome is Outcome.Paused)
+                return ExecutionResult.propagatePause(result.state, activationEvents + result.events.filterNot {
+                    it is ManaAddedEvent && it.sourceId == action.sourceId && it.playerId == action.playerId
+                })
+            if (result.outcome !is Outcome.Done) return result
+            val (_, completed) = result.state.popContinuation()
+            return com.wingedsheep.engine.handlers.effects.mana.finishScopedManaProduction(
+                completed, frame, activationEvents + result.events, manaPipeline,
+            )
         }
         val stateBeforeEffect = currentState
         val effectResult = effectExecutorRegistry.execute(currentState, finalEffect, context).toExecutionResult()

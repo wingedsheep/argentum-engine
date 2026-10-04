@@ -1150,9 +1150,12 @@ class MiscContinuationResumer(
             colorless = 0
         )
 
+        val events = if (state.continuationStack.any { it is ScopedManaProductionContinuation &&
+                it.playerId == continuation.playerId && it.sourceId == continuation.sourceId }) emptyList()
+            else listOf(event)
         val remaining = continuation.remainingPips - 1
         if (remaining <= 0) {
-            return checkForMore(newState, listOf(event))
+            return checkForMore(newState, events)
         }
 
         // Pause for the next pip's color choice by re-using the executor's helper, so the
@@ -1169,7 +1172,7 @@ class MiscContinuationResumer(
 
         return ExecutionResult.propagatePause(
             nextResult.state,
-            listOf(event) + nextResult.events
+            events + nextResult.events
         )
     }
 }

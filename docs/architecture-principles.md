@@ -1287,6 +1287,15 @@ be counted twice.
   system produces Arena-quality automatic payment. Manual tapping is available as an opt-in
   `PaymentStrategy.Explicit` for edge cases.
 
+Scoped per-activation spending uses a serialized `ScopedManaProductionContinuation` beneath the
+ability's entire effect tree. Fixed siblings, number splits and repeated color decisions all finish
+before the boundary computes the pool delta and tags one activation identity. The snapshot preserves
+preexisting pool entries and the producing source's projected type/snow metadata. Dampening sees the
+whole production, including restricted entries, and separate triggered tap bonuses run only after
+tagging. Non-tapping and zero-output activations do not fire tap bonuses. This accounting boundary
+does not prove that future activations can pay a forced card play; forward planning and recovery remain
+separate work.
+
 ### 2.11 Copy Effects
 
 **Principle:** Copy effects resolve at entry time by replacing the base `CardComponent`, making

@@ -209,6 +209,15 @@ class ColorChoiceContinuationResumer(
             contextWithColor
         )
 
+        // The activation boundary reports production and owns the tap pipeline after all parts.
+        if (state.continuationStack.any { it is ScopedManaProductionContinuation &&
+                it.sourceId == continuation.sourceId && it.playerId == continuation.controllerId }) {
+            val events = effectResult.events.filterNot { it is ManaAddedEvent &&
+                it.sourceId == continuation.sourceId && it.playerId == continuation.controllerId }
+            if (effectResult.outcome is Outcome.Paused)
+                return ExecutionResult.propagatePause(effectResult.state, events)
+            return checkForMore(effectResult.state, events)
+        }
         if (effectResult.outcome is Outcome.Paused) return effectResult.toExecutionResult()
 
         // The mana ability itself is now done, but only its *effect* ran — `ActivateAbilityHandler`

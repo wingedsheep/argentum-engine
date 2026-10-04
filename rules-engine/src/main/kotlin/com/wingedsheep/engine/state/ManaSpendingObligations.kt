@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ManaSpendingObligationsContinuation
 import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.RestrictedManaEntry
+import com.wingedsheep.engine.state.components.player.ManaSourceTag
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
@@ -22,6 +23,7 @@ fun tagManaObligationProduction(
     after: GameState,
     playerId: EntityId,
     sourceId: EntityId? = null,
+    productionTag: ManaSourceTag? = null,
 ): GameState {
     if (after.activeManaSpendingScope(playerId) == null) return after
     val old = before.getEntity(playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
@@ -31,7 +33,7 @@ fun tagManaObligationProduction(
     val colorless = (added.colorless - old.colorless).coerceAtLeast(0)
     // Zero output still creates an unsatisfied activation: it cannot silently count as a contribution.
     val (id, allocated) = after.newRoutingId()
-    val tag = sourceId?.let { ManaProvenanceTracker.sourceTag(before, it) }
+    val tag = productionTag ?: sourceId?.let { ManaProvenanceTracker.sourceTag(before, it) }
     val entries = colored.flatMap { (color, count) -> List(count) {
         RestrictedManaEntry(color, ManaRestriction.AnySpend, source = tag, obligationIds = setOf(id))
     } } + List(colorless) {
@@ -49,7 +51,10 @@ fun tagManaObligationProduction(
         snowMana = old.snowMana,
         snowColorless = old.snowColorless,
         restrictedMana = added.restrictedMana.mapIndexed { index, entry ->
-            if (index >= untaggedCount) entry.copy(source = entry.source ?: tag, obligationIds = entry.obligationIds + id) else entry
+            if (index >= untaggedCount) entry.copy(
+                source = entry.source?.takeUnless { productionTag != null && it.sourceId == sourceId } ?: tag,
+                obligationIds = entry.obligationIds + id,
+            ) else entry
         } + entries,
         // Preserve the preexisting approximate counters; moved units have exact entry tags.
         manaBySubtype = old.manaBySubtype,

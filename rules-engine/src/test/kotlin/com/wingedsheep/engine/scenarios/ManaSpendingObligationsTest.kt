@@ -164,29 +164,6 @@ class ManaSpendingObligationsTest : FunSpec({
         pool(d).restrictedMana shouldBe emptyList()
         d.state.continuationStack shouldBe emptyList()
     }
-    test("unsupported dynamic and composite activated production reject before changing state") {
-        val d = driver(); val p = d.activePlayer!!
-        val dynamic = card("Obligation Dynamic Production Probe") {
-            typeLine = "Land"
-            activatedAbility { cost = Costs.Tap
-                effect = Effects.AddDynamicMana(com.wingedsheep.sdk.scripting.values.DynamicAmount.XValue, setOf(Color.GREEN))
-                manaAbility = true }
-        }
-        val composite = card("Obligation Composite Production Probe") {
-            typeLine = "Land"
-            activatedAbility { cost = Costs.Tap
-                effect = Effects.AddMana(Color.GREEN, 1) then Effects.AddMana(Color.BLUE, 1)
-                manaAbility = true }
-        }
-        d.registerCards(listOf(dynamic, composite))
-        val a = d.putLandOnBattlefield(p, dynamic.name); val b = d.putLandOnBattlefield(p, composite.name)
-        scope(d)
-        for ((source, definition) in listOf(a to dynamic, b to composite)) {
-            val before = d.state
-            d.submit(ActivateAbility(p, source, definition.script.activatedAbilities.first().id)).error.isNullOrEmpty() shouldBe false
-            d.state shouldBe before
-        }
-    }
     test("SDK wrapper round trips with its affected player and nested instruction") {
         val effect: Effect = Effects.WithManaSpendingObligations(Effects.ForcePlay("chosen"), EffectTarget.ContextTarget(0))
         json.decodeFromString<Effect>(json.encodeToString(effect)) shouldBe effect

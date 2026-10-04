@@ -16244,7 +16244,7 @@ Shared-turn teams follow the existing player-control team rule. A later resoluti
 and a completed window reveals the underlying turn control again. Session hotseat routing keeps precedence.
 
 This primitive composes with `Effects.ForcePlay` for mandatory paid card play. Word of Command
-still needs feasible activated-source plans and recoverable payment (G42); it is not yet authorable faithfully.
+still needs feasible activated-source plans and recoverable payment (G43); it is not yet authorable faithfully.
 
 ### Scoped mana-ability sources
 
@@ -16281,8 +16281,12 @@ outstanding identities. Standard mana-production and mana-spending events contin
 visible changes. No client field or new decision is introduced.
 
 **This is a foundation, not yet a complete forced-play payment policy.** Scoped casts and
-activations currently accept floating-pool payments; solver-dependent production and multi-part
-activated production return explicit unsupported errors rather than claiming an unproved allocation.
+activations currently accept floating-pool payments; solver-dependent production returns an explicit
+unsupported error rather than claiming an unproved allocation. Multipart and dynamic activated
+production now share one serialized completion boundary: all fixed, split and pip-by-pip output
+receives one activation identity after the final part, before separate triggered tap bonuses.
+Source/snow metadata is captured before production; part choices do not finish the tap pipeline.
+Zero output retains an unsatisfied obligation, and a bonus cannot satisfy the base activation.
 An unmatched obligation rejects completion atomically. Complete floating-pool payments now
 assign exact units to fixed pips and X together. The matcher reserves snow units, reassigns flexible
 hybrid/substituted pips, honors mana restrictions and actual-color restrictions on X, and maximizes
@@ -16295,7 +16299,7 @@ settle the prior activations they consume, without requiring every outstanding a
 contribute to that intermediate payment.
 
 This does not establish forward activation legality or provide recovery from an earlier manual
-overactivation. G42 must supply feasible activated-source plans through mana chains, zero-output
-and bonus-only activations, multi-part production pauses, and recoverable payment before a printed
+overactivation. G43 must supply feasible activated-source plans through mana chains, zero-output
+and bonus-only activations, and recoverable payment before a printed
 card uses this wrapper. Partial pool/source planning is still outside the completed floating-pool
 allocator. Word of Command remains blocked; no incomplete canonical is registered.
