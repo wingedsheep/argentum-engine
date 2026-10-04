@@ -12334,7 +12334,11 @@ answer it and would silently return `false`.
   *non-self* `EntersWithCounters` (`selfOnly = false`), whose condition is evaluated against the
   entering creature — Leonardo, Sewer Samurai ("creatures you cast from your graveyard enter with a
   finality counter") and Mikey & Don ("creatures you cast from the top of your library enter with an
-  extra +1/+1 counter", `WasCastFromZone(Zone.LIBRARY)`).
+  extra +1/+1 counter", `WasCastFromZone(Zone.LIBRARY)`). A **copy** of a spell is never cast
+  (CR 707.10), so it carries no cast-origin and every `WasCastFromZone` is false for it — Sevinne's
+  Reclamation's "if this spell was cast from a graveyard, you may copy this spell" (`Effects.If(
+  WasCastFromZone(GRAVEYARD), Effects.May(Effects.CopyTargetSpell(EffectTarget.Self)))`) copies once,
+  and the copy never copies itself.
 - `SourceInZone(vararg zones)` — where the source object is **right now**. A live zone-membership
   lookup, so unlike `WasCastFromZone` (frozen at cast time) it answers differently once the source
   moves; it reads identically at resolution and under projection. Its job is CR 603.4's
