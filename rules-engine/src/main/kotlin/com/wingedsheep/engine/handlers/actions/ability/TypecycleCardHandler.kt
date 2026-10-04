@@ -23,6 +23,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.CardsCycledThisGameComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
@@ -207,6 +208,12 @@ class TypecycleCardHandler(
         val discardResult = zones.discardCards(currentState, action.playerId, listOf(action.cardId), asCyclingCost = true)
         currentState = discardResult.state
         events.addAll(discardResult.events)
+
+        // "Cycled a card named X N times this game" (Yidaro, Wandering Monster) — counted before
+        // the event so a "when you cycle" trigger already sees this cycle.
+        currentState = currentState.updateEntity(action.playerId) { player ->
+            player.with((player.get<CardsCycledThisGameComponent>() ?: CardsCycledThisGameComponent()).record(cardComponent.name))
+        }
 
         // Emit cycling event (typecycling triggers cycling abilities per MTG rules)
         events.add(CardCycledEvent(action.playerId, action.cardId, cardComponent.name))
