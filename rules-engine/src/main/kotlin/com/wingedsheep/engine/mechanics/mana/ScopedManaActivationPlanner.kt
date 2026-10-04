@@ -3,6 +3,7 @@ package com.wingedsheep.engine.mechanics.mana
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.actions.ability.ActivateAbilityHandler
 import com.wingedsheep.engine.handlers.actions.ability.ActivatedAbilityResolver
+import com.wingedsheep.engine.handlers.actions.decision.DecisionValidators
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.activeManaSpendingScope
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -45,12 +46,30 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
             if (nodeLimit <= 0) return null
             val pending = ArrayDeque<Prefix>()
             pending.add(Prefix(initial, emptyList()))
+            val continuationFloor = initial.continuationStack.size
             var admitted = 1
             // Short proofs must precede permutations of irrelevant taps. Bound queued states too.
             while (pending.isNotEmpty()) {
                 val (current, events) = pending.removeFirst()
-                if (complete(current)) return ExecutionResult.success(current, events)
+                if (current.pendingDecision == null && current.continuationStack.size == continuationFloor &&
+                    complete(current)) return ExecutionResult.success(current, events)
                 if (admitted >= nodeLimit) continue
+                if (current.pendingDecision != null) {
+                    // Branch only over the paying player's production answers. Each branch uses
+                    // the real validation and continuation dispatch, but cannot consume caller work.
+                    for (response in productionResponses(current, player)) {
+                        if (admitted >= nodeLimit) break
+                        val decision = current.pendingDecision ?: break
+                        if (DecisionValidators.validate(decision, response, current) != null) continue
+                        val result = services.continuationHandler.resumeWithin(current, response, continuationFloor)
+                        if (result.error != null || result.state.gameOver) continue
+                        pending.add(Prefix(result.state, events + DecisionSubmittedEvent(decision.id, player) + result.events))
+                        admitted++
+                    }
+                    continue
+                }
+                // A production boundary must finish before another activation or final payment.
+                if (current.continuationStack.size != continuationFloor) continue
                 // New activations cannot produce a unit bearing an earlier zero-output identity.
                 val liveIds = current.getEntity(player)?.get<ManaPoolComponent>()?.restrictedMana
                     .orEmpty().flatMap { it.obligationIds }.toSet()
@@ -63,16 +82,19 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                         base.sourceId in excludeSources) continue
                     val ability = resolver.lookup(current, base.sourceId, base.abilityId)?.ability ?: continue
                     if (!safeCost(ability.cost) || !manaOnly(ability.effect)) continue
-                    val colors: List<Color?> = if (candidate.requiresManaColorChoice)
+                    // A composite can contain independently chosen colors. A shared activation
+                    // color would couple those choices, so let its production leaves ask separately.
+                    val colors: List<Color?> = if (candidate.requiresManaColorChoice &&
+                        ability.effect !is CompositeEffect)
                         candidate.availableManaColors ?: Color.entries else listOf(null)
                     for (color in colors) {
                         if (admitted >= nodeLimit) break
                         val action = base.copy(manaColorChoice = color, paymentStrategy = PaymentStrategy.FromPool)
                         if (handler.validate(current, action) != null) continue
                         val result = handler.execute(current, action)
-                        // Choice-bearing bonuses/production belong to a future resumable planner.
-                        // No rejected branch, pause, or intermediate events escape the transaction.
-                        if (result.outcome !is Outcome.Done || result.state.pendingDecision != null || result.state.gameOver) continue
+                        // Paused production remains private to this speculative branch. A plan
+                        // is published only after all its questions and its full payment finish.
+                        if (result.error != null || result.state.gameOver) continue
                         pending.add(Prefix(result.state, events + result.events))
                         admitted++
                     }
@@ -86,6 +108,24 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
         return result.copy(state = result.state.copy(
             continuationStack = result.state.continuationStack + listOfNotNull(suspended),
             priorityPlayerId = state.priorityPlayerId, priorityPassedBy = state.priorityPassedBy))
+    }
+
+    private fun productionResponses(state: GameState, player: EntityId): Sequence<DecisionResponse> {
+        val suspension = state.continuationStack.lastOrNull() as? Suspension ?: return emptySequence()
+        val question = suspension.question
+        if (question.playerId != player) return emptySequence()
+        return when (suspension.answer) {
+            is ChooseManaColorContinuation, is AddManaPipsContinuation, is ChooseAnyColorTapBonusContinuation -> {
+                val colors = question as? ChooseColorDecision ?: return emptySequence()
+                if (colors.maxColors != 1) return emptySequence()
+                colors.availableColors.asSequence().map { ColorChosenResponse(question.id, it) }
+            }
+            is AddDynamicManaContinuation -> {
+                val number = question as? ChooseNumberDecision ?: return emptySequence()
+                (number.minValue..number.maxValue).asSequence().map { NumberChosenResponse(question.id, it) }
+            }
+            else -> emptySequence()
+        }
     }
 
     // Only costs with no object/type/amount choice. The real handler validates and pays each
@@ -118,7 +158,7 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
     }
 
     private fun manaOnly(effect: Effect): Boolean = when (effect) {
-        is AddManaEffect, is AddColorlessManaEffect, is AddManaOfChoiceEffect -> true
+        is AddManaEffect, is AddColorlessManaEffect, is AddManaOfChoiceEffect, is AddDynamicManaEffect -> true
         is CompositeEffect -> effect.effects.isNotEmpty() && effect.effects.all(::manaOnly)
         else -> false
     }

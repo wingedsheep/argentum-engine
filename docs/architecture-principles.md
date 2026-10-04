@@ -1221,12 +1221,18 @@ all scopes. Explicit source selections exclude other sources throughout the chai
 cost against the current prefix: tap, self-sacrifice, positive fixed life or mana payments and named
 fixed self-counter removal compose without a separate cost simulation. Repeated activations share
 the actual life, counters and pool, and receive distinct contribution identities. Sacrificed output
-retains last-known provenance. It accepts mana-only effect trees and declines production pauses or
-more than 256 prefixes. No replay, event, decision or client contract is added. Standalone
+retains last-known provenance. It accepts mana-only effect trees and explores their finite
+production pauses using the ordinary decision validators and continuation resumers. The existing
+node budget includes each color or split-number answer, not just activation prefixes. A bounded
+continuation drain finishes the entire activation and triggered tap bonuses while preserving
+enclosing scopes and caller work below the activation's continuation floor. The caller suspension
+and priority are restored after a complete production proof; partial production and failed branch
+events never publish. Search still declines after 256 admitted states. No replay, event, decision
+or client contract is added. Standalone
 solvers and intermediate-ability affordability retain the independent fixed-output proof. Face-down
 boards retain a uniform source-proof boundary because legacy enumeration inspects hidden printed
-statics; complete floating payments still work. Resumable choice planning and manual overactivation
-recovery remain required before a printed card uses the foundation.
+statics; complete floating payments still work. Activation-cost choices, explicit search uncertainty
+and atomic manual-overactivation recovery remain required before a printed card uses the foundation.
 
 **Tier 3: Cost Execution (Engine).** The `CostHandler` physically pays costs — tapping permanents,
 deducting from the mana pool, sacrificing creatures, discarding cards, paying life. The `ManaPool`

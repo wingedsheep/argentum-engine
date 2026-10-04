@@ -16290,7 +16290,7 @@ Shared-turn teams follow the existing player-control team rule. A later resoluti
 and a completed window reveals the underlying turn control again. Session hotseat routing keeps precedence.
 
 This primitive composes with `Effects.ForcePlay` for mandatory paid card play. Word of Command
-still needs resumable activation choices and recoverable payment (G46); it is not yet authorable faithfully.
+still needs activation-cost choices, search uncertainty and recoverable payment (G47); it is not yet authorable faithfully.
 
 ### Scoped mana-ability sources
 
@@ -16390,13 +16390,22 @@ and production planning, so activation costs cannot consume the life committed t
 Self-sacrifice output retains last-known source/snow provenance; excess remains
 available after its identity is discharged. It supports direct fixed/dynamic-amount colored, colorless,
 chosen-color or composite mana effects. It declines X activation choices, zero/free costs,
-object-selection or unnamed-counter costs, non-mana effect leaves, and production or bonuses that pause. Search
+object-selection or unnamed-counter costs and non-mana effect leaves. Finite mana-production pauses
+are now explored through the normal continuation dispatch: single-color choices, two-color split
+numbers, pip-by-pip dynamic output, and any-color triggered tap bonuses. Composite choice leaves
+choose independently within their own color sets; a single activation color does not bind all leaves.
+Each answer is validated and charged to the same search budget. The planner finishes an activated ability and its bonuses
+before considering another activation; it never treats a partially produced pool as payable.
+A continuation floor keeps enclosing effects, forced-play completion, source filters and spending
+scopes intact while automatic production frames resume above them. Successful production restores
+the caller's original suspension and priority; speculative choices and events from failed branches
+never escape. Unsupported questions remain outside the proof boundary. Search
 visits shorter activation plans first and bounds both admitted prefixes and queued states to 256 per
 query; exhaustion declines a proof. The face-down public-board
 boundary remains uniform, while complete existing floating payments still work. Intermediate ability
 affordability keeps the independent proof and actual intermediate payment uses the floating pool.
 The standalone solver's independent proof remains available when no engine execution provider exists.
 
-G46 must supply resumable activation-choice planning, search-exhaustion handling and recovery from
+G47 must supply activation-cost choices, explicit search uncertainty and atomic recovery from
 zero-output or excess manual activations before a printed card uses this wrapper. Word of Command remains blocked; no incomplete
 canonical is registered. The new planner adds no SDK type, decision, client field or serialization shape.

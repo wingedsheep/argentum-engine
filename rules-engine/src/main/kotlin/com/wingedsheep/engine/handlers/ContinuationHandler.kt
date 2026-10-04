@@ -87,7 +87,22 @@ class ContinuationHandler(
      * @param response The player's decision response
      * @return The result of resuming execution
      */
-    fun resume(state: GameState, response: DecisionResponse): ExecutionResult {
+    fun resume(state: GameState, response: DecisionResponse): ExecutionResult =
+        resumeWithin(state, response, 0)
+
+    /**
+     * Resume nested work without consuming the caller's continuation prefix. Mana planning uses
+     * this boundary so production can finish while the enclosing payment and resolution stay live.
+     */
+    fun resumeWithin(state: GameState, response: DecisionResponse, continuationFloor: Int): ExecutionResult {
+        require(continuationFloor >= 0)
+        if (state.continuationStack.size <= continuationFloor) {
+            return ExecutionResult.error(state, if (continuationFloor == 0)
+                "No suspension is awaiting an answer" else "No suspension above the continuation boundary")
+        }
+        val continueWithin: CheckForMore = { next, events ->
+            checkForMoreContinuations(next, events, continuationFloor)
+        }
         val suspension = state.peekContinuation() as? Suspension
             ?: return ExecutionResult.error(state, "No suspension is awaiting an answer")
         if (suspension.question.id != response.decisionId) {
@@ -98,12 +113,12 @@ class ContinuationHandler(
         }
 
         val (_, stateAfterPop) = state.popContinuation()
-        val result = registry.resume(stateAfterPop, suspension.answer, suspension.question, response, ::checkForMoreContinuations)
+        val result = registry.resume(stateAfterPop, suspension.answer, suspension.question, response, continueWithin)
         // Casting resumers can finish a local picker without draining enclosing work.
         // A mandatory play must then retry the card or resume the original resolution.
         val completed = if (result.outcome is Outcome.Done &&
             result.state.continuationStack.any { it is FinishForcedPlayContinuation }) {
-            checkForMoreContinuations(result.state, result.events)
+            continueWithin(result.state, result.events)
         } else result
         // Any resumed effect tree can produce mana and pause again before the activation boundary.
         val productions = completed.state.continuationStack.filterIsInstance<ScopedManaProductionContinuation>()
@@ -125,8 +140,15 @@ class ContinuationHandler(
      */
     private fun checkForMoreContinuations(
         state: GameState,
-        events: List<GameEvent>
+        events: List<GameEvent>,
+        continuationFloor: Int = 0,
     ): ExecutionResult {
+        if (continuationFloor > 0 && state.continuationStack.size <= continuationFloor) {
+            return ExecutionResult.success(state, events)
+        }
+        val continueWithin: CheckForMore = { next, nextEvents ->
+            checkForMoreContinuations(next, nextEvents, continuationFloor)
+        }
         // A resumer that dealt damage or countered a spell outside the effect registry (a declined
         // "counter unless you pay", a divided-damage answer) may owe a replacement's rest — Guile's
         // free cast, Vigor's counters. Run it before the interrupted resolution goes on, as the
@@ -139,9 +161,9 @@ class ContinuationHandler(
             if (drained.outcome is com.wingedsheep.engine.core.Outcome.Paused) {
                 return ExecutionResult.propagatePause(drained.state, events + drained.events)
             }
-            return checkForMoreContinuations(drained.state, events + drained.events)
+            return continueWithin(drained.state, events + drained.events)
         }
-        registry.tryAutoResume(state, events, ::checkForMoreContinuations)?.let { return it }
+        registry.tryAutoResume(state, events, continueWithin)?.let { return it }
         return if (state.pendingDecision != null) ExecutionResult.propagatePause(state, events)
         else ExecutionResult.success(state, events)
     }
