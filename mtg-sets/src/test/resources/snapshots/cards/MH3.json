@@ -430,6 +430,301 @@
     ]
 }
 
+// Ajani, Nacatl Pariah
+{
+    "name": "Ajani, Nacatl Pariah",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Creature — Cat Warrior",
+    "oracleText": "When Ajani enters, create a 2/1 white Cat Warrior creature token.\nWhenever one or more other Cats you control die, you may exile Ajani, then return him to the battlefield transformed under his owner's control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ajani, Nacatl Pariah:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Cat",
+                        "Warrior"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce5c5bcf-1fdd-4d73-a92b-223292da00ca.jpg?1783911117"
+                },
+                "descriptionOverride": "When Ajani enters, create a 2/1 white Cat Warrior creature token."
+            },
+            {
+                "id": "Ajani, Nacatl Pariah:2",
+                "trigger": {
+                    "type": "CreaturesYouControlDiedEvent",
+                    "filter": "creature Cat ctrl:you",
+                    "excludeSelf": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": "ExileAndReturnTransformed"
+                },
+                "descriptionOverride": "Whenever one or more other Cats you control die, you may exile Ajani, then return him to the battlefield transformed under his owner's control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Ajani, Nacatl Avenger",
+        "manaCost": "",
+        "typeLine": "Legendary Planeswalker — Ajani",
+        "oracleText": "+2: Put a +1/+1 counter on each Cat you control.\n0: Create a 2/1 white Cat Warrior creature token. When you do, if you control a red permanent other than Ajani, he deals damage equal to the number of creatures you control to any target.\n−4: Each opponent chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices the rest.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Ajani, Nacatl Avenger:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 2
+                    },
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature Cat ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Put a +1/+1 counter on each Cat you control."
+                },
+                {
+                    "id": "Ajani, Nacatl Avenger:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 0
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "power": 2,
+                                "toughness": 1,
+                                "colors": [
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Cat",
+                                    "Warrior"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce5c5bcf-1fdd-4d73-a92b-223292da00ca.jpg?1783911117"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "Exists",
+                                        "player": "You",
+                                        "zone": "Battlefield",
+                                        "filter": "permanent red",
+                                        "excludeSelf": true
+                                    }
+                                },
+                                "then": {
+                                    "type": "ReflexiveTrigger",
+                                    "action": {
+                                        "type": "Composite",
+                                        "effects": []
+                                    },
+                                    "optional": false,
+                                    "reflexiveEffect": {
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.WhenCondition",
+                                            "condition": {
+                                                "type": "Exists",
+                                                "player": "You",
+                                                "zone": "Battlefield",
+                                                "filter": "permanent red",
+                                                "excludeSelf": true
+                                            }
+                                        },
+                                        "then": {
+                                            "type": "DealDamage",
+                                            "amount": {
+                                                "type": "AggregateBattlefield",
+                                                "player": "You",
+                                                "filter": "creature"
+                                            },
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        }
+                                    },
+                                    "reflexiveTargetRequirements": [
+                                        {
+                                            "type": "AnyTarget",
+                                            "id": "t0"
+                                        }
+                                    ],
+                                    "descriptionOverride": "When you do, if you control a red permanent other than Ajani, he deals damage equal to the number of creatures you control to any target."
+                                }
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Create a 2/1 white Cat Warrior creature token. When you do, if you control a red permanent other than Ajani, he deals damage equal to the number of creatures you control to any target."
+                },
+                {
+                    "id": "Ajani, Nacatl Avenger:3",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -4
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "nonland permanent ctrl:opponent"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "ChooseOnePerCategory",
+                                "from": "gathered0",
+                                "categories": [
+                                    {
+                                        "cardPredicates": [
+                                            "IsArtifact"
+                                        ]
+                                    },
+                                    {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ]
+                                    },
+                                    {
+                                        "cardPredicates": [
+                                            "IsEnchantment"
+                                        ]
+                                    },
+                                    {
+                                        "cardPredicates": [
+                                            "IsPlaneswalker"
+                                        ]
+                                    }
+                                ],
+                                "storeAs": "kept1"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered0",
+                                "collectionFilter": {
+                                    "type": "ExcludeOtherCollection",
+                                    "otherCollectionName": "kept1"
+                                },
+                                "storeMatching": "matching2"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "matching2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Sacrifice"
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Each opponent chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices the rest."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "237",
+            "rarity": "MYTHIC",
+            "artist": "Chris Rallis",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.jpg?1783911238",
+            "rulings": [
+                {
+                    "date": "2024-06-07",
+                    "text": "You can activate one of Ajani, Nacatl Avenger's loyalty abilities the turn he enters the battlefield. However, you may do so only during one of your main phases when the stack is empty. For example, if Ajani, Nacatl Avenger enters the battlefield during combat, there will be an opportunity for your opponent to remove him before you can activate one of his abilities."
+                },
+                {
+                    "date": "2024-06-07",
+                    "text": "You don't choose a target for Ajani, Nacatl Avenger's second ability when you activate it. Rather, if you control a red permanent other than Ajani, Nacatl Avenger, a second \"reflexive\" ability triggers when you create a Cat Warrior creature token this way. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+                },
+                {
+                    "date": "2024-06-07",
+                    "text": "When Ajani, Nacatl Avenger's last ability resolves, starting with the next opponent in turn order, each opponent in turn order chooses permanents they control. Each opponent will know the choices made by players who chose before them. They then sacrifice all of their unchosen nonland permanents simultaneously."
+                },
+                {
+                    "date": "2024-06-07",
+                    "text": "A permanent with more than one type may be chosen as any of its types. For example, an artifact creature may be chosen as the artifact, the creature, or both. Choosing the same permanent twice this way has the same result as choosing it once."
+                },
+                {
+                    "date": "2024-06-07",
+                    "text": "Lands can't be chosen and won't be sacrificed, even if they have any of the types referenced by Ajani, Nacatl Avenger's last ability."
+                },
+                {
+                    "date": "2024-06-07",
+                    "text": "If an opponent doesn't control any permanents of one of the types, they'll still choose the permanents of the types they do control."
+                }
+            ]
+        },
+        "startingLoyalty": 3,
+        "colorIdentityOverride": [
+            "RED",
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "RED",
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rallis",
+        "flavorText": "His pride denied him; his brother did not.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.jpg?1783911238",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "In some rare cases, a spell or ability may cause Ajani, Nacatl Pariah to transform while it's a creature (front face up) on the battlefield. If this happens, Ajani, Nacatl Avenger won't have any loyalty counters on him and will subsequently be put into his owner's graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Amped Raptor
 {
     "name": "Amped Raptor",
@@ -8619,6 +8914,258 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Grist, Voracious Larva
+{
+    "name": "Grist, Voracious Larva",
+    "manaCost": "{G}",
+    "typeLine": "Legendary Creature — Insect",
+    "oracleText": "Deathtouch\nWhenever Grist or another creature you control enters, if it entered from your graveyard or you cast it from your graveyard, you may pay {G}. If you do, exile Grist, then return it to the battlefield transformed under its owner's control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grist, Voracious Larva:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerAnd",
+                            "predicates": [
+                                "ControlledByYou",
+                                "OwnedByYou"
+                            ]
+                        }
+                    },
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{G}"
+                        }
+                    },
+                    "then": "ExileAndReturnTransformed"
+                },
+                "interveningIf": "TriggeringEntityEnteredOrWasCastFromGraveyard",
+                "descriptionOverride": "Whenever Grist or another creature you control enters, if it entered from your graveyard or you cast it from your graveyard, you may pay {G}. If you do, exile Grist, then return it to the battlefield transformed under its owner's control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Grist, the Plague Swarm",
+        "manaCost": "",
+        "typeLine": "Legendary Planeswalker — Grist",
+        "oracleText": "+1: Create a 1/1 black and green Insect creature token, then mill two cards. Put a deathtouch counter on the token if a black card was milled this way.\n−2: Destroy target artifact or enchantment.\n−6: For each creature card in your graveyard, create a token that's a copy of it, except it's a 1/1 black and green Insect.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Grist, the Plague Swarm:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 1
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "BLACK",
+                                    "GREEN"
+                                ],
+                                "creatureTypes": [
+                                    "Insect"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5bc4cb0-60d4-4c8f-a420-8bfe635154cd.jpg?1783911112"
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "isMill": true
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "CollectionContainsMatch",
+                                        "collection": "gathered1",
+                                        "filter": "black"
+                                    }
+                                },
+                                "then": {
+                                    "type": "AddCountersToCollection",
+                                    "collectionName": "createdTokens",
+                                    "counterType": "DEATHTOUCH"
+                                }
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Create a 1/1 black and green Insect creature token, then mill two cards. Put a deathtouch counter on the token if a black card was milled this way."
+                },
+                {
+                    "id": "Grist, the Plague Swarm:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -2
+                    },
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact|enchantment"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Destroy target artifact or enchantment."
+                },
+                {
+                    "id": "Grist, the Plague Swarm:3",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -6
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard",
+                                    "filter": "creature"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "gathered0"
+                                },
+                                "body": {
+                                    "type": "CreateTokenCopyOfTarget",
+                                    "target": "IterationEntity",
+                                    "overridePower": 1,
+                                    "overrideToughness": 1,
+                                    "overrideColors": [
+                                        "BLACK",
+                                        "GREEN"
+                                    ],
+                                    "overrideSubtypes": [
+                                        "Insect"
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "For each creature card in your graveyard, create a token that's a copy of it, except it's a 1/1 black and green Insect."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "251",
+            "rarity": "MYTHIC",
+            "artist": "Chris Rahn",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/8/68239b41-b7db-4044-b672-6808c2c342ec.jpg?1783911227",
+            "rulings": [
+                {
+                    "date": "2024-06-07",
+                    "text": "You can activate one of Grist, the Plague Swarm's loyalty abilities the turn it enters the battlefield. However, you may do so only during one of your main phases when the stack is empty."
+                },
+                {
+                    "date": "2024-06-07",
+                    "text": "Except for the listed exceptions, the tokens created by Grist, the Plague Swarm's last ability copy exactly what was printed on the original cards and nothing else. They don't copy any information about the objects those cards were before they were put into your graveyard."
+                },
+                {
+                    "date": "2024-06-07",
+                    "text": "The tokens are Insects instead of their other creature types, and they're black and green instead of their other colors. These are copiable values of the tokens that other effects may copy."
+                },
+                {
+                    "date": "2024-06-07",
+                    "text": "If any of the copied cards have {X} in their mana costs, {X} is 0."
+                }
+            ]
+        },
+        "startingLoyalty": 3,
+        "colorIdentityOverride": [
+            "BLACK",
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "BLACK",
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "251",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68239b41-b7db-4044-b672-6808c2c342ec.jpg?1783911227",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "In some rare cases, a spell or ability may cause Grist, Voracious Larva to transform while it's a creature (front face up) on the battlefield. If this happens, Grist, the Plague Swarm won't have any loyalty counters on it and will subsequently be put into its owner's graveyard."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If Grist, Voracious Larva leaves the battlefield while its triggered ability is on the stack, you can't exile it from the zone it's put into, so you won't return it to the battlefield transformed under its owner's control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -17775,6 +18322,313 @@
     ]
 }
 
+// Sorin of House Markov
+{
+    "name": "Sorin of House Markov",
+    "manaCost": "{1}{B}",
+    "typeLine": "Legendary Creature — Human Noble",
+    "oracleText": "Lifelink\nExtort (Whenever you cast a spell, you may pay {W/B}. If you do, each opponent loses 1 life and you gain that much life.)\nAt the beginning of each of your postcombat main phases, if you gained 3 or more life this turn, exile Sorin, then return him to the battlefield transformed under his owner's control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sorin of House Markov:1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{W/B}"
+                        }
+                    },
+                    "then": {
+                        "type": "DrainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "Extort (Whenever you cast a spell, you may pay {W/B}. If you do, each opponent loses 1 life and you gain that much life.)"
+            },
+            {
+                "id": "Sorin of House Markov:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "POSTCOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": "ExileAndReturnTransformed",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "At the beginning of each of your postcombat main phases, if you gained 3 or more life this turn, exile Sorin, then return him to the battlefield transformed under his owner's control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Sorin, Ravenous Neonate",
+        "manaCost": "",
+        "typeLine": "Legendary Planeswalker — Sorin",
+        "oracleText": "Extort (Whenever you cast a spell, you may pay {W/B}. If you do, each opponent loses 1 life and you gain that much life.)\n+2: Create a Food token.\n−1: Sorin deals damage equal to the amount of life you gained this turn to any target.\n−6: Gain control of target creature. It becomes a Vampire in addition to its other types. Put a lifelink counter on it if you control a white permanent other than that creature or Sorin.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Sorin, Ravenous Neonate:1",
+                    "trigger": "SpellCastEvent",
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayPay",
+                            "cost": {
+                                "type": "PayManaCost",
+                                "cost": "{W/B}"
+                            }
+                        },
+                        "then": {
+                            "type": "DrainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "descriptionOverride": "Extort (Whenever you cast a spell, you may pay {W/B}. If you do, each opponent loses 1 life and you gain that much life.)"
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "Sorin, Ravenous Neonate:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 2
+                    },
+                    "effect": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Food"
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Create a Food token."
+                },
+                {
+                    "id": "Sorin, Ravenous Neonate:3",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -1
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "LIFE_GAINED"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Sorin deals damage equal to the amount of life you gained this turn to any target."
+                },
+                {
+                    "id": "Sorin, Ravenous Neonate:4",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -6
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GainControl",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            {
+                                "type": "AddCreatureType",
+                                "subtype": "Vampire",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "Any",
+                                        "conditions": [
+                                            {
+                                                "type": "Compare",
+                                                "left": {
+                                                    "type": "AggregateBattlefield",
+                                                    "player": "You",
+                                                    "filter": "permanent white",
+                                                    "excludeSelf": true
+                                                },
+                                                "operator": "GTE",
+                                                "right": {
+                                                    "type": "Fixed",
+                                                    "amount": 2
+                                                }
+                                            },
+                                            {
+                                                "type": "All",
+                                                "conditions": [
+                                                    {
+                                                        "type": "Compare",
+                                                        "left": {
+                                                            "type": "AggregateBattlefield",
+                                                            "player": "You",
+                                                            "filter": "permanent white",
+                                                            "excludeSelf": true
+                                                        },
+                                                        "operator": "GTE",
+                                                        "right": {
+                                                            "type": "Fixed",
+                                                            "amount": 1
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "Not",
+                                                        "condition": {
+                                                            "type": "EntityMatches",
+                                                            "entity": {
+                                                                "type": "BoundVariable",
+                                                                "name": "t1"
+                                                            },
+                                                            "filter": "permanent white ctrl:you"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                "then": {
+                                    "type": "AddCounters",
+                                    "counterType": "LIFELINK",
+                                    "count": 1,
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Gain control of target creature. It becomes a Vampire in addition to its other types. Put a lifelink counter on it if you control a white permanent other than that creature or Sorin."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "245",
+            "rarity": "MYTHIC",
+            "artist": "Matt Stewart",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/d/1d7474fc-0042-4be9-81f3-5f66f4b16740.jpg?1783911233",
+            "rulings": [
+                {
+                    "date": "2024-06-07",
+                    "text": "You can activate one of Sorin, Ravenous Neonate's loyalty abilities the turn he enters the battlefield. However, you may do so only during one of your main phases when the stack is empty."
+                },
+                {
+                    "date": "2024-06-07",
+                    "text": "Sorin, Ravenous Neonate's second loyalty ability counts the total amount of life you gained without taking into account any life you lost during that turn. For example, if you gained 3 life and lost 3 life earlier in the turn, Sorin, Ravenous Neonate will deal 3 damage to the target."
+                },
+                {
+                    "date": "2024-06-07",
+                    "text": "The control effect created by Sorin, Ravenous Neonate's last ability lasts indefinitely. It doesn't wear off during the cleanup step or if Sorin, Ravenous Neonate leaves the battlefield."
+                }
+            ]
+        },
+        "startingLoyalty": 3,
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "245",
+        "rarity": "MYTHIC",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d7474fc-0042-4be9-81f3-5f66f4b16740.jpg?1783911233",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "In some rare cases, a spell or ability may cause Sorin of House Markov to transform while he's a creature (front face up) on the battlefield. If this happens, Sorin, Ravenous Neonate won't have any loyalty counters on him and will subsequently be put into his owner's graveyard."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Sorin of House Markov doesn't need to have been on the battlefield when you gained the life. For example, if you gained 3 or more life during your upkeep and you cast Sorin of House Markov during your first main phase, its last ability will trigger at the beginning of your postcombat main phase."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Sorin of House Markov's last ability will trigger only once during your postcombat main phase, no matter how much life you gained this turn. However, if you haven't gained life so far this turn as your postcombat main phase begins, the ability won't trigger at all. It's not possible to gain life during your postcombat main phase in time for the ability to trigger."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "You may pay {W/B} a maximum of one time for each extort triggered ability. You decide whether to pay when the ability resolves."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "The amount of life you gain from extort is based on the total amount of life lost, not necessarily the number of opponents you have. For example, if your opponent's life total can't change (perhaps because that player controls Platinum Emperion), you won't gain any life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Sowing Mycospawn
 {
     "name": "Sowing Mycospawn",
@@ -18926,6 +19780,362 @@
     "layout": "MODAL_DFC"
 }
 
+// Tamiyo Meets the Story Circle
+{
+    "name": "Tamiyo Meets the Story Circle",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Until your next turn, whenever a creature attacks you or a planeswalker you control, it gets -2/-0 until end of turn.\nII — Discard any number of cards, then investigate twice for each card discarded this way.\nIII — Shuffle up to three target cards from your graveyard into your library.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "TriggeringEntity"
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "AttackEvent",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsAttackingYouOrYourPlaneswalkers"
+                                ]
+                            }
+                        },
+                        "binding": "ANY"
+                    },
+                    "expiry": "DelayedTriggerExpiry.UntilControllersNextTurn"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "stored0_candidates"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "stored0_candidates",
+                                    "selection": "ChooseAnyNumber",
+                                    "storeSelected": "stored0",
+                                    "prompt": "Choose any number of cards to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "stored0",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Investigate",
+                            "count": {
+                                "type": "Multiply",
+                                "amount": {
+                                    "type": "VariableReference",
+                                    "variableName": "stored0_count"
+                                },
+                                "multiplier": 2
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": "IterationSpace.Targets",
+                            "body": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "destination": "Library"
+                            }
+                        },
+                        "ShuffleLibrary"
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 3,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "UNCOMMON",
+        "artist": "Xabi Gaztelua",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee66a06e-a461-46af-a318-550bc35de5d0.jpg?1783911287",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If you're instructed to investigate multiple times, those actions are sequential, meaning you'll create that many Clue tokens one at a time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Tamiyo, Inquisitive Student
+{
+    "name": "Tamiyo, Inquisitive Student",
+    "manaCost": "{U}",
+    "typeLine": "Legendary Creature — Moonfolk Wizard",
+    "oracleText": "Flying\nWhenever Tamiyo attacks, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\nWhen you draw your third card in a turn, exile Tamiyo, then return her to the battlefield transformed under her owner's control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tamiyo, Inquisitive Student:1",
+                "trigger": "AttackEvent",
+                "effect": "Investigate"
+            },
+            {
+                "id": "Tamiyo, Inquisitive Student:2",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 3
+                },
+                "binding": "ANY",
+                "effect": "ExileAndReturnTransformed",
+                "descriptionOverride": "When you draw your third card in a turn, exile Tamiyo, then return her to the battlefield transformed under her owner's control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Tamiyo, Seasoned Scholar",
+        "manaCost": "",
+        "typeLine": "Legendary Planeswalker — Tamiyo",
+        "oracleText": "+2: Until your next turn, whenever a creature attacks you or a planeswalker you control, it gets -1/-0 until end of turn.\n−3: Return target instant or sorcery card from your graveyard to your hand. If it's a green card, add one mana of any color.\n−7: Draw cards equal to half the number of cards in your library, rounded up. You get an emblem with \"You have no maximum hand size.\"",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Tamiyo, Seasoned Scholar:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 2
+                    },
+                    "effect": {
+                        "type": "CreateDelayedTrigger",
+                        "effect": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "TriggeringEntity"
+                        },
+                        "trigger": {
+                            "event": {
+                                "type": "AttackEvent",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsAttackingYouOrYourPlaneswalkers"
+                                    ]
+                                }
+                            },
+                            "binding": "ANY"
+                        },
+                        "expiry": "DelayedTriggerExpiry.UntilControllersNextTurn"
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Until your next turn, whenever a creature attacks you or a planeswalker you control, it gets -1/-0 until end of turn."
+                },
+                {
+                    "id": "Tamiyo, Seasoned Scholar:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -3
+                    },
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "filter": "green"
+                            }
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "MoveToZone",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "destination": "Hand"
+                                },
+                                "AddManaOfChoice"
+                            ]
+                        },
+                        "otherwise": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "instant|sorcery own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Return target instant or sorcery card from your graveyard to your hand. If it's a green card, add one mana of any color."
+                },
+                {
+                    "id": "Tamiyo, Seasoned Scholar:3",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -7
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Divide",
+                                    "numerator": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Library"
+                                    },
+                                    "denominator": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                }
+                            },
+                            "RemoveMaximumHandSize",
+                            {
+                                "type": "CreatePermanentEmblem",
+                                "emblemDescription": "You have no maximum hand size."
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Draw cards equal to half the number of cards in your library, rounded up. You get an emblem with \"You have no maximum hand size.\""
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "242",
+            "rarity": "MYTHIC",
+            "artist": "Magali Villeneuve",
+            "imageUri": "https://cards.scryfall.io/normal/back/2/a/2a717b98-cdac-416d-bf6c-f6b6638e65d1.jpg?1783911236",
+            "rulings": [
+                {
+                    "date": "2024-06-07",
+                    "text": "You can activate one of Tamiyo, Seasoned Scholar's loyalty abilities the turn she enters the battlefield. However, you may do so only during one of your main phases when the stack is empty. For example, if Tamiyo, Seasoned Scholar enters the battlefield during combat, there will be an opportunity for your opponent to remove her before you can activate one of her abilities."
+                },
+                {
+                    "date": "2024-06-07",
+                    "text": "If multiple effects modify your hand size, apply them in timestamp order. For example, if you put Necrodominance (an enchantment that says your maximum hand size is five) onto the battlefield and then activate Tamiyo, Seasoned Scholar's last ability, you'll have no maximum hand size. However, if the emblem from Tamiyo, Seasoned Scholar's last ability was created before you put Necrodominance onto the battlefield, your maximum hand size would be five."
+                }
+            ]
+        },
+        "startingLoyalty": 2,
+        "colorIdentityOverride": [
+            "BLUE",
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "BLUE",
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a717b98-cdac-416d-bf6c-f6b6638e65d1.jpg?1783911236",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "In some rare cases, a spell or ability may cause Tamiyo, Inquisitive Student to transform while she's a creature (front face up) on the battlefield. If this happens, Tamiyo, Seasoned Scholar won't have any loyalty counters on her and will subsequently be put into her owner's graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "GREEN"
+    ]
+}
+
 // Temperamental Oozewagg
 {
     "name": "Temperamental Oozewagg",
@@ -19217,6 +20427,470 @@
             {
                 "date": "2024-06-07",
                 "text": "You don't have to reveal the card even if it's a creature card. You may leave it on top of your library or put it into your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// The Creation of Avacyn
+{
+    "name": "The Creation of Avacyn",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Search your library for a card, exile it face down, then shuffle.\nII — Turn the exiled card face up. If it's a creature card, you lose life equal to its mana value.\nIII — You may put the exiled card onto the battlefield if it's a creature card. If you don't put it onto the battlefield, put it into its owner's hand.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library"
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Search your library for a card to exile face down"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true,
+                            "faceDown": "HIDDEN"
+                        },
+                        "ShuffleLibrary"
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "gathered0"
+                            },
+                            "body": {
+                                "type": "TurnFaceUp",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "gathered0",
+                            "ifNotEmpty": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "ManaValueSumOfCollection",
+                                    "collectionName": "gathered0"
+                                },
+                                "target": "Controller"
+                            },
+                            "filter": "creature"
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "gathered0",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "gathered0",
+                                        "filter": "permanent",
+                                        "storeMatching": "matching2"
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.MayDecide",
+                                            "prompt": "Put the exiled card onto the battlefield?"
+                                        },
+                                        "then": {
+                                            "type": "Composite",
+                                            "effects": [
+                                                {
+                                                    "type": "MoveCollection",
+                                                    "from": "matching2",
+                                                    "destination": {
+                                                        "type": "ToZone",
+                                                        "zone": "Battlefield"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            "filter": "creature"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Exile"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching5"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching5",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "UNCOMMON",
+        "artist": "Franz Vohwinkel",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27d701aa-df93-4f0e-b1e3-d081487eb456.jpg?1783911283",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Each The Creation of Avacyn you control has its own set of face-down exiled cards. (In most cases, this set of cards will contain just one card.) The Creation of Avacyn's second and third chapter abilities refer only to those cards, not those of any other The Creation of Avacyn."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "In the unusual case where two or more cards are exiled face down with The Creation of Avacyn's first chapter ability (likely because the triggered ability was copied or the ability triggered a second time), the second chapter ability will turn all of the exiled cards face up. If at least one of them is a creature card, you'll lose life equal to the combined mana value of all the exiled cards."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "In the unusual case where two or more cards are exiled face down with The Creation of Avacyn's first ability when the third chapter ability resolves, if at least one of the exiled cards is a creature card, you may choose to put all or none of the exiled cards that are permanent cards onto the battlefield. Regardless of what you choose, any remaining exiled cards will be put into their owners' hands."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// The Hunger Tide Rises
+{
+    "name": "The Hunger Tide Rises",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after IV.)\nI, II, III — Create a 1/1 black and green Insect creature token.\nIV — Sacrifice any number of creatures. Search your library and/or graveyard for a creature card with mana value less than or equal to the number of creatures sacrificed this way and put it onto the battlefield. If you search your library this way, shuffle.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK",
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Insect"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5bc4cb0-60d4-4c8f-a420-8bfe635154cd.jpg?1783911112"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK",
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Insect"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5bc4cb0-60d4-4c8f-a420-8bfe635154cd.jpg?1783911112"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK",
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Insect"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5bc4cb0-60d4-4c8f-a420-8bfe635154cd.jpg?1783911112"
+                }
+            },
+            {
+                "chapter": 4,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature",
+                                "player": "You"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Choose any number of creatures to sacrifice",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Sacrifice",
+                            "storeMovedAs": "moved2"
+                        },
+                        {
+                            "type": "StoreNumber",
+                            "name": "number3",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "moved2_count"
+                            }
+                        },
+                        {
+                            "type": "Modal",
+                            "modes": [
+                                {
+                                    "effect": {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromMultipleZones",
+                                                    "zones": [
+                                                        "Library"
+                                                    ],
+                                                    "filter": {
+                                                        "cardPredicates": [
+                                                            "IsCreature",
+                                                            {
+                                                                "type": "ManaValueAtMostDynamic",
+                                                                "amount": {
+                                                                    "type": "VariableReference",
+                                                                    "variableName": "number3"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "storeAs": "searchable",
+                                                "search": true
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "searchable",
+                                                "selection": {
+                                                    "type": "ChooseUpTo",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "found"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "found",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Battlefield"
+                                                }
+                                            },
+                                            "ShuffleLibrary",
+                                            "EmitLibrarySearchedEvent"
+                                        ]
+                                    },
+                                    "description": "Search your library"
+                                },
+                                {
+                                    "effect": {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromMultipleZones",
+                                                    "zones": [
+                                                        "Graveyard"
+                                                    ],
+                                                    "filter": {
+                                                        "cardPredicates": [
+                                                            "IsCreature",
+                                                            {
+                                                                "type": "ManaValueAtMostDynamic",
+                                                                "amount": {
+                                                                    "type": "VariableReference",
+                                                                    "variableName": "number3"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "storeAs": "searchable"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "searchable",
+                                                "selection": {
+                                                    "type": "ChooseUpTo",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "found"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "found",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Battlefield"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "description": "Search your graveyard"
+                                },
+                                {
+                                    "effect": {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromMultipleZones",
+                                                    "zones": [
+                                                        "Library",
+                                                        "Graveyard"
+                                                    ],
+                                                    "filter": {
+                                                        "cardPredicates": [
+                                                            "IsCreature",
+                                                            {
+                                                                "type": "ManaValueAtMostDynamic",
+                                                                "amount": {
+                                                                    "type": "VariableReference",
+                                                                    "variableName": "number3"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "storeAs": "searchable",
+                                                "search": true
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "searchable",
+                                                "selection": {
+                                                    "type": "ChooseUpTo",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "found"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "found",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Battlefield"
+                                                }
+                                            },
+                                            "ShuffleLibrary",
+                                            "EmitLibrarySearchedEvent"
+                                        ]
+                                    },
+                                    "description": "Search your library and graveyard"
+                                }
+                            ],
+                            "countsAsModalSpell": false
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "UNCOMMON",
+        "artist": "Liiga Smilshkalne",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b44f01b-17e8-4d49-8f38-fd1128114b2f.jpg?1783911260",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If a card in a player's library has {X} in its mana cost, X is 0 when determining its mana value."
             }
         ]
     },
