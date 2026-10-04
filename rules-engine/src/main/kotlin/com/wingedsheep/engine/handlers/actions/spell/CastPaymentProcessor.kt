@@ -10,6 +10,8 @@ import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
 import com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor
+import com.wingedsheep.engine.mechanics.mana.ScopedManaPlanResult
+import com.wingedsheep.engine.mechanics.mana.ScopedManaSearchLimit
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.activeManaSpendingScope
@@ -164,15 +166,26 @@ class CastPaymentProcessor(
             val excluded = if (chosen == null) emptySet() else state.getBattlefield().filter { it !in chosen }.toSet()
             val plan = manaSolver.planScopedActivations(state, action.playerId, manaCost, spellContext,
                 xValue * manaCost.xCount.coerceAtLeast(1), xManaRestriction, excluded, reservedLife = lifeToPay)
-            if (plan == null) {
-                // A standalone solver without an execution provider still supports floating payments.
+            fun floatingOrFailure(message: String): PaymentResult =
                 payFromPool(state, action.playerId, manaCost, cardName, xValue, spellContext, xManaRestriction)
-                    .let { if (it.error == null) it else it.copy(error = "No exact scoped activation allocation available") }
-            } else {
-                productionState = plan.state
-                val paid = payFromPool(plan.state, action.playerId, manaCost, cardName, xValue, spellContext, xManaRestriction)
-                if (paid.error != null) PaymentResult(state, emptyList(), paid.error)
-                else paid.copy(events = plan.events + paid.events)
+                    .let { if (it.error == null) it else it.copy(error = message) }
+            when (plan) {
+                ScopedManaPlanResult.Impossible -> PaymentResult(state, emptyList(),
+                    "No exact scoped activation allocation available")
+                is ScopedManaPlanResult.Unknown -> {
+                    val message = "Automatic mana payment could not determine whether this cost can be paid"
+                    // Only a standalone solver needs this fallback; a paused production pool
+                    // must not bypass the execution planner's incomplete-production boundary.
+                    if (plan.reasons == setOf(ScopedManaSearchLimit.NO_EXECUTION_PROVIDER)) floatingOrFailure(message)
+                    else PaymentResult(state, emptyList(), message)
+                }
+                is ScopedManaPlanResult.Found -> {
+                    productionState = plan.execution.state
+                    val paid = payFromPool(plan.execution.state, action.playerId, manaCost, cardName, xValue,
+                        spellContext, xManaRestriction)
+                    if (paid.error != null) PaymentResult(state, emptyList(), paid.error)
+                    else paid.copy(events = plan.execution.events + paid.events)
+                }
             }
         } else when (action.paymentStrategy) {
             is PaymentStrategy.FromPool -> payFromPool(state, action.playerId, manaCost, cardName, xValue, spellContext, xManaRestriction)

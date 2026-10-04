@@ -16308,7 +16308,7 @@ Shared-turn teams follow the existing player-control team rule. A later resoluti
 and a completed window reveals the underlying turn control again. Session hotseat routing keeps precedence.
 
 This primitive composes with `Effects.ForcePlay` for mandatory paid card play. Word of Command
-still needs activation-cost choices, search uncertainty and recoverable payment (G47); it is not yet authorable faithfully.
+still needs activation-cost choices and recoverable payment (G48); it is not yet authorable faithfully.
 
 ### Scoped mana-ability sources
 
@@ -16419,11 +16419,22 @@ scopes intact while automatic production frames resume above them. Successful pr
 the caller's original suspension and priority; speculative choices and events from failed branches
 never escape. Unsupported questions remain outside the proof boundary. Search
 visits shorter activation plans first and bounds both admitted prefixes and queued states to 256 per
-query; exhaustion declines a proof. The face-down public-board
+query. `ScopedManaPlanResult` distinguishes `Found` (the complete immutable execution),
+`Impossible` (all supported branches exhausted without omitted work or unsupported candidates), and `Unknown`
+(with explicit reasons for budget limits, unsupported activations/decisions, hidden boards, incomplete
+continuations or execution failures). Reaching the budget alone is not exhaustion: a complete last
+node still succeeds, and a terminal node with no legal successors can still prove impossibility.
+A successful branch dominates uncertainty recorded on other branches. Complete existing floating
+payment is checked before the hidden-board and zero-budget boundaries. The boolean affordability
+API accepts only `Found`; automatic/explicit payment reports an unknown result separately from an
+impossible allocation and publishes no speculative events or state. An absent execution provider
+is also unknown. Unsupported candidates remain conservative even when their affordability preview
+is false; granted player mana actions are outside this planner's supported activation shape. A paused
+production frame is unknown before checking its partially produced pool. The face-down public-board
 boundary remains uniform, while complete existing floating payments still work. Intermediate ability
 affordability keeps the independent proof and actual intermediate payment uses the floating pool.
 The standalone solver's independent proof remains available when no engine execution provider exists.
 
-G47 must supply activation-cost choices, explicit search uncertainty and atomic recovery from
+G48 must supply activation-cost choices and atomic recovery from
 zero-output or excess manual activations before a printed card uses this wrapper. Word of Command remains blocked; no incomplete
 canonical is registered. The new planner adds no SDK type, decision, client field or serialization shape.

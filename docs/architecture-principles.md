@@ -1227,11 +1227,16 @@ node budget includes each color or split-number answer, not just activation pref
 continuation drain finishes the entire activation and triggered tap bonuses while preserving
 enclosing scopes and caller work below the activation's continuation floor. The caller suspension
 and priority are restored after a complete production proof; partial production and failed branch
-events never publish. Search still declines after 256 admitted states. No replay, event, decision
+events never publish. Search admits at most 256 states and returns a complete execution, an
+exhaustive impossibility proof, or explicit uncertainty. It records omitted eligible work and
+unsupported execution boundaries; merely reaching the budget does not invalidate a completed
+last node or a terminal impossibility proof. Any successful branch wins over uncertain alternatives.
+Boolean affordability accepts only a complete proof, while payment errors distinguish unknown
+feasibility from impossibility without publishing speculative state or events. No replay, event, decision
 or client contract is added. Standalone
 solvers and intermediate-ability affordability retain the independent fixed-output proof. Face-down
 boards retain a uniform source-proof boundary because legacy enumeration inspects hidden printed
-statics; complete floating payments still work. Activation-cost choices, explicit search uncertainty
+statics; complete floating payments still work. Activation-cost choices
 and atomic manual-overactivation recovery remain required before a printed card uses the foundation.
 
 **Tier 3: Cost Execution (Engine).** The `CostHandler` physically pays costs — tapping permanents,

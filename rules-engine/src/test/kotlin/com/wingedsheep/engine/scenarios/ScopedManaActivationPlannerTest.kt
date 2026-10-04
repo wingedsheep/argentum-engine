@@ -288,7 +288,7 @@ class ScopedManaActivationPlannerTest : FunSpec({
         val d = driver(); val p = d.activePlayer!!
         d.putLandOnBattlefield(p, "Forest")
         val s = scoped(d)
-        ScopedManaActivationPlanner(d.services, nodeLimit = 1).plan(s, p, ManaCost.parse("{G}"), context) shouldBe null
+        ScopedManaActivationPlanner(d.services, nodeLimit = 1).plan(s, p, ManaCost.parse("{G}"), context) shouldBe ScopedManaPlanResult.Unknown(setOf(ScopedManaSearchLimit.NODE_BUDGET))
         s.remainingManaObligations(p) shouldBe false
     }
 })

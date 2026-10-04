@@ -2053,8 +2053,13 @@ class ManaSolver(
     fun planScopedActivations(state: GameState, player: EntityId, cost: ManaCost,
         context: SpellPaymentContext?, xAmount: Int, xColors: Set<Color>, excludeSources: Set<EntityId> = emptySet(),
         reservedLife: Int = 0
-    ): com.wingedsheep.engine.core.ExecutionResult? =
-        scopedPlanner?.invoke()?.plan(state, player, cost, context, xAmount, xColors, excludeSources, reservedLife)
+    ): ScopedManaPlanResult {
+        if (state.continuationStack.any {
+                it is com.wingedsheep.engine.core.ScopedManaProductionContinuation && it.playerId == player
+            }) return ScopedManaPlanResult.Unknown(setOf(ScopedManaSearchLimit.CONTINUATION_BOUNDARY))
+        return scopedPlanner?.invoke()?.plan(state, player, cost, context, xAmount, xColors, excludeSources, reservedLife)
+            ?: ScopedManaPlanResult.Unknown(setOf(ScopedManaSearchLimit.NO_EXECUTION_PROVIDER))
+    }
 
     private fun independentTapEnvironment(state: GameState, playerId: EntityId): Boolean {
         // Tapping can change another source's abilities, costs or eligible production. Such
@@ -2658,6 +2663,9 @@ class ManaSolver(
 
         val spendingScope = state.activeManaSpendingScope(playerId)
         if (spendingScope != null) {
+            if (spellContext?.isAbilityActivation != true && state.continuationStack.any {
+                    it is com.wingedsheep.engine.core.ScopedManaProductionContinuation && it.playerId == playerId
+                }) return false
             val pending = if (spellContext?.isAbilityActivation == true) emptySet() else state.continuationStack
                 .filterIsInstance<ManaSpendingObligationsContinuation>()
                 .filter { it.playerId == playerId }.flatMap { it.pendingIds }.toSet()
@@ -2667,7 +2675,7 @@ class ManaSolver(
             if (spellContext?.isAbilityActivation != true && scopedPlanner != null) {
                 return scopedPlanner.invoke().plan(state, playerId, cost, spellContext,
                     xValue * cost.xCount.coerceAtLeast(1), xManaRestriction, excludeSources,
-                    reservedLife = phyrexianLifePipsCommitted * 2) != null
+                    reservedLife = phyrexianLifePipsCommitted * 2) is ScopedManaPlanResult.Found
             }
             val sources = if (independentTapEnvironment(state, playerId))
                 findAvailableManaSources(state, playerId, spellContext).filter {
