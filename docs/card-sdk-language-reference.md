@@ -16271,7 +16271,7 @@ Shared-turn teams follow the existing player-control team rule. A later resoluti
 and a completed window reveals the underlying turn control again. Session hotseat routing keeps precedence.
 
 This primitive composes with `Effects.ForcePlay` for mandatory paid card play. Word of Command
-still needs feasible activated-source plans and recoverable payment (G44); it is not yet authorable faithfully.
+still needs resumable activation choices and recoverable payment (G45); it is not yet authorable faithfully.
 
 ### Scoped mana-ability sources
 
@@ -16308,8 +16308,8 @@ outstanding identities. Standard mana-production and mana-spending events contin
 visible changes. No client field or new decision is introduced.
 
 **This is a foundation, not yet a complete forced-play payment policy.** Scoped casts and
-activations currently accept floating-pool payments; solver-dependent production returns an explicit
-unsupported error rather than claiming an unproved allocation. Multipart and dynamic activated
+activations accept floating-pool payments. Scoped spell automatic and explicit payment can also
+execute a complete deterministic tap-chain plan through the real activation handler. Multipart and dynamic activated
 production now share one serialized completion boundary: all fixed, split and pip-by-pip output
 receives one activation identity after the final part, before separate triggered tap bonuses.
 Source/snow metadata is captured before production; part choices do not finish the tap pipeline.
@@ -16349,9 +16349,26 @@ and X-spend records report actual colors. Nested mana-ability payments use the s
 settle the prior activations they consume, without requiring every outstanding activation to
 contribute to that intermediate payment.
 
-This does not establish forward activation legality or provide recovery from an earlier manual
-overactivation. G44 must supply execution-backed activation planning through mana chains, bonus-dependent
-production and recovery from zero-output or excess manual activations before a printed card uses
-this wrapper. Independent feasibility is a read-only proof, not an automatic activation payment
-plan. Scoped payment execution remains pool-only. Word of Command remains blocked; no incomplete
-canonical is registered.
+The engine service graph now supplies `ScopedManaActivationPlanner` for final spell affordability
+and automatic/explicit payment. It executes candidate activations on immutable states and feeds the
+resulting exact floating entries into the existing complete allocator. Each prefix re-enumerates
+mana abilities and validates their projected eligibility. Paid tap chains can discharge a feeder's
+identity on the next ability's mana cost; fixed triggered tap bonuses remain separate from the
+base activation. Final payment settles every containing scope. Automatic and explicit payment use
+the same successful production state and publish only that branch's real activation/production events,
+then the spell's spending event. Explicit selection excludes unselected sources at every chain link.
+No hypothetical event or tap is published when planning fails. Context-free exact allocations accept
+`AnySpend` tagged entries while preserving other restricted entries as ineligible. Actual restrictions, riders, snow,
+source provenance and excess survive production and payment. Existing unscoped payment is unchanged.
+
+This planner uses each source once, with only a tap cost or tap plus fixed mana costs, and direct
+fixed/dynamic-amount colored, colorless, chosen-color or composite mana effects. It declines X activation
+choices, other cost atoms, non-mana effect leaves, and any production or bonus that pauses. Search
+is limited to 256 prefixes per query; exhaustion declines a proof. The face-down public-board
+boundary remains uniform, while complete existing floating payments still work. Intermediate ability
+affordability keeps the independent proof and actual intermediate payment uses the floating pool.
+The standalone solver's independent proof remains available when no engine execution provider exists.
+
+G45 must supply resumable activation-choice planning and recovery from zero-output or excess manual
+activations before a printed card uses this wrapper. Word of Command remains blocked; no incomplete
+canonical is registered. The new planner adds no SDK type, decision, client field or serialization shape.

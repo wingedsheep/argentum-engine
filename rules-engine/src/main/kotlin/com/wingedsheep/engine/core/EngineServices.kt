@@ -124,7 +124,10 @@ class EngineServices(
         spliceTargetValidator = targetValidator
     )
     val triggerProcessor = TriggerProcessor(cardRegistry = cardRegistry, stackResolver = stackResolver, amountEvaluator = dynamicAmountEvaluator, targetFinder = targetFinder)
-    val manaSolver = ManaSolver(cardRegistry, predicateEvaluator)
+    val manaSolver = ManaSolver(cardRegistry, predicateEvaluator, scopedPlanner = { scopedManaActivationPlanner })
+    private val scopedManaActivationPlanner by lazy {
+        com.wingedsheep.engine.mechanics.mana.ScopedManaActivationPlanner(this)
+    }
     val costCalculator = CostCalculator(cardRegistry, predicateEvaluator)
     val grantedKeywordResolver = GrantedKeywordResolver(cardRegistry)
     val alternativePaymentHandler = AlternativePaymentHandler(grantedKeywordResolver)

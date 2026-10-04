@@ -116,7 +116,7 @@ class ScopedManaAffordabilityTest : FunSpec({
         canPay(d, "{G}") shouldBe false
     }
 
-    test("compound production stays outside the independent proof") {
+    test("execution-backed affordability proves compound production") {
         val d = driver(); val p = d.activePlayer!!
         val source = card("Independent Compound Mana") {
             typeLine = "Land"
@@ -129,7 +129,7 @@ class ScopedManaAffordabilityTest : FunSpec({
         d.registerCards(listOf(source)); d.putLandOnBattlefield(p, source.name)
         d.services.manaSolver.canPay(d.state, p, ManaCost.parse("{G}"), spellContext = context) shouldBe true
         scope(d)
-        canPay(d, "{G}") shouldBe false
+        canPay(d, "{G}") shouldBe true
     }
 
     test("tap-dependent continuous effects require execution-backed planning") {
@@ -147,13 +147,13 @@ class ScopedManaAffordabilityTest : FunSpec({
         d.giveMana(p, Color.GREEN, 2)
         canPay(d, "{G}{G}") shouldBe true
     }
-    test("stateful source filters are not assumed invariant after hypothetical taps") {
+    test("execution checks an untapped source filter before paying its tap cost") {
         val d = driver(); val p = d.activePlayer!!
         d.putLandOnBattlefield(p, "Forest"); scope(d)
         d.replaceState(d.state.pushContinuation(com.wingedsheep.engine.core.ManaAbilitySourcesContinuation(
             p, com.wingedsheep.sdk.scripting.GameObjectFilter.Land.untapped(),
             EffectContext(sourceId = null, controllerId = p))))
-        canPay(d, "{G}") shouldBe false
+        canPay(d, "{G}") shouldBe true
         d.giveMana(p, Color.GREEN, 1)
         canPay(d, "{G}") shouldBe true
     }

@@ -3,6 +3,7 @@ package com.wingedsheep.engine.mechanics.mana
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
+import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 
 /** An entire pool payment: fixed pips and X compete for the same exact units. */
 internal data class FloatingManaAllocation(
@@ -22,7 +23,8 @@ internal fun ManaPool.allocateFloating(
     xAmount: Int = 0,
     xColors: Set<Color> = emptySet(),
 ): FloatingManaAllocation? {
-    val available = total + if (context == null) 0 else getTotalEligibleRestricted(context)
+    val available = total + if (context == null) restrictedMana.count { it.restriction == ManaRestriction.AnySpend }
+        else getTotalEligibleRestricted(context)
     if (xAmount > available) return null
     val fixed = cost.symbols.filter { it !is ManaSymbol.X && it !is ManaSymbol.MonocolorHybrid }
     val hybrids = cost.symbols.filterIsInstance<ManaSymbol.MonocolorHybrid>().groupingBy { it }.eachCount()
@@ -72,8 +74,10 @@ private fun ManaPool.matchFloating(
     xColors: Set<Color>,
 ): FloatingManaAllocation? {
     val units = buildList {
-        if (context != null) restrictedMana.forEachIndexed { index, entry ->
-            if (entry.restriction.isSatisfiedBy(context)) add(PoolUnits(entry.color,
+        restrictedMana.forEachIndexed { index, entry ->
+            val eligible = if (context == null) entry.restriction == ManaRestriction.AnySpend
+                else entry.restriction.isSatisfiedBy(context)
+            if (eligible) add(PoolUnits(entry.color,
                 entry.source?.isSnow == true, 1, index, entry.obligationIds - dischargedObligations))
         }
         for (color in Color.entries.map { it as Color? } + null) {

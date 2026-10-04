@@ -158,17 +158,22 @@ class CastPaymentProcessor(
         val manaCost = effectiveCost.withPhyrexianPaidByLife(lifePayments)
             ?: return PaymentResult(state, emptyList(), "Invalid Phyrexian mana payment")
         val scoped = state.activeManaSpendingScope(action.playerId) != null
-        if (scoped && (action.paymentStrategy as? PaymentStrategy.Explicit)?.manaAbilitiesToActivate?.isNotEmpty() == true) {
-            return PaymentResult(state, emptyList(), "Exact explicit mana allocation is not supported in this scope")
-        }
+        var productionState = state
         val rawManaResult = if (scoped && action.paymentStrategy !is PaymentStrategy.FromPool) {
-            // A solver solution currently carries aggregate production, rather than exact units
-            // allocated to the spell and intermediate activations. Until that plan is available,
-            // scoped payments can use already-floating mana but must not auto-activate sources.
-            val fromPool = payFromPool(state, action.playerId, manaCost, cardName, xValue, spellContext, xManaRestriction)
-            if (fromPool.error != null) fromPool.copy(error =
-                "Scoped mana payment requires exact activated-source allocation; use floating mana")
-            else fromPool
+            val chosen = (action.paymentStrategy as? PaymentStrategy.Explicit)?.manaAbilitiesToActivate?.toSet()
+            val excluded = if (chosen == null) emptySet() else state.getBattlefield().filter { it !in chosen }.toSet()
+            val plan = manaSolver.planScopedActivations(state, action.playerId, manaCost, spellContext,
+                xValue * manaCost.xCount.coerceAtLeast(1), xManaRestriction, excluded)
+            if (plan == null) {
+                // A standalone solver without an execution provider still supports floating payments.
+                payFromPool(state, action.playerId, manaCost, cardName, xValue, spellContext, xManaRestriction)
+                    .let { if (it.error == null) it else it.copy(error = "No exact scoped activation allocation available") }
+            } else {
+                productionState = plan.state
+                val paid = payFromPool(plan.state, action.playerId, manaCost, cardName, xValue, spellContext, xManaRestriction)
+                if (paid.error != null) PaymentResult(state, emptyList(), paid.error)
+                else paid.copy(events = plan.events + paid.events)
+            }
         } else when (action.paymentStrategy) {
             is PaymentStrategy.FromPool -> payFromPool(state, action.playerId, manaCost, cardName, xValue, spellContext, xManaRestriction)
             is PaymentStrategy.AutoPay -> autoPay(state, action.playerId, manaCost, cardName, xValue, spellContext, xManaRestriction = xManaRestriction)
@@ -185,7 +190,7 @@ class CastPaymentProcessor(
         }
         if (rawManaResult.error != null) return rawManaResult
         val manaResult = if (scoped) {
-            val before = state.getEntity(action.playerId)?.get<ManaPoolComponent>()?.restrictedMana.orEmpty()
+            val before = productionState.getEntity(action.playerId)?.get<ManaPoolComponent>()?.restrictedMana.orEmpty()
             val after = rawManaResult.state.getEntity(action.playerId)?.get<ManaPoolComponent>()?.restrictedMana.orEmpty()
             val settled = settleManaObligationPayment(rawManaResult.state, action.playerId, before, after)
             if (settled.remainingManaObligations(action.playerId)) {

@@ -1211,19 +1211,19 @@ or a color needed by X. Unrestricted snow/plain units use separate capacity buck
 expanding a large pool into individual nodes. Repeated mono-hybrid symbols enumerate count splits,
 with equal contribution coverage preferring the smaller payment. Ordinary untagged payments keep
 their existing fast path. The immutable scope frames and entries serialize together, and empty identity fields are omitted
-from older replay shapes. Current scope payments are pool-only: aggregate solver production cannot
-prove an allocation through mana chains, so that path explicitly refuses until the allocation
-planner is implemented. Scoped affordability now routes independent fixed-output tap sources
-through exact hypothetical activation entries. Final spell payment requires every selected and
-already-outstanding identity to contribute; intermediate ability payments may leave prior identities
-for later payments. It never reuses aggregate affordability after an unsatisfied floating
-payment. Memoized subset search and a remaining-production upper bound prune impossible
-contributions at each prefix without mutating game state. Independent planning excludes
-stateful source predicates and boards with unclassified continuous/static dependencies. Face-down
-boards have a uniform source-proof boundary because legacy production previews inspect some hidden
-printed statics; complete floating payments remain valid. Conditional, compound, dynamic and paid activations, mana chains,
-triggered bonus-dependent plans and manual recovery still require execution-backed planning. A
-printed card must not use the foundation before that gap is closed.
+from older replay shapes. The engine service graph supplies a bounded execution-backed planner
+for scoped final-spell affordability and automatic/explicit payment. It searches immutable results
+from the existing activation handler, re-enumerates projected legal mana abilities after each prefix,
+and proves exact contribution coverage before publishing any state or event. Deterministic tap
+chains pay intermediate costs from the pool and settle feeder identities; fixed triggered tap bonuses
+keep separate provenance. The final spell allocator consumes the chosen production state and settles
+all scopes. Explicit source selections exclude other sources throughout the chain. Search uses each
+source once, allows tap or tap-plus-fixed-mana costs and mana-only effect trees, and declines production
+pauses or more than 256 prefixes. No replay, event, decision or client contract is added. Standalone
+solvers and intermediate-ability affordability retain the independent fixed-output proof. Face-down
+boards retain a uniform source-proof boundary because legacy enumeration inspects hidden printed
+statics; complete floating payments still work. Resumable choice planning and manual overactivation
+recovery remain required before a printed card uses the foundation.
 
 **Tier 3: Cost Execution (Engine).** The `CostHandler` physically pays costs — tapping permanents,
 deducting from the mana pool, sacrificing creatures, discarding cards, paying life. The `ManaPool`

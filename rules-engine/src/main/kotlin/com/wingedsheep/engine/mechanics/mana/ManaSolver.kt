@@ -354,7 +354,8 @@ private const val MAX_SNOW_RESERVATIONS = 64
 
 class ManaSolver(
     private val cardRegistry: CardRegistry,
-    private val predicateEvaluator: PredicateEvaluator
+    private val predicateEvaluator: PredicateEvaluator,
+    private val scopedPlanner: (() -> ScopedManaActivationPlanner)? = null
 ) {
     private val conditionEvaluator = predicateEvaluator.conditions
     private val dynamicAmountEvaluator = predicateEvaluator.amounts
@@ -2048,6 +2049,12 @@ class ManaSolver(
         }
     }
 
+    /** A successful result contains actual production; the caller still pays the exact floating allocation. */
+    fun planScopedActivations(state: GameState, player: EntityId, cost: ManaCost,
+        context: SpellPaymentContext?, xAmount: Int, xColors: Set<Color>, excludeSources: Set<EntityId> = emptySet()
+    ): com.wingedsheep.engine.core.ExecutionResult? =
+        scopedPlanner?.invoke()?.plan(state, player, cost, context, xAmount, xColors, excludeSources)
+
     private fun independentTapEnvironment(state: GameState, playerId: EntityId): Boolean {
         // Tapping can change another source's abilities, costs or eligible production. Such
         // dependencies require executing the prefix, not proving it against one projection.
@@ -2654,6 +2661,10 @@ class ManaSolver(
             val floating = pool.allocateFloating(cost, spellContext,
                 xValue * cost.xCount.coerceAtLeast(1), xManaRestriction)
             if (floating?.pool?.dischargedObligations?.containsAll(pending) == true) return true
+            if (spellContext?.isAbilityActivation != true && scopedPlanner != null) {
+                return scopedPlanner.invoke().plan(state, playerId, cost, spellContext,
+                    xValue * cost.xCount.coerceAtLeast(1), xManaRestriction, excludeSources) != null
+            }
             val sources = if (independentTapEnvironment(state, playerId))
                 findAvailableManaSources(state, playerId, spellContext).filter {
                     it.entityId !in excludeSources

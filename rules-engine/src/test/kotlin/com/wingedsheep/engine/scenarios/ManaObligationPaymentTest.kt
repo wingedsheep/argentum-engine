@@ -101,15 +101,18 @@ class ManaObligationPaymentTest : FunSpec({
         result.error.isNullOrEmpty() shouldBe false
         result.state shouldBe state
     }
-    test("scoped automatic and explicit payment cannot claim untracked solver activations") {
+    test("scoped automatic and explicit payment execute tracked intrinsic activations") {
         val d = driver(); val p = d.activePlayer!!
         val forest = d.putPermanentOnBattlefield(p, "Forest")
         val state = scoped(d, ManaPoolComponent(), emptySet())
         for (strategy in listOf(PaymentStrategy.AutoPay, PaymentStrategy.Explicit(listOf(forest)))) {
             val result = pay(d, state, "{G}", strategy)
-            result.error!!.contains("allocation") shouldBe true
-            result.state shouldBe state
-            result.state.getEntity(forest)!!.has<TappedComponent>() shouldBe false
+            result.error shouldBe null
+            result.state.getEntity(forest)!!.has<TappedComponent>() shouldBe true
+            result.state.remainingManaObligations(p) shouldBe false
+            result.events.filterIsInstance<ManaAddedEvent>().single().green shouldBe 1
+            result.events.filterIsInstance<AbilityActivatedEvent>().single().sourceId shouldBe forest
+            state.getEntity(forest)!!.has<TappedComponent>() shouldBe false
         }
     }
     test("scoped automatic and explicit choices can spend sufficient already-floating mana") {
