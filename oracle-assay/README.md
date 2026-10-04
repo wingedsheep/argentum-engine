@@ -5475,6 +5475,44 @@ could not be chosen. All eleven now gather, choose and move. **Emancipation Ange
 but gathered `Any.youControl()` where the card prints "a permanent", so its filter is now
 `Permanent` with the player on the gather, and it shows the battlefield picker like the Drake.
 
+## Who discards: "that player", "target opponent", "each opponent" N
+
+"Whenever ~ deals combat damage to a player, **that player discards a card**." (Blazing Specter,
+Cabal Slaver, Oppression, Necrogen Mists), "**Target opponent discards two cards.**", "**Each opponent
+discards two cards.**" (Unnerve). Tail keys "that player discards …", "opponent discards a …" and
+"opponent discards two …". `Hand` already had `discard`'s subject-per-template shape over
+`Patterns.Hand.discardCards` — "discard", "target player discards", "have target opponent discard" —
+and the band is rows in it: "that player" is `PlayerRef(Player.TriggeringPlayer)` with no
+requirement, the reading `Steps`' damage recipients already give the phrase; "target opponent" is the
+bound slot over `Targets.opponent()`. "Each opponent discards N cards" is the count split over
+`eachOpponentDiscards`, its own per-opponent recipe, and the random discard became the same
+subject shape over `discardRandom`.
+
+### The causative moved into its row
+
+"Have target opponent discard a card" was a bare row, gated by `mayClause` from outside. Harmless
+while it was the one row printing a targeted opponent's discard; the moment "target opponent
+discards a card" printed the same model it would have printed every plain discard as "have …". So
+the row is now the whole "you may have target opponent discard a card" over `Effects.May`, which is
+`Steps`' forced-sacrifice causative one verb over, and the plain sentence prints as itself.
+
+### What it moved
+
+Probe 33 lines / 16 whole cards for "that player" and 38 / 9 for "target opponent". Over the
+implemented population delivered **+17** (7,830 → 7,847), compared 7,416 → 7,432.
+
+### What the differential found
+
+Four new divergences on the first run. **Ozai's Cruelty [TLA]** was the grammar's: "~ deals 2 damage
+to target player. That player discards two cards." read the second sentence as the *triggering*
+player, which on a spell is nobody. After a declared target "that player" is that target — or, in
+"return target permanent to its owner's hand, then that player discards", its owner — so `Steps`'
+run fold now declines a line that both declares a target and names the triggering player. No
+previously confirmed card moved. The other three were cards: **Headhunter** and **Silent Specter
+[ONS]** made *each opponent* discard where the text makes the damaged player discard — the same in
+two-player and wrong in multiplayer — and **Unnerve [USG]** discarded one card where it prints two.
+All three are fixed; divergent is back to 76.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote

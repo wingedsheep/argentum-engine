@@ -21,7 +21,7 @@ val Unnerve = card("Unnerve") {
     typeLine = "Sorcery"
     oracleText = "Each opponent discards two cards."
     spell {
-        effect = Patterns.Hand.eachOpponentDiscards(1)
+        effect = Patterns.Hand.eachOpponentDiscards(2)
     }
     metadata {
         rarity = Rarity.COMMON

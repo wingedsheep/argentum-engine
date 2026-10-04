@@ -3405,6 +3405,14 @@ object Steps {
         // self-excluding requirement anywhere but first refuses, and the line declines.
         val declared = parts.flatMap { it.targetRequirements }
         if (declared.drop(1).any { (it as? TargetObject)?.filter?.excludeSelf == true }) return null
+        // **"That player" beside a declared target is about that target.** The [Hand] and damage
+        // rows read "that player" as the player the trigger named, which is the only reading when
+        // the line declares nothing. "~ deals 2 damage to target player. That player discards two
+        // cards." (Ozai's Cruelty) names the target instead, and "return target permanent to its
+        // owner's hand, then that player discards a card" names the target's owner — and both
+        // round-trip as the triggering player, which on a spell is no one. The SDK spells the first
+        // as the bound slot and the second as a third thing, so the run declines rather than choose.
+        if (declared.isNotEmpty() && parts.any { Slots.namesPlayer(it, "TriggeringPlayer") }) return null
         var index = 0
         return parts.map { part ->
             if (part.targetRequirements.isEmpty()) {

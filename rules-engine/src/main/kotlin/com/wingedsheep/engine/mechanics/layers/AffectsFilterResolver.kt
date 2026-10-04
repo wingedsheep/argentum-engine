@@ -812,7 +812,7 @@ internal class AffectsFilterResolver(
         }
         is StatePredicate.HasCounter -> {
             val counters = container.get<CountersComponent>()
-            counters != null && counters.getCount(predicate.counterType) > 0
+            counters != null && counters.getCount(predicate.counterType) >= predicate.minCount
         }
         StatePredicate.HasLockedDoor ->
             container.get<RoomComponent>()?.lockedFaces?.isNotEmpty() == true

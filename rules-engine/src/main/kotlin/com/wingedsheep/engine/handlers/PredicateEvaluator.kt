@@ -2158,7 +2158,7 @@ class PredicateEvaluator(
             // Counter state
             is StatePredicate.HasCounter -> {
                 val countersComponent = container.get<CountersComponent>()
-                countersComponent != null && countersComponent.getCount(predicate.counterType) > 0
+                countersComponent != null && countersComponent.getCount(predicate.counterType) >= predicate.minCount
             }
             StatePredicate.HasAnyCounter -> {
                 val countersComponent = container.get<CountersComponent>()

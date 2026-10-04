@@ -26,6 +26,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -49,24 +50,49 @@ object Hand {
         }
     }
 
-    /** "Target opponent discards a card at random." — Mind Knives. */
-    private val opponentDiscardsAtRandom: Phrase<CardScript> = run {
+    /**
+     * "Target opponent discards a card at random." — Mind Knives; "At the beginning of each player's
+     * upkeep, that player discards a card at random." — Bottomless Pit.
+     *
+     * [discard]'s subject-per-template split over `Patterns.Hand.discardRandom`, a separate recipe
+     * because the selection is random rather than chosen. Only the singular: the corpus prints the
+     * counted random discard on one card per subject, which is a row with no reader.
+     */
+    private fun discardAtRandom(
+        template: String,
+        name: String,
+        target: EffectTarget,
+        requirements: List<TargetRequirement>,
+    ): Phrase<CardScript> {
         val script = CardScript(
-            spellEffect = Patterns.Hand.discardRandom(1, Targets.bound()),
-            targetRequirements = listOf(Targets.opponent()),
+            spellEffect = Patterns.Hand.discardRandom(1, target),
+            targetRequirements = requirements,
         )
-        phrase("target opponent discards a card at random", name = "target opponent discards at random") {
+        return phrase(template, name = name) {
             build { script }
             match { if (it == script) bind() else null }
         }
     }
 
-    /** "Each opponent discards a card." — Noxious Toad's death trigger. */
-    private val eachOpponentDiscards: Phrase<CardScript> = run {
-        val script = CardScript(spellEffect = Patterns.Hand.eachOpponentDiscards(1))
-        phrase("each opponent discards a card", name = "each opponent discards a card") {
-            build { script }
-            match { if (it == script) bind() else null }
+    /**
+     * "Each opponent discards a card." — Noxious Toad's death trigger; "Each opponent discards two
+     * cards." — Unnerve.
+     *
+     * `Patterns.Hand.eachOpponentDiscards` is its own recipe (a per-opponent iteration, so each one
+     * chooses from their own hand), so this is [discard]'s count split over that facade rather than
+     * a subject row of it.
+     */
+    private fun eachOpponentDiscards(template: String, name: String, count: Int?): Phrase<CardScript> {
+        fun scriptFor(cards: Int) = CardScript(spellEffect = Patterns.Hand.eachOpponentDiscards(cards))
+        return phrase(template, name = name) {
+            if (count == null) slot("n", Cardinals.word)
+            build { bindings -> scriptFor(count ?: bindings.int("n")) }
+            match { script ->
+                val cards = count ?: eachOpponentDiscardedCount(script) ?: return@match null
+                if (count == null && !Cardinals.spellable(cards)) return@match null
+                if (script != scriptFor(cards)) return@match null
+                bind("n" to cards)
+            }
         }
     }
 
@@ -132,18 +158,40 @@ object Hand {
      * position — "target player discards" against "have target opponent discard". So the shape is a
      * template per subject, each carrying its own requirement, and the singular and plural counts
      * are two rows for the reason [Steps] gives: the article and the noun both change.
+     *
+     * "That player" is the player the trigger named — the one dealt combat damage (Blazing
+     * Specter), the one whose upkeep began (Necrogen Mists), the one who cast the spell
+     * (Oppression) — so it is `Player.TriggeringPlayer` and declares no requirement, the same
+     * reading [Steps]' damage recipients give the phrase.
+     *
+     * ### The causative is the consent gate's own row
+     *
+     * "You may have target opponent discard a card." is the same discard behind `Effects.May`, and
+     * English marks the gate by moving the subject inside "have" — [Steps]' forced-sacrifice
+     * argument, one verb over. The row used to be the bare "have target opponent discard a card"
+     * with [Steps]' `mayClause` supplying the gate, which was harmless only while it was the one
+     * row printing that model: with "target opponent discards a card" beside it, the bare
+     * causative would print every plain discard as "have …". So the gate moved into the row, and
+     * the composed "you may target opponent discards a card" never wins, since [Hand.clauses]
+     * precede `mayClause` in `simpleClause`. `HandTest` asserts both printings.
+     *
+     * @param causative the "you may have … discard" surface and its `Effects.May` wrapper.
      */
     private fun discard(
         template: String,
         name: String,
         count: Int?,
         target: com.wingedsheep.sdk.scripting.targets.EffectTarget,
-        requirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
+        requirements: List<TargetRequirement>,
+        causative: Boolean = false,
     ): Phrase<CardScript> {
-        fun scriptFor(cards: Int) = CardScript(
-            spellEffect = Patterns.Hand.discardCards(cards, target),
-            targetRequirements = requirements,
-        )
+        fun scriptFor(cards: Int): CardScript {
+            val effect = Patterns.Hand.discardCards(cards, target)
+            return CardScript(
+                spellEffect = if (causative) Effects.May(effect) else effect,
+                targetRequirements = requirements,
+            )
+        }
         return phrase(template, name = name) {
             if (count == null) slot("n", Cardinals.word)
             build { bindings -> scriptFor(count ?: bindings.int("n")) }
@@ -154,6 +202,14 @@ object Hand {
                 bind("n" to cards)
             }
         }
+    }
+
+    /** How many cards each opponent discards in an `eachOpponentDiscards` iteration, off its select step. */
+    private fun eachOpponentDiscardedCount(script: CardScript): Int? {
+        val body = (script.spellEffect as? ForEachEffect)?.body as? CompositeEffect ?: return null
+        val select = body.effects.filterIsInstance<SelectFromCollectionEffect>().firstOrNull() ?: return null
+        val mode = select.selection as? SelectionMode.ChooseExactly ?: return null
+        return (mode.count as? DynamicAmount.Fixed)?.amount
     }
 
     /** How many cards a `discardCards` pipeline discards, read off its select step. */
@@ -280,7 +336,7 @@ object Hand {
         template: String,
         name: String,
         target: EffectTarget,
-        requirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
+        requirements: List<TargetRequirement>,
     ): Phrase<CardScript> {
         val script = CardScript(
             spellEffect = Patterns.Hand.discardHand(target),
@@ -313,7 +369,7 @@ object Hand {
         name: String,
         count: Int?,
         target: EffectTarget,
-        requirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
+        requirements: List<TargetRequirement>,
     ): Phrase<CardScript> {
         fun scriptFor(cards: Int) = CardScript(
             spellEffect = Patterns.Hand.exileFromHand(cards, target),
@@ -345,8 +401,16 @@ object Hand {
         lookAtOpponentHand,
         opponentRevealsHand,
         lookAtPlayerHand,
-        opponentDiscardsAtRandom,
-        eachOpponentDiscards,
+        discardAtRandom(
+            "target opponent discards a card at random", "target opponent discards at random",
+            target = Targets.bound(), requirements = listOf(Targets.opponent()),
+        ),
+        discardAtRandom(
+            "that player discards a card at random", "the triggering player discards at random",
+            target = EffectTarget.PlayerRef(Player.TriggeringPlayer), requirements = emptyList(),
+        ),
+        eachOpponentDiscards("each opponent discards a card", "each opponent discards a card", count = 1),
+        eachOpponentDiscards("each opponent discards {n} cards", "each opponent discards cards", count = null),
         eachPlayerMayDraw,
         discard(
             "discard a card", "discard a card",
@@ -365,8 +429,24 @@ object Hand {
             count = null, target = Targets.bound(), requirements = listOf(Targets.player()),
         ),
         discard(
-            "have target opponent discard a card", "have target opponent discard a card",
+            "target opponent discards a card", "target opponent discards a card",
             count = 1, target = Targets.bound(), requirements = listOf(Targets.opponent()),
+        ),
+        discard(
+            "target opponent discards {n} cards", "target opponent discards cards",
+            count = null, target = Targets.bound(), requirements = listOf(Targets.opponent()),
+        ),
+        discard(
+            "that player discards a card", "the triggering player discards a card",
+            count = 1, target = EffectTarget.PlayerRef(Player.TriggeringPlayer), requirements = emptyList(),
+        ),
+        discard(
+            "that player discards {n} cards", "the triggering player discards cards",
+            count = null, target = EffectTarget.PlayerRef(Player.TriggeringPlayer), requirements = emptyList(),
+        ),
+        discard(
+            "you may have target opponent discard a card", "you may have target opponent discard a card",
+            count = 1, target = Targets.bound(), requirements = listOf(Targets.opponent()), causative = true,
         ),
         discardWholeHand(
             "discard your hand", "discard your hand",
