@@ -5327,6 +5327,39 @@ on their payload — "can't be blocked by creatures with …", a second ability 
 Nothing new: the six cards it finished were compared and all six agree (7,373 → 7,379 compared,
 divergent unchanged at 75). The hand-written spellings of this predicate were already right.
 
+## Draw and lose life, with the second subject elided
+
+"You draw two cards **and lose 2 life**." — Night's Whisper, Moonglove Extractor, Decode
+Transmissions, Visions of Villainy, and the upkeep and end-step drains on Doctor Doom and its kin. The grammar read the full-stop spelling ("Draw two cards. You
+lose 2 life.") and the subject-repeated join ("…and you lose 2 life"), but not the ellipsis newer
+Oracle wording prints, where "lose 2 life" has no subject of its own. The band is two `alternate`
+rows over the model the full-stop run already builds (`DrawCards(n) then LoseLife(n, Controller)`),
+plus an `alsoSpelled` on the X-count draw-and-lose in `Amounts` ("you draw X cards and lose X life,
+where X is …").
+
+The subject is spelled into the template rather than made a fourth join of `tailsOf`, because a bare
+"and lose N life" tail cannot see who the clause before it named: Oracle prints the same ellipsis
+after plural subjects ("any number of target players each mill a card and lose 1 life"), where the
+loser is someone else.
+
+The rows are offered at the sentence-terminal clause position, not as clause-run members. The gate
+said why in one run: inside "Surveil 1, then **you draw a card and lose 1 life**." (Hymn of the
+Faller) a two-effect clause folds into a *nested* composite, which no card carries and nothing can
+print. Flattening nested composites in `merge` instead was tried and broke 235 lines — other rules
+build composites the cards deliberately keep as one element. Hymn declines until the run can read
+the elided subject as a tail of its own.
+
+### What it moved
+
+Probe 19 lines / 12 whole cards corpus-wide; over the implemented population delivered **+8**
+(7,790 → 7,798), compared 7,380 → 7,385.
+
+### What the differential found
+
+One new divergence, a standing finding: **Visions of Villainy [MSH]** writes its "costs {1} less if
+you control a Villain" as `ReduceGenericBy(FixedIfControlFilter)`, the `FixedIf…` half of the
+`FixedIf…` / `OnlyIf` split the spell-cost band recorded. No card bugs.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote
