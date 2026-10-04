@@ -313,6 +313,13 @@ object DynamicAmounts {
          * (Emil, Vastlands Roamer). Two permanents sharing a name count once.
          */
         fun distinctNames(): DynamicAmount = aggregate(Aggregation.DISTINCT_NAMES)
+
+        /**
+         * The size of the largest group of matched permanents sharing one name — e.g.
+         * `largestSameNameGroup()` over `GameObjectFilter.Artifact` for "eight or more artifacts
+         * with the same name as one another" (Mechanized Production).
+         */
+        fun largestSameNameGroup(): DynamicAmount = aggregate(Aggregation.LARGEST_SAME_NAME_GROUP)
     }
 
     // =========================================================================

@@ -186,6 +186,94 @@
     ]
 }
 
+// Mechanized Production
+{
+    "name": "Mechanized Production",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact you control\nAt the beginning of your upkeep, create a token that's a copy of enchanted artifact. Then if you control eight or more artifacts with the same name as one another, you win the game.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mechanized Production:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": "EnchantedPermanent"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "artifact",
+                                        "aggregation": "LARGEST_SAME_NAME_GROUP"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 8
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "WinGame",
+                                "message": "Mechanized Production: controlled eight or more artifacts with the same name."
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, create a token that's a copy of enchanted artifact. Then if you control eight or more artifacts with the same name as one another, you win the game."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "artifact ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "MYTHIC",
+        "artist": "Adam Paquette",
+        "flavorText": "\"Give me eight walkers, I'll give you the city.\"\n—Dovin Baan",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/235dd8f1-215a-4b0a-9e94-0d0d5a3c730b.jpg?1783936771",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "The eight artifacts with the same name don't have to have the same name as the enchanted artifact. For example, you win the game if you control eight Thopter artifact creature tokens as Mechanized Production's ability resolves, even if Mechanized Production isn't attached to a Thopter."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "All eight of the permanents sharing a name must be artifacts. If you control only seven artifacts with the same name and a nonartifact permanent with that same name, you won't win the game."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If you control eight or more artifacts that share a name while you control Mechanized Production, you won't win the game yet. You'll win the game while resolving its triggered ability during your upkeep."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If the enchanted artifact leaves the battlefield in response to Mechanized Production's triggered ability but Mechanized Production does not, Mechanized Production is put into its owner's graveyard as a state-based action with no enchanted artifact. The triggered ability creates no token, but you can still win the game if you control enough artifacts with the same name."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Metallic Mimic
 {
     "name": "Metallic Mimic",

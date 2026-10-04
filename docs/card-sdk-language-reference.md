@@ -12974,7 +12974,7 @@ forbids `DynamicAmount.X` in card definitions.
 - **Named reads**: `xValue()`, `castX()`, `castChoice(slot)`, `convokedCreatureCount()` (the creatures that convoked this object, CR 702.51c), `storedNumber(name)` (a number a
   non-pipeline effect stored), `count(player, zone, filter)`, `battlefield(player, filter,
   excludeSelf).count() / sumPower() / sumToughness() / sumManaValue() / maxPower() / maxToughness() /
-  maxManaValue() / minToughness() / distinctValues(p) / distinctNames() / distinctColors() /
+  maxManaValue() / minToughness() / distinctValues(p) / distinctNames() / largestSameNameGroup() / distinctColors() /
   distinctTypes() / totalCounters(type) / totalCounters()` (no type = every kind of counter,
   `CardNumericProperty.COUNTERS` — Hydra Trainer's "the number of counters on permanents you control"), `zone(player, zone, filter).count() / distinctTypes() / …`,
   `lifeTotal(player)`, `yourLifeTotal()`, `startingLifeTotal(player)`, `playerCount(scope)`,
@@ -13104,6 +13104,11 @@ forbids `DynamicAmount.X` in card definitions.
   `DISTINCT_NAMES` counts *differently named* matched permanents (two sharing a name count once) —
   "the number of differently named lands you control" (Emil, Vastlands Roamer) via
   `DynamicAmounts.battlefield(Player.You, GameObjectFilter.Land).distinctNames()`.
+  `LARGEST_SAME_NAME_GROUP` is the size of the biggest group of matched permanents sharing one
+  name (projected name where a name-changing effect set one; a face-down permanent has no name and
+  joins no group, CR 201.2a) — "eight or more artifacts with the same name as one another"
+  (Mechanized Production) via
+  `DynamicAmounts.battlefield(Player.You, GameObjectFilter.Artifact).largestSameNameGroup()`.
   `DISTINCT_COLOR_PAIRS` counts the *color pairs* the group contributes: one unordered pair per
   matched permanent that is exactly two colors (CR 105.2c), the same pair on several permanents
   counting once, so the value is bounded by the ten pairs in Magic. Mono-colored, three-or-more

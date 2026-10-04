@@ -1393,6 +1393,12 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
                     if (excludeSelf || excludeTriggeringEntity) append("other ")
                     append(pluralize(filter.description))
                 }
+                Aggregation.LARGEST_SAME_NAME_GROUP -> {
+                    append("the greatest number of ")
+                    if (excludeSelf || excludeTriggeringEntity) append("other ")
+                    append("same-named ")
+                    append(pluralize(filter.description))
+                }
             }
             append(" ")
             when (player) {
@@ -1547,6 +1553,10 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
                 }
                 Aggregation.DISTINCT_VALUES -> {
                     append("the number of different ${property?.description ?: "value"} among ")
+                    append(pluralize(filter.description))
+                }
+                Aggregation.LARGEST_SAME_NAME_GROUP -> {
+                    append("the greatest number of same-named ")
                     append(pluralize(filter.description))
                 }
             }
