@@ -7,8 +7,10 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.EntersTapped
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Selesnya Sanctuary
@@ -18,9 +20,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * When this land enters, return a land you control to its owner's hand.
  * {T}: Add {G}{W}.
  *
- * "Return a land you control" is technically non-targeted per oracle text, but the
- * engine models the controller's choice through a target requirement constrained to
- * their own lands — practically equivalent for a self-bounce that cannot fizzle.
+ * "Return a land you control" doesn't target (CR 115.10a): the land is chosen as the
+ * trigger resolves, so this gathers, chooses and moves rather than binding a target —
+ * the same shape as Shrieking Drake's ETB. With no other land, this one is the only choice.
  *
  * Canonical printing: Scryfall lists the "Salvat 2005" box product (`psal`, 2005-08-22) as a
  * slightly earlier date than Ravnica: City of Guilds (2005-10-07), but `psal` is a regional
@@ -39,8 +41,16 @@ val SelesnyaSanctuary = card("Selesnya Sanctuary") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        val land = target(TargetFilter.Land.youControl())
-        effect = Effects.ReturnToHand(land)
+        effect = Effects.Pipeline {
+            val lands = gather(CardSource.BattlefieldMatching(filter = GameObjectFilter.Land, player = Player.You))
+            val returned = chooseExactly(
+                1,
+                from = lands,
+                prompt = "Return a land you control to its owner's hand",
+                useTargetingUI = true
+            )
+            toHand(returned)
+        }
     }
 
     activatedAbility {

@@ -1507,6 +1507,73 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  MH3: {
+    setCode: 'MH3',
+    setName: 'Modern Horizons 3',
+    archetypes: [
+      {
+        name: 'Energy Exalted',
+        colors: ['W', 'U'],
+        keyCard: 'Emissary of Soulfire',
+        description: 'Bank energy and spend it to stack exalted counters, then send one well-equipped attacker in alone each turn. A tempo deck backed by flyers and flicker effects that turns a single threat into a lethal clock.',
+      },
+      {
+        name: 'Draw-Discard Graveyard',
+        colors: ['U', 'B'],
+        keyCard: 'Horrid Shadowspinner',
+        description: 'Loot, wheel, and discard to fill the graveyard, then cash it in for recursion and threats that reward a stocked yard. A grindy control deck that always finds the right answer.',
+      },
+      {
+        name: 'Artifact Sacrifice',
+        colors: ['B', 'R'],
+        keyCard: 'Pyretic Rebirth',
+        description: 'Sacrifice artifacts and creatures for value, then bring the best ones back while their mana value doubles as removal. An attrition deck that turns every death into a fresh card.',
+      },
+      {
+        name: 'Eldrazi Ramp',
+        colors: ['R', 'G'],
+        keyCard: 'Titans\' Vanguard',
+        description: 'Ramp into devoid and colorless Eldrazi, using Eldrazi Spawn and Scion tokens to bridge the gap, then grow the whole colorless board and trample through. A big-mana deck that goes over the top of everything else.',
+        creatureTypes: ['Eldrazi'],
+      },
+      {
+        name: 'Auras & Equipment',
+        colors: ['G', 'W'],
+        keyCard: 'Golden-Tail Trainer',
+        description: 'Suit up creatures with Auras, Equipment, and counters, then swing with a modified team that gets bigger together. An aggressive voltron-style deck where every modification pays off twice.',
+      },
+      {
+        name: 'Modified Counters',
+        colors: ['W', 'B'],
+        keyCard: 'Ondu Knotmaster',
+        description: 'Spread +1/+1 counters and other modifications across a lifelinking board, then profit when modified creatures trade off. A sticky midrange deck that drains value out of every combat.',
+      },
+      {
+        name: 'Energy Artifacts',
+        colors: ['U', 'R'],
+        keyCard: 'Izzet Generatorium',
+        description: 'Pile up energy from artifacts and spells, then spend it in big bursts for card draw, damage, and tempo. A spells-and-artifacts deck that turns every energy payoff into extra value.',
+      },
+      {
+        name: '+1/+1 Counters',
+        colors: ['B', 'G'],
+        keyCard: 'Cursed Wombat',
+        description: 'Put +1/+1 counters everywhere and add one more each time, adapting and growing an unstoppable board. A resilient midrange deck that outsizes the opponent turn after turn.',
+      },
+      {
+        name: 'Energy Go-Wide',
+        colors: ['R', 'W'],
+        keyCard: 'Scurry of Gremlins',
+        description: 'Flood the board with small creatures and tokens, convert the crowd into energy, then pump the team and give it haste for a sudden alpha strike. A go-wide aggro deck that closes games fast.',
+      },
+      {
+        name: 'Lands Value',
+        colors: ['G', 'U'],
+        keyCard: 'Planar Genesis',
+        description: 'Hit every land drop and play the modal double-faced spell lands as either half, rewarding landfall and lands entering with card advantage. A flexible value deck that never misses a beat.',
+      },
+    ],
+  },
   MOM: {
     setCode: 'MOM',
     setName: 'March of the Machine',

@@ -5447,6 +5447,34 @@ Captain [ISD]** ("other Humans you control") and **Vulture, Scheming Scavenger [
 Villains you control") filtered on creatures, where a bare subtype noun names permanents of that
 type. Both now write `GameObjectFilter.Permanent.withSubtype(…)`; divergent back to 76.
 
+## Return a permanent you control, chosen on resolution
+
+"When this land enters, **return a land you control to its owner's hand**." (the ten Karoo bounce
+lands, Zell Dincht, Shrieking Drake, Emancipation Angel). Tail key "a land you …". The grammar read
+the targeted bounce and the cost-position "Return a land you control …:" but not the effect without
+"target", which CR 115.10a says creates no target: the permanent is chosen as the ability resolves,
+your own shroud or hexproof permanent is a legal choice, and nothing can become illegal and fizzle
+it. One rule in `Steps`, the sibling of `Graveyard`'s "exile a card from a graveyard": gather your
+permanents of the kind with `BattlefieldMatching(filter, player = You)`, choose exactly one with the
+targeting UI, move it to hand — the pipeline Shrieking Drake was already written as. "You control"
+is the gather's `player`, not a controller predicate on the filter.
+
+### What it moved
+
+Probe 22 lines / 14 whole cards corpus-wide. Over the implemented population delivered **+12**
+(7,817 → 7,829), compared 7,403 → 7,415. Arid Archway shares the sentence but its second one ("If
+another Desert was returned this way, surveil 1") reads the chosen card back, and stays declined.
+
+### What the differential found
+
+Nothing new — divergent stays at 76 — because the band's card bugs were fixed on the way in rather
+than found by the gate. The ten Karoo lands and **Zell Dincht [FIN]** were written as a *targeted*
+bounce, with a KDoc conceding the text has no "target" and calling it "practically equivalent". It is
+not: the choice moved to when the trigger is put on the stack, and a land with shroud or hexproof
+could not be chosen. All eleven now gather, choose and move. **Emancipation Angel [AVR]** already did,
+but gathered `Any.youControl()` where the card prints "a permanent", so its filter is now
+`Permanent` with the player on the gather, and it shows the battlefield picker like the Drake.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote

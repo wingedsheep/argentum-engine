@@ -854,6 +854,19 @@ class StepsTest : StringSpec({
         roundTrips("Return each other creature you control to its owner's hand.")
     }
 
+    // Without "target" the permanent is chosen on resolution (CR 115.10a), so the sentence is a
+    // gather-choose-move pipeline with no requirement — never the targeted bounce.
+    "return a permanent you control is chosen on resolution, not targeted" {
+        val untargeted = fragment("When ~ enters, return a land you control to its owner's hand.")
+        untargeted.script.triggeredAbilities.single().targetRequirement shouldBe null
+        untargeted shouldNotBe fragment("When ~ enters, return target land you control to its owner's hand.")
+        roundTrips("When ~ enters, return a land you control to its owner's hand.")
+        roundTrips("When ~ enters, return a creature you control to its owner's hand.")
+        roundTrips("When ~ enters, return a permanent you control to its owner's hand.")
+        roundTrips("At the beginning of your end step, return a land you control to its owner's hand.")
+        roundTrips("When ~ enters, you may return a land you control to its owner's hand.")
+    }
+
     // The causative moves the subject inside "have" and drops the verb's agreement, and the model
     // gains a `Effects.May` — which is why it is a parameter on the row and not an `alsoSpelled`.
     "the causative sacrifice prints its own sentence rather than the composed may" {

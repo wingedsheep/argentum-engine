@@ -184,6 +184,16 @@ worktree (recreate it with \`git worktree add\` if missing). Never work in the m
 PR open, CI still pending or running -> do nothing; don't poll or wait on it — the loop waits for CI
 between sessions. Answer WAITING_CI.
 
+A card whose earliest real printing is in a set that isn't scaffolded yet (\`just check-card-printing\` says NOT
+SCAFFOLDED) is an ordinary '## Ready' card, never needs-human and never a reason to answer STUCK: scaffold that set
+yourself. Add its \`MtgSet\` object in the era module for its release year (mirror a neighbour; set
+\`override val incomplete = true\`, plus \`sealedSupported = false\` unless it is a draftable expansion), put the
+canonical there with a \`Printing\` row in $CODE, and give every card of that set that is already implemented its
+\`Printing\` row too. To do that, list the set's Scryfall cards that already have a \`card(\"Name\")\` in mtg-sets, run
+\`just check-card-printing\` on each one (that refreshes its cache), then run \`scripts/generate-reprints.py --set <CODE> --cards-from <list>\`.
+Relocate any canonical it reports as misplaced. If that comes to more than about 15 rows, ship the scaffold and its rows
+as their own PR first ('[agent-loop: $MODEL] Scaffold <set name> for <card>'), and add the card in the next unit.
+
 If a step fails twice for the same PR, comment on it, mark it needs-human in the ledger (and the gap \`[!]\` if it
 was one), and move on. A sweep that fails twice marks the sweep line \`[!]\`, and its cards go through steps 6-7. Cards blocked on a \`[!]\` gap are skipped. When the only cards left are blocked on \`[!]\`
 gaps, answer STUCK naming those gaps; when \`card-status\` shows the set complete AND the step-8

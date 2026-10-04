@@ -1205,6 +1205,7 @@ serialized shape; the facade for each is:
 | `DamageToTargetCantBePreventedThisTurnEffect` | `Effects.DamageCantBePreventedThisTurn` |
 | `DealDamageEffect` | `Effects.DealDamage` |
 | `DividedDamageEffect` | `Effects.DividedDamage` |
+| `DistributeDamageAmongCollectionEffect` | `Effects.DistributeDamageAmongCollection` |
 | `DrawCardsEffect` | `Effects.DrawCards` |
 | `DrawUpToEffect` | `Effects.DrawUpTo` |
 | `EachPermanentBecomesCopyOfTargetEffect` | `Effects.EachPermanentBecomesCopyOfTarget` |
@@ -1373,6 +1374,19 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   after targeting. When no division is supplied (a single target, or a non-interactive controller such
   as the built-in AI) the executor deals the whole total to a lone target, or asks for the division at
   resolution via a `DistributeDecision`.
+- `Effects.DistributeDamageAmongCollection(amount, among, damageSource, chooser?)` — the **untargeted**
+  sibling of `DividedDamage`: `damageSource` deals `amount` damage divided among the permanents in pipeline
+  collection `among`. Nothing in the collection is targeted, so nothing is announced on the stack — the
+  `chooser` (a `Chooser`, default `Controller`) divides it as the effect resolves through a
+  `DistributeDecision`. Members that have left the battlefield drop out (new objects, CR 400.7); any
+  member may be left at 0 ("among any number of those"), but the whole amount is dealt; a single
+  remaining member takes it all with no prompt; a missing source or non-positive amount deals nothing.
+  The damage is dealt *by* `damageSource`, not by the resolving ability. Master of the Wild Hunt:
+  `gather` untapped Wolves you control → `TapCollection` → `ForEachInCollection(DealDamage(powerOf(IterationEntity),
+  creature, damageSource = IterationEntity))` → `DistributeDamageAmongCollection(powerOf(creature), wolves,
+  damageSource = creature, chooser = Chooser.ControllerOfTarget)` ("that creature deals damage equal to its
+  power divided as its controller chooses among any number of those Wolves"). `Chooser.ControllerOfTarget`
+  reads the target's *projected* controller, so a stolen creature's current controller decides.
 - `DamageCantBePreventedThisTurn()` — "Damage can't be prevented this turn." Turn-scoped one-shot that
   sets a `GameState` flag (cleared at the next turn boundary), shutting off all damage prevention for
   the rest of the turn — prevention shields, prevention/replacement-of-damage effects, and protection's

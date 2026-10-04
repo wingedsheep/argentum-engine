@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.Chooser
+import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Emancipation Angel
@@ -36,12 +36,12 @@ val EmancipationAngel = card("Emancipation Angel") {
     triggeredAbility {
         trigger = Triggers.self.enters()
         effect = Effects.Pipeline {
-            val yourPermanents = gather(CardSource.BattlefieldMatching(filter = GameObjectFilter.Any.youControl()))
+            val yourPermanents = gather(CardSource.BattlefieldMatching(filter = GameObjectFilter.Permanent, player = Player.You))
             val returned = chooseExactly(
                 1,
                 from = yourPermanents,
-                chooser = Chooser.Controller,
-                prompt = "Choose a permanent you control to return to its owner's hand"
+                prompt = "Choose a permanent you control to return to its owner's hand",
+                useTargetingUI = true
             )
             toHand(returned)
         }

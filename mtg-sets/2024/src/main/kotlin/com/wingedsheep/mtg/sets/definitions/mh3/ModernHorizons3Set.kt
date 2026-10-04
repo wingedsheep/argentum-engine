@@ -16,7 +16,6 @@ object ModernHorizons3Set : MtgSet {
     override val code = "MH3"
     override val displayName = "Modern Horizons 3"
     override val releaseDate = "2024-06-14"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
