@@ -292,7 +292,7 @@ class GameInitializer(
             if (startTeam == null && !config.format.sharesTeamTurns) {
                 // CR 808.4 (Team vs. Team): the randomly chosen team's first player is its *centre*
                 // seat when the team is odd-sized and the seat to the left of its midpoint when it
-                // is even — index size/2 either way, since turn order runs to the left (CR 103.7b).
+                // is even — index size/2 either way, since turn order runs to the left (CR 101.4).
                 // Turn order then continues around the table from that seat, so the rest of that
                 // team comes last. With shared team turns (CR 805) the team takes one turn and its
                 // first-listed member is just the representative, so the seating stays as built.

@@ -538,8 +538,8 @@ sealed interface ServerMessage {
         val aiAssistEnabled: Boolean = true,
         /** Lobby mode axis: "TOURNAMENT" (bracket of 2-player matches) or "FREE_FOR_ALL" (one multiplayer game). */
         val gameMode: String = "TOURNAMENT",
-        /** Free-for-All attack rule (CR 802/803): "MULTIPLE", "LEFT", or "RIGHT". Ignored in tournament mode. */
-        val attackMode: String = "MULTIPLE",
+        /** Free-for-All attack rule (CR 802/803): "LEFT" (default), "RIGHT", or "MULTIPLE". Ignored in tournament mode. */
+        val attackMode: String = "LEFT",
         /**
          * Two-Headed Giant only (CR 810): true = random teams each game (the default); false = host
          * sets the teams via [teamAssignments]. Ignored outside Two-Headed Giant mode.

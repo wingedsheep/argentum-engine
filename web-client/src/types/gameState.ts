@@ -1,6 +1,7 @@
 import { AbilityFlag, Color, CounterType, DayNight, Keyword, Phase, Step, ZoneType } from './enums'
 import { EntityId, ZoneId } from './entities'
 import { ClientEvent } from './events'
+import type { AttackMode } from './messages'
 
 /**
  * Client-facing game state DTO.
@@ -57,6 +58,14 @@ export interface ClientGameState {
    * so never masked. Drives the day/night indicator. See {@link DayNight}.
    */
   readonly dayNight?: DayNight | null
+
+  /**
+   * The Free-for-All attack restriction (CR 803): `'LEFT'` / `'RIGHT'` limit each player to the
+   * neighbouring seat in that direction; absent/null when any opponent may be attacked. Fixed for
+   * the game, so a delta never carries it — the applicator keeps the full state's value. Display
+   * only: `validAttackTargets` is still what a declaration may name.
+   */
+  readonly attackMode?: AttackMode | null
 
   /**
    * If non-null, the affected player whose choices the viewing player is currently driving

@@ -500,8 +500,11 @@ are gated on `players.length > 2`).
   selected attacker has an explicit defender. When exactly one player is a legal attack
   target (attack left/right — CR 803.1, last opponent standing) the sticky defender is
   pre-assigned so the popup never asks; a restriction banner names who can legally be
-  attacked (phrased with the lobby's `attackMode` when known) and rail chips of
-  unattackable living seats dim with a 🚫 marker. Arrows against the viewed defender render
+  attacked (phrased with `ClientGameState.attackMode`) and rail chips and shared-strip name
+  plates of unattackable living seats dim with a 🚫 marker. Under attack left/right the rail
+  also carries a direction header for the whole game, and the one seat you can attack / the
+  one that can attack you are tagged ⚔ TARGET / 🛡 ATTACKS YOU on their chip and plate
+  (`useAttackNeighbours` — display only, standing down once two players remain). Arrows against the viewed defender render
   per-creature in the defender's seat color; attacks on boards visible in a shared-strip
   view end on the defender's name plate; attacks on off-screen boards bundle
   into one arrow to the defender's rail chip with a creature-count badge (`CombatArrows`),

@@ -250,6 +250,7 @@ class ClientStateTransformer(
             combat = combat,
             voidActive = state.nonlandPermanentLeftBattlefieldThisTurn || state.spellWarpedThisTurn,
             dayNight = state.dayNight,
+            attackMode = state.attackMode.takeIf { it != com.wingedsheep.sdk.core.AttackMode.MULTIPLE },
             youAreHijacking = youAreHijacking,
             youAreHijackedBy = youAreHijackedBy,
             hotseat = hotseat,

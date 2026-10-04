@@ -12,6 +12,8 @@ import { CommandZone } from './CommandZone'
 import { ZonePile } from './ZonePiles'
 import { styles } from './styles'
 import { isLoneTargetRequirement } from '@/utils/targeting.ts'
+import { defendingPlayerOf } from '@/utils/combatTargets'
+import { AttackRelationTag, useAttackRelation } from '../AttackRelationTag'
 
 /** Height of a shared-strip cell's name-plate band (the pill plus its top margin). */
 export const CELL_PLATE_BAND = 34
@@ -703,6 +705,21 @@ export function BoardNamePlate({
   const isDefenderAssignTarget =
     isDefenderTarget &&
     ((combatState?.selectedAttackers.length ?? 0) > 0 || draggingAttackerId !== null)
+  // Mirrors the rail chip: while declaring, a living seat that can't be attacked at all — neither
+  // the player nor anything they defend — dims with a 🚫, so the legal boards read at a glance.
+  // Your own plate (team-game bottom row) never reads as restricted — it's the attacking seat.
+  const cards = useGameStore((state) => state.gameState?.cards)
+  const ownPlayerId = useGameStore((state) => state.playerId)
+  const actingSeat = combatState?.actingSeat ?? ownPlayerId
+  const isAttackRestricted =
+    declaringAttackers &&
+    !player.hasLost &&
+    playerId !== actingSeat &&
+    !isDefenderTarget &&
+    !(combatState?.validAttackTargets ?? []).some(
+      (id) => id !== playerId && defendingPlayerOf(id, cards) === playerId,
+    )
+  const attackRelation = useAttackRelation(playerId)
 
   // Player-as-target (mirrors RailChip's crosshair handling).
   const isTargetingSelected = targetingState?.selectedTargets.includes(playerId) ?? false
@@ -769,9 +786,11 @@ export function BoardNamePlate({
           ? `Attack ${player.name}`
           : isPlayerTargetable || isPlayerTargetSelected
             ? (isPlayerTargetSelected ? `Unselect ${player.name}` : `Target ${player.name}`)
-            : handCount != null
-              ? `${player.name} — ${handCount} ${handCount === 1 ? 'card' : 'cards'} in hand`
-              : player.name
+            : isAttackRestricted
+              ? `${player.name} — can't be attacked this combat`
+              : handCount != null
+                ? `${player.name} — ${handCount} ${handCount === 1 ? 'card' : 'cards'} in hand`
+                : player.name
       }
       onClick={interactive ? handleClick : undefined}
       style={{
@@ -800,9 +819,16 @@ export function BoardNamePlate({
           : isPlayerTargetSelected
             ? '0 0 10px rgba(255, 255, 0, 0.6)'
             : 'none',
-        transition: 'border-color 150ms, box-shadow 150ms',
+        opacity: isAttackRestricted ? 0.55 : 1,
+        filter: isAttackRestricted ? 'saturate(0.5)' : 'none',
+        transition: 'border-color 150ms, box-shadow 150ms, opacity 200ms',
       }}
     >
+      {isAttackRestricted && (
+        <span aria-hidden style={{ fontSize: 10, lineHeight: 1, flexShrink: 0 }}>
+          🚫
+        </span>
+      )}
       <span
         aria-hidden
         style={{
@@ -843,6 +869,7 @@ export function BoardNamePlate({
           ALLY
         </span>
       )}
+      {attackRelation && <AttackRelationTag relation={attackRelation} />}
       {handCount != null && <HandCountBadge count={handCount} />}
       {!sharedLifeTeam && (
         <span
