@@ -411,6 +411,148 @@
     ]
 }
 
+// Isu the Abominable
+{
+    "name": "Isu the Abominable",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Legendary Snow Creature — Yeti",
+    "oracleText": "You may look at the top card of your library any time.\nYou may play snow lands and cast snow spells from the top of your library.\nWhenever another snow permanent you control enters, you may pay {G}, {W}, or {U}. If you do, put a +1/+1 counter on Isu.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Isu the Abominable:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            "IsSnow"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Pay {G}: put a +1/+1 counter on Isu",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "PayManaCost",
+                                        "cost": "{G}"
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 1,
+                                        "target": "Self"
+                                    }
+                                ]
+                            },
+                            "feasibilityCheck": {
+                                "type": "CanPayMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        {
+                            "label": "Pay {W}: put a +1/+1 counter on Isu",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "PayManaCost",
+                                        "cost": "{W}"
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 1,
+                                        "target": "Self"
+                                    }
+                                ]
+                            },
+                            "feasibilityCheck": {
+                                "type": "CanPayMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        {
+                            "label": "Pay {U}: put a +1/+1 counter on Isu",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "PayManaCost",
+                                        "cost": "{U}"
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 1,
+                                        "target": "Self"
+                                    }
+                                ]
+                            },
+                            "feasibilityCheck": {
+                                "type": "CanPayMana",
+                                "cost": "{U}"
+                            }
+                        },
+                        {
+                            "label": "Don't pay",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "LookAtTopOfLibrary",
+            {
+                "type": "PlayLandsAndCastFilteredFromTopOfLibrary",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "IsSnow"
+                    ]
+                },
+                "landFilter": {
+                    "cardPredicates": [
+                        "IsLand",
+                        "IsSnow"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "MYTHIC",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e1d50c3-3219-49cb-8f63-c1faff93215c.jpg?1783919194",
+        "rulings": [
+            {
+                "date": "2022-12-02",
+                "text": "You must pay all costs and follow all timing rules for cards played from the top of your library this way. For example, you may play a snow land this way only while the stack is empty during one of your own main phases, and only if you haven't played a land yet this turn."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "The top card of your library is still in your library and not in your hand. You can't discard cards from the top of your library or activate abilities of cards on top of your library that normally work in your hand."
+            }
+        ]
+    }
+}
+
 // Kenessos, Priest of Thassa
 {
     "name": "Kenessos, Priest of Thassa",

@@ -64,6 +64,7 @@ class ReflexiveTriggerEffectExecutor(
     private val amountEvaluator: DynamicAmountEvaluator
 ) : EffectExecutor<ReflexiveTriggerEffect> {
     private val predicateEvaluator = amountEvaluator.predicates
+    private val manaSolver = com.wingedsheep.engine.mechanics.mana.ManaSolver(cardRegistry, predicateEvaluator)
 
     override val effectType: KClass<ReflexiveTriggerEffect> = ReflexiveTriggerEffect::class
 
@@ -179,7 +180,7 @@ class ReflexiveTriggerEffectExecutor(
             ).size >= action.count
         }
         is ChooseActionEffect -> action.choices.any { choice ->
-            checkFeasibility(state, context.controllerId, choice.feasibilityCheck, predicateEvaluator = predicateEvaluator)
+            checkFeasibility(state, context.controllerId, choice.feasibilityCheck, predicateEvaluator = predicateEvaluator, manaSolver = manaSolver)
         }
         is SelectFromCollectionEffect -> {
             val available = gathered?.get(action.from)

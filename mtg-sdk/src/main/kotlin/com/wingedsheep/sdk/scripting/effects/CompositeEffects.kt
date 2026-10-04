@@ -1355,6 +1355,16 @@ sealed interface FeasibilityCheck {
         val filter: GameObjectFilter = GameObjectFilter.Any,
         val count: Int = 1
     ) : FeasibilityCheck
+
+    /**
+     * The player can pay [cost] right now — from floating mana or untapped mana sources. Hides a
+     * "pay {G}" option of a [ChooseActionEffect] the player can't afford, so "you may pay {G}, {W},
+     * or {U}. If you do, …" (Isu the Abominable) offers only the colours that can actually be paid,
+     * and skips the prompt when none can.
+     */
+    @SerialName("CanPayMana")
+    @Serializable
+    data class CanPayMana(val cost: ManaCost) : FeasibilityCheck
 }
 
 /**

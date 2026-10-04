@@ -1113,3 +1113,13 @@ class CastZoneResolver(
         }
     }
 }
+
+/**
+ * Whether this top-of-library permission lets [card] be played as a land — its `landFilter` (Isu
+ * the Abominable: snow lands) checked against the card's printed characteristics. The default
+ * every-land filter is not evaluated: a modal DFC whose land face is its back has a nonland front,
+ * and it was always playable from the top through this permission.
+ */
+internal fun PlayLandsAndCastFilteredFromTopOfLibrary.allowsLand(card: CardComponent): Boolean =
+    landFilter == GameObjectFilter.Land ||
+        CastZoneResolver.matchesCardFilter(card, landFilter)

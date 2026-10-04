@@ -7,6 +7,8 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -26,8 +28,11 @@ import kotlin.reflect.KClass
  */
 class ChooseActionEffectExecutor(
     private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
+    cardRegistry: CardRegistry,
     private val predicateEvaluator: PredicateEvaluator
 ) : EffectExecutor<ChooseActionEffect> {
+
+    private val manaSolver = ManaSolver(cardRegistry, predicateEvaluator)
 
     override val effectType: KClass<ChooseActionEffect> = ChooseActionEffect::class
 
@@ -93,7 +98,7 @@ class ChooseActionEffectExecutor(
         state: GameState,
         playerId: com.wingedsheep.sdk.model.EntityId,
         check: FeasibilityCheck?
-    ): Boolean = checkFeasibility(state, playerId, check, predicateEvaluator)
+    ): Boolean = checkFeasibility(state, playerId, check, predicateEvaluator, manaSolver)
 }
 
 /**
@@ -104,7 +109,8 @@ internal fun checkFeasibility(
     state: GameState,
     playerId: com.wingedsheep.sdk.model.EntityId,
     check: FeasibilityCheck?,
-    predicateEvaluator: PredicateEvaluator
+    predicateEvaluator: PredicateEvaluator,
+    manaSolver: ManaSolver
 ): Boolean {
     if (check == null) return true
 
@@ -130,5 +136,6 @@ internal fun checkFeasibility(
                 } >= check.count
             }
         }
+        is FeasibilityCheck.CanPayMana -> manaSolver.canPay(state, playerId, check.cost)
     }
 }

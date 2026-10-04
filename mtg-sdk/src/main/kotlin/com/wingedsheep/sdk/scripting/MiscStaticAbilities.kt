@@ -628,7 +628,7 @@ data object PlayersRevealTopOfLibrary : StaticAbility {
 
 /**
  * You may play lands and cast spells matching a filter from the top of your library.
- * Unlike PlayFromTopOfLibrary, this restricts which spells can be cast (but always allows lands).
+ * Unlike PlayFromTopOfLibrary, this restricts which spells can be cast and which lands can be played.
  * Used for Glarb, Calamity's Augur (mana value 4 or greater).
  *
  * @property spellFilter The filter that spells on top of library must match to be castable, or
@@ -636,18 +636,29 @@ data object PlayersRevealTopOfLibrary : StaticAbility {
  *   permission at all (Ka-Zar of the Savage Land). Passing a land-shaped filter instead behaves the
  *   same, since a land is never cast, but renders a nonsense description ("cast spells matching
  *   land"), and that description is what the UI shows for a granted ability.
+ * @property landFilter The filter a land on top of the library must match to be played this way.
+ *   Defaults to every land; Isu the Abominable narrows it to snow lands ("you may play snow lands and
+ *   cast snow spells from the top of your library"). Evaluated against the card in the library, so
+ *   only printed characteristics are seen.
  */
 @SerialName("PlayLandsAndCastFilteredFromTopOfLibrary")
 @Serializable
 data class PlayLandsAndCastFilteredFromTopOfLibrary(
-    val spellFilter: GameObjectFilter?
+    val spellFilter: GameObjectFilter?,
+    val landFilter: GameObjectFilter = GameObjectFilter.Land
 ) : StaticAbility {
-    override val description: String =
-        if (spellFilter == null) "You may play lands from the top of your library."
-        else "You may play lands and cast spells matching ${spellFilter.description} from the top of your library."
+    override val description: String = buildString {
+        append("You may play ")
+        append(if (landFilter == GameObjectFilter.Land) "lands" else "${landFilter.description}s")
+        if (spellFilter != null) append(" and cast spells matching ${spellFilter.description}")
+        append(" from the top of your library.")
+    }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
-        val newFilter = spellFilter?.applyTextReplacement(replacer)
-        return if (newFilter !== spellFilter) copy(spellFilter = newFilter) else this
+        val newSpellFilter = spellFilter?.applyTextReplacement(replacer)
+        val newLandFilter = landFilter.applyTextReplacement(replacer)
+        return if (newSpellFilter !== spellFilter || newLandFilter !== landFilter) {
+            copy(spellFilter = newSpellFilter, landFilter = newLandFilter)
+        } else this
     }
 }
 
