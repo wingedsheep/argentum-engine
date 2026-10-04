@@ -224,7 +224,7 @@ object Steps {
     )
 
     /**
-     * "You draw a card **and lose 1 life**." — Phyrexian Arena, Night's Whisper, and the "drain a
+     * "You draw a card **and lose 1 life**." — Night's Whisper, Moonglove Extractor, and the "drain a
      * card" payoffs: the draw of [drawOne]/[drawMany] with a life loss whose subject English elides.
      *
      * The elided subject is why this is a rule and not a fourth join of [tailsOf]: "lose 1 life"

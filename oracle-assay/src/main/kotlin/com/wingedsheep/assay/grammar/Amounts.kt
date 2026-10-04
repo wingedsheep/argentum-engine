@@ -797,7 +797,7 @@ object Amounts {
             "you draw X cards and you lose X life, where X is {amount}",
             name = "draw and lose a count",
         ) {
-            // The newer Oracle wording elides the second subject (Graveborn Muse, Painful Truths,
+            // The newer Oracle wording elides the second subject (Painful Truths, Savanti Romero,
             // The Speed Demon): 13 printed lines keep it to 6 that drop it. Same rule, same
             // closures — the elision is licensed by the "you" this template already spells, which
             // is [Steps.drawAndLoseLife]'s reason for not making it a bare tail.
