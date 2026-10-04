@@ -367,6 +367,7 @@ class PredicateEvaluator(
             is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl,
             CardPredicate.HasActivatedAbility,
             CardPredicate.HasCycling,
+            CardPredicate.CouldProduceColorlessMana,
             CardPredicate.HasAdventure,
             is CardPredicate.HasAnyOfSubtypes,
             is CardPredicate.HasBasicLandType,
@@ -731,6 +732,11 @@ class PredicateEvaluator(
             CardPredicate.HasNonManaActivatedAbility -> card.hasNonManaActivatedAbility
             CardPredicate.HasActivatedAbility -> card.hasActivatedAbility
             CardPredicate.HasCycling -> card.hasCycling
+            // Reads the land's mana abilities off its definition (Naga Vitalist); fails closed with no registry.
+            CardPredicate.CouldProduceColorlessMana -> cardRegistry?.let {
+                com.wingedsheep.engine.mechanics.mana.LandManaColorInspector
+                    .landCouldProduceColorless(state, projected, entityId, it)
+            } ?: false
 
             // Color predicates - use projected colors
             is CardPredicate.HasColor -> predicate.color.name in colors
@@ -2617,6 +2623,7 @@ class PredicateEvaluator(
             CardPredicate.HasNonManaActivatedAbility -> false
             CardPredicate.HasActivatedAbility -> false
             CardPredicate.HasCycling -> false
+            CardPredicate.CouldProduceColorlessMana -> false
 
             // Stack-relative targeting predicate — historical cast records have no
             // chosen-target snapshot, so this always returns false here.

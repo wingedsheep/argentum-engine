@@ -2455,6 +2455,72 @@
     ]
 }
 
+// Naga Vitalist
+{
+    "name": "Naga Vitalist",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Snake Druid",
+    "oracleText": "{T}: Add one mana of any type that a land you control could produce.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Naga Vitalist:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "colorSet": {
+                        "type": "ManaColorSet.LandsCouldProduce",
+                        "scope": "YOU"
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add one mana of any color that a land you control could produce."
+            },
+            {
+                "id": "Naga Vitalist:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsLand",
+                                    "CouldProduceColorlessMana"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}. Activate only if a land you control could produce colorless mana."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "artist": "James Ryman",
+        "flavorText": "The lands of the God-Pharaoh are suffused with his breath.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce9a8551-8788-47ea-b774-477f0f3ff22a.jpg?1783936472"
+    }
+}
+
 // Nimble-Blade Khenra
 {
     "name": "Nimble-Blade Khenra",

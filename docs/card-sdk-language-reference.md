@@ -2228,7 +2228,7 @@ vocabulary; this primitive does not provide Word of Command's full mana restrict
   the source permanent (its `LinkedExileComponent`, still in the exile zone; reads each card's base
   colors; sugar for `ManaColorSet.AmongLinkedExiledCards`). Pit of Offerings ("any of the exiled
   cards' colors"). Pair with a `MoveToZoneEffect(linkToSource = true)` that records the exiled pile.
-- `AddManaOfColorLandsCouldProduce(scope)` — sugar for `AddManaOfChoice(ManaColorSet.LandsCouldProduce(scope))`. Fellwar Stone / Exotic Orchard / Reflecting Pool shape.
+- `AddManaOfColorLandsCouldProduce(scope)` — sugar for `AddManaOfChoice(ManaColorSet.LandsCouldProduce(scope))`. Fellwar Stone / Exotic Orchard shape. Colors only — "any **type**" (Reflecting Pool, Naga Vitalist) adds a gated `{C}` ability, see `.couldProduceColorlessMana()`.
 - `AddManaOfColorInCommanderColorIdentity()` — sugar for `AddManaOfChoice(ManaColorSet.CommanderIdentity)`. Arcane Signet / Command Tower shape.
 - `AddAnyColorManaSpendOnChosenType(typeName)` — mana that can only pay for a specific card type (kept separate because it derives a runtime [ManaRestriction] from the source's chosen subtype).
 - `AddDynamicMana(amount, allowedColors, restriction?)` — split X across a fixed color set, distinct from `AddManaOfChoice` because it distributes the full X total across multiple colors rather than producing X copies of one chosen color.
@@ -5321,6 +5321,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   typecycling (CR 702.29e). Read off the card's printed keyword abilities (stamped as
   `CardComponent.hasCycling`), so it works in any zone — "target card with a cycling ability from your
   graveyard" (Rooting Moloch).
+- `.couldProduceColorlessMana()` — `CardPredicate.CouldProduceColorlessMana`: a land one of whose mana
+  abilities (intrinsic, printed or granted) adds `{C}` — Wastes, an Eldrazi Temple. Like
+  `ManaColorSet.LandsCouldProduce` it ignores costs and tapped state, a land that lost all abilities
+  only counts its granted ones, and a nonland never matches. The colorless half of "add one mana of any
+  **type** a land you control could produce" (Naga Vitalist): author that as two `{T}` mana abilities —
+  `Effects.AddManaOfColorLandsCouldProduce(YOU)` and `Effects.AddColorlessMana(1)` gated by
+  `ActivationRestriction.OnlyIfCondition(Conditions.YouControl(GameObjectFilter.Land.couldProduceColorlessMana()))`.
 - `.ofColor(c)` / `.ofColors(set)` — color predicate.
 - `.withColor(c)` / `.withAnyColor(c…)` / `.notColor(c)` — fixed-color predicates (`CardPredicate.HasColor`/`NotColor`).
 - `.nonartifact()` — appends `CardPredicate.IsNonartifact` ("nonartifact creature", the Terror template);
@@ -13811,7 +13818,7 @@ solver picks if there's only one), and that color is added to the pool.
 - `ManaColorSet.Specific(colors)` — hand-authored fixed set (e.g., `{R, G}` for a Gruul producer).
 - `ManaColorSet.CommanderIdentity` — union of color identities of every commander the controller has registered. Empty (no mana produced) in non-Commander formats.
 - `ManaColorSet.AmongPermanents(filter)` — colors of permanents matching `filter`, read via projected state so type/color-changing effects are honored. Mox Amber shape.
-- `ManaColorSet.LandsCouldProduce(scope)` — colors any land in `scope` could produce; tapped state and activation costs are ignored (CR 106.7). `scope` is `LandControllerScope.{YOU, OPPONENTS, ANY}`. Fellwar Stone / Exotic Orchard / Reflecting Pool shape.
+- `ManaColorSet.LandsCouldProduce(scope)` — colors any land in `scope` could produce; tapped state and activation costs are ignored (CR 106.7). `scope` is `LandControllerScope.{YOU, OPPONENTS, ANY}`. Fellwar Stone / Exotic Orchard shape. Colors only — "any **type**" (Reflecting Pool, Naga Vitalist) adds a gated `{C}` ability, see `.couldProduceColorlessMana()`.
 - `ManaColorSet.SourceChosenColor` — the single color stored on the source's `ChosenColorComponent` (set via `EntersWithChoice(ChoiceType.COLOR)`). Uncharted Haven / Ashling Rekindled shape.
 - `ManaColorSet.ColorsOf(entity)` — the colors of one object, `entity` an `EffectTarget` resolved against the running effect: a pipeline-gathered card (`handle.asTarget(0)`), a target, `Self`. Battlefield permanents read projected colors; any other zone reads the card's own. A colorless or unresolvable object produces no mana. Outside an effect (the mana solver) only `Self` resolves. "Add three mana in any combination of its colors" is `Effects.Repeat(DynamicAmount.Fixed(3), Effects.AddManaOfChoice(ManaColorSet.ColorsOf(revealed.asTarget(0))))` — each unit picks its own colour (Omnath, Locus of All).
 - `ManaColorSet.Union(members)` — the union of two or more pools; the player picks one color from any of them. A fixed color *or* a looked-up one: the Thriving lands' "Add {R} or one mana of the chosen color" is `Union(listOf(Specific(setOf(RED)), SourceChosenColor))`, which still taps for {R} if no color was ever chosen. The resolver, the mana solver and `LandManaColorInspector` all recurse into the members.

@@ -1336,6 +1336,23 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
+     * Matches a land one of whose mana abilities could produce colorless mana ({C}) — Wastes, an
+     * Eldrazi Temple, a land granted "{T}: Add {C}". Like [com.wingedsheep.sdk.scripting.values.ManaColorSet.LandsCouldProduce]
+     * it reads the abilities' effects, not their costs or whether the land is tapped (Reflecting
+     * Pool / Fellwar Stone rulings), and a land that has lost all abilities produces nothing. A
+     * nonland never matches.
+     *
+     * The colorless half of "add one mana of any **type** that a land you control could produce"
+     * (Naga Vitalist): the colors come from `ManaColorSet.LandsCouldProduce`, and `{C}` is a
+     * second mana ability gated on `Exists(Land.youControl().couldProduceColorlessMana())`.
+     */
+    @SerialName("CouldProduceColorlessMana")
+    @Serializable
+    data object CouldProduceColorlessMana : CardPredicate {
+        override val description: String = "that could produce colorless mana"
+    }
+
+    /**
      * Matches a spell or ability on the stack at least one of whose chosen targets
      * matches [subfilter]. Player targets are skipped (they aren't card-like and have
      * no game-object filter to match against). Used by cards like Teferi's Response

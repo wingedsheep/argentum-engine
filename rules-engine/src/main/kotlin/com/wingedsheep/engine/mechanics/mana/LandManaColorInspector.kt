@@ -56,10 +56,41 @@ object LandManaColorInspector {
         cardRegistry: CardRegistry,
     ): Set<Color> {
         val container = state.getEntity(entityId) ?: return emptySet()
-        val card = container.get<CardComponent>() ?: return emptySet()
-        if (!card.typeLine.isLand) return emptySet()
-
         val colors = mutableSetOf<Color>()
+        for (effect in manaAbilityEffects(state, projected, entityId, cardRegistry)) {
+            collectColors(effect, container, colors)
+        }
+        return colors
+    }
+
+    /**
+     * Whether a single land could produce colorless mana ({C}) via any of its mana abilities — the
+     * colorless half of "any **type** a land could produce" (colorless is a type of mana, CR 106.1b;
+     * "could produce" is CR 106.7).
+     * Costs and tapped state are ignored, like [colorsLandCouldProduce]. False for non-lands.
+     */
+    fun landCouldProduceColorless(
+        state: GameState,
+        projected: ProjectedState,
+        entityId: EntityId,
+        cardRegistry: CardRegistry,
+    ): Boolean = manaAbilityEffects(state, projected, entityId, cardRegistry).any(::producesColorless)
+
+    /**
+     * The effects of every mana ability the land has: intrinsic basic-land-type abilities, else its
+     * printed ones, plus granted ones.
+     */
+    private fun manaAbilityEffects(
+        state: GameState,
+        projected: ProjectedState,
+        entityId: EntityId,
+        cardRegistry: CardRegistry,
+    ): List<Effect> {
+        val container = state.getEntity(entityId) ?: return emptyList()
+        val card = container.get<CardComponent>() ?: return emptyList()
+        if (!card.typeLine.isLand) return emptyList()
+
+        val effects = mutableListOf<Effect>()
 
         // A land that has lost all abilities (e.g. Imprisoned in the Moon) keeps its land
         // subtypes (only card types/abilities are overwritten, not subtypes — CR 205.4b) but per
@@ -67,38 +98,33 @@ object LandManaColorInspector {
         // mana ability too. Only granted abilities (handled below) survive.
         val ownAbilitiesSuppressed = projected.hasLostAllAbilities(entityId)
 
-        // Intrinsic abilities derived from projected basic-land subtypes (Plains/Island/...)
         if (!ownAbilitiesSuppressed) {
-            for (ability in IntrinsicManaAbilities.forEntity(state, projected, entityId)) {
-                collectColors(ability.effect, container, colors)
-            }
-        }
+            // Intrinsic abilities derived from projected basic-land subtypes (Plains/Island/...).
+            val intrinsic = IntrinsicManaAbilities.forEntity(state, projected, entityId)
+            intrinsic.mapTo(effects) { it.effect }
 
-        // Card-defined activated abilities (if any). Skip when intrinsic abilities are
-        // present — basic land types replace the printed mana ability (matches
-        // ManaAbilityEnumerator's behavior for shock lands etc.).
-        val intrinsicLandColors = colors.toSet()
-        if (!ownAbilitiesSuppressed && intrinsicLandColors.isEmpty()) {
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId)
-            if (cardDef != null) {
-                for (ability in cardDef.script.activatedAbilities) {
-                    if (!ability.isManaAbility) continue
-                    collectColors(ability.effect, container, colors)
-                }
+            // Card-defined activated abilities (if any). Skip when intrinsic abilities are
+            // present — basic land types replace the printed mana ability (matches
+            // ManaAbilityEnumerator's behavior for shock lands etc.).
+            if (intrinsic.isEmpty()) {
+                cardRegistry.getCard(card.cardDefinitionId)?.script?.activatedAbilities
+                    ?.filter { it.isManaAbility }
+                    ?.mapTo(effects) { it.effect }
             }
         }
 
         // Granted mana abilities (e.g., from auras / continuous effects)
-        val grantedAbilities = state.grantedActivatedAbilities
-            .asSequence()
-            .filter { it.entityId == entityId }
-            .map { it.ability }
-            .filter { it.isManaAbility }
-        for (ability in grantedAbilities) {
-            collectColors(ability.effect, container, colors)
-        }
+        state.grantedActivatedAbilities
+            .filter { it.entityId == entityId && it.ability.isManaAbility }
+            .mapTo(effects) { it.ability.effect }
 
-        return colors
+        return effects
+    }
+
+    private fun producesColorless(effect: Effect): Boolean = when (effect) {
+        is AddColorlessManaEffect -> true
+        is CompositeEffect -> effect.effects.any(::producesColorless)
+        else -> false
     }
 
     private fun collectColors(
