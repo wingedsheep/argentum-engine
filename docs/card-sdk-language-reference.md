@@ -8815,6 +8815,17 @@ in the declare-blockers step, even before the turn-based block action has comple
   it has an `AttachedToComponent`. The restriction is checked only as attackers are declared, so
   attaching the source after it is already being attacked doesn't remove it from combat. Used by
   The Aetherspark.
+- `OpponentsMustAttackYou` — "Each opponent must attack you or a planeswalker you control with at
+  least one creature each combat if able" (Trove of Temptation). A requirement on the attacking
+  *player* (CR 508.1d), not on a creature: whenever an opponent of the controller declares attackers,
+  at least one creature must attack the controller or one of their planeswalkers (a battle doesn't
+  count) if some creature could — legally, without paying an attack tax or sacrifice cost (CR 508.1d:
+  a player is never required to pay one), and without breaking a goad requirement it already carries.
+  An active Taunt aimed at another player takes precedence. Because it names no creature it never
+  shows up in `mandatoryAttackers`; `OpponentsMustAttackYouRequirement` (engine,
+  `mechanics/combat`) is the shared reader — `AttackPhaseManager` validates with it and the AI
+  repairs its planned attack with it. Honors face-down, lost abilities, Room faces and
+  `ConditionalStaticAbility` wrappers. `staticAbility { ability = OpponentsMustAttackYou }`.
 - `ChangeTargetEffect(newTargetMustBePlayer = false, onlyIfCurrentTargetIsController = false)` —
   "change the target of target spell or ability with a single target" (Willbender). The two knobs
   are Reflecting Mirror's printed restrictions: fire only when the spell's single target is *you*,

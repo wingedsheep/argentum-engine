@@ -1031,6 +1031,7 @@ class StaticAbilityHandler(
             is CantAttackUnlessCoAttacker,
             is CantBeAttackedBy,
             is CantBeAttackedWhileAttached,
+            is com.wingedsheep.sdk.scripting.OpponentsMustAttackYou,
             is CantBeBlockedBy,
             is CantBeBlockedByCreaturesWithLessPower,
             is CantBeBlockedByMoreThan,
