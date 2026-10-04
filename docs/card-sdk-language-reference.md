@@ -1510,9 +1510,9 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 - `RestartGame(exempt?, afterRestart?)` — restart the game (CR 727; `RestartGameEffect`): the game ends with no
   winner, loser or draw and every player still in it begins a new one by the CR 103 procedure — every card they own
   that is in the game (any zone, including the stack) becomes a card of its owner's deck as printed (ownership never
-  changes, CR 727.2); tokens, spell copies and emblems are gone; starting life, shuffled libraries, seven-card hands,
-  mulligans and opening-hand actions (Leylines) follow; the sideboard stays outside the game; a commander goes back
-  to the command zone. The effect's **controller is the starting player** (CR 727.1a). `exempt` is a pipeline
+  changes, CR 727.2); tokens, copies of cards and emblems are gone; starting life, shuffled libraries, seven-card
+  hands, mulligans and opening-hand actions (Leylines) follow (a game set up with `skipMulligans` skips them again);
+  the sideboard stays outside the game; a commander goes back to the command zone with no commander tax. The effect's **controller is the starting player** (CR 727.1a). `exempt` is a pipeline
   collection whose cards are **left in exile** instead (CR 727.5). `afterRestart` is the rest of the ability's text:
   it runs once the pre-game procedure is over, just before the new game's first untap step (CR 727.4), with the
   controller as its controller and `exempt` readable under the same slot; the first untap step is then performed,

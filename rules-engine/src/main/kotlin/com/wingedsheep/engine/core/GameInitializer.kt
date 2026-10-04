@@ -234,7 +234,8 @@ class GameInitializer(
                     hasKept = config.skipMulligans,  // Auto-keep if skipping mulligans
                     // CR 800.6: in a multiplayer game (began with >2 players) the first mulligan
                     // is free. Two-player games keep the plain London Mulligan.
-                    freeMulligan = config.players.size > 2
+                    freeMulligan = config.players.size > 2,
+                    skipped = config.skipMulligans,
                 )
             )
 

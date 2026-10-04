@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.GameRestartedEvent
 import com.wingedsheep.engine.core.KeepHand
 import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.core.TakeMulligan
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -11,9 +12,12 @@ import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.CommanderComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.state.components.player.HotseatControlComponent
 import com.wingedsheep.engine.state.components.player.MulliganStateComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
@@ -41,6 +45,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Restarting the game (CR 727) — Karn Liberated's −14, here on an artifact so the test needs no
@@ -100,10 +105,21 @@ class RestartGameTest : FunSpec({
 
     val deckSize = 40
 
-    fun driver(): GameTestDriver = GameTestDriver().apply {
+    /**
+     * The driver sets games up without a mulligan phase; mark it as one that had one, as a game
+     * between people does, so the restarted game has mulligans too.
+     */
+    fun GameTestDriver.withMulliganPhase() {
+        for (player in listOf(player1, player2)) {
+            addComponent(player, state.getEntity(player)!!.get<MulliganStateComponent>()!!.copy(skipped = false))
+        }
+    }
+
+    fun driver(playerTwoDeck: Int = deckSize, mulligans: Boolean = true): GameTestDriver = GameTestDriver().apply {
         registerCards(TestCards.all + listOf(restarter, arrival, aura))
-        initGame(Deck.of("Island" to deckSize), Deck.of("Forest" to deckSize))
+        initGame(Deck.of("Island" to deckSize), Deck.of("Forest" to playerTwoDeck))
         passPriorityUntil(Step.PRECOMBAT_MAIN)
+        if (mulligans) withMulliganPhase()
     }
 
     fun GameTestDriver.exileWith(source: EntityId, controller: EntityId, permanent: EntityId) {
@@ -310,11 +326,7 @@ class RestartGameTest : FunSpec({
     }
 
     test("CR 727.3: a player with fewer than seven cards loses at the first upkeep, mulligans or not") {
-        val d = GameTestDriver().apply {
-            registerCards(TestCards.all + listOf(restarter, arrival, aura))
-            initGame(Deck.of("Island" to deckSize), Deck.of("Forest" to 5))
-            passPriorityUntil(Step.PRECOMBAT_MAIN)
-        }
+        val d = driver(playerTwoDeck = 5)
         val source = d.putPermanentOnBattlefield(d.player1, "Test Restarter")
         d.restart(source, d.player1)
 
@@ -337,5 +349,73 @@ class RestartGameTest : FunSpec({
         d.state.step shouldBe Step.UPKEEP
         d.state.restartFollowUp shouldBe null
         d.state.pendingRestart shouldBe null
+    }
+
+    test("nobody has priority while the new game's opening hands are decided") {
+        val d = driver()
+        val source = d.putPermanentOnBattlefield(d.player1, "Test Restarter")
+        d.restart(source, d.player1)
+
+        d.submit(PassPriority(d.player1)).outcome.shouldBeInstanceOf<Outcome.Rejected>()
+        d.state.step shouldBe Step.UNTAP
+
+        d.keepBoth()
+        d.state.step shouldBe Step.UPKEEP
+    }
+
+    test("a game set up without mulligans restarts straight into its first turn") {
+        val d = driver(mulligans = false)
+        val source = d.putPermanentOnBattlefield(d.player1, "Test Restarter")
+        val mine = d.putCreatureOnBattlefield(d.player1, "Centaur Courser")
+        d.tapPermanent(mine)
+        d.exileWith(source, d.player1, mine)
+
+        d.restart(source, d.player1)
+
+        d.state.turnNumber shouldBe 1
+        d.state.activePlayerId shouldBe d.player1
+        d.state.step shouldBe Step.UPKEEP
+        for (player in listOf(d.player1, d.player2)) {
+            d.state.getEntity(player)?.get<MulliganStateComponent>()?.hasKept shouldBe true
+        }
+        val entered = d.state.getBattlefield()
+        entered.map { d.getCardName(it) } shouldBe listOf("Centaur Courser")
+        d.state.getEntity(entered.single())?.has<TappedComponent>() shouldBe false
+    }
+
+    test("CR 727.2: a copy of a card outside the stack is not a card and doesn't join a deck") {
+        val d = driver()
+        val source = d.putPermanentOnBattlefield(d.player1, "Test Restarter")
+        val copy = d.putCardInExile(d.player1, "Lightning Bolt")
+        d.addComponent(copy, CopyOfComponent("Lightning Bolt", "Lightning Bolt"))
+
+        d.restart(source, d.player1)
+
+        withClue("The deck plus the restarter: the copy is gone") {
+            d.getHandSize(d.player1) + d.state.getLibrary(d.player1).size shouldBe deckSize + 1
+        }
+    }
+
+    test("a commander returns to the command zone with no commander tax from the old game (CR 903.8)") {
+        val d = driver()
+        val source = d.putPermanentOnBattlefield(d.player1, "Test Restarter")
+        val commander = d.putCardInGraveyard(d.player1, "Centaur Courser")
+        d.addComponent(commander, CommanderComponent(ownerId = d.player1, castsFromCommandZone = 3))
+
+        d.restart(source, d.player1)
+
+        val inCommandZone = d.state.getZone(ZoneKey(d.player1, Zone.COMMAND))
+        d.namesIn(d.player1, Zone.COMMAND) shouldBe listOf("Centaur Courser")
+        d.state.getEntity(inCommandZone.single())?.get<CommanderComponent>()?.castsFromCommandZone shouldBe 0
+    }
+
+    test("hotseat control set up around the game survives the restart") {
+        val d = driver()
+        val source = d.putPermanentOnBattlefield(d.player1, "Test Restarter")
+        d.addComponent(d.player2, HotseatControlComponent(d.player1))
+
+        d.restart(source, d.player1)
+
+        d.state.actorFor(d.player2) shouldBe d.player1
     }
 })

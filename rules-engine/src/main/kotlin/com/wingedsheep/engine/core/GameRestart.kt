@@ -20,6 +20,7 @@ import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.identity.VanguardAvatarComponent
 import com.wingedsheep.engine.state.components.player.AttemptedDrawFromEmptyLibraryComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
+import com.wingedsheep.engine.state.components.player.HotseatControlComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.MulliganStateComponent
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
@@ -63,7 +64,7 @@ data object BeginFirstTurnContinuation : AutomaticContinuation
  *
  * Every card the players own that is in the game — in any zone, phased out or not, cast or not —
  * becomes a card of its owner's new deck (CR 727.2), its printed self again. Tokens, copies of
- * spells, abilities on the stack and emblems are not cards and do not carry over, and nothing that
+ * cards, abilities on the stack and emblems are not cards and do not carry over, and nothing that
  * happened in the old game applies to the new one: life totals, counters, effects, designations and
  * turn history all start fresh. Cards outside the game (the sideboard) stay there, and an exempted
  * card stays in exile (CR 727.5). A commander goes back to its command zone (CR 103.2c) unless it
@@ -77,7 +78,15 @@ data object BeginFirstTurnContinuation : AutomaticContinuation
  * opening-hand procedure runs as at any game start. When it finishes, [GameRestartRequest.followUp]
  * runs (CR 727.4) — see [com.wingedsheep.engine.handlers.MulliganHandler.beginFirstTurn].
  */
-class GameRestarter(private val cardRegistry: CardRegistry) {
+class GameRestarter(
+    private val cardRegistry: CardRegistry,
+    /**
+     * Starts the new game's first turn, following the restart's instructions first — for a game
+     * set up without mulligans, which has no pre-game procedure to end in it (see
+     * [com.wingedsheep.engine.handlers.MulliganHandler.beginFirstTurn]).
+     */
+    private val beginFirstTurn: ((GameState, List<GameEvent>) -> ExecutionResult)? = null,
+) {
 
     fun restart(state: GameState, request: GameRestartRequest): ExecutionResult {
         val involved = state.turnOrder.filter { state.getEntity(it)?.has<PlayerLostComponent>() != true }
@@ -122,8 +131,9 @@ class GameRestarter(private val cardRegistry: CardRegistry) {
             }
             val card = container.get<CardComponent>() ?: continue
             if (container.has<TokenComponent>() || container.has<EmblemSourceComponent>()) continue
-            if (container.has<CopyOfComponent>() && container.get<CopyOfComponent>()?.originalCardComponent == null &&
-                oldId in state.stack) continue
+            // A copy with no card beneath it (a copied spell, a prepared copy, a copy made into a
+            // collection) is not a Magic card, wherever it is.
+            if (container.get<CopyOfComponent>()?.let { it.originalCardComponent == null } == true) continue
             val owner = container.get<OwnerComponent>()?.playerId ?: card.ownerId ?: continue
             if (owner !in involved) continue
             val zone = when {
@@ -193,6 +203,8 @@ class GameRestarter(private val cardRegistry: CardRegistry) {
         }
 
         fresh = fresh.copy(restartFollowUp = request.followUp?.let { remap(it, idMap) })
+        val mulligansSkipped = involved.all { fresh.getEntity(it)?.get<MulliganStateComponent>()?.skipped == true }
+        if (mulligansSkipped && beginFirstTurn != null) return beginFirstTurn.invoke(fresh, events)
         return ExecutionResult.success(fresh, events)
     }
 
@@ -217,12 +229,19 @@ class GameRestarter(private val cardRegistry: CardRegistry) {
                 printingSetCode = printed.printingSetCode,
             ))
         }
-        return container.get<CommanderComponent>()?.let { rebuilt.with(it) } ?: rebuilt
+        // Commander tax counts casts in this game only (CR 903.8).
+        return container.get<CommanderComponent>()?.let { rebuilt.with(CommanderComponent(ownerId = it.ownerId)) } ?: rebuilt
     }
 
-    /** A player at the start of a game: starting life, empty pool, no history, mulligans ahead. */
+    /**
+     * A player at the start of a game: starting life, empty pool, no history, mulligans ahead — or
+     * none, when the game was set up without them. What the session set up around the game rather
+     * than inside it (team, hotseat control) stays.
+     */
     private fun newPlayer(old: ComponentContainer, isStarting: Boolean, idMap: Map<EntityId, EntityId>): ComponentContainer {
         val player = old.get<PlayerComponent>()!!
+        val mulligans = old.get<MulliganStateComponent>()
+        val skipMulligans = mulligans?.skipped == true
         var container = ComponentContainer.of(
             player,
             LifeTotalComponent(player.startingLifeTotal),
@@ -230,9 +249,14 @@ class GameRestarter(private val cardRegistry: CardRegistry) {
             LandDropsComponent(),
             // As at setup, the starting player's first turn is counted as it begins.
             PlayerTurnsTakenComponent(count = if (isStarting) 1 else 0),
-            MulliganStateComponent(freeMulligan = old.get<MulliganStateComponent>()?.freeMulligan == true),
+            MulliganStateComponent(
+                hasKept = skipMulligans,
+                freeMulligan = mulligans?.freeMulligan == true,
+                skipped = skipMulligans,
+            ),
         )
         old.get<TeamComponent>()?.let { container = container.with(it) }
+        old.get<HotseatControlComponent>()?.let { container = container.with(it) }
         old.get<CommanderRegistryComponent>()?.let { registry ->
             container = container.with(CommanderRegistryComponent(registry.commanderIds.mapNotNull { idMap[it] }))
         }

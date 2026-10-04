@@ -954,9 +954,17 @@ class GamePlayHandler(
      */
     private fun beginRestartedGameMulligans(gameSession: GameSession) {
         mulliganBroadcastSent.remove(gameSession.sessionId)
-        for (player in gameSession.getPlayers()) {
+        val players = gameSession.getPlayers()
+        for (player in players) {
             if (!gameSession.hasMulliganComplete(player.playerId)) sendMulliganDecision(gameSession, player)
         }
+        // A hotseat seat has no connection of its own to answer the decision, so it keeps its seven.
+        val connected = players.map { it.playerId }.toSet()
+        val seats = gameSession.getStateSnapshot()?.turnOrder.orEmpty()
+        for (seat in seats) {
+            if (seat !in connected && !gameSession.hasMulliganComplete(seat)) gameSession.keepHand(seat)
+        }
+        checkMulliganPhaseComplete(gameSession)
     }
 
     private fun processAutoPassLoop(gameSession: GameSession, initialEvents: List<GameEvent>): List<GameEvent> {

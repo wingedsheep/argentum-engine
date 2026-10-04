@@ -152,7 +152,9 @@ class EngineServices(
     val settler = Settler(
         triggerDetector, triggerProcessor, sbaChecker, stateTriggerPoller, turnManager,
         effectExecutor = effectExecutorRegistry::execute,
-        gameRestarter = GameRestarter(cardRegistry)
+        gameRestarter = GameRestarter(cardRegistry) { state, events ->
+            mulliganHandler.beginFirstTurn(state, events, turnManager)
+        }
     )
 
     /** The cast pipeline (CR 601.2). Built last: it draws on nearly every service above. */

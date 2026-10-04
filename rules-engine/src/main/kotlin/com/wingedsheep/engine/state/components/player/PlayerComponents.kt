@@ -429,7 +429,12 @@ data class MulliganStateComponent(
      * subsequent mulligans count as normal. Set once at game setup from the table size and carried
      * through bottoming — see [GameInitializer]. False for two-player games (London Mulligan as-is).
      */
-    val freeMulligan: Boolean = false
+    val freeMulligan: Boolean = false,
+    /**
+     * The game was set up without a mulligan phase (`GameConfig.skipMulligans` — training and
+     * self-play drivers that can't answer one). A restarted game (CR 727) skips it too.
+     */
+    val skipped: Boolean = false,
 ) : Component {
     companion object {
         const val STARTING_HAND_SIZE = 7

@@ -129,6 +129,14 @@ class ActionProcessor(
             return "Unknown player: ${action.playerId}"
         }
 
+        // Nobody has priority before the first turn (CR 103.8): until every player has kept, only
+        // mulligan decisions are made. A restarted game (CR 727) is back at that point.
+        if (action !is TakeMulligan && action !is KeepHand && action !is BottomCards && action !is Concede &&
+            state.turnOrder.any { state.getEntity(it)?.get<com.wingedsheep.engine.state.components.player.MulliganStateComponent>()?.hasKept == false }
+        ) {
+            return "Opening hands are still being decided"
+        }
+
         if (state.continuationStack.any { it is FinishForcedPlayContinuation } && state.pendingDecision != null &&
             action !is SubmitDecision && action !is Concede &&
             !(action is ActivateAbility && com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow.openFor(state, state.actorFor(action.playerId)) != null)) {

@@ -43,6 +43,11 @@ class TwoHeadedGiantSessionTest : ScenarioTestBase() {
         return session to ids
     }
 
+    /** Every seat keeps its opening hand — nobody is offered actions before then (CR 103.8). */
+    private fun GameSession.keepAll(ids: List<EntityId>) {
+        ids.forEach { keepHand(it) }
+    }
+
     init {
         test("seat roster carries each seat's team index, with teammates in adjacent seats (CR 805.1)") {
             val (session, ids) = started2hg()
@@ -140,6 +145,7 @@ class TwoHeadedGiantSessionTest : ScenarioTestBase() {
 
         test("a teammate is offered their OWN actions while their partner holds the baton (CR 805.5)") {
             val (session, ids) = started2hg()
+            session.keepAll(ids)
             val state = session.getStateForTesting()!!
             val baton = state.priorityPlayerId!!
             val teammate = state.teamOf(baton).single { it != baton }
@@ -166,6 +172,7 @@ class TwoHeadedGiantSessionTest : ScenarioTestBase() {
                 session.addPlayer(PlayerSession(mockWs("f$i"), id, "P${i + 1}"), mapOf("Forest" to 40))
             }
             session.startGame()
+            session.keepAll(ids)
 
             val baton = session.getStateForTesting()!!.priorityPlayerId!!
             session.getLegalActions(baton) shouldNotBe emptyList<Any>()
