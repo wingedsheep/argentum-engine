@@ -558,6 +558,52 @@
     ]
 }
 
+// Amphibian Downpour
+{
+    "name": "Amphibian Downpour",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nStorm (When you cast this spell, copy it for each spell cast before it this turn. You may choose new targets for the copies. Copies become tokens.)\nEnchant creature\nEnchanted creature loses all abilities and is a blue Frog creature with base power and toughness 1/1.",
+    "keywords": [
+        "FLASH",
+        "STORM"
+    ],
+    "script": {
+        "staticAbilities": [
+            "LoseAllAbilities",
+            {
+                "type": "TransformPermanent",
+                "setCardTypes": [
+                    "CREATURE"
+                ],
+                "setSubtypes": [
+                    "Frog"
+                ],
+                "setColors": [
+                    "BLUE"
+                ]
+            },
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 1,
+                "toughness": 1
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "RARE",
+        "artist": "Omar Rayyan",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d8aeca5-622a-45be-8168-07e7c00e3092.jpg?1783911294"
+    }
+}
+
 // Arcbound Condor
 {
     "name": "Arcbound Condor",

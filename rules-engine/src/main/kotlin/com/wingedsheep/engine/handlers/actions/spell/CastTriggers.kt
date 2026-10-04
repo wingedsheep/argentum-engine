@@ -98,7 +98,7 @@ internal class CastTriggers(
         )
     }
 
-    private fun copyEffect(spell: CastSpellOnStack, spellEffect: Effect, copyCount: Int) = StormCopyEffect(
+    private fun copyEffect(spell: CastSpellOnStack, spellEffect: Effect?, copyCount: Int) = StormCopyEffect(
         copyCount = copyCount,
         spellEffect = spellEffect,
         spellTargetRequirements = spell.targetRequirements,
@@ -118,12 +118,16 @@ internal class CastTriggers(
      *
      * Conspire and casualty are reflexive: "When you do, copy it and you may choose new targets for
      * the copy." — present only when their optional additional cost was paid.
+     *
+     * A permanent spell (Amphibian Downpour's storm) has no spell effect: its copies resolve into
+     * token permanents (CR 707.10f), and an Aura copy's enchant target is among
+     * [CastSpellOnStack.targetRequirements], so each copy may choose a new host like any target.
      */
     fun copyTriggers(state: GameState, spell: CastSpellOnStack, stormCount: Int): List<PendingTrigger> {
         val action = spell.action
-        val cardDef = spell.cardDef
-        val spellEffect = cardDef?.script?.spellEffect
-        if (action.castFaceDown || spellEffect == null) return emptyList()
+        val cardDef = spell.cardDef ?: return emptyList()
+        val spellEffect = cardDef.script.spellEffect
+        if (action.castFaceDown) return emptyList()
         val name = spell.cardComponent.name
 
         val conspire = if (action.conspiredCreatures.isNotEmpty()) {

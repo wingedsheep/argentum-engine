@@ -9962,7 +9962,10 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
     `GrantedKeywordResolver.countGrants` when `CastSpellHandler` builds the spell's storm triggers — one storm
     instance per matching grant (CR 702.40b), added to the printed-keyword count. **Prismari, the Inspiration** =
     `GrantKeywordToOwnSpells(STORM, InstantOrSorcery)`. Removing the granter before the spell is cast revokes the
-    grant. (Cascade-style granted keywords are instead modelled as a `youCastSpell(...)`-triggered `Effects.Cascade`
+    grant. Storm (like conspire, casualty and replicate) also works on a **permanent spell**: its `StormCopyEffect`
+    carries `spellEffect = null`, each copy resolves into a token permanent (CR 707.10f), and an Aura's enchant
+    target is one of the spell's targets, so each copy may choose a new host — **Amphibian Downpour** is just
+    `keywords(FLASH, STORM)` + `auraTarget` + its statics. (Cascade-style granted keywords are instead modelled as a `youCastSpell(...)`-triggered `Effects.Cascade`
     on the granter — see **Quandrix, the Proof** / Wildsear, Scouring Maw — since cascade is a cast trigger, not a
     cost keyword.)
   - **Damage keywords on the spell object** (LIFELINK, DEATHTOUCH) — the noncombat-damage path
