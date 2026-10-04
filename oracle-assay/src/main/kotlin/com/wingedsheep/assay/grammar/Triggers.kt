@@ -497,8 +497,8 @@ object Triggers {
      * The same shape for the same reasons: the drawer is a parameter of the event, so it is a row
      * with its possessive baked into the prefix ("you draw **your**", "an opponent draws **their**")
      * rather than a subject vocabulary, and the ordinal is the one slot. What differs is the effect
-     * clause. A draw event names **no object** — the drawn card is not bound, and CR 121.2 makes the
-     * trigger watch a count rather than a card — so "it" in the payoff can only be the source, and
+     * clause. A draw event names **no object** — CR 121.2 makes every draw its own event, so the
+     * trigger counts draws and never binds the drawn card — so "it" in the payoff can only be the source, and
      * the payoff is [Steps.step]'s source cascade, as the expend row's is. [Steps.triggeredStep]
      * would offer a third anaphor with nothing behind it.
      *
