@@ -444,6 +444,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.PlayerActionPermissionsChangedEvent,
             is com.wingedsheep.engine.core.PlayerActionTakenEvent,
             is com.wingedsheep.engine.core.TurnEndedByEffectEvent,
+            is com.wingedsheep.engine.core.GameRestartedEvent,
             is com.wingedsheep.engine.core.TurnSkippedEvent,
             is com.wingedsheep.engine.core.AbilityAutoAnsweredEvent,
             is com.wingedsheep.engine.core.AbilityCounteredEvent,

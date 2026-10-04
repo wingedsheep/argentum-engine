@@ -1507,6 +1507,23 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   sequence via `TurnManager.performEndTheTurn` once the current resolution finishes (so it can exile the *rest* of
   the stack and drop the pending triggers). Compose after a board wipe with
   `Effects.DestroyAll(...) then Effects.EndTheTurn`.
+- `RestartGame(exempt?, afterRestart?)` — restart the game (CR 727; `RestartGameEffect`): the game ends with no
+  winner, loser or draw and every player still in it begins a new one by the CR 103 procedure — every card they own
+  that is in the game (any zone, including the stack) becomes a card of its owner's deck as printed (ownership never
+  changes, CR 727.2); tokens, spell copies and emblems are gone; starting life, shuffled libraries, seven-card hands,
+  mulligans and opening-hand actions (Leylines) follow; the sideboard stays outside the game; a commander goes back
+  to the command zone. The effect's **controller is the starting player** (CR 727.1a). `exempt` is a pipeline
+  collection whose cards are **left in exile** instead (CR 727.5). `afterRestart` is the rest of the ability's text:
+  it runs once the pre-game procedure is over, just before the new game's first untap step (CR 727.4), with the
+  controller as its controller and `exempt` readable under the same slot; the first untap step is then performed,
+  so permanents it put onto the battlefield untap and aren't summoning sick, and their triggers go on the stack in
+  the first upkeep. A player whose deck can't supply seven cards loses at that first upkeep (CR 727.3). Like
+  `EndTheTurn`, the executor only records a request (`GameState.pendingRestart`) that the settle boundary carries
+  out through `GameRestarter` once the resolution finishes — so it must be the ability's **last** instruction;
+  anything after it belongs in `afterRestart`. Every card gets a fresh entity id, minted in a shuffled order, so
+  ids public in the old game don't name cards in new hands. The server re-sends each seat its mulligan decision on
+  the `GameRestartedEvent`. **Karn Liberated** −14:
+  `Pipeline { val exiled = gather(CardSource.FromLinkedExile()); val kept = filter(exiled, Permanent.notSubtype(AURA)); run(Effects.RestartGame(kept, afterRestart = Pipeline { move(kept, ToZone(BATTLEFIELD, Player.You)) })) }`.
 - `ForceExileMultiZone(count, target)` — exile from hand/battlefield/graveyard combined (Lich's Mastery shape).
 
 ### Cards (draw / discard)

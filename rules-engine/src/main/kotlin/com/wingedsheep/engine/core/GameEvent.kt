@@ -1198,6 +1198,17 @@ data class StepChangedEvent(
 ) : GameEvent
 
 /**
+ * An effect restarted the game (CR 727). The old game ended with no winner, loser or draw, and a new
+ * one began with [startingPlayerId] — the controller of the restarting effect — taking the first turn
+ * (CR 727.1a). Everything after this event belongs to the new game.
+ */
+@Serializable
+@SerialName("GameRestartedEvent")
+data class GameRestartedEvent(
+    val startingPlayerId: EntityId
+) : GameEvent
+
+/**
  * An effect ended the turn (CR 724.1 — Ultima, Time Stop). Emitted once the expedited process has
  * reached the cleanup step, just before the next turn begins. Triggered abilities that triggered
  * before this point never go on the stack (CR 724.1a), so [com.wingedsheep.engine.core.Settler]

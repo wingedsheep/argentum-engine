@@ -1272,6 +1272,9 @@ class GameSession(
         // Can't auto-pass if game is over
         if (state.gameOver) return null
 
+        // Nor while opening hands are being decided — a restarted game (CR 727) is back there.
+        if (isMulliganPhase) return null
+
         // Nobody may pass priority while the game is waiting on a decision. This used to be
         // implicit — getLegalActions returned nothing during a decision — but a mana-payment
         // window (CR 605.3a) now legitimately offers mana abilities, so state it outright.

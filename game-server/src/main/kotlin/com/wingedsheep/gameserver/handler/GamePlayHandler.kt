@@ -19,6 +19,7 @@ import com.wingedsheep.gameserver.session.SessionRegistry
 import com.wingedsheep.gameserver.config.GameProperties
 import com.wingedsheep.gameserver.deck.EasterEggDeckInjector
 import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.core.GameRestartedEvent
 import com.wingedsheep.engine.core.PlayerLostEvent
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -915,6 +916,8 @@ class GamePlayHandler(
             // has re-seated behind the overlay) but before the spectator feed.
             notifyEliminatedSeats(gameSession)
 
+            if (allEvents.any { it is GameRestartedEvent }) beginRestartedGameMulligans(gameSession)
+
             // Update spectators. (Replay recording no longer happens here — the compact replay
             // records the input stream as actions are applied, and reconstructs snapshots on demand.)
             val spectatorState = gameSession.buildSpectatorState()
@@ -941,6 +944,18 @@ class GamePlayHandler(
             }
         } catch (e: Exception) {
             logger.error("Error broadcasting state update", e)
+        }
+    }
+
+    /**
+     * A card restarted the game (CR 727): the new game starts with mulligans like any other, so
+     * every seat gets its opening-hand decision again — AI seats answer it through the same
+     * message — and the "everyone has kept" broadcast is re-armed for this round.
+     */
+    private fun beginRestartedGameMulligans(gameSession: GameSession) {
+        mulliganBroadcastSent.remove(gameSession.sessionId)
+        for (player in gameSession.getPlayers()) {
+            if (!gameSession.hasMulliganComplete(player.playerId)) sendMulliganDecision(gameSession, player)
         }
     }
 

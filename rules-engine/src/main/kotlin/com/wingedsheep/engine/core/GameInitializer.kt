@@ -464,55 +464,6 @@ class GameInitializer(
     }
 
     /**
-     * Draw cards for a player.
-     */
-    private fun drawCards(
-        state: GameState,
-        playerId: EntityId,
-        count: Int
-    ): Pair<GameState, List<GameEvent>> {
-        var currentState = state
-        val events = mutableListOf<GameEvent>()
-        val drawnCardIds = mutableListOf<EntityId>()
-
-        val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
-        val handKey = ZoneKey(playerId, Zone.HAND)
-
-        repeat(count) {
-            val library = currentState.getZone(libraryKey)
-            if (library.isEmpty()) {
-                events.add(DrawFailedEvent(playerId, "Library is empty"))
-                return currentState to events
-            }
-
-            // Draw from top of library (first element)
-            val cardId = library.first()
-            drawnCardIds.add(cardId)
-
-            // Move card from library to hand
-            currentState = currentState.removeFromZone(libraryKey, cardId)
-            val oldObjectRef = currentState.objectRef(cardId)
-            currentState = currentState.addToZone(handKey, cardId)
-
-            events.add(ZoneChangeEvent(
-                entityId = cardId,
-                entityName = currentState.getEntity(cardId)
-                    ?.get<CardComponent>()?.name ?: "Unknown",
-                fromZone = Zone.LIBRARY,
-                toZone = Zone.HAND,
-                ownerId = playerId,
-                oldObject = oldObjectRef,
-                newObject = currentState.objectRef(cardId)
-            ))
-        }
-
-        val cardNames = drawnCardIds.map { currentState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-        events.add(CardsDrawnEvent(playerId, drawnCardIds.size, drawnCardIds, cardNames))
-
-        return currentState to events
-    }
-
-    /**
      * Draw a "smoothed" opening hand using MTGA-style hand smoothing algorithm.
      *
      * This algorithm generates multiple candidate hands and selects the one whose
@@ -760,6 +711,56 @@ class GameInitializer(
     }
 
     companion object {
+        /**
+         * Draw an opening hand of [count] cards for [playerId] — game setup and a restarted game
+         * (CR 727) alike.
+         */
+        internal fun drawCards(
+            state: GameState,
+            playerId: EntityId,
+            count: Int
+        ): Pair<GameState, List<GameEvent>> {
+            var currentState = state
+            val events = mutableListOf<GameEvent>()
+            val drawnCardIds = mutableListOf<EntityId>()
+
+            val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
+            val handKey = ZoneKey(playerId, Zone.HAND)
+
+            repeat(count) {
+                val library = currentState.getZone(libraryKey)
+                if (library.isEmpty()) {
+                    events.add(DrawFailedEvent(playerId, "Library is empty"))
+                    return currentState to events
+                }
+
+                // Draw from top of library (first element)
+                val cardId = library.first()
+                drawnCardIds.add(cardId)
+
+                // Move card from library to hand
+                currentState = currentState.removeFromZone(libraryKey, cardId)
+                val oldObjectRef = currentState.objectRef(cardId)
+                currentState = currentState.addToZone(handKey, cardId)
+
+                events.add(ZoneChangeEvent(
+                    entityId = cardId,
+                    entityName = currentState.getEntity(cardId)
+                        ?.get<CardComponent>()?.name ?: "Unknown",
+                    fromZone = Zone.LIBRARY,
+                    toZone = Zone.HAND,
+                    ownerId = playerId,
+                    oldObject = oldObjectRef,
+                    newObject = currentState.objectRef(cardId)
+                ))
+            }
+
+            val cardNames = drawnCardIds.map { currentState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+            events.add(CardsDrawnEvent(playerId, drawnCardIds.size, drawnCardIds, cardNames))
+
+            return currentState to events
+        }
+
         /**
          * Create a simple two-player game for testing.
          * Both players get the same deck.

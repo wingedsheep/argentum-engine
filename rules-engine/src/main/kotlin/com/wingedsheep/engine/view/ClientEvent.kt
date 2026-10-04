@@ -661,6 +661,18 @@ sealed interface ClientEvent {
         }
     ) : ClientEvent
 
+    @Serializable
+    @SerialName("gameRestarted")
+    data class GameRestarted(
+        val startingPlayerId: EntityId,
+        val isYourTurn: Boolean? = null,
+        override val description: String = when (isYourTurn) {
+            true -> "--- The game restarted (you take the first turn) ---"
+            false -> "--- The game restarted (opponent takes the first turn) ---"
+            null -> "--- The game restarted ---"
+        }
+    ) : ClientEvent
+
     // =========================================================================
     // Control Events
     // =========================================================================
@@ -1321,6 +1333,11 @@ object ClientEventTransformer {
                 intoBackFace = event.intoBackFace,
                 controllerId = event.controllerId,
                 isYours = event.controllerId == viewingPlayerId
+            )
+
+            is GameRestartedEvent -> ClientEvent.GameRestarted(
+                startingPlayerId = event.startingPlayerId,
+                isYourTurn = event.startingPlayerId == viewingPlayerId
             )
 
             is TurnChangedEvent -> ClientEvent.TurnChanged(

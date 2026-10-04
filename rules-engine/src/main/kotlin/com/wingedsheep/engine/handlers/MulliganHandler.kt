@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -32,7 +33,12 @@ class MulliganHandler(
      * consulted when scanning a player's opening hand for leyline-marked cards once all
      * players have kept and bottomed.
      */
-    private val cardRegistry: CardRegistry? = null
+    private val cardRegistry: CardRegistry? = null,
+    /**
+     * Runs the remaining instructions of an ability that restarted the game (CR 727.4) before the
+     * new game's first turn — see [beginFirstTurn].
+     */
+    private val effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)? = null
 ) {
 
     /**
@@ -412,11 +418,61 @@ class MulliganHandler(
             return ExecutionResult.propagatePause(result.state, events + result.events)
         }
 
-        val advanceResult = turnManager.advanceStep(com.wingedsheep.engine.core.ControlHistory.beginTurn(stateWithLeylineScan))
-        return ExecutionResult.success(
-            advanceResult.newState,
-            events + advanceResult.events
-        )
+        return beginFirstTurn(stateWithLeylineScan, events, turnManager)
+    }
+
+    /**
+     * The pre-game procedure is over: start the first turn. In a restarted game, the ability that
+     * restarted it first finishes resolving and its remaining instructions are followed — Karn
+     * Liberated puts the cards it left in exile onto the battlefield (CR 727.4). Nobody has priority
+     * while they run, and whatever they trigger goes on the stack the first time a player would
+     * receive priority, in the first upkeep.
+     *
+     * The turn-start snapshot is taken after them, so a permanent put onto the battlefield this way
+     * has been under its controller's control continuously since their first turn began.
+     *
+     * If the instructions stop to ask a question, a [BeginFirstTurnContinuation] parked beneath
+     * them starts the turn once they finish.
+     */
+    fun beginFirstTurn(state: GameState, events: List<GameEvent>, turnManager: TurnManager): ExecutionResult {
+        val followUp = state.restartFollowUp
+        val executor = effectExecutor
+        if (followUp == null || executor == null) return startFirstTurn(state, events, turnManager)
+
+        val parked = state.copy(restartFollowUp = null).pushContinuation(BeginFirstTurnContinuation)
+        val result = executor(parked, followUp.effect, followUp.context)
+        if (result.outcome is Outcome.Paused) {
+            return ExecutionResult.propagatePause(result.state, events + result.events)
+        }
+        val unparked = if (result.state.peekContinuation() == BeginFirstTurnContinuation) {
+            result.state.popContinuation().second
+        } else result.state
+        return startFirstTurn(unparked, events + result.events, turnManager, untapStep = true)
+    }
+
+    /**
+     * Begin the first turn, recording who controls what as it begins, and move on to its upkeep.
+     *
+     * The first turn's untap step is normally empty — nothing is on the battlefield yet. After a
+     * restart's instructions have put permanents there it is not, so with [untapStep] it is
+     * performed: those permanents untap and stop being summoning sick (CR 502.3, 302.6).
+     */
+    fun startFirstTurn(
+        state: GameState,
+        events: List<GameEvent>,
+        turnManager: TurnManager,
+        untapStep: Boolean = false,
+    ): ExecutionResult {
+        var current = ControlHistory.beginTurn(state)
+        val stepEvents = mutableListOf<GameEvent>()
+        if (untapStep) {
+            val untap = turnManager.beginningPhaseManager.performUntapStep(current)
+            if (untap.outcome !is Outcome.Done) return untap.copy(events = events + untap.events)
+            current = untap.newState
+            stepEvents += untap.events
+        }
+        val advanceResult = turnManager.advanceStep(current)
+        return ExecutionResult.success(advanceResult.newState, events + stepEvents + advanceResult.events)
     }
 
     /**
