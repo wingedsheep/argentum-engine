@@ -2384,6 +2384,11 @@ data object BlockerDeclarationPolicyChangedEvent : GameEvent
 @SerialName("StaticAbilityGrantedEvent")
 data class StaticAbilityGrantedEvent(val entityId: EntityId) : GameEvent
 
+/** A copy effect replaced an existing permanent's copiable characteristics. */
+@Serializable
+@SerialName("CopiableCharacteristicsChangedEvent")
+data class CopiableCharacteristicsChangedEvent(val entityId: EntityId) : GameEvent
+
 /** A copy exception added intrinsic triggered rules text to an existing permanent. */
 @Serializable
 @SerialName("CopiableTriggeredAbilityAddedEvent")

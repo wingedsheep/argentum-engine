@@ -8,6 +8,19 @@ import io.kotest.matchers.shouldBe
 import kotlinx.serialization.json.Json
 
 class CopyTriggeredExceptionsSerializationTest : FunSpec({
+    test("retained color exceptions round trip and take precedence over color riders") {
+        val retained = CopyExceptions(retainColors = true)
+        Json.decodeFromString<CopyExceptions>(Json.encodeToString(retained)) shouldBe retained
+        retained.over(CopyExceptions(overrideColors = setOf(com.wingedsheep.sdk.core.Color.RED))) shouldBe retained
+        retained.over(CopyExceptions(addedColors = setOf(com.wingedsheep.sdk.core.Color.RED))) shouldBe retained
+        CopyExceptions(overrideColors = setOf(com.wingedsheep.sdk.core.Color.RED)).over(retained)
+            .retainColors shouldBe false
+        retained.clauses() shouldBe listOf("it doesn't copy that creature's color")
+        io.kotest.assertions.throwables.shouldThrow<IllegalArgumentException> {
+            CopyExceptions(retainColors = true, overrideColors = emptySet())
+        }
+    }
+
     test("retained resolving trigger exception round trips and composes") {
         val exception = CopyExceptions(retainResolvingTriggeredAbility = true)
         Json.decodeFromString<CopyExceptions>(Json.encodeToString(exception)) shouldBe exception

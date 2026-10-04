@@ -358,6 +358,7 @@ class ModalAndCloneContinuationResumer(
                 isDoubleFaced = originalCardComponent.isDoubleFaced,
             ),
             exceptions,
+            copierColors = originalCardComponent.colors,
         )
         return state.updateEntity(entityId) { c ->
             c.with(copiedCardComponent)

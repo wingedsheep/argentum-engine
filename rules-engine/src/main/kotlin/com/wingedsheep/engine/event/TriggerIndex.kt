@@ -487,6 +487,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.ManaSpentEvent,
             is com.wingedsheep.engine.core.ManaPoolChangedEvent,
             is com.wingedsheep.engine.core.StaticAbilityGrantedEvent,
+            is com.wingedsheep.engine.core.CopiableCharacteristicsChangedEvent,
             is com.wingedsheep.engine.core.CopiableTriggeredAbilityAddedEvent,
             is com.wingedsheep.engine.core.DamagePreventionShieldCreatedEvent,
             is com.wingedsheep.engine.core.BlockerDeclarationPolicyChangedEvent,
