@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
+import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Mirrorwing Dragon (EMN #136)
@@ -25,11 +26,12 @@ import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
  *   [SpellCastPredicate.TargetsOnlySource], which is satisfied only when *every* instance of the word
  *   "target" on the spell points at this Dragon and nothing else ("targets only Mirrorwing Dragon and
  *   no other object or player", per the 2016-07-13 ruling).
- * - The payoff is [Effects.CopySpellForEachOtherPossibleTarget], the CR 707.10d "copy for each object
- *   it could target" shape. It resolves its candidate filter *and* control of the copies against the
- *   copied spell's controller, which is what makes the "they control" / "that player copies" wording
- *   work: cast Murder on an opponent's Mirrorwing Dragon and **your** creatures each get a Murder.
- *   Writing the filter as `Creature.youControl()` therefore reads "creature the caster controls".
+ * - The payoff is [Effects.CopyForEachOtherPossibleTarget], the CR 707.10d "copy for each object
+ *   it could target" shape. `copier = Player.TriggeringPlayer` — the caster — owns both the
+ *   candidate filter *and* control of the copies, which is what makes the "they control" / "that
+ *   player copies" wording work: cast Murder on an opponent's Mirrorwing Dragon and **your**
+ *   creatures each get a Murder. Writing the filter as `Creature.youControl()` therefore reads
+ *   "creature the caster controls".
  * - "Each copy targets a different one of those creatures" needs no extra vocabulary — 707.10d already
  *   means one copy per candidate with that candidate as its target, and unlike the 707.10c "you may
  *   choose new targets" family it involves no player decision at all.
@@ -49,8 +51,9 @@ val MirrorwingDragon = card("Mirrorwing Dragon") {
 
     triggeredAbility {
         trigger = Triggers.anyPlayer.casts(GameObjectFilter.InstantOrSorcery, requires = setOf(SpellCastPredicate.TargetsOnlySource))
-        effect = Effects.CopySpellForEachOtherPossibleTarget(
-            candidates = GameObjectFilter.Creature.youControl()
+        effect = Effects.CopyForEachOtherPossibleTarget(
+            candidates = GameObjectFilter.Creature.youControl(),
+            copier = Player.TriggeringPlayer
         )
         description = "That player copies that spell for each other creature they control that the " +
             "spell could target. Each copy targets a different one of those creatures."

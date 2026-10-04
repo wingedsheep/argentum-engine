@@ -3504,13 +3504,14 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "CopySpellForEachOtherPossibleTarget",
+                    "type": "CopyForEachOtherPossibleTarget",
                     "candidates": {
                         "cardPredicates": [
                             "IsCreature"
                         ],
                         "controllerPredicate": "ControlledByYou"
-                    }
+                    },
+                    "copier": "TriggeringPlayer"
                 },
                 "descriptionOverride": "That player copies that spell for each other creature they control that the spell could target. Each copy targets a different one of those creatures."
             }

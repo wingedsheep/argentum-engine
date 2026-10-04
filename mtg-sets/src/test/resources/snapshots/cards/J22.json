@@ -1,3 +1,87 @@
+// Agrus Kos, Eternal Soldier
+{
+    "name": "Agrus Kos, Eternal Soldier",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Spirit Soldier",
+    "oracleText": "Vigilance\nWhenever Agrus Kos becomes the target of an ability that targets only it, you may pay {1}{R/W}. If you do, copy that ability for each other creature you control that ability could target. Each copy targets a different one of those creatures. ({R/W} can be paid with either {R} or {W}.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Agrus Kos, Eternal Soldier:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "abilitiesOnly": true,
+                    "targetsOnlyIt": true
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}{R/W}"
+                        }
+                    },
+                    "then": {
+                        "type": "CopyForEachOtherPossibleTarget",
+                        "target": "TargetingSource",
+                        "candidates": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever Agrus Kos becomes the target of an ability that targets only it, you may pay {1}{R/W}. If you do, copy that ability for each other creature you control that ability could target. Each copy targets a different one of those creatures."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea531418-6c7c-4e23-b681-6bfdd4a3eb79.jpg?1783919197",
+        "rulings": [
+            {
+                "date": "2022-12-02",
+                "text": "The last ability triggers whenever Agrus Kos, Eternal Soldier becomes the target of an ability that targets it and no other object or player. It doesn't matter who controls the ability."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "If an ability has multiple targets, but it's targeting Agrus Kos with all of them, the last ability triggers. In that case, each of the copies will also target only one of those creatures."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "Any creature you control that can't be targeted by the copied ability (due to protection abilities, targeting restrictions, or any other reason) is just ignored. No copy is created for that creature."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "The controller of Agrus Kos controls all the copies, no matter which player controlled the original ability. That player chooses the order the copies are put on the stack. The original ability will be on the stack beneath those copies and will resolve last."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "If the ability that's copied is modal (that is, it says \"Choose one —\" or the like), the copies will have the same mode. Their controller can't choose a different one."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "If the ability that's copied has an X whose value was determined as it was put on the stack, the copies have the same value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Deadly Plot
 {
     "name": "Deadly Plot",

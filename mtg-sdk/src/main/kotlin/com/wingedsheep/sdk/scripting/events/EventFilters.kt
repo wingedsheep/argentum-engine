@@ -376,7 +376,7 @@ sealed interface SpellCastPredicate {
      * chosen targets: a spell targeting both the source and another permanent satisfies
      * [TargetsSource] but not this. A spell with **no** targets never satisfies it either. A spell
      * with several instances of "target" all pointed at the source does — the copies made by
-     * [com.wingedsheep.sdk.scripting.effects.CopySpellForEachOtherPossibleTargetEffect] then have to
+     * [com.wingedsheep.sdk.scripting.effects.CopyForEachOtherPossibleTargetEffect] then have to
      * be legal for each of those instances (CR 707.10d).
      */
     @SerialName("SpellTargetsOnlySource")

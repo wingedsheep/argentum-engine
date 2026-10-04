@@ -74,7 +74,7 @@ internal object StackPlacement {
 
         // Emit BecomesTargetEvent for each permanent, spell, or player target
         // Use abilityId (the entity on the stack) as source so ward can counter it
-        for (target in targets) {
+        for (target in targets.distinct()) {
             newState = emitBecomesTarget(
                 newState, target, abilityId, ability.controllerId, events, sourceIsSpell = false
             )
@@ -209,7 +209,7 @@ internal object StackPlacement {
 
         // Emit BecomesTargetEvent for each permanent, spell, or player target — the copy is its own
         // source on the stack (ward on the target can counter the copy independently).
-        for (target in effectiveTargets) {
+        for (target in effectiveTargets.distinct()) {
             newState = emitBecomesTarget(newState, target, copyId, copyController, events, sourceIsSpell = true)
         }
 
@@ -287,7 +287,7 @@ internal object StackPlacement {
 
         // Emit BecomesTargetEvent for each permanent, spell, or player target
         // Use abilityId (the entity on the stack) as source so ward can counter it
-        for (target in targets) {
+        for (target in targets.distinct()) {
             newState = emitBecomesTarget(
                 newState, target, abilityId, ability.controllerId, events, sourceIsSpell = false
             )
@@ -320,6 +320,11 @@ internal object StackPlacement {
      * reused as the resolved permanent's entity, so marking it would leak a stale flag onto the
      * permanent. Permanents and players are tracked; `CleanupPhaseManager` clears the component for
      * every entity, players included.
+     *
+     * Callers emit once per **distinct** target: an object chosen for several instances of the word
+     * "target" still becomes the target of that spell or ability once, so its becomes-target
+     * triggers fire once (the heroic ruling: "only once per spell, even if that spell targets the
+     * creature … multiple times").
      *
      * [sourceIsSpell] is required rather than defaulted so every call site has to state whether a
      * spell or an ability did the targeting — `spellsOnly` / `abilitiesOnly` read nothing else.

@@ -605,7 +605,7 @@ internal class SpellCaster(
 
         // Emit BecomesTargetEvent for each permanent, spell, or player target (Rule 601.2c)
         // Also track targeting for Valiant ("first time each turn")
-        for (target in effectiveTargets) {
+        for (target in effectiveTargets.distinct()) {
             newState = StackPlacement.emitBecomesTarget(newState, target, cardId, casterId, events, sourceIsSpell = true)
         }
         return newState

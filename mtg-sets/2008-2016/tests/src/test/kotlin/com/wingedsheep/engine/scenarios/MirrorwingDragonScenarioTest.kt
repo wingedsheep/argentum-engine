@@ -11,7 +11,7 @@ import io.kotest.matchers.shouldBe
  * creature, that player copies that spell for each other creature they control that the spell could
  * target. Each copy targets a different one of those creatures."
  *
- * Exercises `SpellCastPredicate.TargetsOnlySource` and `CopySpellForEachOtherPossibleTargetEffect`
+ * Exercises `SpellCastPredicate.TargetsOnlySource` and `CopyForEachOtherPossibleTargetEffect`
  * (CR 707.10d). The tests are the card's 2016-07-13 rulings, one apiece.
  */
 class MirrorwingDragonScenarioTest : ScenarioTestBase() {

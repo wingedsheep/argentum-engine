@@ -29,7 +29,7 @@ class StackExecutors(
         StormCopyEffectExecutor(targetFinder = targetFinder),
         CopyTargetSpellExecutor(dynamicAmountEvaluator = amountEvaluator, targetFinder = targetFinder),
         CopyEachTargetSpellExecutor(targetFinder = targetFinder),
-        CopySpellForEachOtherPossibleTargetExecutor(targetFinder = targetFinder, predicateEvaluator = zones.predicateEvaluator),
+        CopyForEachOtherPossibleTargetExecutor(targetFinder = targetFinder, predicateEvaluator = zones.predicateEvaluator),
         CopyTargetTriggeredAbilityExecutor(targetFinder = targetFinder),
         CopyTargetSpellOrAbilityExecutor(dynamicAmountEvaluator = amountEvaluator, targetFinder = targetFinder),
         CopyNextSpellCastExecutor(),

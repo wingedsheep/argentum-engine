@@ -1888,6 +1888,13 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * for a filter to read, so the kind of ability is a marker it carries instead —
      * [TriggeredAbility.isBackup]. It implies [abilitiesOnly].
      *
+     * [targetsOnlyIt] narrows to a spell or ability that targets the matched object **and no other
+     * object or player** — "becomes the target of an ability that targets only it" (Agrus Kos,
+     * Eternal Soldier). Every instance of the word "target" on the targeting object must point at
+     * the matched object; several instances all pointed at it still match (the Agrus Kos ruling),
+     * one more pointed anywhere else does not. The becomes-target sibling of
+     * [com.wingedsheep.sdk.scripting.events.SpellCastPredicate.TargetsOnlySource].
+     *
      * Note that [spellsOnly] / [abilitiesOnly] / [sourceFilter] narrow *what did the targeting*,
      * while [includeSpellTargets] / [includePlayerTargets] widen *what got targeted*; the two axes
      * are independent.
@@ -1904,7 +1911,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val includePlayerTargets: Boolean = false,
         val abilitiesOnly: Boolean = false,
         val sourceFilter: GameObjectFilter? = null,
-        val backupAbilitiesOnly: Boolean = false
+        val backupAbilitiesOnly: Boolean = false,
+        val targetsOnlyIt: Boolean = false
     ) : EventPattern {
         init {
             require(!(spellsOnly && (abilitiesOnly || backupAbilitiesOnly))) {
@@ -1960,6 +1968,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             }
             if (byYou) append(" you control")
             if (byOpponent) append(" an opponent controls")
+            if (targetsOnlyIt) append(" that targets only it")
             if (firstTimeEachTurn) append(" for the first time each turn")
         }
 

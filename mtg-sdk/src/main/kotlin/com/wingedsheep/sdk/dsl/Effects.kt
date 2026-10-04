@@ -5090,26 +5090,30 @@ object Effects {
         )
 
     /**
-     * Copy [spell] once for each **other** object matching [candidates] that it could target,
-     * giving each copy a distinct one of those objects as its target (CR 707.10d). No retarget
-     * decision is made — the copies and their targets both fall out of the board.
+     * Copy [target] — a spell or an ability on the stack — once for each **other** object matching
+     * [candidates] that it could target, giving each copy a distinct one of those objects as its
+     * target (CR 707.10d). No retarget decision is made — the copies and their targets both fall out
+     * of the board.
      *
      * Models the Zada family: "copy it for each other creature you control that the spell could
-     * target" (Zada, Hedron Grinder) and "that player copies that spell for each other creature they
-     * control that the spell could target" (Mirrorwing Dragon). [candidates] and control of the copies
-     * are both resolved against the **copied spell's controller**, so `Creature.youControl()` reads
-     * as "creature the caster controls" under either wording.
+     * target" (Zada, Hedron Grinder), "copy that ability for each other creature you control that
+     * ability could target" (Agrus Kos, Eternal Soldier — `target = TargetingSource`), and "that
+     * player copies that spell for each other creature they control that the spell could target"
+     * (Mirrorwing Dragon — `copier = Player.TriggeringPlayer`). [copier] controls the copies and is
+     * the player [candidates] is read relative to.
      *
      * Contrast [CopyTargetSpell] with `copies`, which is the 707.10c "you may choose new targets"
      * shape and pauses for a decision per copy.
      */
-    fun CopySpellForEachOtherPossibleTarget(
+    fun CopyForEachOtherPossibleTarget(
         candidates: GameObjectFilter,
-        spell: EffectTarget = EffectTarget.TriggeringEntity
+        target: EffectTarget = EffectTarget.TriggeringEntity,
+        copier: Player = Player.You
     ): Effect =
-        com.wingedsheep.sdk.scripting.effects.CopySpellForEachOtherPossibleTargetEffect(
-            spell = spell,
-            candidates = candidates
+        com.wingedsheep.sdk.scripting.effects.CopyForEachOtherPossibleTargetEffect(
+            target = target,
+            candidates = candidates,
+            copier = copier
         )
 
     /**

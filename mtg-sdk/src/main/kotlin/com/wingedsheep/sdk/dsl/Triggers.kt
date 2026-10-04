@@ -367,7 +367,8 @@ class ObjectTriggerSubject internal constructor(
      * valiant. [includeSpellTargets] also fires when a matching *spell* on the stack is targeted
      * (Surrak, Elusive Hunter); [includePlayerTargets] widens to targeted players and needs an
      * unfiltered subject (Loki, God of Mischief). [ofBackupAbility] is "the target of a backup
-     * ability" (Mirror-Shield Hoplite).
+     * ability" (Mirror-Shield Hoplite). [targetsOnlyIt] is "… that targets only it" — every target
+     * of the spell or ability is this object (Agrus Kos, Eternal Soldier).
      */
     fun becomesTarget(
         of: GameObjectFilter? = null,
@@ -379,6 +380,7 @@ class ObjectTriggerSubject internal constructor(
         includeSpellTargets: Boolean = false,
         includePlayerTargets: Boolean = false,
         ofBackupAbility: Boolean = false,
+        targetsOnlyIt: Boolean = false,
     ): TriggerSpec = spec(
         BecomesTargetEvent(
             targetFilter = filterOrAny,
@@ -391,6 +393,7 @@ class ObjectTriggerSubject internal constructor(
             abilitiesOnly = abilitiesOnly,
             sourceFilter = of,
             backupAbilitiesOnly = ofBackupAbility,
+            targetsOnlyIt = targetsOnlyIt,
         )
     )
 

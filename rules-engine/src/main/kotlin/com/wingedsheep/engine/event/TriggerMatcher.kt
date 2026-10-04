@@ -1599,6 +1599,18 @@ class TriggerMatcher(
             if (onStack?.isBackup != true) return false
         }
 
+        // "… an ability that targets only it" (Agrus Kos): every chosen target of the targeting
+        // object is the matched one — players included, so an ability aimed at this creature and a
+        // player doesn't qualify. Mirrors SpellCastPredicate.TargetsOnlySource; reads the raw list
+        // the stack object went on with, so several slots all pointed here still match.
+        if (trigger.targetsOnlyIt) {
+            val chosen = state.getEntity(event.sourceEntityId)
+                ?.get<com.wingedsheep.engine.state.components.stack.TargetsComponent>()
+                ?.targets
+                ?: return false
+            if (chosen.isEmpty() || chosen.any { it.entityId() != event.targetEntityId }) return false
+        }
+
         // "becomes the target of an **Aura** spell" (Brine Comber) — narrow by the targeting
         // object's own card data. The source is a spell on the stack (or the permanent whose
         // ability targeted), so the same PredicateEvaluator call the targetFilter uses below reads
