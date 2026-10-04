@@ -607,29 +607,46 @@ internal class AttackPhaseManager(
     ): String? {
         for (attackerId in attackerIds) {
             val cardComponent = state.getEntity(attackerId)?.get<CardComponent>() ?: continue
-            // Tokens have no CardDefinition, so their restrictions arrive via grantedStaticAbilities
-            // (CreateTokenExecutor). Union both sources so the "can't attack alone" half of Toby's
-            // Beast token is enforced alongside printed restrictions (Scarred Puma).
-            val printed = cardRegistry.getCard(cardComponent.cardDefinitionId)
-                ?.staticAbilities.orEmpty()
-            val granted = state.grantedStaticAbilities
-                .filter { it.entityId == attackerId }
-                .map { it.ability }
-            val restrictions = (printed + granted)
-                .filterIsInstance<CantAttackUnlessCoAttacker>()
-                .filter { it.filter.scope is Scope.Self }
-            for (restriction in restrictions) {
-                val context = PredicateContext(controllerId = projected.getController(attackerId) ?: attackerId)
-                val satisfied = attackerIds.any { otherId ->
-                    otherId != attackerId &&
-                        predicateEvaluator.matches(state, projected, otherId, restriction.coAttackerFilter, context)
-                }
-                if (!satisfied) {
+            for (restriction in coAttackerRestrictions(state, attackerId)) {
+                if (!coAttackerAvailable(state, projected, attackerId, restriction, attackerIds)) {
                     return "${cardComponent.name} ${restriction.description}"
                 }
             }
         }
         return null
+    }
+
+    /**
+     * The self-scoped [CantAttackUnlessCoAttacker] restrictions on [attackerId]. Tokens have no
+     * CardDefinition, so their restrictions arrive via grantedStaticAbilities (CreateTokenExecutor);
+     * both sources are unioned so the "can't attack alone" half of Toby's Beast token is enforced
+     * alongside printed restrictions (Scarred Puma).
+     */
+    private fun coAttackerRestrictions(state: GameState, attackerId: EntityId): List<CantAttackUnlessCoAttacker> {
+        val cardComponent = state.getEntity(attackerId)?.get<CardComponent>() ?: return emptyList()
+        val printed = cardRegistry.getCard(cardComponent.cardDefinitionId)
+            ?.staticAbilities.orEmpty()
+        val granted = state.grantedStaticAbilities
+            .filter { it.entityId == attackerId }
+            .map { it.ability }
+        return (printed + granted)
+            .filterIsInstance<CantAttackUnlessCoAttacker>()
+            .filter { it.filter.scope is Scope.Self }
+    }
+
+    /** Whether some creature in [candidates] other than [attackerId] satisfies [restriction]. */
+    private fun coAttackerAvailable(
+        state: GameState,
+        projected: ProjectedState,
+        attackerId: EntityId,
+        restriction: CantAttackUnlessCoAttacker,
+        candidates: Collection<EntityId>
+    ): Boolean {
+        val context = PredicateContext(controllerId = projected.getController(attackerId) ?: attackerId)
+        return candidates.any { otherId ->
+            otherId != attackerId &&
+                predicateEvaluator.matches(state, projected, otherId, restriction.coAttackerFilter, context)
+        }
     }
 
     /**
@@ -898,7 +915,7 @@ internal class AttackPhaseManager(
             if (taunt != null && taunt.defenderId != player) continue
             val defenders = OpponentsMustAttackYouRequirement.defendersOf(state, projected, player)
             val able = validAttackers.any { attackerId ->
-                canAttackFreely(state, projected, attackingPlayer, attackerId, defenders, player, opponents)
+                canAttackFreely(state, projected, attackingPlayer, attackerId, defenders, player, opponents, validAttackers)
             }
             if (able) {
                 val name = state.getEntity(player)?.get<PlayerComponent>()?.name ?: "that player"
@@ -911,7 +928,9 @@ internal class AttackPhaseManager(
     /**
      * Whether [attackerId] could attack one of [defenders] (all belonging to [player]) at no cost
      * and without breaking its goad requirement — the "if able" of
-     * [validateOpponentsMustAttackYou].
+     * [validateOpponentsMustAttackYou]. A creature that can't attack unless another creature
+     * also attacks counts only if one of [validAttackers] could be that co-attacker; otherwise a
+     * lone Scarred Puma would leave no legal declaration at all.
      */
     private fun canAttackFreely(
         state: GameState,
@@ -920,9 +939,13 @@ internal class AttackPhaseManager(
         attackerId: EntityId,
         defenders: List<EntityId>,
         player: EntityId,
-        opponents: List<EntityId>
+        opponents: List<EntityId>,
+        validAttackers: List<EntityId>
     ): Boolean {
         if (AttackSacrificeCosts.requirementFor(state, attackerId, cardRegistry) != null) return false
+        if (coAttackerRestrictions(state, attackerId).any {
+                !coAttackerAvailable(state, projected, attackerId, it, validAttackers)
+            }) return false
         val ctx = AttackCheckContext(state, projected, attackerId, attackingPlayer, cardRegistry)
         val goaders = state.getEntity(attackerId)?.get<GoadedComponent>()?.goaderIds.orEmpty()
         if (player in goaders) {
