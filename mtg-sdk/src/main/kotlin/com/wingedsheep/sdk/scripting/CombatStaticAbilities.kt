@@ -599,6 +599,25 @@ data class CantBeAttackedBy(
 }
 
 /**
+ * "Each opponent must attack you or a planeswalker you control with at least one creature each
+ * combat if able" (Trove of Temptation) — a requirement on the attacking *player*, not on any one
+ * creature (CR 508.1d).
+ *
+ * Whenever an opponent of this permanent's controller declares attackers, the declaration must
+ * include at least one creature attacking that controller or a planeswalker they control, as long
+ * as some creature could legally do so without its controller paying a cost (CR 508.1d — a player
+ * is never required to pay an attack cost to obey a requirement). Battles aren't named, so
+ * attacking one never satisfies it. The requirement says nothing about *which* creature, so it
+ * never makes a specific creature mandatory.
+ */
+@SerialName("OpponentsMustAttackYou")
+@Serializable
+data object OpponentsMustAttackYou : StaticAbility {
+    override val description: String =
+        "Each opponent must attack you or a planeswalker you control with at least one creature each combat if able"
+}
+
+/**
  * Sentence-subject rendering of an attacker filter: "creature with flying" → "Creatures with
  * flying". This string is user-visible — it is the attack-rejection message and the label of a
  * granted static — and the clause it heads is always plural ("Creatures without flying can't

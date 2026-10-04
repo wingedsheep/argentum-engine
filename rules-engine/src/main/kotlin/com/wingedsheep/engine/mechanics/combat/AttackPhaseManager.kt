@@ -162,6 +162,12 @@ internal class AttackPhaseManager(
             return ExecutionResult.error(state, goadValidation)
         }
 
+        // Check "each opponent must attack you … with at least one creature" (Trove of Temptation)
+        val attackYouValidation = validateOpponentsMustAttackYou(state, attackingPlayer, attackers, projected)
+        if (attackYouValidation != null) {
+            return ExecutionResult.error(state, attackYouValidation)
+        }
+
         // Calculate (but don't pay) the attack tax. If non-zero, pause for the attacking
         // player to confirm before we tap any of their mana — otherwise auto-tapping the
         // pool would steal sources they were saving for instants/post-combat plays.
@@ -855,6 +861,80 @@ internal class AttackPhaseManager(
         }
 
         return null
+    }
+
+    /**
+     * Validate [com.wingedsheep.sdk.scripting.OpponentsMustAttackYou] (Trove of Temptation): for
+     * each player [OpponentsMustAttackYouRequirement] says must be attacked, the declaration has
+     * to send at least one creature at that player or a planeswalker they control — if able.
+     *
+     * "Able" follows CR 508.1d: some creature could attack one of those defenders without its
+     * controller paying a cost (an attack tax or a "can't attack unless you sacrifice" cost), and
+     * without breaking a requirement the creature already carries. A goaded creature whose goaders
+     * include this player is not counted while it has a non-goader player to attack (obeying one
+     * requirement by breaking another gains nothing), and an active Taunt aimed at a different
+     * player — every creature attacks the taunter — already obeys as many requirements as any
+     * declaration can, so it wins.
+     */
+    private fun validateOpponentsMustAttackYou(
+        state: GameState,
+        attackingPlayer: EntityId,
+        attackers: Map<EntityId, EntityId>,
+        projected: ProjectedState
+    ): String? {
+        val requiring = OpponentsMustAttackYouRequirement.requiringPlayers(
+            state, cardRegistry, predicateEvaluator, attackingPlayer
+        )
+        if (requiring.isEmpty()) return null
+        val taunt = state.sharedTurnTeam(attackingPlayer)
+            .firstNotNullOfOrNull { member -> state.getEntity(member)?.get<MustAttackPlayerComponent>() }
+            ?.takeIf { it.activeThisTurn }
+        val opponents = state.getOpponents(attackingPlayer)
+        val validAttackers by lazy { getValidAttackers(state, attackingPlayer) }
+        for (player in requiring) {
+            if (attackers.values.any { OpponentsMustAttackYouRequirement.isAttackOn(state, projected, it, player) }) {
+                continue
+            }
+            if (taunt != null && taunt.defenderId != player) continue
+            val defenders = OpponentsMustAttackYouRequirement.defendersOf(state, projected, player)
+            val able = validAttackers.any { attackerId ->
+                canAttackFreely(state, projected, attackingPlayer, attackerId, defenders, player, opponents)
+            }
+            if (able) {
+                val name = state.getEntity(player)?.get<PlayerComponent>()?.name ?: "that player"
+                return "At least one creature must attack $name or a planeswalker they control this combat"
+            }
+        }
+        return null
+    }
+
+    /**
+     * Whether [attackerId] could attack one of [defenders] (all belonging to [player]) at no cost
+     * and without breaking its goad requirement — the "if able" of
+     * [validateOpponentsMustAttackYou].
+     */
+    private fun canAttackFreely(
+        state: GameState,
+        projected: ProjectedState,
+        attackingPlayer: EntityId,
+        attackerId: EntityId,
+        defenders: List<EntityId>,
+        player: EntityId,
+        opponents: List<EntityId>
+    ): Boolean {
+        if (AttackSacrificeCosts.requirementFor(state, attackerId, cardRegistry) != null) return false
+        val ctx = AttackCheckContext(state, projected, attackerId, attackingPlayer, cardRegistry)
+        val goaders = state.getEntity(attackerId)?.get<GoadedComponent>()?.goaderIds.orEmpty()
+        if (player in goaders) {
+            val hasNonGoaderPlayer = opponents.any { other ->
+                other !in goaders && attackDefenderRules.all { it.check(ctx, other) == null }
+            }
+            if (hasNonGoaderPlayer) return false
+        }
+        return defenders.any { defenderId ->
+            attackDefenderRules.all { it.check(ctx, defenderId) == null } &&
+                calculateTotalAttackTax(state, mapOf(attackerId to defenderId), projected) == 0
+        }
     }
 
     /**

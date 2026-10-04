@@ -151,7 +151,25 @@ class AIPlayer(
                     }
                     else -> PassPriority(playerId)
                 }
-                val fallbackResult = processor.process(current, fallback).result
+                var fallbackResult = processor.process(current, fallback).result
+                if (fallbackResult.error != null && fallback is DeclareAttackers) {
+                    // A player-level requirement ("each opponent must attack you with at least one
+                    // creature" — Trove of Temptation) names no creature, so it isn't in
+                    // mandatoryAttackers: add one more attacker at each legal defender until the
+                    // engine accepts the declaration.
+                    val attackAction = simulator.getLegalActions(current, playerId)
+                        .find { it.actionType == "DeclareAttackers" }
+                    val extra = attackAction?.validAttackers.orEmpty().filter { it !in fallback.attackers }
+                    val defenders = attackAction?.validAttackTargets.orEmpty()
+                    fallbackResult = extra.asSequence()
+                        .flatMap { attacker -> defenders.asSequence().map { attacker to it } }
+                        .map { (attacker, defender) ->
+                            processor.process(
+                                current, DeclareAttackers(playerId, fallback.attackers + (attacker to defender))
+                            ).result
+                        }
+                        .firstOrNull { it.error == null } ?: fallbackResult
+                }
                 if (fallbackResult.error != null) break
                 current = fallbackResult.state
                 iterations++
