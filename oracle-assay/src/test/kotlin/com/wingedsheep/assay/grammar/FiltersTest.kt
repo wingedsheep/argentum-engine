@@ -74,6 +74,17 @@ class FiltersTest : StringSpec({
         roundTrips(Filters.plural, "creatures with power 2 or greater")
     }
 
+    "the toughness qualities are the power ones' siblings" {
+        read(Filters.filter, "creature with toughness 4 or greater") shouldBe
+            GameObjectFilter.Creature.toughnessAtLeast(4)
+        read(Filters.plural, "creatures you control with toughness 2 or less") shouldBe
+            GameObjectFilter.Creature.youControl().toughnessAtMost(2)
+
+        roundTrips(Filters.filter, "creature with toughness 4 or greater")
+        roundTrips(Filters.plural, "creatures with toughness 3 or greater")
+        roundTrips(Filters.plural, "creatures you control with toughness 2 or less")
+    }
+
     // Colour then controller then quality, which is both the printed order and — for the colour
     // half — the order the SDK's fluent builders append in, the reason "strip the top of the stack"
     // is well defined. The controller clause is not in that stack at all: it is its own field, so

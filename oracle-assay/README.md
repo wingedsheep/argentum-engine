@@ -5305,6 +5305,28 @@ Two stay as standing findings: **Tarrian's Soulcleaver** spells its counter targ
 spell is gone when the trigger resolves) where the grammar reads `ManaValueAtMostX`. The second is a
 grammar finding outside this band: X inside a permanent's own enters trigger means the cast X.
 
+## Toughness N or greater / or less
+
+"Destroy target creature with **toughness 4 or greater**", "Tap all creatures with **toughness 2 or
+less**" — `Filters` had the power pair as two quality rows and nothing for toughness, though
+`CardPredicate.ToughnessAtLeast` / `ToughnessAtMost` and their `toughnessAtLeast(n)` /
+`toughnessAtMost(n)` builders are what every hand-written card already uses. The band is the two
+sibling rows in the quality layer, so every noun position that offers the power clause — singular,
+plural, card, controller-first — offers this one too. No `alternate`: Oracle prints the toughness
+clause one way.
+
+### What it moved
+
+Probe 24 lines / 17 whole cards corpus-wide (dropping the clause); over the implemented population,
+where the family reaches 11 cards, delivered **+6** (7,783 → 7,789), and the verdict ledger moved
+exactly the probe's **17** (10,739 → 10,756 read whole) with no card leaving `whole`. The rest decline
+on their payload — "can't be blocked by creatures with …", a second ability on the card.
+
+### What the differential found
+
+Nothing new: the six cards it finished were compared and all six agree (7,373 → 7,379 compared,
+divergent unchanged at 75). The hand-written spellings of this predicate were already right.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote
