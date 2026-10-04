@@ -26,6 +26,7 @@ import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.mechanics.cost.VariablePermanentsCost
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.mechanics.mana.buildAbilityPaymentContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -110,7 +111,7 @@ internal class ActivationChoicePauses(
         val tapXCost = activation.effectiveCost.extractTapXPermanentsCost()
         val alreadyTapping = (action.costPayment?.tappedPermanents?.isNotEmpty() == true)
         if (tapXCost == null || action.xValue != null || alreadyTapping) return null
-        val tapTargets = costHandler.findUntappedMatchingPermanentsUnified(state, action.playerId, tapXCost.filter)
+        val tapTargets = costHandler.findUntappedMatchingPermanentsUnified(state, action.playerId, tapXCost.filter, action.sourceId)
         val maxX = tapTargets.size
         val continuation = ActivateAbilityChooseXContinuation(
             action = action,
@@ -152,7 +153,9 @@ internal class ActivationChoicePauses(
         }
         val fixedMana = manaXCost?.cmc ?: 0 // the non-X portion ({X} alone is 0; {1}{X} is 1)
         val manaMaxX = if (manaXCost?.hasX == true) {
-            (manaSolver.getAvailableManaCount(state, action.playerId) - fixedMana).coerceAtLeast(0) /
+            (manaSolver.getAvailableManaCount(state, action.playerId, spellContext = buildAbilityPaymentContext(
+                activation.cardComponent, state.projectedState, action.sourceId, activation.ability)
+            ) - fixedMana).coerceAtLeast(0) /
                 manaXCost.xCount.coerceAtLeast(1)
         } else null
         val loyaltyMaxX = if (effectiveCost == AbilityCost.LoyaltyX) {
@@ -331,7 +334,7 @@ internal class ActivationChoicePauses(
         if (sacrificeCost == null || alreadySacrificing) return null
         val sacrificeCandidates = costHandler
             .findMatchingCardsUnified(
-                state, state.getBattlefield(action.playerId), sacrificeCost.filter, action.playerId,
+                state, state.controlledBattlefield(action.playerId), sacrificeCost.filter, action.playerId,
                 // Source-relative filters ("an Equipment attached to this creature") need the
                 // ability's own source to resolve; without it they match nothing.
                 sourceId = action.sourceId,
@@ -426,7 +429,7 @@ internal class ActivationChoicePauses(
         val verb = VariablePermanentsCost.verb(variablePermanentsCost.action)
         val candidates = costHandler
             .findMatchingCardsUnified(
-                state, state.getBattlefield(action.playerId), variablePermanentsCost.filter, action.playerId,
+                state, state.controlledBattlefield(action.playerId), variablePermanentsCost.filter, action.playerId,
                 // Same source-relative resolution as the sacrifice pause above, so the choices
                 // offered here are exactly the ones payment will accept.
                 sourceId = action.sourceId,

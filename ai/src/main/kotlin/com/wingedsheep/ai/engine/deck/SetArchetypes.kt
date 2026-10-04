@@ -681,6 +681,33 @@ object SetArchetypes {
                     "Spread counters of every kind, then proliferate them — poison, +1/+1, and oil alike. A value midrange deck whose whole board grows with every new creature."),
             )
         ),
+        "MH3" to SetSynergies(
+            setCode = "MH3",
+            setName = "Modern Horizons 3",
+            archetypes = listOf(
+                Archetype("Energy Exalted", listOf(Color.WHITE, Color.BLUE),
+                    "Bank energy and spend it to stack exalted counters, then send one well-equipped attacker in alone each turn. A tempo deck backed by flyers and flicker effects that turns a single threat into a lethal clock."),
+                Archetype("Draw-Discard Graveyard", listOf(Color.BLUE, Color.BLACK),
+                    "Loot, wheel, and discard to fill the graveyard, then cash it in for recursion and threats that reward a stocked yard. A grindy control deck that always finds the right answer."),
+                Archetype("Artifact Sacrifice", listOf(Color.BLACK, Color.RED),
+                    "Sacrifice artifacts and creatures for value, then bring the best ones back while their mana value doubles as removal. An attrition deck that turns every death into a fresh card."),
+                Archetype("Eldrazi Ramp", listOf(Color.RED, Color.GREEN),
+                    "Ramp into devoid and colorless Eldrazi, using Eldrazi Spawn and Scion tokens to bridge the gap, then grow the whole colorless board and trample through. A big-mana deck that goes over the top of everything else.",
+                    creatureTypes = listOf("Eldrazi")),
+                Archetype("Auras & Equipment", listOf(Color.GREEN, Color.WHITE),
+                    "Suit up creatures with Auras, Equipment, and counters, then swing with a modified team that gets bigger together. An aggressive voltron-style deck where every modification pays off twice."),
+                Archetype("Modified Counters", listOf(Color.WHITE, Color.BLACK),
+                    "Spread +1/+1 counters and other modifications across a lifelinking board, then profit when modified creatures trade off. A sticky midrange deck that drains value out of every combat."),
+                Archetype("Energy Artifacts", listOf(Color.BLUE, Color.RED),
+                    "Pile up energy from artifacts and spells, then spend it in big bursts for card draw, damage, and tempo. A spells-and-artifacts deck that turns every energy payoff into extra value."),
+                Archetype("+1/+1 Counters", listOf(Color.BLACK, Color.GREEN),
+                    "Put +1/+1 counters everywhere and add one more each time, adapting and growing an unstoppable board. A resilient midrange deck that outsizes the opponent turn after turn."),
+                Archetype("Energy Go-Wide", listOf(Color.RED, Color.WHITE),
+                    "Flood the board with small creatures and tokens, convert the crowd into energy, then pump the team and give it haste for a sudden alpha strike. A go-wide aggro deck that closes games fast."),
+                Archetype("Lands Value", listOf(Color.GREEN, Color.BLUE),
+                    "Hit every land drop and play the modal double-faced spell lands as either half, rewarding landfall and lands entering with card advantage. A flexible value deck that never misses a beat."),
+            )
+        ),
         "MOM" to SetSynergies(
             setCode = "MOM",
             setName = "March of the Machine",

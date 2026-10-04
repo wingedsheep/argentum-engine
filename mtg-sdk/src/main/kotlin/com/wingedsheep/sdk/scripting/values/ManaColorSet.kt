@@ -77,7 +77,8 @@ sealed interface ManaColorSet {
      * The union of colors that any land in the given [scope] could produce
      * (CR 106.7 / Fellwar Stone rulings). Tapped state and unpayable activation
      * costs are ignored; colorless production is ignored. Used by Fellwar Stone
-     * (OPPONENTS), Exotic Orchard (OPPONENTS), Reflecting Pool (YOU).
+     * (OPPONENTS), Exotic Orchard (OPPONENTS), Reflecting Pool (YOU). "Any *type*" adds a
+     * second `{C}` ability gated on `CardPredicate.CouldProduceColorlessMana` (Naga Vitalist).
      */
     @SerialName("ManaColorSet.LandsCouldProduce")
     @Serializable

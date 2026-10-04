@@ -1219,7 +1219,15 @@ chains pay intermediate costs from the pool and settle feeder identities; fixed 
 keep separate provenance. The final spell allocator consumes the chosen production state and settles
 all scopes. Explicit source selections exclude other sources throughout the chain. Search pays each
 cost against the current prefix: tap, self-sacrifice, positive fixed life or mana payments and named
-fixed self-counter removal compose without a separate cost simulation. Repeated activations share
+fixed self-counter removal compose without a separate cost simulation. Finite public cost choices
+also use real handler execution: fixed/variable battlefield sacrifices, fixed other-permanent taps,
+tap-X, mana-X, and named self-counter X. Existing number and public object-selection questions branch
+through their registered resumers; action-carried choices use the handler's normal validation.
+Cost objects follow projected control rather than owner-keyed zones, including stolen permanents;
+source-relative tap filters retain the cost's source through query and payment. Choice previews are
+advisory when they lack that context; the real action remains authoritative.
+Distinct subsets are lazy, and even rejected responses/activations consume the shared budget so
+invalid name/type/measure combinations cannot cause unbounded enumeration. Repeated activations share
 the actual life, counters and pool, and receive distinct contribution identities. Sacrificed output
 retains last-known provenance. It accepts mana-only effect trees and explores their finite
 production pauses using the ordinary decision validators and continuation resumers. The existing
@@ -1236,8 +1244,9 @@ feasibility from impossibility without publishing speculative state or events. N
 or client contract is added. Standalone
 solvers and intermediate-ability affordability retain the independent fixed-output proof. Face-down
 boards retain a uniform source-proof boundary because legacy enumeration inspects hidden printed
-statics; complete floating payments still work. Activation-cost choices
-and atomic manual-overactivation recovery remain required before a printed card uses the foundation.
+statics; complete floating payments still work. Hidden-zone/distributed-counter cost choices and
+other unsupported mana-ability execution shapes remain explicit uncertainty. Atomic manual-overactivation
+recovery and closing those proof boundaries remain required before a printed card uses the foundation.
 
 **Tier 3: Cost Execution (Engine).** The `CostHandler` physically pays costs — tapping permanents,
 deducting from the mana pool, sacrificing creatures, discarding cards, paying life. The `ManaPool`

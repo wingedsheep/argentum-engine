@@ -7,10 +7,13 @@ import com.wingedsheep.engine.handlers.actions.decision.DecisionValidators
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.activeManaSpendingScope
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.TextChanges
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.*
@@ -63,27 +66,28 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
             val pending = ArrayDeque<Prefix>()
             pending.add(Prefix(initial, emptyList()))
             val continuationFloor = initial.continuationStack.size
-            var admitted = 1
-            // Short proofs must precede permutations of irrelevant taps. Bound queued states too.
+            var attempted = 1
+            // Short proofs precede irrelevant permutations. Bound attempts, including rejected choices.
             while (pending.isNotEmpty()) {
                 val (current, events) = pending.removeFirst()
                 if (current.pendingDecision == null && current.continuationStack.size == continuationFloor &&
                     complete(current)) return ScopedManaPlanResult.Found(ExecutionResult.success(current, events))
                 if (current.pendingDecision != null) {
-                    // Branch only over the paying player's production answers. Each branch uses
+                    // Branch only over the paying player's public cost and production answers. Each branch uses
                     // the real validation and continuation dispatch, but cannot consume caller work.
-                    val responses = productionResponses(current, player)
+                    val responses = activationResponses(current, player)
                     if (responses == null) {
                         limits.add(ScopedManaSearchLimit.UNSUPPORTED_DECISION)
                         continue
                     }
                     for (response in responses) {
                         val decision = current.pendingDecision ?: break
-                        if (DecisionValidators.validate(decision, response, current) != null) continue
-                        if (admitted >= nodeLimit) {
+                        if (attempted >= nodeLimit) {
                             limits.add(ScopedManaSearchLimit.NODE_BUDGET)
                             break
                         }
+                        attempted++
+                        if (DecisionValidators.validate(decision, response, current) != null) continue
                         val result = services.continuationHandler.resumeWithin(current, response, continuationFloor)
                         if (result.error != null) {
                             limits.add(ScopedManaSearchLimit.EXECUTION_FAILURE)
@@ -91,7 +95,6 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                         }
                         if (result.state.gameOver) continue
                         pending.add(Prefix(result.state, events + DecisionSubmittedEvent(decision.id, player) + result.events))
-                        admitted++
                     }
                     continue
                 }
@@ -114,33 +117,57 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                     }
                     if (base.sourceId in excludeSources) continue
                     val ability = resolver.lookup(current, base.sourceId, base.abilityId)?.ability
-                    if (ability == null || candidate.hasXCost || !safeCost(ability.cost) || !manaOnly(ability.effect)) {
+                    if (ability == null || !safeCost(ability.cost) || !manaOnly(ability.effect)) {
                         limits.add(ScopedManaSearchLimit.UNSUPPORTED_ACTIVATION)
                         continue
                     }
-                    if (!candidate.affordable) continue
+                    // Choice previews can omit source-relative costs; the real action validates them.
+                    if (!candidate.affordable && !hasCostChoice(ability.cost)) continue
                     // A composite can contain independently chosen colors. A shared activation
                     // color would couple those choices, so let its production leaves ask separately.
                     val colors: List<Color?> = if (candidate.requiresManaColorChoice &&
                         ability.effect !is CompositeEffect)
                         candidate.availableManaColors ?: Color.entries else listOf(null)
-                    for (color in colors) {
-                        val action = base.copy(manaColorChoice = color, paymentStrategy = PaymentStrategy.FromPool)
-                        if (handler.validate(current, action) != null) continue
-                        if (admitted >= nodeLimit) {
-                            limits.add(ScopedManaSearchLimit.NODE_BUDGET)
-                            break
+                    if (colors.isEmpty()) continue
+                    // A named self-counter X has no handler picker; carry its enumerated bound
+                    // on the real action. Tap-X and mana-X use their ordinary nested questions.
+                    val xs: Sequence<Int?> = if (candidate.hasXCost && hasSelfCounterX(ability.cost)) {
+                        val maximum = candidate.maxAffordableX
+                        if (maximum == null || maximum == Int.MAX_VALUE) {
+                            limits.add(ScopedManaSearchLimit.UNSUPPORTED_ACTIVATION)
+                            continue
                         }
+                        (candidate.minX..maximum).asSequence()
+                    } else sequenceOf(null)
+                    val tapCost = TextChanges.of(current, base.sourceId)
+                        ?.let { ability.cost.applyTextReplacement(it) } ?: ability.cost
+                    val tap = fixedTapCost(tapCost)
+                    val taps = if (tap == null) sequenceOf(emptyList()) else {
+                        val options = services.costHandler.findMatchingCardsUnified(
+                            current, current.controlledBattlefield(player), tap.filter, player, sourceId = base.sourceId)
+                            .filter { (!tap.excludeSelf || it != base.sourceId) &&
+                                current.getEntity(it)?.has<TappedComponent>() != true }
+                        if (options.size < tap.count) continue
+                        scopedManaSelections(options, tap.count, tap.count)
+                    }
+                    actions@ for (x in xs) for (selected in taps) for (color in colors) {
+                        if (attempted >= nodeLimit) {
+                            limits.add(ScopedManaSearchLimit.NODE_BUDGET)
+                            break@actions
+                        }
+                        attempted++
+                        val action = base.copy(manaColorChoice = color, xValue = x,
+                            costPayment = if (tap == null) null else AdditionalCostPayment(tappedPermanents = selected),
+                            paymentStrategy = PaymentStrategy.FromPool)
+                        if (handler.validate(current, action) != null) continue
                         val result = handler.execute(current, action)
-                        // Paused production remains private to this speculative branch. A plan
-                        // is published only after all its questions and its full payment finish.
+                        // All announcement and production questions stay private to the branch.
                         if (result.error != null) {
                             limits.add(ScopedManaSearchLimit.EXECUTION_FAILURE)
                             continue
                         }
                         if (result.state.gameOver) continue
                         pending.add(Prefix(result.state, events + result.events))
-                        admitted++
                     }
                 }
             }
@@ -160,7 +187,7 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
             priorityPlayerId = state.priorityPlayerId, priorityPassedBy = state.priorityPassedBy)))
     }
 
-    private fun productionResponses(state: GameState, player: EntityId): Sequence<DecisionResponse>? {
+    private fun activationResponses(state: GameState, player: EntityId): Sequence<DecisionResponse>? {
         val suspension = state.continuationStack.lastOrNull() as? Suspension ?: return null
         val question = suspension.question
         if (question.playerId != player) return null
@@ -170,26 +197,63 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                 if (colors.maxColors != 1) return null
                 colors.availableColors.asSequence().map { ColorChosenResponse(question.id, it) }
             }
-            is AddDynamicManaContinuation -> {
+            is AddDynamicManaContinuation, is ActivateAbilityChooseXContinuation,
+            is ActivateAbilityChooseManaXContinuation -> {
                 val number = question as? ChooseNumberDecision ?: return null
                 (number.minValue..number.maxValue).asSequence().map { NumberChosenResponse(question.id, it) }
+            }
+            is ActivateAbilitySacrificeContinuation, is ActivateAbilityVariablePermanentsContinuation,
+            is ActivateAbilityTapXTargetsContinuation -> {
+                val cards = question as? SelectCardsDecision ?: return null
+                scopedManaSelections(cards.options, cards.minSelections, cards.maxSelections)
+                    .map { CardsSelectedResponse(question.id, it) }
             }
             else -> null
         }
     }
 
-    // Only costs with no object/type/amount choice. The real handler validates and pays each
+    private fun hasCostChoice(cost: AbilityCost): Boolean = when (cost) {
+        is AbilityCost.Composite -> cost.costs.any(::hasCostChoice)
+        is AbilityCost.TapXPermanents -> true
+        is AbilityCost.Atom -> when (val atom = cost.atom) {
+            is CostAtom.TapPermanents, is CostAtom.Sacrifice, is CostAtom.VariablePermanents -> true
+            is CostAtom.Mana -> atom.cost.hasX
+            is CostAtom.RemoveCounters -> atom.count is DynamicAmount.XValue
+            else -> false
+        }
+        else -> false
+    }
+
+    private fun hasSelfCounterX(cost: AbilityCost): Boolean = when (cost) {
+        is AbilityCost.Composite -> cost.costs.any(::hasSelfCounterX)
+        is AbilityCost.Atom -> (cost.atom as? CostAtom.RemoveCounters)?.let {
+            it.self && it.count is DynamicAmount.XValue
+        } == true
+        else -> false
+    }
+
+    private fun fixedTapCost(cost: AbilityCost): CostAtom.TapPermanents? = when (cost) {
+        is AbilityCost.Composite -> cost.costs.firstNotNullOfOrNull(::fixedTapCost)
+        is AbilityCost.Atom -> cost.atom as? CostAtom.TapPermanents
+        else -> null
+    }
+
+    // Public, finite choices only. The real handler validates and pays each
     // prefix, so repeated activations share life, counters and floating mana rather than counting
     // the same resource twice. Taps and sacrifices naturally remove their source's availability.
     // The node budget also bounds positive-mana loops; no hypothetical resources are published.
     private fun safeCost(cost: AbilityCost): Boolean = when (cost) {
-        AbilityCost.Tap, AbilityCost.SacrificeSelf -> true
+        AbilityCost.Tap, AbilityCost.SacrificeSelf, is AbilityCost.TapXPermanents -> true
         is AbilityCost.Composite -> cost.costs.isNotEmpty() && cost.costs.all(::supportedCost) && cost.costs.any(::safeCost)
         is AbilityCost.Atom -> when (val atom = cost.atom) {
-            is CostAtom.Mana -> !atom.cost.hasX && atom.cost.cmc > 0
+            is CostAtom.Mana -> atom.cost.hasX || atom.cost.cmc > 0
             is CostAtom.PayLife -> atom.amount > 0
             is CostAtom.RemoveCounters -> atom.self && atom.counterType != null &&
-                (atom.count as? DynamicAmount.Fixed)?.amount?.let { it > 0 } == true
+                ((atom.count as? DynamicAmount.Fixed)?.amount?.let { it > 0 } == true ||
+                    atom.count is DynamicAmount.XValue)
+            is CostAtom.Sacrifice -> atom.count > 0
+            is CostAtom.TapPermanents -> atom.count > 0
+            is CostAtom.VariablePermanents -> atom.minCount > 0 || atom.minMeasure > 0
             else -> false
         }
         else -> false
@@ -200,7 +264,7 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
     private fun supportedCost(cost: AbilityCost): Boolean = when (cost) {
         is AbilityCost.Composite -> cost.costs.all(::supportedCost)
         is AbilityCost.Atom -> when (val atom = cost.atom) {
-            is CostAtom.Mana -> !atom.cost.hasX
+            is CostAtom.Mana -> true
             is CostAtom.PayLife -> atom.amount >= 0
             else -> safeCost(cost)
         }
@@ -211,5 +275,25 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
         is AddManaEffect, is AddColorlessManaEffect, is AddManaOfChoiceEffect, is AddDynamicManaEffect -> true
         is CompositeEffect -> effect.effects.isNotEmpty() && effect.effects.all(::manaOnly)
         else -> false
+    }
+}
+
+/** Lazy, distinct subsets: no materialized power set, and every yielded choice consumes search budget. */
+internal fun scopedManaSelections(options: List<EntityId>, minimum: Int, maximum: Int): Sequence<List<EntityId>> = sequence {
+    val distinct = options.distinct()
+    for (size in minimum.coerceAtLeast(0)..maximum.coerceAtMost(distinct.size)) {
+        if (size == 0) {
+            yield(emptyList())
+            continue
+        }
+        val indices = IntArray(size) { it }
+        while (true) {
+            yield(indices.map { distinct[it] })
+            var position = size - 1
+            while (position >= 0 && indices[position] == distinct.size - size + position) position--
+            if (position < 0) break
+            indices[position]++
+            for (next in position + 1 until size) indices[next] = indices[next - 1] + 1
+        }
     }
 }

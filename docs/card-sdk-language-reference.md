@@ -2228,7 +2228,7 @@ vocabulary; this primitive does not provide Word of Command's full mana restrict
   the source permanent (its `LinkedExileComponent`, still in the exile zone; reads each card's base
   colors; sugar for `ManaColorSet.AmongLinkedExiledCards`). Pit of Offerings ("any of the exiled
   cards' colors"). Pair with a `MoveToZoneEffect(linkToSource = true)` that records the exiled pile.
-- `AddManaOfColorLandsCouldProduce(scope)` — sugar for `AddManaOfChoice(ManaColorSet.LandsCouldProduce(scope))`. Fellwar Stone / Exotic Orchard / Reflecting Pool shape.
+- `AddManaOfColorLandsCouldProduce(scope)` — sugar for `AddManaOfChoice(ManaColorSet.LandsCouldProduce(scope))`. Fellwar Stone / Exotic Orchard shape. Colors only — "any **type**" (Reflecting Pool, Naga Vitalist) adds a gated `{C}` ability, see `.couldProduceColorlessMana()`.
 - `AddManaOfColorInCommanderColorIdentity()` — sugar for `AddManaOfChoice(ManaColorSet.CommanderIdentity)`. Arcane Signet / Command Tower shape.
 - `AddAnyColorManaSpendOnChosenType(typeName)` — mana that can only pay for a specific card type (kept separate because it derives a runtime [ManaRestriction] from the source's chosen subtype).
 - `AddDynamicMana(amount, allowedColors, restriction?)` — split X across a fixed color set, distinct from `AddManaOfChoice` because it distributes the full X total across multiple colors rather than producing X copies of one chosen color.
@@ -5321,6 +5321,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   typecycling (CR 702.29e). Read off the card's printed keyword abilities (stamped as
   `CardComponent.hasCycling`), so it works in any zone — "target card with a cycling ability from your
   graveyard" (Rooting Moloch).
+- `.couldProduceColorlessMana()` — `CardPredicate.CouldProduceColorlessMana`: a land one of whose mana
+  abilities (intrinsic, printed or granted) adds `{C}` — Wastes, an Eldrazi Temple. Like
+  `ManaColorSet.LandsCouldProduce` it ignores costs and tapped state, a land that lost all abilities
+  only counts its granted ones, and a nonland never matches. The colorless half of "add one mana of any
+  **type** a land you control could produce" (Naga Vitalist): author that as two `{T}` mana abilities —
+  `Effects.AddManaOfColorLandsCouldProduce(YOU)` and `Effects.AddColorlessMana(1)` gated by
+  `ActivationRestriction.OnlyIfCondition(Conditions.YouControl(GameObjectFilter.Land.couldProduceColorlessMana()))`.
 - `.ofColor(c)` / `.ofColors(set)` — color predicate.
 - `.withColor(c)` / `.withAnyColor(c…)` / `.notColor(c)` — fixed-color predicates (`CardPredicate.HasColor`/`NotColor`).
 - `.nonartifact()` — appends `CardPredicate.IsNonartifact` ("nonartifact creature", the Terror template);
@@ -13811,7 +13818,7 @@ solver picks if there's only one), and that color is added to the pool.
 - `ManaColorSet.Specific(colors)` — hand-authored fixed set (e.g., `{R, G}` for a Gruul producer).
 - `ManaColorSet.CommanderIdentity` — union of color identities of every commander the controller has registered. Empty (no mana produced) in non-Commander formats.
 - `ManaColorSet.AmongPermanents(filter)` — colors of permanents matching `filter`, read via projected state so type/color-changing effects are honored. Mox Amber shape.
-- `ManaColorSet.LandsCouldProduce(scope)` — colors any land in `scope` could produce; tapped state and activation costs are ignored (CR 106.7). `scope` is `LandControllerScope.{YOU, OPPONENTS, ANY}`. Fellwar Stone / Exotic Orchard / Reflecting Pool shape.
+- `ManaColorSet.LandsCouldProduce(scope)` — colors any land in `scope` could produce; tapped state and activation costs are ignored (CR 106.7). `scope` is `LandControllerScope.{YOU, OPPONENTS, ANY}`. Fellwar Stone / Exotic Orchard shape. Colors only — "any **type**" (Reflecting Pool, Naga Vitalist) adds a gated `{C}` ability, see `.couldProduceColorlessMana()`.
 - `ManaColorSet.SourceChosenColor` — the single color stored on the source's `ChosenColorComponent` (set via `EntersWithChoice(ChoiceType.COLOR)`). Uncharted Haven / Ashling Rekindled shape.
 - `ManaColorSet.ColorsOf(entity)` — the colors of one object, `entity` an `EffectTarget` resolved against the running effect: a pipeline-gathered card (`handle.asTarget(0)`), a target, `Self`. Battlefield permanents read projected colors; any other zone reads the card's own. A colorless or unresolvable object produces no mana. Outside an effect (the mana solver) only `Self` resolves. "Add three mana in any combination of its colors" is `Effects.Repeat(DynamicAmount.Fixed(3), Effects.AddManaOfChoice(ManaColorSet.ColorsOf(revealed.asTarget(0))))` — each unit picks its own colour (Omnath, Locus of All).
 - `ManaColorSet.Union(members)` — the union of two or more pools; the player picks one color from any of them. A fixed color *or* a looked-up one: the Thriving lands' "Add {R} or one mana of the chosen color" is `Union(listOf(Specific(setOf(RED)), SourceChosenColor))`, which still taps for {R} if no color was ever chosen. The resolver, the mana solver and `LandManaColorInspector` all recurse into the members.
@@ -16429,13 +16436,24 @@ contribution identity. Phyrexian pips paid with life reserve their life budget d
 and production planning, so activation costs cannot consume the life committed to the spell.
 Self-sacrifice output retains last-known source/snow provenance; excess remains
 available after its identity is discharged. It supports direct fixed/dynamic-amount colored, colorless,
-chosen-color or composite mana effects. It declines X activation choices, zero/free costs,
-object-selection or unnamed-counter costs and non-mana effect leaves. Finite mana-production pauses
-are now explored through the normal continuation dispatch: single-color choices, two-color split
+chosen-color or composite mana effects. Public cost choices include fixed or variable-count
+battlefield sacrifices, fixed other-permanent taps, tap-X number/object choices, named self-counter X,
+and mana-X. The planner branches through the handler's existing sacrifice, variable-permanent and
+number/tap-selection questions; self-counter X and fixed taps ride the ordinary activation action.
+It uses projected cost filters and control, distinct subsets and each cost's own exclusions.
+Fixed tap selection applies the source’s current text changes to its filter.
+Source-relative fixed tap costs retain their source through selection, affordability and payment;
+real action validation takes precedence over a choice preview that lacks that context. X and the selected
+set are then paid and measured by the real handler. Mana resolution uses the announced/measured
+X rather than only the submitted action's value, and mana-X pickers count restricted floating mana
+eligible for that ability's payment context. A sacrificed or tapped payment object cannot be reused; cost objects are independent of any scoped mana-source eligibility filter. Hidden-zone,
+unnamed/distributed-counter costs, free costs and non-mana effect leaves remain outside this proof.
+Finite mana-production pauses are explored through the normal continuation dispatch: single-color choices, two-color split
 numbers, pip-by-pip dynamic output, and any-color triggered tap bonuses. Composite choice leaves
 choose independently within their own color sets; a single activation color does not bind all leaves.
-Each answer is validated and charged to the same search budget. The planner finishes an activated ability and its bonuses
-before considering another activation; it never treats a partially produced pool as payable.
+Every attempted activation or answer consumes the same search budget, including invalid selections;
+subsets are generated lazily so a large invalid choice space cannot evade the budget. The planner
+finishes an activated ability and its bonuses before considering another activation; it never treats a partially produced pool as payable.
 A continuation floor keeps enclosing effects, forced-play completion, source filters and spending
 scopes intact while automatic production frames resume above them. Successful production restores
 the caller's original suspension and priority; speculative choices and events from failed branches
@@ -16457,6 +16475,7 @@ boundary remains uniform, while complete existing floating payments still work. 
 affordability keeps the independent proof and actual intermediate payment uses the floating pool.
 The standalone solver's independent proof remains available when no engine execution provider exists.
 
-G48 must supply activation-cost choices and atomic recovery from
-zero-output or excess manual activations before a printed card uses this wrapper. Word of Command remains blocked; no incomplete
+G48 supplies finite public activation-cost choices. G49 must supply atomic recovery from
+zero-output or excess manual activations and close the remaining mana-ability proof boundaries
+before a printed card uses this wrapper. Word of Command remains blocked; no incomplete
 canonical is registered. The new planner adds no SDK type, decision, client field or serialization shape.

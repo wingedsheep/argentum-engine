@@ -170,10 +170,9 @@ internal class ActivatedManaAbilityResolver(
             controllerId = action.playerId,
             granterId = activation.staticGranterId,
             targets = action.targets,
-            // Thread the chosen X so X-based mana abilities produce the right amount
-            // ("{X}, {T}, Sacrifice this: Add X mana..." — Wizard's Rockets). Without
-            // this, DynamicAmount.XValue resolves to 0 and the ability adds no mana.
-            xValue = action.xValue,
+            // Use the announced X, including values defined by a variable cost selection.
+            // The submitted action may not carry that derived value.
+            xValue = activation.effectiveXValue,
             // A mana ability resolves off the stack, so nothing else hands it the last-known
             // information its cost captured. Priest of Yawgmoth ("{T}, Sacrifice an artifact:
             // Add an amount of {B} equal to the sacrificed artifact's mana value") reads the

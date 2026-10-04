@@ -1316,6 +1316,7 @@ class CostCalculator(
             is CardPredicate.PowerGreaterThanEntity -> false
             is CardPredicate.PowerAtMostEntity -> false
             is CardPredicate.CouldEnchant -> false
+            CardPredicate.CouldProduceColorlessMana -> false
             is CardPredicate.PowerLessThanEntity -> false
             is CardPredicate.CompareNumericProperty -> false
             // A printed card's power never exceeds its own base power statically (they're equal).

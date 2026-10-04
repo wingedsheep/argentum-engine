@@ -700,7 +700,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
         is CostAtom.ExileTopOfLibrary ->
             state.getZone(ZoneKey(controllerId, Zone.LIBRARY)).size >= atom.count
         is CostAtom.TapPermanents -> {
-            val candidates = findUntappedMatchingPermanentsUnified(state, controllerId, atom.filter)
+            val candidates = findUntappedMatchingPermanentsUnified(state, controllerId, atom.filter, sourceId)
                 .let { targets -> if (atom.excludeSelf) targets.filter { it != sourceId } else targets }
                 .let { SharedCreatureTypeTapCost.eligible(state, atom, it) }
             candidates.size >= atom.count
@@ -1089,7 +1089,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
         // AI's infinite "Not enough sacrifice targets chosen" loop.
         val toSacrificeList = if (sacrificeChoices.isEmpty()) {
             val candidates = findMatchingCardsUnified(
-                state, state.getBattlefield(controllerId), filter, controllerId, sourceId
+                state, state.controlledBattlefield(controllerId), filter, controllerId, sourceId
             ).let { if (excludeSelf) it.filter { id -> id != sourceId } else it }
             if (candidates.size < requiredCount) {
                 return CostPaymentResult.failure("Not enough sacrifice targets chosen (need $requiredCount, got ${candidates.size})")
@@ -1123,8 +1123,11 @@ class CostHandler(private val zones: ZoneTransitionService) {
         for (toSacrifice in toSacrificeList) {
             val sacrificeContainer = newState.getEntity(toSacrifice)
                 ?: return CostPaymentResult.failure("Sacrifice target not found")
-            val sacrificeController = sacrificeContainer.get<ControllerComponent>()?.playerId
+            val sacrificeController = projected.getController(toSacrifice)
                 ?: return CostPaymentResult.failure("Sacrifice target has no controller")
+            if (sacrificeController != controllerId || toSacrifice !in state.getBattlefield()) {
+                return CostPaymentResult.failure("Can only sacrifice permanents you control")
+            }
             val sacrificeName = sacrificeContainer.get<CardComponent>()?.name ?: "Unknown"
 
             if (!predicateEvaluator.matches(state, projected, toSacrifice, filter, context)) {
@@ -1192,7 +1195,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
         // ActivateAbilityHandler; never silently guess which permanents to pay with.
         val toPay: List<EntityId> = if (choices.isEmpty()) {
             val candidates = findMatchingCardsUnified(
-                state, state.getBattlefield(controllerId), filter, controllerId, sourceId
+                state, state.controlledBattlefield(controllerId), filter, controllerId, sourceId
             ).let { if (excludeSelf) it.filter { id -> id != sourceId } else it }
                 .let { if (atom.action == PermanentCostAction.TAP) it.filter { id -> state.getEntity(id)?.has<TappedComponent>() != true } else it }
             if (candidates.size < minCount) {
@@ -1277,7 +1280,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
         for (id in toPay) {
             val container = newState.getEntity(id)
                 ?: return CostPaymentResult.failure("Permanent to exile not found")
-            val itsController = container.get<ControllerComponent>()?.playerId
+            val itsController = projected.getController(id)
                 ?: return CostPaymentResult.failure("Permanent to exile has no controller")
             if (itsController != controllerId) {
                 return CostPaymentResult.failure("Can only exile permanents you control")
@@ -1318,7 +1321,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
         // can't "pay" a tap cost by re-tapping an already-tapped or ineligible permanent
         // (Station, Cryptic Gateway). Filter matching uses projected state (CR 613).
         val projected = state.projectedState
-        val context = PredicateContext(controllerId = controllerId)
+        val context = PredicateContext(controllerId = controllerId, sourceId = sourceId)
         for (permanentId in toTap) {
             val entity = state.getEntity(permanentId)
                 ?: return CostPaymentResult.failure("Permanent to tap no longer exists")
@@ -1691,10 +1694,9 @@ class CostHandler(private val zones: ZoneTransitionService) {
     ): List<EntityId> {
         val context = PredicateContext(controllerId = controllerId, sourceId = sourceId)
         val projected = state.projectedState
-        return state.entities.filter { (entityId, container) ->
-            container.get<ControllerComponent>()?.playerId == controllerId &&
+        return state.controlledBattlefield(controllerId).filter { entityId ->
             predicateEvaluator.matches(state, projected, entityId, filter, context)
-        }.keys.toList()
+        }
     }
 
     // `internal` (not private) so the TapXPermanents cost-choice pause in ActivateAbilityHandler
@@ -1703,15 +1705,15 @@ class CostHandler(private val zones: ZoneTransitionService) {
     internal fun findUntappedMatchingPermanentsUnified(
         state: GameState,
         controllerId: EntityId,
-        filter: GameObjectFilter
+        filter: GameObjectFilter,
+        sourceId: EntityId? = null
     ): List<EntityId> {
-        val context = PredicateContext(controllerId = controllerId)
+        val context = PredicateContext(controllerId = controllerId, sourceId = sourceId)
         val projected = state.projectedState
-        return state.entities.filter { (entityId, container) ->
-            container.get<ControllerComponent>()?.playerId == controllerId &&
-            !container.has<TappedComponent>() &&
-            predicateEvaluator.matches(state, projected, entityId, filter, context)
-        }.keys.toList()
+        return state.controlledBattlefield(controllerId).filter { entityId ->
+            state.getEntity(entityId)?.has<TappedComponent>() != true &&
+                predicateEvaluator.matches(state, projected, entityId, filter, context)
+        }
     }
 
     // `internal` (not private) so the activated-ability cost-choice pause in
