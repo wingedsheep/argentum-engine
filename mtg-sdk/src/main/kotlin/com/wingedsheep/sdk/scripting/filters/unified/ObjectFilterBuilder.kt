@@ -748,6 +748,14 @@ interface ObjectFilterBuilder<out Self> {
     fun blockingIterationEntity() = withStatePredicate(StatePredicate.IsBlockingIterationEntity)
 
     /**
+     * Blocking the creature [reference] names (CR 509), read live — "each creature blocking it"
+     * when "it" is a role such as the triggering creature (Ib Halfheart, Goblin Tactician). Gather
+     * before a removal in the same resolution to hold the group across it.
+     */
+    fun blockingEntity(reference: EffectTarget.SingleEntity) =
+        withStatePredicate(StatePredicate.IsBlockingEntity(reference))
+
+    /**
      * Must be a token created by the effect's source permanent (CR 111 provenance), recognized via
      * the source's stamped `CreatedByComponent`. "Tokens created with this creature" (Tetravus).
      */

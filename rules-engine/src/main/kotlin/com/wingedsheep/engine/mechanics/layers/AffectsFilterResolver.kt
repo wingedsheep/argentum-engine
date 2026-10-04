@@ -535,6 +535,8 @@ internal class AffectsFilterResolver(
         StatePredicate.IsCombatPairedWithSource -> false
         // Loop-relative; only meaningful inside a ForEach at resolution, never in projection.
         StatePredicate.IsBlockingIterationEntity -> false
+        // Role-relative ("blocking it"); needs an effect context, never present in projection.
+        is StatePredicate.IsBlockingEntity -> false
         // Source-relative: "created with the source" needs the ability's source permanent, absent
         // in group-static projection. Only meaningful in target/gather-filter contexts via
         // PredicateEvaluator. Never match here.

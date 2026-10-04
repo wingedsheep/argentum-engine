@@ -1213,7 +1213,17 @@ with equal contribution coverage preferring the smaller payment. Ordinary untagg
 their existing fast path. The immutable scope frames and entries serialize together, and empty identity fields are omitted
 from older replay shapes. Current scope payments are pool-only: aggregate solver production cannot
 prove an allocation through mana chains, so that path explicitly refuses until the allocation
-planner is implemented. A printed card must not use the foundation before that gap is closed.
+planner is implemented. Scoped affordability now routes independent fixed-output tap sources
+through exact hypothetical activation entries. Final spell payment requires every selected and
+already-outstanding identity to contribute; intermediate ability payments may leave prior identities
+for later payments. It never reuses aggregate affordability after an unsatisfied floating
+payment. Memoized subset search and a remaining-production upper bound prune impossible
+contributions at each prefix without mutating game state. Independent planning excludes
+stateful source predicates and boards with unclassified continuous/static dependencies. Face-down
+boards have a uniform source-proof boundary because legacy production previews inspect some hidden
+printed statics; complete floating payments remain valid. Conditional, compound, dynamic and paid activations, mana chains,
+triggered bonus-dependent plans and manual recovery still require execution-backed planning. A
+printed card must not use the foundation before that gap is closed.
 
 **Tier 3: Cost Execution (Engine).** The `CostHandler` physically pays costs — tapping permanents,
 deducting from the mana pool, sacrificing creatures, discarding cards, paying life. The `ManaPool`

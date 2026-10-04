@@ -6007,6 +6007,15 @@ work for abilities-on-stack (which carry no `CardComponent`).
   counterpart of `IsBlockingSource` — reach for it whenever the printed "that creature" is the loop
   variable and not the permanent whose ability is resolving. Inert in group/projection contexts, which
   have no loop.
+- `IsBlockingEntity(reference)` (filter builder `blockingEntity(reference)`) — blocking the creature an
+  `EffectTarget.SingleEntity` role names (CR 509), read live: "each creature blocking **it**" when "it"
+  is neither the source nor a loop variable. Ib Halfheart, Goblin Tactician's "whenever another Goblin
+  you control becomes blocked, sacrifice it. If you do, it deals 4 damage to each creature blocking it"
+  = `Pipeline { val blockers = gather(Creature.blockingEntity(TriggeringEntity)); run(IfYouDo(SacrificeTarget(TriggeringEntity),
+  ForEachInCollection(blockers, DealDamage(4, IterationEntity, damageSource = TriggeringEntity)), PermanentsSacrificed)) }`.
+  Because it is live, a creature that has left combat has no blockers — gather the group *before* a
+  removal in the same resolution, as above. A reference resolving to nothing matches nothing; inert in
+  group/projection, untap, and trigger-gating contexts.
 - `ControllerControls(filter)` (filter builder `controllerControls(subfilter)`) — the candidate's
   **controller** controls something matching `subfilter`: "target creature whose controller controls
   an Island" (Seasinger, FEM). The load-bearing detail is that the subfilter's `youControl()` is
@@ -16271,7 +16280,7 @@ Shared-turn teams follow the existing player-control team rule. A later resoluti
 and a completed window reveals the underlying turn control again. Session hotseat routing keeps precedence.
 
 This primitive composes with `Effects.ForcePlay` for mandatory paid card play. Word of Command
-still needs feasible activated-source plans and recoverable payment (G43); it is not yet authorable faithfully.
+still needs feasible activated-source plans and recoverable payment (G44); it is not yet authorable faithfully.
 
 ### Scoped mana-ability sources
 
@@ -16319,8 +16328,30 @@ Zero output retains an unsatisfied obligation, and a bonus cannot satisfy the ba
 An unmatched obligation rejects completion atomically. Complete floating-pool payments now
 assign exact units to fixed pips and X together. The matcher reserves snow units, reassigns flexible
 hybrid/substituted pips, honors mana restrictions and actual-color restrictions on X, and maximizes
-distinct activation contributions. Affordability recognizes the same complete floating allocation
-before attempting partial/source planning. A monocolored hybrid can use its larger generic alternative when
+distinct activation contributions. Affordability verifies that the complete floating allocation
+covers every outstanding identity in
+all containing scopes for this player. It no longer falls through to aggregate affordability when
+one identity is unpaid. Intermediate activated-ability costs may leave prior identities for later
+payments; final spell payment requires coverage across all containing scopes. For independent
+fixed-output tap sources, a memoized subset/production-kind
+search feeds exact hypothetical activation units into the same matcher. Each selected source must
+contribute; two-color alternatives cannot count as two simultaneous activations, and excess is
+allowed. Projected source eligibility and explicit exclusions are honored. Triggered tap bonuses
+are usable here only once they are floating; their aggregate preview cannot discharge the base
+activation. Intrinsic land abilities and direct fixed-output tap abilities are proven; dynamic,
+compound, condition-restricted, paid, sacrificed, multiplied and dampened production is deliberately
+outside this planner. Without a payment context, direct sources containing restricted production
+also require execution-backed planning because aggregation can combine incompatible ability outputs.
+Boards with floating/granted static or replacement effects, unclassified
+battlefield statics/continuous effects, or stateful scoped source predicates also require
+execution-backed planning: a tap may change the next source's eligibility or output. Boards
+containing face-down permanents also require execution-backed planning because legacy production
+previews inspect some hidden printed statics. The independent source proof declines that public
+board shape uniformly, regardless of hidden identity; complete floating-pool payments remain usable. An optimistic remaining-production bound
+prunes impossible colors and contribution capacity at every search prefix. A unit bearing several
+identities still occupies one payment slot; only newly planned taps bound search depth. Canonical
+hypothetical identities allow equal independent sources to share memo entries.
+A monocolored hybrid can use its larger generic alternative when
 that is needed for two activations to contribute. If contribution coverage is equal, the smaller
 mana payment wins. Selected entries preserve the exact unused riders/source/snow metadata; events
 and X-spend records report actual colors. Nested mana-ability payments use the same allocation and
@@ -16328,7 +16359,8 @@ settle the prior activations they consume, without requiring every outstanding a
 contribute to that intermediate payment.
 
 This does not establish forward activation legality or provide recovery from an earlier manual
-overactivation. G43 must supply feasible activated-source plans through mana chains, zero-output
-and bonus-only activations, and recoverable payment before a printed
-card uses this wrapper. Partial pool/source planning is still outside the completed floating-pool
-allocator. Word of Command remains blocked; no incomplete canonical is registered.
+overactivation. G44 must supply execution-backed activation planning through mana chains, bonus-dependent
+production and recovery from zero-output or excess manual activations before a printed card uses
+this wrapper. Independent feasibility is a read-only proof, not an automatic activation payment
+plan. Scoped payment execution remains pool-only. Word of Command remains blocked; no incomplete
+canonical is registered.

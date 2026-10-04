@@ -1336,12 +1336,16 @@ class TriggerDetector(
                     // create one trigger per blocked creature controlled by the ability's controller.
                     // If a filter is set (e.g., "whenever a Beast becomes blocked"), match any blocked
                     // creature matching the filter regardless of controller.
-                    else if (ability.trigger is EventPattern.BecomesBlockedEvent && ability.binding == TriggerBinding.ANY &&
+                    // "Whenever another Goblin you control becomes blocked" (OTHER, Ib Halfheart) expands
+                    // the same way, minus the source.
+                    else if (ability.trigger is EventPattern.BecomesBlockedEvent &&
+                        (ability.binding == TriggerBinding.ANY || ability.binding == TriggerBinding.OTHER) &&
                         event is com.wingedsheep.engine.core.BlockingRelationshipsEvent) {
                         val trigger = ability.trigger as EventPattern.BecomesBlockedEvent
                         val creatureFilter = trigger.filter
                         val blockedAttackers = event.newlyBlockedAttackers
                         for (attackerId in blockedAttackers) {
+                            if (ability.binding == TriggerBinding.OTHER && attackerId == entityId) continue
                             if (creatureFilter != null) {
                                 // Filtered trigger: match any creature matching the filter (any controller)
                                 if (predicateEvaluator.matches(state, projected, attackerId, creatureFilter, PredicateContext(controllerId = controllerId, sourceId = entityId))) {

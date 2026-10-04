@@ -1,4 +1,8 @@
 package com.wingedsheep.engine.mechanics.mana
+import com.wingedsheep.engine.core.ManaAbilitySourcesContinuation
+import com.wingedsheep.engine.core.ManaSpendingObligationsContinuation
+import com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent
+import com.wingedsheep.engine.state.components.identity.RoomFaceStatics
 import com.wingedsheep.engine.legality.LegalityKernel
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
@@ -198,7 +202,9 @@ data class ManaSource(
      * source and the resumer prompts for the secondary tap target. Null when no such
      * sub-cost is present.
      */
-    val tapPermanentsSubCost: TapPermanentsSubCost? = null
+    val tapPermanentsSubCost: TapPermanentsSubCost? = null,
+    /** Fixed-output {T} choices eligible in an independent planning environment. */
+    val exactIndependentTap: Boolean = false
 ) {
     /**
      * Returns the set of colors this source can produce for a given spell context.
@@ -1411,7 +1417,8 @@ class ManaSolver(
                             hasNonManaAbilities = hasNonManaAbilities,
                             hasPainCost = false,
                             painAmount = 0,
-                            canAttack = canAttack
+                            canAttack = canAttack,
+                            exactIndependentTap = !tapBlockedBySickness
                         )
                     }
                     landSubtypeSeedColors = effectiveColors
@@ -1887,6 +1894,18 @@ class ManaSolver(
                     colorsRequiringSacrifice = colorsRequiringSacrifice,
                     hasContextSensitiveAbilities = hasMixedRestrictions,
                     tapPermanentsSubCost = tapPermanentsSubCost,
+                    exactIndependentTap = staticGrantedManaAbilities.isEmpty() &&
+                        rawManaAbilities.isNotEmpty() && rawManaAbilities.all { ability ->
+                        ability.cost == AbilityCost.Tap && ability.restrictions.isEmpty() &&
+                            ability.targetRequirements.isEmpty() &&
+                            isIndependentFixedMana(ability.effect) &&
+                            // Without a context, aggregation can pair one ability's amount or
+                            // colorless output with another ability's unrestricted production.
+                            (spellContext != null || extractManaRestriction(
+                                ability.effect, state, entityId, playerId).let {
+                                it == null || it == ManaRestriction.AnySpend
+                            })
+                    },
                 )
             }
 
@@ -2027,6 +2046,37 @@ class ManaSolver(
             // time from the source's CastChoicesComponent, so we don't pre-filter it.
             else -> null
         }
+    }
+
+    private fun independentTapEnvironment(state: GameState, playerId: EntityId): Boolean {
+        // Tapping can change another source's abilities, costs or eligible production. Such
+        // dependencies require executing the prefix, not proving it against one projection.
+        if (state.floatingEffects.isNotEmpty() || state.grantedStaticAbilities.isNotEmpty() ||
+            state.grantedReplacementEffects.isNotEmpty()) return false
+        if (state.continuationStack.any { it is ManaAbilitySourcesContinuation &&
+                it.playerId == playerId && it.sources.statePredicates.isNotEmpty() }) return false
+        return state.getBattlefield().all { id ->
+            val container = state.getEntity(id) ?: return@all false
+            // Legacy production previews inspect some hidden statics. Decline this public
+            // board shape uniformly, rather than let the hidden identity affect a proof.
+            if (container.has<FaceDownComponent>()) return@all false
+            if (container.get<ContinuousEffectSourceComponent>()
+                    ?.effects?.isNotEmpty() == true) return@all false
+            val card = container.get<CardComponent>() ?: return@all false
+            val definition = cardRegistry.getCard(card.cardDefinitionId) ?: return@all false
+            RoomFaceStatics.activeStaticAbilities(container, definition).all {
+                    it is AdditionalManaOnTap || it is AdditionalManaOnSourceTap
+                }
+        }
+    }
+
+    private fun isIndependentFixedMana(effect: Effect): Boolean = when (effect) {
+        is AddManaEffect -> effect.amount is DynamicAmount.Fixed
+        is AddColorlessManaEffect -> effect.amount is DynamicAmount.Fixed
+        is AddManaOfChoiceEffect -> effect.amount is DynamicAmount.Fixed &&
+            effect.recipient == EffectTarget.Controller &&
+            (effect.colorSet is ManaColorSet.Specific || effect.colorSet == ManaColorSet.AnyColor)
+        else -> false
     }
 
     /**
@@ -2310,6 +2360,7 @@ class ManaSolver(
 
         return if (multiplier > 1) {
             source.copy(
+                exactIndependentTap = false,
                 manaAmount = source.manaAmount * multiplier,
                 colorAmounts = source.colorAmounts.mapValues { (_, amount) -> amount * multiplier },
                 colorlessAmount = source.colorlessAmount?.let { it * multiplier },
@@ -2432,6 +2483,7 @@ class ManaSolver(
             val totalMana = source.manaAmount + source.bonusManaPerTap
             if (source.isLand && totalMana >= 2) {
                 source.copy(
+                    exactIndependentTap = false,
                     producesColors = emptySet(),
                     producesColorless = true,
                     manaAmount = 1,
@@ -2594,10 +2646,24 @@ class ManaSolver(
             ManaPool().withSpendingColors(state, playerId)
         }
 
-        // A complete scoped pool payment must reserve fixed and X pips together, just as
-        // execution does. Source-dependent/partial plans continue through the solver below.
-        if (state.activeManaSpendingScope(playerId) != null && pool.allocateFloating(
-                cost, spellContext, xValue * cost.xCount.coerceAtLeast(1), xManaRestriction) != null) return true
+        val spendingScope = state.activeManaSpendingScope(playerId)
+        if (spendingScope != null) {
+            val pending = if (spellContext?.isAbilityActivation == true) emptySet() else state.continuationStack
+                .filterIsInstance<ManaSpendingObligationsContinuation>()
+                .filter { it.playerId == playerId }.flatMap { it.pendingIds }.toSet()
+            val floating = pool.allocateFloating(cost, spellContext,
+                xValue * cost.xCount.coerceAtLeast(1), xManaRestriction)
+            if (floating?.pool?.dischargedObligations?.containsAll(pending) == true) return true
+            val sources = if (independentTapEnvironment(state, playerId))
+                findAvailableManaSources(state, playerId, spellContext).filter {
+                    it.entityId !in excludeSources
+                }
+                else emptyList()
+            // This branch must never fall through to aggregate affordability: every activation
+            // needs an exact contribution. Prior identities may wait until the final payment.
+            return canPayWithIndependentTaps(pool, pending, sources, cost, spellContext,
+                xValue * cost.xCount.coerceAtLeast(1), xManaRestriction)
+        }
 
         // Pay partial from pool for the base cost
         val partialResult = pool.payPartial(cost, spellContext)

@@ -1831,6 +1831,14 @@ class PredicateEvaluator(
                     container.get<BlockingComponent>()?.blockedAttackerIds?.contains(iterated) == true
             }
 
+            // "…each creature blocking *it*" where "it" is a named role (Ib Halfheart's triggering
+            // Goblin). Live like IsBlockingSource; a reference resolving to nothing matches nothing.
+            is StatePredicate.IsBlockingEntity -> {
+                val referenced = resolveEntity(state, predicate.reference, context, projected)
+                referenced != null &&
+                    container.get<BlockingComponent>()?.blockedAttackerIds?.contains(referenced) == true
+            }
+
             // Token created by the effect's source permanent (CR 111). Source-relative: the
             // candidate's stamped CreatedByComponent.creatorId equals context.sourceId. Inert with
             // no source context or for tokens with no recorded creator.
