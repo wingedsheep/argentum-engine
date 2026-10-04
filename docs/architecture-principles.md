@@ -1217,9 +1217,12 @@ from the existing activation handler, re-enumerates projected legal mana abiliti
 and proves exact contribution coverage before publishing any state or event. Deterministic tap
 chains pay intermediate costs from the pool and settle feeder identities; fixed triggered tap bonuses
 keep separate provenance. The final spell allocator consumes the chosen production state and settles
-all scopes. Explicit source selections exclude other sources throughout the chain. Search uses each
-source once, allows tap or tap-plus-fixed-mana costs and mana-only effect trees, and declines production
-pauses or more than 256 prefixes. No replay, event, decision or client contract is added. Standalone
+all scopes. Explicit source selections exclude other sources throughout the chain. Search pays each
+cost against the current prefix: tap, self-sacrifice, positive fixed life or mana payments and named
+fixed self-counter removal compose without a separate cost simulation. Repeated activations share
+the actual life, counters and pool, and receive distinct contribution identities. Sacrificed output
+retains last-known provenance. It accepts mana-only effect trees and declines production pauses or
+more than 256 prefixes. No replay, event, decision or client contract is added. Standalone
 solvers and intermediate-ability affordability retain the independent fixed-output proof. Face-down
 boards retain a uniform source-proof boundary because legacy enumeration inspects hidden printed
 statics; complete floating payments still work. Resumable choice planning and manual overactivation

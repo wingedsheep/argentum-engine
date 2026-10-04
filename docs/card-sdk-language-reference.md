@@ -16380,15 +16380,21 @@ No hypothetical event or tap is published when planning fails. Context-free exac
 `AnySpend` tagged entries while preserving other restricted entries as ineligible. Actual restrictions, riders, snow,
 source provenance and excess survive production and payment. Existing unscoped payment is unchanged.
 
-This planner uses each source once, with only a tap cost or tap plus fixed mana costs, and direct
-fixed/dynamic-amount colored, colorless, chosen-color or composite mana effects. It declines X activation
-choices, other cost atoms, non-mana effect leaves, and any production or bonus that pauses. Search
+This planner supports tap, self-sacrifice, positive fixed life or mana costs, and positive fixed
+self-counter removal with a named counter type, including composites of these costs. It can activate
+the same source repeatedly or use several of its abilities: each prefix pays real costs and
+re-enumerates availability, so life and counters are shared resources, tapped sources cannot repay a
+tap cost, and sacrificed sources leave the candidate pool. Every repeated activation receives its own
+contribution identity. Self-sacrifice output retains last-known source/snow provenance; excess remains
+available after its identity is discharged. It supports direct fixed/dynamic-amount colored, colorless,
+chosen-color or composite mana effects. It declines X activation choices, zero/free costs,
+object-selection or unnamed-counter costs, non-mana effect leaves, and production or bonuses that pause. Search
 visits shorter activation plans first and bounds both admitted prefixes and queued states to 256 per
 query; exhaustion declines a proof. The face-down public-board
 boundary remains uniform, while complete existing floating payments still work. Intermediate ability
 affordability keeps the independent proof and actual intermediate payment uses the floating pool.
 The standalone solver's independent proof remains available when no engine execution provider exists.
 
-G45 must supply resumable activation-choice planning and recovery from zero-output or excess manual
-activations before a printed card uses this wrapper. Word of Command remains blocked; no incomplete
+G46 must supply resumable activation-choice planning, search-exhaustion handling and recovery from
+zero-output or excess manual activations before a printed card uses this wrapper. Word of Command remains blocked; no incomplete
 canonical is registered. The new planner adds no SDK type, decision, client field or serialization shape.

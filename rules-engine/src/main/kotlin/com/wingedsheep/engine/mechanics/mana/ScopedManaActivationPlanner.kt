@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.*
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /** Searches actual immutable activation results; only a complete, contributing plan is published. */
 class ScopedManaActivationPlanner(private val services: EngineServices, private val nodeLimit: Int = 256) {
@@ -37,15 +38,15 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                 .filter { it.playerId == player }.flatMap { it.pendingIds }.toSet()
             return allocation.pool.dischargedObligations.containsAll(required)
         }
-        data class Prefix(val state: GameState, val used: Set<EntityId>, val events: List<GameEvent>)
+        data class Prefix(val state: GameState, val events: List<GameEvent>)
         fun search(initial: GameState): ExecutionResult? {
             if (nodeLimit <= 0) return null
             val pending = ArrayDeque<Prefix>()
-            pending.add(Prefix(initial, emptySet(), emptyList()))
+            pending.add(Prefix(initial, emptyList()))
             var admitted = 1
             // Short proofs must precede permutations of irrelevant taps. Bound queued states too.
             while (pending.isNotEmpty()) {
-                val (current, used, events) = pending.removeFirst()
+                val (current, events) = pending.removeFirst()
                 if (complete(current)) return ExecutionResult.success(current, events)
                 if (admitted >= nodeLimit) continue
                 // New activations cannot produce a unit bearing an earlier zero-output identity.
@@ -56,7 +57,7 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                 val candidates = services.legalActionEnumerator.enumerateManaAbilities(current, player)
                 for (candidate in candidates) {
                     val base = candidate.action as? ActivateAbility ?: continue
-                    if (!candidate.affordable || candidate.hasXCost || base.sourceId in used ||
+                    if (!candidate.affordable || candidate.hasXCost ||
                         base.sourceId in excludeSources) continue
                     val ability = resolver.lookup(current, base.sourceId, base.abilityId)?.ability ?: continue
                     if (!safeCost(ability.cost) || !manaOnly(ability.effect)) continue
@@ -70,7 +71,7 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                         // Choice-bearing bonuses/production belong to a future resumable planner.
                         // No rejected branch, pause, or intermediate events escape the transaction.
                         if (result.outcome !is Outcome.Done || result.state.pendingDecision != null || result.state.gameOver) continue
-                        pending.add(Prefix(result.state, used + base.sourceId, events + result.events))
+                        pending.add(Prefix(result.state, events + result.events))
                         admitted++
                     }
                 }
@@ -85,11 +86,34 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
             priorityPlayerId = state.priorityPlayerId, priorityPassedBy = state.priorityPassedBy))
     }
 
-    // Each source is tapped at most once. No implicit sacrifice, life, counter or secondary tap costs.
-    private fun safeCost(cost: AbilityCost): Boolean = cost == AbilityCost.Tap ||
-        (cost is AbilityCost.Composite && cost.costs.count { it == AbilityCost.Tap } == 1 &&
-            cost.costs.all { it == AbilityCost.Tap ||
-                (it is AbilityCost.Atom && it.atom is CostAtom.Mana && !(it.atom as CostAtom.Mana).cost.hasX) })
+    // Only costs with no object/type/amount choice. The real handler validates and pays each
+    // prefix, so repeated activations share life, counters and floating mana rather than counting
+    // the same resource twice. Taps and sacrifices naturally remove their source's availability.
+    // The node budget also bounds positive-mana loops; no hypothetical resources are published.
+    private fun safeCost(cost: AbilityCost): Boolean = when (cost) {
+        AbilityCost.Tap, AbilityCost.SacrificeSelf -> true
+        is AbilityCost.Composite -> cost.costs.isNotEmpty() && cost.costs.all(::supportedCost) && cost.costs.any(::safeCost)
+        is AbilityCost.Atom -> when (val atom = cost.atom) {
+            is CostAtom.Mana -> !atom.cost.hasX && atom.cost.cmc > 0
+            is CostAtom.PayLife -> atom.amount > 0
+            is CostAtom.RemoveCounters -> atom.self && atom.counterType != null &&
+                (atom.count as? DynamicAmount.Fixed)?.amount?.let { it > 0 } == true
+            else -> false
+        }
+        else -> false
+    }
+
+    // A zero atom is harmless beside a consuming cost (e.g. {0}, {T}); it must not make a
+    // genuinely free ability eligible for repeated search by itself.
+    private fun supportedCost(cost: AbilityCost): Boolean = when (cost) {
+        is AbilityCost.Composite -> cost.costs.all(::supportedCost)
+        is AbilityCost.Atom -> when (val atom = cost.atom) {
+            is CostAtom.Mana -> !atom.cost.hasX
+            is CostAtom.PayLife -> atom.amount >= 0
+            else -> safeCost(cost)
+        }
+        else -> safeCost(cost)
+    }
 
     private fun manaOnly(effect: Effect): Boolean = when (effect) {
         is AddManaEffect, is AddColorlessManaEffect, is AddManaOfChoiceEffect -> true
