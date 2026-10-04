@@ -141,7 +141,7 @@ class GatedEffectExecutor(
             // A ChooseActionEffect payoff with no feasible choice — don't ask the may question at all.
             val then = effect.then
             if (then is ChooseActionEffect &&
-                then.choices.none { checkFeasibility(state, context.controllerId, it.feasibilityCheck, predicateEvaluator = predicateEvaluator) }
+                then.choices.none { checkFeasibility(state, context.controllerId, it.feasibilityCheck, predicateEvaluator = predicateEvaluator, manaSolver = manaSolver) }
             ) {
                 return EffectResult.success(state)
             }
@@ -178,7 +178,7 @@ class GatedEffectExecutor(
             // analogue of a targeted "may" with no legal targets falling to its else branch (e.g.
             // "you may sacrifice an artifact. If you don't, …" with no artifact taps you out).
             gate.feasibility?.let { check ->
-                if (!checkFeasibility(state, context.controllerId, check, predicateEvaluator = predicateEvaluator)) {
+                if (!checkFeasibility(state, context.controllerId, check, predicateEvaluator = predicateEvaluator, manaSolver = manaSolver)) {
                     return effect.otherwise
                         ?.let { effectExecutor(state, it, context) }
                         ?: EffectResult.success(state)

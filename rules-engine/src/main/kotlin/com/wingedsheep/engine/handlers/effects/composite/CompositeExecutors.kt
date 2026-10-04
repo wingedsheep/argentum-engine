@@ -45,7 +45,7 @@ class CompositeExecutors(
     private val flipTwoCoinsExecutor = FlipTwoCoinsExecutor(cardRegistry, effectExecutor, decisionHandler)
     private val flipCoinsExecutor = FlipCoinsExecutor(cardRegistry, decisionHandler)
     private val flipCoinsUntilLossExecutor = FlipCoinsUntilLossExecutor(cardRegistry, decisionHandler)
-    private val chooseActionEffectExecutor = ChooseActionEffectExecutor(effectExecutor, predicateEvaluator = amountEvaluator.predicates)
+    private val chooseActionEffectExecutor = ChooseActionEffectExecutor(effectExecutor, cardRegistry, predicateEvaluator = amountEvaluator.predicates)
     private val repeatDynamicTimesExecutor = RepeatDynamicTimesExecutor(effectExecutor, amountEvaluator = amountEvaluator)
     private val chooseNumberThenExecutor = ChooseNumberThenExecutor(decisionHandler, amountEvaluator)
 
