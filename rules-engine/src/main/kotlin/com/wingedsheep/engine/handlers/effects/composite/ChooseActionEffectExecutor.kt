@@ -80,6 +80,7 @@ class ChooseActionEffectExecutor(
         ) }
 
         val continuation = ChooseActionContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             choosingPlayerId = choosingPlayerId,
             controllerId = context.controllerId,
             sourceId = context.sourceId,

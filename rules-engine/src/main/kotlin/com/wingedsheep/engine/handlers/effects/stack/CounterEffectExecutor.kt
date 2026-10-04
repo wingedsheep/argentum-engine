@@ -178,6 +178,7 @@ class CounterEffectExecutor(
         context: EffectContext
     ): EffectResult {
         val continuation = CounterUnlessPaysContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             payingPlayerId = payingPlayerId,
             spellEntityId = spellEntityId,
             manaCost = manaCost,

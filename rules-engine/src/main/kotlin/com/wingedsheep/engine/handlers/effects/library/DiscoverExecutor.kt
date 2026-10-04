@@ -141,6 +141,7 @@ class DiscoverExecutor(
                 currentState,
                 tail,
                 EffectContext(
+                    resolvingTriggeredAbility = context.resolvingTriggeredAbility,
                     sourceId = context.sourceId,
             objectReferences = context.objectReferences,
                     controllerId = controllerId,
@@ -157,6 +158,7 @@ class DiscoverExecutor(
         val discoveredName = currentState.getEntity(discoveredCard)
             ?.get<CardComponent>()?.name ?: "the discovered card"
         val continuation = DiscoverMayCastContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             playerId = controllerId,
             sourceId = context.sourceId,
             objectReferences = context.objectReferences,

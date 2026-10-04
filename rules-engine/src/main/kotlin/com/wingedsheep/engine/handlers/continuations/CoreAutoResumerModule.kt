@@ -183,6 +183,7 @@ class CoreAutoResumerModule(
 
         autoResumer(ModalPreChosenContinuation::class, canResume = { it.remainingEntries.isNotEmpty() }) { state, continuation, events, checkForMore ->
             val ctx = com.wingedsheep.engine.handlers.effects.composite.PreTargetedEffectContext(
+                resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
                 controllerId = continuation.controllerId,
                 sourceId = continuation.sourceId,
                 sourceName = continuation.sourceName,
@@ -243,6 +244,7 @@ class CoreAutoResumerModule(
                 outerTargets = continuation.outerTargets,
                 outerNamedTargets = continuation.outerNamedTargets,
                 pipeline = continuation.pipeline,
+                resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
                 objectReferences = continuation.objectReferences,
                 accumulatedEvents = events,
                 checkForMore = checkForMore

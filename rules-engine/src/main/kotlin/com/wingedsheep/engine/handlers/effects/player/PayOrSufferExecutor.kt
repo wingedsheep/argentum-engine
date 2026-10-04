@@ -179,6 +179,7 @@ class PayOrSufferExecutor(
         val prompt = buildDiscardPrompt(cost, sourceName, effect)
 
         val continuation = PayOrSufferContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             playerId = controllerId,
             sourceId = sourceId,
             objectReferences = context.objectReferences,
@@ -256,6 +257,7 @@ class PayOrSufferExecutor(
         ) }
 
         val continuation = PayOrSufferContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             playerId = controllerId,
             sourceId = sourceId,
             objectReferences = context.objectReferences,
@@ -310,6 +312,7 @@ class PayOrSufferExecutor(
         }
 
         val continuation = PayOrSufferContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             playerId = controllerId,
             sourceId = sourceId,
             objectReferences = context.objectReferences,
@@ -356,6 +359,7 @@ class PayOrSufferExecutor(
         val prompt = buildSacrificePrompt(cost, sourceName, effect)
 
         val continuation = PayOrSufferContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             playerId = controllerId,
             sourceId = sourceId,
             objectReferences = context.objectReferences,
@@ -418,6 +422,7 @@ class PayOrSufferExecutor(
 
         val consequence = effect.consequenceDescription ?: effect.suffer.description
         val continuation = PayOrSufferContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             playerId = controllerId,
             sourceId = sourceId,
             objectReferences = context.objectReferences,
@@ -489,6 +494,7 @@ class PayOrSufferExecutor(
         val prompt = buildTapPrompt(cost, sourceName, effect)
 
         val continuation = PayOrSufferContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             playerId = controllerId,
             sourceId = sourceId,
             objectReferences = context.objectReferences,
@@ -561,6 +567,7 @@ class PayOrSufferExecutor(
         val prompt = buildReturnToHandPrompt(cost, sourceName, effect)
 
         val continuation = PayOrSufferContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             playerId = controllerId,
             sourceId = sourceId,
             objectReferences = context.objectReferences,
@@ -675,6 +682,7 @@ class PayOrSufferExecutor(
         ) }
 
         val continuation = PayOrSufferContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             playerId = controllerId,
             sourceId = sourceId,
             objectReferences = context.objectReferences,
@@ -731,6 +739,7 @@ class PayOrSufferExecutor(
         ) }
 
         val continuation = PayOrSufferContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             playerId = controllerId,
             sourceId = sourceId,
             objectReferences = context.objectReferences,
@@ -772,6 +781,7 @@ class PayOrSufferExecutor(
         val prompt = buildExilePrompt(cost, sourceName, effect)
 
         val continuation = PayOrSufferContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             playerId = controllerId,
             sourceId = sourceId,
             objectReferences = context.objectReferences,
@@ -845,6 +855,7 @@ class PayOrSufferExecutor(
         ) }
 
         val continuation = PayOrSufferContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             playerId = controllerId,
             sourceId = sourceId,
             objectReferences = context.objectReferences,
@@ -912,6 +923,7 @@ class PayOrSufferExecutor(
         ) }
 
         val continuation = PayOrSufferChoiceContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             playerId = payingPlayerId,
             sourceId = sourceId,
             objectReferences = context.objectReferences,

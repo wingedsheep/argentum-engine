@@ -65,6 +65,7 @@ class SecretBidExecutor(
         val remainingPlayers = playerOrder.drop(currentPlayerIndex + 1)
 
         val continuation = SecretBidContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             sourceId = context.sourceId,
             objectReferences = context.objectReferences,
             sourceName = sourceName,

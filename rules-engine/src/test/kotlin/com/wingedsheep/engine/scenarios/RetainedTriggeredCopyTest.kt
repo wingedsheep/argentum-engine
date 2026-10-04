@@ -10,6 +10,14 @@ import com.wingedsheep.sdk.dsl.*
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CopyExceptions
+import com.wingedsheep.sdk.scripting.effects.Mode
+import com.wingedsheep.sdk.scripting.effects.BudgetMode
+import com.wingedsheep.sdk.scripting.effects.EffectChoice
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
+import com.wingedsheep.engine.core.BudgetModalDecision
+import com.wingedsheep.engine.core.BudgetModalResponse
+import com.wingedsheep.engine.core.NumberChosenResponse
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.core.spec.style.FunSpec
@@ -60,6 +68,187 @@ class RetainedTriggeredCopyTest : FunSpec({
         d.submitTargetSelection(d.player1, listOf(target)).error shouldBe null
         d.bothPass().error shouldBe null
         d.submitYesNo(d.player1, yes).error shouldBe null
+    }
+    fun chooseOption(d: GameTestDriver, label: String) {
+        val decision = d.pendingDecision as ChooseOptionDecision
+        val index = decision.options.indexOf(label)
+        check(index >= 0) { "Expected $label in ${decision.options}" }
+        d.submitDecision(decision.playerId, OptionChosenResponse(decision.id, index)).error shouldBe null
+    }
+    val retainSelf = Effects.EachPermanentBecomesCopyOfTarget(
+        target = EffectTarget.Self, affected = EffectTarget.Self,
+        exceptions = CopyExceptions(retainResolvingTriggeredAbility = true)
+    )
+    test("preselected modal modes retain complete trigger after an earlier mode pauses") {
+        val modalCopier = card("Test Retained Preselected Modal Copier") {
+            typeLine = "Creature — Shapeshifter"
+            power = 1; toughness = 1
+            triggeredAbility {
+                trigger = Triggers.you.beginningOf(Step.UPKEEP)
+                effect = Effects.Modal(chooseCount = 2, modes = listOf(
+                    Mode.noTarget(Effects.May(Effects.GainLife(1)), "Optional life"),
+                    Mode.noTarget(retainSelf, "Copy with ability")
+                ))
+            }
+        }
+        val d = driver()
+        d.registerCards(listOf(modalCopier))
+        val id = d.putPermanentOnBattlefield(d.player1, modalCopier.name)
+        nextOwnUpkeep(d)
+        chooseOption(d, "Optional life")
+        chooseOption(d, "Copy with ability")
+        d.bothPass().error shouldBe null
+        roundTrip(d)
+        d.submitYesNo(d.player1, true).error shouldBe null
+        val retained = card(d, id).copyTriggeredAbilities.single()
+        retained.effect shouldBe modalCopier.script.triggeredAbilities.single().effect
+        retained.trigger shouldBe modalCopier.script.triggeredAbilities.single().trigger
+    }
+    test("a resolution action choice retains its full enclosing trigger") {
+        val choiceCopier = card("Test Retained Action Choice Copier") {
+            typeLine = "Creature — Shapeshifter"
+            power = 1; toughness = 1
+            triggeredAbility {
+                trigger = Triggers.you.beginningOf(Step.UPKEEP)
+                effect = Effects.ChooseAction(listOf(
+                    EffectChoice("Copy with ability", retainSelf),
+                    EffectChoice("Gain life instead", Effects.GainLife(1))
+                ))
+            }
+        }
+        val d = driver()
+        d.registerCards(listOf(choiceCopier))
+        val id = d.putPermanentOnBattlefield(d.player1, choiceCopier.name)
+        nextOwnUpkeep(d)
+        d.bothPass().error shouldBe null
+        roundTrip(d)
+        chooseOption(d, "Copy with ability")
+        card(d, id).copyTriggeredAbilities.single().effect shouldBe choiceCopier.script.triggeredAbilities.single().effect
+    }
+    test("a nested modal choice retains its full enclosing composite trigger") {
+        val nestedCopier = card("Test Retained Nested Modal Copier") {
+            typeLine = "Creature — Shapeshifter"
+            power = 1; toughness = 1
+            triggeredAbility {
+                trigger = Triggers.you.beginningOf(Step.UPKEEP)
+                effect = Effects.Composite(listOf(Effects.GainLife(1), Effects.Modal(modes = listOf(
+                    Mode.noTarget(retainSelf, "Copy with ability"),
+                    Mode.noTarget(Effects.GainLife(1), "Gain life instead")
+                ))))
+            }
+        }
+        val d = driver()
+        d.registerCards(listOf(nestedCopier))
+        val id = d.putPermanentOnBattlefield(d.player1, nestedCopier.name)
+        nextOwnUpkeep(d)
+        d.bothPass().error shouldBe null
+        roundTrip(d)
+        chooseOption(d, "Copy with ability")
+        card(d, id).copyTriggeredAbilities.single().effect shouldBe nestedCopier.script.triggeredAbilities.single().effect
+    }
+    test("a budget mode retains its full enclosing trigger through its serialized decision") {
+        val budgetCopier = card("Test Retained Budget Copier") {
+            typeLine = "Creature — Shapeshifter"
+            power = 1; toughness = 1
+            triggeredAbility {
+                trigger = Triggers.you.beginningOf(Step.UPKEEP)
+                effect = Effects.BudgetModal(2, listOf(
+                    BudgetMode(1, Effects.May(Effects.GainLife(1)), "Optional life"),
+                    BudgetMode(1, retainSelf, "Copy with ability")
+                ))
+            }
+        }
+        val d = driver()
+        d.registerCards(listOf(budgetCopier))
+        val id = d.putPermanentOnBattlefield(d.player1, budgetCopier.name)
+        nextOwnUpkeep(d)
+        d.bothPass().error shouldBe null
+        roundTrip(d)
+        val decision = d.pendingDecision as BudgetModalDecision
+        d.submitDecision(decision.playerId, BudgetModalResponse(decision.id, listOf(0, 1))).error shouldBe null
+        roundTrip(d)
+        d.submitYesNo(d.player1, true).error shouldBe null
+        card(d, id).copyTriggeredAbilities.single().effect shouldBe budgetCopier.script.triggeredAbilities.single().effect
+    }
+    test("discover hand choice preserves the enclosing trigger for its follow-up copy") {
+        val discoverCopier = card("Test Retained Discover Copier") {
+            typeLine = "Creature — Shapeshifter"
+            power = 1; toughness = 1
+            triggeredAbility {
+                trigger = Triggers.you.beginningOf(Step.UPKEEP)
+                effect = Effects.Discover(2, thenEffect = retainSelf)
+            }
+        }
+        val d = driver()
+        d.registerCards(listOf(discoverCopier))
+        val id = d.putPermanentOnBattlefield(d.player1, discoverCopier.name)
+        val hit = d.putCardOnTopOfLibrary(d.player1, "Grizzly Bears")
+        nextOwnUpkeep(d)
+        d.bothPass().error shouldBe null
+        roundTrip(d)
+        d.submitYesNo(d.player1, false).error shouldBe null
+        d.getHand(d.player1).contains(hit) shouldBe true
+        card(d, id).copyTriggeredAbilities.single().effect shouldBe discoverCopier.script.triggeredAbilities.single().effect
+    }
+    test("declining a payable life cost retains the enclosing pay-or-suffer trigger") {
+        val payer = card("Test Retained Pay Or Suffer Copier") {
+            typeLine = "Creature — Shapeshifter"
+            power = 1; toughness = 1
+            triggeredAbility {
+                trigger = Triggers.you.beginningOf(Step.UPKEEP)
+                effect = Effects.PayOrSuffer(Costs.pay.PayLife(1), suffer = retainSelf)
+            }
+        }
+        val d = driver()
+        d.registerCards(listOf(payer))
+        val id = d.putPermanentOnBattlefield(d.player1, payer.name)
+        nextOwnUpkeep(d)
+        d.bothPass().error shouldBe null
+        roundTrip(d)
+        d.submitYesNo(d.player1, false).error shouldBe null
+        card(d, id).copyTriggeredAbilities.single().effect shouldBe payer.script.triggeredAbilities.single().effect
+    }
+    test("the next player's payment retains the enclosing any-player trigger") {
+        val payer = card("Test Retained Any Player Copier") {
+            typeLine = "Creature — Shapeshifter"
+            power = 1; toughness = 1
+            triggeredAbility {
+                trigger = Triggers.you.beginningOf(Step.UPKEEP)
+                effect = Effects.AnyPlayerMayPay(Costs.pay.PayLife(1), consequence = retainSelf)
+            }
+        }
+        val d = driver()
+        d.registerCards(listOf(payer))
+        val id = d.putPermanentOnBattlefield(d.player1, payer.name)
+        nextOwnUpkeep(d)
+        d.bothPass().error shouldBe null
+        roundTrip(d)
+        d.submitYesNo(d.player1, false).error shouldBe null
+        roundTrip(d)
+        d.submitYesNo(d.player2, true).error shouldBe null
+        card(d, id).copyTriggeredAbilities.single().effect shouldBe payer.script.triggeredAbilities.single().effect
+    }
+    test("a secret bid winner's copy retains the enclosing secret-bid trigger") {
+        val bidder = card("Test Retained Secret Bid Copier") {
+            typeLine = "Creature — Shapeshifter"
+            power = 1; toughness = 1
+            triggeredAbility {
+                trigger = Triggers.you.beginningOf(Step.UPKEEP)
+                effect = Effects.SecretBid(highestBidderEffect = retainSelf)
+            }
+        }
+        val d = driver()
+        d.registerCards(listOf(bidder))
+        val id = d.putPermanentOnBattlefield(d.player1, bidder.name)
+        nextOwnUpkeep(d)
+        d.bothPass().error shouldBe null
+        repeat(2) {
+            roundTrip(d)
+            val decision = d.pendingDecision!!
+            val bid = if (decision.playerId == d.player1) 1 else 0
+            d.submitDecision(decision.playerId, NumberChosenResponse(decision.id, bid)).error shouldBe null
+        }
+        card(d, id).copyTriggeredAbilities.single().effect shouldBe bidder.script.triggeredAbilities.single().effect
     }
     test("target and may pauses round trip complete trigger rules text and replace old instances") {
         val d = driver()
@@ -247,5 +436,16 @@ class RetainedTriggeredCopyTest : FunSpec({
         d.submitCardSelection(d.player1, listOf(id)).error shouldBe null
         card(d, clone).copyTriggeredAbilities.size shouldBe 1
         card(d, clone).copyTriggeredAbilities.single() shouldBe card(d, id).copyTriggeredAbilities.single()
+        nextOwnUpkeep(d)
+        d.submitTargetSelection(d.player1, listOf(bear)).error shouldBe null
+        d.submitTargetSelection(d.player1, listOf(bear)).error shouldBe null
+        d.state.stack.map { d.state.getEntity(it)!!.get<TriggeredAbilityOnStackComponent>()!!.sourceId }
+            .toSet() shouldBe setOf(id, clone)
+        repeat(2) {
+            d.bothPass().error shouldBe null
+            d.submitYesNo(d.player1, true).error shouldBe null
+        }
+        card(d, clone).name shouldBe "Grizzly Bears"
+        card(d, clone).copyTriggeredAbilities.size shouldBe 1
     }
 })

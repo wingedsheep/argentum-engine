@@ -52,6 +52,7 @@ data class SecretBidContinuation(
     val lowestBidderEffect: Effect?,
     val tiedBidderEffect: Effect?,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+    val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
 ) : AnswerContinuation
 
 /**
