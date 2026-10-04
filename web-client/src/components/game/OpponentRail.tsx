@@ -341,14 +341,36 @@ function AttackDirectionHeader({ mode, spectatorMode }: { mode: 'LEFT' | 'RIGHT'
   const nameOf = (id: EntityId) => gameState?.players.find((p) => p.playerId === id)?.name ?? ''
   const targetColor = useIdentityColor(relations?.attacks ?? null)
   const attackerColor = useIdentityColor(relations?.attackedBy ?? null)
+  // Collapsed to the one-line rule by default — the chip badges already mark both neighbours; a
+  // click unfolds the spelled-out lines. Remembered per browser.
+  const [expanded, setExpanded] = useState(readAttackHeaderExpanded)
+  const toggle = () => {
+    const next = !expanded
+    setExpanded(next)
+    try {
+      localStorage.setItem(ATTACK_HEADER_EXPANDED_KEY, next ? '1' : '0')
+    } catch {
+      // Storage blocked (private window) — the toggle still works for this session.
+    }
+  }
   const title =
-    mode === 'LEFT'
+    (mode === 'LEFT'
       ? 'Attack left: each player can attack only the next player in turn order — the seat below them in this list (the bottom seat attacks the top one).'
-      : 'Attack right: each player can attack only the previous player in turn order — the seat above them in this list (the top seat attacks the bottom one).'
+      : 'Attack right: each player can attack only the previous player in turn order — the seat above them in this list (the top seat attacks the bottom one).') +
+    (relations ? (expanded ? '\nClick to hide the details.' : '\nClick to show who you attack and who attacks you.') : '')
   return (
     <div
-      role="note"
+      role={relations ? 'button' : 'note'}
+      aria-expanded={relations ? expanded : undefined}
+      tabIndex={relations ? 0 : undefined}
       title={title}
+      onClick={relations ? toggle : undefined}
+      onKeyDown={(e) => {
+        if (relations && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault()
+          toggle()
+        }
+      }}
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -364,15 +386,20 @@ function AttackDirectionHeader({ mode, spectatorMode }: { mode: 'LEFT' | 'RIGHT'
         textTransform: 'uppercase',
         userSelect: 'none',
         pointerEvents: 'auto',
-        cursor: 'help',
+        cursor: relations ? 'pointer' : 'help',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span aria-hidden style={{ fontSize: 11, lineHeight: 1 }}>⚔️</span>
         <span style={{ flex: 1 }}>{attackModeLabel(mode)}</span>
         <span aria-hidden style={{ fontSize: 13, lineHeight: 1 }}>{mode === 'LEFT' ? '↓' : '↑'}</span>
+        {relations && (
+          <span aria-hidden style={{ fontSize: 9, lineHeight: 1, opacity: 0.8, width: 8, textAlign: 'center' }}>
+            {expanded ? '▾' : '▸'}
+          </span>
+        )}
       </div>
-      {relations && (
+      {relations && expanded && (
         <div
           style={{
             display: 'flex',
@@ -396,6 +423,16 @@ function AttackDirectionHeader({ mode, spectatorMode }: { mode: 'LEFT' | 'RIGHT'
       )}
     </div>
   )
+}
+
+const ATTACK_HEADER_EXPANDED_KEY = 'argentum-attack-direction-expanded'
+
+function readAttackHeaderExpanded(): boolean {
+  try {
+    return localStorage.getItem(ATTACK_HEADER_EXPANDED_KEY) === '1'
+  } catch {
+    return false
+  }
 }
 
 function RelationLine({ glyph, children }: { glyph: string; children: React.ReactNode }) {
