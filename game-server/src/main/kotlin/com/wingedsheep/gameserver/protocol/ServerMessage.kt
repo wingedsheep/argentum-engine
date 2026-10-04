@@ -371,7 +371,15 @@ sealed interface ServerMessage {
          * battles (CR 310), whose layout is `TRANSFORM` and so was invisible to the old
          * `layout == "SPLIT"` check the client used to make on its own.
          */
-        val isLandscape: Boolean = false
+        val isLandscape: Boolean = false,
+        /** Mana value (CR 202.3) — feeds the pool search's `cmc:` / `mv:` filter. */
+        val cmc: Int = 0,
+        /**
+         * Keyword abilities as `Keyword` enum names (`FLYING`, `FIRST_STRIKE`, …) — the same
+         * spelling the constructed deckbuilder's catalog ships, so the pool search's `kw:` filter
+         * reads both alike.
+         */
+        val keywords: List<String> = emptyList()
     )
 
     /**

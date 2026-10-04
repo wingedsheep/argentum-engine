@@ -1389,6 +1389,10 @@ export interface SealedCardInfo {
    * latter being `TRANSFORM` and so invisible to a `layout === 'SPLIT'` check.
    */
   readonly isLandscape?: boolean
+  /** Mana value (CR 202.3). Absent from older servers; the client then derives it from the cost. */
+  readonly cmc?: number
+  /** Keyword abilities as `Keyword` enum names (`FLYING`, `FIRST_STRIKE`, …) — drives the pool search's `kw:`. */
+  readonly keywords?: readonly string[]
 }
 
 /**
