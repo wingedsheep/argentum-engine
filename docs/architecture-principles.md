@@ -1226,7 +1226,9 @@ through their registered resumers; action-carried choices use the handler's norm
 Fixed and X public graveyard exile costs reuse the same selection dispatch. Their real payment
 validates filters, owner/single-graveyard constraints and announced X; later prefixes see the cards
 already exiled. A shared action selection cannot represent multiple exile atoms, so the planner
-reports that shape as unsupported. Hidden-zone exile remains outside the proof boundary.
+reports that shape as unsupported. Nested graveyard costs also remain unsupported while the
+activation choice extractors inspect only immediate composite children. Hidden-zone exile remains
+outside the proof boundary.
 Cost objects follow projected control rather than owner-keyed zones, including stolen permanents;
 source-relative tap filters retain the cost's source through query and payment. Choice previews are
 advisory when they lack that context; the real action remains authoritative.

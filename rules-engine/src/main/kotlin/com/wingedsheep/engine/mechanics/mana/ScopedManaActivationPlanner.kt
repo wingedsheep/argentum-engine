@@ -118,7 +118,8 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                     }
                     if (base.sourceId in excludeSources) continue
                     val ability = resolver.lookup(current, base.sourceId, base.abilityId)?.ability
-                    if (ability == null || !safeCost(ability.cost) || exileCostCount(ability.cost) > 1 || !manaOnly(ability.effect)) {
+                    if (ability == null || !safeCost(ability.cost) || exileCostCount(ability.cost) > 1 ||
+                        hasNestedExileCost(ability.cost) || !manaOnly(ability.effect)) {
                         limits.add(ScopedManaSearchLimit.UNSUPPORTED_ACTIVATION)
                         continue
                     }
@@ -284,6 +285,13 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
         is AbilityCost.Atom -> if (cost.atom is CostAtom.ExileFrom) 1 else 0
         else -> 0
     }
+
+    // Activation choice extractors only see immediate composite children. A nested exile
+    // cost could silently skip its picker, so it cannot establish an impossibility proof.
+    private fun hasNestedExileCost(cost: AbilityCost): Boolean =
+        cost is AbilityCost.Composite && cost.costs.any {
+            it is AbilityCost.Composite && exileCostCount(it) > 0
+        }
 
     private fun manaOnly(effect: Effect): Boolean = when (effect) {
         is AddManaEffect, is AddColorlessManaEffect, is AddManaOfChoiceEffect, is AddDynamicManaEffect -> true

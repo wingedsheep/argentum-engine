@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.costs.CostAtom
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -126,6 +127,24 @@ class ScopedManaGraveyardCostPlanningTest : FunSpec({
         r.state.remainingManaObligations(p) shouldBe false
         before.getZone(ZoneKey(p, Zone.GRAVEYARD)).containsAll(cards) shouldBe true
     }
+    test("graveyard X choices retain the source for source-relative filters") {
+        val d = driver(); val p = d.activePlayer!!
+        val sourceCard = card("Graveyard Relative X") {
+            typeLine = "Creature — Bear"; power = 1; toughness = 1
+            activatedAbility {
+                cost = Costs.ExileXFromGraveyard(GameObjectFilter(
+                    cardPredicates = listOf(CardPredicate.IsCreature, CardPredicate.SharesCreatureTypeWithSource)))
+                effect = Effects.AddMana(Color.BLUE, DynamicAmount.XValue); manaAbility = true
+            }
+        }
+        d.registerCards(listOf(sourceCard))
+        d.putCreatureOnBattlefield(p, sourceCard.name)
+        val cards = victims(d, 2)
+        val r = pay(d, scoped(d), "{U}{U}")
+        r.error shouldBe null
+        r.state.getZone(ZoneKey(p, Zone.EXILE)).containsAll(cards) shouldBe true
+        r.state.remainingManaObligations(p) shouldBe false
+    }
     test("zero exile X output cannot satisfy its activation obligation") {
         val d = driver(); val p = d.activePlayer!!
         val zero = producer("Graveyard Zero", Costs.Composite(Costs.Tap,
@@ -181,6 +200,15 @@ class ScopedManaGraveyardCostPlanningTest : FunSpec({
         d.registerCards(listOf(ambiguous)); d.putLandOnBattlefield(p, ambiguous.name); victims(d, 2)
         val result = plan(d, scoped(d), "{U}") as ScopedManaPlanResult.Unknown
         result.reasons.contains(ScopedManaSearchLimit.UNSUPPORTED_ACTIVATION) shouldBe true
+    }
+    test("nested graveyard exile costs remain uncertain instead of silently skipping choices") {
+        for (cost in listOf(Costs.ExileFromGraveyard(1), Costs.ExileXFromGraveyard())) {
+            val d = driver(); val p = d.activePlayer!!
+            val nested = producer("Graveyard Nested", Costs.Composite(Costs.Composite(cost)), DynamicAmount.XValue)
+            d.registerCards(listOf(nested)); d.putLandOnBattlefield(p, nested.name); victims(d, 2)
+            val result = plan(d, scoped(d), "{U}") as ScopedManaPlanResult.Unknown
+            result.reasons.contains(ScopedManaSearchLimit.UNSUPPORTED_ACTIVATION) shouldBe true
+        }
     }
     test("exile costs from hidden zones remain explicitly unsupported") {
         val d = driver(); val p = d.activePlayer!!

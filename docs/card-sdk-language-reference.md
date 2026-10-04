@@ -16458,6 +16458,8 @@ shared budget; incomplete searches report uncertainty and publish no exile or pr
 At most one exile cost is supported per activation because the action currently carries one shared
 exiled-card selection. Multiple exile atoms remain explicitly unsupported instead of reusing a
 single selection for two costs.
+Nested composite graveyard costs are also unsupported because the activation choice extractors
+only inspect immediate children; the planner reports uncertainty instead of skipping their choices.
 Source-relative fixed tap costs retain their source through selection, affordability and payment;
 real action validation takes precedence over a choice preview that lacks that context. X and the selected
 set are then paid and measured by the real handler. Mana resolution uses the announced/measured
@@ -16491,7 +16493,8 @@ boundary remains uniform, while complete existing floating payments still work. 
 affordability keeps the independent proof and actual intermediate payment uses the floating pool.
 The standalone solver's independent proof remains available when no engine execution provider exists.
 
-G48 supplies finite public activation-cost choices. G49 must supply atomic recovery from
+G48 supplies finite public activation-cost choices; G49 adds public graveyard exile costs.
+G50 must supply atomic recovery from
 zero-output or excess manual activations and close the remaining mana-ability proof boundaries
 before a printed card uses this wrapper. Word of Command remains blocked; no incomplete
 canonical is registered. The new planner adds no SDK type, decision, client field or serialization shape.

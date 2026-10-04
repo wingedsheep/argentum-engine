@@ -214,7 +214,8 @@ internal class ActivationChoicePauses(
             state,
             state.getZone(ZoneKey(action.playerId, Zone.GRAVEYARD)),
             exileXCost.filter,
-            action.playerId
+            action.playerId,
+            sourceId = action.sourceId
         )
         // A mana `{X}` already fixed the count; otherwise the player is free to exile any
         // number of matching cards (including none) and that count becomes X.
