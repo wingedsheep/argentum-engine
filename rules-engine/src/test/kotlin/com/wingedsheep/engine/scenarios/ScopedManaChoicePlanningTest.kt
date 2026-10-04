@@ -141,7 +141,7 @@ class ScopedManaChoicePlanningTest : FunSpec({
     test("all resumed production shares one identity and preserves snow provenance") {
         val d = driver(); val p = d.activePlayer!!
         val source = d.putLandOnBattlefield(p, composite.name); val initial = scoped(d)
-        val plan = ScopedManaActivationPlanner(d.services).plan(initial, p, ManaCost.parse("{G}{W}{U}{B}"), context)!!
+        val plan = (ScopedManaActivationPlanner(d.services).plan(initial, p, ManaCost.parse("{G}{W}{U}{B}"), context) as ScopedManaPlanResult.Found).execution
         val ids = plan.state.activeManaSpendingScope(p)!!.pendingIds
         ids.size shouldBe 1
         pool(plan.state, d).restrictedMana.size shouldBe 4
@@ -161,7 +161,7 @@ class ScopedManaChoicePlanningTest : FunSpec({
         val aura = d.putPermanentOnBattlefield(p, bonus.name)
         d.replaceState(d.state.updateEntity(aura) { it.with(AttachedToComponent(source)) })
         val initial = scoped(d)
-        val plan = ScopedManaActivationPlanner(d.services).plan(initial, p, ManaCost.parse("{G}{U}"), context)!!
+        val plan = (ScopedManaActivationPlanner(d.services).plan(initial, p, ManaCost.parse("{G}{U}"), context) as ScopedManaPlanResult.Found).execution
         val original = pool(plan.state, d).restrictedMana.single()
         original.color shouldBe Color.GREEN
         original.source!!.sourceId shouldBe source
@@ -221,7 +221,7 @@ class ScopedManaChoicePlanningTest : FunSpec({
         val chosen = d.putLandOnBattlefield(p, green.name)
         val excluded = d.putLandOnBattlefield(p, pips.name); val initial = scoped(d)
         ScopedManaActivationPlanner(d.services).plan(initial, p, ManaCost.parse("{W}{U}"), context,
-            excludeSources = setOf(excluded)) shouldBe null
+            excludeSources = setOf(excluded)) shouldBe ScopedManaPlanResult.Impossible
         val paid = pay(d, initial, "{W}{U}", PaymentStrategy.Explicit(listOf(chosen)))
         paid.error.isNullOrEmpty() shouldBe false
         paid.state shouldBe initial
@@ -233,7 +233,7 @@ class ScopedManaChoicePlanningTest : FunSpec({
         val caller = EffectContinuation(listOf(Effects.GainLife(7), Effects.May(Effects.GainLife(1))),
             EffectContext(sourceId = null, controllerId = p))
         val initial = scoped(d).pushContinuation(caller)
-        val plan = ScopedManaActivationPlanner(d.services).plan(initial, p, ManaCost.parse("{W}{U}"), context)!!
+        val plan = (ScopedManaActivationPlanner(d.services).plan(initial, p, ManaCost.parse("{W}{U}"), context) as ScopedManaPlanResult.Found).execution
         plan.state.continuationStack.last() shouldBe caller
         plan.state.continuationStack.size shouldBe initial.continuationStack.size
         plan.state.getEntity(p)!!.get<LifeTotalComponent>()!!.life shouldBe initial.lifeTotal(p)
@@ -244,7 +244,7 @@ class ScopedManaChoicePlanningTest : FunSpec({
         val d = driver(); val p = d.activePlayer!!
         val source = d.putLandOnBattlefield(p, pips.name); val initial = scoped(d)
         ScopedManaActivationPlanner(d.services, nodeLimit = 3).plan(initial, p,
-            ManaCost.parse("{W}{U}"), context) shouldBe null
+            ManaCost.parse("{W}{U}"), context) shouldBe ScopedManaPlanResult.Unknown(setOf(ScopedManaSearchLimit.NODE_BUDGET))
         initial.getEntity(source)!!.has<TappedComponent>() shouldBe false
         pool(initial, d).restrictedMana shouldBe emptyList()
         initial.activeManaSpendingScope(p)!!.pendingIds shouldBe emptySet()
@@ -273,7 +273,7 @@ class ScopedManaChoicePlanningTest : FunSpec({
         d.replaceState(forced.state)
         val question = d.pendingDecision as PlayCardDecision
         val originalSuspension = d.state.continuationStack.last() as Suspension
-        val plan = ScopedManaActivationPlanner(d.services).plan(d.state, p, ManaCost.parse("{W}{U}"), context)!!
+        val plan = (ScopedManaActivationPlanner(d.services).plan(d.state, p, ManaCost.parse("{W}{U}"), context) as ScopedManaPlanResult.Found).execution
         plan.state.continuationStack.last() shouldBe originalSuspension
         plan.state.pendingDecision shouldBe question
         plan.state.continuationStack.size shouldBe d.state.continuationStack.size

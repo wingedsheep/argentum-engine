@@ -331,6 +331,24 @@ object Effects {
     )
 
     /**
+     * [damageSource] deals [amount] damage divided among the permanents in [among] — untargeted, so
+     * [chooser] splits it as the effect resolves; members that left the battlefield are skipped and
+     * any member may get none. Master of the Wild Hunt's "that creature deals damage equal to its
+     * power divided as its controller chooses among any number of those Wolves".
+     */
+    fun DistributeDamageAmongCollection(
+        amount: DynamicAmount,
+        among: CollectionSlot,
+        damageSource: EffectTarget,
+        chooser: com.wingedsheep.sdk.scripting.effects.Chooser = com.wingedsheep.sdk.scripting.effects.Chooser.Controller
+    ): Effect = com.wingedsheep.sdk.scripting.effects.DistributeDamageAmongCollectionEffect(
+        amount = amount,
+        collectionName = among.key,
+        damageSource = damageSource,
+        chooser = chooser
+    )
+
+    /**
      * Install a turn-duration replacement that adds [bonus] to every damage instance matching
      * [appliesTo] for the rest of the turn (CR 616). The bonus is fixed at resolution; multiple
      * installs stack additively. [appliesTo]'s `source` / `recipient` / `damageType` are "you"-relative

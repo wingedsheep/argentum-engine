@@ -18,6 +18,7 @@ class DamageExecutors(
         DealDamageExecutor(zones, amountEvaluator),
         DealDamagePerEntityInZoneExecutor(zones),
         DividedDamageExecutor(zones, decisionHandler, amountEvaluator = amountEvaluator),
+        DistributeDamageAmongCollectionExecutor(zones, amountEvaluator),
         FightEffectExecutor(zones),
         AmplifyDamageThisTurnExecutor(amountEvaluator),
         DoubleDamageToPlayerExecutor(),

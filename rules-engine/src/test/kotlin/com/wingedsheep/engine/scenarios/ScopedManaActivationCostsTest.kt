@@ -334,7 +334,7 @@ class ScopedManaActivationCostsTest : FunSpec({
         }
         d.registerCards(listOf(producer)); val source = d.putLandOnBattlefield(p, producer.name)
         val s = scoped(d).updateEntity(p) { it.with(ManaPoolComponent(green = 1)) }
-        ScopedManaActivationPlanner(d.services, nodeLimit = 4).plan(s, p, ManaCost.parse("{U}"), context) shouldBe null
+        ScopedManaActivationPlanner(d.services, nodeLimit = 4).plan(s, p, ManaCost.parse("{U}"), context) shouldBe ScopedManaPlanResult.Unknown(setOf(ScopedManaSearchLimit.NODE_BUDGET))
         s.getEntity(p)!!.get<ManaPoolComponent>()!!.green shouldBe 1
         s.getEntity(source)!!.has<TappedComponent>() shouldBe false
     }

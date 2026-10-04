@@ -143,8 +143,11 @@ object ChooserResolution {
             }
             // Fall back to the owner once the permanent has left the battlefield (e.g. it was
             // destroyed earlier in the same resolution) — CR 608.2h last-known information.
+            // Projected first, so a target under a control-changing effect answers with its
+            // current controller (Layer 2), not the base one.
             val controller = targetId?.let {
-                state.getEntity(it)?.get<ControllerComponent>()?.playerId
+                state.projectedState.getController(it)
+                    ?: state.getEntity(it)?.get<ControllerComponent>()?.playerId
                     ?: state.getEntity(it)?.get<CardComponent>()?.ownerId
             }
             controller?.let { Outcome.Resolved(it) }

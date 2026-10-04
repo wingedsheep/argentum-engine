@@ -710,6 +710,7 @@ object CardLinter {
         put("TapUntapCollection" to "collectionName", read(Space.COLLECTION))
         put("AddCountersToCollection" to "collectionName", read(Space.COLLECTION))
         put("DealDamagePerEntityInZone" to "collectionName", read(Space.COLLECTION))
+        put("DistributeDamageAmongCollection" to "collectionName", read(Space.COLLECTION))
         put("DistinctEntitiesInCollections" to "collections", read(Space.COLLECTION))
         put("DistinctCardTypesInCollections" to "collections", read(Space.COLLECTION))
         put("ExcludeOtherCollection" to "otherCollectionName", read(Space.COLLECTION))
