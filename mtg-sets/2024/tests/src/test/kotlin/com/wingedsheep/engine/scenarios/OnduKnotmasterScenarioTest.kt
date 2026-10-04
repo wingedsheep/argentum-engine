@@ -70,6 +70,30 @@ class OnduKnotmasterScenarioTest : ScenarioTestBase() {
                 game.plusOnes(game.findPermanent("Ondu Knotmaster")!!) shouldBe 0
             }
 
+            test("a modified creature an opponent controls dying does nothing") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Ondu Knotmaster")
+                    .withCardOnBattlefield(2, "Centaur Courser")
+                    .withCardInHand(1, "Doom Blade")
+                    .withLandsOnBattlefield(1, "Swamp", 2)
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val courser = game.findPermanent("Centaur Courser")!!
+                game.state = game.state.updateEntity(courser) {
+                    it.with(CountersComponent(mapOf(CounterType.PLUS_ONE_PLUS_ONE to 1)))
+                }
+
+                game.castSpell(1, "Doom Blade", courser).error shouldBe null
+                game.resolveStack()
+
+                game.isInGraveyard(2, "Centaur Courser") shouldBe true
+                game.plusOnes(game.findPermanent("Ondu Knotmaster")!!) shouldBe 0
+            }
+
             test("Throw a Line splits the counters between two targets as chosen, then exiles the card") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")

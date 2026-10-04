@@ -58,8 +58,8 @@ class ShilgengarSireOfFamineScenarioTest : ScenarioTestBase() {
             }
 
             test("sacrificing an Angel creates Blood tokens equal to its toughness instead") {
-                val game = sacrificeFor("Serra Angel") // 4/4
-                game.findPermanents("Blood").size shouldBe 4
+                val game = sacrificeFor("Youthful Valkyrie") // 1/3: toughness, not power
+                game.findPermanents("Blood").size shouldBe 3
             }
 
             test("sacrificing six Blood tokens returns each creature card as a Vampire with a finality counter") {

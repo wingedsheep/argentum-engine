@@ -39,6 +39,8 @@ class KozilekTheBrokenRealityScenarioTest : ScenarioTestBase() {
                     .withCardInHand(1, "Hill Giant")
                     .withCardInHand(1, "Craw Wurm")
                     .withCardInHand(2, "Shock")
+                    .withCardInHand(2, "Lightning Bolt")
+                    .withCardInHand(2, "Giant Growth")
                     .withLandsOnBattlefield(1, "Island", 9)
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
@@ -58,21 +60,23 @@ class KozilekTheBrokenRealityScenarioTest : ScenarioTestBase() {
                     decision.playerId shouldBe game.player1Id
                 }
                 game.selectCards(listOf(bears, giant)).error shouldBe null
-                // The opponent holds a single card: they manifest that one (Kozilek's ruling).
-                while (game.hasPendingDecision()) {
-                    val d = game.getPendingDecision() as SelectCardsDecision
-                    d.playerId shouldBe game.player2Id
-                    game.selectCards(d.options.take(1)).error shouldBe null
+                val oppDecision = game.getPendingDecision()
+                oppDecision.shouldBeInstanceOf<SelectCardsDecision>()
+                withClue("the opponent chooses from their own hand") {
+                    oppDecision.playerId shouldBe game.player2Id
                 }
+                val shock = game.handIdOf(2, "Shock")
+                val bolt = game.handIdOf(2, "Lightning Bolt")
+                game.selectCards(listOf(shock, bolt)).error shouldBe null
                 game.resolveStack()
 
-                withClue("Player1 manifested two, the opponent its only card") {
+                withClue("each player manifested the two cards they chose") {
                     game.faceDownOf(game.player1Id).toSet() shouldBe setOf(bears, giant)
-                    game.faceDownOf(game.player2Id).size shouldBe 1
-                    game.handSize(2) shouldBe 0
+                    game.faceDownOf(game.player2Id).toSet() shouldBe setOf(shock, bolt)
+                    game.handSize(2) shouldBe 1
                 }
-                withClue("three cards manifested: Player1 keeps Craw Wurm and draws three") {
-                    game.handSize(1) shouldBe 4
+                withClue("four cards manifested: Player1 keeps Craw Wurm and draws four") {
+                    game.handSize(1) shouldBe 5
                 }
                 game.isOnBattlefield("Kozilek, the Broken Reality") shouldBe true
 
@@ -80,7 +84,7 @@ class KozilekTheBrokenRealityScenarioTest : ScenarioTestBase() {
                     game.state.projectedState.getPower(bears) shouldBe 5
                     game.state.projectedState.getToughness(bears) shouldBe 4
                 }
-                val oppManifest = game.faceDownOf(game.player2Id).single()
+                val oppManifest = shock
                 withClue("the opponent's manifest isn't yours; it stays 2/2") {
                     game.state.projectedState.getPower(oppManifest) shouldBe 2
                     game.state.projectedState.getToughness(oppManifest) shouldBe 2
