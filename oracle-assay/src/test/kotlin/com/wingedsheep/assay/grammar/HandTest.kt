@@ -5,6 +5,7 @@ import com.wingedsheep.assay.syntax.ParseOutcome
 import com.wingedsheep.assay.syntax.parseLine
 import com.wingedsheep.assay.syntax.printLine
 import com.wingedsheep.sdk.dsl.Patterns
+import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.StringSpec
@@ -69,6 +70,8 @@ class HandTest : StringSpec({
     // After a declared target "that player" is that target (Ozai's Cruelty) or its owner, not the
     // trigger's player, so the run declines rather than read it as either.
     "that player beside a declared target declines" {
+        Slots.namesPlayer(CardScript(spellEffect = Patterns.Hand.discardCards(2, triggeringPlayer)), "TriggeringPlayer") shouldBe true
+        Slots.namesPlayer(CardScript(spellEffect = Patterns.Hand.discardCards(2, Targets.bound())), "TriggeringPlayer") shouldBe false
         Grammar.abilityLine.parseLine("$self deals 2 damage to target player. That player discards two cards.")
             .shouldBeInstanceOf<ParseOutcome.Declined>()
     }

@@ -26,6 +26,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -61,7 +62,7 @@ object Hand {
         template: String,
         name: String,
         target: EffectTarget,
-        requirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
+        requirements: List<TargetRequirement>,
     ): Phrase<CardScript> {
         val script = CardScript(
             spellEffect = Patterns.Hand.discardRandom(1, target),
@@ -181,7 +182,7 @@ object Hand {
         name: String,
         count: Int?,
         target: com.wingedsheep.sdk.scripting.targets.EffectTarget,
-        requirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
+        requirements: List<TargetRequirement>,
         causative: Boolean = false,
     ): Phrase<CardScript> {
         fun scriptFor(cards: Int): CardScript {
@@ -335,7 +336,7 @@ object Hand {
         template: String,
         name: String,
         target: EffectTarget,
-        requirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
+        requirements: List<TargetRequirement>,
     ): Phrase<CardScript> {
         val script = CardScript(
             spellEffect = Patterns.Hand.discardHand(target),
@@ -368,7 +369,7 @@ object Hand {
         name: String,
         count: Int?,
         target: EffectTarget,
-        requirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
+        requirements: List<TargetRequirement>,
     ): Phrase<CardScript> {
         fun scriptFor(cards: Int) = CardScript(
             spellEffect = Patterns.Hand.exileFromHand(cards, target),
