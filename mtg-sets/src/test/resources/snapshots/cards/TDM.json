@@ -17982,8 +17982,7 @@
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
-                    },
-                    "damageSource": "Self"
+                    }
                 },
                 "targetRequirement": {
                     "type": "TargetObject",

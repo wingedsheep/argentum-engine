@@ -4,10 +4,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.predicates.StatePredicate
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Unsparing Boltcaster — Tarkir: Dragonstorm #130
@@ -19,7 +16,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * controls that was dealt damage this turn.
  *
  * The target is constrained to creatures an opponent controls that already took
- * damage this turn via [StatePredicate.WasDealtDamageThisTurn]. If no such
+ * damage this turn via `StatePredicate.WasDealtDamageThisTurn`. If no such
  * creature exists, the trigger has no legal target and is removed from the stack.
  */
 val UnsparingBoltcaster = card("Unsparing Boltcaster") {
@@ -33,15 +30,8 @@ val UnsparingBoltcaster = card("Unsparing Boltcaster") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        val t = target(
-            TargetFilter(
-                GameObjectFilter.Creature.opponentControls().copy(
-                    statePredicates = listOf(StatePredicate.WasDealtDamageThisTurn)
-                )
-            ),
-        )
-        // The source itself deals the damage ("it deals 5 damage").
-        effect = Effects.DealDamage(5, t, damageSource = EffectTarget.Self)
+        val t = target(TargetFilter.Creature.opponentControls().wasDealtDamageThisTurn())
+        effect = Effects.DealDamage(5, t)
     }
 
     metadata {
