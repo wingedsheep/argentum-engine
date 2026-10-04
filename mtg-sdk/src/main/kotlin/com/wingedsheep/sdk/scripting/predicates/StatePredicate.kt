@@ -295,6 +295,26 @@ sealed interface StatePredicate {
     }
 
     /**
+     * Blocking the creature [reference] names, read live from combat state (CR 509) — "each
+     * creature blocking **it**", where "it" is a role the ability names rather than its source or a
+     * loop variable: Ib Halfheart, Goblin Tactician's "whenever another Goblin you control becomes
+     * blocked, sacrifice it. If you do, it deals 4 damage to each creature blocking it" reads
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity].
+     *
+     * Live, not remembered: once the referenced creature leaves combat its blockers stop matching.
+     * To hold the group across a removal in the same resolution ("sacrifice it. If you do, … each
+     * creature blocking it"), gather it into a collection *before* the removal. A reference that
+     * resolves to nothing matches nothing; inert in group/projection and trigger-gating contexts.
+     */
+    @SerialName("IsBlockingEntity")
+    @Serializable
+    data class IsBlockingEntity(
+        val reference: com.wingedsheep.sdk.scripting.targets.EffectTarget.SingleEntity
+    ) : Entity {
+        override val description: String = "blocking ${reference.description}"
+    }
+
+    /**
      * A token that was *created by the effect's source permanent* — its provenance creator id (the
      * `CreatedByComponent` stamped when a `CreateTokenEffect` with `stampCreator = true` made it)
      * equals the source entity supplied in the evaluation context. Source-relative; yields false

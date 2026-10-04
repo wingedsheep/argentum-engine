@@ -2304,6 +2304,7 @@ class TriggerMatcher(
         // Relative to a referenced entity a trigger filter has no context to resolve; no trigger
         // uses it, so fail closed rather than matching every creature.
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockedOrWasBlockedByEntityThisTurn -> false
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockingEntity -> false
         // Suspected (CR 701.60a) reads off the floating-effect list, which is available here, so a
         // "whenever a suspected creature …" trigger filter gates exactly instead of failing open.
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsSuspected ->

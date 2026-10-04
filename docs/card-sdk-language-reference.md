@@ -6007,6 +6007,15 @@ work for abilities-on-stack (which carry no `CardComponent`).
   counterpart of `IsBlockingSource` — reach for it whenever the printed "that creature" is the loop
   variable and not the permanent whose ability is resolving. Inert in group/projection contexts, which
   have no loop.
+- `IsBlockingEntity(reference)` (filter builder `blockingEntity(reference)`) — blocking the creature an
+  `EffectTarget.SingleEntity` role names (CR 509), read live: "each creature blocking **it**" when "it"
+  is neither the source nor a loop variable. Ib Halfheart, Goblin Tactician's "whenever another Goblin
+  you control becomes blocked, sacrifice it. If you do, it deals 4 damage to each creature blocking it"
+  = `Pipeline { val blockers = gather(Creature.blockingEntity(TriggeringEntity)); run(IfYouDo(SacrificeTarget(TriggeringEntity),
+  ForEachInCollection(blockers, DealDamage(4, IterationEntity, damageSource = TriggeringEntity)), PermanentsSacrificed)) }`.
+  Because it is live, a creature that has left combat has no blockers — gather the group *before* a
+  removal in the same resolution, as above. A reference resolving to nothing matches nothing; inert in
+  group/projection, untap, and trigger-gating contexts.
 - `ControllerControls(filter)` (filter builder `controllerControls(subfilter)`) — the candidate's
   **controller** controls something matching `subfilter`: "target creature whose controller controls
   an Island" (Seasinger, FEM). The load-bearing detail is that the subfilter's `youControl()` is

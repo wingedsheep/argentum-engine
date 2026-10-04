@@ -1895,6 +1895,126 @@
     ]
 }
 
+// Ib Halfheart, Goblin Tactician
+{
+    "name": "Ib Halfheart, Goblin Tactician",
+    "manaCost": "{3}{R}",
+    "typeLine": "Legendary Creature — Goblin Advisor",
+    "oracleText": "Whenever another Goblin you control becomes blocked, sacrifice it. If you do, it deals 4 damage to each creature blocking it.\nSacrifice two Mountains: Create two 1/1 red Goblin creature tokens.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ib Halfheart, Goblin Tactician:1",
+                "trigger": {
+                    "type": "BecomesBlockedEvent",
+                    "filter": "creature Goblin ctrl:you"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "IsBlockingEntity",
+                                            "reference": "TriggeringEntity"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.DoAction",
+                                "action": {
+                                    "type": "SacrificeTarget",
+                                    "target": "TriggeringEntity"
+                                },
+                                "successCriterion": "SuccessCriterion.PermanentsSacrificed"
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "gathered0"
+                                },
+                                "body": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    },
+                                    "target": "IterationEntity",
+                                    "damageSource": "TriggeringEntity"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever another Goblin you control becomes blocked, sacrifice it. If you do, it deals 4 damage to each creature blocking it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ib Halfheart, Goblin Tactician:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "land Mountain",
+                        "count": 2
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Goblin"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/2/e265ca24-96c0-4654-a8f3-bbffe288970a.jpg?1742506636"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "flavorText": "\"Everybody but me—CHARGE!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38134389-b471-4f58-a9ae-26bf9dc1557a.jpg?1783943220",
+        "rulings": [
+            {
+                "date": "2006-09-25",
+                "text": "If you don't actually sacrifice the Goblin (because it was removed from the battlefield before the ability resolved, for example), no damage is dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Icatian Crier
 {
     "name": "Icatian Crier",
