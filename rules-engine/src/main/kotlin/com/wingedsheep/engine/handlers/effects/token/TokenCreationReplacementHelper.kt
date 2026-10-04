@@ -27,7 +27,6 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CreateAdditionalToken
@@ -216,13 +215,13 @@ object TokenCreationReplacementHelper {
                 val tokenComponent = CardComponent(
                     cardDefinitionId = effect.additionalTokenType,
                     name = effect.additionalTokenType,
-                    manaCost = ManaCost.ZERO,
+                    manaCost = cardDef.manaCost,
                     typeLine = cardDef.typeLine,
                     baseStats = cardDef.creatureStats,
                     baseKeywords = cardDef.keywords,
-                    // Tokens have no mana cost, so a colored token's printed color lives in
-                    // its color indicator (CR 204), stored as colorIdentityOverride. Fall
-                    // back to mana-cost-derived colors for tokens without an override.
+                    // The definition's mana cost is the token's (CR 202.1b — none unless defined);
+                    // a colored token without one has its color in its color indicator (CR 204),
+                    // stored as colorIdentityOverride.
                     colors = cardDef.colorIdentityOverride ?: cardDef.colors,
                     ownerId = tokenControllerId,
                     imageUri = cardDef.metadata.imageUri

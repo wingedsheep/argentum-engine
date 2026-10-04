@@ -15013,6 +15013,145 @@
     }
 }
 
+// Ral and the Implicit Maze
+{
+    "name": "Ral and the Implicit Maze",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — This Saga deals 2 damage to each creature and planeswalker your opponents control.\nII — You may discard a card. If you do, exile the top two cards of your library. You may play them until the end of your next turn.\nIII — Create a Spellgorger Weird token. (It's a {2}{R} 2/2 Weird creature with \"Whenever you cast a noncreature spell, put a +1/+1 counter on Spellgorger Weird.\")",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature|planeswalker ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeAs": "impulseExiled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "impulseExiled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    }
+                                },
+                                {
+                                    "type": "GrantMayPlayFromExile",
+                                    "from": "impulseExiled",
+                                    "expiry": {
+                                        "type": "UntilControllerStep",
+                                        "step": "CLEANUP",
+                                        "includeCurrentTurn": false
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Spellgorger Weird"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebadb7dc-69a4-43c9-a2f8-d846b231c71c.jpg?1783911269",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "You pay all costs and follow all normal timing rules for cards played with Ral and the Implicit Maze's second chapter ability. For example, if one of the exiled cards is a land card, you may play it only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Ral and the Implicit Maze's last ability creates a token that's a copy of the card Spellgorger Weird in the Oracle card reference. Official text for Spellgorger Weird can be found using the Gatherer card database at Gatherer.Wizards.com."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ral, Monsoon Mage
 {
     "name": "Ral, Monsoon Mage",

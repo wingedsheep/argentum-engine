@@ -2309,6 +2309,12 @@ vocabulary; this primitive does not provide Word of Command's full mana restrict
   set `colorIdentity = "<symbols>"` on the token's `CardDefinition` — both predefined-token executors read
   `colorIdentityOverride ?: colors` for the token's color (a bare `colors` is mana-cost-derived and would be
   colorless). Example: the `Frog` token (`PredefinedTokens.Frog`, a 1/1 green Frog created by Quina, Qu Gourmet).
+  **Tokens with a mana cost** (CR 202.1b: none "unless the effect that creates them specifies otherwise"): the
+  predefined-token executors (and the `CreateAdditionalToken` replacement) carry the definition's `manaCost` onto
+  the token, so its mana value and mana-cost-derived colors follow — a definition without one stays `ManaCost.ZERO`.
+  A "create a token that's a copy of the Oracle card X" token (Ral and the Implicit Maze's `{2}{R}` Spellgorger
+  Weird) is just `Effects.CreatePredefinedToken("<Oracle card name>")` — the registry resolves the real card's
+  definition; the minting set's `tokenArt` row supplies the token printing's art.
   For an *inline* token (not a registered `CardDefinition`) that has its own abilities, the facade's
   `staticAbilities?` parameter covers the common static-only case (e.g. a token with "This token can't
   block" — Broodrage Mycoid's `CantBlock(GroupFilter.source())`). For `triggeredAbilities` **and**
