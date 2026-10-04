@@ -1223,6 +1223,10 @@ fixed self-counter removal compose without a separate cost simulation. Finite pu
 also use real handler execution: fixed/variable battlefield sacrifices, fixed other-permanent taps,
 tap-X, mana-X, and named self-counter X. Existing number and public object-selection questions branch
 through their registered resumers; action-carried choices use the handler's normal validation.
+Fixed and X public graveyard exile costs reuse the same selection dispatch. Their real payment
+validates filters, owner/single-graveyard constraints and announced X; later prefixes see the cards
+already exiled. A shared action selection cannot represent multiple exile atoms, so the planner
+reports that shape as unsupported. Hidden-zone exile remains outside the proof boundary.
 Cost objects follow projected control rather than owner-keyed zones, including stolen permanents;
 source-relative tap filters retain the cost's source through query and payment. Choice previews are
 advisory when they lack that context; the real action remains authoritative.

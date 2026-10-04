@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
@@ -117,7 +118,7 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                     }
                     if (base.sourceId in excludeSources) continue
                     val ability = resolver.lookup(current, base.sourceId, base.abilityId)?.ability
-                    if (ability == null || !safeCost(ability.cost) || !manaOnly(ability.effect)) {
+                    if (ability == null || !safeCost(ability.cost) || exileCostCount(ability.cost) > 1 || !manaOnly(ability.effect)) {
                         limits.add(ScopedManaSearchLimit.UNSUPPORTED_ACTIVATION)
                         continue
                     }
@@ -203,7 +204,8 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                 (number.minValue..number.maxValue).asSequence().map { NumberChosenResponse(question.id, it) }
             }
             is ActivateAbilitySacrificeContinuation, is ActivateAbilityVariablePermanentsContinuation,
-            is ActivateAbilityTapXTargetsContinuation -> {
+            is ActivateAbilityTapXTargetsContinuation, is ActivateAbilityExileFromGraveyardContinuation,
+            is ActivateAbilityExileXFromGraveyardContinuation -> {
                 val cards = question as? SelectCardsDecision ?: return null
                 scopedManaSelections(cards.options, cards.minSelections, cards.maxSelections)
                     .map { CardsSelectedResponse(question.id, it) }
@@ -214,9 +216,10 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
 
     private fun hasCostChoice(cost: AbilityCost): Boolean = when (cost) {
         is AbilityCost.Composite -> cost.costs.any(::hasCostChoice)
-        is AbilityCost.TapXPermanents -> true
+        is AbilityCost.TapXPermanents, is AbilityCost.ExileXFromGraveyard -> true
         is AbilityCost.Atom -> when (val atom = cost.atom) {
-            is CostAtom.TapPermanents, is CostAtom.Sacrifice, is CostAtom.VariablePermanents -> true
+            is CostAtom.TapPermanents, is CostAtom.Sacrifice, is CostAtom.VariablePermanents,
+            is CostAtom.ExileFrom -> true
             is CostAtom.Mana -> atom.cost.hasX
             is CostAtom.RemoveCounters -> atom.count is DynamicAmount.XValue
             else -> false
@@ -243,7 +246,8 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
     // the same resource twice. Taps and sacrifices naturally remove their source's availability.
     // The node budget also bounds positive-mana loops; no hypothetical resources are published.
     private fun safeCost(cost: AbilityCost): Boolean = when (cost) {
-        AbilityCost.Tap, AbilityCost.SacrificeSelf, is AbilityCost.TapXPermanents -> true
+        AbilityCost.Tap, AbilityCost.SacrificeSelf, is AbilityCost.TapXPermanents,
+        is AbilityCost.ExileXFromGraveyard -> true
         is AbilityCost.Composite -> cost.costs.isNotEmpty() && cost.costs.all(::supportedCost) && cost.costs.any(::safeCost)
         is AbilityCost.Atom -> when (val atom = cost.atom) {
             is CostAtom.Mana -> atom.cost.hasX || atom.cost.cmc > 0
@@ -252,6 +256,7 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                 ((atom.count as? DynamicAmount.Fixed)?.amount?.let { it > 0 } == true ||
                     atom.count is DynamicAmount.XValue)
             is CostAtom.Sacrifice -> atom.count > 0
+            is CostAtom.ExileFrom -> atom.zone == Zone.GRAVEYARD && atom.count > 0
             is CostAtom.TapPermanents -> atom.count > 0
             is CostAtom.VariablePermanents -> atom.minCount > 0 || atom.minMeasure > 0
             else -> false
@@ -269,6 +274,15 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
             else -> safeCost(cost)
         }
         else -> safeCost(cost)
+    }
+
+    // All exile selections share exiledCards on the action. Multiple exile atoms would need
+    // per-atom choices; do not let one selection pay two different costs in a speculative proof.
+    private fun exileCostCount(cost: AbilityCost): Int = when (cost) {
+        is AbilityCost.Composite -> cost.costs.sumOf(::exileCostCount)
+        is AbilityCost.ExileXFromGraveyard -> 1
+        is AbilityCost.Atom -> if (cost.atom is CostAtom.ExileFrom) 1 else 0
+        else -> 0
     }
 
     private fun manaOnly(effect: Effect): Boolean = when (effect) {
