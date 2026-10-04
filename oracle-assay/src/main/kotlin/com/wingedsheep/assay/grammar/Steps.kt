@@ -223,6 +223,59 @@ object Steps {
         youSpelled = "you draw {n} cards" to "you draw cards",
     )
 
+    /**
+     * "You draw a card **and lose 1 life**." — Night's Whisper, Moonglove Extractor, and the "drain a
+     * card" payoffs: the draw of [drawOne]/[drawMany] with a life loss whose subject English elides.
+     *
+     * The elided subject is why this is a rule and not a fourth join of [tailsOf]: "lose 1 life"
+     * means *you* only because the clause before it said "you", and a bare tail cannot see that
+     * clause. Oracle prints the same ellipsis after plural subjects — "any number of target players
+     * each mill a card and lose 1 life" (Tinybones Joins Up), "you and the attacking player each
+     * draw a card and lose 1 life" (Karazikar) — where the loser is someone else, so a subjectless
+     * tail would read those wrong the day their first clause parsed. Spelling the subject into the
+     * template keeps the ellipsis exactly as wide as the sentences that license it.
+     *
+     * The model is the plain sequence the full-stop spelling ("Draw a card. You lose 1 life.")
+     * builds, so the rules are `alternate`s: the run of two clauses is the one printer, and these
+     * lines come back as a [com.wingedsheep.assay.gate.LineVerdict.VARIANT].
+     */
+    private val drawAndLoseLife: List<Phrase<CardScript>> = run {
+        fun scriptFor(cards: Int, life: Int) = CardScript(
+            spellEffect = Effects.DrawCards(cards) then Effects.LoseLife(life, EffectTarget.Controller)
+        )
+
+        /** The draw count and the life lost, when [script] is exactly this sentence's sequence. */
+        fun read(script: CardScript): Pair<Int, Int>? {
+            val effects = (script.spellEffect as? CompositeEffect)?.effects ?: return null
+            val cards = drawCount(CardScript(spellEffect = effects.firstOrNull())) ?: return null
+            val life = ((effects.getOrNull(1) as? LoseLifeEffect)?.amount as? DynamicAmount.Fixed)?.amount
+                ?: return null
+            return (cards to life).takeIf { script == scriptFor(cards, life) }
+        }
+
+        listOf(
+            alternate(phrase("you draw a card and lose {n} life", name = "draw a card and lose life") {
+                slot("n", Primitives.cardinal)
+                build { scriptFor(1, it.int("n")) }
+                match { script ->
+                    val (cards, life) = read(script) ?: return@match null
+                    if (cards != 1) return@match null
+                    bind("n" to life)
+                }
+            }),
+            alternate(phrase("you draw {k} cards and lose {n} life", name = "draw cards and lose life") {
+                slot("k", Cardinals.word)
+                slot("n", Primitives.cardinal)
+                build { scriptFor(it.int("k"), it.int("n")) }
+                match { script ->
+                    val (cards, life) = read(script) ?: return@match null
+                    if (cards < 2 || !Cardinals.spellable(cards)) return@match null
+                    bind("k" to cards, "n" to life)
+                }
+            }),
+        )
+    }
+
     private val targetPlayerDrawsOne: Phrase<CardScript> = draw(
         "target player draws a card", "target player draws a card",
         count = 1, target = Targets.bound(), requirements = listOf(Targets.player()),
@@ -3629,12 +3682,17 @@ object Steps {
          * The pay-gates and the conditional sit here rather than in [simpleClause] because they are
          * sentence-terminal: their consequence runs to the end of the sentence, so nothing can be
          * joined after one. See [gatedConsequence] and [runEndingInScopedClause].
+         *
+         * [drawAndLoseLife] sits here for a different reason: it is already a run of two clauses,
+         * so joined to a third ("Surveil 1, then you draw a card and lose 1 life.") it would fold
+         * into a *nested* composite — a model no card carries and nothing can print. Offered only
+         * as a whole clause, it denotes exactly the flat sequence the full-stop spelling builds.
          */
         private val clause: Phrase<CardScript> =
             oneOf(
                 "a clause position$tag",
                 listOf(simpleClause, sequenceClause, conditionalClause, runEndingInScopedClause, mayDoClause) +
-                    mayPayClauses,
+                    mayPayClauses + drawAndLoseLife,
             )
 
         /** One clause and the stop that ends it — what a whole effect line is. */

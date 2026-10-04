@@ -555,7 +555,7 @@ class CastFromZoneEnumerator(
                         baseCost
                     }
                     if (!playForFree && runtimeCostIncrease != null) {
-                        effectiveCost = effectiveCost + ManaCost.parse("{${runtimeCostIncrease.amount}}")
+                        effectiveCost = effectiveCost + runtimeCostIncrease.cost
                     }
                     val costString = if (playForFree) "{0}" else effectiveCost.toString()
                     // Hama, the Bloodbender: the fixed alternative cost is a *waterbend* cost, so its

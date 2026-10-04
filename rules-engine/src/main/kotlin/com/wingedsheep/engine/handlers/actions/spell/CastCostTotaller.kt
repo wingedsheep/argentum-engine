@@ -152,7 +152,7 @@ internal class CastCostTotaller(
                 ?.get<PlayWithCostIncreaseComponent>()
                 ?.takeIf { it.controllerId == action.playerId }
             if (runtimeCostIncrease != null) {
-                effectiveCost = effectiveCost + ManaCost.parse("{${runtimeCostIncrease.amount}}")
+                effectiveCost = effectiveCost + runtimeCostIncrease.cost
             }
         }
 

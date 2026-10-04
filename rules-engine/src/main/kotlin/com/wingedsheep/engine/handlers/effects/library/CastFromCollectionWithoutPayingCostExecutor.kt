@@ -19,6 +19,8 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithAdditionalCostComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.sdk.scripting.AdditionalCost
@@ -135,6 +137,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
             insteadOfGraveyard = effect.insteadOfGraveyard,
             faceIndex = faceIndex,
             alternativeCost = alternativeCost,
+            additionalManaCost = effect.additionalManaCost,
         )
 
         if (prep is TargetPrep.NeedsTargets) {
@@ -233,6 +236,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
             insteadOfGraveyard: AfterResolveDestination? = null,
             faceIndex: Int? = null,
             alternativeCost: AdditionalCost? = null,
+            additionalManaCost: ManaCost? = null,
         ): Pair<EntityId, GameState> {
             var stamped = if (!withoutPayingCost) state else state.updateEntity(cardId) { container ->
                 container.with(PlayWithoutPayingCostComponent(controllerId = controllerId))
@@ -243,6 +247,14 @@ class CastFromCollectionWithoutPayingCostExecutor(
             if (alternativeCost != null) {
                 stamped = stamped.updateEntity(cardId) { container ->
                     container.with(PlayWithAdditionalCostComponent(controllerId, listOf(alternativeCost)))
+                }
+            }
+            // "By paying {R}{R} in addition to its other costs": an additional mana cost (CR 601.2f),
+            // owed through the same runtime cost-increase stamp as Soul Partition's tax so the
+            // totaller adds it on top of the mana cost and every other increase.
+            if (additionalManaCost != null) {
+                stamped = stamped.updateEntity(cardId) { container ->
+                    container.with(PlayWithCostIncreaseComponent(controllerId, additionalManaCost))
                 }
             }
             // The cast-this-way rider rides the card, not the permission, so it survives the move
@@ -280,6 +292,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
                     .without<AfterResolveDestinationComponent>()
                     // Nor its substitute cost, which would otherwise be owed by a later cast.
                     .without<PlayWithAdditionalCostComponent>()
+                    .without<PlayWithCostIncreaseComponent>()
             }
         }
 

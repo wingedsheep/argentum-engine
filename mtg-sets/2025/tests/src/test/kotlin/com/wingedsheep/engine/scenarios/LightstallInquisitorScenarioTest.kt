@@ -89,7 +89,7 @@ class LightstallInquisitorScenarioTest : ScenarioTestBase() {
                 withClue("Cost increase must apply to the opponent (the player who may cast it)") {
                     costIncrease!!.controllerId shouldBe game.player2Id
                 }
-                costIncrease!!.amount shouldBe 1
+                costIncrease!!.cost shouldBe com.wingedsheep.sdk.core.ManaCost.parse("{1}")
             }
 
             test("a land played from this exile enters the battlefield tapped") {

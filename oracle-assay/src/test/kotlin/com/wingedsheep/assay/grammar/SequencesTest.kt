@@ -109,6 +109,27 @@ class SequencesTest : StringSpec({
             fragment("Scry 2. Draw two cards. You lose 2 life.")
     }
 
+    // The elided second subject: "you" licenses "lose 1 life", so the rule spells the subject and is
+    // an alternate of the full-stop run, which is what prints.
+    "you draw and lose life is the full-stop run with its second subject elided" {
+        fragment("You draw a card and lose 1 life.") shouldBe CardFragment(
+            script = CardScript(
+                spellEffect = Effects.DrawCards(1) then Effects.LoseLife(1, EffectTarget.Controller)
+            )
+        )
+        fragment("You draw two cards and lose 2 life.") shouldBe fragment("Draw two cards. You lose 2 life.")
+        Grammar.abilityLine.printLine(fragment("You draw three cards and lose 3 life.")) shouldBe
+            "Draw three cards. You lose 3 life."
+        // Only "you" licenses the elision: a bare "lose 1 life" is no clause of its own.
+        Grammar.abilityLine.parseLine("Target player draws a card and lose 1 life.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+    }
+
+    "the X-count draw-and-lose reads with its second subject elided" {
+        fragment("You draw X cards and lose X life, where X is the number of Zombies you control.") shouldBe
+            fragment("You draw X cards and you lose X life, where X is the number of Zombies you control.")
+    }
+
     // Two declared targets are numbered by the position their clause introduces them in, and the
     // first one keeps the bare name so a single-target line folds through unchanged.
     "two clauses that each declare a target are numbered by position" {
