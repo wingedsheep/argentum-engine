@@ -251,13 +251,9 @@ class CastFromZoneEnumerator(
         val castFromTopGrants = if (!canPlayAllFromTop) {
             context.castPermissionUtils.getCastFromTopOfLibraryGrants(state, playerId)
         } else emptyList()
-        val canPlayLandsFromTop = canPlayAllFromTop ||
-            context.castPermissionUtils.hasPlayLandsFromTopOfLibrary(state, playerId)
-        val castFilteredFromTopFilter = if (!canPlayAllFromTop) {
-            context.castPermissionUtils.getCastFilteredFromTopOfLibraryFilter(state, playerId)
-        } else null
-
-        if (!canPlayAllFromTop && castFromTopGrants.isEmpty() && !canPlayLandsFromTop && castFilteredFromTopFilter == null) return
+        val castFilteredFromTopFilters = if (!canPlayAllFromTop) {
+            context.castPermissionUtils.getCastFilteredFromTopOfLibraryFilters(state, playerId)
+        } else emptyList()
 
         val library = state.getLibrary(playerId)
         if (library.isEmpty()) return
@@ -265,6 +261,11 @@ class CastFromZoneEnumerator(
         val topCardId = library.first()
         val topCardComponent = state.getEntity(topCardId)?.get<CardComponent>() ?: return
         val topCardDef = context.cardRegistry.getCard(topCardComponent.name)
+        // Per card, not per player: a land permission can be narrowed by a filter (Isu's snow lands).
+        val canPlayLandsFromTop = canPlayAllFromTop ||
+            context.castPermissionUtils.hasPlayLandsFromTopOfLibrary(state, playerId, topCardId)
+
+        if (!canPlayAllFromTop && castFromTopGrants.isEmpty() && !canPlayLandsFromTop && castFilteredFromTopFilters.isEmpty()) return
 
         // Land on top of library (PlayFromTopOfLibrary or PlayLandsAndCastFilteredFromTopOfLibrary)
         if (canPlayLandsFromTop && topCardComponent.typeLine.isLand && context.canPlayLand) {
@@ -286,9 +287,11 @@ class CastFromZoneEnumerator(
                     PredicateContext(controllerId = playerId, sourceId = grantSourceId)
                 )
             } ||
-            (castFilteredFromTopFilter != null && context.predicateEvaluator.matches(
-                state, state.projectedState, topCardId, castFilteredFromTopFilter, PredicateContext(controllerId = playerId)
-            ))
+            castFilteredFromTopFilters.any { filter ->
+                context.predicateEvaluator.matches(
+                    state, state.projectedState, topCardId, filter, PredicateContext(controllerId = playerId)
+                )
+            }
 
         if (!topCardComponent.typeLine.isLand && topCardMatchesFilter) {
             // Check timing

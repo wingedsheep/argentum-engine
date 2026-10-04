@@ -3522,8 +3522,8 @@ vocabulary; this primitive does not provide Word of Command's full mana restrict
     yes/no prompt is delegated; the `then`/`otherwise` effects still resolve from the controller's
     perspective unless they themselves target a specific player.
   - **`feasibility` suppresses an unanswerable prompt** — a `FeasibilityCheck`
-    (`ControlsPermanentMatching(filter, count?)` / `HasCardsInZone(zone, filter?, count?)`, both scoped to
-    the decision-maker) evaluated at resolution. Unmet ⇒ the yes/no is skipped and `otherwise` runs
+    (`ControlsPermanentMatching(filter, count?)` / `HasCardsInZone(zone, filter?, count?)` /
+    `CanPayMana(cost)`, all scoped to the decision-maker) evaluated at resolution. Unmet ⇒ the yes/no is skipped and `otherwise` runs
     directly, the no-target analogue of a targeted "may" with no legal targets. Reach for it on
     **recurring** triggers whose action needs a resource the player may not have — Provisions Merchant
     ("whenever this creature attacks, you may sacrifice a Food") would otherwise ask every combat. Only
@@ -3710,7 +3710,7 @@ vocabulary; this primitive does not provide Word of Command's full mana restrict
 - `ModalEffect.chooseOne { mode(...) }` / `ModalEffect.chooseN(n) { ... }` — modal effect block.
 - `ModalEffect.chooseOneNotYetChosen(*modes)` — "choose one that hasn't been chosen"; source remembers used modes across the game (Gandalf the Grey). Flag: `excludePreviouslyChosenModes` (per-source `ChosenModesEverComponent`, never cleared).
 - `ModalEffect.chooseOneNotYetChosenThisTurn(*modes)` — "choose one that hasn't been chosen **this turn**"; the turn-scoped sibling. The source remembers modes chosen during the current turn (per-source `ChosenModesThisTurnComponent`, cleared each cleanup step) and excludes them from later triggers *this turn*, so across all of a turn's triggers each mode is chosen at most once; the memory resets next turn. Once every mode is chosen this turn the ability has no legal mode and resolves as a no-op. Keyed to the source object, so two copies track modes independently. Flag: `excludeModesChosenThisTurn` (mutually exclusive with `excludePreviouslyChosenModes`). Repeatable modal triggered/activated abilities only — not modal spells (Breeches, Eager Pillager).
-- `ChooseActionEffect(choices, player = Controller)` — `player` picks from a list of labeled effects; infeasible options (per each `EffectChoice.feasibilityCheck`) are filtered out, and if one remains it auto-runs. `player` may be any `EffectTarget`, including the state-relational `EffectTarget.TargetController` — routing the choice to the controller of the ability's chosen permanent (a "[do X to target permanent] unless its controller [accepts an avoidance]" choice). Combustion Man: "destroy target permanent unless its controller has Combustion Man deal damage to them equal to his power" — `player = TargetController`, with choices `DealDamage(sourcePower(), target = TargetController, damageSource = Self)` and `Destroy(<the permanent>)`.
+- `ChooseActionEffect(choices, player = Controller)` — `player` picks from a list of labeled effects; infeasible options (per each `EffectChoice.feasibilityCheck`) are filtered out, and if one remains it auto-runs. `player` may be any `EffectTarget`, including the state-relational `EffectTarget.TargetController` — routing the choice to the controller of the ability's chosen permanent (a "[do X to target permanent] unless its controller [accepts an avoidance]" choice). Combustion Man: "destroy target permanent unless its controller has Combustion Man deal damage to them equal to his power" — `player = TargetController`, with choices `DealDamage(sourcePower(), target = TargetController, damageSource = Self)` and `Destroy(<the permanent>)`. `FeasibilityCheck.CanPayMana(cost)` hides an option whose mana the player can't pay right now (floating mana or untapped sources, the `ManaSolver`'s answer), which is how a **choice of payments** is spelled: "you may pay {G}, {W}, or {U}. If you do, put a +1/+1 counter on Isu" (Isu the Abominable) is one `EffectChoice` per colour — `PayMana(symbol) then AddCounters(...)` with `CanPayMana(symbol)`, so a chosen payment always goes through — plus a "Don't pay" `Effects.Nothing`; with no colour payable only "Don't pay" survives and runs unasked.
 - `GrantBushido(amount, target, duration = EndOfTurn)` — "[target] gains bushido N"; a thin recipe over `GrantKeyword("BUSHIDO_<n>")`, the same `<KEYWORD>_<n>` form as `GrantToxic`. The engine derives the bushido trigger from it and `KeywordValue(BUSHIDO)` counts it. Sensei Golden-Tail: `AddCounters(TRAINING, 1, t) then GrantBushido(1, t, Duration.Permanent) then AddCreatureType("Samurai", t)`.
 - `GrantProtectionFromColor(color, target, duration)` — grant protection from a **fixed** color to a target (no player choice); a thin recipe over `GrantKeyword("PROTECTION_FROM_<COLOR>")`. "{W}: Target creature gains protection from red until end of turn." (Crimson Acolyte).
 - `GrantProtectionFromCardType(cardType, target, duration)` — the card-type sibling: grant protection from a **fixed** `CardType` (no player choice), a thin recipe over `GrantKeyword("PROTECTION_FROM_CARDTYPE_<TYPE>")` — the same projected keyword the printed `Protection(ProtectionScope.CardType(...))` static and the player-chosen `GrantProtectionFromChosenCardType` produce, so targeting, blocking, and combat damage all read one keyword. Reach for it when the card names the type outright rather than letting the player pick ("gains protection from artifacts" — Razor Barrier).
@@ -10220,9 +10220,14 @@ concerns — the `ClientStateTransformer` reveals the top card for `PlayFromTopO
   mana value rather than its mana cost." Read through the top-of-library cast path, which scans
   `grantedStaticAbilities` for it (so a durationally-granted permission works), waives the mana, and
   charges the life. Pass `filter` to restrict which cards it covers (null = all).
-- `PlayLandsAndCastFilteredFromTopOfLibrary(spellFilter)` — like `PlayFromTopOfLibrary` but only
-  spells matching `spellFilter` are castable (lands always playable), and **no public reveal** (pair
-  with `LookAtTopOfLibrary` to let just the controller see). `spellFilter = GameObjectFilter.Any`
+- `PlayLandsAndCastFilteredFromTopOfLibrary(spellFilter, landFilter = GameObjectFilter.Land)` — like
+  `PlayFromTopOfLibrary` but only spells matching `spellFilter` are castable (`null` = lands only),
+  only lands matching `landFilter` are playable, and **no public reveal** (pair with
+  `LookAtTopOfLibrary` to let just the controller see). `landFilter` is checked against the card's
+  printed characteristics by the legal-action enumerator and the play-land handler alike (Isu the
+  Abominable: `spellFilter = GameObjectFilter.Any.snow(), landFilter = GameObjectFilter.Land.snow()` —
+  "play snow lands and cast snow spells from the top"). Several such permissions combine: each one's
+  spell filter is honoured, so a lands-only grant doesn't shadow another's spells. `spellFilter = GameObjectFilter.Any`
   means "play the top card" of any type non-revealingly. (Glarb, Calamity's Augur =
   `GameObjectFilter.Any.manaValueAtLeast(4)`; The Lunar Whale = `GameObjectFilter.Any`.) Honors a
   `ConditionalStaticAbility` wrapper — the play/cast-from-top readers unwrap the conditional and

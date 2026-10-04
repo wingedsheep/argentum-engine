@@ -40,6 +40,7 @@ import com.wingedsheep.engine.state.components.identity.emblemStaticAbilitiesOf
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayLandsAndCastFilteredFromTopOfLibrary
+import com.wingedsheep.engine.handlers.actions.spell.allowsLand
 import com.wingedsheep.sdk.scripting.PlotFromTopOfLibrary
 import com.wingedsheep.engine.mechanics.FlashTypeGrants
 import com.wingedsheep.sdk.scripting.PlayersCantActivateAbilities
@@ -371,12 +372,19 @@ class CastPermissionUtils(
         else -> ability
     }
 
-    fun hasPlayLandsFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {
+    /**
+     * Whether [playerId] may play [landCardId] — the land on top of their library — through a
+     * [PlayLandsAndCastFilteredFromTopOfLibrary] permission whose `landFilter` it matches (Isu the
+     * Abominable: snow lands only), or through Gwenom's play-anything permission.
+     */
+    fun hasPlayLandsFromTopOfLibrary(state: GameState, playerId: EntityId, landCardId: EntityId): Boolean {
+        val landCard = state.getEntity(landCardId)?.get<CardComponent>() ?: return false
         for (entityId in state.getBattlefield(playerId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             if (cardDef.script.staticAbilities.any {
-                    activeStaticAbility(state, it, entityId, playerId) is PlayLandsAndCastFilteredFromTopOfLibrary
+                    val active = activeStaticAbility(state, it, entityId, playerId)
+                    active is PlayLandsAndCastFilteredFromTopOfLibrary && active.allowsLand(landCard)
                 }) {
                 return true
             }
@@ -385,18 +393,24 @@ class CastPermissionUtils(
         return playFromTopAlternativeCost(state, playerId) != null
     }
 
-    fun getCastFilteredFromTopOfLibraryFilter(state: GameState, playerId: EntityId): GameObjectFilter? {
+    /**
+     * Every live [PlayLandsAndCastFilteredFromTopOfLibrary] spell filter [playerId] controls. A list,
+     * not the first match: Isu's snow spells and Glarb's mana value 4+ spells are separate
+     * permissions, and a lands-only grant (a null `spellFilter`) contributes nothing.
+     */
+    fun getCastFilteredFromTopOfLibraryFilters(state: GameState, playerId: EntityId): List<GameObjectFilter> {
+        val filters = mutableListOf<GameObjectFilter>()
         for (entityId in state.getBattlefield(playerId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             for (ability in cardDef.script.staticAbilities) {
                 val active = activeStaticAbility(state, ability, entityId, playerId)
                 if (active is PlayLandsAndCastFilteredFromTopOfLibrary) {
-                    return active.spellFilter
+                    active.spellFilter?.let { filters += it }
                 }
             }
         }
-        return null
+        return filters
     }
 
     /**

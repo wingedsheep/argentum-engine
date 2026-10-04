@@ -42,6 +42,7 @@ import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.engine.legalactions.utils.LandDropUtils
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayLandsAndCastFilteredFromTopOfLibrary
+import com.wingedsheep.engine.handlers.actions.spell.allowsLand
 import kotlin.reflect.KClass
 import com.wingedsheep.engine.core.Outcome
 
@@ -663,7 +664,7 @@ class PlayLandHandler(
     ): Boolean {
         val library = state.getLibrary(playerId)
         if (library.isEmpty() || library.first() != cardId) return false
-        return hasPlayFromTopOfLibrary(state, playerId)
+        return hasPlayFromTopOfLibrary(state, playerId, cardId)
     }
 
     private fun isInExileWithPlayPermission(
@@ -699,7 +700,8 @@ class PlayLandHandler(
     ): Boolean = state.activeMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry)
         .any { !it.nonLandOnly && it.landEntersTapped }
 
-    private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {
+    private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId, cardId: EntityId): Boolean {
+        val landCard = state.getEntity(cardId)?.get<CardComponent>() ?: return false
         for (entityId in state.getBattlefield(playerId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
@@ -710,7 +712,9 @@ class PlayLandHandler(
                     if (!evaluateStaticGate(state, ability.condition, entityId, playerId)) continue
                     ability.ability
                 } else ability
-                if (unwrapped is PlayFromTopOfLibrary || unwrapped is PlayLandsAndCastFilteredFromTopOfLibrary) {
+                if (unwrapped is PlayFromTopOfLibrary) return true
+                // Isu the Abominable: only lands matching the permission's land filter (snow lands).
+                if (unwrapped is PlayLandsAndCastFilteredFromTopOfLibrary && unwrapped.allowsLand(landCard)) {
                     return true
                 }
             }
