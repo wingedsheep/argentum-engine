@@ -66,15 +66,23 @@ class HoldForQuestioningScenarioTest : ScenarioTestBase() {
             }
 
             test("enchanted creature's activated abilities can't be activated") {
-                val game = scenario()
-                    .withPlayers("Alice", "Bob")
-                    .withCardOnBattlefield(2, "Llanowar Elves", summoningSickness = false)
-                    .withCardAttachedTo(1, "Hold for Questioning", "Llanowar Elves")
-                    .withActivePlayer(2)
-                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
-                    .build()
+                val build = { enchanted: Boolean ->
+                    var b = scenario()
+                        .withPlayers("Alice", "Bob")
+                        .withCardOnBattlefield(2, "Llanowar Elves", summoningSickness = false)
+                    if (enchanted) b = b.withCardAttachedTo(1, "Hold for Questioning", "Llanowar Elves")
+                    val game = b.withActivePlayer(2)
+                        .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                        .build()
+                    game to game.findPermanent("Llanowar Elves")!!
+                }
 
-                val elves = game.findPermanent("Llanowar Elves")!!
+                val (control, controlElves) = build(false)
+                withClue("control: unenchanted Elves offer their mana ability") {
+                    control.activationsOf(2, controlElves).isNotEmpty() shouldBe true
+                }
+
+                val (game, elves) = build(true)
                 withClue("the mana ability is locked") {
                     game.activationsOf(2, elves).isEmpty() shouldBe true
                 }

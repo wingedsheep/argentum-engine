@@ -78,6 +78,18 @@ class LittjaraKinseekersScenarioTest : FunSpec({
         driver.state.projectedState.getToughness(kinseekers) shouldBe 4
     }
 
+    test("Warriors the opponent controls don't count toward three sharing a type") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val opponent = driver.getOpponent(me)
+        driver.putPermanentOnBattlefield(opponent, "Centaur Courser")
+        driver.putPermanentOnBattlefield(opponent, "Phantom Warrior")
+
+        driver.castKinseekers(me)
+        driver.state.stack.size shouldBe 0
+        driver.state.pendingDecision.shouldBeNull()
+    }
+
     test("losing the third shared-type creature before resolution means no counter and no scry") {
         val driver = createDriver()
         val me = driver.activePlayer!!

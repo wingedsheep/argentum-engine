@@ -8,6 +8,7 @@ import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.dom.cards.Divination
 import com.wingedsheep.mtg.sets.definitions.eld.cards.MantleOfTides
+import com.wingedsheep.mtg.sets.definitions.tsp.cards.ThinkTwice
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
@@ -26,7 +27,7 @@ class MantleOfTidesScenarioTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(MantleOfTides, Divination))
+        driver.registerCards(TestCards.all + listOf(MantleOfTides, Divination, ThinkTwice))
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), startingLife = 20)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -48,6 +49,14 @@ class MantleOfTidesScenarioTest : FunSpec({
         bothPass() // Divination resolves; the second draw fires the trigger
     }
 
+    fun GameTestDriver.castThinkTwice(player: EntityId) {
+        val thinkTwice = putCardInHand(player, "Think Twice")
+        giveMana(player, Color.BLUE, 1)
+        giveColorlessMana(player, 1)
+        castSpell(player, thinkTwice)
+        bothPass()
+    }
+
     test("drawing the second card of the turn attaches the Mantle to the chosen creature for +1/+2") {
         val driver = createDriver()
         val me = driver.activePlayer!!
@@ -63,6 +72,24 @@ class MantleOfTidesScenarioTest : FunSpec({
         driver.attachedTo(mantle) shouldBe bears
         driver.state.projectedState.getPower(bears) shouldBe 3
         driver.state.projectedState.getToughness(bears) shouldBe 4
+    }
+
+    test("the first card drawn in a turn doesn't trigger; the second single draw does") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val bears = driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val mantle = driver.putPermanentOnBattlefield(me, "Mantle of Tides")
+
+        driver.castThinkTwice(me)
+        driver.state.stack.isEmpty() shouldBe true
+        driver.pendingDecision shouldBe null
+        driver.attachedTo(mantle) shouldBe null
+
+        driver.castThinkTwice(me)
+        driver.submitTargetSelection(me, listOf(bears))
+        driver.resolveAll()
+        driver.attachedTo(mantle) shouldBe bears
     }
 
     test("the trigger moves the Mantle off its current creature, and fires only on the second draw") {

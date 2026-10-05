@@ -51,6 +51,34 @@ class MysticSkyfishScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("the first card drawn in a turn does not grant flying; the second one does") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Mystic Skyfish")
+                    .withCardInHand(1, "Think Twice")
+                    .withCardInHand(1, "Think Twice")
+                    .withLandsOnBattlefield(1, "Island", 4)
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(2, "Island")
+                    .withCardsDrawnThisTurn(1, 0)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Think Twice").error shouldBe null
+                game.resolveStack()
+                withClue("the first draw of the turn should not trigger") {
+                    hasFlying(game) shouldBe false
+                }
+
+                game.castSpell(1, "Think Twice").error shouldBe null
+                game.resolveStack()
+                withClue("the second single draw should grant flying") {
+                    hasFlying(game) shouldBe true
+                }
+            }
+
             test("draws after the second card of the turn do not grant flying") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")

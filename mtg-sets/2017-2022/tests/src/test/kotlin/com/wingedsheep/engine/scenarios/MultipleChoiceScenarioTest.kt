@@ -119,6 +119,7 @@ class MultipleChoiceScenarioTest : ScenarioTestBase() {
             projected.getPower(token) shouldBe 4
             projected.getToughness(token) shouldBe 4
             projected.hasSubtype(token, "Elemental") shouldBe true
+            projected.getColors(token) shouldBe setOf("BLUE", "RED")
             game.handSize(1) shouldBe 0
             game.isOnBattlefield("Grizzly Bears") shouldBe true
         }
