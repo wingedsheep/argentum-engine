@@ -587,7 +587,8 @@ internal class ActivationValidator(
                 // and X-bounded "mana value X or less" reanimation targets (Fabrication Foundry)
                 // need the chosen X to validate — mirror the spell path.
                 xValue = effectiveXValue,
-                targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY
+                targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY,
+                groupCounts = action.targetGroupCounts.takeIf { controllerTargetReqs.size == effectiveTargetReqs.size }
             )
         } else if (controllerTargetReqs.isNotEmpty() && action.targets.isEmpty()) {
             // An empty target list is only illegal when at least one controller-chosen

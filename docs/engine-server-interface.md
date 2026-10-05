@@ -139,6 +139,7 @@ Used to play a card from Hand, Graveyard, Exile, or Command Zone.
 |-------------------|-------------------------|---------------------------------------------------------------------------------------------------------------------------------|
 | `cardId`          | `EntityId`              | The UUID of the card being cast.                                                                                                |
 | `targets`         | `List<TargetSelection>` | Targeted objects (e.g., "Bolt targets Bird").                                                                                   |
+| `targetGroupCounts` | `List<Int>?`          | How many of `targets` each target requirement owns, in requirement order (CR 601.2c). Lets a partly filled "up to N" group be told apart from the next requirement's targets. `null` (or a list of the wrong length) lets the engine infer the split: groups fill as fully as they legally can, earlier groups first. The split is recorded on the stack (each requirement narrowed to its count), so resolution, copies and splice slices read the same boundaries. |
 | `modeIndex`       | `Int?`                  | For modal spells (e.g., "Choose one..."). `null` if not modal.                                                                  |
 | `xValue`          | `Int?`                  | The declared value for `{X}` costs (e.g., Fireball).                                                                            |
 | **`chosenCosts`** | **`Map<Int, Int>`**     | **Modular Optional Costs.** Maps the index of the optional cost definition to times paid. (e.g., Kicker, Buyback, Multikicker). |
@@ -154,6 +155,7 @@ Used to use an activated ability of a permanent (or card in hand/graveyard).
 | `sourceId`     | `EntityId`              | The entity having the ability.                            |
 | `abilityIndex` | `Int`                   | 0-based index of the ability on the card (top to bottom). |
 | `targets`      | `List<TargetSelection>` | Required targets for the ability.                         |
+| `targetGroupCounts` | `List<Int>?`       | As for `CastSpell`.                                       |
 | `chosenCosts`  | `Map<Int, Int>`         | For optional additional costs in abilities.               |
 | `payment`      | `ManaPaymentStrategy?`  | Explicit payment instructions.                            |
 

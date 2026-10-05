@@ -743,9 +743,21 @@ internal class CastValidator(
      * The chosen targets (CR 601.2c), against the requirements of the face and modes being cast —
      * the aura target included, and each spliced card's own after the spell's.
      */
-    private fun validateTargets(state: GameState, action: CastSpell, cardDef: CardDefinition?, source: CastSource): String? {
+    private fun validateTargets(state: GameState, action: CastSpell, cardDef: CardDefinition?, source: CastSource): String? =
+        targetBinding(state, action, cardDef, source.transformedFace)?.error
+
+    /**
+     * How the cast's flat target list splits across its requirements (CR 601.2c) — see
+     * [TargetValidator.bindTargetGroups] — or null when the cast has no targets to bind. The same
+     * requirements [validate] checks, so the handler records exactly the split that was validated.
+     */
+    internal fun targetBinding(
+        state: GameState,
+        action: CastSpell,
+        cardDef: CardDefinition?,
+        transformedFace: CardDefinition?,
+    ): TargetValidator.TargetGroupBinding? {
         if (cardDef == null) return null
-        val transformedFace = source.transformedFace
         // Adventure / split face cast (CR 715 / 709) — read targets from the face's script. A
         // disturb cast reads the back face's script instead (CR 712.8c): the Innistrad disturb
         // cycle's Aura backs choose what to enchant as the spell is cast.
@@ -777,7 +789,7 @@ internal class CastValidator(
         } else if (isOverloadCast(action, cardDef)) {
             // Overload (CR 702.96b): "target" became "each", so the spell takes no targets — and a
             // client-supplied target list on an overloaded cast is malformed, not ignorable.
-            if (action.targets.isNotEmpty()) return "An overloaded spell has no targets"
+            if (action.targets.isNotEmpty()) return TargetValidator.TargetGroupBinding(emptyList(), "An overloaded spell has no targets")
             emptyList()
         } else {
             effectiveScript.targetRequirements
@@ -798,9 +810,9 @@ internal class CastValidator(
         if (targetRequirements.isEmpty()) return null
         // Reject casting if spell requires targets but none were provided
         if (action.targets.isEmpty() && targetRequirements.sumOf { it.effectiveMinCount } > 0) {
-            return "No valid targets available"
+            return TargetValidator.TargetGroupBinding(targetRequirements.map { 0 }, "No valid targets available")
         }
-        return targetValidator.validateTargets(
+        return targetValidator.bindTargetGroups(
             state,
             action.targets,
             targetRequirements,
@@ -809,7 +821,8 @@ internal class CastValidator(
             sourceSubtypes = (transformedFace ?: cardDef).typeLine.subtypes.map { it.value }.toSet(),
             sourceId = action.cardId,
             xValue = action.xValue,
-            targetingSourceType = TargetingSourceType.SPELL
+            targetingSourceType = TargetingSourceType.SPELL,
+            explicitCounts = action.targetGroupCounts
         )
     }
 

@@ -219,7 +219,15 @@ data class CastSpell(
      * synthesized free casts) leave it null. Mirrors how [useWithoutPayingManaCost] was split
      * out as its own flag for the same reason (CR 118.9a — only one alternative cost per cast).
      */
-    val alternativeCostType: AlternativeCostType? = null
+    val alternativeCostType: AlternativeCostType? = null,
+    /**
+     * How many of [targets] each of the spell's target requirements owns, in requirement order —
+     * the boundaries between its instances of the word "target" (CR 601.2c), which a flat list loses
+     * when an "up to N" group is only partly filled. `null` lets the engine infer them: groups fill
+     * as fully as they legally can, earlier groups first. A client that knows the boundaries should
+     * send them; an inferred split is the legal one, but not always the one the player meant.
+     */
+    val targetGroupCounts: List<Int>? = null
 ) : GameAction
 
 /**
@@ -446,7 +454,9 @@ data class ActivateAbility(
      * directly); ActivateAbilityHandler.validate() rejects any client-submitted action that carries
      * it, so it can't be used to skip the opponent-target pause.
      */
-    val opponentTargetsChosen: Boolean = false
+    val opponentTargetsChosen: Boolean = false,
+    /** Per-requirement target counts, as for [CastSpell.targetGroupCounts]. */
+    val targetGroupCounts: List<Int>? = null
 ) : GameAction
 
 // =============================================================================

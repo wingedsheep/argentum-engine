@@ -179,6 +179,18 @@ internal object StackPlacement {
             chosenModes = effectiveModes,
             modeTargetsOrdered = effectiveModeTargets,
             modeTargetRequirements = effectiveModeRequirements,
+            // A copy of a spliced spell copies the spliced text (Fork's 2004-12-01 ruling), whose
+            // targets are the tail of the flat list. A copy keeps one slot per original target, so
+            // each spliced card's slice keeps its size and is re-read from the copy's own targets.
+            splicedTargetsOrdered = if (sourceSpell.splicedTargetsOrdered.isEmpty() || targets.isEmpty()) {
+                sourceSpell.splicedTargetsOrdered
+            } else {
+                var cursor = effectiveTargets.size - sourceSpell.splicedTargetsOrdered.sumOf { it.size }
+                sourceSpell.splicedTargetsOrdered.map { old ->
+                    effectiveTargets.subList(cursor.coerceIn(0, effectiveTargets.size), (cursor + old.size).coerceIn(0, effectiveTargets.size))
+                        .toList().also { cursor += old.size }
+                }
+            },
             damageDistribution = if (sourceSpell.damageDistribution.isNullOrEmpty() || (targets.isEmpty() && modeTargetsOrdered == null)) sourceSpell.damageDistribution else buildMap {
                 sourceTargets?.targets.orEmpty().zip(effectiveTargets).forEach { (old, new) ->
                     fun id(t: ChosenTarget): EntityId = when (t) {
@@ -197,8 +209,11 @@ internal object StackPlacement {
         )
         if (effectiveTargets.isNotEmpty()) {
             val captured = TargetsComponent.capture(state, effectiveTargets, effectiveRequirements)
+            // Explicit replacements capture the current object even when its entity id is unchanged.
+            val inheritsAllTargets = targets.isEmpty() && modeTargetsOrdered == null
             val inherited = sourceTargets?.targets.orEmpty().mapIndexedNotNull { i, old ->
-                if (old == effectiveTargets.getOrNull(i) && (retainedTargetIndices == null || i in retainedTargetIndices)) old else null
+                val retained = retainedTargetIndices?.contains(i) ?: inheritsAllTargets
+                if (old == effectiveTargets.getOrNull(i) && retained) old else null
             }.toSet()
             val ids = inherited.mapTo(mutableSetOf()) { target -> when (target) {
                 is ChosenTarget.Player -> target.playerId

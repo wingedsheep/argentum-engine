@@ -137,8 +137,18 @@ object SpliceCasts {
     fun splicedTargetSlotCounts(
         splicedCardNames: List<String>,
         cardRegistry: CardRegistry,
-    ): List<Int> = splicedCardNames.map { name ->
-        cardRegistry.getCard(name)?.script?.targetRequirements?.sumOf { it.count } ?: 0
+        boundRequirements: List<TargetRequirement>? = null,
+    ): List<Int> {
+        val printed = splicedCardNames.map { name -> cardRegistry.getCard(name)?.script?.targetRequirements.orEmpty() }
+        // The spell's own recorded requirements end with each spliced card's, narrowed to what the
+        // announcement bound to them (CR 601.2c) — a partly filled "up to N" spliced group counts
+        // the targets it holds, not its printed maximum.
+        val tail = printed.sumOf { it.size }
+        if (boundRequirements == null || boundRequirements.size < tail) return printed.map { reqs -> reqs.sumOf { it.count } }
+        var cursor = boundRequirements.size - tail
+        return printed.map { reqs ->
+            boundRequirements.subList(cursor, cursor + reqs.size).sumOf { it.count }.also { cursor += reqs.size }
+        }
     }
 
     /**
@@ -149,9 +159,10 @@ object SpliceCasts {
         flatTargets: List<T>,
         splicedCardNames: List<String>,
         cardRegistry: CardRegistry,
+        boundRequirements: List<TargetRequirement>? = null,
     ): List<List<T>> {
-        val counts = splicedTargetSlotCounts(splicedCardNames, cardRegistry)
-        var index = mainTargetCount(flatTargets.size, splicedCardNames, cardRegistry)
+        val counts = splicedTargetSlotCounts(splicedCardNames, cardRegistry, boundRequirements)
+        var index = (flatTargets.size - counts.sum()).coerceAtLeast(0)
         return counts.map { count ->
             val slice = flatTargets.drop(index).take(count)
             index += count
@@ -164,7 +175,8 @@ object SpliceCasts {
         totalTargets: Int,
         splicedCardNames: List<String>,
         cardRegistry: CardRegistry,
-    ): Int = (totalTargets - splicedTargetSlotCounts(splicedCardNames, cardRegistry).sum())
+        boundRequirements: List<TargetRequirement>? = null,
+    ): Int = (totalTargets - splicedTargetSlotCounts(splicedCardNames, cardRegistry, boundRequirements).sum())
         .coerceAtLeast(0)
 }
 

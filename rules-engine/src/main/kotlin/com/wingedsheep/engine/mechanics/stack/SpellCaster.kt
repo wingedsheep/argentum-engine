@@ -198,7 +198,7 @@ internal class SpellCaster(
         val splicedTargetsOrdered: List<List<ChosenTarget>> = if (splicedCardNames.isEmpty()) {
             emptyList()
         } else {
-            SpliceCasts.sliceSplicedTargets(effectiveTargets, splicedCardNames, cardRegistry)
+            SpliceCasts.sliceSplicedTargets(effectiveTargets, splicedCardNames, cardRegistry, effectiveTargetRequirements)
         }
 
         // Add spell components

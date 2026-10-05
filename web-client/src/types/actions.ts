@@ -113,6 +113,8 @@ export interface CastSpellAction {
   readonly playerId: EntityId
   readonly cardId: EntityId
   readonly targets?: readonly ChosenTarget[]
+  /** How many of `targets` each target requirement owns, in requirement order (CR 601.2c). */
+  readonly targetGroupCounts?: readonly number[]
   readonly xValue?: number | null
   readonly paymentStrategy?: PaymentStrategy
   readonly additionalCostPayment?: AdditionalCostPayment
@@ -214,6 +216,8 @@ export interface ActivateAbilityAction {
   readonly sourceId: EntityId
   readonly abilityId: string
   readonly targets?: readonly ChosenTarget[]
+  /** How many of `targets` each target requirement owns, in requirement order (CR 601.2c). */
+  readonly targetGroupCounts?: readonly number[]
   /** Payment choices for ability costs (sacrifice, etc.) */
   readonly costPayment?: AdditionalCostPayment
   /** Color chosen for "add one mana of any color" abilities */

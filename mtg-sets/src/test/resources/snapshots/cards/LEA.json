@@ -2416,6 +2416,69 @@
     }
 }
 
+// Fork
+{
+    "name": "Fork",
+    "manaCost": "{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Copy target instant or sorcery spell, except that the copy is red. You may choose new targets for the copy.",
+    "script": {
+        "spellEffect": {
+            "type": "CopyTargetSpell",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "exceptions": {
+                "overrideColors": [
+                    "RED"
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "instant|sorcery",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "RARE",
+        "artist": "Amy Weber",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6b43916-fe2d-417a-a550-d7c795023297.jpg?1783948686",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "If you Fork a Spliced spell, the spliced text is added during the announcement of the original spell, and therefore is fully copied by Fork."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Fork does not let you make non-targeting choices about the spell."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "For spells that can have a variable number of targets, the controller of the copy must use the same number of targets the original spell did."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Forking a spell with an X in the cost requires you to use the same X value."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "The copy that is placed on the stack is not considered to have been \"cast\"."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Frozen Shade
 {
     "name": "Frozen Shade",

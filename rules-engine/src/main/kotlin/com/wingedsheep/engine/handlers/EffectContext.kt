@@ -530,7 +530,9 @@ data class EffectContext(
                 val id = req.id
                 if (id != null) {
                     if (req.count == 1) {
-                        targets.getOrNull(targetIndex)?.let { result[id] = it }
+                        // `id[0]` too: a multi-target group narrowed to the one target it holds
+                        // (`withCount`) is still read through its `targets()` handles.
+                        targets.getOrNull(targetIndex)?.let { result[id] = it; result["$id[0]"] = it }
                     } else {
                         for (i in 0 until req.count) {
                             targets.getOrNull(targetIndex + i)?.let { result["$id[$i]"] = it }
