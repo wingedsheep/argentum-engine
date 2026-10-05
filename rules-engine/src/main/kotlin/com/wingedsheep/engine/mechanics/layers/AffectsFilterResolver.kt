@@ -87,18 +87,25 @@ internal class AffectsFilterResolver(
         return card.typeLine.cardTypes.any { it.name == cardTypeName }
     }
 
+    /**
+     * @param youId pins "you" in the filter to this player instead of the source's current
+     *   controller. A floating effect from a resolved spell or ability passes its own controller:
+     *   "you" means whoever controlled it at resolution, and a source that has since left the
+     *   battlefield has no controller to read (Jace, Arcane Strategist's −7 outlives Jace).
+     */
     fun resolveAffectedEntities(
         state: GameState,
         sourceId: EntityId,
         filter: AffectsFilter?,
-        projectedValues: Map<EntityId, MutableProjectedValues> = emptyMap()
+        projectedValues: Map<EntityId, MutableProjectedValues> = emptyMap(),
+        youId: EntityId? = null
     ): Set<EntityId> {
         if (filter == null) return setOf(sourceId)
 
         return when (filter) {
             is AffectsFilter.Self -> setOf(sourceId)
             is AffectsFilter.AllCreaturesYouControl -> {
-                val controller = projectedController(state, sourceId, projectedValues)
+                val controller = youId ?: projectedController(state, sourceId, projectedValues)
                     ?: return emptySet()
                 state.getBattlefield().filter { entityId ->
                     state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
@@ -113,7 +120,7 @@ internal class AffectsFilterResolver(
                 }.toSet()
             }
             is AffectsFilter.AllCreaturesOpponentsControl -> {
-                val controller = projectedController(state, sourceId, projectedValues)
+                val controller = youId ?: projectedController(state, sourceId, projectedValues)
                     ?: return emptySet()
                 state.getBattlefield().filter { entityId ->
                     state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
@@ -148,7 +155,7 @@ internal class AffectsFilterResolver(
                 }.toSet()
             }
             is AffectsFilter.OtherTappedCreaturesYouControl -> {
-                val controller = projectedController(state, sourceId, projectedValues)
+                val controller = youId ?: projectedController(state, sourceId, projectedValues)
                     ?: return emptySet()
                 state.getBattlefield().filter { entityId ->
                     if (entityId == sourceId) return@filter false
@@ -160,7 +167,7 @@ internal class AffectsFilterResolver(
                 }.toSet()
             }
             is AffectsFilter.OtherCreaturesYouControl -> {
-                val controller = projectedController(state, sourceId, projectedValues)
+                val controller = youId ?: projectedController(state, sourceId, projectedValues)
                     ?: return emptySet()
                 state.getBattlefield().filter { entityId ->
                     if (entityId == sourceId) return@filter false
@@ -202,7 +209,7 @@ internal class AffectsFilterResolver(
             }
             is AffectsFilter.OwnCreaturesWithCounter -> {
                 val counterType = filter.counterType
-                val sourceController = projectedController(state, sourceId, projectedValues)
+                val sourceController = youId ?: projectedController(state, sourceId, projectedValues)
                     ?: return emptySet()
                 state.getBattlefield().filter { entityId ->
                     val container = state.getEntity(entityId) ?: return@filter false
@@ -224,7 +231,7 @@ internal class AffectsFilterResolver(
                 }.toSet()
             }
             is AffectsFilter.Generic -> {
-                resolveGenericFilter(state, sourceId, filter.groupFilter, projectedValues)
+                resolveGenericFilter(state, sourceId, filter.groupFilter, projectedValues, youId)
             }
         }
     }
@@ -274,10 +281,11 @@ internal class AffectsFilterResolver(
         state: GameState,
         sourceId: EntityId,
         groupFilter: GroupFilter,
-        projectedValues: Map<EntityId, MutableProjectedValues>
+        projectedValues: Map<EntityId, MutableProjectedValues>,
+        youId: EntityId? = null
     ): Set<EntityId> {
         val baseFilter = groupFilter.baseFilter
-        val controller = projectedController(state, sourceId, projectedValues)
+        val controller = youId ?: projectedController(state, sourceId, projectedValues)
 
         // Read chosen subtype once from source's CastChoicesComponent if needed
         val chosenSubtype = if (groupFilter.chosenSubtypeKey != null) {

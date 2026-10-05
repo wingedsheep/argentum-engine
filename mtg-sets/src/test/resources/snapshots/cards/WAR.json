@@ -1912,6 +1912,103 @@
     ]
 }
 
+// Jace, Arcane Strategist
+{
+    "name": "Jace, Arcane Strategist",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Jace",
+    "oracleText": "Whenever you draw your second card each turn, put a +1/+1 counter on target creature you control.\n+1: Draw a card.\n−7: Creatures you control can't be blocked this turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jace, Arcane Strategist:1",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Jace, Arcane Strategist:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Jace, Arcane Strategist:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CantBeBlockedGroup",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "270",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b6a857fb-159f-40c4-8988-da91d8521a60.jpg?1783933359",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Jace's first ability can trigger only once each turn. It doesn't matter whether Jace was on the battlefield when the first card was drawn."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If an effect instructs you to draw multiple cards, Jace's first ability triggers after you draw whichever is the second one for the turn (if any). You choose a target for the ability after you've drawn all of the cards."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a spell or ability causes you to put cards into your hand without specifically using the word \"draw,\" it's not a card drawn."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Once Jace's last ability has resolved, its effect applies even if Jace has left the battlefield."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Jaya's Greeting
 {
     "name": "Jaya's Greeting",
