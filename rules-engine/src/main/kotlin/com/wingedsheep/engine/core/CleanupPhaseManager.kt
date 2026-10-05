@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.handlers.effects.copy.expireCopyLayers
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.state.GameState
@@ -315,14 +316,16 @@ class CleanupPhaseManager(
         // is back in time to trigger again.
         for ((entityId, container) in result.entities) {
             val marker = container.get<RevertCopyAtYourNextTurnComponent>() ?: continue
-            if (marker.playerId !in activeTeam) continue
-            val originalCard = container.get<CopyOfComponent>()?.originalCardComponent
+            if (marker.playerId !in activeTeam && container.get<com.wingedsheep.engine.state.components.identity.CopyHistoryComponent>()
+                    ?.layers?.none { it.duration == Duration.UntilYourNextTurn && it.controllerId in activeTeam } != false) continue
             result = result.updateEntity(entityId) { c ->
-                var reverted = c.without<RevertCopyAtYourNextTurnComponent>()
-                if (originalCard != null) {
-                    reverted = reverted.with(originalCard).without<CopyOfComponent>()
-                }
-                reverted
+                c.expireCopyLayers(cardRegistry) { it.duration == Duration.UntilYourNextTurn && it.controllerId in activeTeam }
+                    .let { updated ->
+                        val next = updated.get<com.wingedsheep.engine.state.components.identity.CopyHistoryComponent>()
+                            ?.layers?.lastOrNull { it.duration == Duration.UntilYourNextTurn }
+                        if (next?.controllerId == null) updated.without<RevertCopyAtYourNextTurnComponent>()
+                        else updated.with(RevertCopyAtYourNextTurnComponent(next.controllerId))
+                    }
             }
         }
         return result
@@ -387,13 +390,9 @@ class CleanupPhaseManager(
 
         for ((entityId, container) in result.entities) {
             if (!container.has<RevertCopyAtNextEndStepComponent>()) continue
-            val originalCard = container.get<CopyOfComponent>()?.originalCardComponent
             result = result.updateEntity(entityId) { c ->
-                var reverted = c.without<RevertCopyAtNextEndStepComponent>()
-                if (originalCard != null) {
-                    reverted = reverted.with(originalCard).without<CopyOfComponent>()
-                }
-                reverted
+                c.expireCopyLayers(cardRegistry) { it.duration == Duration.UntilNextEndStep }
+                    .without<RevertCopyAtNextEndStepComponent>()
             }
         }
 
@@ -1063,13 +1062,9 @@ class CleanupPhaseManager(
         // marker is removed so the entity isn't left flagged.
         for ((entityId, container) in newState.entities) {
             if (!container.has<RevertCopyAtEndOfTurnComponent>()) continue
-            val originalCard = container.get<CopyOfComponent>()?.originalCardComponent
             newState = newState.updateEntity(entityId) { c ->
-                var reverted = c.without<RevertCopyAtEndOfTurnComponent>()
-                if (originalCard != null) {
-                    reverted = reverted.with(originalCard).without<CopyOfComponent>()
-                }
-                reverted
+                c.expireCopyLayers(cardRegistry) { it.duration == Duration.EndOfTurn }
+                    .without<RevertCopyAtEndOfTurnComponent>()
             }
         }
 

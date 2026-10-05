@@ -466,7 +466,7 @@ object TokenCreationReplacementHelper {
             }?.let { components.add(it) }
 
             var container = ComponentContainer.of(*components.toTypedArray())
-            container = CopyExceptionApplier.withNumericKeywords(container, attachedContainer, CopyExceptions.None)
+            container = CopyExceptionApplier.withNumericKeywords(container, attachedContainer, CopyExceptions.None, cardRegistry)
             if (staticAbilityHandler != null) {
                 container = staticAbilityHandler.addContinuousEffectComponent(container)
                 container = staticAbilityHandler.addReplacementEffectComponent(container)

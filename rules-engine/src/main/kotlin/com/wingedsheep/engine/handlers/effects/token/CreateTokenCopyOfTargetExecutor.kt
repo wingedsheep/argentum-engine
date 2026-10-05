@@ -9,7 +9,6 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
-import com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
@@ -190,7 +189,11 @@ class CreateTokenCopyOfTargetExecutor(
         // (CR 707.2 lists them; layout isn't one). A token copy of a double-faced permanent is a
         // double-faced *token* and can still transform (CR 707.8a / 712.9), which is what the
         // DoubleFacedComponent copied below is for.
-        val tokenCard = CopyExceptionApplier.apply(targetCard, exceptions, context.resolvingTriggeredAbility)
+        fun withAddedStatics(card: CardComponent): CardComponent = card.copy(
+            copyStaticAbilities = card.copyStaticAbilities + effect.addedStaticAbilities,
+            flipSide = card.flipSide?.let(::withAddedStatics),
+        )
+        val tokenCard = withAddedStatics(CopyExceptionApplier.apply(targetCard, exceptions, context.resolvingTriggeredAbility))
             .copy(ownerId = controllerId, isDoubleFaced = false)
 
         val cappedCount = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(count, "target-copy tokens")
@@ -234,32 +237,17 @@ class CreateTokenCopyOfTargetExecutor(
             // are intentionally not copied (handled by the absence of CountersComponent copy
             // throughout this executor).
             targetContainer.copiableDoubleFacedComponent {
-                CopyExceptionApplier.apply(it, exceptions, context.resolvingTriggeredAbility).copy(ownerId = controllerId, isDoubleFaced = false)
+                withAddedStatics(CopyExceptionApplier.apply(it, exceptions, context.resolvingTriggeredAbility))
+                    .copy(ownerId = controllerId, isDoubleFaced = false)
             }?.let { components.add(it) }
 
             var container = ComponentContainer.of(*components.toTypedArray())
             // Toxic N / bushido N ride components, not the CardComponent — carry them over too.
-            container = CopyExceptionApplier.withNumericKeywords(container, targetContainer, exceptions)
+            container = CopyExceptionApplier.withNumericKeywords(container, targetContainer, exceptions, cardRegistry)
 
             if (staticAbilityHandler != null) {
                 container = staticAbilityHandler.addContinuousEffectComponent(container)
                 container = staticAbilityHandler.addReplacementEffectComponent(container)
-                // The "except it has \"[static ability]\"" clause has to *project*, not just be
-                // recorded. `grantedStaticAbilities` (written below) is a lookup table each static
-                // reader consults by hand — the equip-cost reducer, the combat rules — and the
-                // layer projector is not one of those readers. A granted ability that lives in a
-                // CR 613 layer (Dollhouse of Horrors' "This token gets +1/+1 for each Construct you
-                // control") was therefore silently inert, which for a 0/0 copy meant the token died
-                // to state-based actions the instant it entered. Lower it onto the token's own
-                // ContinuousEffectSourceComponent so the projector sees it like any printed static.
-                if (effect.addedStaticAbilities.isNotEmpty()) {
-                    val granted = staticAbilityHandler
-                        .lowerToContinuousEffectData(effect.addedStaticAbilities)
-                    val existing = container.get<ContinuousEffectSourceComponent>()?.effects.orEmpty()
-                    container = container.with(
-                        ContinuousEffectSourceComponent(existing + granted)
-                    )
-                }
             }
 
             newState = newState.withEntity(tokenId, container)

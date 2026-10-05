@@ -10,8 +10,8 @@ normalization, the touchstone, a grammar covering vanilla cards and keyword-only
 [`:oracle-assay`](../oracle-assay/README.md). The MVP the work is aimed at — *Assay reads a whole
 card and proves the reading against the card we already wrote* — and the numbers each phase landed
 on are in [`docs/plans/oracle-assay.md`](plans/oracle-assay.md). Phases 2 and 4–6 remain proposals.
-Nothing here changes the existing `:mtgish-tooling` pipeline, which stays authoritative until a
-set-by-set cutover replaces it.
+Assay has since superseded the `:mtgish-tooling` pipeline, which is deprecated; the comparisons to
+mtgish below record why.
 
 ## The name
 
@@ -375,4 +375,4 @@ parse is counted, not lost.
 
 - [`docs/plans/oracle-assay.md`](plans/oracle-assay.md) — the phased realization plan
 - [`docs/sdk-design-principles.md`](sdk-design-principles.md) — the bar for new SDK types
-- [`mtgish-tooling/README.md`](../mtgish-tooling/README.md) — the incumbent pipeline
+- [`mtgish-tooling/README.md`](../mtgish-tooling/README.md) — the deprecated pipeline Assay replaced

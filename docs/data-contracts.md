@@ -356,7 +356,7 @@ lives only in the local Scryfall cache. `scripts/gen-set-totals` bakes those can
 into `draft` (some printing of the card in that set is Scryfall `booster: true`) and `extra`, each
 `{ name, img }` (direct CDN art URL) plus `{ products, group }` on the extras, into
 the committed `game-server/.../resources/coverage/set-totals.json` resource (same partitioning as
-`scripts/card-status`, so the numbers match the mtgish coverage TUI). Baking the art URL lets the
+`scripts/card-status`, so the numbers match its report). Baking the art URL lets the
 detail view render set-specific images for *missing* cards too, without hammering the rate-limited
 Scryfall name-lookup API. At request time `SetCoverageService` joins that static denominator with the
 *live* card catalog: `implemented` is the count of a set's canonical names we've actually authored

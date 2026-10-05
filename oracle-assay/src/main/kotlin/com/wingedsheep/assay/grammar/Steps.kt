@@ -2104,6 +2104,26 @@ object Steps {
         quantifiedPermanentSteps("tap {q}target {filter}", "tap") { Effects.Tap(it) },
         quantifiedPermanentSteps("untap {q}target {filter}", "untap") { Effects.Untap(it) },
         quantifiedPermanentSteps("tap or untap {q}target {filter}", "tap or untap", effect = ::tapOrUntap),
+        // "Target creature you control explores." / "… connives." — the keyword actions with the
+        // target as their subject, the cast-time twin of `SelfSteps`' "{self} explores" rows.
+        // Singular rows only: the verb agrees with one actor, and no card prints a plural.
+        quantifiedPermanentSteps(
+            "{q}target {filter} explores",
+            "explores",
+            quantifiers = Targets.quantifiers.filterNot { it.plural },
+        ) { Effects.Explore(it) },
+        // Connive also refuses the optional rows. An explore with no creature does nothing, but
+        // `ConniveEffectExecutor` still draws and discards when its subject does not resolve (the
+        // CR 701.50b last-known-information case), so "up to one target creature you control
+        // connives" chosen with no target would loot anyway. Unstable Experiment guards it with a
+        // `TargetMatchesFilter` gate; a bare `Connive` over an optional target is a different card.
+        quantifiedPermanentSteps(
+            "{q}target {filter} connives",
+            "connives",
+            quantifiers = Targets.quantifiers.filter {
+                !it.plural && !it.requirement(1, GameObjectFilter.Creature).optional
+            },
+        ) { Effects.Connive(it) },
         quantifiedPermanentSteps(
             singular = "return {q}target {filter} to its owner's hand",
             name = "return to hand",

@@ -1,5 +1,11 @@
 # mtgish Tooling
 
+> **Deprecated.** [Argentum Assay](../oracle-assay/README.md) replaced this pipeline for reading Oracle
+> text into SDK models and for verifying hand-written cards against it. The module still builds and
+> its recipes still run, but nothing in the workflow depends on it: don't use its drafts, don't teach
+> its bridge/emitter new capabilities, and treat its failures as non-blocking (see the root
+> [`AGENTS.md`](../AGENTS.md)). This page is kept as a reference.
+
 This module turns the external [mtgish](https://github.com/i5jb/mtgish) oracle IR into actionable Argentum data.
 It is analysis and generation tooling, not a runtime dependency and not a card loader.
 

@@ -194,7 +194,7 @@ class FaceDownCopyTest : FunSpec({
         val d = driver()
         val copy = castCopy(d, faceDown(d, FaceDownMode.CLOAK))
         val source = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
-        val result = EachPermanentBecomesCopyOfTargetExecutor(PredicateEvaluator(cardRegistry = d.cardRegistry))
+        val result = EachPermanentBecomesCopyOfTargetExecutor(PredicateEvaluator(cardRegistry = d.cardRegistry), d.cardRegistry)
             .execute(d.state, EachPermanentBecomesCopyOfTargetEffect(target = EffectTarget.ContextTarget(0), affected = EffectTarget.Self),
                 EffectContext(sourceId = copy, controllerId = d.player1, targets = listOf(ChosenTarget.Permanent(source))))
         d.replaceState(result.state)

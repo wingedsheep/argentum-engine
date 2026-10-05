@@ -414,8 +414,7 @@ played rather than what it does. Nearly everything else was rows in those lists.
 coverage went from 3,004 cards to 4,287 in the same change, which is the argument for picking a set
 as the target rather than picking the number.
 
-Nothing here changes `:mtgish-tooling`, which stays authoritative until a per-set cutover replaces it
-(Phase 5). Assay is **not a runtime card loader** and never will be — with one carved-out exception,
+Assay has superseded `:mtgish-tooling`, which is deprecated. Assay is **not a runtime card loader** and never will be — with one carved-out exception,
 the [custom-card sandbox](#the-compiler-and-the-custom-card-sandbox), which compiles a *pasted* card
 for a dev-gated Scenario Builder session and never touches the corpus.
 
@@ -5682,6 +5681,37 @@ on eighteen others. **Zuko's Exile [TLA]** selected its target inside a pipeline
 it as the spell is cast. It is now the cast-time target and `TargetController` every other card in the
 family uses, with a scenario test; a gym-trainer search test that had borrowed it as its one
 resolution-time targeting fixture now declares that fixture inline. Divergent 84 → 84.
+
+## Explores and connives
+
+"When ~ enters, **it explores**." (River Herald Scout, Cenote Scout), "Whenever ~
+attacks, **it connives**." (the SNC and Marvel villains) and "Target creature you control explores."
+(Enter the Unknown, Twists and Turns). Tail keys "explores." and "connives.". CR 701.44 and 701.50
+are keyword actions a permanent performs, and the SDK names the actor and nothing else —
+`Effects.Explore(target)`, `Effects.Connive(target)` — so the band is two rows of
+`SelfSteps.retargetable`, whose subject already moves with the position ("~", the filtered trigger's
+"it", the later clause's "it", enchanted creature), and two of `quantifiedPermanentSteps` for the
+cast-time target as subject. Singular rows only, and connive refuses "up to one" as well:
+`ConniveEffectExecutor` still draws and discards when its subject does not resolve (the CR 701.50b
+last-known-information path), so an empty optional target would loot anyway.
+
+### What it moved
+
+Probe 23 + 23 lines / 21 + 17 whole cards corpus-wide by swapping the verb for "gets +1/+1 until
+end of turn". Over the implemented population delivered **+16** (7,903 → 7,919), compared 7,488 →
+7,504. Endure ("it endures 3", 8 cards) is the same subject shape over a `May` with a token
+`otherwise`, left for its own band.
+
+### What the differential found
+
+Three new readings. **Path of Discovery [RIX]** wrote `Triggers.another` for printed "a creature you
+control" — the card is an enchantment, so the "other" exclusion was a word the text never printed;
+fixed to `Triggers.a`. **Prowler, Clawed Thief [SPM]** watched for a *creature* Villain where it
+prints "another Villain"; a bare subtype names a permanent (CR 109.2), fixed to the
+`Permanent.withSubtype` Flying Octobot already uses. **Unstable Experiment [SPM]** was a parser bug:
+its "up to one target creature you control connives" is gated on the target existing because of the
+executor behaviour above, and the grammar read it as a bare connive — the optional connive rows were
+withdrawn. Divergent 84 → 84.
 
 ## The differential gate
 

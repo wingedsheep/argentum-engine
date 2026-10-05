@@ -1,5 +1,11 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
+import com.wingedsheep.engine.handlers.effects.copy.withCopyIdentity
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.components.identity.copiableCardComponent
+import com.wingedsheep.engine.state.components.identity.recordCopyLayer
+import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.engine.core.CopiableCharacteristicsChangedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -29,7 +35,7 @@ import kotlin.reflect.KClass
  *    (the exile target was declined, or the exiled card has since left exile);
  *  - the affected permanent can't be resolved or has left the battlefield.
  */
-class BecomeCopyOfLinkedExileExecutor : EffectExecutor<BecomeCopyOfLinkedExileEffect> {
+class BecomeCopyOfLinkedExileExecutor(private val cardRegistry: CardRegistry) : EffectExecutor<BecomeCopyOfLinkedExileEffect> {
 
     override val effectType: KClass<BecomeCopyOfLinkedExileEffect> =
         BecomeCopyOfLinkedExileEffect::class
@@ -57,16 +63,18 @@ class BecomeCopyOfLinkedExileExecutor : EffectExecutor<BecomeCopyOfLinkedExileEf
         val currentCard = affectedContainer.get<CardComponent>() ?: return EffectResult.success(state)
 
         // Preserve ownership; only copiable characteristics change (CR 707.2).
-        val copiedCard = copySourceCard.copy(ownerId = currentCard.ownerId)
+        val copiedCard = copySourceCard.copy(ownerId = currentCard.ownerId, isDoubleFaced = currentCard.isDoubleFaced)
 
         // Keep the original pre-copy snapshot if the affected permanent is already a copy, so a
         // chain still reverts to the printed identity.
         val existingCopyOf = affectedContainer.get<CopyOfComponent>()
-        val originalSnapshot = existingCopyOf?.originalCardComponent ?: currentCard
+        val originalSnapshot = existingCopyOf?.originalCardComponent
+            ?: affectedContainer.get<com.wingedsheep.engine.state.components.identity.FlippedComponent>()?.unflippedCard ?: currentCard
         val originalDefinitionId = existingCopyOf?.originalCardDefinitionId ?: currentCard.cardDefinitionId
 
         val newState = state.updateEntity(affectedId) { c ->
-            c.with(copiedCard)
+            c.recordCopyLayer(copiedCard, Duration.WhileSourceAttachedToAffected, context.controllerId, equipmentId)
+                .withCopyIdentity(copiedCard, cardRegistry)
                 .with(
                     CopyOfComponent(
                         originalCardDefinitionId = originalDefinitionId,
@@ -77,6 +85,6 @@ class BecomeCopyOfLinkedExileExecutor : EffectExecutor<BecomeCopyOfLinkedExileEf
                 .with(CopyWhileAttachedComponent(equipmentId))
         }
 
-        return EffectResult.success(newState)
+        return EffectResult.success(newState, listOf(CopiableCharacteristicsChangedEvent(affectedId)))
     }
 }

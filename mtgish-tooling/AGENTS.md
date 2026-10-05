@@ -1,5 +1,11 @@
 # `:mtgish-tooling`
 
+> **Deprecated.** [Argentum Assay](../oracle-assay/README.md) replaced this pipeline for reading Oracle
+> text into SDK models and for verifying hand-written cards against it. The module still builds and
+> its recipes still run, but nothing in the workflow depends on it: don't use its drafts, don't teach
+> its bridge/emitter new capabilities, and treat its failures as non-blocking (see the root
+> [`AGENTS.md`](../AGENTS.md)). Only work here when a task explicitly asks for it.
+
 Guidance for coding agents working in this module. Read [`README.md`](README.md) first — it's the
 authoritative reference for the commands, the two dictionaries (`bridge/` capability + `emitter/`
 rendering), the fidelity policy, and the write/relocate paths.

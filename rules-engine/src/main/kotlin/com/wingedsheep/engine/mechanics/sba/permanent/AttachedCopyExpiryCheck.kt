@@ -1,5 +1,10 @@
 package com.wingedsheep.engine.mechanics.sba.permanent
 
+import com.wingedsheep.engine.handlers.effects.copy.expireCopyLayers
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.components.identity.CopyHistoryComponent
+import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.engine.core.CopiableCharacteristicsChangedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.mechanics.sba.SbaOrder
 import com.wingedsheep.engine.mechanics.sba.StateBasedActionCheck
@@ -20,37 +25,38 @@ import com.wingedsheep.engine.state.components.identity.CopyWhileAttachedCompone
  * `CopyOfComponent` and the marker — mirroring the end-of-turn copy revert, but keyed to attachment
  * rather than the cleanup step.
  */
-class AttachedCopyExpiryCheck : StateBasedActionCheck {
+class AttachedCopyExpiryCheck(private val cardRegistry: CardRegistry) : StateBasedActionCheck {
     override val name = "611.2b Attached-Copy Expiry"
     override val order = SbaOrder.ATTACHED_COPY_EXPIRY
 
     override fun check(state: GameState): ExecutionResult {
         var newState = state
         var changed = false
+        val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val marker = container.get<CopyWhileAttachedComponent>() ?: continue
 
-            // Still attached to this very permanent? Then the copy persists.
-            val attachment = state.getEntity(marker.attachmentId)
-            val stillAttached = marker.attachmentId in state.getBattlefield() &&
-                attachment?.get<AttachedToComponent>()?.targetId == entityId
-            if (stillAttached) continue
-
-            // Revert to the pre-copy identity (CR 611.2b — one-way: drop the marker so a later
-            // re-attach can't resurrect this copy).
-            val originalCard = container.get<CopyOfComponent>()?.originalCardComponent
+            fun attached(id: com.wingedsheep.sdk.model.EntityId?): Boolean = id != null &&
+                id in state.getBattlefield() && state.getEntity(id)?.get<AttachedToComponent>()?.targetId == entityId
+            val history = container.get<CopyHistoryComponent>()
+            if (history != null) {
+                if (history.layers.none { it.duration == Duration.WhileSourceAttachedToAffected && !attached(it.attachmentId) }) continue
+            } else if (attached(marker.attachmentId)) continue
             newState = newState.updateEntity(entityId) { c ->
-                var reverted = c.without<CopyWhileAttachedComponent>()
-                if (originalCard != null) {
-                    reverted = reverted.with(originalCard).without<CopyOfComponent>()
+                c.expireCopyLayers(cardRegistry) {
+                    it.duration == Duration.WhileSourceAttachedToAffected && !attached(it.attachmentId)
+                }.let { updated ->
+                    val next = updated.get<CopyHistoryComponent>()?.layers
+                        ?.lastOrNull { it.duration == Duration.WhileSourceAttachedToAffected }?.attachmentId
+                    if (next == null) updated.without<CopyWhileAttachedComponent>() else updated.with(CopyWhileAttachedComponent(next))
                 }
-                reverted
             }
             changed = true
+            events.add(CopiableCharacteristicsChangedEvent(entityId))
         }
 
-        return if (changed) ExecutionResult.success(newState) else ExecutionResult.success(state)
+        return if (changed) ExecutionResult.success(newState, events) else ExecutionResult.success(state)
     }
 }

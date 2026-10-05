@@ -192,7 +192,7 @@ details (`ScenarioTestBase` vs `GameTestDriver`, inline test cards) and which co
 - Any other doc the feature contradicts: `engine-server-interface.md`, `data-contracts.md`,
   `player-input.md`, `web-client-architecture.md`, `continuous-effect-dependency-system.md`.
 
-## Step 8a: Keep Argentum Assay compiling and honest
+## Step 9: Keep Argentum Assay compiling and honest
 
 [Argentum Assay](../../../oracle-assay/README.md) — our first-party Oracle-text parser — reads printed
 text into the very SDK types you just touched, so it is a compile-time consumer of `mtg-sdk` and the
@@ -210,23 +210,7 @@ closest thing the SDK has to an outside reader.
   set. A new `DIVERGENT` row means Assay and the corpus now disagree about a card you moved — classify it
   before committing rather than leaving it for the next set sweep.
 
-## Step 8b: Teach the mtgish generator your new capability
-
-A new SDK primitive should also become something the mtgish generator can *predict and draft*
-corpus-wide — one bridge/emitter entry typically unlocks coverage and auto-draft for many cards sharing
-the mechanic. Mechanics: [`add-card/new-sdk-types.md`](../add-card/new-sdk-types.md) → "Teach the mtgish
-generator". Unlike an Assay band, this really is a one-line entry, which is why it stays in-PR.
-
-**Gate this on the right axis.** It applies when the feature introduces a new SDK effect/primitive
-mapping to an mtgish IR tag. It does **not** apply to pure composition of effects the emitter already
-renders (e.g. a `jobSelect()` keyword shell chaining `CreateToken` + `AttachEquipment`) — there's no new
-capability or IR tag to register, so skip it and say so.
-
-Crucially, **do not gate on whether the motivating set is in the mtgish corpus.** The generator is
-corpus-wide; "the set isn't in the corpus / there's no `coverage-verify --set X` path" is not a valid
-reason to decline.
-
-## Step 9: Build, verify, commit
+## Step 10: Build, verify, commit
 
 1. Run the gates via the **`verify`** skill. Fix only failures your change caused; if a pre-existing or
    other-agent test fails, report it and stop.

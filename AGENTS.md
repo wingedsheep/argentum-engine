@@ -17,16 +17,15 @@ docs it points at; load those when the work needs them.
   unrelated failure, opening the PR is allowed; disclose the failure and the verification that did pass
   in the PR body. **Exception: mtgish-only issues are non-blocking**, as specified below; continue without
   asking for confirmation.
-- **Assay supersedes mtgish as the Oracle-to-SDK verification method.** mtgish differences, coverage
-  gaps, generated-draft mismatches, and mtgish-only tooling/test failures are accepted limitations and
-  must not stop implementation, verification of unaffected modules, commits, or PR creation. Report
-  them briefly in the verification summary and continue; do not ask for permission to proceed or take
-  on mtgish repairs unless the task explicitly requests them. This exception takes precedence over
-  skill instructions requiring mtgish checks, generator updates, or stopping on unrelated failures.
-  Use the applicable Assay gates and behavioral scenario tests instead. Assay divergences and actual
-  engine/card regressions remain actionable; an Assay decline is not a pass. If a mtgish failure prevents
-  a broader gate from completing, report that gate as incomplete and run the unaffected checks rather
-  than claiming it passed.
+- **mtgish is deprecated; Argentum Assay replaced it.** Oracle-to-SDK reading and verification is
+  Assay's job (`just assay parse/explain/compile`, `just assay-differential`) plus behavioural scenario
+  tests. Don't use `:mtgish-tooling` drafts, don't teach its bridge/emitter new capabilities, and don't
+  cite its coverage numbers. mtgish differences, coverage gaps, and mtgish-only tooling/test failures
+  must not stop implementation, verification of unaffected modules, commits, or PR creation — report
+  them briefly and continue; don't take on mtgish repairs unless the task explicitly asks. If a mtgish
+  failure prevents a broader gate from completing, report that gate as incomplete and run the
+  unaffected checks rather than claiming it passed. Assay divergences and real engine/card regressions
+  remain actionable; an Assay decline is not a pass.
 - **Route to the matching skill, don't freelance:**
   - Implementing a card — or a batch of them — from a backlog file or by name → **`add-card`** (Scryfall
     lookup, oracle errata, canonical-printing placement, scenario test).
@@ -151,23 +150,12 @@ daemons and thrash the box into watchdog timeouts; the `just` recipes limit the 
 builds through a machine-global semaphore. The `verify` skill covers which gate to run for which change
 and how to read the results.
 
-## mtgish coverage + auto-gen tooling
+## Deprecated: `:mtgish-tooling`
 
-`:mtgish-tooling` maps the [mtgish](https://github.com/i5jb/mtgish) oracle-IR corpus onto our SDK
-capabilities — for backlog triage ("which feature unlocks the most cards?") and blank-page drafts of easy
-cards. `just coverage-dashboard` is the TUI over it; recipe docs live in the `justfile` comments and
-[`mtgish-tooling/README.md`](mtgish-tooling/README.md).
-
-It is **predictive and non-authoritative — never a card loader.**
-
-Assay is the current verification method. mtgish is optional legacy triage/drafting tooling, and its
-issues do not block other work (see Hard rules). Updating its emitter for new SDK capabilities is
-optional unless explicitly requested. The following rules apply when working on mtgish itself:
-
-- Generated `.kt` are drafts in a staging dir. `coverage-verify` proves *compile + capabilities*, not
-  behaviour — a human-reviewed `cardDef` with a passing scenario test is the only ground truth.
-- When output is wrong, **fix the emitter, not the generated card.** Render correctly or decline to the
-  SCAFFOLD tier; never silently emit a lossy approximation.
+The `just coverage*` recipes and [`mtgish-tooling/`](mtgish-tooling/README.md) are the legacy
+mtgish-IR pipeline that [Argentum Assay](oracle-assay/README.md) replaced. They still build, but nothing
+in the workflow depends on them (see Hard rules). For triage use `just assay-report --rank tail` and the
+Set Completion view's Assay-ready badges; for a head start on a card use `just assay compile`.
 
 ## Documentation index
 
