@@ -120,6 +120,15 @@ class BlessedSanctuaryScenarioTest : ScenarioTestBase() {
                 // so it does not trigger the Sanctuary again.
                 unicornTokens(game) shouldBe 1
                 game.state.stack.isEmpty() shouldBe true
+
+                val unicorn = game.state.getBattlefield().single { id ->
+                    game.state.getEntity(id)?.get<CardComponent>()?.typeLine?.subtypes
+                        ?.any { it.value == "Unicorn" } == true
+                }
+                val projected = game.state.projectedState
+                projected.getPower(unicorn) shouldBe 2
+                projected.getToughness(unicorn) shouldBe 2
+                projected.getColors(unicorn) shouldBe setOf("WHITE")
             }
 
             test("an opponent's nontoken creature entering does not trigger") {

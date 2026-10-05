@@ -92,6 +92,41 @@ class CaughtInTheBrightsScenarioTest : ScenarioTestBase() {
                     game.isInGraveyard(1, "Caught in the Brights") shouldBe true
                 }
             }
+
+            test("the Aura leaving in response still exiles the creature it last enchanted") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Sleek Schooner")
+                    .withCardOnBattlefield(1, "Savannah Lions")
+                    .withCardInHand(1, "Disenchant")
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withCardAttachedTo(1, "Caught in the Brights", "Grizzly Bears")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val schooner = game.findPermanent("Sleek Schooner")!!
+                val lions = game.findPermanent("Savannah Lions")!!
+                game.execute(CrewVehicle(game.player1Id, schooner, listOf(lions))).error shouldBe null
+                game.resolveStack()
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Sleek Schooner" to 2)).error shouldBe null
+                game.state.stack.isEmpty() shouldBe false
+
+                val aura = game.findPermanent("Caught in the Brights")!!
+                game.castSpell(1, "Disenchant", aura).error shouldBe null
+                game.resolveStack()
+
+                withClue("the Aura was destroyed before the trigger resolved") {
+                    game.isInGraveyard(1, "Caught in the Brights") shouldBe true
+                }
+                withClue("the trigger still exiles the creature the Aura last enchanted") {
+                    game.isOnBattlefield("Grizzly Bears") shouldBe false
+                    game.isInExile(2, "Grizzly Bears") shouldBe true
+                }
+            }
         }
     }
 }

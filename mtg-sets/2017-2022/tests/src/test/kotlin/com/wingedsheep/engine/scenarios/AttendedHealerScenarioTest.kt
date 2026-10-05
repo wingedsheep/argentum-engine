@@ -92,6 +92,11 @@ class AttendedHealerScenarioTest : ScenarioTestBase() {
                 withClue("the Healer itself is untouched") {
                     game.state.projectedState.hasKeyword(healer, Keyword.LIFELINK.name) shouldBe false
                 }
+
+                game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+                withClue("lifelink lasts only until end of turn") {
+                    game.state.projectedState.hasKeyword(monk, Keyword.LIFELINK.name) shouldBe false
+                }
             }
 
             test("cannot target the Healer itself or a non-Cleric") {
