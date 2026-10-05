@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.mbs
 
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
@@ -22,7 +21,7 @@ object MirrodinBesiegedSet : MtgSet {
     override val displayName = "Mirrodin Besieged"
     override val releaseDate = "2011-02-04"
     override val block = "Scars of Mirrodin"
-    override val basicLandsFallback = PortalSet
+    override val basicLandsFallbackCode = "POR"
     override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {

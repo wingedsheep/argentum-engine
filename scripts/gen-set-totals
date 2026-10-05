@@ -115,6 +115,9 @@ STANDARD_LEGAL_RATIO = 0.5
 SET_CODE_RE = re.compile(r'override\s+val\s+code\s*=\s*"([^"]+)"')
 DISPLAY_NAME_RE = re.compile(r'override\s+val\s+displayName\s*=\s*"([^"]+)"')
 SKIP_FOLDERS = {"custom"}
+# Digital-only sets drafted on Arena whose Scryfall printings all carry `booster: false`.
+# Every card is a booster card for us, so the whole set counts as draft, not extras.
+ALL_DRAFT_SETS = {"OM1"}
 
 
 def front_face(name: str) -> str:
@@ -243,7 +246,7 @@ def main() -> int:
             continue
         cards = payload.get("cards", {})
 
-        extra_products = payload.get("extra_products", {})
+        extra_products = {} if code in ALL_DRAFT_SETS else payload.get("extra_products", {})
         grouped_products: dict[str, list[str]] = {}
         for card_name, product_ids in extra_products.items():
             for product_id in product_ids:
@@ -282,6 +285,8 @@ def main() -> int:
 
         draft = {front_face(n) for n in payload.get("draft_names", [])}
         extra = {front_face(n) for n in payload.get("extra_names", [])} - draft
+        if code in ALL_DRAFT_SETS:
+            draft, extra = draft | extra, set()
         entries.append({
             "code": code,
             "name": name,

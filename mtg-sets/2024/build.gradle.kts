@@ -1,12 +1,12 @@
 // Card definitions for sets released in 2024.
 //
-// Era modules are a chain: each one api-depends on the previous, so a set can reference any set
-// released before it. Every cross-set reference in the corpus (basic-land fallbacks, block
-// callbacks) points backwards in time, so the chain is acyclic by construction — and a new
-// reference that points *forwards* is a compile error rather than a silent tangle.
+// Era modules are independent: each depends only on the SDK and :mtg-sets:core, never on another
+// era, so they compile in parallel and a change to one era recompiles only that era. A set must
+// therefore not reference another set's objects or cards at compile time — refer to another set
+// by code instead (see MtgSet.basicLandsFallbackCode). A cross-era import is a compile error.
 //
-// Boundaries are FIXED. A new release year gets a new module appended to the chain; sets already
-// placed never move, so this file's contents only ever grow.
+// Boundaries are FIXED. A new release year gets a new module; sets already placed never move, so
+// this file's contents only ever grow.
 plugins {
     id("buildsrc.convention.kotlin-jvm")
 }
@@ -14,6 +14,4 @@ plugins {
 dependencies {
     api(project(":mtg-sdk"))
     api(project(":mtg-sets:core"))
-    // Chronological chain — everything released earlier.
-    api(project(":mtg-sets:2023"))
 }

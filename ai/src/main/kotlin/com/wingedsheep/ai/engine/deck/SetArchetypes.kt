@@ -794,6 +794,44 @@ object SetArchetypes {
                     creatureTypes = listOf("Merfolk")),
             )
         ),
+        "SPM" to SetSynergies(
+            setCode = "SPM",
+            setName = "Marvel's Spider-Man",
+            archetypes = listOf(
+                Archetype("Modified Heroes", listOf(Color.WHITE, Color.BLUE),
+                    "Suit up Heroes with Auras, Equipment, and +1/+1 counters, then cash in every modified creature that connects for cards. An evasive tempo deck where each upgrade makes the next attack hurt more.",
+                    creatureTypes = listOf("Hero")),
+                Archetype("Villains", listOf(Color.BLUE, Color.BLACK),
+                    "Assemble a crew of Villains that reward each other for entering and attacking, while connive and graveyard recursion smooth out the draws. A grindy flying-and-menace deck that outvalues the opponent.",
+                    creatureTypes = listOf("Villain")),
+                Archetype("Mayhem Discard", listOf(Color.BLACK, Color.RED),
+                    "Discard cards on purpose to fuel payoffs, then cast mayhem cards back from the graveyard the same turn. An aggressive attrition deck that turns every rummage into extra threats."),
+                Archetype("Big Spells", listOf(Color.RED, Color.GREEN),
+                    "Ramp into spells with mana value 4 or greater and reward casting them with card draw, trample, and fights. A stompy midrange deck whose top end outsizes every blocker."),
+                Archetype("Go-Wide Counters", listOf(Color.GREEN, Color.WHITE),
+                    "Flood the board with Heroes and Citizen tokens, then spread +1/+1 counters across the team with each creature you cast. A go-wide aggro deck that grows into an overwhelming army.",
+                    creatureTypes = listOf("Hero")),
+            )
+        ),
+        "OM1" to SetSynergies(
+            setCode = "OM1",
+            setName = "Through the Omenpaths",
+            archetypes = listOf(
+                Archetype("Modified Heroes", listOf(Color.WHITE, Color.BLUE),
+                    "Suit up Heroes with Auras, Equipment, and +1/+1 counters, then cash in every modified creature that connects for cards. An evasive tempo deck where each upgrade makes the next attack hurt more.",
+                    creatureTypes = listOf("Hero")),
+                Archetype("Villains", listOf(Color.BLUE, Color.BLACK),
+                    "Assemble a crew of Villains that reward each other for entering and attacking, while connive and graveyard recursion smooth out the draws. A grindy flying-and-menace deck that outvalues the opponent.",
+                    creatureTypes = listOf("Villain")),
+                Archetype("Mayhem Discard", listOf(Color.BLACK, Color.RED),
+                    "Discard cards on purpose to fuel payoffs, then cast mayhem cards back from the graveyard the same turn. An aggressive attrition deck that turns every rummage into extra threats."),
+                Archetype("Big Spells", listOf(Color.RED, Color.GREEN),
+                    "Ramp into spells with mana value 4 or greater and reward casting them with card draw, trample, and fights. A stompy midrange deck whose top end outsizes every blocker."),
+                Archetype("Go-Wide Counters", listOf(Color.GREEN, Color.WHITE),
+                    "Flood the board with Heroes and Citizen tokens, then spread +1/+1 counters across the team with each creature you cast. A go-wide aggro deck that grows into an overwhelming army.",
+                    creatureTypes = listOf("Hero")),
+            )
+        ),
     )
 
     /** Get archetypes for a specific set code, or null if not found. */

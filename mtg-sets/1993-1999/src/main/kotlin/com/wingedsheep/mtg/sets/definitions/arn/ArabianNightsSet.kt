@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.arn
 
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.CardDefinition
@@ -28,7 +27,7 @@ object ArabianNightsSet : MtgSet {
     override val code = "ARN"
     override val displayName = "Arabian Nights"
     override val releaseDate = "1993-12-17"
-    override val basicLandsFallback = PortalSet
+    override val basicLandsFallbackCode = "POR"
     override val sealedSupported = true
 
     override val cards: List<CardDefinition> by lazy {
@@ -40,7 +39,7 @@ object ArabianNightsSet : MtgSet {
     }
 
     /**
-     * ARN printed only Mountain. Keep [basicLandsFallback] for a complete Limited land supply while
+     * ARN printed only Mountain. Keep [basicLandsFallbackCode] for a complete Limited land supply while
      * exposing the set's own printing here so discovery and set coverage include it.
      */
     override val basicLands: List<CardDefinition> by lazy {

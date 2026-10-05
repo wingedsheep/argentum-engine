@@ -19,6 +19,11 @@ export interface Archetype {
    * to fall back to a color-identity gradient.
    */
   readonly keyCard?: string
+  /**
+   * Scryfall set code whose printing of `keyCard` supplies the art, for sets that reprint
+   * cards under new art (OM1 reprints SPM). Omit to take Scryfall's default printing.
+   */
+  readonly keyCardSet?: string
 }
 
 interface SetSynergies {
@@ -1780,6 +1785,94 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  SPM: {
+    setCode: 'SPM',
+    setName: "Marvel's Spider-Man",
+    archetypes: [
+      {
+        name: 'Modified Heroes',
+        colors: ['W', 'U'],
+        creatureTypes: ['Hero'],
+        keyCard: 'Sun-Spider, Nimble Webber',
+        keyCardSet: 'spm',
+        description: 'Suit up Heroes with Auras, Equipment, and +1/+1 counters, then cash in every modified creature that connects for cards. An evasive tempo deck where each upgrade makes the next attack hurt more.',
+      },
+      {
+        name: 'Villains',
+        colors: ['U', 'B'],
+        creatureTypes: ['Villain'],
+        keyCard: 'Prowler, Clawed Thief',
+        keyCardSet: 'spm',
+        description: 'Assemble a crew of Villains that reward each other for entering and attacking, while connive and graveyard recursion smooth out the draws. A grindy flying-and-menace deck that outvalues the opponent.',
+      },
+      {
+        name: 'Mayhem Discard',
+        colors: ['B', 'R'],
+        keyCard: 'Scarlet Spider, Kaine',
+        keyCardSet: 'spm',
+        description: 'Discard cards on purpose to fuel payoffs, then cast mayhem cards back from the graveyard the same turn. An aggressive attrition deck that turns every rummage into extra threats.',
+      },
+      {
+        name: 'Big Spells',
+        colors: ['R', 'G'],
+        keyCard: 'Rhino, Barreling Brute',
+        keyCardSet: 'spm',
+        description: 'Ramp into spells with mana value 4 or greater and reward casting them with card draw, trample, and fights. A stompy midrange deck whose top end outsizes every blocker.',
+      },
+      {
+        name: 'Go-Wide Counters',
+        colors: ['G', 'W'],
+        creatureTypes: ['Hero'],
+        keyCard: 'Spider-Man India',
+        keyCardSet: 'spm',
+        description: 'Flood the board with Heroes and Citizen tokens, then spread +1/+1 counters across the team with each creature you cast. A go-wide aggro deck that grows into an overwhelming army.',
+      },
+    ],
+  },
+  OM1: {
+    setCode: 'OM1',
+    setName: 'Through the Omenpaths',
+    archetypes: [
+      {
+        name: 'Modified Heroes',
+        colors: ['W', 'U'],
+        creatureTypes: ['Hero'],
+        keyCard: 'Sun-Spider, Nimble Webber',
+        keyCardSet: 'om1',
+        description: 'Suit up Heroes with Auras, Equipment, and +1/+1 counters, then cash in every modified creature that connects for cards. An evasive tempo deck where each upgrade makes the next attack hurt more.',
+      },
+      {
+        name: 'Villains',
+        colors: ['U', 'B'],
+        creatureTypes: ['Villain'],
+        keyCard: 'Prowler, Clawed Thief',
+        keyCardSet: 'om1',
+        description: 'Assemble a crew of Villains that reward each other for entering and attacking, while connive and graveyard recursion smooth out the draws. A grindy flying-and-menace deck that outvalues the opponent.',
+      },
+      {
+        name: 'Mayhem Discard',
+        colors: ['B', 'R'],
+        keyCard: 'Scarlet Spider, Kaine',
+        keyCardSet: 'om1',
+        description: 'Discard cards on purpose to fuel payoffs, then cast mayhem cards back from the graveyard the same turn. An aggressive attrition deck that turns every rummage into extra threats.',
+      },
+      {
+        name: 'Big Spells',
+        colors: ['R', 'G'],
+        keyCard: 'Rhino, Barreling Brute',
+        keyCardSet: 'om1',
+        description: 'Ramp into spells with mana value 4 or greater and reward casting them with card draw, trample, and fights. A stompy midrange deck whose top end outsizes every blocker.',
+      },
+      {
+        name: 'Go-Wide Counters',
+        colors: ['G', 'W'],
+        creatureTypes: ['Hero'],
+        keyCard: 'Spider-Man India',
+        keyCardSet: 'om1',
+        description: 'Flood the board with Heroes and Citizen tokens, then spread +1/+1 counters across the team with each creature you cast. A go-wide aggro deck that grows into an overwhelming army.',
+      },
+    ],
+  },
 }
 
 /**
@@ -2222,8 +2315,8 @@ function ArchetypeCard({
   const artUrl = useMemo(() => {
     if (!archetype.keyCard) return null
     const poolMatch = cardPool?.find((c) => c.name === archetype.keyCard)
-    return getCdnArtCropUrl(poolMatch?.imageUri) ?? getScryfallArtCropUrl(archetype.keyCard)
-  }, [archetype.keyCard, cardPool])
+    return getCdnArtCropUrl(poolMatch?.imageUri) ?? getScryfallArtCropUrl(archetype.keyCard, archetype.keyCardSet)
+  }, [archetype.keyCard, archetype.keyCardSet, cardPool])
   const showArt = artUrl != null && !artFailed
 
   const rarities = useMemo(() => {

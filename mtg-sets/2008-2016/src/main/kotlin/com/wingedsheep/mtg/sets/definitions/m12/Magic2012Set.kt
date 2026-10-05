@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.m12
 
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
@@ -17,7 +16,7 @@ object Magic2012Set : MtgSet {
     override val code = "M12"
     override val displayName = "Magic 2012"
     override val releaseDate = "2011-07-15"
-    override val basicLandsFallback = PortalSet
+    override val basicLandsFallbackCode = "POR"
     override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {

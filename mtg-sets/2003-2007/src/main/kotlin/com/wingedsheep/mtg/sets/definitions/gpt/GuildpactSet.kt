@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.gpt
 
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
@@ -18,7 +17,7 @@ object GuildpactSet : MtgSet {
     override val displayName = "Guildpact"
     override val releaseDate = "2006-02-03"
     override val block = "Ravnica"
-    override val basicLandsFallback = PortalSet
+    override val basicLandsFallbackCode = "POR"
     override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {

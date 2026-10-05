@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.conflux
 
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
@@ -18,7 +17,7 @@ object ConfluxSet : MtgSet {
     override val displayName = "Conflux"
     override val releaseDate = "2009-02-06"
     override val block = "Shards of Alara"
-    override val basicLandsFallback = PortalSet
+    override val basicLandsFallbackCode = "POR"
     override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {

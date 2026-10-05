@@ -63,10 +63,14 @@ interface MtgSet {
         }
 
     /**
-     * If this set has no basic lands of its own, the set whose lands should be
+     * If this set has no basic lands of its own, the code of the set whose lands should be
      * registered alongside it (Scourge and Legions reuse Onslaught lands).
+     *
+     * A code rather than the set object so that a set never needs a compile-time reference to a
+     * set in another era module — that is what lets the era modules compile independently. Resolve
+     * it with `MtgSet.basicLandsFallback` in `:mtg-sets`.
      */
-    val basicLandsFallback: MtgSet? get() = null
+    val basicLandsFallbackCode: String? get() = null
 
     /**
      * Whether the set is wired into the booster generator for sealed/draft.

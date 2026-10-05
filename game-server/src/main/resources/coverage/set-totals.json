@@ -12992,6 +12992,768 @@
     "extra": []
   },
   {
+    "code": "OM1",
+    "name": "Through the Omenpaths",
+    "releaseDate": "2025-09-23",
+    "setType": "expansion",
+    "standardLegal": true,
+    "draft": [
+      {
+        "name": "Agent Venom",
+        "img": "https://cards.scryfall.io/normal/front/d/6/d62cf4f8-36a2-4d9f-9d52-53ea18a52760.jpg"
+      },
+      {
+        "name": "Alien Symbiosis",
+        "img": "https://cards.scryfall.io/normal/front/c/2/c2cbebab-ea84-4a38-8d1e-6e7fc7d0655d.jpg"
+      },
+      {
+        "name": "Amazing Acrobatics",
+        "img": "https://cards.scryfall.io/normal/front/2/9/29a08e0a-4a3f-471b-89bb-7acc7c94285e.jpg"
+      },
+      {
+        "name": "Angry Rabble",
+        "img": "https://cards.scryfall.io/normal/front/8/0/80a99b95-5783-4947-8ce6-3ee1ecfa2525.jpg"
+      },
+      {
+        "name": "Anti-Venom, Horrifying Healer",
+        "img": "https://cards.scryfall.io/normal/front/8/4/84285f17-dbf3-49f6-a61e-2f779cb3e798.jpg"
+      },
+      {
+        "name": "Arachne, Psionic Weaver",
+        "img": "https://cards.scryfall.io/normal/front/6/5/6512f8c1-96bb-4a33-b20f-dd09f6eec5dc.jpg"
+      },
+      {
+        "name": "Araña, Heart of the Spider",
+        "img": "https://cards.scryfall.io/normal/front/f/4/f41cc164-e799-492b-a155-43b218042189.jpg"
+      },
+      {
+        "name": "Aunt May",
+        "img": "https://cards.scryfall.io/normal/front/8/3/83a9e039-f168-40f2-9122-cf6e535e9bb3.jpg"
+      },
+      {
+        "name": "Bagel and Schmear",
+        "img": "https://cards.scryfall.io/normal/front/f/e/feba37ca-7df5-401f-8d16-9ca402ca8df1.jpg"
+      },
+      {
+        "name": "Beetle, Legacy Criminal",
+        "img": "https://cards.scryfall.io/normal/front/8/6/8680fbe9-b231-4334-bca7-7fff7a7b10f9.jpg"
+      },
+      {
+        "name": "Behold the Sinister Six!",
+        "img": "https://cards.scryfall.io/normal/front/2/c/2cdb2129-2cb9-49a0-a30b-34a4b2534f41.jpg"
+      },
+      {
+        "name": "Biorganic Carapace",
+        "img": "https://cards.scryfall.io/normal/front/e/0/e03889a9-f481-4704-8953-919292fc4d28.jpg"
+      },
+      {
+        "name": "Black Cat, Cunning Thief",
+        "img": "https://cards.scryfall.io/normal/front/e/9/e92c1e20-8ab9-425c-bd1a-469e4f091b7e.jpg"
+      },
+      {
+        "name": "Carnage, Crimson Chaos",
+        "img": "https://cards.scryfall.io/normal/front/e/1/e1332480-4986-421f-9a31-1d597d597c65.jpg"
+      },
+      {
+        "name": "Chameleon, Master of Disguise",
+        "img": "https://cards.scryfall.io/normal/front/1/2/12469736-a917-4b6a-973f-bf8380bd3e40.jpg"
+      },
+      {
+        "name": "Cheering Crowd",
+        "img": "https://cards.scryfall.io/normal/front/a/1/a1c5d939-b01b-4ca0-a1e3-1959db9d9ef4.jpg"
+      },
+      {
+        "name": "City Pigeon",
+        "img": "https://cards.scryfall.io/normal/front/5/3/5303956a-87ce-4193-8bf5-5c58beab31fa.jpg"
+      },
+      {
+        "name": "Common Crook",
+        "img": "https://cards.scryfall.io/normal/front/7/d/7d7b5a4a-5dc0-46f0-94dc-35723423f8b9.jpg"
+      },
+      {
+        "name": "Cosmic Spider-Man",
+        "img": "https://cards.scryfall.io/normal/front/b/2/b2996f07-9dbc-444f-aaae-710866da2b4b.jpg"
+      },
+      {
+        "name": "Costume Closet",
+        "img": "https://cards.scryfall.io/normal/front/4/7/47131bd7-822e-4eb2-b1e2-1a0e754818bf.jpg"
+      },
+      {
+        "name": "Daily Bugle Building",
+        "img": "https://cards.scryfall.io/normal/front/e/b/eba92a05-06f1-4978-a92e-925739c20f8c.jpg"
+      },
+      {
+        "name": "Daily Bugle Reporters",
+        "img": "https://cards.scryfall.io/normal/front/c/c/cc2690bd-390e-4217-a991-340ddc0b487d.jpg"
+      },
+      {
+        "name": "Damage Control Crew",
+        "img": "https://cards.scryfall.io/normal/front/3/a/3af61943-e437-4ddf-988f-820e66c79228.jpg"
+      },
+      {
+        "name": "Doc Ock's Henchmen",
+        "img": "https://cards.scryfall.io/normal/front/f/0/f030db6a-aeaf-481f-90b1-d56ca8a3e430.jpg"
+      },
+      {
+        "name": "Doc Ock's Tentacles",
+        "img": "https://cards.scryfall.io/normal/front/7/7/77e06f44-aa89-4f31-b1e6-10bca9685511.jpg"
+      },
+      {
+        "name": "Doc Ock, Sinister Scientist",
+        "img": "https://cards.scryfall.io/normal/front/1/5/15782c61-8310-4fc2-846c-5a00fd302d0b.jpg"
+      },
+      {
+        "name": "Doctor Octopus, Master Planner",
+        "img": "https://cards.scryfall.io/normal/front/7/7/7772b146-80ff-4906-84e4-69c704fa6f4c.jpg"
+      },
+      {
+        "name": "Eddie Brock",
+        "img": "https://cards.scryfall.io/normal/front/4/2/42a3589f-f09e-4298-b1ae-7165de65bfb8.jpg"
+      },
+      {
+        "name": "Eerie Gravestone",
+        "img": "https://cards.scryfall.io/normal/front/4/4/44a156d4-6a2e-4f5a-ad12-ee19825e465f.jpg"
+      },
+      {
+        "name": "Electro's Bolt",
+        "img": "https://cards.scryfall.io/normal/front/c/5/c5af25b9-af79-4cc2-a4d2-126152a873b9.jpg"
+      },
+      {
+        "name": "Electro, Assaulting Battery",
+        "img": "https://cards.scryfall.io/normal/front/5/b/5b12f23c-54b2-4b28-8434-c3f509a204d7.jpg"
+      },
+      {
+        "name": "Ezekiel Sims, Spider-Totem",
+        "img": "https://cards.scryfall.io/normal/front/b/f/bf2b3695-f5f3-4b17-bde3-90ec0c6b9e5b.jpg"
+      },
+      {
+        "name": "Flash Thompson, Spider-Fan",
+        "img": "https://cards.scryfall.io/normal/front/1/6/167f2d2e-d5c3-4bf8-83aa-33998e45a69f.jpg"
+      },
+      {
+        "name": "Flying Octobot",
+        "img": "https://cards.scryfall.io/normal/front/8/c/8c342dfd-8d0e-4c5a-bb4c-a383a4493d00.jpg"
+      },
+      {
+        "name": "Friendly Neighborhood",
+        "img": "https://cards.scryfall.io/normal/front/1/0/10e0dff7-8923-4e47-bf28-c6d0af78ce24.jpg"
+      },
+      {
+        "name": "Gallant Citizen",
+        "img": "https://cards.scryfall.io/normal/front/2/e/2ee7271f-ab1c-4332-b5cb-69b7cea80912.jpg"
+      },
+      {
+        "name": "Green Goblin, Revenant",
+        "img": "https://cards.scryfall.io/normal/front/5/4/54044eb2-ff97-49e3-a123-b707241e513d.jpg"
+      },
+      {
+        "name": "Grow Extra Arms",
+        "img": "https://cards.scryfall.io/normal/front/1/8/181c2f5d-9ebc-40ea-8820-7f7a7cc008fd.jpg"
+      },
+      {
+        "name": "Guy in the Chair",
+        "img": "https://cards.scryfall.io/normal/front/b/f/bf8c2233-1d5f-4081-a31e-e4305887a1af.jpg"
+      },
+      {
+        "name": "Gwen Stacy",
+        "img": "https://cards.scryfall.io/normal/front/a/3/a301083a-9130-4384-a355-efe7050871ca.jpg"
+      },
+      {
+        "name": "Gwenom, Remorseless",
+        "img": "https://cards.scryfall.io/normal/front/f/c/fcd9da8a-e36f-4ae1-9a5d-b72ad9c27397.jpg"
+      },
+      {
+        "name": "Heroes' Hangout",
+        "img": "https://cards.scryfall.io/normal/front/a/1/a15359e5-3d49-45c1-92fd-406bcc8c3afe.jpg"
+      },
+      {
+        "name": "Hide on the Ceiling",
+        "img": "https://cards.scryfall.io/normal/front/1/6/168b8831-6aab-4545-9ba7-d4f2af9920ff.jpg"
+      },
+      {
+        "name": "Hobgoblin, Mantled Marauder",
+        "img": "https://cards.scryfall.io/normal/front/a/4/a4c5097b-204f-4dd1-b2f7-81555c408dd7.jpg"
+      },
+      {
+        "name": "Hot Dog Cart",
+        "img": "https://cards.scryfall.io/normal/front/3/8/38812303-9c39-4bc3-ab60-5a845f66e5e9.jpg"
+      },
+      {
+        "name": "Hydro-Man, Fluid Felon",
+        "img": "https://cards.scryfall.io/normal/front/d/e/de404b0f-9ba3-4e26-9230-20ce1dbf063b.jpg"
+      },
+      {
+        "name": "Impostor Syndrome",
+        "img": "https://cards.scryfall.io/normal/front/e/e/eeef16f4-5bf4-4eea-9891-84b87d1d396c.jpg"
+      },
+      {
+        "name": "Inner Demons Gangsters",
+        "img": "https://cards.scryfall.io/normal/front/b/e/be92071a-94a7-4094-a5a8-c610f3c18a6f.jpg"
+      },
+      {
+        "name": "Interdimensional Web Watch",
+        "img": "https://cards.scryfall.io/normal/front/a/3/a3dddd1e-bdad-4c20-9b35-6679f4fcbd53.jpg"
+      },
+      {
+        "name": "Iron Spider, Stark Upgrade",
+        "img": "https://cards.scryfall.io/normal/front/0/2/0229a5a9-eb7f-4eba-8b1e-f2271e312d4a.jpg"
+      },
+      {
+        "name": "J. Jonah Jameson",
+        "img": "https://cards.scryfall.io/normal/front/3/8/380ab614-e46d-476b-bce9-fd2a8c074906.jpg"
+      },
+      {
+        "name": "Jackal, Genius Geneticist",
+        "img": "https://cards.scryfall.io/normal/front/c/6/c6753c36-4aab-4608-b2e2-c7b0519cb0c6.jpg"
+      },
+      {
+        "name": "Kapow!",
+        "img": "https://cards.scryfall.io/normal/front/1/6/16f0ef01-aa78-4ea3-b1ae-cc9594196425.jpg"
+      },
+      {
+        "name": "Kraven the Hunter",
+        "img": "https://cards.scryfall.io/normal/front/7/f/7f0210ec-36eb-4138-a6a2-4c5c67bf5ce6.jpg"
+      },
+      {
+        "name": "Kraven's Cats",
+        "img": "https://cards.scryfall.io/normal/front/9/f/9fa40406-82da-45e6-a04f-62393e99128c.jpg"
+      },
+      {
+        "name": "Kraven's Last Hunt",
+        "img": "https://cards.scryfall.io/normal/front/8/e/8e34d252-c96d-4f75-bf56-2a9b1e62c002.jpg"
+      },
+      {
+        "name": "Kraven, Proud Predator",
+        "img": "https://cards.scryfall.io/normal/front/6/9/69a6759f-45c8-434b-a18d-2b92221914dd.jpg"
+      },
+      {
+        "name": "Lady Octopus, Inspired Inventor",
+        "img": "https://cards.scryfall.io/normal/front/d/2/d264eb63-e883-413a-ba01-99ed257d086f.jpg"
+      },
+      {
+        "name": "Living Brain, Mechanical Marvel",
+        "img": "https://cards.scryfall.io/normal/front/7/4/74b2cb69-7f02-4a48-ac5f-bdcced99c59c.jpg"
+      },
+      {
+        "name": "Lizard, Connors's Curse",
+        "img": "https://cards.scryfall.io/normal/front/6/3/6361ffac-ad30-4b6a-aea2-c804ad51c773.jpg"
+      },
+      {
+        "name": "Lurking Lizards",
+        "img": "https://cards.scryfall.io/normal/front/6/1/61bf3024-6db2-4fc3-a41d-01897956c3c5.jpg"
+      },
+      {
+        "name": "Madame Web, Clairvoyant",
+        "img": "https://cards.scryfall.io/normal/front/8/5/85ca58c0-bf3a-49fe-848c-adb1449c29bf.jpg"
+      },
+      {
+        "name": "Mary Jane Watson",
+        "img": "https://cards.scryfall.io/normal/front/5/6/566eca5c-fbc3-4ac8-9b20-4c15b0101abd.jpg"
+      },
+      {
+        "name": "Masked Meower",
+        "img": "https://cards.scryfall.io/normal/front/6/b/6bcdcc73-e854-4e7f-9911-ac9c51965c7b.jpg"
+      },
+      {
+        "name": "Maximum Carnage",
+        "img": "https://cards.scryfall.io/normal/front/d/8/d8d0a8fd-57ec-4812-8c40-82380a3eb8d5.jpg"
+      },
+      {
+        "name": "Mechanical Mobster",
+        "img": "https://cards.scryfall.io/normal/front/5/4/540e334b-5c75-499e-860c-38bd260792d5.jpg"
+      },
+      {
+        "name": "Merciless Enforcers",
+        "img": "https://cards.scryfall.io/normal/front/e/2/e21d4a89-cd92-44d2-b66b-b30c82697ff6.jpg"
+      },
+      {
+        "name": "Miles Morales",
+        "img": "https://cards.scryfall.io/normal/front/7/f/7feb1493-b73e-4ee3-968e-d69806360952.jpg"
+      },
+      {
+        "name": "Mister Negative",
+        "img": "https://cards.scryfall.io/normal/front/1/9/198352f7-dd8d-4dce-b985-3917078bd0f1.jpg"
+      },
+      {
+        "name": "Mob Lookout",
+        "img": "https://cards.scryfall.io/normal/front/a/8/a84738ef-d3b7-49de-9cc6-86000527a534.jpg"
+      },
+      {
+        "name": "Molten Man, Inferno Incarnate",
+        "img": "https://cards.scryfall.io/normal/front/7/0/70d0edde-c5a5-406f-8933-bdda1abb5c05.jpg"
+      },
+      {
+        "name": "Morbius the Living Vampire",
+        "img": "https://cards.scryfall.io/normal/front/6/3/63aa6c28-5b8a-4ef3-80ff-e62d34538ed0.jpg"
+      },
+      {
+        "name": "Morlun, Devourer of Spiders",
+        "img": "https://cards.scryfall.io/normal/front/1/8/18091791-5089-483f-9446-c2684c5da03e.jpg"
+      },
+      {
+        "name": "Multiversal Passage",
+        "img": "https://cards.scryfall.io/normal/front/2/1/21502958-a8e3-494a-9be9-bebbbb1dd9dc.jpg"
+      },
+      {
+        "name": "Mysterio's Phantasm",
+        "img": "https://cards.scryfall.io/normal/front/4/2/42b7c039-97c5-4a46-9d0a-43205da77d86.jpg"
+      },
+      {
+        "name": "Mysterio, Master of Illusion",
+        "img": "https://cards.scryfall.io/normal/front/f/f/ffca39eb-f611-46b1-9d6b-a5c90c722fb9.jpg"
+      },
+      {
+        "name": "News Helicopter",
+        "img": "https://cards.scryfall.io/normal/front/c/f/cfe529d7-4418-4068-8f9d-6d74a74fd291.jpg"
+      },
+      {
+        "name": "Norman Osborn",
+        "img": "https://cards.scryfall.io/normal/front/d/a/da13a060-36ee-41e9-bab1-af8ddcc893b8.jpg"
+      },
+      {
+        "name": "Ominous Asylum",
+        "img": "https://cards.scryfall.io/normal/front/3/7/371b03a1-7707-4a8a-8c0e-0272418c801f.jpg"
+      },
+      {
+        "name": "Origin of Spider-Man",
+        "img": "https://cards.scryfall.io/normal/front/1/b/1bb9f52a-8edc-4ca5-bc63-ac6f93874219.jpg"
+      },
+      {
+        "name": "Oscorp Industries",
+        "img": "https://cards.scryfall.io/normal/front/c/b/cb962bcf-5d63-49b1-a383-068e53bb4db5.jpg"
+      },
+      {
+        "name": "Oscorp Research Team",
+        "img": "https://cards.scryfall.io/normal/front/3/f/3fb8e876-3687-4850-bebc-fbd1b86b15a3.jpg"
+      },
+      {
+        "name": "Parker Luck",
+        "img": "https://cards.scryfall.io/normal/front/2/e/2e4d38dc-d670-4c10-906f-988e4102f5f0.jpg"
+      },
+      {
+        "name": "Passenger Ferry",
+        "img": "https://cards.scryfall.io/normal/front/9/6/965ca8a1-e93b-4cac-903a-d7fa675b393c.jpg"
+      },
+      {
+        "name": "Peter Parker",
+        "img": "https://cards.scryfall.io/normal/front/2/e/2ec821c3-3e5c-4af8-a6ef-e2e77aa8668c.jpg"
+      },
+      {
+        "name": "Peter Parker's Camera",
+        "img": "https://cards.scryfall.io/normal/front/b/0/b0c811f8-b456-47b3-9d55-a87590eb4573.jpg"
+      },
+      {
+        "name": "Pictures of Spider-Man",
+        "img": "https://cards.scryfall.io/normal/front/4/2/42b0bd7b-38a6-465c-badf-ea72989160b9.jpg"
+      },
+      {
+        "name": "Prison Break",
+        "img": "https://cards.scryfall.io/normal/front/a/c/ac0bb4b8-f6ff-4f5f-9ab7-f281c5344aba.jpg"
+      },
+      {
+        "name": "Professional Wrestler",
+        "img": "https://cards.scryfall.io/normal/front/5/e/5e1bc145-8e4b-484a-bf29-4b46089d9300.jpg"
+      },
+      {
+        "name": "Prowler, Clawed Thief",
+        "img": "https://cards.scryfall.io/normal/front/f/7/f7717ba8-c225-40ad-bd2e-282d0f43cdaf.jpg"
+      },
+      {
+        "name": "Pumpkin Bombardment",
+        "img": "https://cards.scryfall.io/normal/front/7/e/7e842fe7-b9dc-45fc-a85a-3c32a943fd34.jpg"
+      },
+      {
+        "name": "Radioactive Spider",
+        "img": "https://cards.scryfall.io/normal/front/8/1/81c44f97-df99-4ee3-a38e-163675d1afda.jpg"
+      },
+      {
+        "name": "Raging Goblinoids",
+        "img": "https://cards.scryfall.io/normal/front/5/a/5aff08a7-cc92-4792-abbd-c5019700a6ab.jpg"
+      },
+      {
+        "name": "Rent Is Due",
+        "img": "https://cards.scryfall.io/normal/front/d/7/d70c0e56-4f97-486a-8345-0cc6c51e3e36.jpg"
+      },
+      {
+        "name": "Rhino's Rampage",
+        "img": "https://cards.scryfall.io/normal/front/a/0/a0a11134-15bf-4f38-a0ef-6bf146149c9d.jpg"
+      },
+      {
+        "name": "Rhino, Barreling Brute",
+        "img": "https://cards.scryfall.io/normal/front/7/d/7d9b096d-8813-44a0-835e-fddb61c576b0.jpg"
+      },
+      {
+        "name": "Risky Research",
+        "img": "https://cards.scryfall.io/normal/front/b/0/b08238f7-9e00-4122-b196-05d623c84f8f.jpg"
+      },
+      {
+        "name": "Robotics Mastery",
+        "img": "https://cards.scryfall.io/normal/front/b/9/b9be8e17-7304-4df9-bdeb-8f31c604056c.jpg"
+      },
+      {
+        "name": "Rocket-Powered Goblin Glider",
+        "img": "https://cards.scryfall.io/normal/front/c/d/cd043c7b-7c9c-431a-9904-944115fb222f.jpg"
+      },
+      {
+        "name": "Romantic Rendezvous",
+        "img": "https://cards.scryfall.io/normal/front/d/1/d18dc61a-377e-4b84-9fc5-6496e21c9346.jpg"
+      },
+      {
+        "name": "SP//dr, Piloted by Peni",
+        "img": "https://cards.scryfall.io/normal/front/c/1/c10d6ea8-f670-41c9-8aa0-66df5fd69f34.jpg"
+      },
+      {
+        "name": "Sandman's Quicksand",
+        "img": "https://cards.scryfall.io/normal/front/8/8/88590608-5f0e-4c04-9df6-8dd6b03974b8.jpg"
+      },
+      {
+        "name": "Sandman, Shifting Scoundrel",
+        "img": "https://cards.scryfall.io/normal/front/6/2/62531cc3-c218-41f0-a3a2-beb42185baaf.jpg"
+      },
+      {
+        "name": "Savage Mansion",
+        "img": "https://cards.scryfall.io/normal/front/c/1/c172cdb5-aa2c-419d-b8ab-4795f4b7e160.jpg"
+      },
+      {
+        "name": "Scarlet Spider, Ben Reilly",
+        "img": "https://cards.scryfall.io/normal/front/a/6/a6d9b8d6-1e97-4e9c-b0c4-3b71734134a4.jpg"
+      },
+      {
+        "name": "Scarlet Spider, Kaine",
+        "img": "https://cards.scryfall.io/normal/front/5/f/5f5a13ff-8763-4923-a610-8cfd08bc8d2b.jpg"
+      },
+      {
+        "name": "School Daze",
+        "img": "https://cards.scryfall.io/normal/front/6/2/62f8dfb3-8591-4946-91a5-f1d936bf3d10.jpg"
+      },
+      {
+        "name": "Scorpion's Sting",
+        "img": "https://cards.scryfall.io/normal/front/2/b/2be7387a-4350-4c9e-8f5d-7716b903e476.jpg"
+      },
+      {
+        "name": "Scorpion, Seething Striker",
+        "img": "https://cards.scryfall.io/normal/front/0/a/0ac4c44a-d74b-47f3-91d9-bffc3cc4eaae.jpg"
+      },
+      {
+        "name": "Scout the City",
+        "img": "https://cards.scryfall.io/normal/front/1/5/155c41e0-98e1-4c86-9cac-73276be5d3c6.jpg"
+      },
+      {
+        "name": "Secret Identity",
+        "img": "https://cards.scryfall.io/normal/front/8/7/87e8e5cf-20a5-4ef9-9c19-8967c02c53e6.jpg"
+      },
+      {
+        "name": "Selfless Police Captain",
+        "img": "https://cards.scryfall.io/normal/front/4/a/4ae38e57-014b-487a-bb03-d45f5fbb927e.jpg"
+      },
+      {
+        "name": "Shadow of the Goblin",
+        "img": "https://cards.scryfall.io/normal/front/c/d/cd68f368-6b6c-4c1e-a971-11e549e029c3.jpg"
+      },
+      {
+        "name": "Shock",
+        "img": "https://cards.scryfall.io/normal/front/4/a/4aef9732-28a6-4e6a-b1ba-79b28d85d78b.jpg"
+      },
+      {
+        "name": "Shocker, Unshakable",
+        "img": "https://cards.scryfall.io/normal/front/e/b/eb8acf92-22c2-462f-af2d-bc07217e83a9.jpg"
+      },
+      {
+        "name": "Shriek, Treblemaker",
+        "img": "https://cards.scryfall.io/normal/front/1/e/1eb20949-de39-4da8-903b-c5d7cd786342.jpg"
+      },
+      {
+        "name": "Silk, Web Weaver",
+        "img": "https://cards.scryfall.io/normal/front/4/5/458cd7a1-7437-493b-b7b7-42ef489e77df.jpg"
+      },
+      {
+        "name": "Silver Sable, Mercenary Leader",
+        "img": "https://cards.scryfall.io/normal/front/a/6/a6927378-fee5-49c7-a607-c8084d7d077c.jpg"
+      },
+      {
+        "name": "Sinister Hideout",
+        "img": "https://cards.scryfall.io/normal/front/c/4/c417f8ce-e156-4c9a-af30-792606d861bd.jpg"
+      },
+      {
+        "name": "Skyward Spider",
+        "img": "https://cards.scryfall.io/normal/front/5/7/57a37326-f399-4e75-a1b1-c34e2e0a8ae6.jpg"
+      },
+      {
+        "name": "Spectacular Spider-Man",
+        "img": "https://cards.scryfall.io/normal/front/8/f/8ff57c8b-173e-4a72-a0a0-1ad2d5cc6e5e.jpg"
+      },
+      {
+        "name": "Spectacular Tactics",
+        "img": "https://cards.scryfall.io/normal/front/2/0/205cf34c-b3f4-4901-ac0c-ad22533f924c.jpg"
+      },
+      {
+        "name": "Spider Manifestation",
+        "img": "https://cards.scryfall.io/normal/front/0/f/0f6824b0-02d3-4b2a-bf74-61bd38e7e632.jpg"
+      },
+      {
+        "name": "Spider-Bot",
+        "img": "https://cards.scryfall.io/normal/front/d/f/df1e0d83-e6ac-4256-b7be-ffd71824c466.jpg"
+      },
+      {
+        "name": "Spider-Byte, Web Warden",
+        "img": "https://cards.scryfall.io/normal/front/a/a/aa7d8ca7-5db9-4a22-a921-18dd7c56cf2c.jpg"
+      },
+      {
+        "name": "Spider-Girl, Legacy Hero",
+        "img": "https://cards.scryfall.io/normal/front/e/b/ebc534ac-c33b-4059-9d11-82645f8fead1.jpg"
+      },
+      {
+        "name": "Spider-Gwen, Free Spirit",
+        "img": "https://cards.scryfall.io/normal/front/d/6/d643a81f-2b6b-430b-9123-3df43072fa5f.jpg"
+      },
+      {
+        "name": "Spider-Ham, Peter Porker",
+        "img": "https://cards.scryfall.io/normal/front/b/1/b1c95ee4-b60d-4868-b7e3-204849a8f544.jpg"
+      },
+      {
+        "name": "Spider-Islanders",
+        "img": "https://cards.scryfall.io/normal/front/7/1/7148fd5f-e80a-4f2f-9f3d-8b68ff9d2f67.jpg"
+      },
+      {
+        "name": "Spider-Man 2099",
+        "img": "https://cards.scryfall.io/normal/front/d/c/dc6a2e6c-7096-4466-90ab-828290f098cc.jpg"
+      },
+      {
+        "name": "Spider-Man India",
+        "img": "https://cards.scryfall.io/normal/front/b/8/b851b3f4-0f88-44ce-bd75-b4cf083967f4.jpg"
+      },
+      {
+        "name": "Spider-Man No More",
+        "img": "https://cards.scryfall.io/normal/front/0/7/07171df9-8998-4d56-a59c-eb3cb9240f53.jpg"
+      },
+      {
+        "name": "Spider-Man Noir",
+        "img": "https://cards.scryfall.io/normal/front/1/f/1f0b6b31-c3e1-49bb-bc59-ce6414cde878.jpg"
+      },
+      {
+        "name": "Spider-Man, Brooklyn Visionary",
+        "img": "https://cards.scryfall.io/normal/front/e/b/eb4fc620-2c48-46d9-9046-157285e820a6.jpg"
+      },
+      {
+        "name": "Spider-Man, Web-Slinger",
+        "img": "https://cards.scryfall.io/normal/front/1/9/19e761e8-7542-44e9-9c6f-65a806153501.jpg"
+      },
+      {
+        "name": "Spider-Mobile",
+        "img": "https://cards.scryfall.io/normal/front/4/8/48a433c4-9849-46b5-881d-64c05b87faf8.jpg"
+      },
+      {
+        "name": "Spider-Punk",
+        "img": "https://cards.scryfall.io/normal/front/7/7/774d48ab-181b-4190-9956-67706bea9b27.jpg"
+      },
+      {
+        "name": "Spider-Rex, Daring Dino",
+        "img": "https://cards.scryfall.io/normal/front/3/6/36320a3a-e771-4763-b147-f328724cf36c.jpg"
+      },
+      {
+        "name": "Spider-Sense",
+        "img": "https://cards.scryfall.io/normal/front/5/e/5eee9160-4f14-4ffc-83e9-ee5931ff6a7f.jpg"
+      },
+      {
+        "name": "Spider-Slayer, Hatred Honed",
+        "img": "https://cards.scryfall.io/normal/front/a/8/a8874e6e-400f-48ff-a9da-6bce557bde78.jpg"
+      },
+      {
+        "name": "Spider-Suit",
+        "img": "https://cards.scryfall.io/normal/front/5/2/522bc3df-0ec8-466c-9996-c403823cc755.jpg"
+      },
+      {
+        "name": "Spider-UK",
+        "img": "https://cards.scryfall.io/normal/front/4/8/488f94ef-c9ba-4a96-8abe-99c9a855c5c3.jpg"
+      },
+      {
+        "name": "Spider-Verse",
+        "img": "https://cards.scryfall.io/normal/front/c/3/c3fd31e5-0faa-493f-aa50-08307a0c0139.jpg"
+      },
+      {
+        "name": "Spider-Woman, Stunning Savior",
+        "img": "https://cards.scryfall.io/normal/front/f/b/fbf1ea21-2e90-4792-b399-111ff70a9d06.jpg"
+      },
+      {
+        "name": "Spiders-Man, Heroic Horde",
+        "img": "https://cards.scryfall.io/normal/front/2/9/29f7f242-57fa-4714-84fa-3e65c7101985.jpg"
+      },
+      {
+        "name": "Spinneret and Spiderling",
+        "img": "https://cards.scryfall.io/normal/front/3/2/32b086a3-1a5a-4765-918e-06a11770079d.jpg"
+      },
+      {
+        "name": "Starling, Aerial Ally",
+        "img": "https://cards.scryfall.io/normal/front/4/8/48255f10-ea0e-42a3-bbfb-efa773f0cb08.jpg"
+      },
+      {
+        "name": "Steel Wrecking Ball",
+        "img": "https://cards.scryfall.io/normal/front/2/9/296b300a-115a-458e-b526-65a1679053ca.jpg"
+      },
+      {
+        "name": "Stegron the Dinosaur Man",
+        "img": "https://cards.scryfall.io/normal/front/d/1/d1ac4300-5589-4a21-af20-87b58ddae09b.jpg"
+      },
+      {
+        "name": "Strength of Will",
+        "img": "https://cards.scryfall.io/normal/front/2/4/24b3e1b0-a6af-46da-820a-439a292f7de0.jpg"
+      },
+      {
+        "name": "Suburban Sanctuary",
+        "img": "https://cards.scryfall.io/normal/front/c/a/cabf021b-23e9-404d-90c6-eef629e1283e.jpg"
+      },
+      {
+        "name": "Subway Train",
+        "img": "https://cards.scryfall.io/normal/front/f/6/f676c797-b4d5-4a3e-8036-54595539e8e5.jpg"
+      },
+      {
+        "name": "Sudden Strike",
+        "img": "https://cards.scryfall.io/normal/front/3/b/3b8ca716-d1ea-47c9-a919-7da112310133.jpg"
+      },
+      {
+        "name": "Sun-Spider, Nimble Webber",
+        "img": "https://cards.scryfall.io/normal/front/4/8/487c104e-ab0d-4310-973c-a3661d6dabe2.jpg"
+      },
+      {
+        "name": "Superior Foes of Spider-Man",
+        "img": "https://cards.scryfall.io/normal/front/7/d/7d66d31e-91eb-48b5-9388-9f6adfd89e70.jpg"
+      },
+      {
+        "name": "Superior Spider-Man",
+        "img": "https://cards.scryfall.io/normal/front/0/f/0f193a36-d452-4503-937c-90fb55a99ab4.jpg"
+      },
+      {
+        "name": "Supportive Parents",
+        "img": "https://cards.scryfall.io/normal/front/0/9/09bda521-5d2d-4a61-a533-06361e91e4cb.jpg"
+      },
+      {
+        "name": "Swarm, Being of Bees",
+        "img": "https://cards.scryfall.io/normal/front/1/8/1898ea58-a4ef-4ec0-a88a-22ee14b030ac.jpg"
+      },
+      {
+        "name": "Symbiote Spider-Man",
+        "img": "https://cards.scryfall.io/normal/front/a/b/aba6def8-b2db-4083-a496-45afc7d803c0.jpg"
+      },
+      {
+        "name": "Taxi Driver",
+        "img": "https://cards.scryfall.io/normal/front/e/6/e64d0478-b42f-4b7d-abac-fd1bce602191.jpg"
+      },
+      {
+        "name": "Terrific Team-Up",
+        "img": "https://cards.scryfall.io/normal/front/0/a/0af974cd-f987-4cb8-85d5-77a4bd894d7b.jpg"
+      },
+      {
+        "name": "The Clone Saga",
+        "img": "https://cards.scryfall.io/normal/front/7/8/78cd4dde-7e2d-4fcd-a207-a80911755f3f.jpg"
+      },
+      {
+        "name": "The Death of Gwen Stacy",
+        "img": "https://cards.scryfall.io/normal/front/6/d/6db83692-1c33-4e61-b8ec-dc030bf2c963.jpg"
+      },
+      {
+        "name": "The Soul Stone",
+        "img": "https://cards.scryfall.io/normal/front/a/5/a54f47cd-d897-4da4-be67-aa8eb71bdac5.jpg"
+      },
+      {
+        "name": "The Spot's Portal",
+        "img": "https://cards.scryfall.io/normal/front/0/9/097475b0-24d2-470c-bc3e-3f2fff3a5ebe.jpg"
+      },
+      {
+        "name": "The Spot, Living Portal",
+        "img": "https://cards.scryfall.io/normal/front/d/c/dce39404-b2d5-41e1-84e8-8da3657c278c.jpg"
+      },
+      {
+        "name": "Thwip!",
+        "img": "https://cards.scryfall.io/normal/front/5/8/582e9e16-51a6-4f5a-a060-d7e92b108ed5.jpg"
+      },
+      {
+        "name": "Tombstone, Career Criminal",
+        "img": "https://cards.scryfall.io/normal/front/0/7/079d9bfa-f039-47a9-9b6e-41879028d2da.jpg"
+      },
+      {
+        "name": "Ultimate Green Goblin",
+        "img": "https://cards.scryfall.io/normal/front/9/9/9905b88b-4b4d-4a14-8032-7f23d4517d8b.jpg"
+      },
+      {
+        "name": "University Campus",
+        "img": "https://cards.scryfall.io/normal/front/c/d/cd4b9fc5-fe3d-41d9-9d0e-77f1aebef618.jpg"
+      },
+      {
+        "name": "Unstable Experiment",
+        "img": "https://cards.scryfall.io/normal/front/1/2/12f22890-901e-482d-a6e8-b224a39af6e4.jpg"
+      },
+      {
+        "name": "Urban Retreat",
+        "img": "https://cards.scryfall.io/normal/front/5/0/503fa949-955b-4307-92c8-842692305b7a.jpg"
+      },
+      {
+        "name": "Venom's Hunger",
+        "img": "https://cards.scryfall.io/normal/front/e/f/ef974a13-4eea-4c96-adfe-6f42b71563d4.jpg"
+      },
+      {
+        "name": "Venom, Evil Unleashed",
+        "img": "https://cards.scryfall.io/normal/front/a/d/add0aa73-232a-4d4f-9e04-4cd2a6ff05bc.jpg"
+      },
+      {
+        "name": "Venomized Cat",
+        "img": "https://cards.scryfall.io/normal/front/9/c/9c88ef90-b3d9-4d26-900a-caafdac01597.jpg"
+      },
+      {
+        "name": "Vibrant Cityscape",
+        "img": "https://cards.scryfall.io/normal/front/2/b/2bda06d5-1b67-4a01-b7f7-9fcad54b43e9.jpg"
+      },
+      {
+        "name": "Villainous Wrath",
+        "img": "https://cards.scryfall.io/normal/front/a/c/acd597bf-554e-4456-9215-98917e835d67.jpg"
+      },
+      {
+        "name": "Vulture, Scheming Scavenger",
+        "img": "https://cards.scryfall.io/normal/front/1/3/1392de20-9ed9-4852-ad13-a56c51c8a247.jpg"
+      },
+      {
+        "name": "Wall Crawl",
+        "img": "https://cards.scryfall.io/normal/front/c/3/c37e8b36-00bc-4fc0-89e1-dfd8a3188465.jpg"
+      },
+      {
+        "name": "Web Up",
+        "img": "https://cards.scryfall.io/normal/front/b/4/b4f1026e-ea10-401a-bceb-2a7eedcd83b3.jpg"
+      },
+      {
+        "name": "Web of Life and Destiny",
+        "img": "https://cards.scryfall.io/normal/front/1/3/13025ff4-7dd5-4fc4-806f-d237a7b3bc32.jpg"
+      },
+      {
+        "name": "Web-Shooters",
+        "img": "https://cards.scryfall.io/normal/front/7/a/7a7c3434-4c66-4ce8-8030-4ab5a0b4cc76.jpg"
+      },
+      {
+        "name": "Web-Warriors",
+        "img": "https://cards.scryfall.io/normal/front/f/a/fafc21c6-010b-49dd-b11b-a1f691377028.jpg"
+      },
+      {
+        "name": "Whoosh!",
+        "img": "https://cards.scryfall.io/normal/front/b/f/bf527252-a828-47c5-8194-4a866e39d90c.jpg"
+      },
+      {
+        "name": "Wild Pack Squad",
+        "img": "https://cards.scryfall.io/normal/front/9/7/9706ab5c-129d-42dd-8413-7d4c96916cc9.jpg"
+      },
+      {
+        "name": "Wisecrack",
+        "img": "https://cards.scryfall.io/normal/front/1/2/12a4bbe1-d341-4da2-8180-81f2ce964cb2.jpg"
+      },
+      {
+        "name": "With Great Power . . .",
+        "img": "https://cards.scryfall.io/normal/front/1/3/138dcee4-9163-4f78-ae87-87f9b7c1c6fe.jpg"
+      },
+      {
+        "name": "Wraith, Vicious Vigilante",
+        "img": "https://cards.scryfall.io/normal/front/1/a/1a2d4e77-f22f-4664-bd97-98840a5e94aa.jpg"
+      }
+    ],
+    "extra": []
+  },
+  {
     "code": "EOE",
     "name": "Edge of Eternities",
     "releaseDate": "2025-08-01",

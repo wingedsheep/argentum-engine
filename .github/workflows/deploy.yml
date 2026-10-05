@@ -8,7 +8,70 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build:
+  # The backend image used to compile the whole module graph from scratch inside `docker build`
+  # (no Gradle cache, no daemon) — ~7 of the deploy's ~9 minutes. Building the jar on the runner lets
+  # it restore the build cache CI saves on main, so only modules changed since then recompile; the
+  # image is then just a JRE plus the jar. Backend and frontend build as separate jobs in parallel.
+  backend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      GRADLE_BUILD_CACHE_DIR: ${{ github.workspace }}/.gradle/build-cache
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # Read-only: the deploy never writes caches, so it can't crowd CI's out of the 10 GB quota.
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: true
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      # The `server` group compiles the full module graph that bootJar needs (see ci.yml).
+      - name: Restore Gradle build outputs
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/.gradle/build-cache
+          key: gradle-build-cache-${{ runner.os }}-server-${{ github.sha }}
+          restore-keys: |
+            gradle-build-cache-${{ runner.os }}-server-
+            gradle-build-cache-${{ runner.os }}-
+
+      - name: Build jar
+        run: ./gradlew :game-server:bootJar
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Downcase Image Name
+        run: |
+          echo "IMAGE_REPO=${REGISTRY}/${IMAGE_NAME,,}" >> $GITHUB_ENV
+
+      - name: Build and push Backend
+        uses: docker/build-push-action@v7
+        with:
+          context: ./game-server/build/libs
+          file: ./game-server/Dockerfile.prebuilt
+          push: true
+          tags: ${{ env.IMAGE_REPO }}/backend:latest
+          build-args: |
+            COMMIT_HASH=${{ github.sha }}
+
+  frontend:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -29,16 +92,6 @@ jobs:
         run: |
           echo "IMAGE_REPO=${REGISTRY}/${IMAGE_NAME,,}" >> $GITHUB_ENV
 
-      - name: Build and push Backend
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ./game-server/Dockerfile
-          push: true
-          tags: ${{ env.IMAGE_REPO }}/backend:latest
-          build-args: |
-            COMMIT_HASH=${{ github.sha }}
-
       - name: Build and push Frontend
         uses: docker/build-push-action@v7
         with:
@@ -50,7 +103,7 @@ jobs:
 
 
   deploy:
-    needs: build
+    needs: [backend, frontend]
     runs-on: ubuntu-latest
 
     environment:

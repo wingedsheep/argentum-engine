@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.pcy
 
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.CardDefinition
@@ -24,7 +23,7 @@ object ProphecySet : MtgSet {
     override val displayName = "Prophecy"
     override val releaseDate = "2000-06-05"
     override val block = "Masques"
-    override val basicLandsFallback = PortalSet
+    override val basicLandsFallbackCode = "POR"
     override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
