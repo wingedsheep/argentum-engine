@@ -132,7 +132,7 @@ class EachPermanentBecomesCopyOfTargetExecutor(
             // `isDoubleFaced` stays the copying permanent's own: layout is not a copiable value
             // (CR 707.2), and CR 712.9's Clone/Kruin Outlaw examples turn on the copy's *own* card
             // being double-faced, not the copied one's.
-            val copiedCard = CopyExceptionApplier.apply(targetCard, effect.exceptions, context.resolvingTriggeredAbility, currentCard.colors)
+            val copiedCard = CopyExceptionApplier.apply(targetCard, effect.exceptions, context.resolvingTriggeredAbility, container.copiableCardComponent()!!.colors)
                 .copy(ownerId = currentCard.ownerId, isDoubleFaced = currentCard.isDoubleFaced)
 
             // If this permanent is already a copy, keep the existing pre-copy snapshot

@@ -15155,6 +15155,15 @@ The priority groups are (CR 616.1a–f):
   or granted (`ActiveReplacements`). Not yet ordered against `CreateAdditionalToken` by the affected
   player (CR 616.1): the substitution runs first and `CreateAdditionalToken` then judges only the
   substitutes, so Worldwalker Helm adds no Map for a Treasure that became a Dragon.
+Copy effects read the public copiable values of a face-down source: an unnamed colorless 2/2
+creature with no mana cost, subtypes or printed abilities. Disguise and cloak contribute ward {2},
+which remains intrinsic on the face-up copy and subsequent copies. Face-down status, hidden
+identity/art, turn-up procedures, printed numeric keywords and hidden double-faced identities
+are not inherited. A token copied from a face-down double-faced permanent still has two faces,
+both frozen from the public face-down values; transforming it cannot reveal the source card. Copy exceptions apply afterward, so Vesuvan Doppelganger retains blue and
+adds its upkeep ability to that otherwise anonymous identity. Turning the original face up does
+not update an existing copy.
+
 - `EntersAsCopy(optional, copyFilter, copyFromZone, filterByTotalManaSpent, additionalSubtypes, additionalColors, additionalKeywords, nameOverride, powerOverride, toughnessOverride, exileCopiedCard, tappedIfCopied, additionalCounters, exceptions, duration)` —
   "enter as a copy of …". As the permanent enters, the controller picks an object matching
   `copyFilter` and the permanent enters as a copy (Rule 707 copiable values), with any overrides

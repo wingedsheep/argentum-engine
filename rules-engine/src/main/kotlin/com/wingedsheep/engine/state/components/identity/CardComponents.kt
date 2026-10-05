@@ -118,6 +118,8 @@ data class CardComponent(
      * [copyTriggeredAbilities]; read through [ownActivatedAbilities] alongside the definition's own.
      */
     val copyActivatedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
+    /** Intrinsic ward costs carried by a copy whose values have no printed card definition. */
+    val copyWardCosts: List<com.wingedsheep.sdk.scripting.effects.WardCost> = emptyList(),
     /** Copiable spending-rule abilities, baked from the active printed statics on entry/unlock. */
     val manaSpendingGrants: List<ManaSpendingGrant> = emptyList(),
 ) : Component {

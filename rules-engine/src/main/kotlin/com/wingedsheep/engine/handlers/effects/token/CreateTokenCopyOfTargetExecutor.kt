@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.token
 
 import com.wingedsheep.engine.state.components.identity.copiableCardComponent
+import com.wingedsheep.engine.state.components.identity.copiableDoubleFacedComponent
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ZoneChangeEvent
@@ -26,7 +27,6 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
-import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -233,15 +233,9 @@ class CreateTokenCopyOfTargetExecutor(
             // with the same face up as the source. Counters
             // are intentionally not copied (handled by the absence of CountersComponent copy
             // throughout this executor).
-            targetContainer.get<DoubleFacedComponent>()?.let { sourceDfc ->
-                components.add(
-                    DoubleFacedComponent(
-                        frontCardDefinitionId = sourceDfc.frontCardDefinitionId,
-                        backCardDefinitionId = sourceDfc.backCardDefinitionId,
-                        currentFace = sourceDfc.currentFace
-                    )
-                )
-            }
+            targetContainer.copiableDoubleFacedComponent {
+                CopyExceptionApplier.apply(it, exceptions, context.resolvingTriggeredAbility).copy(ownerId = controllerId, isDoubleFaced = false)
+            }?.let { components.add(it) }
 
             var container = ComponentContainer.of(*components.toTypedArray())
             // Toxic N / bushido N ride components, not the CardComponent — carry them over too.

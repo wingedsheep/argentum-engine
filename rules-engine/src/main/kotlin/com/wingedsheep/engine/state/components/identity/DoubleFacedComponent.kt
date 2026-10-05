@@ -42,7 +42,9 @@ data class DoubleFacedComponent(
      * Read back through [com.wingedsheep.engine.handlers.EffectContext.sourceFaceChanges], which
      * carries the value an ability's source had when the ability went on the stack.
      */
-    val faceChanges: Int = 0
+    val faceChanges: Int = 0,
+    /** Public face values for a token copy whose faces have no printed definitions. */
+    val copiedFaces: CopiedCardFaces? = null
 ) : Component {
     @Serializable
     enum class Face { FRONT, BACK }
@@ -50,3 +52,6 @@ data class DoubleFacedComponent(
     val isFront: Boolean get() = currentFace == Face.FRONT
     val isBack: Boolean get() = currentFace == Face.BACK
 }
+
+@Serializable
+data class CopiedCardFaces(val front: CardComponent, val back: CardComponent)

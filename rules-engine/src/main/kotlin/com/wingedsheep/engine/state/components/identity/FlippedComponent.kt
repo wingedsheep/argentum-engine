@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.state.components.identity
 
 import com.wingedsheep.engine.state.Component
-import com.wingedsheep.engine.state.ComponentContainer
 import kotlinx.serialization.Serializable
 
 /**
@@ -19,11 +18,3 @@ import kotlinx.serialization.Serializable
 data class FlippedComponent(
     val unflippedCard: CardComponent,
 ) : Component
-
-/**
- * The [CardComponent] a copy effect should copy from this object. Flipped is a status, and status
- * isn't copied (CR 707.2) — a copy of a flipped permanent is its upright half, able to flip on its
- * own later. Every other object answers with its current [CardComponent].
- */
-fun ComponentContainer.copiableCardComponent(): CardComponent? =
-    get<FlippedComponent>()?.unflippedCard ?: get<CardComponent>()

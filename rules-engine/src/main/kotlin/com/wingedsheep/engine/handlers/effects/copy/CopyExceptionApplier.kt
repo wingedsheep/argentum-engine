@@ -131,9 +131,11 @@ object CopyExceptionApplier {
         exceptions: CopyExceptions,
     ): ComponentContainer {
         val numeric = buildList {
-            source.get<ToxicComponent>()?.let { add(KeywordAbility.Numeric(Keyword.TOXIC, it.amount)) }
-            source.get<NumericKeywordValuesComponent>()?.values?.forEach { (keyword, n) ->
-                add(KeywordAbility.Numeric(keyword, n))
+            if (!source.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) {
+                source.get<ToxicComponent>()?.let { add(KeywordAbility.Numeric(Keyword.TOXIC, it.amount)) }
+                source.get<NumericKeywordValuesComponent>()?.values?.forEach { (keyword, n) ->
+                    add(KeywordAbility.Numeric(keyword, n))
+                }
             }
             addAll(exceptions.addedNumericKeywords)
         }
