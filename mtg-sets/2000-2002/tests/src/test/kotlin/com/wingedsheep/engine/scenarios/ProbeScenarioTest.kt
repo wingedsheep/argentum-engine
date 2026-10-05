@@ -82,6 +82,21 @@ class ProbeScenarioTest : ScenarioTestBase() {
                 game.isInGraveyard(2, "Grizzly Bears") shouldBe true
                 game.isInGraveyard(2, "Centaur Courser") shouldBe true
             }
+
+            test("kicked, it cannot be cast without a target player") {
+                val game = game(kicked = true)
+                val probe = game.findCardsInHand(1, "Probe").single()
+
+                game.execute(
+                    CastSpell(
+                        playerId = game.player1Id,
+                        cardId = probe,
+                        declaredCostSlot = ChoiceSlot.KICKED,
+                        paymentStrategy = PaymentStrategy.AutoPay,
+                    )
+                ).error.shouldNotBeNull()
+                game.isInHand(1, "Probe") shouldBe true
+            }
         }
     }
 }
