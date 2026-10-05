@@ -149,6 +149,13 @@ object SelfSteps {
             // that moves with the position exactly as untap's and regenerate's do — unlike
             // `SacrificeSelfEffect`, which the SDK models as a verb with no object at all.
             move("transform {self}", "transform$tag", TransformEffect(target), subject),
+            // "When ~ enters, it explores." (CR 701.44) and "Whenever ~ attacks, it connives."
+            // (CR 701.50) — the two keyword actions a creature performs on itself, said with the
+            // creature as the sentence's subject rather than its object. The SDK names the actor
+            // and nothing else (`ExploreEffect(target)`, `ConniveEffect` around its pipeline), so
+            // each is a row whose subject moves with the position exactly as untap's does.
+            move("{self} explores", "explores$tag", Effects.Explore(target), subject),
+            move("{self} connives", "connives$tag", Effects.Connive(target), subject),
             // The four zone verbs the pronoun used to be frozen into. "Exile ~." is the standalone
             // sentence twenty-nine spells print about themselves and "exile it" is what the same
             // verb looks like after a clause has already named the source; one rule, one model, and
