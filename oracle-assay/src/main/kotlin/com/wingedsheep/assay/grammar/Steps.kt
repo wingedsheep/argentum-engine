@@ -686,6 +686,18 @@ object Steps {
             amount = ::lifeLostAmount,
         ),
         LifeChange(
+            // "Whenever an opponent draws a card, that player loses 1 life." — Scrawling Crawler.
+            // "That player" is the one the trigger named, `Player.TriggeringPlayer`, exactly as in
+            // [damageRecipients]' row; a run that also declares a target refuses it (see the
+            // `namesPlayer` guard in `merge`), because there it would name the target's owner.
+            "that player loses {n} life", "that player loses life equal to {amount}",
+            "that player loses life",
+            script = {
+                CardScript(spellEffect = Effects.LoseLife(it, EffectTarget.PlayerRef(Player.TriggeringPlayer)))
+            },
+            amount = ::lifeLostAmount,
+        ),
+        LifeChange(
             "target player loses {n} life", "target player loses life equal to {amount}",
             "target player loses life",
             script = {
@@ -3449,6 +3461,10 @@ object Steps {
         if (head != CardScript(spellEffect = headEffect, targetRequirements = head.targetRequirements)) return null
         if (last != CardScript(spellEffect = lastEffect, targetRequirements = last.targetRequirements)) return null
         if (head.targetRequirements.isNotEmpty() && last.targetRequirements.isNotEmpty()) return null
+        // [merge]'s "that player" guard, for the same reason: "Target opponent discards a card. If
+        // you control a Demon, that player loses 3 life." (Scroll of Griselbrand) names the target.
+        val declares = head.targetRequirements.isNotEmpty() || last.targetRequirements.isNotEmpty()
+        if (declares && listOf(head, last).any { Slots.namesPlayer(it, "TriggeringPlayer") }) return null
         val headEffects = (headEffect as? CompositeEffect)
             ?.takeIf { it == CompositeEffect(it.effects) }
             ?.effects

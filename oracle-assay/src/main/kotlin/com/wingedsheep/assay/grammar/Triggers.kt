@@ -518,7 +518,31 @@ object Triggers {
         Steps.step,
     )
 
-    private val drawPrefixes: List<Prefix> = listOf(
+    /**
+     * "Whenever you draw a card, put a +1/+1 counter on ~." — Clinquant Skymage, Ravenhill Flock;
+     * "Whenever an opponent draws a card, you may draw two cards." — Consecrated Sphinx.
+     *
+     * The every-draw sibling of [nthDrawRule], over `DrawEvent`: the drawer is a row for the same
+     * reason it is one there, and the payoff takes the same source cascade, because a draw binds no
+     * object either (CR 121.2 makes each card its own draw, and the event never names it). "That
+     * player" in the payoff is the drawer, which [Steps.step] already spells as
+     * `Player.TriggeringPlayer`.
+     *
+     * Orcish Bowmasters' "except the first one they draw in each of their draw steps" is the
+     * event's `exceptFirstInDrawStep` flag — the turn-based draw of CR 504.1 — and is its own row
+     * rather than a suffix slot, because only the opponent's surface prints it ("they", "their").
+     */
+    private val everyDrawPrefixes: List<Prefix> = listOf(
+        triggerRule("whenever you draw a card", SdkTriggers.player(Player.You).draws()),
+        triggerRule("whenever an opponent draws a card", SdkTriggers.player(Player.EachOpponent).draws()),
+        triggerRule("whenever a player draws a card", SdkTriggers.player(Player.Each).draws()),
+        triggerRule(
+            "whenever an opponent draws a card except the first one they draw in each of their draw steps",
+            SdkTriggers.player(Player.EachOpponent).draws(exceptFirstInDrawStep = true),
+        ),
+    )
+
+    private val drawPrefixes: List<Prefix> = everyDrawPrefixes + listOf(
         nthDrawRule("whenever you draw your", "whenever you draw your nth card", Player.You),
         nthDrawRule("whenever an opponent draws their", "whenever an opponent draws their nth card", Player.EachOpponent),
         nthDrawRule("whenever a player draws their", "whenever a player draws their nth card", Player.Each),

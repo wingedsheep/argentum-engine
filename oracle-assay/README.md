@@ -5625,6 +5625,33 @@ value to the engine either — `SacrificeTargetExecutor` honours `CANT_BE_SACRIF
 immunity and the projected controller, and `SacrificeSelfExecutor` does none of that — so the cards
 were left as written rather than moved onto the weaker executor. Divergent 78 → 84.
 
+## Whenever you draw a card
+
+"**Whenever you draw a card**, put a +1/+1 counter on ~." (Clinquant Skymage, Ravenhill Flock,
+Hoofprints of the Stag), "Whenever an opponent draws a card, you may draw two cards." (Consecrated
+Sphinx) and "Whenever a player draws a card, ~ deals 1 damage to that player." (Spiteful Visions).
+Tail keys "you draw a …" and "opponent draws a …". The grammar read the ordinal draw trigger and not
+the every-draw one it is the sibling of: `Triggers.<player>.draws()` is `DrawEvent`, the drawer is a
+row for the reason it is one in the ordinal rule, and the payoff is the same source cascade because a
+draw names no object (CR 121.2). Orcish Bowmasters' "except the first one they draw in each of their
+draw steps" is the event's `exceptFirstInDrawStep` flag and its own row, since only the opponent's
+surface prints it. One row joins the life vocabulary — "that player loses {n} life", the drawer as
+`Player.TriggeringPlayer`, as the hand-written cards spell it.
+
+### What it moved
+
+Probe 46 + 16 lines / 15 + 4 whole cards corpus-wide by swapping the prefix for "Whenever ~ attacks".
+Over the implemented population delivered **+5** (7,890 → 7,895), compared 7,475 → 7,480. "They lose
+2 life" (Sheoldred) and "~ deals 1 damage to them" (Razorkin Needlehead) still decline on the pronoun.
+
+### What the differential found
+
+No new divergence and no card bug. The new life row found a parser bug first: the "ends in a scoped
+clause" fold (`appendClause`) lacked `merge`'s guard against "that player" beside a declared target,
+so Scroll of Griselbrand's "Target opponent discards a card. If you control a Demon, that player loses
+3 life." read the target as the triggering player and failed to print. The fold now refuses it, as
+`merge` does. Divergent 84 → 84.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote
