@@ -195,7 +195,11 @@ internal object StackPlacement {
 
         var newState = stateWithId.withEntity(copyId, container)
         sourceContainer.get<com.wingedsheep.engine.mechanics.BestowedComponent>()?.let { bestowed ->
-            newState = newState.updateEntity(copyId) { it.with(bestowed.copy(original = bestowed.original.copy(ownerId = copyController))) }
+            // Bestow restores this identity on entry or when its target becomes illegal.
+            // Restore the copy's exceptions as well as its printed characteristics.
+            val original = com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
+                .apply(bestowed.original, exceptions).copy(ownerId = copyController)
+            newState = newState.updateEntity(copyId) { it.with(bestowed.copy(original = original)) }
         }
         newState = newState.pushToStack(copyId).copy(priorityPassedBy = emptySet())
 

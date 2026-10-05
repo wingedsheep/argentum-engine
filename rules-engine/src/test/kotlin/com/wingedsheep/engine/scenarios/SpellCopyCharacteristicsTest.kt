@@ -238,6 +238,59 @@ class SpellCopyCharacteristicsTest : FunSpec({
         d.state.pendingDecision shouldBe null
         card(d, copies(d).single()).colors shouldBe setOf(Color.RED)
     }
+    for (removeBeforeEntry in listOf(false, true)) {
+        for (copyAgain in listOf(false, true)) {
+            test("bestow exceptions survive host removal before entry $removeBeforeEntry and recopy $copyAgain") {
+                val d = driver()
+                val spirit = card("Test Excepted Bestow Spirit") {
+                    manaCost = "{U}"; typeLine = "Enchantment Creature — Spirit"; power = 2; toughness = 3
+                    keywordAbility(KeywordAbility.bestow("{0}"))
+                }
+                val removal = card("Test Bestow Copy Host Removal") {
+                    manaCost = "{0}"; typeLine = "Instant"
+                    spell {
+                        val host = target(TargetFilter.Creature)
+                        effect = Effects.Move(host, Zone.GRAVEYARD)
+                    }
+                }
+                d.registerCards(listOf(spirit, removal))
+                val host = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")
+                val source = d.putCardInHand(d.player1, spirit.name)
+                d.submit(CastSpell(playerId = d.player1, cardId = source,
+                    targets = listOf(ChosenTarget.Permanent(host)), useAlternativeCost = true,
+                    alternativeCostType = AlternativeCostType.BESTOW,
+                    paymentStrategy = PaymentStrategy.FromPool)).error shouldBe null
+                val exceptions = red.copy(powerOverride = 4, toughnessOverride = 5,
+                    addedCardTypes = setOf(CardType.ARTIFACT), addedSubtypes = setOf(Subtype.GOLEM))
+                copy(d, source, exceptions)
+                d.submitTargetSelection(d.player2, listOf(host)).error shouldBe null
+                var copied = copies(d).single()
+                if (copyAgain) {
+                    copy(d, copied, CopyExceptions.None)
+                    d.submitTargetSelection(d.player2, listOf(host)).error shouldBe null
+                    copied = copies(d).last()
+                }
+                if (!removeBeforeEntry) {
+                    d.bothPass().error shouldBe null
+                    d.state.getEntity(copied)!!.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()!!.targetId shouldBe host
+                    card(d, copied).baseStats!!.basePower shouldBe 4
+                    card(d, copied).typeLine.cardTypes.contains(CardType.ARTIFACT) shouldBe true
+                }
+                val removingPlayer = d.priorityPlayer!!
+                val removalId = d.putCardInHand(removingPlayer, removal.name)
+                d.castSpell(removingPlayer, removalId, listOf(host)).error shouldBe null
+                d.bothPass().error shouldBe null
+                if (removeBeforeEntry) d.bothPass().error shouldBe null
+                d.state.getEntity(copied)!!.has<TokenComponent>() shouldBe true
+                d.state.projectedState.getPower(copied) shouldBe 4
+                d.state.projectedState.getToughness(copied) shouldBe 5
+                d.state.projectedState.hasType(copied, "ARTIFACT") shouldBe true
+                d.state.projectedState.hasSubtype(copied, "Golem") shouldBe true
+                card(d, copied).colors shouldBe setOf(Color.RED)
+                card(d, source).colors shouldBe setOf(Color.BLUE)
+            }
+        }
+    }
     test("permanent spell exceptions survive becoming a token and a subsequent spell copy") {
         val d = driver()
         val source = cast(d, "Grizzly Bears")
