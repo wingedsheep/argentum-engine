@@ -42,21 +42,13 @@ class EtchedSlithScenarioTest : ScenarioTestBase() {
         while (getPendingDecision() == null && safety++ < 20) passPriority()
     }
 
-    /** Attack unblocked with the Slith and advance to the reflexive trigger's "you may" prompt. */
-    private fun TestGame.attackToMayPrompt(): YesNoDecision {
+    /** Advance through the mandatory counter and announce the reflexive trigger's target. */
+    private fun TestGame.attackToTargetPrompt(): ChooseTargetsDecision {
         passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
         declareAttackers(mapOf("Etched Slith" to 2)).error shouldBe null
         passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
         declareNoBlockers()
         advanceToDecision()
-        return getPendingDecision() as? YesNoDecision
-            ?: error("expected a YesNoDecision, got ${getPendingDecision()}")
-    }
-
-    /** Accept the "you may" — the consent is asked before the target is chosen — and reach the target prompt. */
-    private fun TestGame.attackToTargetPrompt(): ChooseTargetsDecision {
-        attackToMayPrompt()
-        answerYesNo(true)
         return getPendingDecision() as? ChooseTargetsDecision
             ?: error("expected a ChooseTargetsDecision, got ${getPendingDecision()}")
     }
@@ -84,6 +76,7 @@ class EtchedSlithScenarioTest : ScenarioTestBase() {
 
                 game.selectTargets(listOf(bears)).error shouldBe null
                 game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
 
                 game.counters(bears, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
                 game.counters(slith, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
@@ -101,6 +94,7 @@ class EtchedSlithScenarioTest : ScenarioTestBase() {
                 game.attackToTargetPrompt()
                 game.selectTargets(listOf(game.player2Id)).error shouldBe null
                 game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
 
                 game.counters(game.player2Id, CounterType.POISON) shouldBe 2
             }
@@ -117,9 +111,10 @@ class EtchedSlithScenarioTest : ScenarioTestBase() {
                 val bears = game.findPermanent("Grizzly Bears")!!
                 game.addCounters(bears, CounterType.PLUS_ONE_PLUS_ONE, 2)
 
-                game.attackToMayPrompt()
-                game.answerYesNo(false)
+                game.attackToTargetPrompt()
+                game.selectTargets(listOf(bears)).error shouldBe null
                 game.resolveStack()
+                game.answerYesNo(false).error shouldBe null
 
                 game.counters(bears, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 2
                 game.counters(slith, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1

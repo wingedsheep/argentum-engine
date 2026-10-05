@@ -40,7 +40,7 @@ class DaringArchaeologistScenarioTest : FunSpec({
         return d
     }
 
-    /** Cast the Archaeologist over two artifact cards in the graveyard, stopping at its ETB consent. */
+    /** Cast the Archaeologist over two artifact cards in the graveyard, stopping at its ETB target choice. */
     fun GameTestDriver.castOverTwoArtifacts(): Triple<EntityId, EntityId, EntityId> {
         val you = player1
         passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -55,15 +55,14 @@ class DaringArchaeologistScenarioTest : FunSpec({
                 paymentStrategy = PaymentStrategy.AutoPay,
             ),
         ).outcome shouldBe Outcome.Done
-        bothPass() // the creature resolves and its ETB trigger asks whether you want to do this
+        bothPass() // resolve the creature and announce the trigger target
         return Triple(you, golem, myr)
     }
 
-    test("consenting then asks for a target, and the target is mandatory") {
+    test("the target is mandatory before resolution consent") {
         val d = driver()
         val (you, golem, myr) = d.castOverTwoArtifacts()
 
-        d.submitYesNo(you, true)
 
         val decision = d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
         decision.legalTargets[0].shouldNotBeNull() shouldContainAll listOf(golem, myr)
@@ -72,17 +71,19 @@ class DaringArchaeologistScenarioTest : FunSpec({
         decision.targetRequirements.single().minTargets shouldBe 1
 
         d.submitTargetSelection(you, listOf(golem))
-        while (d.stackSize > 0) d.bothPass()
+        d.bothPass().error shouldBe null
+        d.submitYesNo(you, true).error shouldBe null
 
         d.getHand(you) shouldContain golem
     }
 
-    test("declining asks for no target at all and both cards stay in the graveyard") {
+    test("declining after target selection leaves both cards in the graveyard") {
         val d = driver()
         val (you, golem, myr) = d.castOverTwoArtifacts()
 
-        d.submitYesNo(you, false)
-        while (d.stackSize > 0) d.bothPass()
+        d.submitTargetSelection(you, listOf(golem)).error shouldBe null
+        d.bothPass().error shouldBe null
+        d.submitYesNo(you, false).error shouldBe null
 
         d.getGraveyard(you) shouldContainAll listOf(golem, myr)
     }

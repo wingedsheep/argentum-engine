@@ -50,16 +50,16 @@ class HydroelectricSpecimenScenarioTest : ScenarioTestBase() {
     }
 
     /**
-     * Use the optional trigger on [spell] — the "you may" is asked as the trigger is put on the
-     * stack, then its target is chosen (auto-picked when [spell] is the only legal one) — and
-     * resolve the trigger, leaving [spell] alone on the stack.
+     * Announce [spell] as the target, then answer the optional choice at resolution,
+     * leaving [spell] alone on the stack.
      */
-    private fun TestGame.useTriggerOn(spell: com.wingedsheep.sdk.model.EntityId) {
-        getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-        answerYesNo(true).error shouldBe null
-        if (getPendingDecision() is ChooseTargetsDecision) selectTargets(listOf(spell)).error shouldBe null
+    private fun TestGame.useTriggerOn(spell: com.wingedsheep.sdk.model.EntityId, accept: Boolean = true) {
+        getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
+        selectTargets(listOf(spell)).error shouldBe null
         var guard = 0
         while (state.stack.size > 1 && getPendingDecision() == null && guard++ < 10) passPriority()
+        getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+        answerYesNo(accept).error shouldBe null
         state.stack shouldBe listOf(spell)
     }
 
@@ -142,8 +142,7 @@ class HydroelectricSpecimenScenarioTest : ScenarioTestBase() {
                 val bolt = game.state.stack.last()
 
                 game.flashInSpecimen()
-                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(false).error shouldBe null
+                game.useTriggerOn(bolt, accept = false)
 
                 game.targetsOf(bolt) shouldBe listOf(ChosenTarget.Permanent(bears))
                 game.resolveStack()

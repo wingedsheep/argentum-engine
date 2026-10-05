@@ -10,21 +10,13 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * The "you may [then]." shape — the lowered form of the former `Effects.May` wrapper: a
  * [GatedEffect] whose gate is a [Gate.MayDecide] with no `otherwise` branch.
  *
- * Engine paths that used to special-case `is Effects.May` (the may-then-target trigger reorder in
- * `TriggerProcessor`, its `resumeMayTrigger` unwrap) key off this matcher instead, so they still
- * recognize a bare "may" after the type was lowered to the frame. The `otherwise == null` guard
- * keeps it the *exact* `Effects.May` equivalent — the old wrapper had no else branch, so a
- * `Gate.MayDecide` that carries an `otherwise` ("you may X, otherwise Y") deliberately does not
- * match and resolves through the generic [GatedEffectExecutor] yes/no path instead.
+ * Recognizes the inner effect in a saved MayTriggerContinuation. New targeted triggers keep
+ * the gate intact on the stack and use the generic gated executor at resolution.
  *
  * @property then Inner effect that runs iff the player says yes.
  * @property sourceRequiredZone Skip silently if the source has left this zone by resolution.
  * @property inlineOnTrigger Render the yes/no inline on the triggering permanent.
- * @property decisionMaker Who answers the yes/no; null means the ability's controller. Carried
- *   through because the may-then-target path in `TriggerProcessor` asks the question itself,
- *   *before* the effect executes, so it cannot rely on `GatedEffectExecutor` honouring it later.
- *   Farrel's Mantle needs it: the Aura may enchant an opponent's creature, and "its controller may"
- *   is that creature's controller, not the Aura's.
+ * @property decisionMaker Who answers the yes/no; null means the ability's controller.
  */
 data class MayDecideGate(
     val then: Effect,

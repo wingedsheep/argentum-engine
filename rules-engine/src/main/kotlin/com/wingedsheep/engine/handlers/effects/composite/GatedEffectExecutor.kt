@@ -133,6 +133,9 @@ class GatedEffectExecutor(
             // Source must still be in its required zone (e.g. a dies-trigger "may" whose source
             // has since left) — otherwise the may-action is impossible, so skip silently.
             if (gate.sourceRequiredZone != null && context.sourceId != null) {
+                if (gate.sourceRequiredZone == Zone.BATTLEFIELD && context.sourceReferenceLost) {
+                    return EffectResult.success(state)
+                }
                 val inRequiredZone = state.zones.any { (zoneKey, entities) ->
                     zoneKey.zoneType == gate.sourceRequiredZone && context.sourceId in entities
                 }

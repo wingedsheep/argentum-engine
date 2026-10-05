@@ -88,10 +88,9 @@ class GravediggerCombatDeathTest : FunSpec({
         // Gravedigger should be on battlefield
         driver.findPermanent(activePlayer, "Gravedigger") shouldNotBe null
 
-        // The ETB trigger fires and asks its "you may" first; accepting prompts for the target
+        // The ETB trigger announces its target before the optional effect resolves.
         driver.isPaused shouldBe true
         driver.pendingDecision.shouldNotBeNull()
-        driver.submitYesNo(activePlayer, true)
         driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
 
         val targetDecision = driver.pendingDecision as ChooseTargetsDecision
@@ -100,5 +99,10 @@ class GravediggerCombatDeathTest : FunSpec({
         // Our Grizzly Bears that died in combat should be a legal target
         val legalTargets = targetDecision.legalTargets[0] ?: emptyList()
         legalTargets shouldContain attackerBears
+        driver.submitTargetSelection(activePlayer, listOf(attackerBears)).error shouldBe null
+        driver.pendingDecision shouldBe null
+        driver.bothPass().error shouldBe null
+        driver.submitYesNo(activePlayer, true).error shouldBe null
+        driver.getGraveyardCardNames(activePlayer).contains("Grizzly Bears") shouldBe false
     }
 })

@@ -42,8 +42,6 @@ class InameLifeAspectScenarioTest : ScenarioTestBase() {
         castSpell(2, "Terror", iname).outcome shouldBe Outcome.Done
         resolveStack()
 
-        getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-        answerYesNo(true)
         val choose = getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
         withClue("Iname itself is a legal (if pointless) target; Grizzly Bears is not") {
             choose.legalTargets[0]!!.toSet() shouldBe (
@@ -53,6 +51,8 @@ class InameLifeAspectScenarioTest : ScenarioTestBase() {
                 ).toSet()
         }
         selectTargets(targets(this))
+        resolveStack()
+        answerYesNo(true).error shouldBe null
         resolveStack()
     }
 
@@ -95,9 +95,9 @@ class InameLifeAspectScenarioTest : ScenarioTestBase() {
                 game.castSpell(2, "Terror", iname).outcome shouldBe Outcome.Done
                 game.resolveStack()
 
-                game.answerYesNo(false)
-                if (game.hasPendingDecision()) game.skipTargets()
+                game.skipTargets().error shouldBe null
                 game.resolveStack()
+                game.answerYesNo(false).error shouldBe null
 
                 game.isInGraveyard(1, "Iname, Life Aspect") shouldBe true
                 game.isInGraveyard(1, "Gibbering Kami") shouldBe true

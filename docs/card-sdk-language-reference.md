@@ -3485,22 +3485,16 @@ vocabulary; this primitive does not provide Word of Command's full mana restrict
   `GatedEffect` or a `Gate` itself.
 - `Effects.May(effect, otherwise?, prompt?, decisionMaker?, sourceRequiredZone?, inlineOnTrigger?, hint?, dynamicHint?, feasibility?, descriptionOverride?)`
   — "You may [effect]." Lowers to `GatedEffect(Gate.MayDecide(...), then = effect, otherwise = otherwise, decisionMaker = decisionMaker)`.
-  `prompt` is the yes/no question when it should differ from the effect's text ("Buy your way out of
-  Worms of the Earth?"). The may-vs-target trigger reorder —
-  for a "may" ability that *also* targets, the yes/no is asked *before* target selection (Invigorating
-  Boon) — recognizes the lowered shape via the `Effect.asMayDecide()` matcher (a bare `Gate.MayDecide`
-  with no `otherwise`).
-  - **The prompt is the ability's authored `description` when it has one.** A generated effect
-    description is assembled bottom-up from the effect tree, so a composed effect reads as its own
-    plumbing rather than as the card — Safe Haven's `optional = true` upkeep trigger asked "You may
-    sacrifice this creature. If you do, look at cards exiled by this permanent. Put those cards onto
-    the battlefield" instead of its printed text. Lowering `optional = true` therefore passes the
-    `triggeredAbility { }` block's `description` into the gate as `Effects.May(descriptionOverride =
-    …)`, which is what both prompt sites render — `GatedEffectExecutor` when the trigger resolves,
-    and `TriggerProcessor` for a "may" that is asked *before* target selection. **Write the
-    `description` out on any optional trigger whose effect is a composition** — it is player-facing
-    text, not just catalog documentation. A trigger with no `description` still falls back to the
-    generated "You may …".
+  `prompt` is the yes/no question when it should differ from the effect's text.
+  For triggered abilities, targets are chosen when the ability goes on the stack, and the "may"
+  gate stays on that stack object until resolution. `sourceRequiredZone = Zone.BATTLEFIELD` also
+  requires the original battlefield visit: leaving and returning cannot enable the old source
+  option. Each instance offers its own consent choice
+  after opponents can respond; all-invalid targets fizzle without a consent prompt.
+  - **The prompt is the ability's authored `description` when it has one.** Lowering
+    `optional = true` passes `triggeredAbility { }`'s `description` into `Effects.May`.
+    Write the description for composed optional effects so the player sees the printed clause
+    rather than generated pipeline instructions.
   - **Dynamic hints — `dynamicHint = DynamicHint(template, amount)`.** A printed "you may … *that
     much* damage / *that many* cards" renders the same sentence on every instance. When one event
     puts **several instances of the same ability on the stack at once**, the prompts become
@@ -6596,11 +6590,9 @@ cleared at end of turn by `CleanupPhaseManager`. Once the action is taken, later
 turn are dropped silently at trigger-processing time — CR 603.2h says they never trigger, so no event
 is emitted. Cards never author `Gate.OnceEachTurn` directly.
 
-Two consequences of that outer gate are worth knowing. First, a *targeted* capped trigger no longer
-matches `asMayDecide()` at the top of its effect, so it routes through the plain targeted path:
-targets are chosen when the ability is put on the stack (CR 603.3d) and the "you may" is asked at
-resolution, one instance at a time. Second, capped abilities are excluded from the batched
-may-question — one shared yes/no would take away the choice of *which* instance to use.
+The read-only outer gate suppresses consent when another instance already spent the turn's action.
+Like other targeted optional triggers, these abilities announce targets before entering the stack
+and ask consent only as each instance resolves.
 
 The lowering looks for the consent gate at the **top** of `effect` or at the **tail** of a
 `CompositeEffect`. The tail case is "do X, then you may Y", where the rider attaches to the payoff:
@@ -6626,12 +6618,13 @@ owns a consent gate is rejected at build time rather than prompting twice.
 
 What that gets you, uniformly, for targeted and untargeted triggers alike:
 
-- **The yes/no is its own decision.** For a **no-target** trigger the unified gated executor asks it
-  at resolution and runs the gate's `otherwise` on "no" (or nothing when there is none, e.g. Song of
-  Stupefaction's "you may mill two cards"). For a **targeted** trigger `TriggerProcessor` asks it as
-  the ability goes on the stack and only then selects targets, so declining never costs you a target
-  choice first — and the trigger becomes eligible for batching and for a remembered auto-answer, both
-  of which key on the gate.
+- **The yes/no is its own resolution decision.** Targeted and untargeted triggers retain the
+  gate on their stack object. Declining runs `otherwise`, or does nothing when none is authored.
+  Targeted optional triggers are not combined into a put-on-stack `BatchYesNoDecision`: every
+  instance must announce its targets and give opponents a response window even when its eventual
+  answer will be "no". Remembered auto-answers run through the gated executor at resolution;
+  they never skip target selection or priority. Multiple instances resolve independently so the
+  player can inspect earlier outcomes before answering later instances.
 - **Targets follow CR 603.3d.** A slot's minimum is the *requirement's*: "target creature" stays
   mandatory and the ability is removed from the stack when nothing is legal. "Up to one target
   creature" is an optional **requirement** (`target(TargetFilter.Creature, optional = true)`), which is a different
@@ -16142,22 +16135,19 @@ with no card around it must name its id: a file-level `private val` shared betwe
 (`persist`, `saga_chapter_2`, `delayed_<id>`), like the keyword ones (`flanking`, `suspend_countdown`). An id only has to
 be unique among the abilities one object holds at once.
 
-### Batched may-question (engine-internal, not authored)
+### Optional-trigger consent and grouping (engine-internal, not authored)
 
-When a run of structurally identical **optional, targeted** triggers ("Whenever …, you may … *target* …") fires off one
-event, the engine asks the controller a single `BatchYesNoDecision` instead of one `YesNoDecision` per trigger — Magic
-Online's "auto-stack identical triggers" affordance (`backlog/stack-collapse-and-batch-decisions.md` §B). Cards author
-nothing: `TriggerProcessor` groups contiguous `liveTriggers` sharing one (controller, `AbilityIdentity`) key (and that would
-actually raise the may-question rather than fizzle for lack of targets) into one decision carrying a `count`. The reply,
-`BatchYesNoResponse(choice, applyToAll)`, is fanned back out by `BatchMayTriggerContinuation`:
+Optional targeted instances announce targets individually and enter the stack with their consent
+unchanged. Each instance resolves separately. The earlier put-on-stack may-question batching is
+removed: declining a batch cannot omit mandatory target announcements or remove response windows.
+A stack's visual grouping never combines its rules objects or its resolution consent.
 
-- `applyToAll = true` resolves the whole run (`no` drops it; `yes` unwraps each may-gate and routes every instance through
-  ordinary per-trigger target selection — only the yes/no is shared, never the target).
-- `applyToAll = false` peels one instance off (answered with `choice`) and re-raises the batch for the remainder.
-
-Only same-controller, same-identity, targeted-may triggers batch; targetless "may" triggers still decide at resolution, and a
-lone trigger uses the plain per-trigger yes/no. The guard guarantees the engine never makes a meaningful target/ordering
-choice on the player's behalf.
+The existing `BatchYesNoDecision` transport/UI shape is not emitted for targeted trigger consent.
+Remembered per-ability auto-answers remain available through the ordinary gated executor and are
+applied only after that instance's target legality has been checked. Without a remembered answer,
+each instance raises a `YesNoDecision` at resolution, including multiple copies of the same ability
+on one permanent. Already-suspended single may-question frames in supported saved-game traces
+remain resumable; new triggers never create those frames.
 
 ## 21. Structural lint (`CardLinter`)
 

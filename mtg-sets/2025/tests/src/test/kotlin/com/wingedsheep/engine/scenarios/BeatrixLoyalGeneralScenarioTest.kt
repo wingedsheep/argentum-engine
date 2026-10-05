@@ -3,7 +3,6 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.TargetsResponse
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -21,11 +20,11 @@ import io.kotest.matchers.shouldNotBe
  * to target creature you control.
  *
  * The ability is a pure composition: a begin-combat trigger targeting a creature you control,
- * wrapped in a "you may" (a yes/no decided before targeting). On "yes" its resolution gathers the
+ * wrapped in a "you may" (a yes/no decided at resolution). On "yes" its resolution gathers the
  * Equipment you control, lets you choose any number (0..all) of them, and attaches each chosen
  * Equipment to the target creature via a ForEach over the selection. These tests prove the
  * multi-attach (two Equipment onto one creature), the zero-choice no-op (the "any number = 0"
- * path), and declining the optional trigger up front.
+ * path), and declining the optional effect at resolution.
  */
 class BeatrixLoyalGeneralScenarioTest : ScenarioTestBase() {
 
@@ -49,18 +48,13 @@ class BeatrixLoyalGeneralScenarioTest : ScenarioTestBase() {
 
             game.passUntilPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
 
-            // The begin-combat "you may" asks yes/no first.
-            val mayDecision = game.getPendingDecision()
-            withClue("begin-combat trigger asks the 'you may' yes/no") {
-                (mayDecision is YesNoDecision) shouldBe true
-            }
-            game.answerYesNo(true)
-
-            // Then choose the target creature you control (slot 0).
+            // Announce the creature target before resolution consent.
+            // Choose the target creature you control (slot 0).
             val targetDecision = game.getPendingDecision()
             targetDecision shouldNotBe null
             game.submitDecision(TargetsResponse(targetDecision!!.id, mapOf(0 to listOf(bears))))
             game.resolveStack()
+            game.answerYesNo(true).error shouldBe null
 
             // The ability resolves and pauses to choose any number of Equipment you control.
             val selectDecision = game.getPendingDecision()
@@ -92,12 +86,10 @@ class BeatrixLoyalGeneralScenarioTest : ScenarioTestBase() {
 
             game.passUntilPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
 
-            (game.getPendingDecision() is YesNoDecision) shouldBe true
-            game.answerYesNo(true)
-
             val targetDecision = game.getPendingDecision()!!
             game.submitDecision(TargetsResponse(targetDecision.id, mapOf(0 to listOf(bears))))
             game.resolveStack()
+            game.answerYesNo(true).error shouldBe null
 
             val selectDecision = game.getPendingDecision()
             (selectDecision is SelectCardsDecision) shouldBe true
@@ -111,7 +103,7 @@ class BeatrixLoyalGeneralScenarioTest : ScenarioTestBase() {
             }
         }
 
-        test("declining the 'you may' up front does nothing") {
+        test("declining the 'you may' at resolution does nothing") {
             val game = scenario()
                 .withPlayers()
                 .withCardOnBattlefield(1, "Beatrix, Loyal General", summoningSickness = false)
@@ -125,10 +117,12 @@ class BeatrixLoyalGeneralScenarioTest : ScenarioTestBase() {
 
             game.passUntilPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
 
-            // Decline the "you may" — no targeting, no Equipment selection, no attach.
-            (game.getPendingDecision() is YesNoDecision) shouldBe true
-            game.answerYesNo(false)
+            // Announce the creature, then decline: no Equipment selection or attachment.
+            val targetDecision = game.getPendingDecision()!!
+            game.submitDecision(TargetsResponse(targetDecision.id,
+                mapOf(0 to listOf(bears)))).error shouldBe null
             game.resolveStack()
+            game.answerYesNo(false).error shouldBe null
 
             withClue("declined — no Equipment-selection decision, Grizzly Bears stays 2/2") {
                 (game.getPendingDecision() is SelectCardsDecision) shouldBe false

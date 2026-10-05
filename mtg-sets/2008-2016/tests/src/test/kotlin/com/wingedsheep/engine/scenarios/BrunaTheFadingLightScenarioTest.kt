@@ -36,9 +36,7 @@ class BrunaTheFadingLightScenarioTest : ScenarioTestBase() {
                 }
 
                 game.resolveStack()
-                // "you may return …" — the consent gate is answered before targeting.
-                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(true)
+                // Announce the reanimation target before consent.
                 val targetDecision = game.getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
                 val human = game.findCardsInGraveyard(1, "Glory Seeker").single()
                 val bear = game.findCardsInGraveyard(1, "Grizzly Bears").single()
@@ -50,6 +48,8 @@ class BrunaTheFadingLightScenarioTest : ScenarioTestBase() {
                 game.submitDecision(
                     TargetsResponse(targetDecision.id, mapOf(0 to listOf(human))),
                 ).error shouldBe null
+                game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
                 game.resolveStack()
 
                 withClue("the cast trigger reanimates the chosen Human before Bruna resolves") {

@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.continuations
 
+import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
+
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DependentTargetSelection
 import com.wingedsheep.engine.state.GameState
@@ -9,7 +11,6 @@ import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComp
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
-import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.Gate
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -21,7 +22,6 @@ import com.wingedsheep.sdk.scripting.targets.withCount
  * - TriggeredAbilityContinuation (target selection for triggered abilities)
  * - ResolveSpellContinuation (no-op marker)
  * - MayAbilityContinuation (yes/no for may effects)
- * - MayTriggerContinuation (yes/no for may triggers with targets)
  */
 class EffectAndTriggerContinuationResumer(
     private val services: com.wingedsheep.engine.core.EngineServices,
@@ -40,8 +40,7 @@ class EffectAndTriggerContinuationResumer(
         resumer(MayRevealCardFromHandContinuation::class, ::resumeMayRevealCardFromHand),
         resumer(BeholdContinuation::class, ::resumeBehold),
         resumer(MayTriggerContinuation::class, ::resumeMayTrigger),
-        resumer(TriggerOpponentChooserContinuation::class, ::resumeTriggerOpponentChooser),
-        resumer(BatchMayTriggerContinuation::class, ::resumeBatchMayTrigger)
+        resumer(TriggerOpponentChooserContinuation::class, ::resumeTriggerOpponentChooser)
     )
 
 
@@ -411,79 +410,6 @@ class EffectAndTriggerContinuationResumer(
         }
 
         return checkForMore(result.newState, result.events.toList())
-    }
-
-    /**
-     * Resume a [BatchMayTriggerContinuation] after the controller answers the batched may-question.
-     * Fans the single [BatchYesNoResponse] back out over the run (see the continuation's docs):
-     *
-     *  - apply-to-all + no  → drop the entire run.
-     *  - apply-to-all + yes → unwrap the may-gate on every trigger and process them as ordinary
-     *    targeted triggers (each picks its own target via the existing per-trigger machinery).
-     *  - peel-off           → resolve the first trigger per [BatchYesNoResponse.choice] and re-run
-     *    the rest (which re-batch if still ≥ 2), enabling "this one, then ask me about the rest".
-     *
-     * Triggers after the run already wait in a [PendingTriggersContinuation] beneath this frame, so
-     * any path that ends in `checkForMore` resumes them in order.
-     */
-    private fun resumeBatchMayTrigger(
-        state: GameState,
-        continuation: BatchMayTriggerContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is BatchYesNoResponse) {
-            return ExecutionResult.error(state, "Expected batch yes/no response for may trigger")
-        }
-
-        val run = continuation.triggers
-
-        if (response.applyToAll) {
-            if (!response.choice) {
-                // No to all — the whole run declines; trailing triggers handled by the frame beneath.
-                return checkForMore(state, emptyList())
-            }
-            // Yes to all — unwrap each may and let the standard pipeline target them one by one.
-            val unwrapped = run.mapNotNull(::unwrapMayTrigger)
-            val result = services.triggerProcessor.processTriggers(state, unwrapped)
-            if (result.outcome is Outcome.Paused || result.outcome !is Outcome.Done) return result
-            return checkForMore(result.newState, result.events.toList())
-        }
-
-        // Peel one instance off; queue the rest so they re-batch/ask after it resolves.
-        val first = run.first()
-        val rest = run.drop(1)
-        var workingState = state
-        if (rest.isNotEmpty()) {
-            workingState = workingState.pushContinuation(
-                PendingTriggersContinuation(
-                    remainingTriggers = rest
-                )
-            )
-        }
-
-        if (!response.choice) {
-            // No to this one — drop it; the rest (and trailing triggers) resume beneath.
-            return checkForMore(workingState, emptyList())
-        }
-
-        val unwrapped = unwrapMayTrigger(first)
-            ?: return ExecutionResult.error(state, "Batch may continuation resumed on a non-may trigger")
-        val result = services.triggerProcessor.processTriggers(workingState, listOf(unwrapped))
-        if (result.outcome is Outcome.Paused || result.outcome !is Outcome.Done) return result
-        return checkForMore(result.newState, result.events.toList())
-    }
-
-    /**
-     * Strip the bare "may" gate off a trigger, returning a copy whose effect is the inner payoff so
-     * the standard targeted-trigger path handles it. Mirrors [resumeMayTrigger]. Null if the trigger
-     * is not a lowered may (should not happen for a batched trigger).
-     */
-    private fun unwrapMayTrigger(
-        trigger: com.wingedsheep.engine.event.PendingTrigger
-    ): com.wingedsheep.engine.event.PendingTrigger? {
-        val inner = trigger.ability.effect.asMayDecide()?.then ?: return null
-        return trigger.copy(ability = trigger.ability.copy(effect = inner))
     }
 
     private fun resumeMayAbility(

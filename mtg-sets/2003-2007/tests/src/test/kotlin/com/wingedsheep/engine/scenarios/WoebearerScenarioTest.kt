@@ -60,8 +60,7 @@ class WoebearerScenarioTest : ScenarioTestBase() {
                     game.getLifeTotal(2) shouldBe 18
                 }
 
-                // The "you may" is answered before targeting is reached.
-                game.answerYesNo(true)
+                // Announce the target before resolution consent.
                 val decision = game.getPendingDecision()
                 withClue("The trigger should ask for a target; got $decision") {
                     decision.shouldBeInstanceOf<ChooseTargetsDecision>()
@@ -71,6 +70,8 @@ class WoebearerScenarioTest : ScenarioTestBase() {
                     (decision as ChooseTargetsDecision).legalTargets[0].orEmpty() shouldContain bears
                 }
                 game.selectTargets(listOf(bears))
+                game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
                 game.resolveStack()
 
                 withClue("Grizzly Bears should be back in Alice's hand") {
@@ -92,12 +93,13 @@ class WoebearerScenarioTest : ScenarioTestBase() {
 
                 // A "you may" is a consent gate on the effect, so the decline is its own yes/no and
                 // comes before any target is chosen — no picking a card you mean to leave behind.
+                game.selectTargets(listOf(game.findCardsInGraveyard(1, "Grizzly Bears").single())).error shouldBe null
+                game.resolveStack()
                 val decision = game.getPendingDecision()
                 withClue("The trigger should ask the may; got $decision") {
                     decision.shouldBeInstanceOf<YesNoDecision>()
                 }
-                game.answerYesNo(false)
-                game.resolveStack()
+                game.answerYesNo(false).error shouldBe null
 
                 withClue("Grizzly Bears should still be in the graveyard") {
                     game.isInGraveyard(1, "Grizzly Bears") shouldBe true
@@ -117,8 +119,7 @@ class WoebearerScenarioTest : ScenarioTestBase() {
 
                 game.connectWithWoebearer()
 
-                // The "you may" is answered before targeting is reached.
-                game.answerYesNo(true)
+                // Announce the target before resolution consent.
                 val decision = game.getPendingDecision()
                 withClue("The trigger should ask for a target; got $decision") {
                     decision.shouldBeInstanceOf<ChooseTargetsDecision>()

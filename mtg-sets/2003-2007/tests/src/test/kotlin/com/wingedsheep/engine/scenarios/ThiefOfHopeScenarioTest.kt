@@ -82,8 +82,6 @@ class ThiefOfHopeScenarioTest : ScenarioTestBase() {
 
                 game.boltTheThief()
 
-                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(true)
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ChooseTargetsDecision>()
                 val soilshaper = game.findCardsInGraveyard(1, "Soilshaper").single()
@@ -91,6 +89,8 @@ class ThiefOfHopeScenarioTest : ScenarioTestBase() {
                     decision.legalTargets[0].orEmpty() shouldContainExactly listOf(soilshaper)
                 }
                 game.selectTargets(listOf(soilshaper))
+                game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
                 game.resolveStack()
 
                 game.isInHand(1, "Soilshaper") shouldBe true
@@ -104,9 +104,10 @@ class ThiefOfHopeScenarioTest : ScenarioTestBase() {
 
                 game.boltTheThief()
 
-                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(false)
+                game.selectTargets(listOf(game.findCardsInGraveyard(1, "Soilshaper").single())).error shouldBe null
                 game.resolveStack()
+                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+                game.answerYesNo(false).error shouldBe null
 
                 game.isInGraveyard(1, "Soilshaper") shouldBe true
                 game.isInHand(1, "Soilshaper") shouldBe false

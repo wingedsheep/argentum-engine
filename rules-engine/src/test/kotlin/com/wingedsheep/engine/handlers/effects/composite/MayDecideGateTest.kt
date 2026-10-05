@@ -14,11 +14,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
- * Pins the recognition boundary of [asMayDecide] — the matcher the trigger machinery uses to
- * recognize the lowered `Effects.May` (a [GatedEffect] over a bare [Gate.MayDecide]) after the
- * wrapper became a facade. The may-then-target reorder in `TriggerProcessor` and its
- * `resumeMayTrigger` unwrap key off it, so it must match exactly the no-`otherwise` MayDecide
- * shape and nothing else.
+ * Pins the bare may shape used to resume an already suspended consent question in a saved game.
+ * New targeted instances retain their gate through target announcement until resolution.
  */
 class MayDecideGateTest : FunSpec({
 

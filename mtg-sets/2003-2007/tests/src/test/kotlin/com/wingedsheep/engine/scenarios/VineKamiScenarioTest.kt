@@ -51,8 +51,6 @@ class VineKamiScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
                 game.isInGraveyard(1, "Vine Kami") shouldBe true
 
-                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(true)
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ChooseTargetsDecision>()
                 val lunacy = game.findCardsInGraveyard(1, "Kami of Lunacy").single()
@@ -61,6 +59,8 @@ class VineKamiScenarioTest : ScenarioTestBase() {
                     decision.legalTargets[0].orEmpty() shouldContainExactlyInAnyOrder listOf(lunacy, hunt)
                 }
                 game.selectTargets(listOf(lunacy))
+                game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
                 game.resolveStack()
 
                 game.isInHand(1, "Kami of Lunacy") shouldBe true

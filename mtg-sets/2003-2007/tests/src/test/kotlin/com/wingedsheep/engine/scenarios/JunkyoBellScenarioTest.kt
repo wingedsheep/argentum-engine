@@ -48,8 +48,7 @@ class JunkyoBellScenarioTest : ScenarioTestBase() {
 
                 game.advanceToOurUpkeep()
 
-                // The optional trigger asks "you may" as it goes on the stack, then for its target.
-                game.answerYesNo(true)
+                // Announce the optional trigger target before it goes on the stack.
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ChooseTargetsDecision>()
                 val legal = decision.legalTargets[0] ?: emptyList()
@@ -59,6 +58,8 @@ class JunkyoBellScenarioTest : ScenarioTestBase() {
                     legal shouldNotContain giant
                 }
                 game.selectTargets(listOf(bear))
+                game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
                 game.resolveStack()
 
                 withClue("two creatures you control: the 2/2 becomes a 4/4") {
@@ -91,8 +92,9 @@ class JunkyoBellScenarioTest : ScenarioTestBase() {
 
                 game.advanceToOurUpkeep()
 
-                game.answerYesNo(false)
+                game.selectTargets(listOf(bear)).error shouldBe null
                 game.resolveStack()
+                game.answerYesNo(false).error shouldBe null
 
                 game.state.projectedState.getPower(bear) shouldBe 2
 

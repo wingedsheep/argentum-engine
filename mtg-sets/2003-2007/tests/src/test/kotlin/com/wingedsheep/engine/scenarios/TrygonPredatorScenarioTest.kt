@@ -60,14 +60,13 @@ class TrygonPredatorScenarioTest : FunSpec({
 
         driver.currentStep shouldBe Step.COMBAT_DAMAGE
 
-        // "You may destroy?" — yes.
-        val yesNo = driver.pendingDecision as YesNoDecision
-        driver.submitYesNo(yesNo.playerId, true)
+        // Announce the destruction target.
 
         // Choose the target artifact.
         val choose = driver.pendingDecision as ChooseTargetsDecision
         driver.submitTargetSelection(attacker, listOf(artifact))
         driver.bothPass()
+        driver.submitYesNo(attacker, true).error shouldBe null
 
         driver.findPermanent(defender, "Test Artifact") shouldBe null
         driver.getGraveyardCardNames(defender) shouldContain "Test Artifact"
@@ -91,11 +90,10 @@ class TrygonPredatorScenarioTest : FunSpec({
         driver.declareNoBlockers(defender)
         driver.bothPass()
 
-        val yesNo = driver.pendingDecision as YesNoDecision
-        driver.submitYesNo(yesNo.playerId, true)
         val choose = driver.pendingDecision as ChooseTargetsDecision
         driver.submitTargetSelection(attacker, listOf(enchantment))
         driver.bothPass()
+        driver.submitYesNo(attacker, true).error shouldBe null
 
         driver.findPermanent(defender, "Test Enchantment") shouldBe null
         driver.assertLifeTotal(defender, 18)
@@ -121,8 +119,6 @@ class TrygonPredatorScenarioTest : FunSpec({
         driver.declareNoBlockers(defender)
         driver.bothPass()
 
-        val yesNo = driver.pendingDecision as YesNoDecision
-        driver.submitYesNo(yesNo.playerId, true)
 
         val choose = driver.pendingDecision as ChooseTargetsDecision
         // The scoped filter must offer exactly the defender's artifact, never the attacker's.
@@ -138,7 +134,7 @@ class TrygonPredatorScenarioTest : FunSpec({
 
         val predator = driver.putCreatureOnBattlefield(attacker, "Trygon Predator")
         driver.removeSummoningSickness(predator)
-        driver.putPermanentOnBattlefield(defender, "Test Artifact")
+        val artifact = driver.putPermanentOnBattlefield(defender, "Test Artifact")
 
         driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
         driver.declareAttackers(attacker, listOf(predator), defender)
@@ -146,6 +142,8 @@ class TrygonPredatorScenarioTest : FunSpec({
         driver.declareNoBlockers(defender)
         driver.bothPass()
 
+        driver.submitTargetSelection(attacker, listOf(artifact)).error shouldBe null
+        driver.bothPass().error shouldBe null
         val yesNo = driver.pendingDecision as YesNoDecision
         driver.submitYesNo(yesNo.playerId, false)
 
