@@ -1786,6 +1786,54 @@
     ]
 }
 
+// Unquestioned Authority
+{
+    "name": "Unquestioned Authority",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, draw a card.\nEnchanted creature has protection from creatures.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Unquestioned Authority:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantProtectionFromCardType",
+                "cardType": "CREATURE"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Horley-Orlandelli",
+        "flavorText": "\"Only the Ancestor should be revered.\"\n—Mystic heretic",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a015205e-5895-4038-9c2f-ed4766c498ff.jpg?1783945132"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Venomous Vines
 {
     "name": "Venomous Vines",
