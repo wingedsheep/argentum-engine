@@ -35,7 +35,7 @@ class WatertrapWeaverScenarioTest : FunSpec({
 
         val weaver = d.putCardInHand(p1, "Watertrap Weaver")
         d.giveMana(p1, Color.BLUE, 3)
-        d.castSpell(p1, weaver)
+        d.castSpell(p1, weaver).error shouldBe null
         d.bothPass() // resolve the creature; its ETB trigger asks for a target
 
         d.isTapped(weaver) shouldBe false

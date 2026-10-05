@@ -99,6 +99,7 @@ class TolarianKrakenScenarioTest : FunSpec({
         d.passPriorityUntil(Step.DRAW) // opponent's turn draw step
         d.activePlayer shouldBe opp
         d.stackSize shouldBe 0
+        d.pendingDecision shouldBe null
         d.isTapped(bears) shouldBe false
     }
 })

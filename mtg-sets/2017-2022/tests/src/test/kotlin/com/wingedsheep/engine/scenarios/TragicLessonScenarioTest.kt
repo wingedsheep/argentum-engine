@@ -92,10 +92,11 @@ class TragicLessonScenarioTest : FunSpec({
         val theirs = d.putLandOnBattlefield(d.getOpponent(me), "Island")
         d.castLesson()
 
-        when (val decision = d.pendingDecision) {
-            is SelectCardsDecision -> decision.options.contains(theirs) shouldBe false
-            else -> {}
+        val decision = d.pendingDecision as? SelectCardsDecision
+            ?: error("Expected the discard selection")
+        withClue("with no land of your own, the prompt is the discard over cards in hand") {
+            decision.options.contains(theirs) shouldBe false
+            decision.options.all { it in d.state.getHand(me) } shouldBe true
         }
-        d.state.getBattlefield().contains(theirs) shouldBe true
     }
 })

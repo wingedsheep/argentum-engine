@@ -47,6 +47,34 @@ class WizardMentorScenarioTest : ScenarioTestBase() {
                 game.isInHand(1, "Grizzly Bears") shouldBe true
             }
 
+            test("can target itself, returning just itself") {
+                val game = scenario()
+                    .withPlayers("Mentor", "Opponent")
+                    .withCardOnBattlefield(1, "Wizard Mentor", summoningSickness = false)
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(2, "Island")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val mentor = game.findPermanent("Wizard Mentor")!!
+                val abilityId = cardRegistry.getCard("Wizard Mentor")!!.script.activatedAbilities[0].id
+
+                game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = mentor,
+                        abilityId = abilityId,
+                        targets = listOf(entityIdToChosenTarget(game.state, mentor))
+                    )
+                ).error shouldBe null
+                game.resolveStack()
+
+                game.findPermanent("Wizard Mentor") shouldBe null
+                game.isInHand(1, "Wizard Mentor") shouldBe true
+                game.state.getHand(game.player1Id).size shouldBe 1
+            }
+
             test("cannot target a creature an opponent controls") {
                 val game = scenario()
                     .withPlayers("Mentor", "Opponent")

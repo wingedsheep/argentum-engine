@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -65,6 +66,10 @@ class TezzeretArtificeMasterScenarioTest : ScenarioTestBase() {
             projected.hasKeyword(thopter, Keyword.FLYING) shouldBe true
             projected.getPower(thopter) shouldBe 1
             projected.getToughness(thopter) shouldBe 1
+            withClue("the Thopter is a colorless artifact, so it counts for the 0 ability") {
+                projected.hasType(thopter, "ARTIFACT") shouldBe true
+                projected.getColors(thopter) shouldBe emptySet()
+            }
         }
 
         test("0 draws one card with fewer than three artifacts") {
@@ -145,9 +150,10 @@ class TezzeretArtificeMasterScenarioTest : ScenarioTestBase() {
             withClue("the emblem's end-step trigger asks for a permanent card") {
                 game.hasPendingDecision() shouldBe true
             }
-            val options = game.state.pendingDecision.toString()
-            withClue("an instant is not a permanent card") { options.contains(shock.toString()) shouldBe false }
-            game.selectCards(listOf(bears))
+            val decision = game.state.pendingDecision as SelectCardsDecision
+            withClue("an instant is not a permanent card") { decision.options.contains(shock) shouldBe false }
+            decision.options.contains(bears) shouldBe true
+            game.selectCards(listOf(bears)).error shouldBe null
             game.resolveStack()
 
             withClue("Grizzly Bears was put onto the battlefield") {
