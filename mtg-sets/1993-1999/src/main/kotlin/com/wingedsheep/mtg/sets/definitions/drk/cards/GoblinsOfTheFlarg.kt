@@ -34,7 +34,8 @@ val GoblinsOfTheFlarg = card("Goblins of the Flarg") {
     keywords(Keyword.MOUNTAINWALK)
 
     stateTriggeredAbility {
-        condition = Conditions.YouControl(GameObjectFilter.Creature.withSubtype("Dwarf"))
+        // A bare subtype names a permanent (CR 109.2) — any Dwarf you control, creature or not.
+        condition = Conditions.YouControl(GameObjectFilter.Permanent.withSubtype("Dwarf"))
         effect = Effects.SacrificeTarget(EffectTarget.Self)
         description = "When you control a Dwarf, sacrifice this creature"
     }
