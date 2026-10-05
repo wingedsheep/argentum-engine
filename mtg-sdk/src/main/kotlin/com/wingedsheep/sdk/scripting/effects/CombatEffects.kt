@@ -474,6 +474,33 @@ data class CantBlockGroupEffect(
 }
 
 /**
+ * All creatures matching a filter can't be blocked this turn.
+ * Used for Jace, Arcane Strategist's −7: "Creatures you control can't be blocked this turn."
+ *
+ * The group sibling of granting [com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_BLOCKED] to one
+ * creature. "Can't be blocked" changes no characteristic, so per Rule 611.2c the affected set is
+ * not locked in at resolution: a creature that matches later in the turn (cast with haste, a
+ * crewed Vehicle, one you gain control of) can't be blocked either. "You" in [filter] stays the
+ * controller of the resolving spell or ability, even after its source leaves the battlefield.
+ *
+ * @property filter Which creatures can't be blocked (e.g., GroupFilter.AllCreaturesYouControl)
+ * @property duration How long the evasion lasts
+ */
+@SerialName("CantBeBlockedGroup")
+@Serializable
+data class CantBeBlockedGroupEffect(
+    val filter: GroupFilter,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = "${filter.description} can't be blocked this turn"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Grant a creature an evasion restriction until end of turn: it "can't be blocked except by
  * creatures matching [blockerFilter]." The one-shot, floating-effect counterpart to the static
  * [com.wingedsheep.sdk.scripting.CantBeBlockedExceptBy] ability (and the filter-based sibling of

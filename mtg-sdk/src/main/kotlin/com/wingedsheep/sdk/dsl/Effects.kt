@@ -73,6 +73,7 @@ import com.wingedsheep.sdk.scripting.effects.MarkMustBlockThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveSuspectedEffect
 import com.wingedsheep.sdk.scripting.effects.SuspectEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
+import com.wingedsheep.sdk.scripting.effects.CantBeBlockedGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantActivateLoyaltyAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.CantSearchLibrariesEffect
@@ -5430,6 +5431,13 @@ object Effects {
      */
     fun CantBlockGroup(filter: GroupFilter, duration: Duration = Duration.EndOfTurn): Effect =
         CantBlockGroupEffect(filter, duration)
+
+    /**
+     * "[Filter] can't be blocked this turn." — a floating group restriction that also covers
+     * creatures matching [filter] later in the turn (Rule 611.2c). Jace, Arcane Strategist's −7.
+     */
+    fun CantBeBlockedGroup(filter: GroupFilter, duration: Duration = Duration.EndOfTurn): Effect =
+        CantBeBlockedGroupEffect(filter, duration)
 
     /**
      * Target creature can't attack this turn.

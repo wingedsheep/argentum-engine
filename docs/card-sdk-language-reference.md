@@ -2694,6 +2694,14 @@ vocabulary; this primitive does not provide Word of Command's full mana restrict
   declaration, because a per-blocker projected flag can't express a pair.
 - `CantAttackGroupEffect(filter, condition?)` — group-scoped can't-attack.
 - `CantBlockGroupEffect(filter, condition?)` — group-scoped can't-block.
+- `Effects.CantBeBlockedGroup(filter, duration = EndOfTurn)` (`CantBeBlockedGroupEffect`) — "[filter]
+  can't be blocked this turn" (Jace, Arcane Strategist's −7: `CantBeBlockedGroup(GroupFilter.AllCreaturesYouControl)`).
+  A floating `CANT_BE_BLOCKED` grant whose group is re-resolved on every projection, like the two
+  above: "can't be blocked" changes no characteristic, so CR 611.2c lets it cover creatures that
+  come under your control after it resolves (a haste creature cast later, a stolen one). Don't
+  spell this sentence `ForEachInGroup` + `GrantKeyword(CANT_BE_BLOCKED)` — that snapshots the
+  group. For all three group effects, "you" in the filter is the controller of the resolved
+  spell or ability, fixed at resolution, so the effect outlives its source leaving the battlefield.
 - `GrantCantBeBlockedExceptByCollection(target, collection, alternativeFilter, duration)` — restrict
   the named attacker to blockers that were in a pipeline collection at resolution, **or** match
   `alternativeFilter` when blocking. Cards use the `Effects` facade with a `CollectionSlot`.

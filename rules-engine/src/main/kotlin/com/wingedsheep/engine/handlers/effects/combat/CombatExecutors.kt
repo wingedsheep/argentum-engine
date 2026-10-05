@@ -25,6 +25,7 @@ class CombatExecutors(
         TauntExecutor(),
         CantAttackGroupExecutor(),
         CantBlockGroupExecutor(),
+        CantBeBlockedGroupExecutor(),
         CantAttackExecutor(),
         CantBlockExecutor(),
         RemoveFromCombatExecutor(),
