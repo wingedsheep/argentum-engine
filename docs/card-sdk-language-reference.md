@@ -1766,7 +1766,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 
 ### Library reveal & free cast
 
-- `PlayFromCollectionWithoutPayingCostEffect(from)` (facade `Effects.PlayFromCollectionWithoutPayingCost(from)`) — play the first card in the pipeline collection immediately during the resolving effect. Nonlands use the free-cast machinery; lands use the normal land-play path, consume a land play for the turn, and remain unplayed when no land play is available. Use this for Oracle text that says **play**, such as **Fight Rigging**; it grants no permission that survives resolution.
+- `PlayFromCollectionWithoutPayingCostEffect(from)` (facade `Effects.PlayFromCollectionWithoutPayingCost(from)`) — play the first card in the pipeline collection immediately during the resolving effect. Nonlands use the free-cast machinery; lands use the normal land-play path, consume a land play for the turn, and remain unplayed when no land play is available. Use this for Oracle text that says **play**, such as **Fight Rigging** (from exile) and **Djinn of Wishes** (the revealed top card of the library); it grants no permission that survives resolution. A land that can't be played (not your turn, no land play left — CR 305.2b/305.3) stays where it was, so "If you don't, exile it" is `filter(revealed, GameObjectFilter.Any.currentlyIn(Zone.LIBRARY))` then `exile(...)`.
 
 - `Effects.Cascade` — CR 702.85a (`CascadeEffect`). Exile from the top of the controller's library
   until a nonland card with mana value **strictly less than** the triggering spell's is exiled,

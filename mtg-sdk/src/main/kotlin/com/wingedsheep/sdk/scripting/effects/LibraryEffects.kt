@@ -453,6 +453,11 @@ data class CastFromCollectionWithoutPayingCostEffect(
  * Play the first card in [from] during this effect's resolution without paying its mana cost.
  * Spells use the ordinary synthesized-cast pipeline; lands are played as a special action and
  * still consume one of the controller's land plays for the turn.
+ *
+ * The card may sit in exile (Fight Rigging's hideaway card) or in the library (Djinn of Wishes'
+ * revealed top card). A land is played only on its controller's turn with a land play left (CR
+ * 305.2b, 305.3); otherwise that part of the instruction is ignored and the card stays put, so a
+ * follow-up "if you don't, exile it" reads the card's zone (`filter(revealed, currentlyIn(...))`).
  */
 @SerialName("PlayFromCollectionWithoutPayingCost")
 @Serializable
