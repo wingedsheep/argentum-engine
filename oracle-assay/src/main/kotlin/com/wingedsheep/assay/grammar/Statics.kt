@@ -38,6 +38,7 @@ import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.GrantProtectionFromChosenColorToGroup
 import com.wingedsheep.sdk.scripting.GrantSubtype
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
+import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
@@ -45,6 +46,7 @@ import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.UntapDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.effects.WardCost
 import com.wingedsheep.sdk.scripting.conditions.EntityMatches
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -1178,6 +1180,97 @@ object Statics {
     private data class PumpAndKeywords(val stats: Pair<Int, Int>, val keywords: List<Keyword>)
 
     /**
+     * "Enchanted creature has ward {2}.", "Equipped creature gets +4/+4 and has trample and ward
+     * {1}.", "Other Frogs you control have ward {1}.", "Legendary creatures you control get +2/+1 and
+     * have ward {1}." — the four grant sentences above, with [Keywords.wardedRun] where the keyword
+     * run goes.
+     *
+     * Ward is a parameterized keyword, so [Keywords.keyword] cannot name it and the SDK does not
+     * grant it through [GrantKeyword]: it is [GrantWard], a static of its own carrying the cost and
+     * the same `GroupFilter` the keyword grants take. One sentence therefore still denotes a list —
+     * the pump if printed, one [GrantKeyword] per plain keyword in printed order, then the
+     * [GrantWard] — and every hand-written card that prints one of these sentences orders its
+     * statics that way. Each rule rebuilds that list and compares the whole of it, so a card that
+     * carries them in another order, or a ward under a different filter than its neighbours,
+     * declines rather than printing.
+     *
+     * These are rules beside the keyword-only four rather than a widening of their slot, because
+     * [Keywords.keywordRun] is also what the effect grants ("gains flying until end of turn") and the
+     * token riders slot, and neither of those has a ward to give.
+     */
+    private fun wardedGrants(run: Keywords.WardedRun, group: GroupFilter): List<StaticAbility> =
+        run.keywords.map { GrantKeyword(it, group) } + GrantWard(run.cost, group)
+
+    /** The warded run a list of grants spells, and the group they share — or null. */
+    private fun readWardedGrants(abilities: List<StaticAbility>): Pair<Keywords.WardedRun, GroupFilter>? {
+        val ward = abilities.lastOrNull() as? GrantWard ?: return null
+        val cost = ward.cost as? WardCost.Mana ?: return null
+        val keywords = attachedKeywords(abilities.dropLast(1)) ?: if (abilities.size == 1) emptyList() else return null
+        val run = Keywords.WardedRun(keywords, cost)
+        if (abilities != wardedGrants(run, ward.filter)) return null
+        return run to ward.filter
+    }
+
+    private val attachedWarded: Phrase<List<StaticAbility>> =
+        phrase("enchanted creature has {grants}.", name = "enchanted creature has keywords and ward") {
+            slot("grants", Keywords.wardedRun)
+            build { wardedGrants(it.value("grants"), GroupFilter.attachedCreature()) }
+            match { abilities ->
+                val (run, group) = readWardedGrants(abilities) ?: return@match null
+                if (group != GroupFilter.attachedCreature()) return@match null
+                bind("grants" to run)
+            }
+        }
+
+    private val pumpAndWarded: Phrase<List<StaticAbility>> =
+        phrase("enchanted creature gets {mod} and has {grants}.", name = "enchanted creature gets and has ward") {
+            slot("mod", Primitives.statModifiers)
+            slot("grants", Keywords.wardedRun)
+            build {
+                val (power, toughness) = it.value<Pair<Int, Int>>("mod")
+                listOf<StaticAbility>(ModifyStats(power, toughness)) +
+                    wardedGrants(it.value("grants"), GroupFilter.attachedCreature())
+            }
+            match { abilities ->
+                val stats = abilities.firstOrNull() as? ModifyStats ?: return@match null
+                if (stats != ModifyStats(stats.powerBonus, stats.toughnessBonus)) return@match null
+                val (run, group) = readWardedGrants(abilities.drop(1)) ?: return@match null
+                if (group != GroupFilter.attachedCreature()) return@match null
+                bind("mod" to (stats.powerBonus to stats.toughnessBonus), "grants" to run)
+            }
+        }
+
+    private val lordWarded: List<Phrase<List<StaticAbility>>> = lordStatic(
+        "have", "a group has keywords and ward",
+        parameter = Keywords.wardedRun,
+        ability = ::wardedGrants,
+        read = ::readWardedGrants,
+    )
+
+    private val lordPumpAndWarded: List<Phrase<List<StaticAbility>>> = run {
+        val parameter: Phrase<Pair<Pair<Int, Int>, Keywords.WardedRun>> =
+            phrase("{mod} and have {grants}", name = "a body and ward") {
+                slot("mod", Primitives.statModifiers)
+                slot("grants", Keywords.wardedRun)
+                build { it.value<Pair<Int, Int>>("mod") to it.value<Keywords.WardedRun>("grants") }
+                match { (mod, run) -> bind("mod" to mod, "grants" to run) }
+            }
+        lordStatic(
+            "get", "a group gets and has ward",
+            parameter = parameter,
+            ability = { (mod, run), group ->
+                listOf<StaticAbility>(ModifyStats(mod.first, mod.second, group)) + wardedGrants(run, group)
+            },
+            read = { abilities ->
+                val stats = abilities.firstOrNull() as? ModifyStats
+                val warded = readWardedGrants(abilities.drop(1))
+                if (stats == null || warded == null || stats.filter != warded.second) null
+                else ((stats.powerBonus to stats.toughnessBonus) to warded.first) to stats.filter
+            },
+        )
+    }
+
+    /**
      * "Enchanted creature gets +2/+2 and has flying.", "…gets +2/+0 and has first strike, vigilance,
      * trample, and haste." — a pump and **one static per granted keyword**, from one sentence.
      *
@@ -1340,8 +1433,8 @@ object Statics {
      */
     val line: Phrase<List<StaticAbility>> = oneOf(
         "static abilities",
-        listOf(pumpAndKeyword, pumpAndQuotedAbility, attachedKeywordRun, cantAttackOrBlockUnless) +
-            lordPumpAndKeyword + cantAttackOrBlock +
+        listOf(pumpAndKeyword, pumpAndQuotedAbility, attachedKeywordRun, cantAttackOrBlockUnless, attachedWarded, pumpAndWarded) +
+            lordPumpAndKeyword + lordWarded + lordPumpAndWarded + cantAttackOrBlock +
             ConditionalForm.entries.flatMap { form ->
                 listOf(
                     conditionalSelfStatic(leading = false, form = form),

@@ -5768,6 +5768,38 @@ that has left the battlefield; the zone-transition service has since stashed a l
 the resolver reads, so it now takes the printed order and its existing test still passes. Divergent
 84 → 84.
 
+## Granted ward
+
+"Enchanted creature gets +3/+3 and **has ward {2}**." (Crystal Carapace, Chains of Custody), "…has
+trample and ward {1}." (Super Strength, Lavaspur Boots), "Other Frogs you control **have ward {1}**."
+(Long River Lurker, Shelob). Tail key "ward {§}.". Ward is a parameterized keyword, so
+`Keywords.keyword` could not name it — and its KDoc said the line declined because the SDK had
+nowhere to hold the cost, which stopped being true when `GrantWard(cost, filter)` landed. That is the
+tapped-entry band's lesson again: a write-off that names a missing dependency has an expiry date.
+The band is `Keywords.wardedRun` — `keywordRun`'s three list sizes with ward as the last member,
+where every granted ward in the corpus prints it — slotted into the four grant sentences that
+already carried a keyword run: the attachment, the attachment with a pump, and the two `lordStatic`
+shapes. Each denotes the pump if printed, one `GrantKeyword` per plain keyword, then the
+`GrantWard`, and rebuilds that list to compare, so ward first or a ward under a different group
+refuses to print. Only the mana cost: the em-dash costs print quoted when granted ("have
+"Ward—Pay 2 life.""), a different shape. The effect-side run ("gains ward {2} until end of turn")
+stays declined; nothing grants ward as an effect.
+
+### What it moved
+
+Probe 26 lines / 12 whole cards corpus-wide by swapping "ward {N}" for "flying". Over the
+implemented population delivered **+7** (7,934 → 7,941), compared 7,517 → 7,524. Paladin's Arms
+("has ward {1}, and is a Knight"), Hardlight Containment ("Enchanted permanent"), Flowering of the
+White Tree (the "Legendary creatures" noun) and the conditional forms (Combat Research, Thorin,
+Yuna) decline elsewhere.
+
+### What the differential found
+
+One new divergence, a card spelling, fixed. **Dwarven Mattock [HOB]** targeted a Dwarf *creature*
+for "attach it to target Dwarf you control"; a bare subtype names a permanent (CR 109.2), so it now
+writes `TargetFilter.PermanentYouControl.withSubtype` and has its first scenario test. Divergent 84
+→ 84.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote
