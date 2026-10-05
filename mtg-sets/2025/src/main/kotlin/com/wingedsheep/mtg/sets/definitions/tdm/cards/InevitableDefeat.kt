@@ -12,7 +12,6 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Instant
  * This spell can't be countered.
  * Exile target nonland permanent. Its controller loses 3 life and you gain 3 life.
-
  */
 val InevitableDefeat = card("Inevitable Defeat") {
     manaCost = "{1}{R}{W}{B}"
