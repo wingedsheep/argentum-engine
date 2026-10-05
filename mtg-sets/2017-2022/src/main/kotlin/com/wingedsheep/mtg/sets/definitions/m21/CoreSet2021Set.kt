@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.m21
 
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
@@ -17,7 +16,7 @@ object CoreSet2021Set : MtgSet {
     override val code = "M21"
     override val displayName = "Core Set 2021"
     override val releaseDate = "2020-07-03"
-    override val basicLandsFallback = PortalSet
+    override val basicLandsFallbackCode = "POR"
     override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {

@@ -116,6 +116,9 @@ describe('end-to-end search', () => {
     expect(printedNameMatcher(parseQuery('spectacular').ast)?.(spidey)).toBeNull()
     expect(printedNameMatcher(parseQuery('t:creature').ast)).toBeNull()
     expect(printedNameMatcher(parseQuery('ademi or t:instant').ast)).toBeNull()
+    // A pasted decklist is an `or` of exact names — each card still picks its printing.
+    expect(printedNameMatcher(parseQuery('!"Cut Down" or !"Ademi of the Silkchutes"').ast)?.(spidey)?.setCode).toBe('OM1')
+    expect(printedNameMatcher(parseQuery('!"Cut Down" or !"Spectacular Spider-Man"').ast)?.(spidey)).toBeNull()
   })
 
   it('s:EOE Banishing Light combines reprint set with name match', () => {

@@ -155,6 +155,18 @@ function entriesFromCards(
  * pair is folded in so the commander's pinned printing survives a save → load
  * round-trip alongside the rest.
  */
+/**
+ * The printed name of the pinned printing when it differs from the oracle name — a deck that
+ * pinned Through the Omenpaths' Spider Manifestation lists it as "Leyline Weaver".
+ */
+function pinnedPrintedName(card: CardSummary | undefined, pinned: PrintingRef | undefined): string | null {
+  if (!card || !pinned) return null
+  const match = card.printedNamePrintings?.find(
+    (p) => p.setCode.toUpperCase() === pinned.setCode.toUpperCase() && p.collectorNumber === pinned.collectorNumber,
+  )
+  return match?.name ?? null
+}
+
 function pinnedPrintingsFromEntries(
   entries: readonly SavedDeckEntry[] | undefined,
   commanderName?: string | null,
@@ -2977,7 +2989,7 @@ const DeckRow = memo(function DeckRow({
       </button>
       <span className={styles.deckRowCount}>{entry.count}×</span>
       <span className={styles.deckRowName}>
-        {entry.name}
+        {pinnedPrintedName(entry.card, pinnedPrinting) ?? entry.name}
         {unknown && <span className={styles.deckRowUnknownTag}>not implemented</span>}
       </span>
       {showCommanderControls && (

@@ -35,3 +35,7 @@ object MtgSetCatalog {
     fun requireByCode(code: String): MtgSet =
         byCode(code) ?: throw IllegalArgumentException("Unknown set code: $code")
 }
+
+/** The set named by [MtgSet.basicLandsFallbackCode]; an unknown code throws rather than going quiet. */
+val MtgSet.basicLandsFallback: MtgSet?
+    get() = basicLandsFallbackCode?.let(MtgSetCatalog::requireByCode)

@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.nph
 
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
@@ -22,7 +21,7 @@ object NewPhyrexiaSet : MtgSet {
     override val displayName = "New Phyrexia"
     override val releaseDate = "2011-05-13"
     override val block = "Scars of Mirrodin"
-    override val basicLandsFallback = PortalSet
+    override val basicLandsFallbackCode = "POR"
     override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {

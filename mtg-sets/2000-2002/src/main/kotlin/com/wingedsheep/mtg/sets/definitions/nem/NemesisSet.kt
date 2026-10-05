@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.nem
 
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
@@ -22,7 +21,7 @@ object NemesisSet : MtgSet {
     override val displayName = "Nemesis"
     override val releaseDate = "2000-02-14"
     override val block = "Masques"
-    override val basicLandsFallback = PortalSet
+    override val basicLandsFallbackCode = "POR"
     override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {

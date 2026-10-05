@@ -4,7 +4,6 @@ import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.sdk.model.Printing
 import com.wingedsheep.sdk.model.TokenPrinting
 
@@ -27,7 +26,7 @@ object FallenEmpiresSet : MtgSet {
      * Fallen Empires printed no basic lands of its own and belongs to no block, so its limited
      * environment borrows Portal's — the same fallback The Dark takes.
      */
-    override val basicLandsFallback = PortalSet
+    override val basicLandsFallbackCode = "POR"
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

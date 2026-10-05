@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.atq
 
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
@@ -22,7 +21,7 @@ object AntiquitiesSet : MtgSet {
     override val code = "ATQ"
     override val displayName = "Antiquities"
     override val releaseDate = "1994-03-04"
-    override val basicLandsFallback = PortalSet
+    override val basicLandsFallbackCode = "POR"
 
     override val cards: List<CardDefinition> by lazy {
         // Self-stamp [code] onto every card, honouring the MtgSet contract that `cards` is already

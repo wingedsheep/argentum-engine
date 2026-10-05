@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.om1
 
-import com.wingedsheep.mtg.sets.definitions.spm.SpiderManSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
@@ -32,7 +31,7 @@ object ThroughTheOmenpathsSet : MtgSet {
     }
 
     /** OM1 prints no basic lands; Limited pools use Spider-Man's. */
-    override val basicLandsFallback: MtgSet get() = SpiderManSet
+    override val basicLandsFallbackCode = "SPM"
 
     private const val CARDS_PACKAGE = "com.wingedsheep.mtg.sets.definitions.om1.cards"
 }

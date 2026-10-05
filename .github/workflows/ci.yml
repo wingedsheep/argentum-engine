@@ -15,6 +15,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+# actions: write lets a PR run delete its own superseded build-cache entries (see "Drop superseded
+# PR cache entries" below).
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   # Backend tests run as parallel jobs, one per module group, instead of a single monolithic
   # `./gradlew build`. The old single job serialized the two largest suites (game-server + rules-engine)
@@ -63,6 +69,11 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
+        with:
+          # Lets setup-gradle save and restore the configuration cache (which can
+          # hold secrets, so it is only persisted encrypted). Saves ~20 s of
+          # configuration + buildSrc per job. Without the secret it is simply skipped.
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       # Persist the Gradle build cache (compiled classes + test results) across runs. Unlike
       # setup-gradle's exact-key build cache, actions/cache restore-keys do prefix matching and pick
@@ -77,6 +88,11 @@ jobs:
           restore-keys: |
             gradle-build-cache-${{ runner.os }}-${{ matrix.name }}-
             gradle-build-cache-${{ runner.os }}-
+
+      - name: Mark cache entries in use
+        run: |
+          mkdir -p "${GRADLE_BUILD_CACHE_DIR}"
+          touch "${RUNNER_TEMP}/cache-marker"
 
       - name: Test
         # Wrapped in a watchdog: if a group hasn't finished within the timeout it is almost certainly
@@ -109,6 +125,32 @@ jobs:
           STATUS=$?
           kill "${WATCHDOG_PID}" 2>/dev/null || true
           exit "${STATUS}"
+
+      # Gradle bumps an entry's mtime whenever it reads or writes it, so anything older than the marker
+      # is an entry this group neither used nor produced — carried along from older restores. Without
+      # this the saved cache only ever grows (PR entries reached 1.1 GB per group), which is what blew
+      # the 10 GB cap. What is left is exactly what the next run of this group can reuse.
+      - name: Prune unused cache entries
+        run: |
+          du -sh "${GRADLE_BUILD_CACHE_DIR}" || true
+          find "${GRADLE_BUILD_CACHE_DIR}" -type f ! -newer "${RUNNER_TEMP}/cache-marker" -delete
+          du -sh "${GRADLE_BUILD_CACHE_DIR}" || true
+
+      # The repo's Actions cache is capped at 10 GB and evicts least-recently-used entries past it.
+      # Each PR push used to save a fresh copy of every group's cache, so a few busy PRs pushed main's
+      # entries out and the next run fell back to a cold (or wildly stale) cache. A PR's older entries
+      # are never restored again once a newer one exists, so delete them once this run has passed and is
+      # about to save its own. (Only on success: superseded pushes are cancelled constantly here, and a
+      # cancelled run saves nothing.)
+      - name: Drop superseded PR cache entries
+        if: github.event_name == 'pull_request'
+        continue-on-error: true   # fork PRs get a read-only token; a stale entry is harmless
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh cache list --repo "${{ github.repository }}" --ref "${{ github.ref }}" \
+            --key "gradle-build-cache-${{ runner.os }}-${{ matrix.name }}-" --limit 100 --json id -q '.[].id' |
+            xargs -r -n1 gh cache delete --repo "${{ github.repository }}"
 
   # Aggregate gate so branch protection can keep requiring a single "backend" check. It passes only
   # if every test group passed; with fail-fast disabled, a failure in one group still surfaces all
@@ -146,6 +188,11 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
+        with:
+          # Lets setup-gradle save and restore the configuration cache (which can
+          # hold secrets, so it is only persisted encrypted). Saves ~20 s of
+          # configuration + buildSrc per job. Without the secret it is simply skipped.
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Cache Gradle build outputs
         uses: actions/cache@v4
@@ -157,7 +204,12 @@ jobs:
             gradle-build-cache-${{ runner.os }}-
 
       - name: Generate coverage report
-        run: ./gradlew koverXmlReport
+        run: |
+          mkdir -p "${GRADLE_BUILD_CACHE_DIR}"
+          touch "${RUNNER_TEMP}/cache-marker"
+          ./gradlew koverXmlReport
+          # Same pruning as the test groups: keep only entries this run read or wrote.
+          find "${GRADLE_BUILD_CACHE_DIR}" -type f ! -newer "${RUNNER_TEMP}/cache-marker" -delete
 
       - name: Extract coverage percentage
         id: coverage

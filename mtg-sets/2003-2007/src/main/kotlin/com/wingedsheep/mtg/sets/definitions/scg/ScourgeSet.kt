@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.scg
 
-import com.wingedsheep.mtg.sets.definitions.ons.OnslaughtSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.CardDefinition
@@ -23,7 +22,7 @@ object ScourgeSet : MtgSet {
     override val displayName = "Scourge"
     override val releaseDate = "2003-05-26"
     override val block = "Onslaught"
-    override val basicLandsFallback = OnslaughtSet
+    override val basicLandsFallbackCode = "ONS"
     override val sealedSupported = true
 
     override val cards: List<CardDefinition> by lazy {

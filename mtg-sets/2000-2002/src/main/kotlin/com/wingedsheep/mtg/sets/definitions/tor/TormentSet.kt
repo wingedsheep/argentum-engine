@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.tor
 
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
@@ -22,7 +21,7 @@ object TormentSet : MtgSet {
     override val displayName = "Torment"
     override val releaseDate = "2002-02-04"
     override val block = "Odyssey"
-    override val basicLandsFallback = PortalSet
+    override val basicLandsFallbackCode = "POR"
     override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {

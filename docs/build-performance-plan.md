@@ -73,18 +73,20 @@ Peak heap was the sum of six live sessions rather than the largest one. Default 
 - **`:mtg-sets:core`** — `CardDiscovery`, `TokenArtData` + `tokens.json`, and the setless
   `definitions/custom/` cards. The only things card definitions import from outside the SDK.
 - **`:mtg-sets:<era>`** × 9 — the definitions, in fixed release-year ranges (`1993-1999`,
-  `2000-2002`, `2003-2007`, `2008-2016`, `2017-2022`, `2023`, `2024`, `2025`, `2026`), chained
-  oldest→newest with `api`.
+  `2000-2002`, `2003-2007`, `2008-2016`, `2017-2022`, `2023`, `2024`, `2025`, `2026`), each
+  depending only on `:mtg-sdk` and `:mtg-sets:core` — never on another era.
 - **`:mtg-sets`** — the aggregator: `MtgSetCatalog` (a classpath scan, so no compile dependency on
   any era), the Scryfall sync tasks, `PredefinedTokens`, the legality resources, and the corpus-wide
   tests. It `api`-re-exports core and every era, so **every existing `project(":mtg-sets")`
   dependency is unchanged** — nothing downstream had to move.
 
-The chain works because all 44 cross-set references in the corpus point backwards in time (38 of them
-to `PortalSet` for basic-land fallbacks). The only three that pointed "forwards" — Alpha, Arabian
-Nights and Antiquities referencing Portal — are inside the same first era module. A chronological
-chain is therefore acyclic by construction, and a future reference that points forwards is a compile
-error rather than a silent tangle.
+The eras were first chained oldest→newest with `api`, because a few sets referenced an older set
+across an era boundary — every one of them a basic-land fallback (`basicLandsFallback = PortalSet`
+or `OnslaughtSet`) in an `MtgSet` object. That chain made the corpus compile one era at a time, and a card added to an old era recompiled every era
+after it. `MtgSet.basicLandsFallbackCode` now names the fallback set by code instead (resolved through
+`MtgSetCatalog` by the `MtgSet.basicLandsFallback` extension in `:mtg-sets`), so no era needs another
+at compile time: the eras compile in parallel, and a change recompiles only its own era. A new
+cross-era reference is a compile error — refer to the other set by code.
 
 Boundaries are **fixed**: a new release year appends a module; no set ever moves between them.
 

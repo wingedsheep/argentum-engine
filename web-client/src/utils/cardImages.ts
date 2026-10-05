@@ -131,10 +131,12 @@ export function getScryfallFallbackUrl(
  * gallery to paint each deck's hero art from its rarest card.
  *
  * @param cardName The card's name (the default printing's art is used)
+ * @param setCode Scryfall set code to take that printing's art instead
  */
-export function getScryfallArtCropUrl(cardName: string): string {
+export function getScryfallArtCropUrl(cardName: string, setCode?: string): string {
   const scryfallName = cardName.endsWith(' Token') ? cardName.slice(0, -6) : cardName
-  return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(scryfallName)}&format=image&version=art_crop`
+  const set = setCode ? `&set=${encodeURIComponent(setCode)}` : ''
+  return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(scryfallName)}${set}&format=image&version=art_crop`
 }
 
 /**

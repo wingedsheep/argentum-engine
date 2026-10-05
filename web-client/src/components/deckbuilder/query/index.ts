@@ -74,33 +74,42 @@ export function extractSetFilter(ast: Node | null): string | null {
 
 /**
  * Build a lookup for the printing a query matched by its *printed* name. Returns, per card, the
- * printing whose printed name satisfies every positive name atom (bareword, `name:`, `!exact`)
- * in an AND-only branch — but only when the oracle name does not, so `ademi` shows the Through
- * the Omenpaths art while `spectacular` keeps the default. Null when the query has no name atom.
+ * printing whose printed name satisfies the query's name atoms (bareword, `name:`, `!exact`) —
+ * but only when the oracle name does not, so `ademi` shows the Through the Omenpaths art while
+ * `spectacular` keeps the default. Null when the query has no name atom.
  *
- * Same `or` / `not` caution as [extractSetFilter]: a name atom under either branch doesn't
- * describe every match, so it never picks art.
+ * `and` needs every name constraint, `or` any of them — so a pasted decklist
+ * (`!"Leyline Weaver" or !"Cut Down"`) picks art per card. An `or` with a branch that names
+ * nothing, and anything under `not`, leave the name unconstrained and never pick art.
  */
 export function printedNameMatcher(
   ast: Node | null,
 ): ((card: CardSummary) => PrintedNamePrinting | null) | null {
-  if (!ast) return null
-  const tests: Array<(s: string) => boolean> = []
-  const stack: Node[] = [ast]
-  while (stack.length > 0) {
-    const node = stack.pop()!
-    if (node.kind === 'and') stack.push(...node.children)
-    else if (node.kind === 'atom' && isNameAtom(node)) {
-      const test = nameTest(node)
-      if (test) tests.push(test)
-    }
-  }
-  if (tests.length === 0) return null
-  const all = (s: string) => tests.every((t) => t(s))
+  const test = ast ? nameConstraint(ast) : null
+  if (!test) return null
   return (card) => {
     const printed = card.printedNamePrintings
-    if (!printed || printed.length === 0 || all(card.name)) return null
-    return printed.find((p) => all(p.name)) ?? null
+    if (!printed || printed.length === 0 || test(card.name)) return null
+    return printed.find((p) => test(p.name)) ?? null
+  }
+}
+
+/** The name test a node imposes, or null when it doesn't constrain the name. */
+function nameConstraint(node: Node): ((s: string) => boolean) | null {
+  switch (node.kind) {
+    case 'atom':
+      return isNameAtom(node) ? nameTest(node) : null
+    case 'not':
+      return null
+    case 'and': {
+      const tests = node.children.map(nameConstraint).filter((t): t is (s: string) => boolean => t !== null)
+      return tests.length === 0 ? null : (s) => tests.every((t) => t(s))
+    }
+    case 'or': {
+      const tests = node.children.map(nameConstraint)
+      if (tests.some((t) => t === null)) return null
+      return (s) => tests.some((t) => t!(s))
+    }
   }
 }
 

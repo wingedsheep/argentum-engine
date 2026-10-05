@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.pls
 
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.CardDefinition
@@ -24,7 +23,7 @@ object PlaneshiftSet : MtgSet {
     override val displayName = "Planeshift"
     override val releaseDate = "2001-02-05"
     override val block = "Invasion"
-    override val basicLandsFallback = PortalSet
+    override val basicLandsFallbackCode = "POR"
     override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {

@@ -1,0 +1,23 @@
+name: Cache cleanup
+
+# A PR's build-cache entries are scoped to refs/pull/<n>/merge and can't be read by main or any other
+# PR, so once it closes they are dead weight in the repo's 10 GB Actions cache — and every byte of it
+# pushes main's entries (the ones every new PR bootstraps from) closer to eviction.
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  actions: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete this PR's caches
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh cache list --repo "${{ github.repository }}" --ref "refs/pull/${{ github.event.pull_request.number }}/merge" \
+            --limit 100 --json id -q '.[].id' |
+            xargs -r -n1 gh cache delete --repo "${{ github.repository }}"

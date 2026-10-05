@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.lgn
 
-import com.wingedsheep.mtg.sets.definitions.ons.OnslaughtSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
@@ -24,7 +23,7 @@ object LegionsSet : MtgSet {
     override val displayName = "Legions"
     override val releaseDate = "2003-02-03"
     override val block = "Onslaught"
-    override val basicLandsFallback = OnslaughtSet
+    override val basicLandsFallbackCode = "ONS"
     override val sealedSupported = true
 
     override val cards: List<CardDefinition> by lazy {

@@ -2289,6 +2289,66 @@
     ]
 }
 
+// Synchronized Eviction
+{
+    "name": "Synchronized Eviction",
+    "manaCost": "{4}{U}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {2} less to cast if you control at least two creatures that share a creature type.\nPut target nonland permanent into its owner's library second from the top.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Library",
+            "positionFromTop": 1
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "Compare",
+                        "left": "LargestSharedCreatureTypeCount",
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "flavorText": "\"I told you this one would be a handful.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68f10249-8cd0-4366-bd9a-755f8e1c3592.jpg?1783919190"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Towering Gibbon
 {
     "name": "Towering Gibbon",

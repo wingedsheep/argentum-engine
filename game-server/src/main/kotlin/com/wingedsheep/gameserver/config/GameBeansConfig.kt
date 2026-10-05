@@ -11,6 +11,7 @@ import com.wingedsheep.engine.registry.TokenArtRegistry
 import com.wingedsheep.gameserver.coverage.SetCoverageService
 import com.wingedsheep.mtg.sets.tokens.TokenArtData
 import com.wingedsheep.mtg.sets.MtgSetCatalog
+import com.wingedsheep.mtg.sets.basicLandsFallback
 import com.wingedsheep.mtg.sets.definitions.custom.JustOneGlassToken
 import com.wingedsheep.mtg.sets.definitions.custom.SekshaasEarlySleeper
 import com.wingedsheep.mtg.sets.definitions.por.PortalSet

@@ -5324,6 +5324,62 @@
     ]
 }
 
+// Wizard Mentor
+{
+    "name": "Wizard Mentor",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{T}: Return this creature and target creature you control to their owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Wizard Mentor:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Hand"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "artist": "Jeff Miracola",
+        "flavorText": "Although some of the students quickly grasped the concept, the others could summon only blackboards.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49805401-9bd9-48a3-9b99-0120a8bb1fb5.jpg?1783946351"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Worn Powerstone
 {
     "name": "Worn Powerstone",
