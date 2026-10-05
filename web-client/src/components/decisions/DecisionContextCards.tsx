@@ -14,6 +14,11 @@ import styles from './DecisionUI.module.css'
  *  - `triggering` — what caused the ability to trigger (the blocked creature, the aura's host).
  */
 export interface DecisionCards {
+  readonly targets?: readonly {
+    id: EntityId
+    name: string
+    entry?: { card: ClientCard; imageUrl: string } | undefined
+  }[] | undefined
   readonly source?: { card: ClientCard; imageUrl: string } | undefined
   readonly subject?: { card: ClientCard; imageUrl: string } | undefined
   readonly triggering?: { card: ClientCard; imageUrl: string } | undefined
@@ -37,7 +42,14 @@ export function resolveDecisionCards(
   const source = resolve(context.sourceId, gameState)
   const subject = resolve(context.subjectEntityId, gameState)
   const triggering = resolve(context.triggeringEntityId, gameState)
+  const targets = (context.targetIds ?? []).flatMap((id) => {
+    const card = gameState?.cards[id]
+    const player = gameState?.players.find((candidate) => candidate.playerId === id)
+    const name = card?.name ?? player?.name
+    return name ? [{ id, name, entry: resolve(id, gameState) }] : []
+  })
   return {
+    targets,
     source,
     subject,
     // The subject and the triggering entity are the same card often enough (a per-entity loop over
@@ -61,7 +73,7 @@ function ContextCardImage({ entry, className }: { entry: { card: ClientCard; ima
 }
 
 export function hasDecisionContextCards(cards: DecisionCards): boolean {
-  return cards.source != null || cards.subject != null || cards.triggering != null
+  return cards.source != null || cards.subject != null || cards.triggering != null || (cards.targets?.length ?? 0) > 0
 }
 
 /**
@@ -92,7 +104,7 @@ export function DecisionContextCards({ cards, showSourceBackFace = false }: {
 
   // A lone source card needs no caption — the prompt right below it already says what it does.
   // Once a second role is on screen, every card gets labelled so the roles can't be confused.
-  const labelled = [cards.source, cards.subject, cards.triggering, backFace].filter(Boolean).length > 1
+  const labelled = [cards.source, cards.subject, cards.triggering, backFace].filter(Boolean).length + (cards.targets?.length ?? 0) > 1
 
   return (
     <div className={styles.contextCards}>
@@ -117,6 +129,14 @@ export function DecisionContextCards({ cards, showSourceBackFace = false }: {
           <ContextCardImage entry={cards.triggering} className={styles.contextCardImageSecondary} />
         </div>
       )}
+
+      {cards.targets?.map((target, index) => (
+        <div className={styles.contextCard} key={`${target.id}-${index}`}>
+          <p className={styles.contextCardLabel}>Target</p>
+          {target.entry && <ContextCardImage entry={target.entry} className={styles.contextCardImageSecondary} />}
+          <p className={styles.contextCardName}>{target.name}</p>
+        </div>
+      ))}
 
       {cards.subject && (
         <div className={styles.contextCard}>

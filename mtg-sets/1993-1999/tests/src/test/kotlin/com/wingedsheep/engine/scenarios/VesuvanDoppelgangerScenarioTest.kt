@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.*
@@ -15,6 +16,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.json.Json
 
@@ -219,14 +221,17 @@ class VesuvanDoppelgangerScenarioTest : FunSpec({
         card(d, id).copyTriggeredAbilities.size shouldBe 2
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         ownUpkeep(d)
-        repeat(2) { d.submitTargetSelection(d.player1, listOf(hill)).error shouldBe null }
+        d.submitTargetSelection(d.player1, listOf(hill)).error shouldBe null
+        d.submitTargetSelection(d.player1, listOf(bear)).error shouldBe null
         d.pendingDecision shouldBe null
         d.state.stack.size shouldBe 2
         d.bothPass().error shouldBe null
+        d.pendingDecision.shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(bear)
         d.submitYesNo(d.player1, false).error shouldBe null
         card(d, id).name shouldBe "Grizzly Bears"
         d.state.stack.size shouldBe 1
         d.bothPass().error shouldBe null
+        d.pendingDecision.shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(hill)
         d.submitYesNo(d.player1, true).error shouldBe null
         card(d, id).name shouldBe "Hill Giant"
         card(d, id).copyTriggeredAbilities.size shouldBe 1

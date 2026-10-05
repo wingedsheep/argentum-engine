@@ -58,7 +58,7 @@ class BatchMayQuestionTest : FunSpec({
         val d = game(2)
         targetAll(d, 2)
         d.bothPass().error shouldBe null
-        d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        d.pendingDecision.shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(d.player2)
         d.submitYesNo(d.player1, true).error shouldBe null
         d.assertLifeTotal(d.player2, 19)
         d.state.stack.size shouldBe 1
@@ -73,7 +73,7 @@ class BatchMayQuestionTest : FunSpec({
         targetAll(d, 3)
         repeat(3) {
             d.bothPass().error shouldBe null
-            d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+            d.pendingDecision.shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(d.player2)
             d.submitYesNo(d.player1, false).error shouldBe null
         }
         d.assertLifeTotal(d.player2, 20)
@@ -113,10 +113,42 @@ class BatchMayQuestionTest : FunSpec({
             d.pendingDecision shouldBe null
         }
     }
+    test("resolution consent identifies every locked player and permanent target after serialization") {
+        val pair = card("Optional Pair Pinger") {
+            manaCost = "{1}"; typeLine = "Creature — Test"; power = 1; toughness = 1
+            triggeredAbility {
+                trigger = Triggers.another(GameObjectFilter.Creature.youControl()).enters()
+                val first = target(Targets.Any)
+                val second = target(Targets.Any)
+                effect = Effects.May(Effects.Composite(listOf(
+                    Effects.DealDamage(1, first), Effects.DealDamage(1, second)
+                )))
+            }
+        }
+        val d = GameTestDriver()
+        d.registerCards(TestCards.all + listOf(pair, bear))
+        d.initMirrorMatch(Deck.of("Plains" to 40), skipMulligans = true, startingPlayer = 0)
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val permanent = d.putCreatureOnBattlefield(d.player1, pair.name)
+        d.giveColorlessMana(d.player1, 1)
+        d.castSpell(d.player1, d.putCardInHand(d.player1, bear.name)).error shouldBe null
+        d.bothPass().error shouldBe null
+        d.submitMultiTargetSelection(d.player1, mapOf(0 to listOf(d.player2), 1 to listOf(permanent))).error shouldBe null
+        d.bothPass().error shouldBe null
+        val json = kotlinx.serialization.json.Json {
+            serializersModule = engineSerializersModule
+            classDiscriminator = "type"
+        }
+        val decision = d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        val restored = json.decodeFromString<PendingDecision>(json.encodeToString<PendingDecision>(decision))
+        restored.context.targetIds shouldBe listOf(d.player2, permanent)
+        d.submitYesNo(d.player1, true).error shouldBe null
+        d.assertLifeTotal(d.player2, 19)
+    }
     test("one optional instance also targets first and asks only after passing priority") {
         val d = game(1)
         targetAll(d, 1)
         d.bothPass().error shouldBe null
-        d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        d.pendingDecision.shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(d.player2)
     }
 })

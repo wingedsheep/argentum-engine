@@ -68,6 +68,10 @@ data class DecisionContext(
      */
     val subjectEntityId: EntityId? = null,
 
+    /** Validated targets of the resolving effect, in announced order. Only ids are sent. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val targetIds: List<EntityId> = emptyList(),
+
     /**
      * Definition-scoped identity of the ability that raised this decision, when it was raised by a
      * triggered or activated ability of a card. Lets the client offer "always yes/no to this

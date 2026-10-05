@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
 import com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
 import com.wingedsheep.engine.legalactions.utils.CostEnumerationUtils
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
@@ -577,7 +578,9 @@ class GatedEffectExecutor(
         phase = DecisionPhase.RESOLUTION,
         triggeringEntityId = context.triggeringEntityId,
         inlineOnTrigger = inlineOnTrigger,
-        subjectEntityId = context.iterationEntityId
+        subjectEntityId = context.iterationEntityId,
+        targetIds = context.targets.map { it.toEntityId() },
+        abilityIdentity = context.abilityIdentity
     )
 
     /**

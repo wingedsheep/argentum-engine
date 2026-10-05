@@ -9,6 +9,11 @@ This document defines the JSON payloads exchanged between `web-client` and `game
 
 ## 2. Gameplay Payload (WebSocket)
 
+A resolution consent decision may include `context.targetIds`: an ordered list of the
+validated targets the effect will use. The client displays these through its masked `state.cards`
+or `state.players` data, including player targets and multiple targets. This is independent of
+`context.subjectEntityId`, which identifies a per-object iteration subject.
+
 ### A. State Update (Server -> Client)
 
 Sent whenever the game state changes.

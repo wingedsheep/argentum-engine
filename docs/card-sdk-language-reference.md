@@ -16146,7 +16146,8 @@ The existing `BatchYesNoDecision` transport/UI shape is not emitted for targeted
 Remembered per-ability auto-answers remain available through the ordinary gated executor and are
 applied only after that instance's target legality has been checked. Without a remembered answer,
 each instance raises a `YesNoDecision` at resolution, including multiple copies of the same ability
-on one permanent. Already-suspended single may-question frames in supported saved-game traces
+on one permanent. Its decision context lists the validated target IDs in order; the client renders
+card and player targets through the masked state, independently of per-object iteration subjects. Already-suspended single may-question frames in supported saved-game traces
 remain resumable; new triggers never create those frames.
 
 ## 21. Structural lint (`CardLinter`)
