@@ -40,6 +40,20 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
         state: GameState, player: EntityId, cost: ManaCost, context: SpellPaymentContext?,
         xAmount: Int = 0, xColors: Set<Color> = emptySet(), excludeSources: Set<EntityId> = emptySet(),
         reservedLife: Int = 0,
+    ): ScopedManaPlanResult = planInternal(state, player, cost, context, xAmount, xColors,
+        excludeSources, reservedLife, null)
+
+    /** Verdict only: finish a manually started activation without consuming its enclosing payment. */
+    internal fun provePaymentPrefix(
+        state: GameState, player: EntityId, cost: ManaCost, context: SpellPaymentContext?,
+        continuationFloor: Int,
+    ): ScopedManaPlanResult = planInternal(state, player, cost, context, 0, emptySet(),
+        emptySet(), 0, continuationFloor)
+
+    private fun planInternal(
+        state: GameState, player: EntityId, cost: ManaCost, context: SpellPaymentContext?,
+        xAmount: Int, xColors: Set<Color>, excludeSources: Set<EntityId>, reservedLife: Int,
+        prefixFloor: Int?,
     ): ScopedManaPlanResult {
         val limits = mutableSetOf<ScopedManaSearchLimit>()
         if (state.activeManaSpendingScope(player) == null)
@@ -59,14 +73,15 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
         data class Prefix(val state: GameState, val events: List<GameEvent>)
         fun search(initial: GameState): ScopedManaPlanResult {
             // Floating payment needs no source enumeration, even on hidden boards or at zero budget.
-            if (complete(initial)) return ScopedManaPlanResult.Found(ExecutionResult.success(initial))
+            val continuationFloor = prefixFloor ?: initial.continuationStack.size
+            if (initial.pendingDecision == null && initial.continuationStack.size == continuationFloor &&
+                complete(initial)) return ScopedManaPlanResult.Found(ExecutionResult.success(initial))
             // Hidden identities must not affect this public proof boundary.
             if (initial.getBattlefield().any { initial.getEntity(it)?.has<FaceDownComponent>() == true })
                 return ScopedManaPlanResult.Unknown(setOf(ScopedManaSearchLimit.HIDDEN_BATTLEFIELD))
             if (nodeLimit <= 0) return ScopedManaPlanResult.Unknown(setOf(ScopedManaSearchLimit.NODE_BUDGET))
             val pending = ArrayDeque<Prefix>()
             pending.add(Prefix(initial, emptyList()))
-            val continuationFloor = initial.continuationStack.size
             var attempted = 1
             // Short proofs precede irrelevant permutations. Bound attempts, including rejected choices.
             while (pending.isNotEmpty()) {
@@ -177,9 +192,9 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                 else ScopedManaPlanResult.Unknown(limits.toSet())
         }
         // A caller may ask while production is paused; its partial pool is not a final proof.
-        if (state.continuationStack.any { it is ScopedManaProductionContinuation && it.playerId == player })
+        if (prefixFloor == null && state.continuationStack.any { it is ScopedManaProductionContinuation && it.playerId == player })
             return ScopedManaPlanResult.Unknown(setOf(ScopedManaSearchLimit.CONTINUATION_BOUNDARY))
-        val suspended = state.continuationStack.lastOrNull() as? Suspension
+        val suspended = if (prefixFloor == null) state.continuationStack.lastOrNull() as? Suspension else null
         val searchState = if (suspended == null) state else state.copy(continuationStack = state.continuationStack.dropLast(1))
         val outcome = search(searchState)
         if (outcome !is ScopedManaPlanResult.Found) return outcome

@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent
+import com.wingedsheep.engine.state.components.battlefield.WasCastComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
@@ -1679,8 +1680,7 @@ class ConditionEvaluator(
         // when the spell resolved. Reanimated, token, and "put onto battlefield"
         // permanents lack these markers and are correctly excluded.
         val sourceId = context.sourceId ?: return false
-        val container = state.getEntity(sourceId) ?: return false
-        return container.has<CastFromHandComponent>() || container.has<CastFromGraveyardComponent>()
+        return state.getEntity(sourceId)?.has<WasCastComponent>() == true
     }
 
     private fun evaluateWasCastFromHand(state: GameState, context: EffectContext): Boolean {
@@ -2068,8 +2068,7 @@ class ConditionEvaluator(
      */
     private fun evaluateTriggeringEntityWasCast(state: GameState, context: EffectContext): Boolean {
         val entityId = context.triggeringEntityId ?: return false
-        val entity = state.getEntity(entityId) ?: return false
-        return entity.has<CastFromHandComponent>() || entity.has<CastFromGraveyardComponent>()
+        return state.getEntity(entityId)?.has<WasCastComponent>() == true
     }
 
     private fun evaluateTriggeringEntityEnteredOrWasCastFromGraveyard(

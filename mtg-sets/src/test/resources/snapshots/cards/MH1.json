@@ -611,6 +611,60 @@
     ]
 }
 
+// Eyekite
+{
+    "name": "Eyekite",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Drake",
+    "oracleText": "Flying\nThis creature gets +2/+0 as long as you've drawn two or more cards this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "PlayerDrewCardsThisTurn",
+                    "atLeast": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"This one will need direction. After all, each of its eyes is larger than its brain.\"\n—Cyla, Lord of the Aerie",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49f7bda8-949a-42aa-9254-f39b791cb9a8.jpg?1783933145",
+        "rulings": [
+            {
+                "date": "2019-06-14",
+                "text": "Eyekite's effect applies even if you drew two or more cards only before Eyekite entered the battlefield."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "If a spell or ability causes you to put cards into your hand without specifically using the word \"draw,\" Eyekite's effect doesn't count them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Faerie Seer
 {
     "name": "Faerie Seer",
@@ -2738,6 +2792,95 @@
         "artist": "Simon Dominic",
         "flavorText": "When Worzel summoned Segovian angels to fight Thomil's Gargantikari gnats, the ensuing battle numbered among the Multiverse's least destructive.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5dbaec5-502d-48c2-9e71-c12cd0bccc6a.jpg?1783933157"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Settle Beyond Reality
+{
+    "name": "Settle Beyond Reality",
+    "manaCost": "{4}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one or both —\n• Exile target creature you don't control.\n• Exile target creature you control, then return it to the battlefield under its owner's control.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Exile"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Exile target creature you don't control"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "destination": "Exile"
+                            },
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "destination": "Battlefield"
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Exile target creature you control, then return it to the battlefield under its owner's control"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "artist": "Anthony Palumbo",
+        "flavorText": "Two taken, two judged, one returned.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72ed8e57-61bb-4e89-9484-ff2be800a449.jpg?1783933156",
+        "rulings": [
+            {
+                "date": "2019-06-14",
+                "text": "Once the exiled creature you control returns, it's considered a new object with no relation to the object that it was. Auras attached to the exiled creatures will be put into their owners' graveyards. Equipment attached to the exiled creatures will become unattached and remain on the battlefield. Any counters on the exiled creatures will cease to exist."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "If a token you control is exiled this way, it will cease to exist and won't return to the battlefield."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"

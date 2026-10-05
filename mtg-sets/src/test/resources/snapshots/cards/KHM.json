@@ -2897,6 +2897,93 @@
     ]
 }
 
+// Righteous Valkyrie
+{
+    "name": "Righteous Valkyrie",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Angel Cleric",
+    "oracleText": "Flying\nWhenever another Angel or Cleric you control enters, you gain life equal to that creature's toughness.\nAs long as you have at least 7 life more than your starting life total, creatures you control get +2/+2.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Righteous Valkyrie:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Angel|Cleric ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "Toughness"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Add",
+                        "left": {
+                            "type": "StartingLifeTotal",
+                            "player": "You"
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 7
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02fb5f9f-8750-4eb5-a03a-6dacc60e0b90.jpg?1783928279",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The amount of life you gain is equal to the Angel or Cleric's toughness as the triggered ability resolves. If the Angel or Cleric is no longer on the battlefield at that time, use its toughness from when it was last on the battlefield."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Because damage remains marked on creatures until the damage is removed as the turn ends, nonlethal damage dealt to creatures you control may become lethal if your life total drops below 7 life more than your starting life total or if Righteous Valkyrie leaves the battlefield that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Rimewood Falls
 {
     "name": "Rimewood Falls",
@@ -3315,6 +3402,76 @@
     ]
 }
 
+// Spectral Steel
+{
+    "name": "Spectral Steel",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2.\n{1}{W}, Exile this card from your graveyard: Return another target Aura or Equipment card from your graveyard to your hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Spectral Steel:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "Aura|Equipment own:you",
+                            "zone": "Graveyard",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Graveyard"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf036489-ef9e-40ee-a1bb-24ee37c554f1.jpg?1783928275"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Squash
 {
     "name": "Squash",
@@ -3367,6 +3524,59 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Stalwart Valkyrie
+{
+    "name": "Stalwart Valkyrie",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Angel Warrior",
+    "oracleText": "You may pay {1}{W} and exile a creature card from your graveyard rather than pay this spell's mana cost.\nFlying",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "selfAlternativeCost": {
+            "manaCost": "{1}{W}",
+            "additionalCosts": [
+                {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomExileFrom",
+                        "zone": "Graveyard",
+                        "filter": "creature"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Jason Rainville",
+        "flavorText": "\"Only the worthy may pass.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89ecb530-e429-4b50-a24c-8437614cf224.jpg?1783928277",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Casting Stalwart Valkyrie for its alternative cost doesn't change when you can cast it."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Once you announce that you're casting Stalwart Valkyrie using its alternative cost, no player may take other actions until the spell's been paid for. Notably, players can't try to remove creature cards from your graveyard to stop you from casting the spell."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Stalwart Valkyrie has mana value 4, no matter what you actually paid to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3573,6 +3783,88 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Valkyrie Harbinger
+{
+    "name": "Valkyrie Harbinger",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Angel Cleric",
+    "oracleText": "Flying\nLifelink (Damage dealt by this creature also causes you to gain that much life.)\nAt the beginning of each end step, if you gained 4 or more life this turn, create a 4/4 white Angel creature token with flying and vigilance.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Valkyrie Harbinger:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel"
+                    ],
+                    "keywords": [
+                        "FLYING",
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/8/9864812a-b3b1-4e12-8737-0795cdff994c.jpg?1783902808"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "374",
+        "rarity": "RARE",
+        "artist": "Tran Nguyen",
+        "flavorText": "Where she flies, the Light of Starnheim shines.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/edab83a9-35b5-4312-b8ee-1c042c02aa31.jpg?1783928124",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You create just one Angel token, no matter how much life you've gained past 4 life."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Valkyrie Harbinger's ability looks at how much life you've gained in the turn, even if it wasn't on the battlefield when you gained life. It doesn't care if you also lost life, even if you lost more life than you gained."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you haven't gained 4 life by the time an end step begins, Valkyrie Harbinger's ability won't trigger at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

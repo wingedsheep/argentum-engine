@@ -2434,6 +2434,43 @@
     ]
 }
 
+// Pouncing Lynx
+{
+    "name": "Pouncing Lynx",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "During your turn, this creature has first strike.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "\"I don't understand. He's normally so well behaved!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/9383956f-90bc-40e4-ae5c-503e98e21832.jpg?1783933478"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Prismite
 {
     "name": "Prismite",

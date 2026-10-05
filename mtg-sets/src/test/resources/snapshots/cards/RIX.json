@@ -601,6 +601,69 @@
     ]
 }
 
+// Crashing Tide
+{
+    "name": "Crashing Tide",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell has flash as long as you control a Merfolk.\nReturn target creature to its owner's hand.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "conditionalFlash": {
+            "type": "Exists",
+            "player": "You",
+            "zone": "Battlefield",
+            "filter": "permanent Merfolk"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Carmen Sinek",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e312980a-7b3c-43f8-81cf-53ff818cea30.jpg?1783935328",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Once you announce that you're casting Crashing Tide, players can't try to remove your Merfolk to make it lose flash until you're done casting it. If it loses flash after it's been cast, it will still resolve if able."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "If the target creature is an illegal target by the time Crashing Tide tries to resolve, the spell doesn't resolve. You won't draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Crested Herdcaller
 {
     "name": "Crested Herdcaller",

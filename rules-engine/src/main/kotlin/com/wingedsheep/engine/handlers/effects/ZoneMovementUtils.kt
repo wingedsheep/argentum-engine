@@ -474,6 +474,7 @@ object ZoneMovementUtils {
             .without<TappedComponent>()
             .without<SummoningSicknessComponent>()
             .without<CastFromHandComponent>()
+            .without<com.wingedsheep.engine.state.components.battlefield.WasCastComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.CastFromGraveyardComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.CastFromLibraryComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.EnteredFromGraveyardComponent>()

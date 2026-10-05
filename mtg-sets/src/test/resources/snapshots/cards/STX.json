@@ -852,6 +852,57 @@
     ]
 }
 
+// Bury in Books
+{
+    "name": "Bury in Books",
+    "manaCost": "{4}{U}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {2} less to cast if it targets an attacking creature.\nPut target creature into its owner's library second from the top.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Library",
+            "positionFromTop": 1
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 2,
+                        "filter": "creature attacking"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "artist": "Zoltan Boros",
+        "flavorText": "There are no weapons allowed in the Biblioplex, but a clever mage is never truly defenseless.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac2a2cf5-80cf-4c06-8b04-bc04a5460de5.jpg?1783927380"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Campus Guide
 {
     "name": "Campus Guide",
@@ -3932,6 +3983,98 @@
     },
     "colorIdentityOverride": [
         "BLACK",
+        "WHITE"
+    ]
+}
+
+// Pilgrim of the Ages
+{
+    "name": "Pilgrim of the Ages",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "When this creature enters, you may search your library for a basic Plains card, reveal it, put it into your hand, then shuffle.\n{6}: Return this card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pilgrim of the Ages:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland Plains"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Pilgrim of the Ages:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "JiHun Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c86714f5-e909-413f-8eb6-99dbea4d1897.jpg?1783927388"
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }

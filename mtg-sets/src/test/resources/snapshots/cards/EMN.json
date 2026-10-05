@@ -1696,6 +1696,60 @@
     ]
 }
 
+// Drag Under
+{
+    "name": "Drag Under",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature to its owner's hand.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Tianhua X",
+        "flavorText": "Some took to their boats to escape the unfolding nightmare. The remains of their vessels now litter the shores of Nephalia.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0dffa444-92ff-41d8-8b55-8896808bbfab.jpg?1783937500",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If the targeted creature becomes an illegal target before Drag Under resolves, you won't draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Drogskol Shieldmate
 {
     "name": "Drogskol Shieldmate",

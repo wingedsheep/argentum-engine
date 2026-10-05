@@ -16377,7 +16377,7 @@ Shared-turn teams follow the existing player-control team rule. A later resoluti
 and a completed window reveals the underlying turn control again. Session hotseat routing keeps precedence.
 
 This primitive composes with `Effects.ForcePlay` for mandatory paid card play. Word of Command
-still needs activation-cost choices and recoverable payment (G48); it is not yet authorable faithfully.
+still needs complete forced-play mana windows and remaining proof boundaries (G51); it is not yet authorable faithfully.
 
 ### Scoped mana-ability sources
 
@@ -16528,10 +16528,27 @@ affordability keeps the independent proof and actual intermediate payment uses t
 The standalone solver's independent proof remains available when no engine execution provider exists.
 
 G48 supplies finite public activation-cost choices; G49 adds public graveyard exile costs.
-G50 must supply atomic recovery from
-zero-output or excess manual activations and close the remaining mana-ability proof boundaries
-before a printed card uses this wrapper. Word of Command remains blocked; no incomplete
-canonical is registered. The new planner adds no SDK type, decision, client field or serialization shape.
+G50 protects manual production inside an already announced fixed-price forced-cast payment window.
+After a manual activation or production/cost answer, the public action boundary verifies that some
+complete execution can still pay the announced price and discharge every outstanding identity.
+Zero-output and excessive activations, impossible color answers, and uncertain prefixes reject
+atomically: the input state, costs, events and current question are retained. A valid answer can be
+retried with the same live question. A paused activation is proved through its remaining finite
+answers above the existing payment-restoration frame; partial output never counts as complete
+production. Proof results are discarded, so future choices, taps and payment are not auto-committed.
+A feeder spent on a converter can discharge its identity, and excess from a contributing activation
+may remain. Payment-menu confirmation uses the exact execution-backed cast allocator rather than
+legacy source floating, including explicit-source exclusions. Ordinary payments and scopes without
+an instructed cast retain their existing behavior. This uses existing errors/questions and adds no
+SDK, event, decision, replay or client field.
+
+The current payment frame does not capture X color restrictions or the chosen Phyrexian life split;
+manual prefixes for those prices are conservatively rejected rather than proved against a weaker
+price. Existing direct automatic casting remains available. G51 must complete reachable mandatory
+mana windows, capture these payment choices and other casting-cost resources, and close the remaining unsupported mana-ability proof
+boundaries before a printed card uses this wrapper. Hidden boards, hidden-zone/distributed-counter
+costs, multiple/nested graveyard selections, free costs, non-mana effect leaves and unsupported
+questions still report uncertainty. Word of Command remains blocked; no incomplete canonical is registered.
 
 
 ### Flip-card identities under copy effects

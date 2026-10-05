@@ -1010,6 +1010,54 @@
     ]
 }
 
+// Floodhound
+{
+    "name": "Floodhound",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Elemental Dog",
+    "oracleText": "{3}, {T}: Investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Floodhound:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "Investigate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "artist": "Lius Lasahido",
+        "flavorText": "The thief doubled back twice, doused herself with perfume, crossed the ocean, and still woke up with her pursuer close on her heels.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5b1ac05-bd87-4605-8443-0469276e1e3a.jpg?1783926879",
+        "rulings": [
+            {
+                "date": "2021-06-18",
+                "text": "The token is named Clue Token and has the artifact subtype Clue. Clue isn't a creature type."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Fodder Tosser
 {
     "name": "Fodder Tosser",

@@ -788,6 +788,65 @@
     ]
 }
 
+// Murder Investigation
+{
+    "name": "Murder Investigation",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature you control\nWhen enchanted creature dies, create X 1/1 white Soldier creature tokens, where X is its power.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Murder Investigation:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "Power"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"Every death has a web of consequences. Our job is to find the spider.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f3bb284-d10e-4265-92a4-8dcaf118f3c8.jpg?1783940141",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "To determine how many Soldier tokens are created, use the power of the enchanted creature as it last existed on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ogre Slumlord
 {
     "name": "Ogre Slumlord",

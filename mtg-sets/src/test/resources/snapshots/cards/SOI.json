@@ -1542,6 +1542,36 @@
     ]
 }
 
+// Drownyard Explorers
+{
+    "name": "Drownyard Explorers",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Drownyard Explorers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "Investigate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "Anthony Palumbo",
+        "flavorText": "\"Angels and inquisitors terrorize villages, but no one seems to notice the stirring out at sea.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/3714713f-deb4-4b1c-8764-35287293ca18.jpg?1783937802"
+    }
+}
+
 // Drownyard Temple
 {
     "name": "Drownyard Temple",
@@ -4111,6 +4141,84 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Not Forgotten
+{
+    "name": "Not Forgotten",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put target card from a graveyard on your choice of the top or bottom of its owner's library. Create a 1/1 white Spirit creature token with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Put it on top of its owner's library",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Library",
+                                "placement": "Top"
+                            }
+                        },
+                        {
+                            "label": "Put it on the bottom of its owner's library",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Library",
+                                "placement": "Bottom"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "UNCOMMON",
+        "artist": "Darek Zabrocki",
+        "flavorText": "Visit the dead, and they may return the favor.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66ecdadf-56f7-4dfb-9c3c-7d240ba19b00.jpg?1783937815"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

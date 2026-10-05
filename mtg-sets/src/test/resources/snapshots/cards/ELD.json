@@ -419,6 +419,56 @@
     ]
 }
 
+// Faerie Vandal
+{
+    "name": "Faerie Vandal",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Faerie Rogue",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nFlying\nWhenever you draw your second card each turn, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Faerie Vandal:1",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "UNCOMMON",
+        "artist": "Paul Scott Canavan",
+        "flavorText": "History may be written by the triumphant, but it's often rewritten by the troublesome.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/789c5c2b-3e51-4f6c-ac76-d276facf716f.jpg?1783932658",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The triggered ability can trigger only once each turn. It doesn't matter whether the permanent with that ability was on the battlefield when the first card was drawn. If it's not on the battlefield when the second card is drawn, the ability can't trigger at all that turn. It won't trigger when the third or fourth card is drawn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Fierce Witchstalker
 {
     "name": "Fierce Witchstalker",

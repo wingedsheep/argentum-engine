@@ -291,6 +291,9 @@ internal class PermanentEntry(
         spellComponent: SpellOnStackComponent
     ): ComponentContainer {
         var updated = container
+        if (spellComponent.castFromZone != null) {
+            updated = updated.with(com.wingedsheep.engine.state.components.battlefield.WasCastComponent)
+        }
         // Track if this permanent was cast from hand (for cards like Phage the Untouchable)
         if (spellComponent.castFromZone == Zone.HAND) {
             updated = updated.with(CastFromHandComponent)
