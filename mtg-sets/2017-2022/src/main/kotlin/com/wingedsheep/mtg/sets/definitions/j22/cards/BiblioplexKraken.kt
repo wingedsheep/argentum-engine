@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -54,15 +55,19 @@ val BiblioplexKraken = card("Biblioplex Kraken") {
                             excludeSelf = true
                         )
                     )
+                    // Named: a stolen creature goes to its owner's hand, so "if you do" reads the
+                    // choice rather than the growth of your own hand.
                     val bounced = chooseExactly(
                         1,
                         from = candidates,
                         prompt = "Return another creature you control to its owner's hand",
-                        useTargetingUI = true
+                        useTargetingUI = true,
+                        name = "bounced"
                     )
                     toHand(bounced)
                 },
-                then = Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED, EffectTarget.Self)
+                then = Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED, EffectTarget.Self),
+                successCriterion = SuccessCriterion.CollectionNonEmpty("bounced")
             )
         )
         description = "Whenever this creature attacks, you may return another creature you control to " +

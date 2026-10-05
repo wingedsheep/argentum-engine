@@ -334,19 +334,23 @@
                                                 "amount": 1
                                             }
                                         },
-                                        "storeSelected": "selected1",
+                                        "storeSelected": "bounced",
                                         "prompt": "Return another creature you control to its owner's hand",
                                         "useTargetingUI": true
                                     },
                                     {
                                         "type": "MoveCollection",
-                                        "from": "selected1",
+                                        "from": "bounced",
                                         "destination": {
                                             "type": "ToZone",
                                             "zone": "Hand"
                                         }
                                     }
                                 ]
+                            },
+                            "successCriterion": {
+                                "type": "SuccessCriterion.CollectionNonEmpty",
+                                "name": "bounced"
                             }
                         },
                         "then": {

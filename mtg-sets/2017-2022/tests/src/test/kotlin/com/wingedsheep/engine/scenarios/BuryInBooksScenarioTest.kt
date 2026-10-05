@@ -27,6 +27,7 @@ class BuryInBooksScenarioTest : ScenarioTestBase() {
             .withCardInLibrary(1, "Island")
             .withCardInLibrary(2, "Forest")
             .withCardInLibrary(2, "Mountain")
+            .withCardInLibrary(2, "Plains")
             .withActivePlayer(2)
             .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
             .build()
@@ -47,8 +48,10 @@ class BuryInBooksScenarioTest : ScenarioTestBase() {
 
             game.findPermanent("Grizzly Bears") shouldBe null
             val library = game.state.getLibrary(game.player2Id)
-            library.size shouldBe 3
-            library[1] shouldBe bears
+            withClue("of four cards, index 1 is second from the top and not second from the bottom") {
+                library.size shouldBe 4
+                library[1] shouldBe bears
+            }
         }
 
         test("a non-attacking creature target gets no discount") {

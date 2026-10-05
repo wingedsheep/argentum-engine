@@ -17,7 +17,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * When this creature enters, you may exile another target creature you control, then return that
  * card to the battlefield under its owner's control.
  *
- * The target is chosen when the trigger goes on the stack; the "may" is answered on resolution.
+ * The "may" is asked when the trigger is put on the stack, then the target is chosen.
  * The return is a plain move to the battlefield, which puts the card under its owner's control; an
  * exiled token ceases to exist and doesn't come back.
  */

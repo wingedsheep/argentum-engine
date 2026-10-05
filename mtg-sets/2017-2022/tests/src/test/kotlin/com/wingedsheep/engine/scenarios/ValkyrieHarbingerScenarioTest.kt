@@ -37,9 +37,16 @@ class ValkyrieHarbingerScenarioTest : ScenarioTestBase() {
         spell { effect = Effects.GainLife(3) }
     }
 
+    private val instantGainFourLife = card("Test Valkyrie Instant Gain Four") {
+        manaCost = "{W}"
+        typeLine = "Instant"
+        spell { effect = Effects.GainLife(4) }
+    }
+
     init {
         cardRegistry.register(gainFourLife)
         cardRegistry.register(gainThreeLife)
+        cardRegistry.register(instantGainFourLife)
 
         context("Valkyrie Harbinger") {
 
@@ -106,14 +113,40 @@ class ValkyrieHarbingerScenarioTest : ScenarioTestBase() {
 
                 val before = angelTokens(game.state, game.player1Id)
 
-                game.castSpell(1, "Test Valkyrie Gain Three")
+                val lifeBefore = game.getLifeTotal(1)
+                game.castSpell(1, "Test Valkyrie Gain Three").error shouldBe null
                 game.resolveStack()
+                game.getLifeTotal(1) shouldBe lifeBefore + 3
 
                 game.passUntilPhase(Phase.ENDING, Step.END)
                 game.resolveStack()
 
                 withClue("Gaining only 3 life should not create a token") {
                     (angelTokens(game.state, game.player1Id) - before).size shouldBe 0
+                }
+            }
+
+            test("triggers at an opponent's end step too") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Valkyrie Harbinger", summoningSickness = false)
+                    .withCardInHand(1, "Test Valkyrie Instant Gain Four")
+                    .withLandsOnBattlefield(1, "Plains", 1)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val before = angelTokens(game.state, game.player1Id)
+
+                game.passPriority() // the active opponent passes; the Valkyrie's controller gets priority
+                game.castSpell(1, "Test Valkyrie Instant Gain Four").error shouldBe null
+                game.resolveStack()
+
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.resolveStack()
+
+                withClue("\"each end step\" includes the opponent's") {
+                    (angelTokens(game.state, game.player1Id) - before).size shouldBe 1
                 }
             }
         }

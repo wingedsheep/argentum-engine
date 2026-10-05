@@ -82,6 +82,40 @@ class BiblioplexKrakenScenarioTest : ScenarioTestBase() {
                 game.krakenUnblockable() shouldBe true
             }
 
+            test("returning a stolen creature sends it to its owner's hand and still counts as \"if you do\"") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Biblioplex Kraken")
+                    .withCardOnBattlefield(1, "Glory Seeker")
+                    .withCardInHand(1, "Act of Treason")
+                    .withLandsOnBattlefield(1, "Mountain", 3)
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(2, "Island")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val bears = game.findPermanent("Grizzly Bears")!!
+                game.castSpell(1, "Act of Treason", bears).error shouldBe null
+                game.resolveStack()
+                game.state.projectedState.getController(bears) shouldBe game.player1Id
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Biblioplex Kraken" to 2)).error shouldBe null
+                game.resolveStack()
+
+                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+                game.answerYesNo(true)
+                game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
+                game.selectCards(listOf(bears))
+
+                withClue("the Bears go to their owner's hand, not the Kraken controller's") {
+                    game.isInHand(2, "Grizzly Bears") shouldBe true
+                }
+                game.krakenUnblockable() shouldBe true
+            }
+
             test("declining returns nothing and grants no evasion") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
