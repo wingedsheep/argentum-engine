@@ -17,4 +17,6 @@ val LitaMechanicalEngineerReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/e/9/e9211079-9499-4443-8cb9-4c2bb2849994.jpg?1783904862",
     releaseDate = "2025-11-21",
     rarity = Rarity.MYTHIC,
+    isFullArt = true,
+    borderColor = "borderless",
 )

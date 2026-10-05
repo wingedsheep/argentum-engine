@@ -68,6 +68,7 @@ val EmielTheBlessed = card("Emiel the Blessed") {
         ruling("2020-06-23", "If a token is exiled this way, it will cease to exist and won't return to the battlefield.")
         ruling("2020-06-23", "Emiel's second ability triggers whenever any creature other than itself enters the battlefield under your control, including those returned by its first ability.")
         ruling("2020-06-23", "You choose whether to pay for Emiel's triggered ability while it's resolving. If you do, no player may take other actions between the time you pay and the time the creature has one or two +1/+1 counters on it.")
+        ruling("2020-06-23", "While resolving Emiel's triggered ability, you can't pay {G/W} more than once to put more counters on the creature.")
         ruling("2020-06-23", "If the entering creature is a Unicorn, you still have to pay {G/W} to put two +1/+1 counters on it.")
     }
 }

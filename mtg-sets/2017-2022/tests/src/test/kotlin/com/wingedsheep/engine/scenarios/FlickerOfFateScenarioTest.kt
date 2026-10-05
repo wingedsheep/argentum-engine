@@ -93,6 +93,25 @@ class FlickerOfFateScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("a blinked token ceases to exist and does not return") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Flicker of Fate")
+                    .withCardOnBattlefield(1, "Grizzly Bears", isToken = true)
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val token = game.findPermanent("Grizzly Bears")!!
+                game.castSpell(1, "Flicker of Fate", token).error shouldBe null
+                game.resolveStack()
+
+                withClue("the token does not come back to the battlefield") {
+                    game.findPermanent("Grizzly Bears") shouldBe null
+                }
+            }
+
             test("cannot target a land") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")

@@ -456,6 +456,10 @@
             },
             {
                 "date": "2020-06-23",
+                "text": "While resolving Emiel's triggered ability, you can't pay {G/W} more than once to put more counters on the creature."
+            },
+            {
+                "date": "2020-06-23",
                 "text": "If the entering creature is a Unicorn, you still have to pay {G/W} to put two +1/+1 counters on it."
             }
         ]

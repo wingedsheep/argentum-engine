@@ -60,6 +60,35 @@ class LitaMechanicalEngineerScenarioTest : ScenarioTestBase() {
                 withClue("An opponent's artifact creature stays tapped") { game.isTapped(memnite) shouldBe true }
             }
 
+            test("untaps a crewed Vehicle, which is an artifact creature until end of turn, but not an uncrewed one") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Lita, Mechanical Engineer")
+                    .withCardOnBattlefield(1, "Sky Skiff", tapped = true)
+                    .withCardOnBattlefield(1, "Sky Skiff", tapped = true)
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val (crewedSkiff, idleSkiff) = game.findAllPermanents("Sky Skiff")
+                val bears = game.findPermanent("Grizzly Bears")!!
+                withClue("Crew 1 animates the tapped Skiff") {
+                    game.execute(CrewVehicle(game.player1Id, crewedSkiff, listOf(bears))).error shouldBe null
+                }
+                game.resolveStack()
+
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.resolveStack()
+
+                withClue("The crewed Skiff is an artifact creature at end step and untaps") {
+                    game.isTapped(crewedSkiff) shouldBe false
+                }
+                withClue("The uncrewed Skiff is a noncreature artifact and stays tapped") {
+                    game.isTapped(idleSkiff) shouldBe true
+                }
+            }
+
             test("does not trigger at the opponent's end step") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")

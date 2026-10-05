@@ -93,6 +93,47 @@ class MichikoKondaTruthSeekerScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("two attackers dealing damage at once trigger it once per source") {
+                val game = scenario()
+                    .withPlayers("Alice", "Bob")
+                    .withCardOnBattlefield(1, "Michiko Konda, Truth Seeker", tapped = true)
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withCardOnBattlefield(2, "Hill Giant")
+                    .withLandsOnBattlefield(2, "Forest", 1)
+                    .withLandsOnBattlefield(2, "Mountain", 1)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val lands = listOf(game.findPermanent("Forest")!!, game.findPermanent("Mountain")!!)
+
+                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Grizzly Bears" to 1, "Hill Giant" to 1)).error shouldBe null
+                game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
+                game.resolveStack()
+                if (game.getPendingDecision() is CombatResolutionDecision) {
+                    game.submitDefaultCombatDamage()
+                    game.resolveStack()
+                }
+
+                withClue("Alice took 2 + 3 combat damage") { game.getLifeTotal(1) shouldBe 15 }
+
+                for (land in lands) {
+                    val decision = game.getPendingDecision()
+                    decision.shouldBeInstanceOf<SelectCardsDecision>()
+                    decision.playerId shouldBe game.player2Id
+                    game.selectCards(listOf(land)).error shouldBe null
+                    game.resolveStack()
+                }
+
+                withClue("one sacrifice per damage source: both lands gone, both attackers kept") {
+                    game.isInGraveyard(2, "Forest") shouldBe true
+                    game.isInGraveyard(2, "Mountain") shouldBe true
+                    game.isOnBattlefield("Grizzly Bears") shouldBe true
+                    game.isOnBattlefield("Hill Giant") shouldBe true
+                }
+            }
+
             test("damage from a source you control doesn't trigger it") {
                 val game = scenario()
                     .withPlayers("Alice", "Bob")
