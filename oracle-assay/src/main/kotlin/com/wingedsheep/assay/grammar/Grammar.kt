@@ -153,7 +153,7 @@ object Grammar {
      * know nothing about where in a card they land.
      */
     private val spellLine: Phrase<CardFragment> = phrase("{step}", name = "a spell effect line") {
-        slot("step", Steps.step)
+        slot("step", Steps.spellStep)
         build { CardFragment.of(it.value<CardScript>("step")) }
         match { fragment ->
             if (fragment.keywordAbilities.isEmpty() && fragment.script != CardScript.EMPTY) {

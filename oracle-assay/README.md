@@ -5800,6 +5800,40 @@ for "attach it to target Dwarf you control"; a bare subtype names a permanent (C
 writes `TargetFilter.PermanentYouControl.withSubtype` and has its first scenario test. Divergent 84
 → 84.
 
+## This spell was kicked
+
+"Return target nonland permanent to its owner's hand. **If this spell was kicked**, draw a card."
+(Into the Roil, Whoosh!, Blink of an Eye, Dismantling Blow, Tolarian Geyser). Tail key "this spell
+was …". The condition is `WasKicked`, which `Conditions` already read as the permanents' "if it was
+kicked" — and Oracle splits the two spellings exactly by position: 110 lines on instants and
+sorceries say "this spell", 98 on permanents say "it". One model, two surfaces, chosen by where the
+sentence stands, so it is neither an `alternate` (which would print the pronoun on every spell) nor
+a second row (two printers for one model). It is the anaphors' shape: `Conditions.kicked(subject)`
+instantiated as `condition` and `spellCondition`, and `Steps.Cascade` taking its condition
+vocabulary as a parameter, so the spell line slots a fifth cascade, `Steps.spellStep`, that differs
+from the source cascade in that one row. Cinderclasm, the one spell still printing "if it was
+kicked" about itself, declines.
+
+### What it moved
+
+Probe 108 lines / 12 whole cards corpus-wide by rewriting the subject to "it". Over the implemented
+population delivered **+4** (7,941 → 7,945), compared 7,524 → 7,528; the bake moved 11,119 → 11,129.
+The rest of the family prints "…instead" (Burst Lightning's `If(…, then, otherwise)`), splits the
+spell into the SDK's `kickerEffect` branch (Goblin Barrage, Fight with Fire), or declines on the
+payload ("they get +1/+1").
+
+### What the differential found
+
+One new divergence, and it was the reading that was wrong. Probe ("If this spell was kicked, target
+player discards two cards") read as `Effects.If(WasKicked)` over an ordinary target — chosen on
+every cast — where CR 702.33g says a target in the kicked part of a spell is chosen only if it was
+kicked. The SDK spells that with `kickerTarget` / `kickerEffect`, which no rule builds yet, so the
+spell cascade now **declines** a kicked consequence that declares a target; a permanent's "if it was
+kicked" keeps them, being an intervening-if whose trigger never reaches the stack to choose. The card
+was wrong too, in a different way: an optional target under the gate, so a kicked Probe could be
+cast with nobody to discard. It now uses the kicker branch, as its comment claimed the SDK could not,
+and has its first scenario test. Divergent 84 → 84.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote

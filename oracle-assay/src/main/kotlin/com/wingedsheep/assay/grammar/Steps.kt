@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Conditions as SdkConditions
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Patterns
@@ -3538,11 +3539,17 @@ object Steps {
      * are built twice.
      *
      * @param tag suffixes the rule names so an ambiguity diagnostic can say which cascade it found.
+     * @param condition the condition vocabulary [conditionalClause] slots — [Conditions.condition]
+     *   everywhere but a spell's own text, which names itself; see [spellCascade].
+     * @param gateMayTarget whether a consequence under the given condition may declare targets of
+     *   its own; false only for kicker in a spell, see [spellCascade].
      */
     private class Cascade(
         anaphora: List<Phrase<CardScript>>,
         val tag: String,
         positionScoped: List<Phrase<CardScript>> = emptyList(),
+        private val condition: Phrase<Condition> = Conditions.condition,
+        private val gateMayTarget: (Condition) -> Boolean = { true },
     ) {
 
         /**
@@ -3758,16 +3765,19 @@ object Steps {
          */
         private val conditionalClause: Phrase<CardScript> =
             phrase("if {cond}, {inner}", name = "a conditional clause$tag") {
-                slot("cond", Conditions.condition)
+                slot("cond", condition)
                 slot("inner", gatedConsequence)
                 build { bindings ->
                     val condition = bindings.value<Condition>("cond")
-                    wrap(bindings.value("inner")) { Effects.If(condition, it) }
+                    val inner = bindings.value<CardScript>("inner")
+                    if (inner.targetRequirements.isNotEmpty() && !gateMayTarget(condition)) return@build null
+                    wrap(inner) { Effects.If(condition, it) }
                 }
                 match { script ->
                     val gated = script.spellEffect as? GatedEffect ?: return@match null
                     val gate = gated.gate as? Gate.WhenCondition ?: return@match null
                     val inner = CardScript(spellEffect = gated.then, targetRequirements = script.targetRequirements)
+                    if (inner.targetRequirements.isNotEmpty() && !gateMayTarget(gate.condition)) return@match null
                     if (wrap(inner) { Effects.If(gate.condition, it) } != script) return@match null
                     bind("cond" to gate.condition, "inner" to inner)
                 }
@@ -3907,6 +3917,31 @@ object Steps {
     private val sourceCascade =
         Cascade(SelfSteps.anaphoric + sourceLifeByProperty + sourceDamageByProperty, tag = "")
 
+    /**
+     * The cascade an instant's or sorcery's own text takes — [sourceCascade] with the condition
+     * vocabulary a spell speaks: "If **this spell** was kicked, …" where an ability says "if **it**
+     * was kicked". The difference is the subject's spelling and nothing else, which is why it is an
+     * instantiation and not a branch: both forms are `WasKicked`, so registering both in one cascade
+     * would be two printers for one model. See [Conditions.kicked].
+     *
+     * **A kicked consequence that declares a target declines here.** CR 702.33g: a target in the
+     * part of a spell that applies only if it was kicked is chosen only if it was kicked —
+     * otherwise "the spell is cast as if it did not have those targets". `Effects.If` over an
+     * ordinary requirement says the opposite: the target is chosen on every cast and the gate only
+     * decides whether it is used. The SDK spells the rule with `kickerTarget` / `kickerEffect`,
+     * a whole second branch of the spell, which no rule here builds yet; until one does, the line
+     * is a decline and not a reading. Probe is the card the differential surfaced it on. A
+     * permanent's "if it was kicked" needs no guard: there it is an intervening-if, and a trigger
+     * whose condition fails never goes on the stack to choose anything (CR 603.4).
+     */
+    private val spellCascade =
+        Cascade(
+            SelfSteps.anaphoric + sourceLifeByProperty + sourceDamageByProperty,
+            tag = " in a spell",
+            condition = Conditions.spellCondition,
+            gateMayTarget = { it != SdkConditions.WasKicked },
+        )
+
     /** The cascade a filtered trigger's effect takes; see [SelfSteps.triggering]. */
     private val triggeredCascade =
         Cascade(
@@ -3952,6 +3987,12 @@ object Steps {
         Cascade(SelfSteps.named, tag = " after attached damage", positionScoped = Tokens.damageClauses)
 
     val step: Phrase<CardScript> = sourceCascade.step
+
+    /**
+     * The same vocabulary for a spell's own effect line; [Grammar]'s spell line is the only caller.
+     * See [spellCascade].
+     */
+    val spellStep: Phrase<CardScript> = spellCascade.step
 
     /**
      * The same vocabulary for a damage trigger whose subject is the attached creature;

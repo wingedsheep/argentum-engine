@@ -212,12 +212,7 @@ object Conditions {
             ),
         ),
         constant("it's bargained", SdkConditions.WasBargained),
-        // "When ~ enters, **if it was kicked**, …" — the kicker permanents' intervening-if. Past
-        // tense is the only printed spelling (81 cards); the row used to read "it's kicked" by
-        // analogy with "it's bargained" above, which Oracle never prints. Bargain is the other way
-        // round: the present is its cost-position spelling, so its trigger form ("if it was
-        // bargained") is a separate, positional question this row doesn't answer.
-        constant("it was kicked", SdkConditions.WasKicked),
+        // `WasKicked` is not a row here: its subject is spelled by position. See [kicked].
         // The life-state conditions Bloomburrow's Bats and Lizards check. Each is one whole clause
         // with a facade of its own, so they are constants rather than a shape: `Conditions` names
         // the gained/lost pair and both of its joins, and the printed English draws the same
@@ -479,5 +474,35 @@ object Conditions {
         else -> null
     }
 
-    val condition: Phrase<Condition> = oneOf("a condition", all)
+    /**
+     * Kicker's condition, whose subject is the one word of it that varies — and varies by
+     * **position**, not by card. A permanent's ability prints "When ~ enters, **if it was
+     * kicked**, …" (98 Oracle lines, every one on a permanent), and an instant or sorcery prints
+     * "~ deals 2 damage to any target. **If this spell was kicked**, …" (110, every one on a spell).
+     * Both are `WasKicked` in every golden — the same read of the cast's kicker choice — so they
+     * are one model with two surfaces, and the surface is decided by where the sentence stands.
+     *
+     * Not an [com.wingedsheep.assay.syntax.alternate]: that would print the permanent's spelling
+     * on every spell, and the spell's is the majority there by 110 to 2. Not two rows of one
+     * alternation either, which is two printers for one model. So it is the shape the anaphors take
+     * ([SelfSteps.retargetable]): one row instantiated per position, [condition] carrying the
+     * pronoun and [spellCondition] the spell's own noun. Two spells print "if it was kicked":
+     * Ertai's Trickery means the spell it *targets*, a different object and a different model, so
+     * the pronoun's absence from spell position is the decline it should have; Cinderclasm means
+     * itself in wording Oracle never updated, and one card against 110 is not a canonical form.
+     *
+     * Past tense is the only printed spelling; the permanent row used to read "it's kicked" by
+     * analogy with "it's bargained", which Oracle never prints. Bargain is the other way round: the
+     * present is its cost-position spelling, so its trigger form ("if it was bargained") is a
+     * positional question of its own that this shape would answer the day a card needs it.
+     */
+    private fun kicked(subject: String): Phrase<Condition> = constant("$subject was kicked", SdkConditions.WasKicked)
+
+    val condition: Phrase<Condition> = oneOf("a condition", all + kicked("it"))
+
+    /**
+     * [condition] in a spell's own text, where the spell names itself ("this spell") rather than
+     * by pronoun. [Steps.spellStep] is the only caller; see [kicked].
+     */
+    val spellCondition: Phrase<Condition> = oneOf("a condition in a spell", all + kicked("this spell"))
 }
