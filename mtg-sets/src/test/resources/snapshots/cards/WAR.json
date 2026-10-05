@@ -2655,6 +2655,54 @@
     ]
 }
 
+// No Escape
+{
+    "name": "No Escape",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target creature or planeswalker spell. If that spell is countered this way, exile it instead of putting it into its owner's graveyard.\nScry 1.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Counter",
+                    "counterDestination": "CounterDestination.Exile"
+                },
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "artist": "G-host Lee",
+        "flavorText": "Jace surmised that they were walking into Bolas's trap. He felt no joy in being right.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc9888a1-6f35-4802-b8fb-902017736d4a.jpg?1783933458",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "A creature or planeswalker spell that can't be countered is a legal target for No Escape. The spell won't be countered when No Escape resolves, but you'll still scry 1."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Pouncing Lynx
 {
     "name": "Pouncing Lynx",

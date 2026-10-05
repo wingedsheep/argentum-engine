@@ -1974,6 +1974,52 @@
     ]
 }
 
+// Oneirophage
+{
+    "name": "Oneirophage",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Squid Illusion",
+    "oracleText": "Flying\nWhenever you draw a card, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oneirophage:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "UNCOMMON",
+        "artist": "Martina Pilcerova",
+        "flavorText": "It manifests at wizard academies to siphon inspiration from young prodigies.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/caefbac6-b2a0-4a70-a912-25173eafd7b3.jpg?1783933142",
+        "rulings": [
+            {
+                "date": "2019-06-14",
+                "text": "If a spell or ability causes you to put cards into your hand without specifically using the word \"draw,\" Oneirophage's ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ore-Scale Guardian
 {
     "name": "Ore-Scale Guardian",

@@ -1629,6 +1629,93 @@
     }
 }
 
+// Pirated Copy
+{
+    "name": "Pirated Copy",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Shapeshifter Pirate",
+    "oracleText": "You may have this creature enter as a copy of any creature on the battlefield, except it's a Pirate in addition to its other types and it has \"Whenever this creature or another creature with the same name deals combat damage to a player, you draw a card.\"",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "exceptions": {
+                    "addedSubtypes": [
+                        "Pirate"
+                    ],
+                    "addedTriggeredAbilities": [
+                        {
+                            "id": "Pirated Copy:1",
+                            "trigger": {
+                                "type": "DealsDamageEvent",
+                                "damageType": "DamageCombat",
+                                "recipient": {
+                                    "type": "RecipientPlayer",
+                                    "player": "Any"
+                                },
+                                "sourceFilter": "creature"
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "triggerRestriction": {
+                                "type": "EntityMatches",
+                                "entity": "TriggeringEntity",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "SharesNameWith",
+                                            "entity": "Self"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a0567fb-2b4f-4fa9-8dfe-df4e665a4c5c.jpg?1783919190",
+        "rulings": [
+            {
+                "date": "2022-12-02",
+                "text": "Being a Pirate and having the granted ability are part of the copiable values of Pirated Copy. If another creature enters the battlefield as or becomes a copy of Pirated Copy, it will copy whatever Pirated Copy is copying, be a Pirate in addition to its other types, and have \"Whenever this creature or another creature with the same name deals combat damage to a player, you draw a card.\""
+            },
+            {
+                "date": "2022-12-02",
+                "text": "If Pirated Copy doesn't enter the battlefield as a creature (such as by copying an artifact or land that became a creature), it doesn't become a Pirate, though it still has the granted triggered ability. It won't become a Pirate even if it later turns into a creature from another effect."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "If the chosen creature is copying something else, then Pirated Copy enters the battlefield as whatever the chosen creature is copying. It will also be a Pirate and have the granted ability."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "If Pirated Copy somehow enters the battlefield at the same time as another creature, Pirated Copy can't become a copy of that creature. You may choose only a creature that's already on the battlefield."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "You can choose to not copy anything. In that case, Pirated Copy enters the battlefield as a 0/0 Shapeshifter Pirate creature, and will probably die almost immediately, when state-based actions are next performed."
+            }
+        ]
+    }
+}
+
 // Plundering Predator
 {
     "name": "Plundering Predator",
@@ -2022,6 +2109,59 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Soul Read
+{
+    "name": "Soul Read",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Counter target spell unless its controller pays {4}.\n• Draw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Counter",
+                        "condition": {
+                            "type": "CounterCondition.UnlessPaysMana",
+                            "cost": "{4}"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Stack"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                },
+                {
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "description": "Draw two cards"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "artist": "Drew Tucker",
+        "flavorText": "It's easy to be two steps ahead when you can see their every thought.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2cebbfa1-e709-45bb-9b86-c6b09e7866b2.jpg?1783919192"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

@@ -937,6 +937,71 @@
     ]
 }
 
+// Rhystic Study
+{
+    "name": "Rhystic Study",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an opponent casts a spell, you may draw a card unless that player pays {1}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rhystic Study:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{1}"
+                        }
+                    },
+                    "suffer": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "player": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    },
+                    "consequenceDescription": "let Rhystic Study's controller draw a card"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "artist": "Terese Nielsen",
+        "flavorText": "Friends teach what you want to know. Enemies teach what you *need* to know.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/3394cefd-a3c6-4917-8f46-234e441ecfb6.jpg?1783945789",
+        "rulings": [
+            {
+                "date": "2023-09-01",
+                "text": "Rhystic Study's triggered ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered. The player gets the option to pay when this triggered ability resolves."
+            },
+            {
+                "date": "2023-09-01",
+                "text": "You don't have to decide whether or not to draw a card until after the player decides whether or not to pay."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Rib Cage Spider
 {
     "name": "Rib Cage Spider",

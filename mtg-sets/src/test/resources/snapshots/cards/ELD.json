@@ -1015,6 +1015,75 @@
     ]
 }
 
+// Overwhelmed Apprentice
+{
+    "name": "Overwhelmed Apprentice",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, each opponent mills two cards. Then you scry 2. (Look at the top two cards of your library, then put any number of them on the bottom and the rest on top in any order.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Overwhelmed Apprentice:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": "EachOpponent",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "Scry",
+                            "count": 2
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/8659092e-4fe8-42be-ab03-efc99ed37436.jpg?1783932651",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "You scry 2 once after each opponent has moved the top cards of their library. You don't scry 2 for each opponent."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Raging Redcap
 {
     "name": "Raging Redcap",
@@ -1247,6 +1316,111 @@
             {
                 "date": "2022-06-10",
                 "text": "If one of the two target creatures becomes an illegal target, Run Away Together can still determine its controller only to check whether the other creature is a legal target. If the illegal target has left the battlefield, use its last known information. If the other creature is still a legal target, it's returned to its owner's hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Sage of the Falls
+{
+    "name": "Sage of the Falls",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "Whenever this creature or another non-Human creature you control enters, you may draw a card. If you do, discard a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sage of the Falls:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Human"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "flavorText": "Ask a merfolk even a simple question and the answer is a journey far beyond the known.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/274e3aa4-4b46-4daa-a7a8-400a20c59435.jpg?1783932649",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "You draw a card and discard a card all while Sage of the Falls's ability is resolving. Nothing can happen between the two, and no player may choose to take actions."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If more than one non-Human creature enters the battlefield at the same time, Sage of the Falls's ability triggers that many times. You'll resolve the abilities one at a time—you won't draw that many cards at once and then discard that many cards."
             }
         ]
     },
@@ -1500,6 +1674,148 @@
         "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2c5f336-c100-4bec-89d5-548f60064d7f.jpg?1783932583"
     },
     "colorIdentityOverride": []
+}
+
+// So Tiny
+{
+    "name": "So Tiny",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nEnchanted creature gets -2/-0. It gets -6/-0 instead as long as its controller has seven or more cards in their graveyard.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "Subtract",
+                    "left": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "right": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "Min",
+                            "left": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "right": {
+                                "type": "IfPositive",
+                                "amount": {
+                                    "type": "Subtract",
+                                    "left": {
+                                        "type": "Count",
+                                        "player": "ControllerOfAffectedEntity",
+                                        "zone": "Graveyard"
+                                    },
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 6
+                                    }
+                                }
+                            }
+                        },
+                        "multiplier": 4
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "artist": "Randy Vargas",
+        "flavorText": "His sword sounded like a silver chime on the glass jar, and the sprite laughed with delight.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/421650f2-1b34-4a36-9675-9424997c9d0b.jpg?1783932650",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "So Tiny continuously checks the enchanted creature's controller's graveyard to determine just how tiny the enchanted creature is."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Steelgaze Griffin
+{
+    "name": "Steelgaze Griffin",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Griffin",
+    "oracleText": "Flying\nWhenever you draw your second card each turn, this creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Steelgaze Griffin:1",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "artist": "J.P. Targete",
+        "flavorText": "\"If we didn't guard our secrets, they wouldn't remain secrets for long.\"\n—Gadwick, the Wizened",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d361328-8b0a-40a0-b5c0-215398fdfb47.jpg?1783932649",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The triggered ability can trigger only once each turn. It doesn't matter whether the permanent with that ability was on the battlefield when the first card was drawn. If it's not on the battlefield when the second card is drawn, the ability can't trigger at all that turn. It won't trigger when the third or fourth card is drawn."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If an effect instructs you to draw multiple cards, the ability triggers after you draw whichever is the second one for the turn. You choose a target (if any) for the ability after you've drawn and looked at all of the cards and finished resolving the spell or ability that caused you to draw them."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If a spell or ability causes you to put cards into your hand without specifically using the word “draw,” it's not a card drawn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Syr Alin, the Lion's Claw

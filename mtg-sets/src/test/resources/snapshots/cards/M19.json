@@ -3601,6 +3601,84 @@
     ]
 }
 
+// Skilled Animator
+{
+    "name": "Skilled Animator",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "When this creature enters, target artifact you control becomes an artifact creature with base power and toughness 5/5 for as long as this creature remains on the battlefield.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skilled Animator:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "duration": {
+                        "type": "WhileSourceOnBattlefield",
+                        "sourceDescription": "Skilled Animator"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, target artifact you control becomes an artifact creature with base power and toughness 5/5 for as long as this creature remains on the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "UNCOMMON",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/586d5000-1fdb-4bfe-aa34-63b25ee94bb9.jpg?1783934583",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "Skilled Animator doesn't remove any abilities the target artifact has."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "The artifact retains any types, subtypes, or supertypes it has."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If an Equipment becomes an artifact creature, it usually can't be attached to another creature. If it was attached to a creature, it becomes unattached."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If the artifact was already a creature, its base power and toughness will each become 5. This overwrites any previous effects that set the creature's base power and toughness to specific values. Any power- or toughness-setting effects that start to apply after Skilled Animator's ability resolves will overwrite this effect."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Effects that modify a creature's power and/or toughness, such as the ones created by Titanic Growth or a +/1+1 counter, will apply to the creature no matter when they started to take effect. The same is true for any counters that change its power and/or toughness and effects that switch power and toughness."
+            }
+        ]
+    }
+}
+
 // Skyscanner
 {
     "name": "Skyscanner",

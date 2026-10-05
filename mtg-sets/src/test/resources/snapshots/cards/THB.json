@@ -3202,6 +3202,100 @@
     ]
 }
 
+// Stinging Lionfish
+{
+    "name": "Stinging Lionfish",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment Creature — Fish",
+    "oracleText": "Whenever you cast your first spell during each opponent's turn, you may tap or untap target nonland permanent.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stinging Lionfish:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 1,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Modal",
+                        "modes": [
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "description": "Tap that permanent"
+                            },
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "tap": false
+                                },
+                                "description": "Untap that permanent"
+                            }
+                        ],
+                        "countsAsModalSpell": false
+                    },
+                    "descriptionOverride": "Whenever you cast your first spell during each opponent's turn, you may tap or untap target nonland permanent."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent"
+                    },
+                    "id": "t0"
+                },
+                "triggerRestriction": "IsOpponentsTurn",
+                "descriptionOverride": "Whenever you cast your first spell during each opponent's turn, you may tap or untap target nonland permanent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Burdett",
+        "flavorText": "Starfish are its favorite prey.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/0162a0b8-a2d1-4664-a445-331aee6d5175.jpg?1783931577",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "An ability that triggers when you cast a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "This ability triggers only on your very first spell during an opponent's turn, not the first spell after the card is on the battlefield. If you cast a spell before it's on the battlefield (including if you cast this card somehow during an opponent's turn), the ability won't trigger."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If you have more than one opponent, this ability can trigger once during each of those opponents' turns."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "In a Two-Headed Giant game, this ability triggers no more than once during each opposing team's turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sunmane Pegasus
 {
     "name": "Sunmane Pegasus",

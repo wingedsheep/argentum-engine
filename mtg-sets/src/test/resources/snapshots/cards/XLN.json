@@ -2577,6 +2577,97 @@
     ]
 }
 
+// Perilous Voyage
+{
+    "name": "Perilous Voyage",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target nonland permanent you don't control to its owner's hand. If its mana value was 2 or less, scry 2.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "numericProperty": "ManaValue"
+                            },
+                            "operator": "LTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Scry",
+                        "count": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsNonland",
+                            "IsPermanent"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "UNCOMMON",
+        "artist": "Wesley Burt",
+        "flavorText": "For the first time in her life, Vraska tried to prevent death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9f6623e-2784-4bc9-9d8c-3eee9c78c350.jpg?1783935777",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If the target permanent is an illegal target by the time Perilous Voyage resolves, the entire spell doesn't resolve. You won't scry."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Use the permanent's mana value as it existed on the battlefield to determine whether you scry."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If a permanent has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Pirate's Cutlass
 {
     "name": "Pirate's Cutlass",
@@ -3342,6 +3433,49 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Shaper Apprentice
+{
+    "name": "Shaper Apprentice",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "This creature has flying as long as you control another Merfolk.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Merfolk",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "artist": "Yongjae Choi",
+        "flavorText": "The River Heralds would wreck a thousand ships to keep intruders from finding the golden city.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02955471-5ffc-4c7b-83fe-a69816415ca1.jpg?1783935774"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
