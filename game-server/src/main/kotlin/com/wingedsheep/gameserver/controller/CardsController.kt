@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.controller
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.registry.PrintingRegistry
@@ -140,7 +141,24 @@ class CardsController(
          * though its [setCode] still points at the original printing's set.
          */
         override val printingSetCodes: List<String> = emptyList(),
-    ) : SearchCard
+        /**
+         * Printings whose printed name differs from the oracle [name] (Through the Omenpaths).
+         * Feeds the name matcher via [printedNames], and carries each printing's ref + art so
+         * the deckbuilder can show the printing a search matched by its printed name.
+         */
+        val printedNamePrintings: List<PrintedNamePrintingDTO> = emptyList(),
+    ) : SearchCard {
+        @get:JsonIgnore
+        override val printedNames: List<String> get() = printedNamePrintings.map { it.name }
+    }
+
+    data class PrintedNamePrintingDTO(
+        val name: String,
+        val setCode: String,
+        val collectorNumber: String,
+        val imageUri: String?,
+        val backFaceImageUri: String?,
+    )
 
     private fun CardDefinition.toSummary(): CardSummaryDTO {
         // Prefer the most-recent printing's art and picker target so reprints (e.g. EOE/KTK)
@@ -176,6 +194,11 @@ class CardsController(
             printingSetCodes = printingRegistry.printingsOf(name)
                 .map { it.setCode }
                 .distinct(),
+            printedNamePrintings = printingRegistry.printingsOf(name).mapNotNull { p ->
+                p.printedName?.let {
+                    PrintedNamePrintingDTO(it, p.setCode, p.collectorNumber, p.imageUri, p.backFaceImageUri)
+                }
+            },
         )
     }
 

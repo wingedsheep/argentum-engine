@@ -124,11 +124,35 @@ function buildNumeric(field: NumericFieldGetter): Matcher['build'] {
 // Name / oracle / type
 // ---------------------------------------------------------------------------
 
+/** The oracle name plus every printed name — what a name atom is matched against. */
+export function cardNames(c: CardSummary): string[] {
+  const printed = c.printedNamePrintings
+  return printed && printed.length > 0 ? [c.name, ...printed.map((p) => p.name)] : [c.name]
+}
+
+/**
+ * The string test a name atom applies (regex, `!exact`, or substring), or null when the atom is
+ * malformed. Shared by the name matcher and the printed-name art selection.
+ */
+export function nameTest(atom: AtomNode): ((s: string) => boolean) | null {
+  if (atom.regex) {
+    try {
+      const re = new RegExp(atom.value, atom.regexFlags || 'i')
+      return (s) => re.test(s)
+    } catch {
+      return null
+    }
+  }
+  const needle = lc(atom.value)
+  if (atom.exact) return (s) => lc(s) === needle
+  return (s) => lc(s).includes(needle)
+}
+
 function buildName(target: 'name' | 'oracle'): Matcher['build'] {
   return (atom) => {
-    const get = (c: CardSummary): string => {
-      if (target === 'name') return c.name
-      return c.oracleText ?? ''
+    const get = (c: CardSummary): string[] => {
+      if (target === 'name') return cardNames(c)
+      return [c.oracleText ?? '']
     }
     if (atom.regex) {
       let re: RegExp
@@ -141,18 +165,18 @@ function buildName(target: 'name' | 'oracle'): Matcher['build'] {
       } catch (e) {
         return err(`Invalid regex: ${(e as Error).message}.`)
       }
-      return ok((c) => re.test(get(c)))
+      return ok((c) => get(c).some((s) => re.test(s)))
     }
     if (atom.exact && target === 'name') {
       const want = lc(atom.value)
-      return ok((c) => lc(c.name) === want)
+      return ok((c) => get(c).some((s) => lc(s) === want))
     }
     const needle = lc(atom.value)
     if (!needle) return ok(() => true)
     // Oracle and name use simple substring — Scryfall does the same. Word-
     // boundary matching gets surprising fast (`o:fly` should still find
     // "flying").
-    return ok((c) => lc(get(c)).includes(needle))
+    return ok((c) => get(c).some((s) => lc(s).includes(needle)))
   }
 }
 

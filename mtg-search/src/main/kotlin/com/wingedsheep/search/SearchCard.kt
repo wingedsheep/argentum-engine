@@ -43,4 +43,11 @@ interface SearchCard {
      * matcher always falls back to [setCode] for backwards compatibility.
      */
     val printingSetCodes: List<String> get() = emptyList()
+
+    /**
+     * Names printed on this card's printings when they differ from the oracle [name] — e.g.
+     * Through the Omenpaths' "Ademi of the Silkchutes" for Spectacular Spider-Man. The name
+     * matcher (bareword, `name:`, `!exact`) checks these alongside [name], as Scryfall does.
+     */
+    val printedNames: List<String> get() = emptyList()
 }

@@ -154,3 +154,27 @@ export const CARDS: CardSummary[] = [
 export function names(cards: CardSummary[]): string[] {
   return cards.map((c) => c.name).sort()
 }
+
+/** Printed-name case, kept out of [CARDS]: Through the Omenpaths prints it as "Ademi of the Silkchutes". */
+export const SPECTACULAR_SPIDER_MAN: CardSummary = {
+  name: 'Spectacular Spider-Man',
+  manaCost: '{1}{W}',
+  cmc: 2,
+  colors: ['WHITE'],
+  colorIdentity: ['WHITE'],
+  cardTypes: ['CREATURE'],
+  supertypes: ['LEGENDARY'],
+  subtypes: [],
+  basicLand: false,
+  rarity: 'RARE',
+  setCode: 'SPM',
+  collectorNumber: '14',
+  power: '3',
+  toughness: '2',
+  keywords: [],
+  legalFormats: ['STANDARD'],
+  printingSetCodes: ['SPM', 'OM1'],
+  printedNamePrintings: [
+    { name: 'Ademi of the Silkchutes', setCode: 'OM1', collectorNumber: '1', imageUri: 'om1.jpg', backFaceImageUri: null },
+  ],
+}

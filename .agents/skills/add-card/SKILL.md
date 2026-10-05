@@ -184,14 +184,25 @@ cards. It becomes its own PR — with tests for the primitive, not just for the 
 
 ## Step 5: Tests
 
-**Only if Step 4 added new vocabulary.** A card built purely from existing primitives is covered by the
-snapshot and lint nets.
+**Most cards get no test.** A card composed of primitives other cards already exercise is covered by the
+snapshot and lint nets; a test that only re-proves "deal 3 damage deals 3 damage" is cost with no signal.
+Write one only when the card earns it:
+
+- **Step 4 added new vocabulary** — test the primitive through the card.
+- **First use of an existing primitive or keyword** — no card has lowered it yet, so nothing proves the
+  engine acts on it (bushido's first card). A `Keyword.X` existing is not proof.
+- **A rules interaction the snapshot can't see** — last-known information, a replacement or layer
+  ordering, a linked exile, a cost-linked amount, a condition evaluated at an unusual moment, or a
+  composition you had to think hard about.
+
+When in doubt: if a reviewer can confirm the card by reading its script against the oracle text, skip the
+test; if being right depends on how the engine executes the script, write one.
 
 **File:** `mtg-sets/<era>/tests/src/test/kotlin/com/wingedsheep/engine/scenarios/{CardName}ScenarioTest.kt`,
 in the era module mirroring the card's own — **`just where {SET}`** prints both. (Tests that exercise the
 engine rather than a specific card stay in `rules-engine/src/test/.../scenarios/`.)
 
-**One card per file** — a five-card batch unit gets five test files, never one shared
+**One card per file** — five tested cards get five test files, never one shared
 `{Something}BatchScenarioTest`. See AGENTS.md → Hard rules.
 
 Set up a minimal board, exercise the new effect in isolation, verify the state changes, and cover the

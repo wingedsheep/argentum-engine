@@ -21,6 +21,7 @@ data class TestCard(
     override val legalFormats: List<String> = emptyList(),
     override val isDoubleFaced: Boolean = false,
     override val printingSetCodes: List<String> = emptyList(),
+    override val printedNames: List<String> = emptyList(),
 ) : SearchCard
 
 object Fixtures {
@@ -130,5 +131,16 @@ object Fixtures {
             legalFormats = listOf("STANDARD", "MODERN"),
             printingSetCodes = listOf("BLB", "EOE"),
         ),
+    )
+
+    /** Printed-name case, kept out of [CARDS]: Through the Omenpaths prints it as "Ademi of the Silkchutes". */
+    val SPECTACULAR_SPIDER_MAN = TestCard(
+        name = "Spectacular Spider-Man", manaCost = "{1}{W}", cmc = 2,
+        colors = listOf("WHITE"), colorIdentity = listOf("WHITE"),
+        cardTypes = listOf("CREATURE"), supertypes = listOf("LEGENDARY"),
+        rarity = "RARE", setCode = "SPM",
+        power = "3", toughness = "2",
+        printingSetCodes = listOf("SPM", "OM1"),
+        printedNames = listOf("Ademi of the Silkchutes"),
     )
 }

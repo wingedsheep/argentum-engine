@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseQuery } from '../index'
-import { CARDS, names } from './fixtures'
+import { CARDS, SPECTACULAR_SPIDER_MAN, names } from './fixtures'
 
 function run(q: string): string[] {
   const { predicate, errors } = parseQuery(q)
@@ -97,6 +97,25 @@ describe('end-to-end search', () => {
     expect(run('s:eoe')).toContain('Banishing Light')
     expect(run('s:blb')).toContain('Banishing Light')
     expect(run('s:eoe')).not.toContain('Lightning Bolt')
+  })
+
+  it('name matching also checks printed names', () => {
+    const withSpidey = [...CARDS, SPECTACULAR_SPIDER_MAN]
+    const runAll = (q: string) => names(withSpidey.filter(parseQuery(q).predicate))
+    expect(runAll('ademi')).toEqual(['Spectacular Spider-Man'])
+    expect(runAll('name:silkchutes')).toEqual(['Spectacular Spider-Man'])
+    expect(runAll('!"Ademi of the Silkchutes"')).toEqual(['Spectacular Spider-Man'])
+    expect(runAll('name:/^ademi/')).toEqual(['Spectacular Spider-Man'])
+  })
+
+  it('printedNameMatcher picks the printing only when the printed name is what matched', async () => {
+    const { printedNameMatcher, parseQuery } = await import('../index')
+    const spidey = SPECTACULAR_SPIDER_MAN
+    expect(printedNameMatcher(parseQuery('ademi').ast)?.(spidey)?.setCode).toBe('OM1')
+    expect(printedNameMatcher(parseQuery('ademi t:creature').ast)?.(spidey)?.setCode).toBe('OM1')
+    expect(printedNameMatcher(parseQuery('spectacular').ast)?.(spidey)).toBeNull()
+    expect(printedNameMatcher(parseQuery('t:creature').ast)).toBeNull()
+    expect(printedNameMatcher(parseQuery('ademi or t:instant').ast)).toBeNull()
   })
 
   it('s:EOE Banishing Light combines reprint set with name match', () => {

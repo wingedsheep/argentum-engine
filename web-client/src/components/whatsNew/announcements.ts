@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-om1',
+    date: '2026-10-05',
+    kind: 'set',
+    setCode: 'OM1',
+    title: 'Through the Omenpaths is complete',
+    body:
+      'Marvel’s Spider-Man retold on Magic’s own planes: the same cards and draft as Spider-Man, with new names and art for every hero and villain. Pick its printings in the deckbuilder or draft it as its own set.',
+    tryIf: 'the Spider-Man draft without leaving the Multiverse',
+  },
+  {
     id: 'set-mh3',
     date: '2026-10-04',
     kind: 'set',

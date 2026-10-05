@@ -31,6 +31,12 @@ data class Printing(
     val frameEffects: List<String> = emptyList(),
     /** Scryfall `border_color` (e.g. "black", "white", "borderless"). Null when unknown. */
     val borderColor: String? = null,
+    /**
+     * Scryfall `printed_name` — the name printed on this card when it differs from the oracle
+     * [name], e.g. Through the Omenpaths' in-universe names for Marvel's Spider-Man cards.
+     * Presentation only: rules identity stays [name]. Null when the printing uses the oracle name.
+     */
+    val printedName: String? = null,
 ) {
     /** Reference form for decks and lookup APIs. */
     val ref: PrintingRef get() = PrintingRef(setCode, collectorNumber)

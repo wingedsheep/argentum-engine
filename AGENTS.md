@@ -28,7 +28,7 @@ docs it points at; load those when the work needs them.
   remain actionable; an Assay decline is not a pass.
 - **Route to the matching skill, don't freelance:**
   - Implementing a card — or a batch of them — from a backlog file or by name → **`add-card`** (Scryfall
-    lookup, oracle errata, canonical-printing placement, scenario test).
+    lookup, oracle errata, canonical-printing placement, a scenario test when the card earns one).
   - Any engine/SDK/server/client capability that isn't a single card — effect, trigger, condition,
     keyword, decision flow → **`add-feature`** (composition-first design, cross-layer tracing, perf + UX).
   - Starting a set that has no `backlog/sets/` entry yet → **`create-backlog-for-set`** (Scryfall dump,
@@ -52,9 +52,10 @@ docs it points at; load those when the work needs them.
   613.8 vs 613.7 and 704.5 vs 704.6 are easy to swap. Check the official Comprehensive Rules
   <https://magic.wizards.com/en/rules> — the plain-text `.txt` is too large to fetch into context, so
   `curl -o` it and `grep` locally. If you can't verify, describe the rule by name instead of guessing.
-- **One card, one test file — never batch cards into a shared test.** A scenario test covers exactly one
-  card: `<CardName>ScenarioTest.kt` holding that card's tests. Implementing five cards means five test
-  files, not one `FooBatchScenarioTest`. Batched files hide which card a failure belongs to, make
+- **One card, one test file — never batch cards into a shared test.** Not every card gets a test: a card
+  composed of well-trodden primitives is covered by the snapshot and lint nets (`add-card` Step 5 says
+  when one is earned). When a card does get one, it covers exactly that card: `<CardName>ScenarioTest.kt`
+  holding that card's tests. Five tested cards means five test files, not one `FooBatchScenarioTest`. Batched files hide which card a failure belongs to, make
   `just test-class` useless for a single card, and turn every later edit into a merge conflict between
   agents. Engine-level tests (a mechanic, a replacement effect) are the exception — those are named for
   the mechanic and may exercise several cards. This bans the shared test *file*, not the shared *PR*:

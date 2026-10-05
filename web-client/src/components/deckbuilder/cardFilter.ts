@@ -20,6 +20,14 @@ import type { CardPredicate, ParseResult } from './query'
 // Card shape — mirrors `DecksController.CardSummaryDTO` on the backend.
 // ---------------------------------------------------------------------------
 
+export interface PrintedNamePrinting {
+  name: string
+  setCode: string
+  collectorNumber: string
+  imageUri: string | null
+  backFaceImageUri: string | null
+}
+
 export interface CardSummary {
   name: string
   manaCost: string
@@ -46,6 +54,12 @@ export interface CardSummary {
    * at the original printing's set. Defaults to empty for legacy fixtures.
    */
   printingSetCodes?: string[]
+  /**
+   * Printings whose printed name differs from [name] (Through the Omenpaths' "Ademi of the
+   * Silkchutes" for Spectacular Spider-Man). The name matcher checks these too, and a search
+   * that matched only a printed name shows that printing's art.
+   */
+  printedNamePrintings?: PrintedNamePrinting[]
   oracleText?: string | null
   power?: string | null
   toughness?: string | null

@@ -108,6 +108,7 @@ class PrintingsController(
         isFullArt = isFullArt,
         frameEffects = frameEffects,
         borderColor = borderColor,
+        printedName = printedName,
     )
 
     /**
@@ -129,5 +130,6 @@ class PrintingsController(
         val isFullArt: Boolean,
         val frameEffects: List<String>,
         val borderColor: String?,
+        val printedName: String? = null,
     )
 }

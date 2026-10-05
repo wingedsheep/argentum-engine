@@ -34,6 +34,8 @@ export interface PrintingDTO {
   readonly isFullArt: boolean
   readonly frameEffects: readonly string[]
   readonly borderColor: string | null
+  /** Name printed on this card when it differs from the oracle name (e.g. Through the Omenpaths). */
+  readonly printedName?: string | null
 }
 
 /** All printings sharing one set, ready to render under a single header. */
@@ -125,7 +127,8 @@ export function PrintingPicker({
         !p.setCode.toLowerCase().includes(needle) &&
         !(p.setName?.toLowerCase().includes(needle) ?? false) &&
         !p.collectorNumber.toLowerCase().includes(needle) &&
-        !(p.artist?.toLowerCase().includes(needle) ?? false)
+        !(p.artist?.toLowerCase().includes(needle) ?? false) &&
+        !(p.printedName?.toLowerCase().includes(needle) ?? false)
       ) {
         continue
       }
@@ -223,7 +226,7 @@ export function PrintingPicker({
                         type="button"
                         className={styles.tileButton}
                         onClick={() => onPick(p)}
-                        title={`${p.setName ?? p.setCode} #${p.collectorNumber}${p.artist ? ` — ${p.artist}` : ''}`}
+                        title={`${p.printedName ? `${p.printedName} · ` : ''}${p.setName ?? p.setCode} #${p.collectorNumber}${p.artist ? ` — ${p.artist}` : ''}`}
                       >
                         {p.imageUri ? (
                           <img src={p.imageUri} alt="" className={styles.tileImage} loading="lazy" />

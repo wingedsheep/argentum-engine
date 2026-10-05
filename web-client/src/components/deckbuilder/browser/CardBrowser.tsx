@@ -16,7 +16,7 @@ import { FilterSection } from './FilterSection'
 import { SearchBar } from './SearchBar'
 import { sortCards, type SortMode } from './cardSort'
 import type { SetInfo } from './useCardCatalog'
-import { useCardsWithSetArt, useSetPrintingOverride, type PrintingOverride } from './useSetPrintingOverride'
+import { useArtOverrides, useCardsWithSetArt, useSetPrintingOverride, type PrintingOverride } from './useSetPrintingOverride'
 import styles from './CardBrowser.module.css'
 
 const PAGE_SIZE = 120
@@ -81,8 +81,9 @@ export function CardBrowser({
     () => filtered.slice(0, visibleCount).map((c) => c.name),
     [filtered, visibleCount],
   )
-  const overrides = useSetPrintingOverride(activeSetFilter, visibleNames)
-  const withArt = useCardsWithSetArt(filtered, activeSetFilter, overrides)
+  const setOverrides = useSetPrintingOverride(activeSetFilter, visibleNames)
+  const overrides = useArtOverrides(parseResult.ast, filtered, setOverrides)
+  const withArt = useCardsWithSetArt(filtered, overrides)
   const displayed = useMemo(() => withArt.slice(0, visibleCount), [withArt, visibleCount])
 
   const resultLabel = loading

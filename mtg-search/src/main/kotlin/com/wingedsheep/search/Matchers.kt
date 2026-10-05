@@ -85,27 +85,28 @@ object Matchers {
     // ---- name / oracle / type --------------------------------------------
 
     private fun buildName(target: NameTarget): (AtomNode) -> MatcherResult = { atom ->
-        val get: (SearchCard) -> String = when (target) {
-            NameTarget.NAME -> { c -> c.name }
-            NameTarget.ORACLE -> { c -> c.oracleText ?: "" }
+        // A name atom matches the oracle name or any printed name; oracle text has one value.
+        val get: (SearchCard) -> List<String> = when (target) {
+            NameTarget.NAME -> { c -> if (c.printedNames.isEmpty()) listOf(c.name) else listOf(c.name) + c.printedNames }
+            NameTarget.ORACLE -> { c -> listOf(c.oracleText ?: "") }
         }
         when {
             atom.regex -> {
                 try {
                     val flags = if (atom.regexFlags.isEmpty()) "i" else atom.regexFlags
                     val re = Regex(atom.value, regexOptions(flags))
-                    ok { c -> re.containsMatchIn(get(c)) }
+                    ok { c -> get(c).any { re.containsMatchIn(it) } }
                 } catch (e: Exception) {
                     err("Invalid regex: ${e.message}.")
                 }
             }
             atom.exact && target == NameTarget.NAME -> {
                 val want = atom.value.lowercase()
-                ok { c -> c.name.lowercase() == want }
+                ok { c -> get(c).any { it.lowercase() == want } }
             }
             else -> {
                 val needle = atom.value.lowercase()
-                if (needle.isEmpty()) ok(ALWAYS_TRUE) else ok { c -> get(c).lowercase().contains(needle) }
+                if (needle.isEmpty()) ok(ALWAYS_TRUE) else ok { c -> get(c).any { it.lowercase().contains(needle) } }
             }
         }
     }

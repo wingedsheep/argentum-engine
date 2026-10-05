@@ -94,6 +94,16 @@ class SearchServiceTest : StringSpec({
         run("s:eoe") shouldNotContain "Lightning Bolt"
     }
 
+    "name matching also checks printed names" {
+        val cards = Fixtures.CARDS + Fixtures.SPECTACULAR_SPIDER_MAN
+        fun run(q: String) = SearchService.search(cards, q).map { it.name }
+        run("ademi") shouldContainExactly listOf("Spectacular Spider-Man")
+        run("name:silkchutes") shouldContainExactly listOf("Spectacular Spider-Man")
+        run("!\"Ademi of the Silkchutes\"") shouldContainExactly listOf("Spectacular Spider-Man")
+        run("name:/^ademi/") shouldContainExactly listOf("Spectacular Spider-Man")
+        run("spectacular") shouldContainExactly listOf("Spectacular Spider-Man")
+    }
+
     "set: filter combines with name match for 's:EOE Banishing Light'" {
         run("s:eoe banishing") shouldContainExactly listOf("Banishing Light")
     }
