@@ -3425,6 +3425,19 @@ object Steps {
         // round-trip as the triggering player, which on a spell is no one. The SDK spells the first
         // as the bound slot and the second as a third thing, so the run declines rather than choose.
         if (declared.isNotEmpty() && parts.any { Slots.namesPlayer(it, "TriggeringPlayer") }) return null
+        // **"Its controller" needs one permanent to be the controller of.** "Destroy target creature.
+        // Its controller creates a 3/3 green Beast creature token." reads the token's recipient as
+        // `EffectTarget.TargetController`, which, like `ContextTarget(0)`, names no slot and so is
+        // invisible to the pronoun guard above. After a player target there is no controller to
+        // name, after two targets the model cannot say which one's, and after a spell the cards
+        // that print it (An Offer You Can't Refuse) order the token before the counter so the
+        // spell's controller is still readable — a different model from the printed order. So the
+        // line must declare exactly one permanent target, and anything else declines.
+        if (parts.any { Slots.namesPlayer(it, "TargetController") }) {
+            val single = declared.singleOrNull() ?: return null
+            Targets.targetedFilter(single) ?: return null
+            if (single is TargetObject && (single.count != 1 || single.filter.zone != Zone.BATTLEFIELD)) return null
+        }
         var index = 0
         return parts.map { part ->
             if (part.targetRequirements.isEmpty()) {

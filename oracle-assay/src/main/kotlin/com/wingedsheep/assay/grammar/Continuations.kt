@@ -178,7 +178,7 @@ object Continuations {
         damageToThatCreature,
         ownerGainsLife,
         drawForEachInHand,
-    ) + SelfSteps.continuing + Prevention.continuationClauses
+    ) + SelfSteps.continuing + Prevention.continuationClauses + Tokens.targetControllerClauses
 
     val clause: Phrase<CardScript> = oneOf("a clause referring to the target", all)
 }

@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.TurnTracker
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -250,6 +251,31 @@ object Tokens {
     )
 
     /**
+     * Who the clause says creates the token: the imperative's "you", or the third-person "its
+     * controller" of the target an earlier sentence chose.
+     *
+     * "Destroy target creature. **Its controller creates** a 3/3 green Frog Lizard creature token."
+     * (Pongify, Beast Within, Crib Swap, Get Lost) is the same token clause with a subject and a
+     * conjugated verb, and the SDK holds it as the same effect with one field set —
+     * `controller = EffectTarget.TargetController`, which nine hand-written cards write. So it is an
+     * axis of [createToken] and [createPredefined] rather than a second copy of either: the verb and
+     * the controller travel together, and the default row's `null` is what keeps the imperative
+     * from reading a token that goes to someone else.
+     *
+     * The third-person rows are **not** in [clauses]: "its controller" points back at a target, so
+     * they are offered only from a later clause position ([Continuations]), and `Steps.renumbered`
+     * refuses them unless the line declared exactly one permanent target.
+     */
+    private class Creator(val verb: String, val controller: EffectTarget?, val name: String)
+
+    private val you = Creator("create", controller = null, name = "create")
+    private val targetController = Creator(
+        "its controller creates",
+        controller = EffectTarget.TargetController,
+        name = "its controller creates",
+    )
+
+    /**
      * The shape: "create <count> P/T <colours> <type> creature token(s)[ with <keywords>]".
      *
      * The keyword rider builds the same list [Keywords.keywordRun] does everywhere else, into
@@ -274,12 +300,13 @@ object Tokens {
         suffix: String = "",
         suffixName: String = "",
         tally: Amounts.Scope? = null,
+        creator: Creator = you,
     ): Phrase<CardScript> {
         val noun = if (count.plural) "{kind} tokens" else "{kind} token"
         val rider = if (keywords) " with {kws}" else ""
         val entry = if (tapped) "tapped " else ""
         val counted = if (tally == null) "" else " for each {filter}${tally.surface}"
-        val name = "create " + (if (count.plural) "tokens" else "a token") +
+        val name = "${creator.name} " + (if (count.plural) "tokens" else "a token") +
             (if (tapped) " tapped" else "") +
             (if (keywords) " with keywords" else "") + suffixName +
             (if (tally == null) "" else " per ${tally.where}")
@@ -300,13 +327,17 @@ object Tokens {
                 colors = colours,
                 creatureTypes = types.map { it.value }.toSet(),
                 keywords = granted,
+                controller = creator.controller,
                 tapped = tapped,
                 artifactToken = kind.artifact,
                 enchantmentToken = kind.enchantment,
             )
         )
 
-        return phrase("create ${count.surface} $entry{p}/{t} {color} {types} $noun$rider$counted$suffix", name = name) {
+        return phrase(
+            "${creator.verb} ${count.surface} $entry{p}/{t} {color} {types} $noun$rider$counted$suffix",
+            name = name,
+        ) {
             if (count.words != null) slot("n", count.words)
             slot("p", Primitives.cardinal)
             slot("t", Primitives.cardinal)
@@ -411,32 +442,54 @@ object Tokens {
      */
     private class Predefined(
         val tokenType: String,
-        val fixed: (Int) -> Effect,
-        val dynamic: ((DynamicAmount) -> Effect)? = null,
+        val fixed: (Int, EffectTarget?) -> Effect,
+        val dynamic: ((DynamicAmount, EffectTarget?) -> Effect?)? = null,
     )
 
     private val PREDEFINED: List<Predefined> = listOf(
-        Predefined("Treasure", { Effects.CreateTreasure(count = it) }, { Effects.CreateTreasure(count = it) }),
-        Predefined("Food", { Effects.CreateFood(count = it) }, { Effects.CreateFood(count = it) }),
-        Predefined("Clue", { Effects.CreateClue(count = it) }, { Effects.CreateClue(count = it) }),
-        Predefined("Blood", { Effects.CreateBlood(count = it) }, { Effects.CreateBlood(count = it) }),
-        Predefined("Map", { Effects.CreateMapToken(count = it) }, { Effects.CreateMapToken(count = it) }),
-        Predefined("Lander", { Effects.CreateLander(count = it) }),
-        Predefined("Shard", { Effects.CreateShard(count = it) }),
+        Predefined(
+            "Treasure",
+            { n, c -> Effects.CreateTreasure(count = n, controller = c) },
+            // The dynamic overload takes no controller, so only the imperative reaches it.
+            { n, c -> if (c == null) Effects.CreateTreasure(count = n) else null },
+        ),
+        Predefined(
+            "Food",
+            { n, c -> Effects.CreateFood(count = n, controller = c) },
+            { n, c -> Effects.CreateFood(count = n, controller = c) },
+        ),
+        Predefined(
+            "Clue",
+            { n, c -> Effects.CreateClue(count = n, controller = c) },
+            { n, c -> Effects.CreateClue(count = n, controller = c) },
+        ),
+        Predefined(
+            "Blood",
+            { n, c -> Effects.CreateBlood(count = n, controller = c) },
+            { n, c -> Effects.CreateBlood(count = n, controller = c) },
+        ),
+        Predefined(
+            "Map",
+            { n, c -> Effects.CreateMapToken(count = n, controller = c) },
+            // The dynamic overload takes no controller, so only the imperative reaches it.
+            { n, c -> if (c == null) Effects.CreateMapToken(count = n) else null },
+        ),
+        Predefined("Lander", { n, c -> Effects.CreateLander(count = n, controller = c) }),
+        Predefined("Shard", { n, c -> Effects.CreateShard(count = n, controller = c) }),
     )
 
-    private fun createPredefined(count: Count, token: Predefined): Phrase<CardScript> {
+    private fun createPredefined(count: Count, token: Predefined, creator: Creator = you): Phrase<CardScript> {
         val noun = if (count.plural) "tokens" else "token"
         fun scriptFor(amount: DynamicAmount): CardScript? {
             val effect = when (amount) {
-                is DynamicAmount.Fixed -> token.fixed(amount.amount)
-                else -> token.dynamic?.invoke(amount) ?: return null
+                is DynamicAmount.Fixed -> token.fixed(amount.amount, creator.controller)
+                else -> token.dynamic?.invoke(amount, creator.controller) ?: return null
             }
             return CardScript(spellEffect = effect)
         }
         return phrase(
-            "create ${count.surface} ${token.tokenType} $noun",
-            name = "create " +
+            "${creator.verb} ${count.surface} ${token.tokenType} $noun",
+            name = "${creator.name} " +
                 if (count.plural) "${token.tokenType} tokens" else "a ${token.tokenType} token",
         ) {
             if (count.words != null) slot("n", count.words)
@@ -514,6 +567,22 @@ object Tokens {
                 counts.dropLast(1).map { createPredefined(it, token) }
             } +
             investigate
+
+    /**
+     * "Its controller creates a 3/3 green Ape creature token." / "Its controller creates two Treasure
+     * tokens." — the [Creator] axis's third-person rows, for [Continuations] to offer after the
+     * sentence that chose the target. The counted, tallied and X rows are left out: no printed
+     * "its controller creates" line takes them, and a row written against nothing is a guess.
+     */
+    val targetControllerClauses: List<Phrase<CardScript>> =
+        counts.dropLast(1).flatMap { count ->
+            listOf(
+                createToken(count, keywords = false, creator = targetController),
+                createToken(count, keywords = true, creator = targetController),
+            )
+        } + PREDEFINED.flatMap { token ->
+            counts.dropLast(1).map { createPredefined(it, token, targetController) }
+        }
 
     /**
      * "Create that many Blood tokens." — Olivia's Attendants; "…create that many 1/1 green Elf

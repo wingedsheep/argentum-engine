@@ -93,9 +93,10 @@ internal object Slots {
         }
 
     /**
-     * Whether [script] names [player] anywhere — a `Player` reference such as `TriggeringPlayer`,
-     * however deeply nested. A JSON walk for [readsPropertyOf]'s reason; the one caller is
-     * [Steps]' `renumbered`, which carries the reason it asks.
+     * Whether [script] names [player] anywhere — a `Player` reference such as `TriggeringPlayer`, or
+     * an `EffectTarget` such as `TargetController`, however deeply nested. A JSON walk for
+     * [readsPropertyOf]'s reason; the one caller is [Steps]' `renumbered`, which carries the reasons
+     * it asks.
      */
     fun namesPlayer(script: CardScript, player: String): Boolean {
         val tree = runCatching {
