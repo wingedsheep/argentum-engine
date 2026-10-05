@@ -800,6 +800,82 @@
     ]
 }
 
+// Demonic Gifts
+{
+    "name": "Demonic Gifts",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature gets +2/+0 and gains \"When this creature dies, return it to the battlefield under its owner's control.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Demonic Gifts:1",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        },
+                        "effect": {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        "descriptionOverride": "When this creature dies, return it to the battlefield under its owner's control."
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "artist": "Kekai Kotaki",
+        "flavorText": "It began as a flavor on the tongue, like a bloody morsel of roast boar—but soon the power was a conflagration in her veins.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f23c487-ac4a-475b-ad5e-ec6f8678e668.jpg?1783928252",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The reanimating effect of Demonic Gifts works only once. Once the creature dies and returns to the battlefield, it's a new object with no relation to the creature it was. If that new creature dies, it won't come back."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Depart the Realm
 {
     "name": "Depart the Realm",
@@ -1067,6 +1143,72 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Dread Rider
+{
+    "name": "Dread Rider",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Spirit Knight",
+    "oracleText": "{1}{B}, {T}, Exile a creature card from your graveyard: Target opponent loses 3 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 7
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dread Rider:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "artist": "Irina Nordsol",
+        "flavorText": "\"What kind of monstrous grave robber leaves the treasures, but takes the bodies?\"\n—Fjall, Beskir elder",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/205eb029-68a0-4895-b142-2eb09987b5cb.jpg?1783928250"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

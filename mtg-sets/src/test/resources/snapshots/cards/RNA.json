@@ -743,6 +743,62 @@
     ]
 }
 
+// Consign to the Pit
+{
+    "name": "Consign to the Pit",
+    "manaCost": "{5}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature. Consign to the Pit deals 2 damage to that creature's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "artist": "Colin Boyer",
+        "flavorText": "First your whole life flashes before your eyes. Then you have considerable time to reflect on every regret as you plummet.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09991fad-4282-4a17-bfb1-03eaa13502df.jpg?1783933695",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "If the target creature is an illegal target by the time Consign to the Pit tries to resolve, the spell doesn't resolve. No player is dealt damage. If the target is legal but not destroyed (most likely because it has indestructible), its controller is dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Coral Commando
 {
     "name": "Coral Commando",

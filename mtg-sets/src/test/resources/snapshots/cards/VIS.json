@@ -170,6 +170,76 @@
     ]
 }
 
+// Crypt Rats
+{
+    "name": "Crypt Rats",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Rat",
+    "oracleText": "{X}: This creature deals X damage to each creature and each player. Spend only black mana on X.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Crypt Rats:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{X}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": "XValue",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "Each"
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": "XValue",
+                                "target": "Controller"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{X}: This creature deals X damage to each creature and each player. Spend only black mana on X.",
+                "xManaRestriction": [
+                    "BLACK"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Paul Lee",
+        "flavorText": "\"Once I dreamt of death, but now it dreams of me / And only rats and rotting flesh can hear my silent plea.\"\n—Mundungu chant",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/736455f6-c1b3-4a5a-a91f-a0cd3986ed53.jpg?1783946994"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Elven Cache
 {
     "name": "Elven Cache",
