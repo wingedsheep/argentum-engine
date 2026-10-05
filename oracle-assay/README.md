@@ -5713,6 +5713,32 @@ its "up to one target creature you control connives" is gated on the target exis
 executor behaviour above, and the grammar read it as a bare connive — the optional connive rows were
 withdrawn. Divergent 84 → 84.
 
+## The exploit payoff
+
+"When ~ exploits a creature, each opponent sacrifices a creature of their choice." Tail key "~
+exploits a …". CR 702.110b says a creature exploits a creature when its exploit ability's controller
+sacrifices one as that ability resolves, and `CardBuilder.exploit` takes the rule at its word: the
+payoff is the *reflexive* half of the one enters trigger exploit lowers to, not a trigger of its own.
+So the printed "Exploit" line stays the bare keyword `keywordLine` already read, and the payoff line
+carries the whole lowered ability — `Grammar.exploitPayoffLine`, soulshift's shape, calling the DSL
+method inside a throwaway `card { }` and matching by rebuilding from the reflexive half. A card with
+exploit and no payoff (Skull Skaab) still holds an ability no line prints, and the lowered-keyword
+guard keeps setting it aside. The payoff's targets are the reflexive trigger's, chosen after the
+sacrifice, so the differential learned `reflexiveTargetRequirements` as a slot owner — the cards name
+the slot `t0`, the grammar `target`.
+
+The probe (→ "When ~ enters") said 20 lines and 14 whole cards corpus-wide, and the verdict ledger
+moved by exactly 14 (11,079 → 11,093) — ten of them unimplemented cards, mostly Dragons of Tarkir, now
+Assay-ready. Over the hand-written corpus the band delivered **4 whole cards (7,919 →
+7,923)** — Graf Reaver, Repository Skaab, Rot-Tide Gargantua and Stitched Assistant. The
+other five exploit payoffs decline on their payload: "draws two cards and loses 2 life", "exiles a
+card from their hand", a counter over spells *and* abilities, the owner's top-or-bottom choice, and
+a gain-control run.
+
+### What the differential found
+
+All four newly compared cards agree with their goldens; compared 7,504 → 7,508, divergent 84 → 84.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote
