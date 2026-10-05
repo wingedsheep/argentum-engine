@@ -3424,7 +3424,7 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "creature Dwarf ctrl:you"
+                        "baseFilter": "permanent Dwarf ctrl:you"
                     },
                     "id": "t0"
                 }
