@@ -3683,6 +3683,221 @@
     ]
 }
 
+// Multiple Choice
+{
+    "name": "Multiple Choice",
+    "manaCost": "{X}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "If X is 1, scry 1, then draw a card.\nIf X is 2, you may choose a player. They return a creature they control to its owner's hand.\nIf X is 3, create a 4/4 blue and red Elemental creature token.\nIf X is 4 or more, do all of the above.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Any",
+                            "conditions": [
+                                {
+                                    "type": "Compare",
+                                    "left": "XValue",
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": "XValue",
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "Scry",
+                                "count": 1
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Any",
+                            "conditions": [
+                                {
+                                    "type": "Compare",
+                                    "left": "XValue",
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": "XValue",
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetPlayer",
+                                    "optional": true,
+                                    "descriptionOverride": "a player"
+                                },
+                                "storeAs": "multipleChoicePlayer",
+                                "nonTargeting": true,
+                                "prompt": "You may choose a player — they return a creature they control to its owner's hand"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": {
+                                        "type": "InCollection",
+                                        "collection": "multipleChoicePlayer"
+                                    }
+                                },
+                                "body": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "BattlefieldMatching",
+                                                "filter": "creature",
+                                                "player": "You"
+                                            },
+                                            "storeAs": "multipleChoiceCreatures"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "multipleChoiceCreatures",
+                                            "selection": {
+                                                "type": "ChooseExactly",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "selected2",
+                                            "prompt": "Return a creature you control to its owner's hand",
+                                            "useTargetingUI": true
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "selected2",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Any",
+                            "conditions": [
+                                {
+                                    "type": "Compare",
+                                    "left": "XValue",
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": "XValue",
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 4,
+                        "toughness": 4,
+                        "colors": [
+                            "BLUE",
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Elemental"
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "RARE",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08c9890f-7081-42f6-89eb-35c83911b443.jpg?1783927376",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Multiple Choice doesn't have any targets."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You can choose 0 as the value of X as you cast Multiple Choice, but it will have no effect when it resolves."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect allows you to cast Multiple Choice without paying its mana cost, you must choose 0 as the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Needlethorn Drake
 {
     "name": "Needlethorn Drake",

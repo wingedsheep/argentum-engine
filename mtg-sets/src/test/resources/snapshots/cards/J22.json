@@ -724,6 +724,85 @@
     ]
 }
 
+// Hold for Questioning
+{
+    "name": "Hold for Questioning",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature or planeswalker\nWhen this Aura enters, tap enchanted permanent and investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\nEnchanted permanent doesn't untap during its controller's untap step and its activated abilities can't be activated.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hold for Questioning:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "EnchantedPermanent"
+                        },
+                        "Investigate"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|planeswalker"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "UNCOMMON",
+        "artist": "Samuel Perin",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74004b11-53dc-475c-8d29-cf52403456cf.jpg?1783919194",
+        "rulings": [
+            {
+                "date": "2022-12-02",
+                "text": "Static and triggered abilities are unaffected by Hold for Questioning."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "The permanent can be untapped by other spells and abilities."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "You can enchant a permanent that is already tapped with Hold for Questioning. If you do, it doesn't become tapped again, but you will still investigate."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "Loyalty abilities are a type of activated ability, so Hold for Questioning will prevent an enchanted planeswalker's loyalty abilities being activated."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ingenious Leonin
 {
     "name": "Ingenious Leonin",
@@ -1047,6 +1126,55 @@
         "artist": "Joshua Raphael",
         "imageUri": "https://cards.scryfall.io/normal/front/0/b/0ba97da8-0106-4e8b-b58b-8f2d63e3d618.jpg?1783919191"
     }
+}
+
+// Launch Mishap
+{
+    "name": "Launch Mishap",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target creature or planeswalker spell. Create a 1/1 colorless Thopter artifact creature token with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/5/3597cf76-f0db-4d2c-b01c-d518d7c7a764.jpg?1789754755",
+                    "artifactToken": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Kim Sokol",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/abc561d3-9e52-41fd-8311-60cc9dfffdd1.jpg?1783919193"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Lita, Mechanical Engineer

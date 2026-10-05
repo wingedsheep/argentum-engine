@@ -1912,6 +1912,111 @@
     ]
 }
 
+// Jace, Arcane Strategist
+{
+    "name": "Jace, Arcane Strategist",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Jace",
+    "oracleText": "Whenever you draw your second card each turn, put a +1/+1 counter on target creature you control.\n+1: Draw a card.\n−7: Creatures you control can't be blocked this turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jace, Arcane Strategist:1",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Jace, Arcane Strategist:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Jace, Arcane Strategist:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "CANT_BE_BLOCKED",
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "270",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b6a857fb-159f-40c4-8988-da91d8521a60.jpg?1783933359",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Jace's first ability can trigger only once each turn. It doesn't matter whether Jace was on the battlefield when the first card was drawn."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If an effect instructs you to draw multiple cards, Jace's first ability triggers after you draw whichever is the second one for the turn (if any). You choose a target for the ability after you've drawn all of the cards."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a spell or ability causes you to put cards into your hand without specifically using the word \"draw,\" it's not a card drawn."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Once Jace's last ability has resolved, its effect applies even if Jace has left the battlefield."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Jaya's Greeting
 {
     "name": "Jaya's Greeting",
@@ -1957,6 +2062,130 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Kasmina, Enigmatic Mentor
+{
+    "name": "Kasmina, Enigmatic Mentor",
+    "manaCost": "{3}{U}",
+    "typeLine": "Legendary Planeswalker — Kasmina",
+    "oracleText": "Spells your opponents cast that target a creature or planeswalker you control cost {2} more to cast.\n−2: Create a 2/2 blue Wizard creature token. Draw a card, then discard a card.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kasmina, Enigmatic Mentor:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Wizard"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b0b95ce-4821-4955-a27c-93471240f54b.jpg?1783933354"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Hand"
+                                            },
+                                            "storeAs": "hand"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "hand",
+                                            "selection": {
+                                                "type": "ChooseExactly",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "discarded",
+                                            "prompt": "Choose 1 card to discard"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "discarded",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Graveyard"
+                                            },
+                                            "moveType": "Discard"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "OpponentsCastTargeting",
+                    "targetFilter": {
+                        "baseFilter": "creature|planeswalker ctrl:you"
+                    }
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c77d9454-a78c-4063-ad66-46b2f5a030aa.jpg?1783933460",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "To determine the total cost of an opponent's spell that targets a creature or planeswalker you control, start with the mana cost or alternative cost that player is paying, add any cost increases (such as that of Kasmina's effect), then apply any cost reductions. The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Spells that target more than one creature and/or planeswalker you control cost only {2} more to cast."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You can't do anything in between drawing a card and discarding a card, including casting the card you drew."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

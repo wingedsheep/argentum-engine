@@ -2817,6 +2817,51 @@
     ]
 }
 
+// Mirror Image
+{
+    "name": "Mirror Image",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Shapeshifter",
+    "oracleText": "You may have this creature enter as a copy of a creature you control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "copyFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ],
+                    "controllerPredicate": "ControlledByYou"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "The life of a shapeshifter is one of constant change.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b3ffc69-f21b-410e-8993-8c1b4669fc19.jpg?1783934585",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If the chosen creature is copying something else (for example, if the chosen creature is another Mirror Image), then Mirror Image enters the battlefield as whatever the chosen creature copied."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If Mirror Image somehow enters the battlefield at the same time as another creature, it can't become a copy of that creature. You may choose only a creature that's already on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mystic Archaeologist
 {
     "name": "Mystic Archaeologist",

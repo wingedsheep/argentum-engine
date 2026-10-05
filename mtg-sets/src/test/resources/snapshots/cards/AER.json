@@ -248,6 +248,60 @@
     ]
 }
 
+// Leave in the Dust
+{
+    "name": "Leave in the Dust",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target nonland permanent to its owner's hand.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "artist": "Vincent Proce",
+        "flavorText": "The daredevil racers of the Derby Crows, long at odds with the Consulate, were quick to join the renegades in open revolt.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c01bd77-beb0-4a26-858d-022311e550bf.jpg?1783936771",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If the target permanent becomes an illegal target, Leave in the Dust doesn’t resolve and none of its effects happen. You won’t draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Lifecrafter's Bestiary
 {
     "name": "Lifecrafter's Bestiary",

@@ -2678,6 +2678,79 @@
     ]
 }
 
+// Littjara Kinseekers
+{
+    "name": "Littjara Kinseekers",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Shapeshifter",
+    "oracleText": "Changeling (This card is every creature type.)\nWhen this creature enters, if you control three or more creatures that share a creature type, put a +1/+1 counter on this creature, then scry 1.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "CHANGELING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Littjara Kinseekers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "LargestSharedCreatureTypeCount",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Tyler Walpole",
+        "flavorText": "Like calls to like, and none are forgotten.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c119f836-0707-49e2-b6d4-25f849d054a4.jpg?1783928261",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Three creatures share a creature type if there's at least one creature type all three have, no matter what other creature types they have. For example, Littjara Kinseekers (which has all creature types), an Elf Warrior, and an Elf Wizard share a creature type because they're all Elves."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you don't control three or more creatures that share a creature type immediately after Littjara Kinseekers enters the battlefield, its ability doesn't trigger. If you don't control three or more as the ability resolves, you won't put a +1/+1 counter on Littjara Kinseekers or scry 1. The three shared-type creatures you control when the ability resolves don't have to be the same three you controlled when the ability triggered."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "You put just one +1/+1 counter on Littjara Kinseekers and scry 1, no matter how many extra trios of creatures that share a creature type you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Maja, Bretagard Protector
 {
     "name": "Maja, Bretagard Protector",

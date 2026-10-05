@@ -2154,6 +2154,68 @@
     ]
 }
 
+// Lookout's Dispersal
+{
+    "name": "Lookout's Dispersal",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {1} less to cast if you control a Pirate.\nCounter target spell unless its controller pays {4}.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysMana",
+                "cost": "{4}"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "permanent Pirate"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "flavorText": "Her song plucks the strings of the storm, shifting wind and storm into a harmony that will carry her ship to safety.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5751a3c-7695-4c47-9cbd-92fd5b1b7ec9.jpg?1783935780",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Once you announce that you're casting Lookout's Dispersal, no player may take other actions until the spell's been paid for. Notably, players can't try to raise the spell's cost by removing your Pirates."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Looming Altisaur
 {
     "name": "Looming Altisaur",

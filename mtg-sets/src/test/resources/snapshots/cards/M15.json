@@ -1429,6 +1429,43 @@
     "colorIdentityOverride": []
 }
 
+// Military Intelligence
+{
+    "name": "Military Intelligence",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you attack with two or more creatures, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Military Intelligence:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "minAttackers": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "flavorText": "To know the battlefield is to anticipate the enemy. To know the enemy is to anticipate victory.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f10fafb6-3476-4cf1-a762-42fec628a579.jpg?1783939190"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Miner's Bane
 {
     "name": "Miner's Bane",

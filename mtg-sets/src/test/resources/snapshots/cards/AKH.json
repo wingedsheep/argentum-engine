@@ -2099,6 +2099,41 @@
     ]
 }
 
+// Lay Claim
+{
+    "name": "Lay Claim",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant permanent\nYou control enchanted permanent.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            "ControlEnchantedPermanent"
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "permanent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rallis",
+        "flavorText": "Initiates need worry only about the trials. Everything else is in the hands of the gods.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc0e741f-0448-4a95-9178-074356e50426.jpg?1783936519"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Liliana's Mastery
 {
     "name": "Liliana's Mastery",
