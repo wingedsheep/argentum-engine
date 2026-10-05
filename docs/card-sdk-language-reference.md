@@ -15159,7 +15159,8 @@ Copy effects read the public copiable values of a face-down source: an unnamed c
 creature with no mana cost, subtypes or printed abilities. Disguise and cloak contribute ward {2},
 which remains intrinsic on the face-up copy and subsequent copies. Face-down status, hidden
 identity/art, turn-up procedures, printed numeric keywords and hidden double-faced identities
-are not inherited. A token copied from a face-down double-faced permanent still has two faces,
+are not inherited. Attached-copy token replacements use these same public values, including
+when a token-creation replacement is accepted after a choice. A token copied from a face-down double-faced permanent still has two faces,
 both frozen from the public face-down values; transforming it cannot reveal the source card. Copy exceptions apply afterward, so Vesuvan Doppelganger retains blue and
 adds its upkeep ability to that otherwise anonymous identity. Turning the original face up does
 not update an existing copy.

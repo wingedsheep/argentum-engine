@@ -23,6 +23,9 @@ import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComp
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.TokenReplacementOfferedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.copiableCardComponent
+import com.wingedsheep.engine.state.components.identity.copiableDoubleFacedComponent
+import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -36,6 +39,7 @@ import com.wingedsheep.sdk.scripting.ModifyTokenCount
 import com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithAttachedCopy
 import com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithToken
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.effects.CopyExceptions
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -363,7 +367,7 @@ object TokenCreationReplacementHelper {
                 // cast/attach time by auraTarget / equipmentTarget — no re-check here.
                 val attachedTo = container.get<AttachedToComponent>() ?: continue
                 val attachedContainer = state.getEntity(attachedTo.targetId) ?: continue
-                val attachedCard = attachedContainer.get<CardComponent>() ?: continue
+                val attachedCard = attachedContainer.copiableCardComponent() ?: continue
 
                 val cardName = container.get<CardComponent>()?.name ?: "Source"
 
@@ -371,7 +375,8 @@ object TokenCreationReplacementHelper {
                 var newState = state.withEntity(entityId, container.with(TokenReplacementOfferedThisTurnComponent))
 
                 if (re.optional) {
-                    val prompt = "Use $cardName? Create ${if (tokenCount == 1) "a token that's a copy" else "$tokenCount tokens that are copies"} of ${attachedCard.name} instead?"
+                    val copyName = attachedCard.name.ifBlank { "the face-down creature" }
+                    val prompt = "Use $cardName? Create ${if (tokenCount == 1) "a token that's a copy" else "$tokenCount tokens that are copies"} of $copyName instead?"
 
                     val decision = { decisionId: String -> YesNoDecision(
                         id = decisionId,
@@ -429,7 +434,7 @@ object TokenCreationReplacementHelper {
         val attachedContainer = state.getEntity(attachedPermanentId)
             ?: return EffectResult.success(state)
 
-        val attachedCard = attachedContainer.get<CardComponent>()
+        val attachedCard = attachedContainer.copiableCardComponent()
             ?: return EffectResult.success(state)
 
         var newState = state
@@ -441,7 +446,7 @@ object TokenCreationReplacementHelper {
         repeat(cappedCount) {
             val (tokenId, stateWithId) = newState.newEntity()
             newState = stateWithId
-            val tokenCard = attachedCard.copy(ownerId = controllerId)
+            val tokenCard = attachedCard.copy(ownerId = controllerId, isDoubleFaced = false)
 
             val components = mutableListOf<Component>(
                 tokenCard,
@@ -456,7 +461,12 @@ object TokenCreationReplacementHelper {
                 components.add(SummoningSicknessComponent)
             }
 
+            attachedContainer.copiableDoubleFacedComponent {
+                it.copy(ownerId = controllerId, isDoubleFaced = false)
+            }?.let { components.add(it) }
+
             var container = ComponentContainer.of(*components.toTypedArray())
+            container = CopyExceptionApplier.withNumericKeywords(container, attachedContainer, CopyExceptions.None)
             if (staticAbilityHandler != null) {
                 container = staticAbilityHandler.addContinuousEffectComponent(container)
                 container = staticAbilityHandler.addReplacementEffectComponent(container)

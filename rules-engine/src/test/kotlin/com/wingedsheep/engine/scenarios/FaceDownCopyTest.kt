@@ -201,7 +201,7 @@ class FaceDownCopyTest : FunSpec({
         card(d, copy).copyWardCosts shouldBe emptyList()
         card(d, copy).name shouldBe "Grizzly Bears"
     }
-    for (path in listOf("source", "equipped", "chosen")) {
+    for (path in listOf("source", "equipped", "chosen", "attached replacement")) {
         test("$path token copying freezes public values on both faces") {
             val d = driver()
             val source = faceDown(d, FaceDownMode.CLOAK)
@@ -216,7 +216,7 @@ class FaceDownCopyTest : FunSpec({
                     d.cardRegistry, predicateEvaluator = evaluator).execute(d.state, CreateTokenCopyOfSourceEffect(), context)
                 "chosen" -> com.wingedsheep.engine.handlers.effects.token.CreateTokenCopyOfChosenPermanentExecutor
                     .createTokenCopy(d.state, source, d.player1, cardRegistry = d.cardRegistry, predicateEvaluator = evaluator)
-                else -> {
+                "equipped" -> {
                     val equipment = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")
                     d.replaceState(d.state.updateEntity(equipment) {
                         it.with(com.wingedsheep.engine.state.components.battlefield.AttachedToComponent(source))
@@ -225,6 +225,9 @@ class FaceDownCopyTest : FunSpec({
                         d.cardRegistry, predicateEvaluator = evaluator).execute(d.state,
                             CreateTokenCopyOfEquippedCreatureEffect(grantHaste = true), context.copy(sourceId = equipment))
                 }
+                else -> com.wingedsheep.engine.handlers.effects.token.TokenCreationReplacementHelper
+                    .createAttachedPermanentCopies(d.state, source, d.player1, 1,
+                        cardRegistry = d.cardRegistry, predicateEvaluator = evaluator)
             }
             d.replaceState(result.state)
             val token = (d.state.getBattlefield().toSet() - before).single { d.state.getEntity(it)!!.has<TokenComponent>() }
@@ -236,6 +239,15 @@ class FaceDownCopyTest : FunSpec({
             card(d, token).name shouldBe ""
             card(d, token).copyWardCosts shouldBe listOf(WardCost.Mana("{2}"))
             d.state.projectedState.hasKeyword(token, Keyword.HASTE) shouldBe (path == "equipped")
+            val transformer = com.wingedsheep.engine.view.ClientStateTransformer(
+                cardRegistry = d.cardRegistry, predicateEvaluator = evaluator)
+            for (viewer in listOf(d.player1, d.player2)) {
+                val view = transformer.transform(d.state, viewer).cards[token]!!
+                view.name shouldBe ""
+                view.oracleText shouldBe ""
+                view.backFaceName shouldBe null
+                view.isFaceDown shouldBe false
+            }
         }
     }
     test("numeric copy exceptions still apply when the source is face down") {
@@ -245,5 +257,47 @@ class FaceDownCopyTest : FunSpec({
         val result = CopyExceptionApplier.withNumericKeywords(source, source,
             CopyExceptions(addedNumericKeywords = listOf(com.wingedsheep.sdk.scripting.KeywordAbility.Numeric(Keyword.TOXIC, 1))))
         result.get<ToxicComponent>()!!.amount shouldBe 1
+    }
+    for (optional in listOf(false, true)) {
+        test("attached-copy replacement dispatch keeps hidden identity private when optional=$optional") {
+            val d = driver()
+            val source = faceDown(d, FaceDownMode.DISGUISE)
+            d.replaceState(d.state.updateEntity(source) {
+                it.with(DoubleFacedComponent(hidden.name, hidden.name)).with(ToxicComponent(4))
+            })
+            val equipment = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")
+            d.replaceState(d.state.updateEntity(equipment) {
+                it.with(com.wingedsheep.engine.state.components.battlefield.AttachedToComponent(source))
+                    .with(com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent(
+                        listOf(com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithAttachedCopy(optional = optional))))
+            })
+            val evaluator = PredicateEvaluator(cardRegistry = d.cardRegistry)
+            val before = d.state.getBattlefield().toSet()
+            val result = com.wingedsheep.engine.handlers.effects.token.TokenCreationReplacementHelper.checkReplacement(
+                d.state, CreateTokenCopyOfSourceEffect(), EffectContext(sourceId = equipment, controllerId = d.player1),
+                1, d.player1, cardRegistry = d.cardRegistry, predicateEvaluator = evaluator)!!
+            d.replaceState(result.state)
+            if (optional) {
+                d.state.pendingDecision!!.prompt.contains(hidden.name) shouldBe false
+                d.state.pendingDecision!!.prompt.contains("face-down creature") shouldBe true
+                d.submitYesNo(d.player1, true).error shouldBe null
+            }
+            val token = (d.state.getBattlefield().toSet() - before).single()
+            card(d, token).name shouldBe ""
+            card(d, token).copyWardCosts shouldBe listOf(WardCost.Mana("{2}"))
+            d.state.getEntity(token)!!.has<ToxicComponent>() shouldBe false
+            val transformed = com.wingedsheep.engine.handlers.effects.permanent.types.flipDfcInPlace(d.state, d.cardRegistry, token)!!
+            d.replaceState(transformed.first)
+            card(d, token).name shouldBe ""
+            card(d, token).copyWardCosts shouldBe listOf(WardCost.Mana("{2}"))
+            val transformer = com.wingedsheep.engine.view.ClientStateTransformer(
+                cardRegistry = d.cardRegistry, predicateEvaluator = evaluator)
+            for (viewer in listOf(d.player1, d.player2)) {
+                val view = transformer.transform(d.state, viewer).cards[token]!!
+                view.name shouldBe ""
+                view.oracleText shouldBe ""
+                view.backFaceName shouldBe null
+            }
+        }
     }
 })
