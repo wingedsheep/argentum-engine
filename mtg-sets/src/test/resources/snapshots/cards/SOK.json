@@ -55,3 +55,59 @@
         "RED"
     ]
 }
+
+// Michiko Konda, Truth Seeker
+{
+    "name": "Michiko Konda, Truth Seeker",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "Whenever a source an opponent controls deals damage to you, that player sacrifices a permanent of their choice.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Michiko Konda, Truth Seeker:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    },
+                    "sourceFilter": "ctrl:opponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": {},
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "ControllerOfTriggeringEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "RARE",
+        "artist": "Christopher Moeller",
+        "flavorText": "\"Watch over my father. Tell him I'm safe, but I won't come home until I find out how to bring him back to his senses, and Kamigawa is again at peace.\"\n—Michiko Konda, last letter to General Takeno",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99c56bf0-ad9f-4419-902c-f3a3880c716c.jpg?1783944168",
+        "rulings": [
+            {
+                "date": "2005-06-01",
+                "text": "One permanent is sacrificed each time an opponent's source deals damage to Michiko Konda's controller. The amount of damage doesn't matter."
+            },
+            {
+                "date": "2005-06-01",
+                "text": "Sources that deal damage multiple times (such as creatures with double strike) will trigger Michiko Konda multiple times."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}

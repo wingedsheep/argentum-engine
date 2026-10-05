@@ -1194,6 +1194,62 @@
     ]
 }
 
+// Imperial Recovery Unit
+{
+    "name": "Imperial Recovery Unit",
+    "manaCost": "{2}{W}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Whenever this Vehicle attacks, return target creature or Vehicle card with mana value 2 or less from your graveyard to your hand.\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Imperial Recovery Unit:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|Vehicle mv<=2 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this Vehicle attacks, return target creature or Vehicle card with mana value 2 or less from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac9b2c7b-c93b-4b97-999e-86faed8a26ee.jpg?1783923921"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Inkrise Infiltrator
 {
     "name": "Inkrise Infiltrator",
@@ -1282,6 +1338,60 @@
     },
     "colorIdentityOverride": [
         "GREEN",
+        "WHITE"
+    ]
+}
+
+// Kitsune Ace
+{
+    "name": "Kitsune Ace",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Fox Pilot",
+    "oracleText": "Whenever a Vehicle you control attacks, choose one —\n• That Vehicle gains first strike until end of turn.\n• Untap this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kitsune Ace:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "permanent Vehicle ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "FIRST_STRIKE",
+                                "target": "TriggeringEntity"
+                            },
+                            "description": "That Vehicle gains first strike until end of turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "TapUntap",
+                                "target": "Self",
+                                "tap": false
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a Vehicle you control attacks, choose one — that Vehicle gains first strike until end of turn; or untap this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Joseph Weston",
+        "flavorText": "\"Oh, sorry—were we racing?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef1d446a-8607-45b8-a01f-dad17bab76e7.jpg?1783923919"
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }

@@ -1121,6 +1121,44 @@
     ]
 }
 
+// Mesa Lynx
+{
+    "name": "Mesa Lynx",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "During turns other than yours, this creature gets +0/+2.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 0,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsNotYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Its ferocity is tempered by patience, knowing it must wait for just the right moment to strike a killing blow.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f65af09b-656f-4d81-b95d-b4f902e56bb7.jpg?1783929411"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Murasa Brute
 {
     "name": "Murasa Brute",
