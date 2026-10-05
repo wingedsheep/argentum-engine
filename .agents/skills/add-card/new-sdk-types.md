@@ -52,23 +52,6 @@ catalog and a standing `AGENTS.md` rule: add the new building block to the right
 A new SDK type that reads or writes a named pipeline variable must also be classified in
 `CardLinter.dataflowFields`, or `CardLintTest`'s hygiene check fails. See §21.
 
-## Teach the mtgish generator (best-effort, wide payoff)
-
-One entry unlocks coverage and auto-draft for *every* card sharing the mechanic across the whole corpus,
-not just this one. When the building block maps to an mtgish IR tag:
-
-- **Capability bridge** (`mtgish-tooling/.../coverage/bridge/`) — a one-line `tag → capability` mapping
-  in the closest themed bridge file, so the probe scores those cards as coverable rather than blocked.
-- **Rendering emitter** (`mtgish-tooling/.../coverage/emitter/*Handlers.kt`) — a `simple("Tag",
-  "MyEffect()")` entry, or `on("Tag") { node, args, tvar -> … }` when it needs amount/target/filter
-  recovery. Extend `TargetRecovery.kt` rather than widening filters. Handlers don't track imports;
-  `Shells.importsFor` derives them.
-
-Confirm with `just coverage-verify --set <SET>`. If the mechanic is genuinely too card-specific to render
-exactly, return `null` from the emitter (the SCAFFOLD tier) but **still add the bridge entry** so coverage
-scoring stays correct. See [`mtgish-tooling/README.md`](../../../mtgish-tooling/README.md)
-§"Adding a handler".
-
 ## Assay will want to spell it too — name it, don't build it here
 
 [Argentum Assay](../../../oracle-assay/README.md) parses Oracle text into these same SDK types, so new

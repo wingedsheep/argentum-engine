@@ -2,6 +2,9 @@
 
 Design: [`docs/oracle-assay.md`](../oracle-assay.md). This is the build order.
 
+> **Status:** Assay has superseded `:mtgish-tooling`, which is now deprecated. The cutover phases below
+> are kept as the historical plan.
+
 ## Goal
 
 Replace `Scryfall → mtgish (Go) → mtgish.lines.json → emitter → Kotlin source` with

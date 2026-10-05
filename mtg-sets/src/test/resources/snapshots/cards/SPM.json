@@ -6959,7 +6959,7 @@
                 "id": "Prowler, Clawed Thief:1",
                 "trigger": {
                     "type": "ZoneChangeEvent",
-                    "filter": "creature Villain ctrl:you",
+                    "filter": "permanent Villain ctrl:you",
                     "to": "Battlefield"
                 },
                 "binding": "OTHER",

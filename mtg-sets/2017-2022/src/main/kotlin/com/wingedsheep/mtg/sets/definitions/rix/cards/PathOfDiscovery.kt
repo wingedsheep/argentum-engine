@@ -22,7 +22,7 @@ val PathOfDiscovery = card("Path of Discovery") {
     oracleText = "Whenever a creature you control enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on the creature, then put the card back or put it into your graveyard.)"
 
     triggeredAbility {
-        trigger = Triggers.another(GameObjectFilter.Creature.youControl()).enters()
+        trigger = Triggers.a(GameObjectFilter.Creature.youControl()).enters()
         effect = Effects.Explore(EffectTarget.TriggeringEntity)
     }
 

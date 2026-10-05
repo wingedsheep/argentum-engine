@@ -58,12 +58,9 @@ Model exactly what the card does under the Comprehensive Rules, not a convenient
 When the faithful implementation is more work than the shortcut, do the work — or stop and tell the user
 what's missing. **A card that looks right but resolves wrong is worse than an unimplemented one.**
 
-## Step 0: read the card with Assay, then probe draftability — fail fast
+## Step 0: read the card with Assay — fail fast
 
-Two cheap signals, in this order. Assay tells you what the card *means* in our own vocabulary; the
-mtgish probe hands you a Kotlin draft to start from.
-
-### Assay first — the first-party reading
+Assay tells you what the card *means* in our own vocabulary before you write a line.
 
 ```bash
 just assay parse "<Card Name>"      # normalized lines + the SDK model each one parses to
@@ -87,30 +84,9 @@ reads the card whole — a useful second opinion on field-level questions in Ste
 fail-closed by design (one declined line declines the card) and it is **not a card loader**: its output
 feeds the Scenario Builder's dev sandbox, never the corpus. You still hand-write the `cardDef`.
 
-### Then the mtgish draft
-
-```bash
-just coverage-fidelity --emit "<Card Name>"     # prints a generated cardDef DSL + a tier banner
-```
-
-The cheapest possible draft: it tells you in one command whether the tooling can already render this
-card, and hands you a starting `cardDef` with metadata pre-filled. Read the trailing tier line:
-
-- **`fidelity tier: AUTO`** — whole card rendered. Use it as your Step 3 draft, treating every line as a
-  claim to verify.
-- **`fidelity tier: SCAFFOLD`** (leads with `// TODO:` / `// STRUCTURE needs human wiring:`) — keep the
-  structure as a skeleton and hand-fill every marker in Step 3. Don't ship the stubs.
-- **Blocked / nothing emitted** — implement from scratch.
-
-Two things the emit deliberately cannot do, so **Step 1 always runs anyway**: its Scryfall lookup is keyed
-to wherever the card is *already* implemented (else POR), so collector number, artist, flavor, and image
-may be for the wrong printing; and it can't make the canonical-placement decision, which needs the
-printings list.
-
-**Distrust the draft on the engine's known-sloppy shapes** — additional costs, cast/activation-time value
-choices (X, chosen creature type, chosen color), and inheriting a cast-time choice into later effects.
-Model those by hand and prove them with a scenario test even on an AUTO render. A confidently-wrong
-generated card is worse than none.
+**Distrust any reading on the engine's known-sloppy shapes** — additional costs, cast/activation-time
+value choices (X, chosen creature type, chosen color), and inheriting a cast-time choice into later
+effects. Model those by hand and prove them with a scenario test even when Assay reads the card whole.
 
 ## Step 1: Scryfall lookup and canonical placement
 
@@ -177,8 +153,8 @@ by release year so no single Kotlin compilation holds all of it).
 There is no registration step — `CardDiscovery` scans the `{set}/cards/` package for top-level `val`s, so
 a card in the right package with `val {CardName} = card("{Card Name}") { … }` is picked up automatically.
 
-1. Write it with DSL facades over raw constructors. If Step 0 produced a draft, start from it rather than
-   a blank page. [`examples.md`](examples.md) has a template for every common shape.
+1. Write it with DSL facades over raw constructors. If Assay read the card whole in Step 0, write to the shape
+   its `assay compile` JSON shows rather than from a blank page. [`examples.md`](examples.md) has a template for every common shape.
 
 2. **Image URI — the single most common silent error.** Use the exact `image_uris.normal` from the API
    response, query parameter (`?1562911270`) included. These are hash-based paths; a generated or

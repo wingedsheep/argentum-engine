@@ -3979,7 +3979,7 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
   in one draw instruction (Syphon Mind); this covers every opponent and naturally counts fewer cards
   when an opponent's hand is short.
 - `eachPlayerPutsCardsOnTopOfLibrary(count = 1)` — each player *including you* puts N cards from their own hand on top of their own library (facade `Effects.EachPlayerPutsCardsOnTopOfLibrary(count)`). Sadistic Augermage's dies trigger. Identical `ForEachPlayer(Player.ActivePlayerFirst)` → Gather → Select → Move shape as `eachPlayerDiscards`, with `CardDestination.ToZone(Zone.LIBRARY, Player.You, ZonePlacement.Top)` and the default `MoveType` — a tuck is not a discard, so nothing here feeds a discard trigger or a madness cast. Same sequential-iteration deviation from CR 101.4a.
-- `eachPlayerDiscards(count)` — each player *including you* discards N, each from their own hand (facade `Effects.EachPlayerDiscards(count)`). Rankle's Prank's first mode, Lore Broker's second half. One `ForEachPlayer(Player.ActivePlayerFirst)` iteration per player so the choices happen in APNAP order (CR 101.4); iterations run sequentially, so a later player chooses after an earlier player's cards have already hit the graveyard, where the rules would have every player choose face down (CR 101.4a) and discard simultaneously. The mtgish emitter renders `EachPlayerAction(AnyPlayer, Discard…)` to this pattern when the discard is the player's sole action.
+- `eachPlayerDiscards(count)` — each player *including you* discards N, each from their own hand (facade `Effects.EachPlayerDiscards(count)`). Rankle's Prank's first mode, Lore Broker's second half. One `ForEachPlayer(Player.ActivePlayerFirst)` iteration per player so the choices happen in APNAP order (CR 101.4); iterations run sequentially, so a later player chooses after an earlier player's cards have already hit the graveyard, where the rules would have every player choose face down (CR 101.4a) and discard simultaneously.
 - `eachPlayerDiscardsDraws(controllerBonusDraw?)` — Windfall / Wheel of Fortune.
 - `eachPlayerDrawsX(includeController?, includeOpponents?)` — Howling Mine shape.
 - `eachPlayerMayDraw(maxCards, lifePerCardNotDrawn?)` — optional group draw with a tax.
@@ -13013,14 +13013,13 @@ Other gates available in both contexts:
 - `SourceChosenModeIs("id")` — gate on the chosen mode (Sieges / `EntersWithChoice`). Works at both
   resolution and projection.
 - `CastChoiceMade(slot)` — generic "was a value locked into this `ChoiceSlot`" guard over the durable
-  cast-choices bag (mtgish's `AColorWasChosen`): `CastChoiceMade(ChoiceSlot.COLOR)`,
+  cast-choices bag: `CastChoiceMade(ChoiceSlot.COLOR)`,
   `CastChoiceMade(ChoiceSlot.KICKED)`, `CastChoiceMade(ChoiceSlot.BARGAINED)`. Works at resolution and
   projection; for the optional-additional-cost slots it also answers from the declaration a spell carries
   while it is still on the stack (and from the branch a cost gate is pricing), before any durable bag exists.
 - `CastChoiceIs(slot, "value")` — the slot's value equals `value` (text compare; color compares against
   the enum name): `CastChoiceIs(ChoiceSlot.MODE, "Khans")`, `CastChoiceIs(ChoiceSlot.COLOR, "RED")`. The
-  generic slot reader new cards should prefer over per-slot conditions; the §8 emitter target for
-  mtgish's `TheChosenColor`/`TheChosenCreatureType` guards.
+  generic slot reader new cards should prefer over per-slot conditions.
 - `CapturedAtCast("flag")` — the named **"as you cast this spell"** condition capture (CR 601.2i) was
   true the moment the spell was cast. Pairs with the spell DSL `captureAtCast("flag", condition)`: the
   engine evaluates `condition` (caster as controller) as the spell finishes being cast and freezes the
@@ -13106,8 +13105,7 @@ forbids `DynamicAmount.X` in card definitions.
   see it. Use `CastX` for the durable, object-scoped reading.
 - `CastX` — the `{X}` this object was cast with, read off the *current object* regardless of zone, so it
   survives onto the permanent. The same X feeds a "when you cast this spell" trigger, an enters-the-
-  battlefield trigger, the enters-with-counters replacement, and a later activated ability — the analogue
-  of mtgish's `ValueX` / `Trigger_ValueXOfThatSpell`. Backed by a durable `CastChoicesComponent` that
+  battlefield trigger, the enters-with-counters replacement, and a later activated ability. Backed by a durable `CastChoicesComponent` that
   rides the spell's stable entity onto the battlefield (and `SpellOnStackComponent.xValue` while still on
   the stack); preserved as last-known information for dies/leaves triggers. A copy of a *permanent*
   (Clone) does not inherit it (CR 707.2); a copy of a *spell* on the stack does. Hydroid Krasis reads
@@ -16293,8 +16291,7 @@ graveyard sources to the ordinary draw-replacement processor with `CardZoneIdent
 The effect recipe composes library milling and return-to-hand; no new decision or
 resolution executor is introduced. The existing Yes/No decision belongs to the
 drawing player, and its source identifies the public graveyard card. The client
-keyword label is `DREDGE`. The mtgish emitter preserves the numeric argument through
-`KeywordAbility.dredge(N)`; unsupported numeric shapes remain scaffolded.
+keyword label is `DREDGE`.
 
 `GraveyardCardsHaveDredge(filter, amount)` is the static grant: "[filter] cards in your graveyard
 have dredge N" (The Necrobloom: `GraveyardCardsHaveDredge(GameObjectFilter.Land, amount = 2)`).

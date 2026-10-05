@@ -349,28 +349,6 @@ flow, but a human needs to confirm it actually feels right in the client. Run th
 + `just client`), set up the situation (the `generate-scenario` skill can inject a board state), and
 click through the decision yourself.
 
-### From oracle text to Argentum code — `mtgish-tooling`
-
-<img src="assets/mtgish-coverage-dashboard.png" alt="mtgish coverage dashboard" width="900px">
-
-The `:mtgish-tooling` module maps the [**mtgish**](https://github.com/i5jb/mtgish) oracle-IR corpus —
-a wonderful project by [**i5jb**](https://github.com/i5jb) that parses every card's oracle text into a
-structured intermediate representation — onto our SDK. Huge thanks to its creator: that clean IR is
-what makes this whole pipeline possible. It's a **predictive, non-authoritative** analyzer (never a
-card loader): it triages the backlog and drafts the easy cards as a head start.
-
-```bash
-just coverage-dashboard       # interactive TUI: browse sets, drill into a card's generated cardDef + missing caps
-just coverage --set TMP       # implemented / free-to-add / blocked, plus which feature unlocks the most cards
-just coverage-generate --set TMP   # draft .kt for the auto-generable cards -> mtgish-tooling/generated/<set>/
-just coverage-verify --set POR     # compile the drafts + diff their capabilities against the golden snapshot
-```
-
-Generated `.kt` are **drafts in a staging dir** — they must compile, get a passing scenario test, and
-be human-reviewed before moving into a set's `cards/` package. Use it to find which feature unlocks
-the most cards, or for a blank-page head start; keep using `add-card` for the real implementation. See
-[`mtgish-tooling/README.md`](mtgish-tooling/README.md) for the full reference.
-
 ### Argentum Assay — how much of Magic can the SDK say?
 
 [`:oracle-assay`](oracle-assay/README.md) is a first-party Oracle-text grammar: Scryfall JSON in,
@@ -412,6 +390,11 @@ edited is one restart from being re-measured.
 See [`oracle-assay/README.md`](oracle-assay/README.md) for the design, the verdict table, and what the
 gates have found so far.
 
+Assay replaced the earlier `:mtgish-tooling` pipeline, which mapped the
+[**mtgish**](https://github.com/i5jb/mtgish) oracle-IR corpus by [**i5jb**](https://github.com/i5jb)
+onto our SDK. That project's clean IR got the first auto-drafts off the ground, and its explorer is
+what Assay's is modelled on — thank you. The module is deprecated and kept only for reference.
+
 ### Implementing a whole set
 
 When bringing up an entire set, this flow has proven much faster than implementing cards one at a
@@ -434,14 +417,11 @@ time (it's how Invasion was done):
 5. **Review engine changes.** Cards will occasionally still need a small engine tweak. When a PR adds
    or changes engine/SDK code, run **`review-changes <PR_URL>`** on it — this checks for elegance and
    correctness and keeps the engine/SDK clean. (Card-only PRs with no engine changes don't need it.)
-6. **Feed the work back into the mtgish generator.** Ideally, every new feature and card you implement
-   also becomes something the [`:mtgish-tooling`](mtgish-tooling/README.md) generator can *predict and
-   draft* — a capability entry in the bridge (`coverage/bridge/`) plus a rendering handler in the
-   emitter (`coverage/emitter/*Handlers.kt`). This has wider benefits than the one card: the tooling
-   maps the mtgish IR corpus across *every* set, so one bridge/emitter entry typically unlocks coverage
-   and auto-draft for many more cards that share the mechanic. Confirm with
-   `just coverage-verify --set <SET>` that the cards you just implemented now classify as
-   coverable/AUTO. (The `add-feature` and `add-card` skills both prompt for this step.)
+6. **Check the set against Assay.** Run `just assay-differential --set <SET>`: any `DIVERGENT` row
+   means Assay's reading of a card and the hand-written `cardDef` disagree — classify it before calling
+   the set done. New SDK vocabulary you added isn't taught to Assay in the same PR; name it in the PR
+   body, and the [`assay-loop`](.agents/skills/assay-loop/SKILL.md) widens the grammar to read it as its
+   own measured band.
 
 A set can also finish with a card or two deliberately left out — Antiquities' Bronze Tablet needs the
 ante zone, Arabian Nights' Shahrazad needs a whole subgame. Add those to

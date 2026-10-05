@@ -156,8 +156,8 @@ diff the generated file count against the bucket count.
 owed into a row you owe: merging main mid-sweep made M19's Mighty Leap owe a DDF row that did not exist
 when the batch was generated.
 
-`just coverage-relocate <CODE>` exists and does the `elsewhere` move mechanically, but it emits *mtgish*
-drafts rather than Assay's reading — treat its output as a starting skeleton, not as authored cards.
+Don't reach for `just coverage-relocate <CODE>`: it belongs to the deprecated mtgish tooling and emits
+*mtgish* drafts rather than Assay's reading.
 
 ## Stage 5 — prove it
 

@@ -233,6 +233,8 @@ assay-loop MODEL="" FOCUS="":
 card-status *ARGS:
     scripts/card-status {{ARGS}}
 
+# DEPRECATED — the coverage* recipes below drive the legacy :mtgish-tooling pipeline, which Argentum
+# Assay replaced (see the assay* recipes). Kept runnable for reference; nothing depends on them.
 # Build the Kotlin coverage tooling once so the recipes below can call its CLI (fast no-op when
 # up to date). The bridge + lenses live in the :mtgish-tooling module (Kotlin port of the mtgish spike).
 _coverage-tool:
