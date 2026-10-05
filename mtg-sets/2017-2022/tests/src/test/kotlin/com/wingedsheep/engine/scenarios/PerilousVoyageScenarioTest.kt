@@ -3,7 +3,14 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.j22.cards.PiratedCopy
+import com.wingedsheep.mtg.sets.definitions.xln.cards.PerilousVoyage
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.model.Deck
+import io.kotest.matchers.types.shouldBeInstanceOf
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
@@ -78,6 +85,38 @@ class PerilousVoyageScenarioTest : ScenarioTestBase() {
                 }
                 withClue("Library untouched") {
                     game.librarySize(1) shouldBe 3
+                }
+            }
+
+            test("uses the mana value the permanent had on the battlefield — a bounced copy of a 2-drop scries") {
+                val d = GameTestDriver()
+                d.registerCards(TestCards.all + listOf(PiratedCopy, PerilousVoyage))
+                d.initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
+                d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+                // Player 1's Pirated Copy ({4}{U}, mana value 5 in hand) enters as a copy of Grizzly Bears.
+                val bears = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")
+                val copy = d.putCardInHand(d.player1, "Pirated Copy")
+                d.giveMana(d.player1, Color.BLUE, 5)
+                d.castSpell(d.player1, copy).error shouldBe null
+                d.bothPass()
+                d.state.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
+                d.submitCardSelection(d.player1, listOf(bears)).error shouldBe null
+
+                // Player 2 bounces the copy at instant speed.
+                d.passPriority(d.player1)
+                val voyage = d.putCardInHand(d.player2, "Perilous Voyage")
+                d.giveMana(d.player2, Color.BLUE, 2)
+                d.castSpell(d.player2, voyage, listOf(copy)).error shouldBe null
+                d.bothPass()
+
+                withClue("The copy is back in its owner's hand") {
+                    d.getHand(d.player1).contains(copy) shouldBe true
+                }
+                withClue("It had mana value 2 on the battlefield, so its caster scries 2") {
+                    val scry = d.state.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
+                    scry.playerId shouldBe d.player2
+                    scry.options.size shouldBe 2
                 }
             }
 

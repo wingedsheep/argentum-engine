@@ -2585,43 +2585,51 @@
     "oracleText": "Return target nonland permanent you don't control to its owner's hand. If its mana value was 2 or less, scry 2.",
     "script": {
         "spellEffect": {
-            "type": "Composite",
-            "effects": [
-                {
-                    "type": "MoveToZone",
-                    "target": {
-                        "type": "BoundVariable",
-                        "name": "t0"
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "ManaValue"
                     },
-                    "destination": "Hand"
-                },
-                {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "Compare",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": {
-                                    "type": "BoundVariable",
-                                    "name": "t0"
-                                },
-                                "numericProperty": "ManaValue"
-                            },
-                            "operator": "LTE",
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 2
-                            }
-                        }
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
                     },
-                    "then": {
+                    {
                         "type": "Scry",
                         "count": 2
                     }
-                }
-            ]
+                ]
+            },
+            "otherwise": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "destination": "Hand"
+            }
         },
         "targetRequirements": [
             {

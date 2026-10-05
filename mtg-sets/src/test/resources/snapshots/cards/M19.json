@@ -3673,6 +3673,10 @@
             },
             {
                 "date": "2020-11-10",
+                "text": "The resulting artifact creature will be able to attack on your turn if it's been under your control continuously since the turn began. That is, it doesn't matter how long it's been a creature, just how long it's been on the battlefield."
+            },
+            {
+                "date": "2020-11-10",
                 "text": "Effects that modify a creature's power and/or toughness, such as the ones created by Titanic Growth or a +/1+1 counter, will apply to the creature no matter when they started to take effect. The same is true for any counters that change its power and/or toughness and effects that switch power and toughness."
             }
         ]

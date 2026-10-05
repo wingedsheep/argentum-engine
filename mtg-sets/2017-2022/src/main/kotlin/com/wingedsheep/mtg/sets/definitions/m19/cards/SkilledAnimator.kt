@@ -52,6 +52,7 @@ val SkilledAnimator = card("Skilled Animator") {
         ruling("2020-11-10", "The artifact retains any types, subtypes, or supertypes it has.")
         ruling("2020-11-10", "If an Equipment becomes an artifact creature, it usually can't be attached to another creature. If it was attached to a creature, it becomes unattached.")
         ruling("2020-11-10", "If the artifact was already a creature, its base power and toughness will each become 5. This overwrites any previous effects that set the creature's base power and toughness to specific values. Any power- or toughness-setting effects that start to apply after Skilled Animator's ability resolves will overwrite this effect.")
+        ruling("2020-11-10", "The resulting artifact creature will be able to attack on your turn if it's been under your control continuously since the turn began. That is, it doesn't matter how long it's been a creature, just how long it's been on the battlefield.")
         ruling("2020-11-10", "Effects that modify a creature's power and/or toughness, such as the ones created by Titanic Growth or a +/1+1 counter, will apply to the creature no matter when they started to take effect. The same is true for any counters that change its power and/or toughness and effects that switch power and toughness.")
     }
 }

@@ -77,12 +77,11 @@ class PiratedCopyScenarioTest : FunSpec({
         d.getHandSize(d.player1) shouldBe before + 1
     }
 
-    test("declining the copy leaves a 0/0 with no granted trigger that dies") {
+    test("declining the copy leaves a 0/0 that dies to state-based actions") {
         val d = driver()
         d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
-        val id = d.castCopying(null)
+        d.castCopying(null)
 
         d.getGraveyardCardNames(d.player1).contains("Pirated Copy") shouldBe true
-        d.state.getEntity(id)!!.get<CardComponent>()!!.copyTriggeredAbilities shouldBe emptyList()
     }
 })

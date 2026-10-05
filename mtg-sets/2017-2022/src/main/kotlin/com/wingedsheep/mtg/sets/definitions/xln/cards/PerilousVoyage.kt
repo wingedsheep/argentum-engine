@@ -17,10 +17,10 @@ import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
  * Return target nonland permanent you don't control to its owner's hand. If its mana value was
  * 2 or less, scry 2.
  *
- * The mana-value check runs after the bounce, so it reads the permanent's last-known information
- * (its `LastKnownPermanentComponent` snapshot) — the mana value it had on the battlefield, per the
- * 2017-09-29 ruling. If the target is illegal on resolution the whole spell fizzles and there is
- * no scry.
+ * The mana-value check runs *before* the bounce: a target read is live-only, so checking after
+ * the return would read the card in hand — a bounced copy (Clone as Grizzly Bears) would show its
+ * own printed mana value instead of the one it had on the battlefield (2017-09-29 ruling). If the
+ * target is illegal on resolution the whole spell fizzles and there is no scry.
  */
 val PerilousVoyage = card("Perilous Voyage") {
     manaCost = "{1}{U}"
@@ -37,11 +37,11 @@ val PerilousVoyage = card("Perilous Voyage") {
                 )
             )
         )
-        effect = Effects.ReturnToHand(permanent) then
-            Effects.If(
-                condition = Conditions.TargetSpellManaValueAtMost(DynamicAmounts.fixed(2), permanent),
-                then = Patterns.Library.scry(2)
-            )
+        effect = Effects.If(
+            condition = Conditions.TargetSpellManaValueAtMost(DynamicAmounts.fixed(2), permanent),
+            then = Effects.ReturnToHand(permanent) then Patterns.Library.scry(2),
+            otherwise = Effects.ReturnToHand(permanent)
+        )
     }
 
     metadata {

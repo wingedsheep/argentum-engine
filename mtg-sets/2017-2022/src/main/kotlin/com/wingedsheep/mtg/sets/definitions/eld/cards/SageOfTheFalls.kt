@@ -17,9 +17,9 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  * Whenever this creature or another non-Human creature you control enters, you may draw a card.
  * If you do, discard a card.
  *
- * The Sage is itself a non-Human creature, so "this creature or another non-Human creature you
- * control" is exactly "a non-Human creature you control" — one [Triggers.a] enters trigger covers
- * both. Each simultaneous arrival triggers separately and resolves its own draw-then-discard.
+ * The Sage is printed as a non-Human creature, so "this creature or another non-Human creature
+ * you control" reads as "a non-Human creature you control" — one [Triggers.a] enters trigger covers
+ * both (it would miss the Sage only if an effect made it a Human). Each simultaneous arrival triggers separately and resolves its own draw-then-discard.
  */
 val SageOfTheFalls = card("Sage of the Falls") {
     manaCost = "{4}{U}"

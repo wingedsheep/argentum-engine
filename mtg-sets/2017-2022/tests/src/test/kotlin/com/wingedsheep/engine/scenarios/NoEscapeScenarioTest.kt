@@ -23,6 +23,25 @@ class NoEscapeScenarioTest : ScenarioTestBase() {
     init {
         context("No Escape — counter a creature spell into exile, then scry 1") {
 
+            test("cannot target a noncreature, nonplaneswalker spell") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "No Escape")
+                    .withLandsOnBattlefield(1, "Island", 3)
+                    .withCardInHand(2, "Divination")
+                    .withLandsOnBattlefield(2, "Island", 3)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(2, "Divination").error shouldBe null
+                game.passPriority()
+
+                withClue("Divination is a sorcery spell — not a legal target") {
+                    (game.castSpellTargetingStackSpell(1, "No Escape", "Divination").error != null) shouldBe true
+                }
+            }
+
             test("exiles the countered creature spell and scries 1") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
