@@ -5678,8 +5678,10 @@ delivered **+8** (7,895 → 7,903), compared 7,480 → 7,488.
 Two new divergences, both card spellings, fixed. **Bovine Intervention [OTJ]** wrote
 `CreatureOrArtifact` for printed "artifact or creature", the finding the artifact/creature band fixed
 on eighteen others. **Zuko's Exile [TLA]** selected its target inside a pipeline and gave the Clue to
-`ControllerOfPipelineTarget`; it is now the cast-time target and `TargetController` every other card
-in the family uses, with a scenario test. Divergent 84 → 84.
+`ControllerOfPipelineTarget` — which chose the target as the spell *resolved*, where CR 601.2c chooses
+it as the spell is cast. It is now the cast-time target and `TargetController` every other card in the
+family uses, with a scenario test; a gym-trainer search test that had borrowed it as its one
+resolution-time targeting fixture now declares that fixture inline. Divergent 84 → 84.
 
 ## The differential gate
 
