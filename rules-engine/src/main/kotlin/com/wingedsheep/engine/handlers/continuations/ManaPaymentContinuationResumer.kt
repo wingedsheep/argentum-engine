@@ -12,6 +12,8 @@ import com.wingedsheep.engine.mechanics.mana.isSatisfiedBy
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.activeManaSpendingScope
+import com.wingedsheep.engine.state.forcedPlayFor
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -61,6 +63,16 @@ class ManaPaymentContinuationResumer(
         if (response !is ManaSourcesSelectedResponse) return ExecutionResult.error(state, "Expected mana sources")
         val player = continuation.action.playerId
         if (response.declined) return checkForMore(state.withPriority(player), emptyList())
+        val cast = continuation.action as? CastSpell
+        if (cast != null && state.forcedPlayFor(player, cast.cardId) != null &&
+            state.activeManaSpendingScope(player) != null) {
+            // Use the same execution-backed allocation as a direct cast. Legacy menu floating
+            // bypasses per-activation identities and cannot enforce contribution obligations.
+            val strategy = if (response.autoPay) PaymentStrategy.AutoPay
+                else PaymentStrategy.Explicit(response.selectedSources)
+            return services.castSpellHandler.executeWithLockedManaCost(state.withPriority(player),
+                cast.copy(paymentStrategy = strategy), continuation.lockedCastCost)
+        }
         val decision = services.manaSolver.findAvailableManaSources(state, player, continuation.paymentContext)
             .filter { it.entityId !in continuation.excludedSources && it.tapPermanentsSubCost == null &&
                 (continuation.paymentContext == null || it.restriction?.isSatisfiedBy(continuation.paymentContext) != false) }.map { source ->

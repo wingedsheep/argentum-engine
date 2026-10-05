@@ -36,9 +36,16 @@ private val ABILITY_LISTS = listOf("triggeredAbilities", "stateTriggeredAbilitie
  * reference on an Aura counts the spell's requirements first. It is here at all because it is a
  * `TargetRequirement` like the others — the golden declares it with no `id` and the grammar always
  * mints one, so without this entry every Aura would diverge over a name in neither model.
+ *
+ * `reflexiveTargetRequirements` makes a `ReflexiveTriggerEffect` an owner of its own: a "when you
+ * do" trigger chooses its targets after the action resolves, so its slots number from zero inside
+ * it and its payoff reads only them. The exploit payoff (`Grammar.exploitPayoffLine`) is the first
+ * rule to produce one; the cards name the slot `t0` and the grammar names it `target`.
  */
-private val REQUIREMENT_KEYS =
-    listOf("targetRequirement", "targetRequirements", "additionalTargetRequirements", "auraTarget")
+private val REQUIREMENT_KEYS = listOf(
+    "targetRequirement", "targetRequirements", "additionalTargetRequirements", "auraTarget",
+    "reflexiveTargetRequirements",
+)
 
 /**
  * Gate 2 — the **differential**: Assay's reading of a card against the definition a human wrote
