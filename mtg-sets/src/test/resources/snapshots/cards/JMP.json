@@ -333,6 +333,143 @@
     ]
 }
 
+// Emiel the Blessed
+{
+    "name": "Emiel the Blessed",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Creature — Unicorn",
+    "oracleText": "{3}: Exile another target creature you control, then return it to the battlefield under its owner's control.\nWhenever another creature you control enters, you may pay {G/W}. If you do, put a +1/+1 counter on it. If it's a Unicorn, put two +1/+1 counters on it instead. ({G/W} can be paid with either {G} or {W}.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Emiel the Blessed:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{G/W}"
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "TriggeringEntity",
+                                "filter": "Unicorn"
+                            }
+                        },
+                        "then": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": "TriggeringEntity"
+                        },
+                        "otherwise": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "TriggeringEntity"
+                        }
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Emiel the Blessed:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Battlefield"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "MYTHIC",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f74dfd07-d17c-4890-82c3-4b12a6029940.jpg?1783930510",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "When the card returns to the battlefield, it will be a new object with no connection to the card that was exiled. Auras attached to the exiled creature will be put into their owners' graveyards. Any Equipment will become unattached and remain on the battlefield. Any counters on the exiled creature will cease to exist."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Emiel's second ability triggers whenever any creature other than itself enters the battlefield under your control, including those returned by its first ability."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "You choose whether to pay for Emiel's triggered ability while it's resolving. If you do, no player may take other actions between the time you pay and the time the creature has one or two +1/+1 counters on it."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "While resolving Emiel's triggered ability, you can't pay {G/W} more than once to put more counters on the creature."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If the entering creature is a Unicorn, you still have to pay {G/W} to put two +1/+1 counters on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "GREEN"
+    ]
+}
+
 // Lightning Visionary
 {
     "name": "Lightning Visionary",

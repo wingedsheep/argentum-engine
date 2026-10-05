@@ -2352,6 +2352,77 @@
     ]
 }
 
+// Justiciar's Portal
+{
+    "name": "Justiciar's Portal",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target creature you control, then return that card to the battlefield under its owner's control. It gains first strike until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield"
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Micah Epstein",
+        "flavorText": "With the new guildmaster's innovations, arresters can arrive on the scene moments before a crime is committed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1df611df-3490-4b07-8034-6da9a0122a81.jpg?1783933722",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Once the exiled creature returns, it's considered a new object with no relation to the object that it was. Auras attached to the exiled creature will be put into their owners' graveyards. Equipment attached to the exiled creature will become unattached and remain on the battlefield. Any counters on the exiled creature will cease to exist."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "The creature returns untapped unless another effect causes it to enter the battlefield tapped."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Noxious Groodion
 {
     "name": "Noxious Groodion",

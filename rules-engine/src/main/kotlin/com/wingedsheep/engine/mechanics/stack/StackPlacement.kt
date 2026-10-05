@@ -316,7 +316,8 @@ internal object StackPlacement {
      * Returns the updated state.
      *
      * Spell targets are left out of the "targeted by this controller this turn" tracking (Valiant's
-     * "first time each turn") and always carry `firstTime = true`: a spell's stack entity can be
+     * "first time each turn", and Angelic Cub's controller-blind reading of it) and always carry
+     * both first-time flags `true`: a spell's stack entity can be
      * reused as the resolved permanent's entity, so marking it would leak a stale flag onto the
      * permanent. Permanents and players are tracked; `CleanupPhaseManager` clears the component for
      * every entity, players included.
@@ -350,7 +351,9 @@ internal object StackPlacement {
         } else {
             state.getEntity(targetEntityId)?.get<CardComponent>()?.name ?: "Unknown"
         }
-        val firstTime = isSpell || !hasBeenTargetedByController(state, targetEntityId, controllerId)
+        val targetedBy = state.getEntity(targetEntityId)?.get<TargetedByControllerThisTurnComponent>()
+        val firstTime = isSpell || targetedBy?.hasBeenTargetedBy(controllerId) != true
+        val firstTimeByAnyone = isSpell || targetedBy?.controllerIds.isNullOrEmpty()
         events.add(
             BecomesTargetEvent(
                 targetEntityId,
@@ -358,6 +361,7 @@ internal object StackPlacement {
                 sourceEntityId,
                 controllerId,
                 firstTime,
+                firstTimeThisTurn = firstTimeByAnyone,
                 targetIsSpell = isSpell,
                 sourceIsSpell = sourceIsSpell,
                 targetIsPlayer = isPlayer
@@ -369,14 +373,6 @@ internal object StackPlacement {
     // =========================================================================
     // Valiant / "first time targeted" tracking
     // =========================================================================
-
-    /**
-     * Check if the target entity has already been targeted by the given controller this turn.
-     */
-    private fun hasBeenTargetedByController(state: GameState, targetId: EntityId, controllerId: EntityId): Boolean {
-        val component = state.getEntity(targetId)?.get<TargetedByControllerThisTurnComponent>()
-        return component?.hasBeenTargetedBy(controllerId) == true
-    }
 
     /**
      * Mark the target entity as having been targeted by the given controller this turn.

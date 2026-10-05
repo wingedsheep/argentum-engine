@@ -5652,6 +5652,37 @@ so Scroll of Griselbrand's "Target opponent discards a card. If you control a De
 3 life." read the target as the triggering player and failed to print. The fold now refuses it, as
 `merge` does. Divergent 84 → 84.
 
+## Its controller creates
+
+"Destroy target permanent. **Its controller creates** a 3/3 green Beast creature token." (Beast
+Within, Pongify, Rapid Hybridization, Crib Swap, Get Lost, Emergency Eject). Tail key "s controller
+creates …". The SDK holds the sentence as the token clause it already read with one field set —
+`controller = EffectTarget.TargetController` on `CreateToken` or the predefined-token facade, which
+nine hand-written cards write — so the band is an axis of `Tokens.createToken` and
+`createPredefined` rather than a copy of them: a `Creator` that carries the verb ("create" / "its
+controller creates") and the controller together, with the imperative's `null` keeping the existing
+rows from reading a token that goes to someone else. The third-person rows join `Continuations`, the
+later-clause position, and `Steps.renumbered` refuses them unless the line declared exactly one
+permanent target: `TargetController` names no slot, so the pronoun guard cannot see it, and
+after a player, two targets or a spell there is no one permanent whose controller it means. That last
+case is An Offer You Can't Refuse, which creates the Treasures *before* countering so the spell's
+controller is still on the stack to read — a different model from the printed order, left declined.
+
+### What it moved
+
+Probe 28 lines / 23 whole cards corpus-wide by dropping the sentence. Over the implemented population
+delivered **+8** (7,895 → 7,903), compared 7,480 → 7,488.
+
+### What the differential found
+
+Two new divergences, both card spellings, fixed. **Bovine Intervention [OTJ]** wrote
+`CreatureOrArtifact` for printed "artifact or creature", the finding the artifact/creature band fixed
+on eighteen others. **Zuko's Exile [TLA]** selected its target inside a pipeline and gave the Clue to
+`ControllerOfPipelineTarget` — which chose the target as the spell *resolved*, where CR 601.2c chooses
+it as the spell is cast. It is now the cast-time target and `TargetController` every other card in the
+family uses, with a scenario test; a gym-trainer search test that had borrowed it as its one
+resolution-time targeting fixture now declares that fixture inline. Divergent 84 → 84.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote

@@ -2436,6 +2436,67 @@
     ]
 }
 
+// Leonin Warleader
+{
+    "name": "Leonin Warleader",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Cat Soldier",
+    "oracleText": "Whenever this creature attacks, create two 1/1 white Cat creature tokens with lifelink that are tapped and attacking.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Leonin Warleader:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Cat"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/3/b31f1580-5bba-4cef-b0c8-f2837a597b7d.jpg?1783934470",
+                    "tapped": true,
+                    "attacking": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "RARE",
+        "artist": "Jakub Kasper",
+        "flavorText": "When one leonin hunts, many more are surely nearby.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b31b2e5e-6572-462a-9fa0-1b2e660099e3.jpg?1783934603",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "You choose which players or planeswalkers the two tokens are attacking. They don't have to be attacking the same player or planeswalker that Leonin Warleader is attacking, and they can each be attacking different players and/or planeswalkers."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Although the tokens are attacking, they were never declared as attacking creatures (for the purposes of abilities that trigger whenever a creature attacks, for example)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Lich's Caress
 {
     "name": "Lich's Caress",
