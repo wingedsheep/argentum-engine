@@ -28,6 +28,7 @@ class PilgrimOfTheAgesScenarioTest : ScenarioTestBase() {
                     .withCardInLibrary(1, "Plains")
                     .withCardInLibrary(1, "Island")
                     .withCardInLibrary(1, "Grizzly Bears")
+                    .withCardInLibrary(1, "Scrubland") // a Plains, but not a basic one
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
@@ -38,7 +39,7 @@ class PilgrimOfTheAgesScenarioTest : ScenarioTestBase() {
                 game.answerYesNo(true).error shouldBe null
                 val search = game.getPendingDecision() as? SelectCardsDecision
                     ?: error("expected a library search; got ${game.getPendingDecision()}")
-                withClue("only the basic Plains is offered, and at most one") {
+                withClue("only the basic Plains is offered (not Scrubland), and at most one") {
                     search.options.size shouldBe 1
                     search.maxSelections shouldBe 1
                 }
@@ -48,7 +49,7 @@ class PilgrimOfTheAgesScenarioTest : ScenarioTestBase() {
                 withClue("the Plains went to hand, the other cards stayed in the library") {
                     game.isInHand(1, "Plains") shouldBe true
                     game.findCardsInLibrary(1, "Plains").size shouldBe 0
-                    game.librarySize(1) shouldBe 2
+                    game.librarySize(1) shouldBe 3
                 }
                 game.isOnBattlefield("Pilgrim of the Ages") shouldBe true
             }

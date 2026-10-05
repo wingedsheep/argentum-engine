@@ -12,8 +12,8 @@ import io.kotest.matchers.shouldBe
  * Ninth Bridge Patrol (KLD #22) — "Whenever another creature you control leaves the battlefield,
  * put a +1/+1 counter on this creature."
  *
- * Proves the three axes of the trigger: death counts, a bounce counts too ("leaves", not "dies"),
- * and an opponent's creature leaving does not (controller-scoped).
+ * Proves the axes of the trigger: death counts, a bounce counts too ("leaves", not "dies"),
+ * an opponent's creature leaving does not (controller-scoped), and neither does a noncreature permanent.
  */
 class NinthBridgePatrolScenarioTest : ScenarioTestBase() {
 
@@ -88,6 +88,26 @@ class NinthBridgePatrolScenarioTest : ScenarioTestBase() {
 
                 withClue("only creatures you control feed the Patrol") {
                     game.findPermanent("Grizzly Bears") shouldBe null
+                    game.patrolCounters() shouldBe 0
+                }
+            }
+
+            test("a noncreature permanent you control leaving does not trigger it") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Ninth Bridge Patrol")
+                    .withCardOnBattlefield(1, "Mind Stone")
+                    .withCardInHand(1, "Disenchant")
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Disenchant", game.findPermanent("Mind Stone")!!).error shouldBe null
+                game.resolveStack()
+
+                withClue("only creatures feed the Patrol") {
+                    game.findPermanent("Mind Stone") shouldBe null
                     game.patrolCounters() shouldBe 0
                 }
             }

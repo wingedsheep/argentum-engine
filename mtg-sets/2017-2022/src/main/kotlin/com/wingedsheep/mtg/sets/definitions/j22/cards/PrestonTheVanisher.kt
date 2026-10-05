@@ -23,8 +23,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * "If it wasn't cast" is an intervening-if on the *entering* creature's cast record
  * ([Conditions.TriggeringEntityWasCast], negated), as on Rapid Augmenter. The copy's "except it's a
- * 0/1 white Illusion" is a set of copy exceptions (CR 707.9b): the stated color and creature type
- * replace the copied ones (CR 205.1a), and base P/T becomes 0/1. The token is a token, so it never
+ * 0/1 white Illusion" is a set of copy exceptions (CR 707.9b): the stated color replaces the copied
+ * ones (CR 105.3), the creature type replaces the copied creature types (CR 205.1a), and base P/T
+ * becomes 0/1. The token is a token, so it never
  * re-triggers Preston.
  */
 val PrestonTheVanisher = card("Preston, the Vanisher") {

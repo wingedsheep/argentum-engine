@@ -75,6 +75,23 @@ class PrestonTheVanisherScenarioTest : ScenarioTestBase() {
             game.tokensNamed("Grizzly Bears").size shouldBe 0
         }
 
+        test("a creature cast from exile was cast, so it is not copied") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Preston, the Vanisher")
+                .withCardInExile(1, "Squee, the Immortal")
+                .withLandsOnBattlefield(1, "Mountain", 3)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpellFromExile(1, "Squee, the Immortal").error shouldBe null
+            game.resolveStack()
+
+            game.findAllPermanents("Squee, the Immortal").size shouldBe 1
+            game.tokensNamed("Squee, the Immortal").size shouldBe 0
+        }
+
         test("creature tokens are not copied") {
             val game = scenario()
                 .withPlayers("Player1", "Player2")

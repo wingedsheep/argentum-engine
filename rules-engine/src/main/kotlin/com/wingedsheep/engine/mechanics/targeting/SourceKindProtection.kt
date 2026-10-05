@@ -3,10 +3,7 @@ package com.wingedsheep.engine.mechanics.targeting
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.battlefield.CastFromExileComponent
-import com.wingedsheep.engine.state.components.battlefield.CastFromGraveyardComponent
-import com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent
-import com.wingedsheep.engine.state.components.battlefield.CastFromLibraryComponent
+import com.wingedsheep.engine.state.components.battlefield.WasCastComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -66,8 +63,7 @@ object SourceKindProtection {
         if (entityId !in state.getBattlefield()) return false
         val container = state.getEntity(entityId) ?: return false
         if (!container.has<EnteredThisTurnComponent>()) return false
-        return container.has<CastFromHandComponent>() || container.has<CastFromGraveyardComponent>() ||
-            container.has<CastFromLibraryComponent>() || container.has<CastFromExileComponent>()
+        return container.has<WasCastComponent>()
     }
 
     /**

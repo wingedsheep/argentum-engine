@@ -55,6 +55,34 @@ class PhalanxTacticsScenarioTest : ScenarioTestBase() {
             }
         }
 
+        test("if the target is gone on resolution, no other creature gets +1/+1") {
+            val game = scenario()
+                .withPlayers("P1", "P2")
+                .withCardInHand(1, "Phalanx Tactics")
+                .withCardInHand(1, "Shock")
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardOnBattlefield(1, "Hill Giant") // 3/3
+                .withLandsOnBattlefield(1, "Plains", 2)
+                .withLandsOnBattlefield(1, "Mountain", 1)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val bears = game.findPermanent("Grizzly Bears")!!
+            val giant = game.findPermanent("Hill Giant")!!
+
+            game.castSpell(1, "Phalanx Tactics", targetId = bears).error shouldBe null
+            game.castSpell(1, "Shock", targetId = bears).error shouldBe null
+            game.resolveStack()
+
+            withClue("the Bears died first, so Phalanx Tactics didn't resolve") {
+                game.findPermanent("Grizzly Bears") shouldBe null
+                game.isInGraveyard(1, "Phalanx Tactics") shouldBe true
+                game.state.projectedState.getPower(giant) shouldBe 3
+                game.state.projectedState.getToughness(giant) shouldBe 3
+            }
+        }
+
         test("can't target a creature an opponent controls") {
             val game = scenario()
                 .withPlayers("P1", "P2")

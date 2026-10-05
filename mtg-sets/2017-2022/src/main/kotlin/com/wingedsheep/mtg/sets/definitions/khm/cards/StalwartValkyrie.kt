@@ -28,8 +28,8 @@ val StalwartValkyrie = card("Stalwart Valkyrie") {
     typeLine = "Creature — Angel Warrior"
     power = 3
     toughness = 2
-    oracleText = "Flying\nYou may pay {1}{W} and exile a creature card from your graveyard rather " +
-        "than pay this spell's mana cost."
+    oracleText = "You may pay {1}{W} and exile a creature card from your graveyard rather " +
+        "than pay this spell's mana cost.\nFlying"
 
     keywords(Keyword.FLYING)
 

@@ -3532,7 +3532,7 @@
     "name": "Stalwart Valkyrie",
     "manaCost": "{3}{W}",
     "typeLine": "Creature — Angel Warrior",
-    "oracleText": "Flying\nYou may pay {1}{W} and exile a creature card from your graveyard rather than pay this spell's mana cost.",
+    "oracleText": "You may pay {1}{W} and exile a creature card from your graveyard rather than pay this spell's mana cost.\nFlying",
     "creatureStats": {
         "power": 3,
         "toughness": 2

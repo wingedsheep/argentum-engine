@@ -60,6 +60,14 @@ data class PhasedOutComponent(
 data object CastFromHandComponent : Component
 
 /**
+ * Marks a permanent that entered the battlefield by resolving as a cast spell, from whatever zone
+ * it was cast — including the command zone, which has no zone-specific marker. "If you cast it" /
+ * "if it wasn't cast" (Preston, the Vanisher) read this rather than OR-ing the per-zone markers.
+ */
+@Serializable
+data object WasCastComponent : Component
+
+/**
  * Marks a permanent as having been cast from a graveyard (e.g., flashback, encore,
  * or ongoing permission to cast from graveyard). Added when a spell resolves with
  * castFromZone == GRAVEYARD. Used by triggers that care whether an entering creature
