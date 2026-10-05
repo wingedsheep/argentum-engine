@@ -364,7 +364,8 @@ class ObjectTriggerSubject internal constructor(
      * "becomes the target of a spell or ability". [of] narrows the *targeting* object ("an Aura
      * spell" — Brine Comber). [byYou] / [byOpponent] are "you control" / "an opponent controls";
      * [spellsOnly] / [abilitiesOnly] drop the other half. [firstTimeEachTurn] with [byYou] is
-     * valiant. [includeSpellTargets] also fires when a matching *spell* on the stack is targeted
+     * valiant (the first time *you* target it); alone it is the first time anything targets it
+     * (Angelic Cub). [includeSpellTargets] also fires when a matching *spell* on the stack is targeted
      * (Surrak, Elusive Hunter); [includePlayerTargets] widens to targeted players and needs an
      * unfiltered subject (Loki, God of Mischief). [ofBackupAbility] is "the target of a backup
      * ability" (Mirror-Shield Hoplite). [targetsOnlyIt] is "… that targets only it" — every target

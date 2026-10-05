@@ -7580,6 +7580,11 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   Backs **Stitcher's Graft** ("Whenever this Equipment becomes unattached from a permanent,
   sacrifice that permanent").
 - `Triggers.self.becomesTarget(byYou = true, firstTimeEachTurn = true)` — Bloomburrow Valiant trigger.
+- `Triggers.self.becomesTarget(firstTimeEachTurn = true)` — "becomes the target of a spell or ability for the
+  first time each turn" with no controller (Angelic Cub). The window follows the controller axis: with `byYou`
+  (Valiant) only a spell or ability *you* control closes it, so an opponent targeting it first doesn't; without
+  one, *any* spell or ability's targeting does. Backed by `BecomesTargetEvent.firstTimeByThisController` /
+  `firstTimeThisTurn`, both read off the target's `TargetedByControllerThisTurnComponent` (cleared at cleanup).
 - `Triggers.you.fullyUnlocksARoom()` — Rooms — both doors unlocked.
 - `Triggers.self.doorUnlocked()` — single Room door unlocked.
 
