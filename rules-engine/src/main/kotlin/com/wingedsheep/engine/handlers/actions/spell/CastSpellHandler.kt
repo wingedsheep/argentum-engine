@@ -385,8 +385,12 @@ class CastSpellHandler(
             is CastPaymentOutcome.Paid -> outcome.payment
         }
 
+        // Only a flat target list announces a split to bind. A modal cast that sends its targets
+        // per mode (`modeTargetsOrdered`) leaves `targets` empty — binding that would narrow every
+        // mode's requirement to zero and drop the targets it chose.
         val targeting = spellTargeting(state, action, cardDef, transformedFace)
-            .boundTo(castValidator.targetBinding(state, action, cardDef, transformedFace)?.counts)
+            .boundTo(action.targets.takeIf { it.isNotEmpty() }
+                ?.let { castValidator.targetBinding(state, action, cardDef, transformedFace)?.counts })
 
         // A creature type chosen as the spell is cast (e.g., Aphetto Dredging).
         cardDef?.script?.castTimeCreatureTypeChoice?.let { castTimeChoice ->
