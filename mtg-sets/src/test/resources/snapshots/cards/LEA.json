@@ -3782,63 +3782,6 @@
     ]
 }
 
-// Keldon Warlord
-{
-    "name": "Keldon Warlord",
-    "manaCost": "{2}{R}{R}",
-    "typeLine": "Creature — Human Barbarian",
-    "oracleText": "Keldon Warlord's power and toughness are each equal to the number of non-Wall creatures you control.",
-    "creatureStats": {
-        "power": {
-            "type": "Dynamic",
-            "source": {
-                "type": "AggregateBattlefield",
-                "player": "You",
-                "filter": {
-                    "cardPredicates": [
-                        "IsCreature",
-                        {
-                            "type": "NotSubtype",
-                            "subtype": "Wall"
-                        }
-                    ]
-                }
-            }
-        },
-        "toughness": {
-            "type": "Dynamic",
-            "source": {
-                "type": "AggregateBattlefield",
-                "player": "You",
-                "filter": {
-                    "cardPredicates": [
-                        "IsCreature",
-                        {
-                            "type": "NotSubtype",
-                            "subtype": "Wall"
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "metadata": {
-        "collectorNumber": "160",
-        "rarity": "UNCOMMON",
-        "artist": "Kev Brockschmidt",
-        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8fe3fd83-969c-4add-888f-86f4306b067c.jpg?1783948685",
-        "rulings": [
-            {
-                "date": "2008-08-01",
-                "text": "This is a Characteristic-Defining Ability. It checks the number of non-Wall creatures you control continuously, and applies in all zones. It is never “locked in”."
-            }
-        ]
-    },
-    "colorIdentityOverride": [
-        "RED"
-    ]
-}
-
 // Lance
 {
     "name": "Lance",
@@ -8232,52 +8175,6 @@
         "artist": "Mark Tedin",
         "flavorText": "Everybody knows that to ward off trouble, you knock on wood. But usually it's better to make a wall out of the wood and let trouble do the knocking.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/d/8df80424-3bd9-4982-ad79-e55d9ba3b43d.jpg"
-    },
-    "colorIdentityOverride": [
-        "GREEN"
-    ]
-}
-
-// Wanderlust
-{
-    "name": "Wanderlust",
-    "manaCost": "{2}{G}",
-    "typeLine": "Enchantment — Aura",
-    "oracleText": "Enchant creature\nAt the beginning of the upkeep of enchanted creature's controller, this Aura deals 1 damage to that player.",
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Wanderlust:1",
-                "trigger": {
-                    "type": "StepEvent",
-                    "step": "UPKEEP"
-                },
-                "binding": "ATTACHED",
-                "effect": {
-                    "type": "DealDamage",
-                    "amount": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": {
-                        "type": "PlayerRef",
-                        "player": "TriggeringPlayer"
-                    }
-                }
-            }
-        ],
-        "auraTarget": {
-            "type": "TargetObject",
-            "filter": {
-                "baseFilter": "creature"
-            }
-        }
-    },
-    "metadata": {
-        "collectorNumber": "226",
-        "rarity": "UNCOMMON",
-        "artist": "Cornelius Brudi",
-        "imageUri": "https://cards.scryfall.io/normal/front/2/2/220a03ca-8c9b-4acb-821d-f6577fbb20fb.jpg?1783948671"
     },
     "colorIdentityOverride": [
         "GREEN"
