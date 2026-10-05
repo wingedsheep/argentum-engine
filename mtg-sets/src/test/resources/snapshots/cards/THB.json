@@ -2361,6 +2361,77 @@
     ]
 }
 
+// Phalanx Tactics
+{
+    "name": "Phalanx Tactics",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gets +2/+1 until end of turn. Each other creature you control gets +1/+1 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeTarget": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "UNCOMMON",
+        "artist": "Bayard Wu",
+        "flavorText": "Every soldier has a place to stand and a role to play.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f114a10-0b00-4f3a-bd73-d4c791fbf4d5.jpg?1783931592"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Pharika's Libation
 {
     "name": "Pharika's Libation",
@@ -3511,6 +3582,45 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd2fa92d-5521-421c-b3f8-7c14bbef3080.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Transcendent Envoy
+{
+    "name": "Transcendent Envoy",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment Creature — Griffin",
+    "oracleText": "Flying\nAura spells you cast cost {1} less to cast.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "Aura"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "artist": "Zezhou Chen",
+        "flavorText": "\"The first griffins were made by the gods to capture falling stars; they were given the keenest eyes and the swiftest wings, and sent to keep watch above the clouds.\"\n—*The Cosmogony*",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9241289-28d2-4827-970e-81bdecbb5c16.jpg?1783931589"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Triton Waverider

@@ -1370,6 +1370,100 @@
     ]
 }
 
+// Preston, the Vanisher
+{
+    "name": "Preston, the Vanisher",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Rabbit Wizard",
+    "oracleText": "Whenever another nontoken creature you control enters, if it wasn't cast, create a token that's a copy of that creature, except it's a 0/1 white Illusion.\n{1}{W}, Sacrifice five Illusions: Exile target nonland permanent.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Preston, the Vanisher:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "TriggeringEntity",
+                    "exceptions": {
+                        "overrideSubtypes": [
+                            "Illusion"
+                        ],
+                        "overrideColors": [
+                            "WHITE"
+                        ],
+                        "powerOverride": 0,
+                        "toughnessOverride": 1
+                    }
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": "TriggeringEntityWasCast"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Preston, the Vanisher:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "permanent Illusion",
+                                "count": 5
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "nonland permanent"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "RARE",
+        "artist": "Christina Kraus",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/952cb0b3-a6b7-4279-8833-3d8890b2d005.jpg?1783919194"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Primeval Herald
 {
     "name": "Primeval Herald",

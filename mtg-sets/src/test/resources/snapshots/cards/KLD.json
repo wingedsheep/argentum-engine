@@ -3565,6 +3565,57 @@
     ]
 }
 
+// Ninth Bridge Patrol
+{
+    "name": "Ninth Bridge Patrol",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dwarf Soldier",
+    "oracleText": "Whenever another creature you control leaves the battlefield, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ninth Bridge Patrol:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever another creature you control leaves the battlefield, put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Ryan Alexander Lee",
+        "flavorText": "The Consulate keeps watch at each of the eleven bridges to ensure that the market remains a haven for commerce, not for con artists.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/10a22cf8-4441-48ab-8adc-ae071cbc5999.jpg?1783937230",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "If Ninth Bridge Patrol is dealt lethal damage at the same time as another creature you control, it won't receive a counter from its ability in time to save it."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Ninth Bridge Patrol's ability doesn't care where the creature went or whether it's a creature in its new zone. It may have died, been exiled, returned to your hand, and so on. It won't trigger if an object remains on the battlefield but ceases to be a creature. It won't trigger if a creature phases out."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ornamental Courage
 {
     "name": "Ornamental Courage",

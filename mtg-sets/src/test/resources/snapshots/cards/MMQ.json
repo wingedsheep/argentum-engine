@@ -5213,6 +5213,53 @@
     ]
 }
 
+// Task Force
+{
+    "name": "Task Force",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Rebel",
+    "oracleText": "Whenever this creature becomes the target of a spell or ability, it gets +0/+3 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Task Force:1",
+                "trigger": "BecomesTargetEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "artist": "Gary Ruddell",
+        "flavorText": "They are the reflection of Rushwood's glow on the edge of a wooden sword.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17a58c5b-28c2-4261-992c-2ecadb721880.jpg?1783945972",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "The +0/+3 bonus is added as a triggered ability upon the casting/activating of a spell or ability which targets this card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Thermal Glider
 {
     "name": "Thermal Glider",

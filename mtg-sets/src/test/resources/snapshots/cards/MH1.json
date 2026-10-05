@@ -2744,6 +2744,95 @@
     ]
 }
 
+// Settle Beyond Reality
+{
+    "name": "Settle Beyond Reality",
+    "manaCost": "{4}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one or both —\n• Exile target creature you don't control.\n• Exile target creature you control, then return it to the battlefield under its owner's control.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Exile"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Exile target creature you don't control"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "destination": "Exile"
+                            },
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "destination": "Battlefield"
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Exile target creature you control, then return it to the battlefield under its owner's control"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "artist": "Anthony Palumbo",
+        "flavorText": "Two taken, two judged, one returned.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72ed8e57-61bb-4e89-9484-ff2be800a449.jpg?1783933156",
+        "rulings": [
+            {
+                "date": "2019-06-14",
+                "text": "Once the exiled creature you control returns, it's considered a new object with no relation to the object that it was. Auras attached to the exiled creatures will be put into their owners' graveyards. Equipment attached to the exiled creatures will become unattached and remain on the battlefield. Any counters on the exiled creatures will cease to exist."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "If a token you control is exiled this way, it will cease to exist and won't return to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Silent Clearing
 {
     "name": "Silent Clearing",

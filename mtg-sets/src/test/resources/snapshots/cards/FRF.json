@@ -513,6 +513,119 @@
     ]
 }
 
+// Sage's Reverie
+{
+    "name": "Sage's Reverie",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, draw a card for each Aura you control that's attached to a creature.\nEnchanted creature gets +1/+1 for each Aura you control that's attached to a creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sage's Reverie:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsEnchantment",
+                                {
+                                    "type": "HasSubtype",
+                                    "subtype": "Aura"
+                                }
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "IsAttachedTo",
+                                    "filter": "creature"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsEnchantment",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Aura"
+                            }
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "IsAttachedTo",
+                                "filter": "creature"
+                            }
+                        ]
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsEnchantment",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Aura"
+                            }
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "IsAttachedTo",
+                                "filter": "creature"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f22dd6f-807a-48a7-bc69-29aaec7012de.jpg?1783938712",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Count the number of Auras you control attached to creatures as the enters-the-battlefield ability resolves to determine how many cards to draw. This will include Sage's Reverie as long as it's still on the battlefield at that time."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "An Aura doesn't necessarily need the enchant creature ability for the abilities of Sage's Reverie to count it. For example, an Aura with enchant permanent that's attached to a creature will count."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Smoldering Efreet
 {
     "name": "Smoldering Efreet",
