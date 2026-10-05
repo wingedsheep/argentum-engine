@@ -93,7 +93,7 @@ export function SearchBar({
   )
 }
 
-function SearchHelp({ onClose, onInsert }: { onClose: () => void; onInsert: (t: string) => void }) {
+export function SearchHelp({ onClose, onInsert }: { onClose: () => void; onInsert: (t: string) => void }) {
   const examples: Array<{ syntax: string; desc: string }> = [
     { syntax: 'lightning', desc: 'name contains "lightning"' },
     { syntax: '!"Lightning Bolt"', desc: 'exact card name' },

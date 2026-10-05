@@ -28,6 +28,23 @@ import io.kotest.matchers.shouldBe
  * value type the permanent-copy path carries.
  */
 class CopyExceptionsTest : FunSpec({
+    test("retained colors replace the copied indicator and omit devoid as copiable text") {
+        val source = CardComponent("color-source", "Source", ManaCost.parse("{G}"),
+            TypeLine.parse("Creature — Eldrazi"), colors = emptySet(),
+            baseKeywords = setOf(Keyword.DEVOID, Keyword.FLYING))
+        val copy = CopyExceptionApplier.apply(source, CopyExceptions(retainColors = true),
+            copierColors = setOf(Color.BLUE, Color.BLACK))
+        copy.colors shouldBe setOf(Color.BLUE, Color.BLACK)
+        copy.baseKeywords shouldBe setOf(Keyword.FLYING)
+        copy.manaCost shouldBe source.manaCost
+        CopyExceptionApplier.apply(copy, CopyExceptions.None) shouldBe copy
+        CopyExceptionApplier.apply(source, CopyExceptions(overrideColors = setOf(Color.RED)))
+            .baseKeywords shouldBe setOf(Keyword.FLYING)
+        CopyExceptionApplier.apply(source, CopyExceptions(addedColors = setOf(Color.RED)))
+            .baseKeywords shouldBe setOf(Keyword.FLYING)
+        CopyExceptionApplier.apply(source, CopyExceptions.None) shouldBe source
+    }
+
 
     fun legendaryArtifactBear() = CardComponent(
         cardDefinitionId = "Test Source#TST-1",

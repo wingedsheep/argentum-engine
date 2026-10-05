@@ -143,10 +143,14 @@ internal fun flipDfcInPlace(
         DoubleFacedComponent.Face.FRONT -> dfc.frontCardDefinitionId
         DoubleFacedComponent.Face.BACK -> dfc.backCardDefinitionId
     }
-    val nextCardDef = cardRegistry.getCard(nextDefinitionId) ?: return null
+    val copiedFace = dfc.copiedFaces?.let {
+        if (intoBackFace) it.back else it.front
+    }
+    val nextCardDef = cardRegistry.getCard(nextDefinitionId)
+    if (copiedFace == null && nextCardDef == null) return null
     // CR 712.10 — transforming into an instant or sorcery face does nothing (a Siege whose back is
     // a sorcery, Invasion of Kylem). That face is reachable only by casting the card transformed.
-    if (!nextCardDef.isPermanent) return null
+    if (!(copiedFace?.isPermanent ?: nextCardDef!!.isPermanent)) return null
 
     // A DFC on the battlefield always has a controller; fall back to owner, and treat a truly
     // owner-less object as un-flippable (null → the caller's no-op contract) rather than fabricate an id.
@@ -165,7 +169,7 @@ internal fun flipDfcInPlace(
     return newState to TransformedEvent(
         entityId = entityId,
         intoBackFace = intoBackFace,
-        newFaceName = nextCardDef.name,
+        newFaceName = copiedFace?.name ?: nextCardDef!!.name,
         controllerId = controllerId
     )
 }
@@ -207,6 +211,16 @@ internal fun setDfcFace(
     val nextDefinitionId = when (nextFace) {
         DoubleFacedComponent.Face.FRONT -> dfc.frontCardDefinitionId
         DoubleFacedComponent.Face.BACK -> dfc.backCardDefinitionId
+    }
+    dfc.copiedFaces?.let { faces ->
+        val face = if (nextFace == DoubleFacedComponent.Face.FRONT) faces.front else faces.back
+        return state.updateEntity(entityId) {
+            it.with(face.copy(ownerId = currentCard.ownerId))
+                .with(dfc.copy(currentFace = nextFace,
+                    faceChanges = dfc.faceChanges + if (nextFace == dfc.currentFace) 0 else 1))
+                .without<ContinuousEffectSourceComponent>()
+                .without<ReplacementEffectSourceComponent>()
+        }
     }
     val nextCardDef = cardRegistry.getCard(nextDefinitionId) ?: return null
 

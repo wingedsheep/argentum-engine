@@ -1,3 +1,61 @@
+// Aerial Modification
+{
+    "name": "Aerial Modification",
+    "manaCost": "{4}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature or Vehicle\nAs long as enchanted permanent is a Vehicle, it's a creature in addition to its other types.\nEnchanted creature gets +2/+2 and has flying.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantCardType",
+                    "cardType": "CREATURE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "AttachedTo"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "permanent Vehicle"
+                }
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|Vehicle"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "UNCOMMON",
+        "artist": "Jung Park",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b89cab47-25fb-49ea-bb43-90a0089b6b20.jpg?1783936786",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If Aerial Modification becomes unattached from a Vehicle that's attacking or blocking, that Vehicle will be removed from combat unless another effect (such as its crew ability) is also making it a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Alley Strangler
 {
     "name": "Alley Strangler",
@@ -36,6 +94,73 @@
         "artist": "Matt Stewart",
         "flavorText": "Headquartered at the Bastion of the Honorable, the Consulate's enforcers are charged with the impossible task of keeping the peace.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/8/88b9c0f7-d49b-4d74-9038-44954054ce21.jpg?1783936782"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Caught in the Brights
+{
+    "name": "Caught in the Brights",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't attack or block.\nWhen a Vehicle you control attacks, exile enchanted creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Caught in the Brights:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "permanent Vehicle ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "EnchantedCreature",
+                    "destination": "Exile"
+                },
+                "descriptionOverride": "When a Vehicle you control attacks, exile enchanted creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "artist": "Kieran Yanner",
+        "flavorText": "While hunting aether, a gremlin may ignore other stimuli, including threats to its own life.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d5bea27-d825-4691-8ae0-c4831574ec53.jpg?1783936782",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "After the enchanted creature is exiled, Caught in the Brights is put into its owner's graveyard."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If Caught in the Brights leaves the battlefield in response to its triggered ability, the resolving ability will exile the creature Caught in the Brights was enchanting as it left the battlefield."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"

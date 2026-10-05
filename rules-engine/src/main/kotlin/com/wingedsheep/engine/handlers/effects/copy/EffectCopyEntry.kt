@@ -71,7 +71,7 @@ object EffectCopyEntry {
             addedColors = r.additionalColors, powerOverride = r.powerOverride, toughnessOverride = r.toughnessOverride,
         ))
         val copied = CopyExceptionApplier.apply(target.copy(ownerId = original.ownerId,
-            isDoubleFaced = original.isDoubleFaced), exceptions)
+            isDoubleFaced = original.isDoubleFaced), exceptions, copierColors = original.colors)
         return state.updateEntity(id) { tagCopyDuration(it.with(copied).with(CopyOfComponent(
             originalCardDefinitionId = original.cardDefinitionId,
             copiedCardDefinitionId = target.cardDefinitionId, originalCardComponent = original)), r.duration) }

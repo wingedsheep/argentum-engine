@@ -240,6 +240,7 @@ class ModalAndCloneContinuationResumer(
             outerTargets = continuation.outerTargets,
             outerNamedTargets = continuation.outerNamedTargets,
             pipeline = continuation.pipeline,
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             objectReferences = continuation.objectReferences,
             accumulatedEvents = emptyList(),
             checkForMore = checkForMore
@@ -276,6 +277,7 @@ class ModalAndCloneContinuationResumer(
             }
 
         val context = EffectContext(
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences,
             controllerId = continuation.controllerId,
@@ -356,6 +358,7 @@ class ModalAndCloneContinuationResumer(
                 isDoubleFaced = originalCardComponent.isDoubleFaced,
             ),
             exceptions,
+            copierColors = originalCardComponent.colors,
         )
         return state.updateEntity(entityId) { c ->
             c.with(copiedCardComponent)
@@ -1420,6 +1423,7 @@ class ModalAndCloneContinuationResumer(
         val effects = sortedIndices.map { continuation.modes[it].effect }
 
         val context = EffectContext(
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences,
             controllerId = continuation.controllerId,
@@ -1555,6 +1559,7 @@ class ModalAndCloneContinuationResumer(
         ) }
 
         val modalContinuation = ModalContinuation(
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             controllerId = continuation.controllerId,
             sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences,
@@ -1597,6 +1602,7 @@ class ModalAndCloneContinuationResumer(
 
         // Build context preserving original targets so ContextTarget references still work
         val context = EffectContext(
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences,
             controllerId = continuation.controllerId,
@@ -1649,7 +1655,8 @@ internal fun processChosenModeQueue(
     accumulatedEvents: List<GameEvent>,
     checkForMore: CheckForMore,
     pipeline: PipelineState = PipelineState.EMPTY,
-    objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment()
+    objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+    resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null
 ): ExecutionResult {
     if (queue.isEmpty()) return checkForMore(state, accumulatedEvents)
 
@@ -1662,6 +1669,7 @@ internal fun processChosenModeQueue(
         // EffectTarget.ContextTarget references in the inner effect resolve to the
         // targets chosen by the enclosing spell/ability.
         val context = EffectContext(
+            resolvingTriggeredAbility = resolvingTriggeredAbility,
             sourceId = sourceId,
             objectReferences = objectReferences,
             controllerId = controllerId,
@@ -1704,7 +1712,7 @@ internal fun processChosenModeQueue(
         return processChosenModeQueue(
             services, state, tail, controllerId, sourceId, sourceName, xValue,
             triggeringEntityId, allowCancelBackToModesList, outerTargets, outerNamedTargets,
-            accumulatedEvents, checkForMore, pipeline, objectReferences
+            accumulatedEvents, checkForMore, pipeline, objectReferences, resolvingTriggeredAbility
         )
     }
 
@@ -1715,6 +1723,7 @@ internal fun processChosenModeQueue(
         if (TargetEnumerationUtils.shouldAutoSelectPlayerTarget(req, targets)) {
             val chosenTargets = listOf(entityIdToChosenTarget(state, targets[0]))
             val context = EffectContext(
+                resolvingTriggeredAbility = resolvingTriggeredAbility,
                 sourceId = sourceId,
                 objectReferences = objectReferences,
                 controllerId = controllerId,
@@ -1751,6 +1760,7 @@ internal fun processChosenModeQueue(
     ) }
 
     val modalTargetContinuation = ModalTargetContinuation(
+        resolvingTriggeredAbility = resolvingTriggeredAbility,
         controllerId = controllerId,
         sourceId = sourceId,
         sourceName = sourceName,
@@ -1800,6 +1810,7 @@ private fun executeChosenModeWithTail(
     val stateForExecution = if (tail.isNotEmpty()) {
         state.pushContinuation(
             ModalChosenModeTailContinuation(
+                resolvingTriggeredAbility = context.resolvingTriggeredAbility,
                 controllerId = controllerId,
                 sourceId = sourceId,
                 sourceName = sourceName,
@@ -1830,6 +1841,6 @@ private fun executeChosenModeWithTail(
         services, nextState, tail, controllerId, sourceId, sourceName, xValue,
         triggeringEntityId, allowCancelBackToModesList = null,
         outerTargets, outerNamedTargets, events, checkForMore,
-        context.pipeline, context.objectReferences.authorize(result.events)
+        context.pipeline, context.objectReferences.authorize(result.events), context.resolvingTriggeredAbility
     )
 }

@@ -480,6 +480,147 @@
     ]
 }
 
+// Gideon, Champion of Justice
+{
+    "name": "Gideon, Champion of Justice",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Gideon",
+    "oracleText": "+1: Put a loyalty counter on Gideon for each creature target opponent controls.\n0: Until end of turn, Gideon becomes a Human Soldier creature with power and toughness each equal to the number of loyalty counters on him and gains indestructible. He's still a planeswalker. Prevent all damage that would be dealt to him this turn.\n−15: Exile all other permanents.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gideon, Champion of Justice:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "LOYALTY",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "TargetOpponent",
+                        "filter": "creature"
+                    },
+                    "target": "Self"
+                },
+                "targetRequirements": [
+                    "TargetOpponent"
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Gideon, Champion of Justice:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "BecomeCreature",
+                            "power": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "LOYALTY"
+                                }
+                            },
+                            "toughness": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "LOYALTY"
+                                }
+                            },
+                            "keywords": [
+                                "INDESTRUCTIBLE"
+                            ],
+                            "creatureTypes": [
+                                "Human",
+                                "Soldier"
+                            ]
+                        },
+                        {
+                            "type": "PreventDamageShield",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Gideon, Champion of Justice:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -15
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "permanent",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "MYTHIC",
+        "artist": "David Rapoza",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93d0509a-a863-4d9c-b39f-625a8cc1a547.jpg?1783940143",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "If damage that can't be prevented is dealt to Gideon, Champion of Justice after his second ability has resolved, that damage will have all applicable results: specifically, the damage is marked on Gideon (since he's a creature) and that damage causes that many loyalty counters to be removed from him (since he's a planeswalker). Even though he has indestructible, if Gideon, Champion of Justice has no loyalty counters on him, he's put into his owner's graveyard as a state-based action."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If the first ability doesn't resolve (perhaps because the target opponent is an illegal target when the ability tries to resolve), you won't put any additional loyalty counters on Gideon, although the loyalty counter you put on him to activate the ability will remain."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Gideon, Champion of Justice's power and toughness are set to the number of loyalty counters on him when his second ability resolves. They won't change later in the turn if the number of loyalty counters on him changes."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Gideon, Champion of Justice's second ability causes him to become a creature with the creature types Human and Soldier. He remains a planeswalker with the planeswalker type Gideon. (He also retains any other card types or subtypes he may have had.) Each subtype is correlated to the proper card type: Gideon is just a planeswalker type (not a creature type), and Human and Soldier are just creature types (not planeswalker types)."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If Gideon, Champion of Justice becomes a creature the same turn he enters, you can't attack with him or use any of his {T} abilities (if he gains any)."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gruul Guildgate
 {
     "name": "Gruul Guildgate",

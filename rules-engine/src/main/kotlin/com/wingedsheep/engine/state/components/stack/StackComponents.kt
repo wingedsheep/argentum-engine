@@ -349,7 +349,9 @@ data class TriggeredAbilityOnStackComponent(
      */
     val isBackup: Boolean = false,
     /** Original state trigger's lifecycle identity (CR 603.8); null on copies and event triggers. */
-    val stateTriggerAbilityId: AbilityId? = null
+    val stateTriggerAbilityId: AbilityId? = null,
+    /** Concrete rules text captured when the trigger fired, independent of later source changes. */
+    val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }

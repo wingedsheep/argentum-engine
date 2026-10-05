@@ -584,6 +584,9 @@ class TriggerAbilityResolver(
                 result.add(createWardTriggeredAbility(it, "facedown"))
             }
         } else {
+            targetContainer.get<CardComponent>()!!.copyWardCosts.forEachIndexed { index, cost ->
+                result.add(createWardTriggeredAbility(cost, "copy_$index"))
+            }
             val cardDef = cardRegistry.getCard(cardDefinitionId)
             if (cardDef != null) {
                 for (ka in cardDef.keywordAbilities) {

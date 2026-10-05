@@ -480,13 +480,16 @@ sealed, or premade), then one N-player game".
   server validates the full Commander deck on arrival and the lobby holds at its normal deck-submission
   gate until the choice exists. A seat whose pool holds no legal commander at all stays un-submitted
   rather than seating a deck the engine would refuse at init.
-- **Attack rule.** The same two messages also carry an optional `attackMode` (default `MULTIPLE`),
+- **Attack rule.** The same two messages also carry an optional `attackMode` (default `LEFT`),
   echoed by `LobbySettings.attackMode`, choosing which opponents creatures may attack in the FFA
   game (CR 802 / 803; CR 806.2b requires exactly one): `MULTIPLE` (any opponent), `LEFT`, or
   `RIGHT` (only the neighbour in that seat direction). It threads to the engine via
   `GameConfig.attackMode` → `GameState.attackMode`; the legal-action enumerator filters
   `validAttackTargets` and the engine rejects an out-of-seat declaration. Ignored in `TOURNAMENT`
-  mode and in any two-player game (all three modes permit the sole opponent).
+  mode and in any two-player game (all three modes permit the sole opponent). In game,
+  `ClientGameState.attackMode` repeats it (`LEFT` / `RIGHT`; null for `MULTIPLE`) — fixed for the
+  game, so only the full state carries it, never a delta — for the rail's direction header and
+  seat tags; `validAttackTargets` stays the authority on what a declaration may name.
 - **Team modes — Two-Headed Giant (CR 810) and Team vs. Team (CR 808).** Both split the pod into two
   even teams and share the same controls: an optional `randomTeams` (default **`true`**) and
   `teamAssignments` (playerId → team index `0`/`1`, full map), echoed by `LobbySettings`.

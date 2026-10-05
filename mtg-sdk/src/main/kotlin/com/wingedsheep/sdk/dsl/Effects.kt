@@ -495,6 +495,15 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.WinGameEffect(target, message)
 
     /**
+     * Restart the game (CR 727), the controller taking the first turn. The cards in pipeline
+     * collection [exempt] stay in exile through the restart; [afterRestart] is the ability's remaining
+     * text, followed just before the new game's first untap step (CR 727.4) with [exempt] still
+     * readable under the same slot. Must be the ability's last instruction (Karn Liberated).
+     */
+    fun RestartGame(exempt: CollectionSlot? = null, afterRestart: Effect? = null): Effect =
+        com.wingedsheep.sdk.scripting.effects.RestartGameEffect(exempt?.key, afterRestart)
+
+    /**
      * Take an extra turn after this one (Time Walk, Lost Isle Calling). When [loseAtEndStep]
      * is true, the player loses the game at the beginning of that turn's end step (Last Chance,
      * Final Fortune). When [powerUpAbilitiesCantBeActivated] is true, no player may activate a

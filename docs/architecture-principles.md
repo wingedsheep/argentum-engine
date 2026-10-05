@@ -1393,6 +1393,14 @@ data class CopyOfComponent(
 5. **Battlefield entry.** The permanent enters the battlefield with the copied stats, types,
    keywords, and abilities as its base state.
 
+Triggered abilities capture their complete SDK rules text when detected. Target and distribution continuations carry that snapshot onto the stack; `EffectContext.forTriggeredAbility` keeps it through resolution choices. `CopyExceptions.retainResolvingTriggeredAbility` appends the snapshot to the copy’s intrinsic triggered abilities, so later copies inherit it and repeated self-copies add separate instances. Source changes cannot rewrite an ability already on the stack.
+
+Face-down sources use a synthetic `CardComponent` containing only their public copiable values,
+including disguise/cloak ward costs. A copied ward cost travels with the card component, so a
+face-up copy has ward without inheriting face-down status or hidden rules text. Token copies of
+face-down double-faced permanents store public snapshots of both faces on `DoubleFacedComponent`;
+transforming those tokens reads the snapshots rather than the hidden card definitions.
+
 **Why copy is resolved before entry, not as a continuous effect layer.**
 
 Rule 613 defines Layer 1 as the copy layer, applied before all other continuous effects. The engine

@@ -161,6 +161,15 @@ class TriggersTest : StringSpec({
         roundTrips("At the beginning of your end step, if you attacked this turn, draw a card.")
     }
 
+    // Loan Shark — the spell count is the slot; one spell is "another spell" and stays out.
+    "you've cast N or more spells this turn is the spell-count intervening-if" {
+        val line = "When ~ enters, if you've cast two or more spells this turn, draw a card."
+        ability(line).interveningIf shouldBe Conditions.YouCastSpellsThisTurn(2)
+        roundTrips(line)
+        Grammar.abilityLine.parseLine("When ~ enters, if you've cast one or more spells this turn, draw a card.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+    }
+
     // The other half of the split (CR 603.2 vs CR 603.4). A `triggerRestriction` is a different
     // printed shape — "Whenever this creature attacks *while* you control a Dinosaur" — that the
     // engine reads only when the trigger fires. No trigger rule spells it, so an ability carrying

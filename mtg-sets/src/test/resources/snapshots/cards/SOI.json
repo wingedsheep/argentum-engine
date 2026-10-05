@@ -2640,12 +2640,11 @@
                     }
                 },
                 "effect": {
-                    "type": "MoveToZone",
+                    "type": "ReturnSelfToBattlefieldAttached",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
-                    },
-                    "destination": "Battlefield"
+                    }
                 },
                 "targetRequirements": [
                     {
@@ -2657,7 +2656,8 @@
                     }
                 ],
                 "timing": "SorcerySpeed",
-                "activateFromZone": "Graveyard"
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Return this card from your graveyard to the battlefield attached to target creature. Activate only as a sorcery."
             }
         ],
         "staticAbilities": [

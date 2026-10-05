@@ -24,7 +24,7 @@ import type {
 /**
  * Extract the relevant player ID from an event for log coloring.
  */
-function getEventPlayerId(event: { type: string; playerId?: string; casterId?: string; controllerId?: string; attackingPlayerId?: string; viewingPlayerId?: string; revealingPlayerId?: string; activePlayerId?: string; newControllerId?: string }): EntityId | null {
+function getEventPlayerId(event: { type: string; playerId?: string; casterId?: string; controllerId?: string; attackingPlayerId?: string; viewingPlayerId?: string; revealingPlayerId?: string; activePlayerId?: string; newControllerId?: string; startingPlayerId?: string }): EntityId | null {
   switch (event.type) {
     case 'lifeChanged': return event.playerId as EntityId
     case 'cardDrawn': return event.playerId as EntityId
@@ -41,6 +41,7 @@ function getEventPlayerId(event: { type: string; playerId?: string; casterId?: s
     case 'transformed': return event.controllerId as EntityId
     case 'coinFlipped': return event.playerId as EntityId
     case 'turnChanged': return event.activePlayerId as EntityId
+    case 'gameRestarted': return event.startingPlayerId as EntityId
     case 'permanentsSacrificed': return event.playerId as EntityId
     case 'cardCycled': return event.playerId as EntityId
     case 'libraryShuffled': return event.playerId as EntityId
@@ -81,7 +82,7 @@ function appendGameLogTail(
   const entries: LogEntry[] = reusable > 0 ? existing.slice(0, reusable) : []
   const now = Date.now()
   for (let i = reusable; i < log.length; i++) {
-    const e = log[i] as { type: string; description: string; playerId?: string; casterId?: string; controllerId?: string; attackingPlayerId?: string; viewingPlayerId?: string; revealingPlayerId?: string; activePlayerId?: string; newControllerId?: string }
+    const e = log[i] as { type: string; description: string; playerId?: string; casterId?: string; controllerId?: string; attackingPlayerId?: string; viewingPlayerId?: string; revealingPlayerId?: string; activePlayerId?: string; newControllerId?: string; startingPlayerId?: string }
     entries.push({
       description: e.description,
       playerId: getEventPlayerId(e),
@@ -94,7 +95,8 @@ function appendGameLogTail(
 
 function getEventLogType(eventType: string): 'action' | 'turn' | 'combat' | 'system' {
   switch (eventType) {
-    case 'turnChanged': return 'turn'
+    case 'turnChanged':
+    case 'gameRestarted': return 'turn'
     case 'creatureAttacked':
     case 'creatureBlocked': return 'combat'
     case 'abilityFizzled':

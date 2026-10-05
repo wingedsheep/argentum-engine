@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.token
 
 import com.wingedsheep.engine.state.components.identity.copiableCardComponent
+import com.wingedsheep.engine.state.components.identity.copiableDoubleFacedComponent
 import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
 import com.wingedsheep.sdk.scripting.effects.CopyExceptions
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -17,7 +18,6 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
-import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -95,15 +95,11 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
 
         // CR 707.8a: a token copy of a double-faced permanent has both faces and enters
         // with the same face up as the source.
-        equippedContainer.get<DoubleFacedComponent>()?.let { sourceDfc ->
-            components.add(
-                DoubleFacedComponent(
-                    frontCardDefinitionId = sourceDfc.frontCardDefinitionId,
-                    backCardDefinitionId = sourceDfc.backCardDefinitionId,
-                    currentFace = sourceDfc.currentFace
-                )
-            )
-        }
+        equippedContainer.copiableDoubleFacedComponent {
+            it.copy(ownerId = controllerId, isDoubleFaced = false,
+                typeLine = if (effect.removeLegendary) it.typeLine.withoutLegendary() else it.typeLine,
+                baseKeywords = if (effect.grantHaste) it.baseKeywords + Keyword.HASTE else it.baseKeywords)
+        }?.let { components.add(it) }
 
         var container = ComponentContainer.of(*components.toTypedArray())
         // Toxic N / bushido N ride components, not the CardComponent — carry them over too.

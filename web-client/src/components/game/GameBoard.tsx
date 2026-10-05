@@ -88,9 +88,6 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   // A multi-phase cast/activation in progress (convoke, waterbend, harmonize, targeting, …). While
   // one is mid-flight the player must finish or cancel it, not pass priority / move to combat.
   const pipelineState = useGameStore((state) => state.pipelineState)
-  // Lobby settings — only for phrasing the attack-restriction banner ("attack left/right").
-  // The actual legality always comes from the server's validAttackTargets.
-  const lobbyState = useGameStore((state) => state.lobbyState)
   const cancelManaSelection = useGameStore((state) => state.cancelManaSelection)
   const { executeAction } = useInteraction()
 
@@ -764,9 +761,9 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
     const attackable = enemies.filter((o) => combatState.validAttackTargets.includes(o.playerId))
     const restricted = enemies.filter((o) => !combatState.validAttackTargets.includes(o.playerId))
     if (attackable.length === 0 || restricted.length === 0) return null
-    const lobbyMode =
-      lobbyState?.settings.gameMode === 'FREE_FOR_ALL' ? lobbyState.settings.attackMode : undefined
-    const direction = lobbyMode === 'LEFT' ? 'left' : lobbyMode === 'RIGHT' ? 'right' : null
+    // Off the game state, not the lobby: a quick game, a reconnect or a replay has no lobby.
+    const direction =
+      gameState.attackMode === 'LEFT' ? 'left' : gameState.attackMode === 'RIGHT' ? 'right' : null
     return { attackable, direction }
   })()
   const defenderPopupVisible =
@@ -1780,7 +1777,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
             userSelect: 'none',
           }}
         >
-          <span aria-hidden>⚔</span>
+          <span aria-hidden>⚔️</span>
           <span>
             {attackRestriction.direction ? `Attack ${attackRestriction.direction} — you can only attack ` : 'You can only attack '}
             {attackRestriction.attackable.map((o, i) => {

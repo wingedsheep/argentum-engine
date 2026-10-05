@@ -225,6 +225,7 @@ class SacrificeAndPayContinuationResumer(
             // Player chose the suffer option — runs under the ability's controller (see
             // executePayOrSufferConsequence), not the player who declined the costs.
             val context = EffectContext(
+                resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
                 sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences,
                 controllerId = continuation.abilityControllerId ?: continuation.playerId,
@@ -248,6 +249,7 @@ class SacrificeAndPayContinuationResumer(
             consequenceDescription = continuation.consequenceDescription
         )
         val context = EffectContext(
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences,
             controllerId = continuation.playerId,
@@ -797,6 +799,7 @@ class SacrificeAndPayContinuationResumer(
         // (ability-controller) context, so this keeps both paths consistent. Falls back to the payer
         // for the common case where the payer is the controller.
         val context = EffectContext(
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = sourceId,
             objectReferences = continuation.objectReferences,
             controllerId = continuation.abilityControllerId ?: continuation.playerId,
@@ -897,6 +900,7 @@ class SacrificeAndPayContinuationResumer(
     ): ExecutionResult {
         if (consequence == null) return checkForMore(state, priorEvents)
         val context = EffectContext(
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences.authorize(priorEvents),
             controllerId = continuation.controllerId,

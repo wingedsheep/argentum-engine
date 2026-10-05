@@ -269,6 +269,91 @@
     ]
 }
 
+// Blessed Defiance
+{
+    "name": "Blessed Defiance",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gets +2/+0 and gains lifelink until end of turn. When that creature dies this turn, create a 1/1 white Spirit creature token with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Spirit"
+                        ],
+                        "keywords": [
+                            "FLYING"
+                        ]
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        }
+                    },
+                    "watchedTarget": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "fireOnce": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "artist": "Kim Sokol",
+        "flavorText": "\"If I'm going, I'm taking you with me!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/1555cdcb-3471-4ee7-99c3-d05311bf433c.jpg?1783925665"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Bloodtithe Collector
 {
     "name": "Bloodtithe Collector",

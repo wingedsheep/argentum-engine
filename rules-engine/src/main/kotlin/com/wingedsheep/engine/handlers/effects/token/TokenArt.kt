@@ -128,6 +128,9 @@ object TokenArt {
             "Thopter" to "https://cards.scryfall.io/art_crop/front/7/8/78e52380-13a1-44fe-b762-e71261cac3d0.jpg?1738355254",
             "Treefolk" to "https://cards.scryfall.io/art_crop/front/2/a/2a3f0d52-34cd-4095-bfa0-bbf9562a8146.jpg",
             "Troll" to "https://cards.scryfall.io/art_crop/front/8/8/8869a8cc-d196-417f-bba5-5ed31bae6a18.jpg?1615686760",
+            // Unicorn (JMP — Blessed Sanctuary). Scryfall has no Unicorn token print; Mesa Unicorn
+            // (JMP #122) is the same 2/2 white Unicorn from the minting set.
+            "Unicorn" to "https://cards.scryfall.io/art_crop/front/e/3/e321bbb0-1660-4452-a9b7-d41674f7f743.jpg?1783930466",
             "Vampire" to "https://cards.scryfall.io/art_crop/front/9/6/969eff58-d91e-49e2-a1e1-8f32b4598810.jpg?1562636856",
             "Wall" to "https://cards.scryfall.io/art_crop/front/7/f/7f31debf-0b93-44c7-99b6-be441ba4e167.jpg?1562702163",
             "Warrior" to "https://cards.scryfall.io/art_crop/front/1/2/12856d0c-240f-42c6-80dd-715ccf314645.jpg?1561756680",

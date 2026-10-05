@@ -179,6 +179,245 @@
     ]
 }
 
+// Forced Worship
+{
+    "name": "Forced Worship",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't attack.\n{2}{W}: Return this Aura to its owner's hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Forced Worship:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                },
+                "descriptionOverride": "{2}{W}: Return this Aura to its owner's hand."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Karl Kopinski",
+        "flavorText": "Imprisonment teaches revenge. Hobbling teaches resignation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e050701d-4609-470d-85ff-4b7638893c6a.jpg?1783941326",
+        "rulings": [
+            {
+                "date": "2011-06-01",
+                "text": "Forced Worship's activated ability may only be activated if Forced Worship is on the battlefield. If it's no longer on the battlefield when the ability resolves, the ability has no effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Karn Liberated
+{
+    "name": "Karn Liberated",
+    "manaCost": "{7}",
+    "typeLine": "Legendary Planeswalker — Karn",
+    "oracleText": "+4: Target player exiles a card from their hand.\n−3: Exile target permanent.\n−14: Restart the game, leaving in exile all non-Aura permanent cards exiled with Karn. Then put those cards onto the battlefield under your control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Karn Liberated:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 4
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a card to exile"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "linkToSource": true
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Karn Liberated:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Exile",
+                    "linkToSource": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Karn Liberated:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -14
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsPermanent",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Aura"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching1"
+                        },
+                        {
+                            "type": "RestartGame",
+                            "exempt": "matching1",
+                            "afterRestart": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "matching1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "MYTHIC",
+        "artist": "Jason Chan",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9287151-95df-4f5a-b32a-4b0aea825452.jpg?1783941329",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "The player who controlled the ability that restarted the game is the starting player in the new game. The new game starts like a game normally does: Each player shuffles their deck (except the cards left in exile by Karn's ability). Each player's life total becomes 20 (or the starting life total for whatever format you're playing). Players draw a hand of seven cards. Players may take mulligans. Players may take actions based on cards in their opening hands, such as those of Leylines."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Karn's first and third abilities are linked. Similarly, Karn's second and third abilities are linked. Only non-Aura permanent cards exiled by either of Karn's first two abilities will remain in exile when the game restarts."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "After the pregame procedure is complete but before the new game's first turn, Karn's ability finishes resolving and the cards left in exile are put onto the battlefield. If this causes any triggered abilities to trigger, those abilities are put onto the stack at the beginning of the first upkeep step."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Permanents put onto the battlefield due to Karn's ability will have been under the starting controller's control continuously since the beginning of that player's first turn. Creatures among them can attack and their activated abilities with {T} in the cost can be activated."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "No actions taken in the game that was restarted apply to the new game. For example, if you were dealt damage by Stigma Lasher in the original game, the effect that states you can't gain life doesn't carry over to the new game."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Players won't have any counters or emblems they had in the original game."
+            }
+        ]
+    },
+    "startingLoyalty": 6
+}
+
 // Loxodon Convert
 {
     "name": "Loxodon Convert",

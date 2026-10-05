@@ -341,6 +341,36 @@ data object EndTheTurnEffect : Effect {
 }
 
 /**
+ * Restart the game (CR 727). The game ends with no winner, loser or draw, and every player still in
+ * it starts a new game by the usual procedure (CR 103) — shuffled libraries, starting life totals,
+ * seven-card hands, mulligans, opening-hand actions — except that the player who controlled this
+ * effect is the starting player (CR 727.1a). Ownership never changes (CR 727.2).
+ *
+ * [exempt] names a pipeline collection whose cards sit the procedure out: they are left in exile
+ * instead of joining their owners' decks (CR 727.5). [afterRestart] is the rest of the resolving
+ * spell or ability's text: the restarting effect finishes resolving just before the new game's first
+ * untap step, and those instructions are followed then (CR 727.4). It runs with the effect's
+ * controller as its controller and the [exempt] collection under the same name.
+ *
+ * Like [EndTheTurnEffect], the engine performs the restart once the current resolution completes, so
+ * this must be the last instruction of its ability — anything after it belongs in [afterRestart].
+ * Karn Liberated: "Restart the game, leaving in exile all non-Aura permanent cards exiled with Karn.
+ * Then put those cards onto the battlefield under your control."
+ */
+@SerialName("RestartGame")
+@Serializable
+data class RestartGameEffect(
+    val exempt: String? = null,
+    val afterRestart: Effect? = null
+) : Effect {
+    override val description: String = buildString {
+        append("Restart the game")
+        if (exempt != null) append(", leaving the exempted cards in exile")
+        if (afterRestart != null) append(". Then ${afterRestart.description.replaceFirstChar { it.lowercase() }}")
+    }
+}
+
+/**
  * "It becomes day" / "It becomes night" (CR 731.1) — set the game's day/night designation to
  * [designation].
  *

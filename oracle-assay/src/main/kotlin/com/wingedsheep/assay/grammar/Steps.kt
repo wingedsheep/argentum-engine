@@ -686,6 +686,18 @@ object Steps {
             amount = ::lifeLostAmount,
         ),
         LifeChange(
+            // "Whenever an opponent draws a card, that player loses 1 life." — Scrawling Crawler.
+            // "That player" is the one the trigger named, `Player.TriggeringPlayer`, exactly as in
+            // [damageRecipients]' row; a run that also declares a target refuses it (see the
+            // `namesPlayer` guard in `merge`), because there it would name the target's owner.
+            "that player loses {n} life", "that player loses life equal to {amount}",
+            "that player loses life",
+            script = {
+                CardScript(spellEffect = Effects.LoseLife(it, EffectTarget.PlayerRef(Player.TriggeringPlayer)))
+            },
+            amount = ::lifeLostAmount,
+        ),
+        LifeChange(
             "target player loses {n} life", "target player loses life equal to {amount}",
             "target player loses life",
             script = {
@@ -3413,6 +3425,19 @@ object Steps {
         // round-trip as the triggering player, which on a spell is no one. The SDK spells the first
         // as the bound slot and the second as a third thing, so the run declines rather than choose.
         if (declared.isNotEmpty() && parts.any { Slots.namesPlayer(it, "TriggeringPlayer") }) return null
+        // **"Its controller" needs one permanent to be the controller of.** "Destroy target creature.
+        // Its controller creates a 3/3 green Beast creature token." reads the token's recipient as
+        // `EffectTarget.TargetController`, which, like `ContextTarget(0)`, names no slot and so is
+        // invisible to the pronoun guard above. After a player target there is no controller to
+        // name, after two targets the model cannot say which one's, and after a spell the cards
+        // that print it (An Offer You Can't Refuse) order the token before the counter so the
+        // spell's controller is still readable — a different model from the printed order. So the
+        // line must declare exactly one permanent target, and anything else declines.
+        if (parts.any { Slots.namesPlayer(it, "TargetController") }) {
+            val single = declared.singleOrNull() ?: return null
+            Targets.targetedFilter(single) ?: return null
+            if (single is TargetObject && (single.count != 1 || single.filter.zone != Zone.BATTLEFIELD)) return null
+        }
         var index = 0
         return parts.map { part ->
             if (part.targetRequirements.isEmpty()) {
@@ -3449,6 +3474,10 @@ object Steps {
         if (head != CardScript(spellEffect = headEffect, targetRequirements = head.targetRequirements)) return null
         if (last != CardScript(spellEffect = lastEffect, targetRequirements = last.targetRequirements)) return null
         if (head.targetRequirements.isNotEmpty() && last.targetRequirements.isNotEmpty()) return null
+        // [merge]'s "that player" guard, for the same reason: "Target opponent discards a card. If
+        // you control a Demon, that player loses 3 life." (Scroll of Griselbrand) names the target.
+        val declares = head.targetRequirements.isNotEmpty() || last.targetRequirements.isNotEmpty()
+        if (declares && listOf(head, last).any { Slots.namesPlayer(it, "TriggeringPlayer") }) return null
         val headEffects = (headEffect as? CompositeEffect)
             ?.takeIf { it == CompositeEffect(it.effects) }
             ?.effects

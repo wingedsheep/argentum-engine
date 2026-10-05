@@ -56,17 +56,21 @@ class Settler(
      * Runs a prevention effect's owed result (see [ReplacementRiders]). Combat damage isn't an
      * effect, so the results its prevention owes are run here, before detection and SBAs.
      */
-    private val effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)? = null
+    private val effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)? = null,
+    /** Carries out a "restart the game" once the resolution that asked for it is over (CR 727). */
+    private val gameRestarter: GameRestarter? = null
 ) {
 
     fun settle(executed: ExecutionResult): ExecutionResult {
         if (executed.outcome is Outcome.Rejected) return executed
         if (executed.state.gameOver) return executed.copy(state = executed.state.withoutPendingTriggers())
+        val current = restartIfRequested(executed)
         // Nothing has happened yet before the first turn begins: mulligans draw and shuffle, but
-        // no one receives priority, and no permanent can have triggered.
-        if (mulligansInProgress(executed.state)) return executed
+        // no one receives priority, and no permanent can have triggered. A restarted game is back
+        // at that point, and nothing from the game it ended can trigger in the new one.
+        if (mulligansInProgress(current.state)) return current
 
-        val raw = runReplacementRiders(endTheTurnIfRequested(executed))
+        val raw = runReplacementRiders(endTheTurnIfRequested(current))
         val result = com.wingedsheep.engine.mechanics.GraveyardOrdering.finish(raw)
         if (result.outcome is Outcome.Rejected) return result
         val state = result.state
@@ -107,6 +111,18 @@ class Settler(
         if (state.getEntity(activePlayer)?.has<EndTheTurnRequestedComponent>() != true) return result
         val ended = turnManager.performEndTheTurn(state)
         return ended.copy(events = result.events + ended.events)
+    }
+
+    /**
+     * A "restart the game" effect (CR 727) records its request while its ability resolves; the game
+     * is restarted once that resolution is over, whether or not it stopped to ask a question first.
+     */
+    private fun restartIfRequested(result: ExecutionResult): ExecutionResult {
+        val request = result.state.pendingRestart ?: return result
+        val restarter = gameRestarter ?: return result
+        if (result.state.pendingDecision != null) return result
+        val restarted = restarter.restart(result.state, request)
+        return restarted.copy(events = result.events + restarted.events)
     }
 
     private fun runReplacementRiders(result: ExecutionResult): ExecutionResult {

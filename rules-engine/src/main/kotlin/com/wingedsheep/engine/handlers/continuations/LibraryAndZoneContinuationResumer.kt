@@ -1127,6 +1127,7 @@ class LibraryAndZoneContinuationResumer(
         var stateForCast = granted
         if (continuation.thenEffect != null) {
             val thenCtx = EffectContext(
+                resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
                 sourceId = continuation.sourceId,
                 objectReferences = continuation.objectReferences,
                 controllerId = continuation.playerId,
@@ -1196,6 +1197,7 @@ class LibraryAndZoneContinuationResumer(
         val thenEffect = continuation.thenEffect
             ?: return checkForMore(state, leadingEvents)
         val ctx = EffectContext(
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences,
             controllerId = continuation.playerId,

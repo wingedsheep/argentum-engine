@@ -132,7 +132,7 @@ class EngineServices(
     val grantedKeywordResolver = GrantedKeywordResolver(cardRegistry)
     val alternativePaymentHandler = AlternativePaymentHandler(grantedKeywordResolver)
     val costHandler = CostHandler(zones)
-    val mulliganHandler = MulliganHandler(cardRegistry)
+    val mulliganHandler = MulliganHandler(cardRegistry, effectExecutorRegistry::execute)
     val castPermissionUtils = CastPermissionUtils(cardRegistry, predicateEvaluator, conditionEvaluator)
     val legalityKernel = LegalityKernel(cardRegistry, conditionEvaluator)
     val sbaChecker = StateBasedActionChecker(zones, cardRegistry = cardRegistry)
@@ -151,7 +151,10 @@ class EngineServices(
     val continuationHandler = ContinuationHandler(this)
     val settler = Settler(
         triggerDetector, triggerProcessor, sbaChecker, stateTriggerPoller, turnManager,
-        effectExecutor = effectExecutorRegistry::execute
+        effectExecutor = effectExecutorRegistry::execute,
+        gameRestarter = GameRestarter(cardRegistry) { state, events ->
+            mulliganHandler.beginFirstTurn(state, events, turnManager)
+        }
     )
 
     /** The cast pipeline (CR 601.2). Built last: it draws on nearly every service above. */

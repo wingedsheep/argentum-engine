@@ -70,7 +70,7 @@ object CombatDefenders {
      *
      * - [AttackMode.MULTIPLE] — every opponent still in the game (CR 802.2).
      * - [AttackMode.LEFT] — only the opponent in the next remaining seat (CR 803.1a). Turn order
-     *   proceeds to the left (CR 103.7b), so "the player to your left" is [GameState.getNextPlayer].
+     *   proceeds to the left (CR 101.4), so "the player to your left" is [GameState.getNextPlayer].
      * - [AttackMode.RIGHT] — only the opponent in the previous remaining seat (CR 803.1b), via
      *   [GameState.getPreviousPlayer].
      *

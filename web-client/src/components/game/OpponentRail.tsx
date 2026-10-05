@@ -12,6 +12,7 @@ import {
   useIsTeamGame,
   useIsSharedLifeTeamGame,
   useViewerTeamIndex,
+  useAttackNeighbours,
 } from '@/store/selectors'
 import { teamColor, type SeatColor } from '@/styles/seatColors'
 import type { ClientCard, ClientPlayer, EntityId } from '@/types'
@@ -20,6 +21,8 @@ import { SpeedGauge } from './overlay'
 import { HelpTip } from '../help/HelpTip'
 import { isLoneTargetRequirement } from '@/utils/targeting.ts'
 import { defendingPlayerOf } from '@/utils/combatTargets'
+import { attackModeLabel } from '@/utils/attackDirection'
+import { AttackRelationBadge, useAttackRelation } from './AttackRelationTag'
 
 /**
  * Total viewport width claimed by the fixed rail column (chip width + left offset + a
@@ -110,6 +113,16 @@ export function OpponentRail({
   const teamMode = isTeamGame && viewerTeam != null && !spectatorMode
   // Only 2HG pools life per team; Team vs. Team groups by team but shows per-player life on chips.
   const sharedLife = useIsSharedLifeTeamGame()
+  // Attack left / attack right (CR 803.1): Free-for-All only, so it never meets the team rail.
+  // Read off the table rather than your seat, so an eliminated player watching on still sees it;
+  // with two players left the rule restricts nothing and the header stands down.
+  const gameState = useGameStore(selectGameState)
+  const attackMode = gameState?.attackMode
+  const attackHeaderMode =
+    (attackMode === 'LEFT' || attackMode === 'RIGHT') &&
+    (gameState?.players.filter((p) => !p.hasLost).length ?? 0) >= 3
+      ? attackMode
+      : null
 
   if (opponents.length <= 1) return null
 
@@ -213,6 +226,7 @@ export function OpponentRail({
               the center-HUD orb. In normal play the seat is "you"; while spectating it is whichever
               seat the header's view switcher has anchored (it would otherwise be missing from the
               rail entirely, since it is nobody's "opponent"). */}
+          {attackHeaderMode && <AttackDirectionHeader mode={attackHeaderMode} spectatorMode={spectatorMode} />}
           {self && <BottomSeatRailChip seat={self} isViewerSeat={!spectatorMode} />}
           {opponents.map((opponent) => (
             <RailChip
@@ -310,6 +324,123 @@ export function OpponentRail({
         </>
       )}
     </div>
+  )
+}
+
+/**
+ * The attack-left / attack-right rule (CR 803.1), shown above the seat list for the whole game.
+ * The rail lists seats in turn order and turn order runs to the left (CR 101.4), so "left" is the
+ * seat below in the list and "right" the seat above, wrapping at the ends — the arrow says which.
+ */
+function AttackDirectionHeader({ mode, spectatorMode }: { mode: 'LEFT' | 'RIGHT'; spectatorMode: boolean }) {
+  const gameState = useGameStore(selectGameState)
+  const neighbours = useAttackNeighbours()
+  // The second line names your two neighbours: the one you can attack, the one who can attack
+  // you. A spectator has no "you", so the header keeps just the rule.
+  const relations = spectatorMode ? null : neighbours
+  const nameOf = (id: EntityId) => gameState?.players.find((p) => p.playerId === id)?.name ?? ''
+  const targetColor = useIdentityColor(relations?.attacks ?? null)
+  const attackerColor = useIdentityColor(relations?.attackedBy ?? null)
+  // Collapsed to the one-line rule by default — the chip badges already mark both neighbours; a
+  // click unfolds the spelled-out lines. Remembered per browser.
+  const [expanded, setExpanded] = useState(readAttackHeaderExpanded)
+  const toggle = () => {
+    const next = !expanded
+    setExpanded(next)
+    try {
+      localStorage.setItem(ATTACK_HEADER_EXPANDED_KEY, next ? '1' : '0')
+    } catch {
+      // Storage blocked (private window) — the toggle still works for this session.
+    }
+  }
+  const title =
+    (mode === 'LEFT'
+      ? 'Attack left: each player can attack only the next player in turn order — the seat below them in this list (the bottom seat attacks the top one).'
+      : 'Attack right: each player can attack only the previous player in turn order — the seat above them in this list (the top seat attacks the bottom one).') +
+    (relations ? (expanded ? '\nClick to hide the details.' : '\nClick to show who you attack and who attacks you.') : '')
+  return (
+    <div
+      role={relations ? 'button' : 'note'}
+      aria-expanded={relations ? expanded : undefined}
+      tabIndex={relations ? 0 : undefined}
+      title={title}
+      onClick={relations ? toggle : undefined}
+      onKeyDown={(e) => {
+        if (relations && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault()
+          toggle()
+        }
+      }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '3px 10px',
+        borderRadius: 6,
+        border: '1px solid rgba(255, 110, 100, 0.45)',
+        borderLeft: '4px solid rgba(255, 110, 100, 0.8)',
+        background: 'linear-gradient(90deg, rgba(90, 20, 20, 0.6), rgba(10, 12, 20, 0.55))',
+        color: '#ffb3ab',
+        fontSize: 10,
+        fontWeight: 800,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        userSelect: 'none',
+        pointerEvents: 'auto',
+        cursor: relations ? 'pointer' : 'help',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span aria-hidden style={{ fontSize: 11, lineHeight: 1 }}>⚔️</span>
+        <span style={{ flex: 1 }}>{attackModeLabel(mode)}</span>
+        <span aria-hidden style={{ fontSize: 13, lineHeight: 1 }}>{mode === 'LEFT' ? '↓' : '↑'}</span>
+        {relations && (
+          <span aria-hidden style={{ fontSize: 9, lineHeight: 1, opacity: 0.8, width: 8, textAlign: 'center' }}>
+            {expanded ? '▾' : '▸'}
+          </span>
+        )}
+      </div>
+      {relations && expanded && (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+            marginTop: 2,
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: 0,
+            textTransform: 'none',
+            color: '#d8c7c4',
+          }}
+        >
+          <RelationLine glyph="⚔️">
+            You attack <b style={{ color: targetColor.bright, fontWeight: 800 }}>{nameOf(relations.attacks)}</b>
+          </RelationLine>
+          <RelationLine glyph="🛡">
+            <b style={{ color: attackerColor.bright, fontWeight: 800 }}>{nameOf(relations.attackedBy)}</b> attacks you
+          </RelationLine>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const ATTACK_HEADER_EXPANDED_KEY = 'argentum-attack-direction-expanded'
+
+function readAttackHeaderExpanded(): boolean {
+  try {
+    return localStorage.getItem(ATTACK_HEADER_EXPANDED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function RelationLine({ glyph, children }: { glyph: string; children: React.ReactNode }) {
+  return (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 5, minWidth: 0 }}>
+      <span aria-hidden style={{ width: 12, textAlign: 'center', fontSize: 10, flexShrink: 0 }}>{glyph}</span>
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{children}</span>
+    </span>
   )
 }
 
@@ -712,6 +843,7 @@ function RailChip({
   const isActiveTurn = gameState?.activePlayerId === playerId && !opponent.hasLost
   const hasPriority = gameState?.priorityPlayerId === playerId && !opponent.hasLost
   const isDeciding = opponentDecisionStatus?.playerId === playerId
+  const attackRelation = useAttackRelation(playerId)
 
   /* ── Targeting state (player as target) ──────────────────────────────── */
   const isValidTargetingTarget = targetingState?.validTargets.includes(playerId) ?? false
@@ -889,7 +1021,12 @@ function RailChip({
           : {})}
         role="button"
         tabIndex={tomb && !spectatorMode ? -1 : 0}
-        title={chipTitle(opponent) + (isAttackRestricted ? "\nCan't be attacked this combat" : '')}
+        title={
+          chipTitle(opponent) +
+          (attackRelation === 'target' ? '\nThe only opponent you can attack' : '') +
+          (attackRelation === 'attacker' ? '\nThe only opponent who can attack you' : '') +
+          (isAttackRestricted ? "\nCan't be attacked this combat" : '')
+        }
         onClick={handleChipClick}
         onKeyDown={(e) => {
           // Only the chip itself: the crosshair and distribute buttons inside it are focusable
@@ -941,6 +1078,9 @@ function RailChip({
               : {}),
         }}
       >
+        {/* Attack relation (attack left/right) — a badge on the chip's left edge, outside the
+            content row: inline words squeezed the name out. The rail header spells it out. */}
+        {attackRelation && !tomb && <AttackRelationBadge relation={attackRelation} />}
         {/* Attention pulse overlay — keyed so each event restarts the animation
             without remounting the chip (which would drop hover state). */}
         {pulse && (

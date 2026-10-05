@@ -82,6 +82,183 @@
     ]
 }
 
+// Angelic Cub
+{
+    "name": "Angelic Cub",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Cat Angel",
+    "oracleText": "Whenever this creature becomes the target of a spell or ability for the first time each turn, put a +1/+1 counter on it.\nAs long as this creature has three or more +1/+1 counters on it, it has flying.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Angelic Cub:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "firstTimeEachTurn": true
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "UNCOMMON",
+        "artist": "Miranda Meeks",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f45e1832-1070-4d12-aba9-dcad47a02eda.jpg?1783919197",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "Angelic Cub's first ability will resolve before the spell or ability that caused it to trigger."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If a spell or ability has one or more of its targets changed to Angelic Cub, Angelic Cub's first ability will trigger if it hasn't yet been the target of a spell or ability this turn."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If you create a copy of a spell on the stack and target Angelic Cub, Angelic Cub's first ability will trigger as long as it hasn't yet been the target of a spell or ability this turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Chains of Custody
+{
+    "name": "Chains of Custody",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature you control\nWhen this Aura enters, exile target nonland permanent an opponent controls until this Aura leaves the battlefield.\nEnchanted creature has ward {2}. (Whenever it becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chains of Custody:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Chains of Custody:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{2}"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "artist": "Bruno Biazotto",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94a1a840-bcdc-4d6f-a28d-9805578473f6.jpg?1783919196",
+        "rulings": [
+            {
+                "date": "2022-12-02",
+                "text": "Auras attached to the exiled permanent will be put into their owners' graveyards. Any Equipment will become unattached and remain on the battlefield. Any counters on the exiled permanent will cease to exist. When the card returns to the battlefield, it will be a new object with no connection to the card that was exiled."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "If Chains of Custody leaves the battlefield before its second ability resolves, the target permanent won't be exiled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Deadly Plot
 {
     "name": "Deadly Plot",
@@ -651,6 +828,76 @@
         "rarity": "RARE",
         "artist": "Joshua Raphael",
         "imageUri": "https://cards.scryfall.io/normal/front/0/b/0ba97da8-0106-4e8b-b58b-8f2d63e3d618.jpg?1783919191"
+    }
+}
+
+// Lita, Mechanical Engineer
+{
+    "name": "Lita, Mechanical Engineer",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Artifact Creature — Artificer",
+    "oracleText": "Vigilance\nAt the beginning of your end step, untap each other artifact creature you control.\n{3}{W}, {T}: Create a 5/5 colorless Vehicle artifact token named Zeppelin with flying and crew 3. (It has \"Tap any number of creatures you control with total power 3 or more: This token becomes an artifact creature until end of turn.\")",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lita, Mechanical Engineer:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "artifact creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Lita, Mechanical Engineer:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Zeppelin"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "MYTHIC",
+        "artist": "Bartek Fedyczak",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f3a5a044-d474-43f4-95a9-e67808908e6c.jpg?1783919196"
     }
 }
 

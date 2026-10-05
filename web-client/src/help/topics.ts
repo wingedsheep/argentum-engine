@@ -300,7 +300,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary:
       'One game, everyone at the same table (2–6 players). Last player standing wins.',
     body: [
-      { kind: 'p', text: 'The host chooses who each creature may attack: any opponent (CR 802), or only the player to your left or right (CR 803). “Left” and “right” follow the seating order shown in the lobby.' },
+      { kind: 'p', text: 'The host chooses who each creature may attack: only the player to your left (the default) or right (CR 803), or any opponent (CR 802). “Left” and “right” follow the seating order shown in the lobby. In game, the seat list names the rule, tags the one opponent you can attack (⚔ TARGET) and the one who can attack you (🛡 ATTACKS YOU), and dims everyone you can’t attack while you declare attackers.' },
     ],
     related: ['table-team-vs-team', 'multiplayer-camera'],
   },

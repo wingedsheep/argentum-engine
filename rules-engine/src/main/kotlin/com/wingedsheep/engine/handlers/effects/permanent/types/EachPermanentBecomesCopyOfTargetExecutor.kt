@@ -120,6 +120,7 @@ class EachPermanentBecomesCopyOfTargetExecutor(
         // `AttachedCopyExpiryCheck` once the source stops being attached — Blade of Shared Souls).
         // Anything else degrades to permanent.
         var newState = state
+        val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
         for (entityId in affected) {
             val container = newState.getEntity(entityId) ?: continue
             val currentCard = container.get<CardComponent>() ?: continue
@@ -131,7 +132,7 @@ class EachPermanentBecomesCopyOfTargetExecutor(
             // `isDoubleFaced` stays the copying permanent's own: layout is not a copiable value
             // (CR 707.2), and CR 712.9's Clone/Kruin Outlaw examples turn on the copy's *own* card
             // being double-faced, not the copied one's.
-            val copiedCard = CopyExceptionApplier.apply(targetCard, effect.exceptions)
+            val copiedCard = CopyExceptionApplier.apply(targetCard, effect.exceptions, context.resolvingTriggeredAbility, container.copiableCardComponent()!!.colors)
                 .copy(ownerId = currentCard.ownerId, isDoubleFaced = currentCard.isDoubleFaced)
 
             // If this permanent is already a copy, keep the existing pre-copy snapshot
@@ -166,6 +167,12 @@ class EachPermanentBecomesCopyOfTargetExecutor(
                 updated
             }
 
+            events.add(com.wingedsheep.engine.core.CopiableCharacteristicsChangedEvent(entityId))
+
+            if (effect.exceptions.retainResolvingTriggeredAbility && context.resolvingTriggeredAbility != null) {
+                events.add(com.wingedsheep.engine.core.CopiableTriggeredAbilityAddedEvent(entityId))
+            }
+
             // The activation snapshot survives changes to the source and to its granting effect.
             val retainedAbility = context.activatedAbility
             if (effect.retainActivatingAbility && retainedAbility != null &&
@@ -180,6 +187,6 @@ class EachPermanentBecomesCopyOfTargetExecutor(
             }
         }
 
-        return EffectResult.success(newState)
+        return EffectResult.success(newState, events)
     }
 }

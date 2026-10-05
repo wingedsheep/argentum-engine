@@ -256,6 +256,12 @@ class ZoneTransitionService(
         val fromZone = currentZoneKey.zoneType
         val leavingBattlefield = fromZone == Zone.BATTLEFIELD
 
+        // A token that has left the battlefield stays where it is until the SBA removes it
+        // (CR 111.8) — "exile it, then return it" (Flicker of Fate) must not bring a token back.
+        if (container.has<TokenComponent>() && fromZone != Zone.BATTLEFIELD && fromZone != Zone.STACK) {
+            return ZoneTransitionResult(state, emptyList())
+        }
+
         // 2. Capture last-known info if leaving battlefield (assembled into one EntitySnapshot
         // below). The +1/+1, -1/-1, and total counter counts are derived from this map by the
         // snapshot's accessors, so they are no longer captured as separate scalars.

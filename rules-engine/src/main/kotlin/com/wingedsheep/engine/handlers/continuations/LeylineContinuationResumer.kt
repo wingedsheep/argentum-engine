@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.continuations
 
+import com.wingedsheep.engine.core.BeginFirstTurnContinuation
 import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.EngineServices
@@ -55,6 +56,12 @@ class LeylineContinuationResumer(
     override fun autoResumers(): List<AutoResumer<*>> = listOf(
         autoResumer(LeylinePhaseContinuation::class) { state, _, events, checkForMore ->
             continueLeylinePhase(state, events, checkForMore)
+        },
+        autoResumer(BeginFirstTurnContinuation::class) { state, _, events, checkForMore ->
+            mergeAndContinue(
+                services.mulliganHandler.startFirstTurn(state, emptyList(), services.turnManager, untapStep = true),
+                events, checkForMore
+            )
         }
     )
 
@@ -228,6 +235,9 @@ class LeylineContinuationResumer(
         }
 
         // No more leyline prompts: the game begins, exactly as it does when no one has a leyline.
-        return mergeAndContinue(services.turnManager.advanceStep(state), events, checkForMore)
+        return mergeAndContinue(
+            services.mulliganHandler.beginFirstTurn(state, emptyList(), services.turnManager),
+            events, checkForMore
+        )
     }
 }

@@ -1868,7 +1868,10 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * player or *creature*" wording needs the object half and the player half kept apart.
      *
      * [byYou] restricts to spells or abilities controlled by the trigger's controller.
-     * [firstTimeEachTurn] restricts to the first time each turn (used by Valiant).
+     * [firstTimeEachTurn] restricts to the first time each turn. Its window follows the controller
+     * axis: with [byYou] (Valiant) it is the first time a spell or ability *you control* targets it,
+     * so an opponent's earlier targeting doesn't close it; unrestricted (Angelic Cub) it is the
+     * first time *any* spell or ability targets it this turn.
      * [spellsOnly] restricts to "becomes the target of a **spell**" wording (King of the
      * Oathbreakers), ignoring abilities; [abilitiesOnly] is its mirror — "becomes the target of an
      * **ability**" (Loki, God of Mischief), ignoring spells. The default (neither) matches both.

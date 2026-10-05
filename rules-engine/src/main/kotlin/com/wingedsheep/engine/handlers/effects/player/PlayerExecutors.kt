@@ -57,6 +57,7 @@ class PlayerExecutors(
         CreatePermanentEmblemExecutor(),
         EachPlayerChoosesCreatureTypeExecutor(),
         EndTheTurnExecutor(),
+        RestartGameExecutor(),
         GainCitysBlessingExecutor(),
         ChangeSpeedExecutor(amountEvaluator = zones.predicateEvaluator.amounts),
         RemoveMaximumHandSizeExecutor(),

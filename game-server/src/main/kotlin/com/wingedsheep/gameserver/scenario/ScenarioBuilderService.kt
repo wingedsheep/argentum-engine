@@ -161,6 +161,7 @@ class ScenarioBuilderService(
         request.activePlayer?.let { builder.withActivePlayer(it) }
         request.priorityPlayer?.let { builder.withPriorityPlayer(it) }
         request.teams?.let { builder.withTeams(it, teamVsTeam = request.teamVsTeam == true) }
+        request.attackMode?.let { builder.withAttackMode(it) }
 
         val (state, playerIds) = builder.build()
         return ScenarioBuildResult(state, playerIds, registry)
@@ -459,6 +460,12 @@ class ScenarioBuilderService(
                 format = if (teamVsTeam) com.wingedsheep.sdk.core.Format.TeamVsTeam()
                 else com.wingedsheep.sdk.core.Format.TwoHeadedGiant()
             )
+            return this
+        }
+
+        /** The Free-for-All attack rule (CR 802 / 803) — what a lobby's `attackMode` threads through `GameConfig`. */
+        fun withAttackMode(mode: com.wingedsheep.sdk.core.AttackMode): ScenarioBuilder {
+            state = state.copy(attackMode = mode)
             return this
         }
 

@@ -108,6 +108,8 @@ class FreeForAllLobbyTest : FunSpec() {
             eventually(5.seconds) {
                 alice.latestLobbyUpdate()?.players?.size shouldBe 3
                 alice.latestLobbyUpdate()?.settings?.gameMode shouldBe "FREE_FOR_ALL"
+                // A pod the host didn't configure plays attack left (CR 803.1a).
+                alice.latestLobbyUpdate()?.settings?.attackMode shouldBe "LEFT"
             }
 
             // ── Decks: everyone submits a premade deck, host starts ──

@@ -140,7 +140,7 @@ export function groupSummary(id: GroupId, view: UnifiedLobbyView, lobbyState: Lo
 }
 
 function attackLabel(mode: LobbyState['settings']['attackMode'] | undefined): string {
-  switch (mode ?? 'MULTIPLE') {
+  switch (mode ?? 'LEFT') {
     case 'LEFT': return 'attack left'
     case 'RIGHT': return 'attack right'
     default: return 'attack any'

@@ -903,6 +903,10 @@ class GameSession(
     fun executeAction(playerId: EntityId, action: GameAction, messageId: String? = null): ActionResult = synchronized(stateLock) {
         val state = gameState ?: return ActionResult.Failure("Game not started")
 
+        // Opening hands are decided through the mulligan messages, and nobody has priority until
+        // every seat has kept (a restarted game, CR 727, is back at that point mid-session).
+        if (isMulliganPhase && action !is Concede) return ActionResult.Failure("Mulligan phase not complete")
+
         // Only the current input authority may submit a player's actions.
         // The action.playerId always represents the in-game actor (whose mana, cards,
         // and spell-controllership this action is); the controller is just the input
@@ -1000,6 +1004,7 @@ class GameSession(
 
     fun getLegalActions(playerId: EntityId): List<LegalActionInfo> {
         val state = gameState ?: return emptyList()
+        if (isMulliganPhase) return emptyList()
 
         // CR 605.3a — while a rule or effect is asking this seat for a mana payment (ward, "you may
         // pay {B}", an attack tax) they hold no priority, but they may still activate mana
@@ -1271,6 +1276,9 @@ class GameSession(
 
         // Can't auto-pass if game is over
         if (state.gameOver) return null
+
+        // Nor while opening hands are being decided — a restarted game (CR 727) is back there.
+        if (isMulliganPhase) return null
 
         // Nobody may pass priority while the game is waiting on a decision. This used to be
         // implicit — getLegalActions returned nothing during a decision — but a mana-payment

@@ -185,7 +185,8 @@ class ManaPaymentContinuationResumer(
                     continuation.onPaid,
                     continuation.controllerId ?: continuation.payingPlayerId,
                     continuation.sourceId,
-                    checkForMore
+                    checkForMore,
+                    resolvingTriggeredAbility = continuation.resolvingTriggeredAbility
                 )
             }
 
@@ -230,6 +231,7 @@ class ManaPaymentContinuationResumer(
                 counterDestination = continuation.counterDestination,
                 controllerId = continuation.controllerId,
                 onPaid = continuation.onPaid,
+                resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
                 sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences
             )
@@ -790,6 +792,7 @@ class ManaPaymentContinuationResumer(
                         pendingSubCostSources = subCostSources,
                         availableSources = continuation.availableSources,
                         onPaid = continuation.onPaid,
+                        resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
                         sourceId = continuation.sourceId,
                         remainingWardParts = continuation.remainingWardParts,
                         wardSourceId = continuation.wardSourceId
@@ -834,7 +837,8 @@ class ManaPaymentContinuationResumer(
             continuation.onPaid,
             continuation.controllerId ?: continuation.payingPlayerId,
             continuation.sourceId,
-            checkForMore
+            checkForMore,
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility
         )
     }
 
@@ -903,11 +907,13 @@ class ManaPaymentContinuationResumer(
         onPaid: com.wingedsheep.sdk.scripting.effects.Effect?,
         riderController: EntityId,
         sourceId: EntityId?,
-        checkForMore: CheckForMore
+        checkForMore: CheckForMore,
+        resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null
     ): ExecutionResult {
         if (onPaid == null) return checkForMore(state, priorEvents)
 
         val riderContext = com.wingedsheep.engine.handlers.EffectContext(
+            resolvingTriggeredAbility = resolvingTriggeredAbility,
             sourceId = sourceId,
             controllerId = riderController,
         )
@@ -1587,7 +1593,8 @@ class ManaPaymentContinuationResumer(
         onPaid: com.wingedsheep.sdk.scripting.effects.Effect? = null,
         sourceId: EntityId? = null,
         remainingWardParts: List<com.wingedsheep.sdk.scripting.effects.WardCost> = emptyList(),
-        wardSourceId: EntityId? = null
+        wardSourceId: EntityId? = null,
+        resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null
     ): ExecutionResult {
         val headSourceId = pendingSubCostSources.first()
         val sourceName = availableSources.firstOrNull { it.entityId == headSourceId }?.name
@@ -1635,6 +1642,7 @@ class ManaPaymentContinuationResumer(
             pendingSubCostSources = pendingSubCostSources,
             availableSources = availableSources,
             onPaid = onPaid,
+            resolvingTriggeredAbility = resolvingTriggeredAbility,
             sourceId = sourceId,
             remainingWardParts = remainingWardParts,
             wardSourceId = wardSourceId
@@ -1747,6 +1755,7 @@ class ManaPaymentContinuationResumer(
                 pendingSubCostSources = remaining,
                 availableSources = continuation.availableSources,
                 onPaid = continuation.onPaid,
+                resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
                 sourceId = continuation.sourceId,
                 remainingWardParts = continuation.remainingWardParts,
                 wardSourceId = continuation.wardSourceId
@@ -1789,7 +1798,8 @@ class ManaPaymentContinuationResumer(
             continuation.onPaid,
             continuation.controllerId ?: continuation.payingPlayerId,
             continuation.sourceId,
-            checkForMore
+            checkForMore,
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility
         )
     }
 

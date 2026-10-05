@@ -46,6 +46,163 @@
     ]
 }
 
+// Ajani, Strength of the Pride
+{
+    "name": "Ajani, Strength of the Pride",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Ajani",
+    "oracleText": "+1: You gain life equal to the number of creatures you control plus the number of planeswalkers you control.\n−2: Create a 2/2 white Cat Soldier creature token named Ajani's Pridemate with \"Whenever you gain life, put a +1/+1 counter on this token.\"\n0: If you have at least 15 life more than your starting life total, exile Ajani and each artifact and creature your opponents control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ajani, Strength of the Pride:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Add",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature"
+                        },
+                        "right": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "planeswalker"
+                        }
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ajani, Strength of the Pride:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Cat",
+                        "Soldier"
+                    ],
+                    "name": "Ajani's Pridemate",
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0819e8e-fb7e-43c7-a7cf-d768f43193ac.jpg?1783932857",
+                    "triggeredAbilities": [
+                        {
+                            "id": "Ajani, Strength of the Pride:2",
+                            "trigger": "LifeGainEvent",
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ajani, Strength of the Pride:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "LifeTotal",
+                                "player": "You"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Add",
+                                "left": {
+                                    "type": "StartingLifeTotal",
+                                    "player": "You"
+                                },
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 15
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "artifact|creature ctrl:opponent"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Exile"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/79883468-a37c-4894-8d05-6a4d150b7d59.jpg?1783933034",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If a planeswalker you control is also a creature (most likely because it's Gideon), it will be counted twice as Ajani's first ability resolves."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "The tokens created by Ajani's second ability are similar to the card Ajani's Pridemate, but they have no mana cost and their mana value is 0."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Whether you have at least 15 life more than your starting life total is determined as Ajani's last ability resolves."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Angel of Vitality
 {
     "name": "Angel of Vitality",

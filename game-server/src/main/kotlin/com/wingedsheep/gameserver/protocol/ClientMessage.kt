@@ -174,8 +174,8 @@ sealed interface ClientMessage {
         val aiAssistEnabled: Boolean = false,
         /** Lobby mode axis: "TOURNAMENT" (default) or "FREE_FOR_ALL" (one multiplayer game, 2-6 players). */
         val gameMode: String = "TOURNAMENT",
-        /** Free-for-All attack rule (CR 802/803): "MULTIPLE" (default), "LEFT", or "RIGHT". */
-        val attackMode: String = "MULTIPLE",
+        /** Free-for-All attack rule (CR 802/803): "LEFT" (default), "RIGHT", or "MULTIPLE". */
+        val attackMode: String = "LEFT",
         /**
          * Ranked toggle, defaulting on for a tournament bracket. Only honored for "TOURNAMENT" mode.
          * At start, if not every seat is a signed-in human the game still runs — just unranked.

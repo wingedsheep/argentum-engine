@@ -8,7 +8,9 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.StringSpec
@@ -199,6 +201,40 @@ class TokensTest : StringSpec({
         Grammar.abilityLine.parseLine("When ~ enters, create that many Blood tokens.")
             .shouldBeInstanceOf<ParseOutcome.Declined>()
         Grammar.abilityLine.parseLine("Whenever ~ attacks, create that many Treasure tokens.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+    }
+
+    // Beast Within, Pongify, Crib Swap, Get Lost — "its controller" is the controller of the
+    // permanent the first sentence chose, and the token clause carries it as its `controller`.
+    "its controller creates a token after a sentence that chose one permanent" {
+        val effects = (fragment("Destroy target permanent. Its controller creates a 3/3 green Beast creature token.")
+            .script.spellEffect as CompositeEffect).effects
+        effects[1] shouldBe Effects.CreateToken(
+            power = 3,
+            toughness = 3,
+            colors = setOf(Color.GREEN),
+            creatureTypes = setOf("Beast"),
+            controller = EffectTarget.TargetController,
+        )
+        (fragment("Destroy target creature. Its controller creates two Map tokens.").script.spellEffect as CompositeEffect)
+            .effects[1] shouldBe Effects.CreateMapToken(count = 2, controller = EffectTarget.TargetController)
+
+        roundTrips("Destroy target permanent. Its controller creates a 3/3 green Beast creature token.")
+        roundTrips("Destroy target creature. Its controller creates a 1/1 white and black Inkling creature token with flying.")
+        roundTrips("Exile target creature. Its controller creates a 1/1 colorless Shapeshifter creature token with changeling.")
+        roundTrips("Destroy target nonland permanent. Its controller creates a Lander token.")
+        roundTrips("Destroy target creature. It can't be regenerated. Its controller creates a 3/3 green Ape creature token.")
+    }
+
+    "the imperative and the third person do not print each other" {
+        val theirs = CardFragment(
+            script = CardScript(spellEffect = Effects.CreateTreasure(count = 2, controller = EffectTarget.TargetController))
+        )
+        Grammar.abilityLine.printLine(theirs) shouldBe null
+        // With nothing — or a player — for "its" to name, the third-person clause has no referent.
+        Grammar.abilityLine.parseLine("Draw a card. Its controller creates a Food token.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+        Grammar.abilityLine.parseLine("Target player draws a card. Its controller creates a Food token.")
             .shouldBeInstanceOf<ParseOutcome.Declined>()
     }
 })

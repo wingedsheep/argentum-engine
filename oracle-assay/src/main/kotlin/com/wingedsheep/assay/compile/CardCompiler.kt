@@ -331,6 +331,7 @@ object CardCompiler {
         AbilityIdScope.within(cardName) {
             script.copy(
                 triggeredAbilities = script.triggeredAbilities.map { it.copy(id = AbilityId.next()) },
+                stateTriggeredAbilities = script.stateTriggeredAbilities.map { it.copy(id = AbilityId.next()) },
                 activatedAbilities = script.activatedAbilities.map { it.copy(id = AbilityId.next()) },
             )
         }

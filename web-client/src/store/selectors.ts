@@ -21,6 +21,7 @@ import {
 import { teamLabel } from './teamLabel'
 import { castOfferFace } from '@/utils/castFace'
 import { isBattle, tableSideOf } from '@/utils/combatTargets'
+import { attackNeighbours, type AttackNeighbours } from '@/utils/attackDirection'
 
 /**
  * Select the game state (works for both normal play and spectating).
@@ -233,6 +234,20 @@ export function useViewingPlayer(): ClientPlayer | null {
     if (!gameState || !playerId) return null
     return gameState.players.find((p) => p.playerId === playerId) ?? null
   }, [gameState, playerId])
+}
+
+/**
+ * Attack left / attack right (CR 803.1) seen from the bottom-anchored seat — normally you: the one
+ * opponent it may attack and the one who may attack it. Null when the game has no such restriction
+ * or it no longer bites (two players left). Display only; `validAttackTargets` stays the authority.
+ */
+export function useAttackNeighbours(): AttackNeighbours | null {
+  const gameState = useGameStore(selectGameState)
+  const playerId = useGameStore(selectViewingPlayerId)
+  return useMemo(
+    () => (gameState ? attackNeighbours(gameState.players, gameState.attackMode, playerId) : null),
+    [gameState, playerId],
+  )
 }
 
 /**

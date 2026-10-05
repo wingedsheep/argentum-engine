@@ -234,7 +234,8 @@ class GameInitializer(
                     hasKept = config.skipMulligans,  // Auto-keep if skipping mulligans
                     // CR 800.6: in a multiplayer game (began with >2 players) the first mulligan
                     // is free. Two-player games keep the plain London Mulligan.
-                    freeMulligan = config.players.size > 2
+                    freeMulligan = config.players.size > 2,
+                    skipped = config.skipMulligans,
                 )
             )
 
@@ -292,7 +293,7 @@ class GameInitializer(
             if (startTeam == null && !config.format.sharesTeamTurns) {
                 // CR 808.4 (Team vs. Team): the randomly chosen team's first player is its *centre*
                 // seat when the team is odd-sized and the seat to the left of its midpoint when it
-                // is even — index size/2 either way, since turn order runs to the left (CR 103.7b).
+                // is even — index size/2 either way, since turn order runs to the left (CR 101.4).
                 // Turn order then continues around the table from that seat, so the rest of that
                 // team comes last. With shared team turns (CR 805) the team takes one turn and its
                 // first-listed member is just the representative, so the seating stays as built.
@@ -461,55 +462,6 @@ class GameInitializer(
         val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
         val (library, newState) = state.nextRandom { shuffle(state.getZone(libraryKey)) }
         return newState.reorderZone(libraryKey, library)
-    }
-
-    /**
-     * Draw cards for a player.
-     */
-    private fun drawCards(
-        state: GameState,
-        playerId: EntityId,
-        count: Int
-    ): Pair<GameState, List<GameEvent>> {
-        var currentState = state
-        val events = mutableListOf<GameEvent>()
-        val drawnCardIds = mutableListOf<EntityId>()
-
-        val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
-        val handKey = ZoneKey(playerId, Zone.HAND)
-
-        repeat(count) {
-            val library = currentState.getZone(libraryKey)
-            if (library.isEmpty()) {
-                events.add(DrawFailedEvent(playerId, "Library is empty"))
-                return currentState to events
-            }
-
-            // Draw from top of library (first element)
-            val cardId = library.first()
-            drawnCardIds.add(cardId)
-
-            // Move card from library to hand
-            currentState = currentState.removeFromZone(libraryKey, cardId)
-            val oldObjectRef = currentState.objectRef(cardId)
-            currentState = currentState.addToZone(handKey, cardId)
-
-            events.add(ZoneChangeEvent(
-                entityId = cardId,
-                entityName = currentState.getEntity(cardId)
-                    ?.get<CardComponent>()?.name ?: "Unknown",
-                fromZone = Zone.LIBRARY,
-                toZone = Zone.HAND,
-                ownerId = playerId,
-                oldObject = oldObjectRef,
-                newObject = currentState.objectRef(cardId)
-            ))
-        }
-
-        val cardNames = drawnCardIds.map { currentState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-        events.add(CardsDrawnEvent(playerId, drawnCardIds.size, drawnCardIds, cardNames))
-
-        return currentState to events
     }
 
     /**
@@ -760,6 +712,56 @@ class GameInitializer(
     }
 
     companion object {
+        /**
+         * Draw an opening hand of [count] cards for [playerId] — game setup and a restarted game
+         * (CR 727) alike.
+         */
+        internal fun drawCards(
+            state: GameState,
+            playerId: EntityId,
+            count: Int
+        ): Pair<GameState, List<GameEvent>> {
+            var currentState = state
+            val events = mutableListOf<GameEvent>()
+            val drawnCardIds = mutableListOf<EntityId>()
+
+            val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
+            val handKey = ZoneKey(playerId, Zone.HAND)
+
+            repeat(count) {
+                val library = currentState.getZone(libraryKey)
+                if (library.isEmpty()) {
+                    events.add(DrawFailedEvent(playerId, "Library is empty"))
+                    return currentState to events
+                }
+
+                // Draw from top of library (first element)
+                val cardId = library.first()
+                drawnCardIds.add(cardId)
+
+                // Move card from library to hand
+                currentState = currentState.removeFromZone(libraryKey, cardId)
+                val oldObjectRef = currentState.objectRef(cardId)
+                currentState = currentState.addToZone(handKey, cardId)
+
+                events.add(ZoneChangeEvent(
+                    entityId = cardId,
+                    entityName = currentState.getEntity(cardId)
+                        ?.get<CardComponent>()?.name ?: "Unknown",
+                    fromZone = Zone.LIBRARY,
+                    toZone = Zone.HAND,
+                    ownerId = playerId,
+                    oldObject = oldObjectRef,
+                    newObject = currentState.objectRef(cardId)
+                ))
+            }
+
+            val cardNames = drawnCardIds.map { currentState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+            events.add(CardsDrawnEvent(playerId, drawnCardIds.size, drawnCardIds, cardNames))
+
+            return currentState to events
+        }
+
         /**
          * Create a simple two-player game for testing.
          * Both players get the same deck.

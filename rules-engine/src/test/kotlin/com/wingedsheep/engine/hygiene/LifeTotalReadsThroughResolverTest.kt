@@ -53,6 +53,8 @@ class LifeTotalReadsThroughResolverTest : FunSpec({
             "com/wingedsheep/engine/state/GameState.kt",
             // Game setup stamps the initial LifeTotalComponent on every player entity.
             "com/wingedsheep/engine/core/GameInitializer.kt",
+            // A restarted game (CR 727) is set up again, stamping each player's starting life the same way.
+            "com/wingedsheep/engine/core/GameRestart.kt",
             // The component's own declaration.
             "com/wingedsheep/engine/state/components/identity/PlayerIdentityComponents.kt",
             // Scenario setup stamps the initial LifeTotalComponent on every player, like GameInitializer.

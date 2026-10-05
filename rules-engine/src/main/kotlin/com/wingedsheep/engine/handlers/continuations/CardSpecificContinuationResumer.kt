@@ -229,6 +229,7 @@ class CardSpecificContinuationResumer(
         bidAmount: Int
     ): ExecutionResult {
         val context = com.wingedsheep.engine.handlers.EffectContext(
+            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences,
             controllerId = playerId,

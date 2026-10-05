@@ -405,6 +405,22 @@ object Grammar {
     }
 
     /**
+     * A line that is one state-triggered ability — "When you control no Islands, sacrifice ~." —
+     * landing in `CardScript.stateTriggeredAbilities`, the SDK's list for CR 603.8 beside the event
+     * triggers [triggerLine] fills. Wrapped here for the reason the other ability lines are:
+     * [StateTriggers] knows nothing about which of a card's slots its ability lands in.
+     */
+    private val stateTriggerLine: Phrase<CardFragment> = phrase("{trigger}", name = "a state-triggered ability line") {
+        slot("trigger", StateTriggers.line)
+        build { CardFragment.of(CardScript(stateTriggeredAbilities = listOf(it.value("trigger")))) }
+        match { fragment ->
+            val ability = fragment.script.stateTriggeredAbilities.singleOrNull() ?: return@match null
+            if (fragment != CardFragment.of(CardScript(stateTriggeredAbilities = listOf(ability)))) return@match null
+            bind("trigger" to ability)
+        }
+    }
+
+    /**
      * The empty line. It exists as a rule rather than as a special case in the gate because a
      * reminder-only line normalizes to "" and must still print back to "" — and because a vanilla
      * card, the easy quarter of the corpus, is exactly a face with no lines at all.
@@ -621,6 +637,7 @@ object Grammar {
         soulshiftLine,
         spellLine,
         triggerLine,
+        stateTriggerLine,
         activatedLine,
         replacementLine,
         enchantLine,

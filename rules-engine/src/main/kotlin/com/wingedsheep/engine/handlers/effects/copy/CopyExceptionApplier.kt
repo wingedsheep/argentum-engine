@@ -75,13 +75,21 @@ object CopyExceptionApplier {
      *
      * A no-op fast path when the exceptions are empty, so a plain copy allocates nothing.
      */
-    fun apply(base: CardComponent, exceptions: CopyExceptions): CardComponent {
+    fun apply(
+        base: CardComponent,
+        exceptions: CopyExceptions,
+        resolvingTrigger: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
+        copierColors: Set<com.wingedsheep.sdk.core.Color> = emptySet(),
+    ): CardComponent {
         if (exceptions.isEmpty) return base
+        val addedTriggers = exceptions.addedTriggeredAbilities +
+            if (exceptions.retainResolvingTriggeredAbility && resolvingTrigger != null) listOf(resolvingTrigger)
+            else emptyList()
         return base.copy(
             name = exceptions.nameOverride ?: base.name,
             // Each instance gets its own identity, including two copies of a once-per-turn
             // trigger. Plain subsequent copies retain these ids rather than adding instances.
-            copyTriggeredAbilities = base.copyTriggeredAbilities + exceptions.addedTriggeredAbilities.mapIndexed { index, ability ->
+            copyTriggeredAbilities = base.copyTriggeredAbilities + addedTriggers.mapIndexed { index, ability ->
                 ability.copy(id = com.wingedsheep.sdk.scripting.AbilityId(
                     "copy:${base.copyTriggeredAbilities.size + index}:${ability.id.value}"
                 ))
@@ -93,8 +101,13 @@ object CopyExceptionApplier {
             },
             typeLine = typeLine(base.typeLine, exceptions),
             baseStats = baseStats(base.baseStats, exceptions),
-            baseKeywords = base.baseKeywords + exceptions.addedKeywords,
-            colors = exceptions.overrideColors ?: (base.colors + exceptions.addedColors),
+            // Color is already derived from the indicator/CDA in the stored characteristics.
+            // A color exception also omits the copied color-defining keyword (CR 707.9d).
+            baseKeywords = (if (exceptions.retainColors || exceptions.overrideColors != null ||
+                exceptions.addedColors.isNotEmpty()) base.baseKeywords - Keyword.DEVOID
+                else base.baseKeywords) + exceptions.addedKeywords,
+            colors = if (exceptions.retainColors) copierColors
+                else exceptions.overrideColors ?: (base.colors + exceptions.addedColors),
             // "…and it has no mana cost" (Embalm / Eternalize, CR 702.128a) — mana value 0, and
             // that 0 is itself a copiable value.
             manaCost = if (exceptions.noManaCost) ManaCost.ZERO else base.manaCost,
@@ -118,9 +131,11 @@ object CopyExceptionApplier {
         exceptions: CopyExceptions,
     ): ComponentContainer {
         val numeric = buildList {
-            source.get<ToxicComponent>()?.let { add(KeywordAbility.Numeric(Keyword.TOXIC, it.amount)) }
-            source.get<NumericKeywordValuesComponent>()?.values?.forEach { (keyword, n) ->
-                add(KeywordAbility.Numeric(keyword, n))
+            if (!source.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) {
+                source.get<ToxicComponent>()?.let { add(KeywordAbility.Numeric(Keyword.TOXIC, it.amount)) }
+                source.get<NumericKeywordValuesComponent>()?.values?.forEach { (keyword, n) ->
+                    add(KeywordAbility.Numeric(keyword, n))
+                }
             }
             addAll(exceptions.addedNumericKeywords)
         }

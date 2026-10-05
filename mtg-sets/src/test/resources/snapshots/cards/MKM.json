@@ -16863,7 +16863,7 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "creature Detective"
+                        "baseFilter": "permanent Detective"
                     },
                     "id": "t0"
                 },

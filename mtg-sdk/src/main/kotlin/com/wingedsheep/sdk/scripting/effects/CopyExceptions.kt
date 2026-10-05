@@ -26,7 +26,7 @@ import kotlinx.serialization.Serializable
  * are frozen — **a new copy exception goes here, never onto another flat rider.**
  *
  * Everything here is a *copiable* value (CR 707.2): anything that later copies the copy sees these
- * modifications too. Riders that are **not** characteristics — "and this ability", "it enters
+ * modifications too. Riders that are **not** characteristics — "it enters
  * tapped", "it enters with a +1/+1 counter" — deliberately stay on the individual effects.
  *
  * Add/override pairs follow Magic's own templating, which the rules make load-bearing: a stated
@@ -84,10 +84,14 @@ data class CopyExceptions(
     val overrideSubtypes: Set<Subtype>? = null,
     val addedColors: Set<Color> = emptySet(),
     val overrideColors: Set<Color>? = null,
+    /** Do not copy color; keep the copying object's pre-copy copiable colors. */
+    val retainColors: Boolean = false,
     val powerOverride: Int? = null,
     val toughnessOverride: Int? = null,
     val noManaCost: Boolean = false,
     val addedNumericKeywords: List<com.wingedsheep.sdk.scripting.KeywordAbility.Numeric> = emptyList(),
+    /** Add the frozen resolving trigger as copiable rules text; no-op outside a triggered ability. */
+    val retainResolvingTriggeredAbility: Boolean = false,
     /** Abilities added as copiable rules text, including multiple identical instances. */
     val addedTriggeredAbilities: List<com.wingedsheep.sdk.scripting.TriggeredAbility> = emptyList(),
     /**
@@ -100,6 +104,9 @@ data class CopyExceptions(
     val addedActivatedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
 ) {
     init {
+        require(!retainColors || (overrideColors == null && addedColors.isEmpty())) {
+            "CopyExceptions.retainColors cannot combine with color additions or overrides"
+        }
         require(addedActivatedAbilities.none { it.isManaAbility }) {
             "CopyExceptions.addedActivatedAbilities can't carry a mana ability"
         }
@@ -136,12 +143,14 @@ data class CopyExceptions(
             overrideCardTypes = overrideCardTypes ?: base.overrideCardTypes,
             addedSubtypes = base.addedSubtypes + addedSubtypes,
             overrideSubtypes = overrideSubtypes ?: base.overrideSubtypes,
-            addedColors = base.addedColors + addedColors,
-            overrideColors = overrideColors ?: base.overrideColors,
+            addedColors = if (retainColors) emptySet() else base.addedColors + addedColors,
+            overrideColors = if (retainColors) null else overrideColors ?: base.overrideColors,
+            retainColors = retainColors || (base.retainColors && overrideColors == null && addedColors.isEmpty()),
             powerOverride = powerOverride ?: base.powerOverride,
             toughnessOverride = toughnessOverride ?: base.toughnessOverride,
             noManaCost = noManaCost || base.noManaCost,
             addedNumericKeywords = base.addedNumericKeywords + addedNumericKeywords,
+            retainResolvingTriggeredAbility = base.retainResolvingTriggeredAbility || retainResolvingTriggeredAbility,
             addedTriggeredAbilities = base.addedTriggeredAbilities + addedTriggeredAbilities,
             addedActivatedAbilities = base.addedActivatedAbilities + addedActivatedAbilities,
         )
@@ -162,6 +171,7 @@ data class CopyExceptions(
      * sentence. Empty when [isEmpty].
      */
     fun clauses(): List<String> = buildList {
+        if (retainColors) add("it doesn't copy that creature's color")
         if (nameOverride != null) add("its name is $nameOverride")
         if (powerOverride != null || toughnessOverride != null) {
             add("it's ${powerOverride ?: "*"}/${toughnessOverride ?: "*"}")
@@ -198,6 +208,7 @@ data class CopyExceptions(
         }
         for (numeric in addedNumericKeywords) add("it has ${numeric.keyword.displayName.lowercase()} ${numeric.n}")
         if (noManaCost) add("it has no mana cost")
+        if (retainResolvingTriggeredAbility) add("it has this ability")
         for (ability in addedTriggeredAbilities) add("it has \"${ability.description}\"")
         for (ability in addedActivatedAbilities) add("it has \"${ability.description}\"")
     }

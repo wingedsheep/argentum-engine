@@ -492,6 +492,21 @@ data class GameState(
      * on its controller's behalf without having asked.
      */
     val optionalDamageRedirectChoices: Map<String, Boolean> = emptyMap(),
+
+    /**
+     * A resolved "restart the game" (CR 727) waiting for its resolution to finish; the settle
+     * boundary carries it out through [com.wingedsheep.engine.core.GameRestarter].
+     */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val pendingRestart: com.wingedsheep.engine.core.GameRestartRequest? = null,
+
+    /**
+     * The rest of the instructions of the ability that restarted the game, followed just before the
+     * new game's first untap step (CR 727.4) by
+     * [com.wingedsheep.engine.handlers.MulliganHandler.beginFirstTurn].
+     */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val restartFollowUp: com.wingedsheep.engine.core.TurnStartFollowUp? = null,
 ) {
     /**
      * Cached projection of the game state with all continuous effects (Rule 613) applied.

@@ -41,6 +41,7 @@ export type ClientEvent =
   | TransformedEvent
   | CoinFlippedEvent
   | TurnChangedEvent
+  | GameRestartedEvent
   | ControlChangedEvent
   | CardCycledEvent
   | LibraryShuffledEvent
@@ -385,6 +386,13 @@ export interface TurnChangedEvent {
   readonly type: 'turnChanged'
   readonly turnNumber: number
   readonly activePlayerId: EntityId
+  readonly isYourTurn: boolean | null
+  readonly description: string
+}
+
+export interface GameRestartedEvent {
+  readonly type: 'gameRestarted'
+  readonly startingPlayerId: EntityId
   readonly isYourTurn: boolean | null
   readonly description: string
 }

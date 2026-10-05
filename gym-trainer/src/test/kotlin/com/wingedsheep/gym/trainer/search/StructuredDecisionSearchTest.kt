@@ -34,7 +34,12 @@ import com.wingedsheep.mtg.sets.tokens.PredefinedTokens
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.TargetObject
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
@@ -47,6 +52,24 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 private const val ORDERING_HEAD = "ordering"
+
+/**
+ * A spell whose target is chosen *while it resolves* — a pipeline `selectTarget` — so casting it
+ * leaves the game paused on a [ChooseTargetsDecision] for the search to expand. No printed card
+ * should choose a target this late (CR 601.2c), which is why this is a test fixture.
+ */
+private val resolutionTimeExile = card("Resolution-Time Exile") {
+    manaCost = "{5}"
+    typeLine = "Instant"
+    spell {
+        effect = Effects.Pipeline {
+            val chosen = selectTarget(
+                TargetObject(filter = TargetFilter(GameObjectFilter.Creature), id = "target creature")
+            )
+            run(Effects.Exile(chosen.asTarget))
+        }
+    }
+}
 
 /** Lexicographic-by-input-index permutations — the same enumeration the expander produces. */
 private fun <T> permutationsOf(items: List<T>): List<List<T>> =
@@ -71,7 +94,7 @@ class StructuredDecisionSearchTest : FunSpec({
     }
 
     fun newDriver(deckCard: String): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + PredefinedTokens.allTokens)
+        registerCards(TestCards.all + PredefinedTokens.allTokens + resolutionTimeExile)
         initMirrorMatch(
             deck = Deck.of(deckCard to 40),
             skipMulligans = true,
@@ -92,7 +115,7 @@ class StructuredDecisionSearchTest : FunSpec({
         val ownCreature = driver.putCreatureOnBattlefield(caster, "Raging Goblin")
         val opposingCreature = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
         repeat(5) { driver.putLandOnBattlefield(caster, "Mountain") }
-        val spell = driver.putCardInHand(caster, "Zuko's Exile")
+        val spell = driver.putCardInHand(caster, "Resolution-Time Exile")
 
         driver.castSpell(caster, spell).error shouldBe null
         while (driver.state.stack.isNotEmpty() && !driver.isPaused) driver.bothPass()

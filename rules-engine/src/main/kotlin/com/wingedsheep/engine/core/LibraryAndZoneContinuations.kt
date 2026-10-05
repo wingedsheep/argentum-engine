@@ -388,6 +388,7 @@ data class DiscoverMayCastContinuation(
     val storeDiscoveredAs: String? = null,
     val thenEffect: com.wingedsheep.sdk.scripting.effects.Effect? = null,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+    val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
 ) : AnswerContinuation
 
 /**

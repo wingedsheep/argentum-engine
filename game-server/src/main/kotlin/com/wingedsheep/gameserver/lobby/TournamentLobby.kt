@@ -376,9 +376,10 @@ class TournamentLobby(
     /**
      * Which opponents creatures may attack in a Free-for-All game (CR 802 / 803; CR 806.2b requires
      * exactly one). Only meaningful when [gameMode] is FREE_FOR_ALL — ignored by the tournament
-     * bracket (whose matches are always two-player). Defaults to [AttackMode.MULTIPLE].
+     * bracket (whose matches are always two-player). Defaults to [AttackMode.LEFT]: one neighbour to
+     * attack keeps a big table from ganging up on whoever is ahead, and the game moving round the table.
      */
-    var attackMode: com.wingedsheep.sdk.core.AttackMode = com.wingedsheep.sdk.core.AttackMode.MULTIPLE,
+    var attackMode: com.wingedsheep.sdk.core.AttackMode = com.wingedsheep.sdk.core.AttackMode.LEFT,
     /**
      * Team games only (2HG / Team vs. Team): when true (the default) the seats are split into two
      * even random teams at game start, re-rolled each game. When false the host sets the teams by

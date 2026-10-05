@@ -145,6 +145,7 @@ class ModalEffectExecutor(
         ) }
 
         val continuation = ModalContinuation(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             controllerId = context.controllerId,
             sourceId = context.sourceId,
             objectReferences = context.objectReferences,
@@ -185,6 +186,7 @@ class ModalEffectExecutor(
         )
         val sourceName = context.sourceId?.let { id -> state.getEntity(id)?.get<CardComponent>()?.name }
         val baseCtx = PreTargetedEffectContext(
+            resolvingTriggeredAbility = context.resolvingTriggeredAbility,
             controllerId = context.controllerId,
             sourceId = context.sourceId,
             sourceName = sourceName,
@@ -258,7 +260,8 @@ internal data class PreTargetedEffectContext(
      * 702.47b: each spliced card's text is its own resolution).
      */
     val pipeline: PipelineState = PipelineState.EMPTY,
-    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment()
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+    val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null
 )
 
 /**
@@ -322,6 +325,7 @@ internal fun processPreTargetedEffectQueue(
     }
 
     val effectContext = EffectContext(
+        resolvingTriggeredAbility = ctx.resolvingTriggeredAbility,
         sourceId = ctx.sourceId,
         objectReferences = ctx.objectReferences,
         controllerId = ctx.controllerId,
@@ -345,6 +349,7 @@ internal fun processPreTargetedEffectQueue(
 
         state.pushContinuation(
             ModalPreChosenContinuation(
+                resolvingTriggeredAbility = ctx.resolvingTriggeredAbility,
                 controllerId = ctx.controllerId,
                 sourceId = ctx.sourceId,
             objectReferences = ctx.objectReferences,

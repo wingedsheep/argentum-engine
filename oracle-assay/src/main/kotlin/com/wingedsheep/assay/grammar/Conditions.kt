@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
+import com.wingedsheep.sdk.scripting.conditions.PlayerCastSpellsThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PutCounterKindOnCreatureThisTurn
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 import com.wingedsheep.sdk.scripting.references.Player
@@ -55,9 +56,12 @@ object Conditions {
     private fun existence(
         template: String,
         name: String,
+        // "you control **a** Beast" counts one, "you control **no** Islands" counts none, and the
+        // determiner decides the noun's number — so the plural rows slot a plural noun phrase.
+        noun: Phrase<GameObjectFilter> = Filters.indefinite,
         condition: (GameObjectFilter) -> Condition,
     ): Phrase<Condition> = phrase(template, name = name) {
-        slot("filter", Filters.indefinite)
+        slot("filter", noun)
         build { condition(it.value("filter")) }
         match { value ->
             val filter = existenceFilter(value) ?: return@match null
@@ -172,6 +176,21 @@ object Conditions {
         existence("an opponent controls no {filter}", "an opponent controls none of a permanent") {
             SdkConditions.OpponentControls(it, negate = true)
         },
+        // "When you control no Islands, sacrifice ~." — the Arabian Nights sea creatures' state
+        // trigger, and Drop of Honey's "when there are no creatures on the battlefield". Both are the
+        // `negate` flag rather than `Not` around the positive: unlike "no opponent controls" above,
+        // that is how the hand-written cards spell these two clauses (55 goldens hold
+        // `Exists(You, negate)` against 6 wrapped ones), so the flag is the majority value here.
+        // The noun is [Filters.pluralSubject] — the controller is already in the sentence, so a noun
+        // that could print its own "you control" clause would be a second place to say it.
+        existence("you control no {filter}", "you control none of a permanent", Filters.pluralSubject) {
+            SdkConditions.YouControl(it, negate = true)
+        },
+        existence(
+            "there are no {filter} on the battlefield",
+            "no permanent of a kind on the battlefield",
+            Filters.pluralSubject,
+        ) { SdkConditions.AnyPlayerControls(it, negate = true) },
         // "This spell costs {2} less to cast if it's bargained." — Hamlet Glutton. The SDK reads the
         // durable cast-choice slot rather than naming a condition per mechanic, and `WasBargained`
         // is the facade over exactly that read, so the rule is a constant and the mechanic's other
@@ -227,6 +246,7 @@ object Conditions {
         // only printed spelling. "You attacked with N or more creatures this turn" is the counted
         // sibling, `YouAttackedWithCreaturesThisTurn`, left for a band of its own.
         constant("you attacked this turn", SdkConditions.YouAttackedThisTurn),
+        spellsCastThisTurn(),
         discardedACardThisTurn,
         eitherControlled,
         countAtLeast(
@@ -416,6 +436,28 @@ object Conditions {
                 val kind = condition.counterType ?: return@match null
                 if (value != SdkConditions.PutCounterKindOnCreatureThisTurn(kind)) return@match null
                 bind("kind" to kind)
+            }
+        }
+
+    /**
+     * "you've cast two or more spells this turn" — Effortless Master, Loan Shark, Illvoi Infiltrator.
+     *
+     * The count is the slot and the rest is the facade's default: any spell, from any zone, cast by
+     * you. A golden carrying a filter or a zone ("…instant and sorcery spells…", the Prairie Dog
+     * cycle's "from your hand") is a different sentence and the reconstruct-and-compare refuses to
+     * print it here. The threshold starts at two because that is where the printed shape starts —
+     * a single spell is "you've cast another spell this turn", whose "another" depends on whether
+     * the spell asking is itself on the stack, which is a question this row cannot answer.
+     */
+    private fun spellsCastThisTurn(): Phrase<Condition> =
+        phrase("you've cast {n} or more spells this turn", name = "you cast a count of spells this turn") {
+            slot("n", Cardinals.word)
+            build { SdkConditions.YouCastSpellsThisTurn(it.int("n")) }
+            match { value ->
+                val atLeast = (value as? PlayerCastSpellsThisTurn)?.atLeast ?: return@match null
+                if (atLeast < 2 || !Cardinals.spellable(atLeast)) return@match null
+                if (value != SdkConditions.YouCastSpellsThisTurn(atLeast)) return@match null
+                bind("n" to atLeast)
             }
         }
 

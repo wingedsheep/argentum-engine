@@ -1198,6 +1198,17 @@ data class StepChangedEvent(
 ) : GameEvent
 
 /**
+ * An effect restarted the game (CR 727). The old game ended with no winner, loser or draw, and a new
+ * one began with [startingPlayerId] — the controller of the restarting effect — taking the first turn
+ * (CR 727.1a). Everything after this event belongs to the new game.
+ */
+@Serializable
+@SerialName("GameRestartedEvent")
+data class GameRestartedEvent(
+    val startingPlayerId: EntityId
+) : GameEvent
+
+/**
  * An effect ended the turn (CR 724.1 — Ultima, Time Stop). Emitted once the expedited process has
  * reached the cleanup step, just before the next turn begins. Triggered abilities that triggered
  * before this point never go on the stack (CR 724.1a), so [com.wingedsheep.engine.core.Settler]
@@ -2121,7 +2132,10 @@ data class ControlChangedEvent(
  * A permanent, spell, or player became the target of a spell or ability.
  * [firstTimeByThisController] indicates whether this is the first time this turn
  * the target was targeted by a spell/ability controlled by [controllerId].
- * Used for Valiant triggers ("for the first time each turn").
+ * Used for Valiant triggers ("… you control for the first time each turn").
+ * [firstTimeThisTurn] is its controller-blind sibling: whether this is the first time this turn
+ * the target was targeted by *any* spell or ability ("becomes the target of a spell or ability for
+ * the first time each turn" — Angelic Cub).
  * [targetIsSpell] is true when the targeted object is a spell on the stack rather
  * than a permanent on the battlefield (Rule 601.2c). Lets triggers that fire on a
  * "creature spell you control" being targeted (e.g. Surrak, Elusive Hunter) match,
@@ -2141,6 +2155,7 @@ data class BecomesTargetEvent(
     val sourceEntityId: EntityId,
     val controllerId: EntityId,
     val firstTimeByThisController: Boolean = true,
+    val firstTimeThisTurn: Boolean = true,
     val targetIsSpell: Boolean = false,
     /** True when the targeting source is a spell on the stack (vs. an activated/triggered ability). */
     val sourceIsSpell: Boolean = false,
@@ -2372,6 +2387,16 @@ data object BlockerDeclarationPolicyChangedEvent : GameEvent
 @Serializable
 @SerialName("StaticAbilityGrantedEvent")
 data class StaticAbilityGrantedEvent(val entityId: EntityId) : GameEvent
+
+/** A copy effect replaced an existing permanent's copiable characteristics. */
+@Serializable
+@SerialName("CopiableCharacteristicsChangedEvent")
+data class CopiableCharacteristicsChangedEvent(val entityId: EntityId) : GameEvent
+
+/** A copy exception added intrinsic triggered rules text to an existing permanent. */
+@Serializable
+@SerialName("CopiableTriggeredAbilityAddedEvent")
+data class CopiableTriggeredAbilityAddedEvent(val entityId: EntityId) : GameEvent
 
 /** New pairings, with the two creature-level transitions kept distinct from new edges. */
 interface BlockingRelationshipsEvent {

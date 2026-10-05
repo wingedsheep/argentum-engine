@@ -701,6 +701,30 @@ object PredefinedTokens {
     }
 
     /**
+     * Zeppelin — the 5/5 colorless Vehicle artifact token with flying and crew 3 that Lita,
+     * Mechanical Engineer (Jumpstart 2022) makes.
+     *
+     * Same shape as [Vehicle]: a *noncreature* artifact with power and toughness until crewed, its
+     * crew the ordinary [KeywordAbility.crew] keyword. Registered here because the token is *named*
+     * and carries crew, which the engine reads off the registered definition.
+     *
+     * Scryfall has no Zeppelin token printing (Jumpstart 2022 has no `tj22` token set), so the art
+     * is a stand-in: the generic Aetherdrift Vehicle token.
+     */
+    val Zeppelin = card("Zeppelin") {
+        typeLine = "Artifact — Vehicle"
+        power = 5
+        toughness = 5
+
+        keywords(Keyword.FLYING)
+        keywordAbility(KeywordAbility.crew(3))
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/a/3/a3803365-ed78-409f-8ca5-7aa3634faf76.jpg?1783907677"
+        }
+    }
+
+    /**
      * The Void — the legendary 5/5 black Horror Villain token that The Sentry, Golden Guardian
      * hands to an opponent (Marvel Super Heroes).
      *
@@ -1091,6 +1115,7 @@ object PredefinedTokens {
         Pest,
         PhyrexianMite,
         Vehicle,
+        Zeppelin,
         TheVoid,
         Redwing,
         Doombot,

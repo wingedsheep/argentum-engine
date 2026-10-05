@@ -1632,8 +1632,14 @@ class TriggerMatcher(
         // Check if the targeting spell/ability is controlled by an opponent
         if (trigger.byOpponent && event.controllerId == controllerId) return false
 
-        // Valiant: check if this is the first time this turn
-        if (trigger.firstTimeEachTurn && !event.firstTimeByThisController) return false
+        // "for the first time each turn". With a controller restriction (Valiant — "a spell or
+        // ability you control") the window is that controller's: an opponent targeting it first
+        // doesn't close it. Unrestricted (Angelic Cub) it is any spell or ability's.
+        if (trigger.firstTimeEachTurn) {
+            val first = if (trigger.byYou || trigger.byOpponent) event.firstTimeByThisController
+            else event.firstTimeThisTurn
+            if (!first) return false
+        }
 
         // Check targetFilter against the targeted entity. The target is live (a battlefield
         // permanent, or a spell on the stack for includeSpellTargets), so evaluate the whole

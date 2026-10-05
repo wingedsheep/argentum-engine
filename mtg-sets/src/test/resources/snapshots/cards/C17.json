@@ -1,3 +1,96 @@
+// Balan, Wandering Knight
+{
+    "name": "Balan, Wandering Knight",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Creature — Cat Knight",
+    "oracleText": "First strike\nBalan has double strike as long as two or more Equipment are attached to it.\n{1}{W}: Attach all Equipment you control to Balan.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Balan, Wandering Knight:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "artifact Equipment ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AttachTargetEquipmentToCreature",
+                        "equipmentTarget": "IterationEntity",
+                        "creatureTarget": "Self"
+                    }
+                },
+                "descriptionOverride": "{1}{W}: Attach all Equipment you control to Balan."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOUBLE_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "AttachmentCount",
+                            "kind": "EQUIPMENT"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"What weapon will you bear against one who's mastered them all?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d0b279c-9a6d-4a56-878e-0ebf3f609f65.jpg?1783935951",
+        "rulings": [
+            {
+                "date": "2017-08-25",
+                "text": "Balan's activated ability has no timing restriction. You can activate it any time you have priority."
+            },
+            {
+                "date": "2017-08-25",
+                "text": "If Balan deals first-strike damage and then gains double strike (most likely because it picked up some Equipment with its activated ability after first-strike damage was dealt), it will also deal regular combat damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Edgar Markov
 {
     "name": "Edgar Markov",
