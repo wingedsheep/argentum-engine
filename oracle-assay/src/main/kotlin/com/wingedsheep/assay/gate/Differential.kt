@@ -23,7 +23,7 @@ import java.util.Locale
 private val SLOT_REFERENCE_KEYS = setOf("id", "name")
 
 /** The `CardScript` fields holding a list of abilities with a generated id. See `canonicalizeAbilities`. */
-private val ABILITY_LISTS = listOf("triggeredAbilities", "activatedAbilities")
+private val ABILITY_LISTS = listOf("triggeredAbilities", "stateTriggeredAbilities", "activatedAbilities")
 
 /**
  * The keys under which a requirement-owning object declares its target slots, in the order
@@ -248,6 +248,7 @@ class Differential(private val touchstone: Touchstone = Touchstone()) {
      */
     private fun carriesUnreadAbilities(card: CardScript, text: CardScript): Boolean =
         card.triggeredAbilities.size > text.triggeredAbilities.size ||
+            card.stateTriggeredAbilities.size > text.stateTriggeredAbilities.size ||
             card.activatedAbilities.size > text.activatedAbilities.size ||
             // Statics get the lowering too, and the corpus already has one: affinity is spelled as
             // `KeywordAbility.Affinity` on Frogmite and hand-rolled as a `ModifySpellCost` static on
@@ -266,6 +267,7 @@ class Differential(private val touchstone: Touchstone = Touchstone()) {
         spellEffect = script.spellEffect,
         targetRequirements = script.targetRequirements,
         triggeredAbilities = script.triggeredAbilities,
+        stateTriggeredAbilities = script.stateTriggeredAbilities,
         activatedAbilities = script.activatedAbilities,
         staticAbilities = script.staticAbilities,
         replacementEffects = script.replacementEffects,
@@ -280,6 +282,7 @@ class Differential(private val touchstone: Touchstone = Touchstone()) {
         spellEffect = null,
         targetRequirements = emptyList(),
         triggeredAbilities = emptyList(),
+        stateTriggeredAbilities = emptyList(),
         activatedAbilities = emptyList(),
         staticAbilities = emptyList(),
         replacementEffects = emptyList(),
