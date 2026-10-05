@@ -314,7 +314,7 @@ class TargetValidator(
     /**
      * Validate a single target against a requirement.
      */
-    private fun validateSingleTarget(
+    internal fun validateSingleTarget(
         state: GameState,
         target: ChosenTarget,
         requirement: TargetRequirement,

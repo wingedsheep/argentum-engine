@@ -953,11 +953,24 @@ data class CopyTargetSpellEffect(
      * copies the triggering spell once per other instant or sorcery cast before it this turn. A
      * count of zero or less makes no copies at all.
      */
-    val copies: DynamicAmount = DynamicAmount.Fixed(1)
+    val copies: DynamicAmount = DynamicAmount.Fixed(1),
+    /** Copiable characteristic exceptions, applied before the copy is put on the stack. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions = com.wingedsheep.sdk.scripting.effects.CopyExceptions.None
 ) : Effect {
-    override val description: String =
-        if (copies == DynamicAmount.Fixed(1)) "Copy target spell"
-        else "Copy target spell ${copies.description} times"
+    override val description: String = run {
+        val main = if (copies == DynamicAmount.Fixed(1)) "Copy target spell"
+            else "Copy target spell ${copies.description} times"
+        val clauses = exceptions.clauses()
+        if (clauses.isEmpty()) main else "$main except ${clauses.joinToString(" and ")}"
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val rewritten = exceptions.applyTextReplacement(replacer)
+        return if (rewritten === exceptions) this else copy(exceptions = rewritten)
+    }
+
 }
 
 /**

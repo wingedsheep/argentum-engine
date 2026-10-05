@@ -461,6 +461,9 @@ data class StormCopyTargetContinuation(
     val keywordsForCopy: Set<String> = emptySet(),
     val removeLegendary: Boolean = false,
     val tokenRiders: com.wingedsheep.engine.state.components.stack.SpellCopyTokenRidersComponent? = null,
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions = com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : AnswerContinuation
 
@@ -522,6 +525,9 @@ data class StormCopyModalTargetContinuation(
     val keywordsForCopy: Set<String> = emptySet(),
     /** If true, strip the Legendary supertype from each resulting copy. */
     val removeLegendary: Boolean = false,
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions = com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : AnswerContinuation
 

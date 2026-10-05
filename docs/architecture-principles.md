@@ -1418,6 +1418,12 @@ with the identity rather than only its derived runtime components. Private depar
 separate from public face-down copy-source values. Saved identities missing flip halves recover them
 from their registered definition at identity installation. Serialized snapshots remain source-independent.
 
+Spell copies apply the same `CopyExceptions` to their stored characteristics before placement events.
+Target-choice continuations carry the exceptions, and legal targets are evaluated against a transient
+prospective copy with its own characteristics and controller. This preview is never pushed to the
+stack or published. Later copies inherit the resulting characteristics without inheriting ordinary
+color-changing effects on the original spell. Numeric keyword components travel with copied text.
+
 **Why copy is resolved before entry, not as a continuous effect layer.**
 
 Rule 613 defines Layer 1 as the copy layer, applied before all other continuous effects. The engine

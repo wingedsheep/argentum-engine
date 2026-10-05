@@ -35,8 +35,8 @@ import com.wingedsheep.sdk.scripting.effects.CopyExceptions
  *
  * [com.wingedsheep.engine.handlers.effects.token.CreateTokenCopyOfEquippedCreatureExecutor]
  * (Helm of the Host) also routes its nonlegendary exception here, so it applies to both flip halves.
- * Not routed through here: [com.wingedsheep.engine.handlers.effects.stack.StormCopyEffectExecutor] (copies of *spells*,
- * CR 707.10, where the copy lives on the stack rather than as a permanent's copiable values).
+ * Spell copies also route through here via [com.wingedsheep.engine.mechanics.stack.StackPlacement]
+ * before placement, including characteristics used by prospective-copy target checks.
  *
  * Copiable values only: everything applied here lives on the [CardComponent], so it is itself
  * copiable (a later copy of the copy sees it) and it lasts exactly as long as the copy does.

@@ -109,7 +109,8 @@ internal object StackPlacement {
         modeTargetRequirements: Map<Int, List<TargetRequirement>>? = null,
         copyIndex: Int? = null,
         copyTotal: Int? = null,
-        controllerId: EntityId? = null
+        controllerId: EntityId? = null,
+        exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions = com.wingedsheep.sdk.scripting.effects.CopyExceptions.None
     ): ExecutionResult {
         val sourceContainer = state.getEntity(sourceSpellId)
             ?: return ExecutionResult.error(state, "Source spell not found: $sourceSpellId")
@@ -145,7 +146,8 @@ internal object StackPlacement {
 
         // Clone the card characteristics. The CardComponent keeps the same cardDefinitionId,
         // name, types, colors, mana cost, and spellEffect (707.10).
-        val copiedCardComp = sourceCard.copy(ownerId = copyController)
+        val copiedCardComp = com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
+            .apply(sourceCard, exceptions).copy(ownerId = copyController)
 
         // Clone cast-time state; per 707.10 the copy inherits every decision made for
         // the original. The data-class copy preserves: xValue, declaredCostSlot, wasBlightPaid,
@@ -178,7 +180,9 @@ internal object StackPlacement {
             modeTargetRequirements = effectiveModeRequirements
         )
 
-        var container = ComponentContainer.of(copiedCardComp, copiedSpellComp)
+        var container = com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier.withNumericKeywords(
+            ComponentContainer.of(copiedCardComp, copiedSpellComp), sourceContainer, exceptions
+        )
         if (effectiveTargets.isNotEmpty()) {
             container = container.with(TargetsComponent.capture(state, effectiveTargets, effectiveRequirements))
         }
@@ -198,12 +202,12 @@ internal object StackPlacement {
         val events = mutableListOf<GameEvent>(
             SpellCopiedEvent(
                 copyEntityId = copyId,
-                cardName = sourceCard.name,
+                cardName = copiedCardComp.name,
                 controllerId = copyController,
                 originalSpellId = sourceSpellId,
                 copyIndex = copyIndex,
                 copyTotal = copyTotal,
-                manaValue = sourceCard.manaValue
+                manaValue = copiedCardComp.manaValue
             )
         )
 

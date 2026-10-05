@@ -158,11 +158,15 @@ data class CopyExceptions(
 
     /** Text changes affect the added rules text before the copy is made. */
     fun applyTextReplacement(replacer: com.wingedsheep.sdk.scripting.text.TextReplacer): CopyExceptions {
-        if (addedTriggeredAbilities.isEmpty() && addedActivatedAbilities.isEmpty()) return this
+        if (isEmpty) return this
+        val colors = addedColors.mapTo(mutableSetOf(), replacer::replaceColor)
+        val overrides = overrideColors?.mapTo(mutableSetOf(), replacer::replaceColor)
         val triggered = addedTriggeredAbilities.map { it.applyTextReplacement(replacer) }
         val activated = addedActivatedAbilities.map { it.applyTextReplacement(replacer) }
-        return if (triggered == addedTriggeredAbilities && activated == addedActivatedAbilities) this
-        else copy(addedTriggeredAbilities = triggered, addedActivatedAbilities = activated)
+        return if (colors == addedColors && overrides == overrideColors &&
+            triggered == addedTriggeredAbilities && activated == addedActivatedAbilities) this
+        else copy(addedColors = colors, overrideColors = overrides,
+            addedTriggeredAbilities = triggered, addedActivatedAbilities = activated)
     }
 
     /**

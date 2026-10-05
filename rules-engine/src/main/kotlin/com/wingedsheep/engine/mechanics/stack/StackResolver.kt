@@ -215,11 +215,12 @@ class StackResolver(
         modeTargetRequirements: Map<Int, List<TargetRequirement>>? = null,
         copyIndex: Int? = null,
         copyTotal: Int? = null,
-        controllerId: EntityId? = null
+        controllerId: EntityId? = null,
+        exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions = com.wingedsheep.sdk.scripting.effects.CopyExceptions.None
     ): ExecutionResult =
         StackPlacement.putSpellCopy(
             state, sourceSpellId, targets, targetRequirements, chosenModes, modeTargetsOrdered,
-            modeTargetRequirements, copyIndex, copyTotal, controllerId
+            modeTargetRequirements, copyIndex, copyTotal, controllerId, exceptions
         )
 
     /** Put an activated ability on the stack. See [StackPlacement.putActivatedAbility]. */

@@ -216,7 +216,8 @@ class StormCopyEffectExecutor(
             totalCopies: Int,
             priorEvents: List<GameEvent>,
             keywordsForCopy: Set<String> = emptySet(),
-            removeLegendary: Boolean = false
+            removeLegendary: Boolean = false,
+            exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions = com.wingedsheep.sdk.scripting.effects.CopyExceptions.None
         ): ExecutionResult {
             var currentState = state
             val allEvents = priorEvents.toMutableList()
@@ -239,12 +240,9 @@ class StormCopyEffectExecutor(
                         continue
                     }
 
-                    val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
-                    for ((reqIndex, requirement) in reqs.withIndex()) {
-                        legalTargetsMap[reqIndex] = targetFinder.findLegalTargets(
-                            currentState, requirement, controllerId, sourceId
-                        )
-                    }
+                    val legalTargetsMap = SpellCopyTargets.legalTargets(
+                        currentState, targetFinder, sourceId, controllerId, reqs, exceptions
+                    )
 
                     val hasNoLegalTargets = legalTargetsMap.any { (_, t) -> t.isEmpty() }
                     if (hasNoLegalTargets) {
@@ -291,7 +289,8 @@ class StormCopyEffectExecutor(
                         accumulatedOrdinalTargets = accumulated,
                         currentOrdinal = ordinal,
                         keywordsForCopy = keywordsForCopy,
-                        removeLegendary = removeLegendary
+                        removeLegendary = removeLegendary,
+                        exceptions = exceptions
                     )
 
                     return currentState.suspendForDecision(decision, continuation, allEvents)
@@ -306,7 +305,8 @@ class StormCopyEffectExecutor(
                     modeTargetRequirements = modeTargetRequirements,
                     copyIndex = copyIndex,
                     copyTotal = totalCopies,
-                    controllerId = controllerId
+                    controllerId = controllerId,
+                    exceptions = exceptions
                 )
                 if (copyResult.outcome !is Outcome.Done) return copyResult
                 currentState = applyCopyMutations(

@@ -49,6 +49,9 @@ enum class TargetingSourceType {
 class TargetFinder(
     private val predicateEvaluator: PredicateEvaluator
 ) {
+    /** Authoritative per-candidate checks, shared with cast-time validation. */
+    internal val validator by lazy { com.wingedsheep.engine.mechanics.targeting.TargetValidator(predicateEvaluator) }
+
     /**
      * Build the per-candidate [PredicateContext] for filter evaluation, folding in any
      * pipeline-derived fields (storedCollections, chosenValues, xValue, …) carried by
