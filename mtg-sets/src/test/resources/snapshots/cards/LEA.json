@@ -449,6 +449,55 @@
     }
 }
 
+// Blessing
+{
+    "name": "Blessing",
+    "manaCost": "{W}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\n{W}: Enchanted creature gets +1/+1 until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Blessing:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "RARE",
+        "artist": "Julie Baroh",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f131fd27-18da-47ca-b59f-135bcac83abd.jpg?1783948717"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Blue Elemental Blast
 {
     "name": "Blue Elemental Blast",
@@ -592,6 +641,37 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Burrowing
+{
+    "name": "Burrowing",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has mountainwalk. (It can't be blocked as long as defending player controls a Mountain.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "MOUNTAINWALK"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a14c05e4-8df3-450b-8a98-5028e73b14c1.jpg?1783948689"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1179,6 +1259,57 @@
     ]
 }
 
+// Crystal Rod
+{
+    "name": "Crystal Rod",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a player casts a blue spell, you may pay {1}. If you do, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crystal Rod:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasColor",
+                                "color": "BLUE"
+                            }
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "UNCOMMON",
+        "artist": "Amy Weber",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76693233-7961-4b7e-80f2-ed90e494c4aa.jpg?1783948668"
+    }
+}
+
 // Cyclopean Tomb
 {
     "name": "Cyclopean Tomb",
@@ -1571,6 +1702,100 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Disrupting Scepter
+{
+    "name": "Disrupting Scepter",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}, {T}: Target player discards a card. Activate only during your turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Disrupting Scepter:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    "OnlyDuringYourTurn"
+                ],
+                "descriptionOverride": "{3}, {T}: Target player discards a card. Activate only during your turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "RARE",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca571ee8-07a2-43b8-9acf-89cbfd3cf7c9.jpg?1783948667",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "You can use it on yourself."
+            }
+        ]
+    }
 }
 
 // Drudge Skeletons
@@ -1991,6 +2216,65 @@
         "rarity": "UNCOMMON",
         "artist": "Melissa A. Benson",
         "imageUri": "https://cards.scryfall.io/normal/front/d/a/da237992-2919-4e37-8f56-2164095f59b5.jpg?1559591353"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Firebreathing
+{
+    "name": "Firebreathing",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\n{R}: Enchanted creature gets +1/+0 until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Firebreathing:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Dan Frazier",
+        "flavorText": "\"And topples round the dreary west\nA looming bastion fringed with fire.\"\n—Alfred, Lord Tennyson, \"In Memoriam\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3eb27381-505d-4e47-bf66-9e7ba91a5075.jpg?1783948686",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "This ability can be activated by Firebreathing’s controller, not the enchanted creature’s controller (in case they’re different players)."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "The ability affects whichever creature is enchanted by Firebreathing at the time the ability resolves. The bonus remains even if Firebreathing stops enchanting that creature."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -2678,6 +2962,61 @@
     ]
 }
 
+// Holy Armor
+{
+    "name": "Holy Armor",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +0/+2.\n{W}: Enchanted creature gets +0/+1 until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Holy Armor:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 2
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "artist": "Melissa A. Benson",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b01041d2-687e-4972-81c8-16690809275b.jpg?1783948713"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Holy Strength
 {
     "name": "Holy Strength",
@@ -3098,6 +3437,57 @@
     ]
 }
 
+// Iron Star
+{
+    "name": "Iron Star",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a player casts a red spell, you may pay {1}. If you do, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Iron Star:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasColor",
+                                "color": "RED"
+                            }
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "250",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/5786de12-cade-43c2-a6b0-0c5b294b9d0e.jpg?1783948665"
+    }
+}
+
 // Ironroot Treefolk
 {
     "name": "Ironroot Treefolk",
@@ -3180,6 +3570,57 @@
                 "text": "Since the draw is replaced, you can't use the same draw to do other things."
             }
         ]
+    }
+}
+
+// Ivory Cup
+{
+    "name": "Ivory Cup",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a player casts a white spell, you may pay {1}. If you do, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ivory Cup:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasColor",
+                                "color": "WHITE"
+                            }
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "251",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/9964d8d8-dc97-4e5f-9f52-173f7e2c37fd.jpg?1783948666"
     }
 }
 
@@ -3338,6 +3779,63 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Keldon Warlord
+{
+    "name": "Keldon Warlord",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Human Barbarian",
+    "oracleText": "Keldon Warlord's power and toughness are each equal to the number of non-Wall creatures you control.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "NotSubtype",
+                            "subtype": "Wall"
+                        }
+                    ]
+                }
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "NotSubtype",
+                            "subtype": "Wall"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Brockschmidt",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8fe3fd83-969c-4add-888f-86f4306b067c.jpg?1783948685",
+        "rulings": [
+            {
+                "date": "2008-08-01",
+                "text": "This is a Characteristic-Defining Ability. It checks the number of non-Wall creatures you control continuously, and applies in all zones. It is never “locked in”."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3647,6 +4145,52 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Lifetap
+{
+    "name": "Lifetap",
+    "manaCost": "{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a Forest an opponent controls becomes tapped, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lifetap:1",
+                "trigger": {
+                    "type": "TapEvent",
+                    "filter": "land Forest ctrl:opponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11add837-7ee4-4104-b031-c161bce459ae.jpg?1783948705",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Gives one life for each and every Forest tapped."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "In multi-player games it affects all opponents."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4664,6 +5208,54 @@
     ]
 }
 
+// Phantasmal Forces
+{
+    "name": "Phantasmal Forces",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Illusion",
+    "oracleText": "Flying\nAt the beginning of your upkeep, sacrifice this creature unless you pay {U}.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Phantasmal Forces:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{U}"
+                        }
+                    },
+                    "suffer": "SacrificeSelf"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Poole",
+        "flavorText": "These beings embody the essence of true heroes long dead. Summoned from the dreamrealms, they rise to meet their enemies.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/0631c7c8-9aa5-4333-8e20-20247fc47033.jpg?1783948703"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Phantasmal Terrain
 {
     "name": "Phantasmal Terrain",
@@ -5195,6 +5787,46 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Regeneration
+{
+    "name": "Regeneration",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature (Target a creature as you cast this. This card enters attached to that creature.)\n{G}: Regenerate enchanted creature. (The next time that creature would be destroyed this turn, instead tap it, remove it from combat, and heal all damage on it.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Regeneration:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "artist": "Quinton Hoover",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7b7aa34-b4f8-41b4-82ce-ab2e204c3bf4.jpg?1783948673"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5781,6 +6413,67 @@
     ]
 }
 
+// Sedge Troll
+{
+    "name": "Sedge Troll",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Troll",
+    "oracleText": "This creature gets +1/+1 as long as you control a Swamp.\n{B}: Regenerate this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sedge Troll:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "land Swamp"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "RARE",
+        "artist": "Dan Frazier",
+        "flavorText": "The stench in the hovel was overpowering; something loathsome was cooking. Occasionally something surfaced in the thick paste, but my host would casually push it down before I could quite make out what it was.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b13bf496-f3c0-4c13-8282-e7abfab6a198.jpg?1783948681"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Serra Angel
 {
     "name": "Serra Angel",
@@ -6062,6 +6755,57 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4300d24-1cae-4dd5-be7e-38cc677cf5bd.jpg?1559591399"
     },
     "colorIdentityOverride": []
+}
+
+// Soul Net
+{
+    "name": "Soul Net",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a creature dies, you may pay {1}. If you do, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Soul Net:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "270",
+        "rarity": "UNCOMMON",
+        "artist": "Dameon Willich",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b814198-814b-4619-a158-327af675f8f2.jpg?1783948661",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "If animated so it is a creature, it can be triggered off its own destruction."
+            }
+        ]
+    }
 }
 
 // Spell Blast
@@ -6496,6 +7240,57 @@
     ]
 }
 
+// Throne of Bone
+{
+    "name": "Throne of Bone",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a player casts a black spell, you may pay {1}. If you do, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Throne of Bone:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasColor",
+                                "color": "BLACK"
+                            }
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "273",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2931ae0-7836-4000-b9ec-f2029ebf5d96.jpg?1783948660"
+    }
+}
+
 // Timber Wolves
 {
     "name": "Timber Wolves",
@@ -6769,6 +7564,72 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Twiddle
+{
+    "name": "Twiddle",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "You may tap or untap target artifact, creature, or land.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": "Gate.MayDecide",
+            "then": {
+                "type": "Modal",
+                "modes": [
+                    {
+                        "effect": {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    },
+                    {
+                        "effect": {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        }
+                    }
+                ],
+                "countsAsModalSpell": false
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|creature|land"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Rob Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/576e811f-26a3-4a7c-bd13-3b1cc3e184eb.jpg?1783948699",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "This is not a toggle effect. If you use Twiddle to tap a card and before it takes effect your opponent taps it, Twiddle will not automatically untap the card."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "The decision whether or not to tap or untap is made on resolution. This is not a modal spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -7377,6 +8238,52 @@
     ]
 }
 
+// Wanderlust
+{
+    "name": "Wanderlust",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nAt the beginning of the upkeep of enchanted creature's controller, this Aura deals 1 damage to that player.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wanderlust:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "UNCOMMON",
+        "artist": "Cornelius Brudi",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/220a03ca-8c9b-4acb-821d-f6577fbb20fb.jpg?1783948671"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // War Mammoth
 {
     "name": "War Mammoth",
@@ -7631,6 +8538,57 @@
                 "text": "All permanents untap during a player’s untap step at once. If Winter Orb is tapped as your untap step begins, your lands will all untap."
             }
         ]
+    }
+}
+
+// Wooden Sphere
+{
+    "name": "Wooden Sphere",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a player casts a green spell, you may pay {1}. If you do, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wooden Sphere:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasColor",
+                                "color": "GREEN"
+                            }
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "276",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcae01a2-171b-47cd-87be-f1e4e5314326.jpg?1783948661"
     }
 }
 
