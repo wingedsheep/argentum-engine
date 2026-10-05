@@ -23304,34 +23304,29 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "SelectTarget",
-                    "requirement": {
-                        "type": "TargetObject",
-                        "filter": {
-                            "baseFilter": "artifact|creature|enchantment"
-                        },
-                        "id": "target artifact, creature, or enchantment"
-                    },
-                    "storeAs": "target0"
-                },
-                {
                     "type": "MoveToZone",
                     "target": {
-                        "type": "PipelineTarget",
-                        "collectionName": "target0"
+                        "type": "BoundVariable",
+                        "name": "t0"
                     },
                     "destination": "Exile"
                 },
                 {
                     "type": "CreatePredefinedToken",
                     "tokenType": "Clue",
-                    "controller": {
-                        "type": "ControllerOfPipelineTarget",
-                        "collectionName": "target0"
-                    }
+                    "controller": "TargetController"
                 }
             ]
-        }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|creature|enchantment"
+                },
+                "id": "t0"
+            }
+        ]
     },
     "metadata": {
         "collectorNumber": "3",
