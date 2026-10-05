@@ -7,13 +7,16 @@ import com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.state.*
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.dsl.*
+import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.encodeToString
@@ -62,16 +65,16 @@ class ForcedManaPaymentSafetyTest : FunSpec({
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
     // Reuse the ordinary announced-cast window. This prerequisite does not register a partial Word of Command.
-    fun window(d: GameTestDriver, scoped: Boolean = true, forced: Boolean = true): EntityId {
+    fun window(d: GameTestDriver, scoped: Boolean = true, forced: Boolean = true, announcedSpell: CardDefinition = spell): EntityId {
         val player = d.activePlayer!!
-        val chosen = d.putCardInHand(player, spell.name)
+        val chosen = d.putCardInHand(player, announcedSpell.name)
         val context = EffectContext(sourceId = null, controllerId = player,
             pipeline = PipelineState(storedCollections = mapOf("chosen" to listOf(chosen))))
         var state = d.state
         if (scoped) state = state.pushContinuation(ManaSpendingObligationsContinuation(player, context, "safety"))
         if (forced) state = state.pushContinuation(FinishForcedPlayContinuation(
             state.objectRef(chosen)!!, player, "chosen", null, context))
-        val cost = ManaCost.parse("{G}")
+        val cost = announcedSpell.manaCost
         val paymentContext = SpellPaymentContext(cardTypes = setOf(CardType.SORCERY))
         state = state.suspendForDecision(
             question = { id -> ManaPaymentWindow.buildDecision(state, player, cost, id, "Pay for chosen card",
@@ -150,6 +153,42 @@ class ForcedManaPaymentSafetyTest : FunSpec({
         d.submitDecision(d.activePlayer!!, ColorChosenResponse(id, Color.GREEN)).error shouldBe null
         pay(d).error shouldBe null; (chosen in d.state.stack) shouldBe true
         d.state.getEntity(d.activePlayer!!)!!.get<ManaPoolComponent>()!!.total shouldBe 1
+    }
+    test("a sacrifice cost answer preserves the source needed for final payment and permits retry") {
+        val d = driver(); val p = d.activePlayer!!
+        val paid = card("Safety Two Color Probe") {
+            manaCost = "{G}{U}"; typeLine = "Sorcery"
+            spell { effect = Effects.GainLife(1) }
+        }
+        val green = card("Safety Green Creature") {
+            typeLine = "Creature — Bear"; power = 2; toughness = 2
+            activatedAbility { cost = Costs.Tap; effect = Effects.AddMana(Color.GREEN, 1); manaAbility = true }
+        }
+        val blue = card("Safety Sacrifice For Blue") {
+            typeLine = "Land"
+            activatedAbility {
+                cost = Costs.Sacrifice(GameObjectFilter.Creature)
+                effect = Effects.AddMana(Color.BLUE, 1); manaAbility = true
+            }
+        }
+        d.registerCards(listOf(paid, green, blue))
+        val keep = d.putCreatureOnBattlefield(p, green.name)
+        d.replaceState(d.state.updateEntity(keep) { it.without<SummoningSicknessComponent>() })
+        val victim = d.putCreatureOnBattlefield(p, "Grizzly Bears")
+        val source = d.putLandOnBattlefield(p, blue.name)
+        val chosen = window(d, announcedSpell = paid)
+        activate(d, source).error shouldBe null
+        (d.pendingDecision is SelectCardsDecision) shouldBe true
+        val before = d.state; val id = d.pendingDecision!!.id
+        val rejected = d.submitDecision(p, CardsSelectedResponse(id, listOf(keep)))
+        rejected.error!!.contains("prevent paying") shouldBe true
+        rejected.state shouldBe before; rejected.events shouldBe emptyList()
+        d.state shouldBe before; d.pendingDecision!!.id shouldBe id
+        d.submitDecision(p, CardsSelectedResponse(id, listOf(victim))).error shouldBe null
+        (keep in d.state.getBattlefield()) shouldBe true
+        (victim in d.state.getZone(ZoneKey(p, Zone.GRAVEYARD))) shouldBe true
+        pay(d).error shouldBe null; (chosen in d.state.stack) shouldBe true
+        d.state.getEntity(keep)!!.has<TappedComponent>() shouldBe true
     }
     test("paying a converter settles the feeder and leaves one final contribution") {
         val d = driver(); val p = d.activePlayer!!
