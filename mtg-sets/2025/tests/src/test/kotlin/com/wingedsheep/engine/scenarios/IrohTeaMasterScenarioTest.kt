@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.TargetsResponse
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
@@ -59,18 +60,16 @@ class IrohTeaMasterScenarioTest : ScenarioTestBase() {
 
             val bears = game.findPermanent("Grizzly Bears")!!
 
-            // Advance to begin-of-combat. The optional "you may" is asked first (the trigger is
-            // optional), then — only if accepted — the two targets are chosen (slot 0 = target
-            // opponent, slot 1 = target permanent you control).
+            // Announce both targets before resolution consent: opponent, then your permanent.
             game.passUntilPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
-            (game.getPendingDecision() is YesNoDecision) shouldBe true
-            game.answerYesNo(true).error shouldBe null
+            (game.getPendingDecision() is ChooseTargetsDecision) shouldBe true
 
             val td = game.getPendingDecision()!!
             game.submitDecision(
                 TargetsResponse(td.id, mapOf(0 to listOf(game.player2Id), 1 to listOf(bears)))
             ).error shouldBe null
             game.resolveStack()
+            game.answerYesNo(true).error shouldBe null
 
             withClue("the opponent now controls the donated Grizzly Bears") {
                 game.state.projectedState.getController(bears) shouldBe game.player2Id
@@ -98,12 +97,13 @@ class IrohTeaMasterScenarioTest : ScenarioTestBase() {
 
             val bears = game.findPermanent("Grizzly Bears")!!
 
-            // Declining the optional "you may" at begin-of-combat: no targets are requested and the
-            // payoff never fires.
+            // Announce the targets, then decline the donation at resolution.
             game.passUntilPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
-            (game.getPendingDecision() is YesNoDecision) shouldBe true
-            game.answerYesNo(false).error shouldBe null
+            val targets = game.getPendingDecision()!!.id
+            game.submitDecision(TargetsResponse(targets,
+                mapOf(0 to listOf(game.player2Id), 1 to listOf(bears)))).error shouldBe null
             game.resolveStack()
+            game.answerYesNo(false).error shouldBe null
 
             withClue("control of Grizzly Bears stays with you") {
                 game.state.projectedState.getController(bears) shouldBe game.player1Id

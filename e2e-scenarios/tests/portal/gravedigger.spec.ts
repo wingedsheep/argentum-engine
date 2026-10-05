@@ -45,6 +45,7 @@ test.describe('Gravedigger ETB trigger', () => {
 
     // Trigger is on the stack — opponent resolves
     await p2.resolveStack('Gravedigger trigger')
+    await p1.answerYes()
 
     // Verify: Gravedigger on battlefield, Grizzly Bears returned to hand
     await p1.expectOnBattlefield('Gravedigger')
@@ -53,8 +54,8 @@ test.describe('Gravedigger ETB trigger', () => {
     await p1.screenshot('End state')
   })
 
-  test('ability is optional - player can skip target selection', async ({ createGame }) => {
-    const { player1 } = await createGame({
+  test('ability is optional - player can decline after target selection', async ({ createGame }) => {
+    const { player1, player2 } = await createGame({
       player1Name: 'Player1',
       player2Name: 'Opponent',
       player1: {
@@ -79,8 +80,10 @@ test.describe('Gravedigger ETB trigger', () => {
     await p1.selectAction('Cast Gravedigger')
 
     // Auto-pass resolves spell → graveyard targeting overlay appears
-    // Decline the optional targeting
-    await p1.skipTargets()
+    await p1.selectCardInZoneOverlay('Grizzly Bears')
+    await p1.confirmTargets()
+    await player2.gamePage.resolveStack('Gravedigger trigger')
+    await p1.answerNo()
 
     // Verify: Gravedigger on battlefield, Grizzly Bears NOT returned
     await p1.expectOnBattlefield('Gravedigger')

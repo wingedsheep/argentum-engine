@@ -1089,6 +1089,13 @@ Each step has a `hasPriority` property. Most steps grant priority; UNTAP and CLE
 engine auto-advances past them). Steps that don't grant priority execute their actions (untap all
 permanents, discard to hand size) and immediately advance to the next step.
 
+**Optional triggered effects.** A "you may" gate stays on the triggered stack object. Targets
+are announced before it enters the stack, even when a remembered answer will decline the effect.
+The existing gated executor asks consent (or applies the player's remembered answer) only when
+that instance resolves, after target validation. Simultaneous identical optional triggers retain
+separate targets, priority windows and resolution choices; no put-on-stack consent batch removes
+those choices. The server/client use the ordinary target decision followed by a resolution yes/no.
+
 **Priority and the "both players pass" rule.** `GameState` tracks priority with two fields:
 
 ```kotlin

@@ -2975,6 +2975,24 @@ object Steps {
         lifeByProperty(Primitives.targetPossessive, EffectTarget.ContextTarget(0), "the chosen object")
 
     /**
+     * "Destroy target creature. **Its controller loses 2 life.**" — Bitter Downfall, Despoil,
+     * Death Bomb, Clutch of the Undercity; "…loses life equal to …" by the same pair.
+     *
+     * [lifeChanges]' loss row with the third-person recipient the SDK spells
+     * `EffectTarget.TargetController`, the field [Tokens]' "its controller creates" rows set. Like
+     * those it is offered only where [targetLifeByProperty] is — a later clause, after the sentence
+     * that chose the permanent — and `renumbered` refuses it unless the line declared exactly one
+     * permanent target, so "Counter target spell. Its controller loses 3 life." (the spell's
+     * controller, no permanent to name) and a line with two targets decline rather than guess.
+     */
+    private val targetControllerLosesLife: List<Phrase<CardScript>> = countedStepPair(
+        "its controller loses {n} life", "its controller loses life equal to {amount}",
+        "its controller loses life",
+        script = { CardScript(spellEffect = Effects.LoseLife(it, EffectTarget.TargetController)) },
+        amount = ::lifeLostAmount,
+    )
+
+    /**
      * The filtered-trigger reading: the name still means the source, the pronoun means the object
      * the trigger matched. Both are offered, with disjoint surfaces, exactly as
      * [SelfSteps.triggering] offers its two.
@@ -3553,7 +3571,7 @@ object Steps {
          */
         private val laterAtom: Phrase<CardScript> = oneOf(
             "a later spell effect$tag",
-            nonAnaphoric + Continuations.all + targetLifeByProperty + positionScoped,
+            nonAnaphoric + Continuations.all + targetLifeByProperty + targetControllerLosesLife + positionScoped,
         )
 
         private val gatedConsequence: Phrase<CardScript> = oneOf(
@@ -3781,7 +3799,7 @@ object Steps {
             // a member here, which is what lets "Draw a card. Put a +1/+1 counter on ~." and
             // "{T}: Add {C}. Put a point counter on ~." read at all.
             nonAnaphoric + mayClause + delayedClause + positionScoped +
-                Continuations.all + targetLifeByProperty + SelfSteps.named,
+                Continuations.all + targetLifeByProperty + targetControllerLosesLife + SelfSteps.named,
         )
 
         /** A whole line's clauses, joined. The shape and its KDoc are [clauseRun]. */

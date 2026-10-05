@@ -37,13 +37,13 @@ class NecriteScenarioTest : ScenarioTestBase() {
                 game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
                 game.declareNoBlockers()
 
-                withClue("the unblocked trigger must ask whether to sacrifice") {
+                withClue("the unblocked trigger must announce a target") {
                     game.state.pendingDecision shouldNotBe null
                 }
                 val bears = game.findPermanent("Grizzly Bears")!!
-                game.answerYesNo(true)
-                game.selectTargets(listOf(bears))
+                game.selectTargets(listOf(bears)).error shouldBe null
                 game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
 
                 withClue("Necrite paid for the kill with itself") {
                     game.isOnBattlefield("Necrite") shouldBe false
@@ -67,8 +67,9 @@ class NecriteScenarioTest : ScenarioTestBase() {
                 game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
                 game.declareNoBlockers()
 
-                game.answerYesNo(false)
+                game.selectTargets(listOf(game.findPermanent("Grizzly Bears")!!)).error shouldBe null
                 game.resolveStack()
+                game.answerYesNo(false).error shouldBe null
 
                 game.isOnBattlefield("Necrite") shouldBe true
                 game.isOnBattlefield("Grizzly Bears") shouldBe true

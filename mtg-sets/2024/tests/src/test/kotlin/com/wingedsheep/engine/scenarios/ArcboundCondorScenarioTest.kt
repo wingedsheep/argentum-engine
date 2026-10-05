@@ -100,19 +100,10 @@ class ArcboundCondorScenarioTest : ScenarioTestBase() {
                     game.isInGraveyard(1, "Arcbound Condor") shouldBe true
                 }
 
-                // Modular's death half is a "you may": the consent question comes first, then the
-                // target choice (CR 603.3d — a may-trigger still targets like any other).
-                withClue("the optional modular trigger asks whether to move the counters") {
-                    game.hasPendingDecision() shouldBe true
-                }
-                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(true).error shouldBe null
-
-                withClue("saying yes then asks for the target artifact creature") {
-                    game.hasPendingDecision() shouldBe true
-                }
+                // Modular announces the artifact creature target before optional consent.
                 game.selectTargets(listOf(thopter)).error shouldBe null
                 game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
 
                 withClue("all three of the Condor's last-known +1/+1 counters moved to Ornithopter") {
                     plusOne(game, thopter) shouldBe 3

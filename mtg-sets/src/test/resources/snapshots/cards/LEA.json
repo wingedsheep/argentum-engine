@@ -6945,6 +6945,125 @@
     ]
 }
 
+// Vesuvan Doppelganger
+{
+    "name": "Vesuvan Doppelganger",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Shapeshifter",
+    "oracleText": "You may have this creature enter as a copy of any creature on the battlefield, except it doesn't copy that creature's color and it has \"At the beginning of your upkeep, you may have this creature become a copy of target creature, except it doesn't copy that creature's color and it has this ability.\"",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "exceptions": {
+                    "retainColors": true,
+                    "addedTriggeredAbilities": [
+                        {
+                            "id": "Vesuvan Doppelganger:1",
+                            "trigger": {
+                                "type": "StepEvent",
+                                "step": "UPKEEP"
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.MayDecide",
+                                    "sourceRequiredZone": "Battlefield"
+                                },
+                                "then": {
+                                    "type": "EachPermanentBecomesCopyOfTarget",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "affected": "Self",
+                                    "exceptions": {
+                                        "retainColors": true,
+                                        "retainResolvingTriggeredAbility": true
+                                    }
+                                },
+                                "descriptionOverride": "At the beginning of your upkeep, you may have this creature become a copy of target creature, except it doesn't copy that creature's color and it has this ability."
+                            },
+                            "targetRequirement": {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                },
+                                "id": "t0"
+                            },
+                            "descriptionOverride": "At the beginning of your upkeep, you may have this creature become a copy of target creature, except it doesn't copy that creature's color and it has this ability."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "RARE",
+        "artist": "Quinton Hoover",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/768f3a05-bd06-4a23-b9f2-94f6e618fd9f.jpg?1783948699",
+        "rulings": [
+            {
+                "date": "2007-09-16",
+                "text": "Although Vesuvan Doppelganger's triggered ability is targeted, its \"as this creature enters\" ability is not."
+            },
+            {
+                "date": "2007-09-16",
+                "text": "When Vesuvan Doppelganger's triggered ability triggers, you must choose a target for it. You determine whether to have the Doppelganger become a copy of that target when the ability resolves."
+            },
+            {
+                "date": "2007-09-16",
+                "text": "Vesuvan Doppelganger copies the mana cost of the creature it's copying but doesn't copy its color."
+            },
+            {
+                "date": "2007-09-16",
+                "text": "If another creature copies Vesuvan Doppelganger, the new creature will become a copy of whatever Vesuvan Doppelganger is copying except for its color, will copy Vesuvan Doppelganger's color, and will gain Vesuvan Doppelganger's triggered ability."
+            },
+            {
+                "date": "2007-09-16",
+                "text": "Vesuvan Doppelganger's triggered ability may cause it to become a copy of itself. A Vesuvan Doppelganger that becomes a copy of a Vesuvan Doppelganger (either itself or a different one) will gain another instance of its triggered ability. Each instance of that ability will trigger during its controller's upkeep. They'll all be put on the stack and resolve one at a time. The last one to resolve determines the Doppelganger's characteristics for the rest of the turn."
+            },
+            {
+                "date": "2007-09-16",
+                "text": "Vesuvan Doppelganger copies a face-down creature, it becomes a face-up 2/2 blue creature with no name and no abilities other than the one it gives itself."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "If a Doppelganger is flipped, and it copies a flip card in any state, it will copy both \"sides\" of that card but use the flipped side. If a Doppelganger is unflipped, and it copies a flip card in any state, it will copy both \"sides\" of that card but use the unflipped side. In the second case, if it ever meets the flip conditions of its new ability, it will flip and used the flipped side of what it is copying."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "When the Doppelganger switches creatures, the creature it used to be is not considered to have left the battlefield. Such effects will consider the creature to have left the battlefield when the Doppelganger leaves the battlefield."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Damage is not removed when it changes forms."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Can switch to the same creature it is currently a copy of."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "When it takes on the characteristics of the other card, it is no longer of creature type Shapeshifter."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "When changing forms, any text changes that exist on the Doppelganger are applied to the new text, if appropriate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Wall of Air
 {
     "name": "Wall of Air",

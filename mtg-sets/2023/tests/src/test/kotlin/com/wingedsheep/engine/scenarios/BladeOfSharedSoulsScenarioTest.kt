@@ -29,10 +29,11 @@ class BladeOfSharedSoulsScenarioTest : ScenarioTestBase() {
         withClue("Casting should succeed: ${cast.error}") { cast.error shouldBe null }
         if (hasPendingDecision()) submitManaSourcesAutoPay()
         resolveStack()
-        // The optional attach trigger asks "you may" first, then for its target.
+        // Announce the attach trigger target before consent.
         withClue("The attach trigger asks whether to copy") { hasPendingDecision() shouldBe true }
-        answerYesNo(accept)
-        if (accept) selectTargets(listOf(giant))
+        selectTargets(listOf(giant)).error shouldBe null
+        resolveStack()
+        answerYesNo(accept).error shouldBe null
         resolveStack()
     }
 
@@ -75,8 +76,9 @@ class BladeOfSharedSoulsScenarioTest : ScenarioTestBase() {
                 withClue("The new attach trigger offers the Giant a copy of the Rebel") {
                     game.hasPendingDecision() shouldBe true
                 }
-                game.answerYesNo(false)
+                game.selectTargets(listOf(rebel)).error shouldBe null
                 game.resolveStack()
+                game.answerYesNo(false).error shouldBe null
 
                 withClue("Blade moved to the Hill Giant") {
                     game.state.getEntity(blade)?.get<AttachedToComponent>()?.targetId shouldBe giant

@@ -65,10 +65,10 @@ class FarrelsMantleScenarioTest : ScenarioTestBase() {
                 withClue("the trigger must actually fire — this is the bug that made the card inert") {
                     game.hasPendingDecision() shouldBe true
                 }
-                game.answerYesNo(true)
                 val target = game.findPermanent("Mantle Bystander")!!
-                game.selectTargets(listOf(target))
+                game.selectTargets(listOf(target)).error shouldBe null
                 game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
 
                 withClue("3 power plus 2 = 5 damage to the chosen creature") {
                     game.state.getEntity(target)?.get<DamageComponent>()?.amount shouldBe 5
@@ -96,8 +96,9 @@ class FarrelsMantleScenarioTest : ScenarioTestBase() {
                 game.declareNoBlockers()
 
                 game.hasPendingDecision() shouldBe true
-                game.answerYesNo(false)
+                game.selectTargets(listOf(game.findPermanent("Mantle Bystander")!!)).error shouldBe null
                 game.resolveStack()
+                game.answerYesNo(false).error shouldBe null
 
                 game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
                 withClue("declined, so the 3/3 connects normally") {
@@ -124,6 +125,9 @@ class FarrelsMantleScenarioTest : ScenarioTestBase() {
                 game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
                 game.declareNoBlockers()
 
+                game.getPendingDecision()!!.playerId shouldBe game.player1Id
+                game.selectTargets(listOf(game.findPermanent("Mantle Bystander")!!)).error shouldBe null
+                game.resolveStack()
                 val decision = game.getPendingDecision()
                 withClue("the trigger fired") {
                     decision shouldNotBe null

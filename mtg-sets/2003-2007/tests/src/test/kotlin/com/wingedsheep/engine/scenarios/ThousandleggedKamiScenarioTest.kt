@@ -52,8 +52,6 @@ class ThousandleggedKamiScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
                 game.isInGraveyard(1, "Thousand-legged Kami") shouldBe true
 
-                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(true)
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ChooseTargetsDecision>()
                 val dragon = game.findCardsInGraveyard(1, "Eternal Dragon").single()
@@ -61,6 +59,8 @@ class ThousandleggedKamiScenarioTest : ScenarioTestBase() {
                     decision.legalTargets[0].orEmpty() shouldContainExactlyInAnyOrder listOf(dragon)
                 }
                 game.selectTargets(listOf(dragon))
+                game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
                 game.resolveStack()
 
                 game.isInHand(1, "Eternal Dragon") shouldBe true

@@ -439,10 +439,7 @@
                         "type": "Fixed",
                         "amount": 2
                     },
-                    "target": {
-                        "type": "BoundVariable",
-                        "name": "t0"
-                    }
+                    "target": "TargetController"
                 }
             ]
         },

@@ -401,7 +401,6 @@ val engineSerializersModule = SerializersModule {
         subclass(BeholdContinuation::class)
         subclass(MayTriggerContinuation::class)
         subclass(TriggerOpponentChooserContinuation::class)
-        subclass(BatchMayTriggerContinuation::class)
         subclass(FlipCoinsUntilLossContinuation::class)
         subclass(CoinFlipChoiceContinuation::class)
         subclass(ConvertCountersToTokensContinuation::class)

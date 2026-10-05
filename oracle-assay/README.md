@@ -5739,6 +5739,35 @@ a gain-control run.
 
 All four newly compared cards agree with their goldens; compared 7,504 → 7,508, divergent 84 → 84.
 
+## Its controller loses life
+
+"Destroy target creature. **Its controller loses 2 life.**" (Bitter Downfall, Despoil, Death Bomb,
+Inevitable Defeat). Tail key "s controller loses …". The second third-person recipient after "its
+controller creates": `lifeChanges`' loss row over `EffectTarget.TargetController`, built by the same
+`countedStepPair` so "…loses life equal to …" comes with it. It is offered only in the later-clause
+position `targetLifeByProperty` already occupies, and `Steps.renumbered`'s existing guard — exactly
+one permanent target on the line — is what keeps "Counter target spell. Its controller loses 3 life."
+(Undermine, Punish Ignorance) declined: a spell's controller is a different value the cards spell
+differently.
+
+### What it moved
+
+Probe 26 lines / 17 whole cards corpus-wide by rewriting the subject to "You lose". Over the
+implemented population delivered **+4** (7,923 → 7,927), compared 7,508 → 7,512. The rest of the
+implemented family is triggered ("Whenever enchanted land becomes tapped, its controller loses 2
+life" — Ragged Veins), names a spell, or declines elsewhere on the card.
+
+### What the differential found
+
+Three new divergences, all card spellings, all fixed. **Death Bomb [PLS]** *gained* 2 life for the
+destroyed creature — `GainLife(2, t)` where the text says its controller loses it. **Despoil [PCY]**
+aimed `LoseLife` at the land itself, a permanent rather than a player, so nobody lost life. Both now
+write `TargetController` and have their first scenario tests. **Inevitable Defeat [TDM]** ran the
+life change before the exile on the stated belief that `TargetController` cannot read a permanent
+that has left the battlefield; the zone-transition service has since stashed a last-known snapshot
+the resolver reads, so it now takes the printed order and its existing test still passes. Divergent
+84 → 84.
+
 ## The differential gate
 
 `just assay-differential` diffs Assay's reading of a card against the `CardDefinition` a human wrote

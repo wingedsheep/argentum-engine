@@ -63,16 +63,13 @@ class DawningPuristTest : FunSpec({
         // (no first strike creatures, so first strike step is skipped per CR 510.4)
         driver.currentStep shouldBe Step.COMBAT_DAMAGE
 
-        // Step 1: "May destroy?" — answer yes
-        val yesNoDecision = driver.pendingDecision as YesNoDecision
-        driver.submitYesNo(yesNoDecision.playerId, true)
-
-        // Step 2: Choose target enchantment
+        // Announce the target before resolution consent.
         val chooseTargets = driver.pendingDecision as ChooseTargetsDecision
         driver.submitTargetSelection(attacker, listOf(enchantment))
 
         // Trigger goes on stack - resolve it
         driver.bothPass()
+        driver.submitYesNo(attacker, true).error shouldBe null
 
         // Enchantment should be destroyed
         driver.findPermanent(defender, "Test Enchantment") shouldBe null
@@ -97,7 +94,7 @@ class DawningPuristTest : FunSpec({
         driver.removeSummoningSickness(purist)
 
         // Put an enchantment on opponent's battlefield
-        driver.putPermanentOnBattlefield(defender, "Test Enchantment")
+        val enchantment = driver.putPermanentOnBattlefield(defender, "Test Enchantment")
 
         // Advance to declare attackers
         driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
@@ -112,6 +109,8 @@ class DawningPuristTest : FunSpec({
 
         // Combat damage - trigger fires with Effects.May, decline
         // (no first strike creatures, so first strike step is skipped per CR 510.4)
+        driver.submitTargetSelection(attacker, listOf(enchantment)).error shouldBe null
+        driver.bothPass().error shouldBe null
         val yesNoDecision = driver.pendingDecision as YesNoDecision
         driver.submitYesNo(yesNoDecision.playerId, false)
 

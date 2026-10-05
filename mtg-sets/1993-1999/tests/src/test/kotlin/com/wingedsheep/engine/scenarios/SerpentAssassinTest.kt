@@ -65,11 +65,9 @@ class SerpentAssassinTest : FunSpec({
         // Serpent Assassin should be on the battlefield
         driver.findPermanent(activePlayer, "Serpent Assassin") shouldNotBe null
 
-        // The ETB trigger fires and asks the "you may" first; accepting it leads to target selection.
+        // The ETB trigger announces its target before asking consent at resolution.
         driver.isPaused shouldBe true
         driver.pendingDecision.shouldNotBeNull()
-        driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
-        driver.submitYesNo(activePlayer, true)
         driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
 
         val targetDecision = driver.pendingDecision as ChooseTargetsDecision
@@ -87,6 +85,8 @@ class SerpentAssassinTest : FunSpec({
         if (driver.stackSize > 0) {
             driver.bothPass()
         }
+        driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        driver.submitYesNo(activePlayer, true).error shouldBe null
 
         // Grizzly Bears should now be destroyed (in graveyard)
         driver.findPermanent(opponent, "Grizzly Bears") shouldBe null
@@ -144,7 +144,7 @@ class SerpentAssassinTest : FunSpec({
         driver.findPermanent(opponent, "Serpent Assassin") shouldNotBe null
     }
 
-    test("Serpent Assassin ETB trigger allows declining optional ability") {
+    test("Serpent Assassin ETB trigger requires a target before optional consent") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of(
@@ -174,12 +174,8 @@ class SerpentAssassinTest : FunSpec({
         // Serpent Assassin should be on the battlefield
         driver.findPermanent(activePlayer, "Serpent Assassin") shouldNotBe null
 
-        // "you may destroy" means the player can choose not to use the ability — and the decline is
-        // the yes/no, not an empty target selection. Once accepted the target is *mandatory*
-        // (CR 603.3d: "target nonblack creature", not "up to one"), which is what minTargets says.
+        // The target is mandatory even when the player intends to decline at resolution.
         driver.isPaused shouldBe true
-        driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
-        driver.submitYesNo(activePlayer, true)
 
         driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
         val targetDecision = driver.pendingDecision as ChooseTargetsDecision
@@ -192,6 +188,8 @@ class SerpentAssassinTest : FunSpec({
         if (driver.stackSize > 0) {
             driver.bothPass()
         }
+        driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        driver.submitYesNo(activePlayer, true).error shouldBe null
 
         // Grizzly Bears should be destroyed
         driver.findPermanent(opponent, "Grizzly Bears") shouldBe null
@@ -215,7 +213,7 @@ class SerpentAssassinTest : FunSpec({
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
         // Put a nonblack creature on opponent's battlefield
-        driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
+        val grizzlyBears = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
 
         // Give active player Serpent Assassin and mana
         val serpentAssassin = driver.putCardInHand(activePlayer, "Serpent Assassin")
@@ -228,16 +226,17 @@ class SerpentAssassinTest : FunSpec({
         // Serpent Assassin should be on the battlefield
         driver.findPermanent(activePlayer, "Serpent Assassin") shouldNotBe null
 
-        // The ability fires and asks the "you may" before anything else is chosen — the player never
-        // has to pick a target they intend to spare.
+        // Even a declined effect announces its target and gives opponents a response window.
         driver.isPaused shouldBe true
+        driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        driver.submitTargetSelection(activePlayer, listOf(grizzlyBears)).error shouldBe null
+        driver.bothPass().error shouldBe null
         driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
 
         val declineResult = driver.submitYesNo(activePlayer, false)
         declineResult.outcome shouldBe Outcome.Done
 
-        // The game should continue without the ability on the stack
-        // (ability was declined, not put on the stack)
+        // The declined stack object has finished resolving.
         driver.isPaused shouldBe false
 
         // Grizzly Bears should still be on the battlefield (not destroyed)

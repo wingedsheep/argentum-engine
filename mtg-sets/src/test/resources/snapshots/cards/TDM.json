@@ -7359,6 +7359,14 @@
             "type": "Composite",
             "effects": [
                 {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
                     "type": "LoseLife",
                     "amount": {
                         "type": "Fixed",
@@ -7372,14 +7380,6 @@
                         "type": "Fixed",
                         "amount": 3
                     }
-                },
-                {
-                    "type": "MoveToZone",
-                    "target": {
-                        "type": "BoundVariable",
-                        "name": "t0"
-                    },
-                    "destination": "Exile"
                 }
             ]
         },

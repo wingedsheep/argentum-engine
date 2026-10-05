@@ -58,8 +58,6 @@ class RootrunnerScenarioTest : ScenarioTestBase() {
 
                 // Soulshift triggers off the sacrifice.
                 game.resolveStack()
-                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(true)
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ChooseTargetsDecision>()
                 val kami = game.findCardsInGraveyard(1, "Kami of the Hunt").single()
@@ -67,6 +65,8 @@ class RootrunnerScenarioTest : ScenarioTestBase() {
                     decision.legalTargets[0].orEmpty() shouldContainExactlyInAnyOrder listOf(kami)
                 }
                 game.selectTargets(listOf(kami))
+                game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
                 game.resolveStack()
 
                 game.isInHand(1, "Kami of the Hunt") shouldBe true

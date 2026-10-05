@@ -323,6 +323,8 @@ export interface DecisionContext {
    * `gameState.cards` — the server sends only the id, so masking still applies.
    */
   readonly subjectEntityId?: EntityId
+  /** Validated resolution targets; render their identities from the masked state. */
+  readonly targetIds?: readonly EntityId[]
 }
 
 /**

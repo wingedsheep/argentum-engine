@@ -47,10 +47,6 @@ class WispweaverAngelScenarioTest : ScenarioTestBase() {
                 val angel = game.findPermanent("Wispweaver Angel")!!
                 game.state.projectedState.hasKeyword(angel, Keyword.FLYING) shouldBe true
 
-                // The engine asks the "may" first, then the target, for a may-trigger that targets.
-                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(true).error shouldBe null
-
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ChooseTargetsDecision>()
                 withClue("only other creatures you control are legal — not the Angel, not an opponent's creature") {
@@ -58,6 +54,8 @@ class WispweaverAngelScenarioTest : ScenarioTestBase() {
                 }
                 game.selectTargets(listOf(bears)).error shouldBe null
                 game.resolveStack()
+                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(bears)
+                game.answerYesNo(true).error shouldBe null
 
                 val returned = game.findPermanent("Grizzly Bears")
                 withClue("the exiled creature returns to the battlefield") { returned shouldNotBe null }
@@ -77,9 +75,11 @@ class WispweaverAngelScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Wispweaver Angel").error shouldBe null
                 game.resolveStack()
 
-                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(false).error shouldBe null
+                game.getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
+                game.selectTargets(listOf(bears)).error shouldBe null
                 game.resolveStack()
+                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(bears)
+                game.answerYesNo(false).error shouldBe null
                 game.hasPendingDecision() shouldBe false
 
                 withClue("the same object stays on the battlefield, still tapped") {

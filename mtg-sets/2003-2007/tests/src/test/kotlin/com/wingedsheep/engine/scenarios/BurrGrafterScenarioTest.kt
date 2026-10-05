@@ -53,9 +53,6 @@ class BurrGrafterScenarioTest : ScenarioTestBase() {
                 withClue("activation should succeed: ${activation.error}") { activation.error shouldBe null }
                 game.isInGraveyard(1, "Burr Grafter") shouldBe true
 
-                val yesNo = game.getPendingDecision()
-                yesNo.shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(true)
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ChooseTargetsDecision>()
                 val hunt = game.findCardsInGraveyard(1, "Kami of the Hunt").single()
@@ -63,6 +60,8 @@ class BurrGrafterScenarioTest : ScenarioTestBase() {
                     decision.legalTargets[0].orEmpty() shouldContainExactlyInAnyOrder listOf(hunt)
                 }
                 game.selectTargets(listOf(hunt))
+                game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
                 game.resolveStack()
 
                 game.isInHand(1, "Kami of the Hunt") shouldBe true

@@ -66,12 +66,12 @@ class BladewingTheRisenTest : FunSpec({
         driver.castSpell(activePlayer, bladewing)
         driver.bothPass() // resolve Bladewing
 
-        // ETB trigger fires — the "you may" is asked first, then targets
-        driver.submitYesNo(activePlayer, true)
+        // The ETB trigger announces a target before consent.
         driver.submitTargetSelection(activePlayer, listOf(dragonInGraveyard))
 
         // Trigger on stack — resolve it
         driver.bothPass()
+        driver.submitYesNo(activePlayer, true).error shouldBe null
 
         // Dragon should now be on the battlefield
         driver.findPermanent(activePlayer, "Test Dragon") shouldNotBe null
@@ -87,7 +87,7 @@ class BladewingTheRisenTest : FunSpec({
         val activePlayer = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        driver.putCardInGraveyard(activePlayer, "Test Dragon")
+        val dragon = driver.putCardInGraveyard(activePlayer, "Test Dragon")
 
         val bladewing = driver.putCardInHand(activePlayer, "Bladewing the Risen")
         driver.giveMana(activePlayer, Color.BLACK, 2)
@@ -97,8 +97,9 @@ class BladewingTheRisenTest : FunSpec({
         driver.bothPass()
 
         // Decline the ETB trigger at its may-question
-        driver.submitYesNo(activePlayer, false)
-        driver.bothPass()
+        driver.submitTargetSelection(activePlayer, listOf(dragon)).error shouldBe null
+        driver.bothPass().error shouldBe null
+        driver.submitYesNo(activePlayer, false).error shouldBe null
 
         // Dragon should remain in graveyard
         driver.findPermanent(activePlayer, "Test Dragon") shouldBe null

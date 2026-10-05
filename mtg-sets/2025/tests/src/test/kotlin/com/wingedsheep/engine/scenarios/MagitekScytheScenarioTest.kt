@@ -84,7 +84,9 @@ class MagitekScytheScenarioTest : FunSpec({
         driver.bothPass()
         if (driver.stackSize > 0) driver.bothPass()
 
-        driver.submitYesNo(me, false)
+        driver.submitTargetSelection(me, listOf(courser)).error shouldBe null
+        driver.bothPass().error shouldBe null
+        driver.submitYesNo(me, false).error shouldBe null
         if (driver.isPaused) driver.bothPass()
 
         val swordId = driver.findPermanent(me, "Magitek Scythe")!!

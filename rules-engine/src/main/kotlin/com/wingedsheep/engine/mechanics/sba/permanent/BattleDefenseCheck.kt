@@ -94,8 +94,6 @@ class BattleDefenseCheck(private val zones: ZoneTransitionService) : StateBasedA
                     entry.remainingTriggers.any { it.objectReferences.origin == current }
                 is com.wingedsheep.engine.core.TriggeredAbilityContinuation -> entry.objectReferences.origin == current
                 is com.wingedsheep.engine.core.MayTriggerContinuation -> entry.trigger.objectReferences.origin == current
-                is com.wingedsheep.engine.core.BatchMayTriggerContinuation ->
-                    entry.triggers.any { it.objectReferences.origin == current }
                 is com.wingedsheep.engine.core.MayPayManaTriggerContinuation -> entry.trigger.objectReferences.origin == current
                 is com.wingedsheep.engine.core.ManaSourceSelectionContinuation -> entry.trigger.objectReferences.origin == current
                 is com.wingedsheep.engine.core.TriggerModalModeSelectionContinuation -> entry.ability.objectReferences.origin == current

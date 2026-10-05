@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 
 /**
@@ -28,7 +29,7 @@ val DeathBomb = card("Death Bomb") {
     additionalCost(Costs.additional.SacrificePermanent(GameObjectFilter.Creature))
     spell {
         val t = target(TargetFilter.Creature.notColor(Color.BLACK))
-        effect = Effects.Destroy(t, noRegenerate = true) then Effects.GainLife(2, t)
+        effect = Effects.Destroy(t, noRegenerate = true) then Effects.LoseLife(2, EffectTarget.TargetController)
     }
     metadata {
         rarity = Rarity.COMMON

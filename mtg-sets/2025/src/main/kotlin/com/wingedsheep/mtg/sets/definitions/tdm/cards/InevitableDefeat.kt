@@ -12,11 +12,6 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Instant
  * This spell can't be countered.
  * Exile target nonland permanent. Its controller loses 3 life and you gain 3 life.
- *
- * The life loss / gain resolves before the exile so `TargetController` can still read the
- * permanent's controller — exiling first would move it off the battlefield and the
- * controller lookup would silently fail (same ordering trick as Undermine / Agonizing
- * Demise). All three happen in one resolution, so the order is imperceptible to players.
  */
 val InevitableDefeat = card("Inevitable Defeat") {
     manaCost = "{1}{R}{W}{B}"
@@ -28,9 +23,9 @@ val InevitableDefeat = card("Inevitable Defeat") {
 
     spell {
         val permanent = target(TargetFilter.NonlandPermanent)
-        effect = Effects.LoseLife(3, EffectTarget.TargetController) then
-            Effects.GainLife(3, EffectTarget.Controller) then
-            Effects.Exile(permanent)
+        effect = Effects.Exile(permanent) then
+            Effects.LoseLife(3, EffectTarget.TargetController) then
+            Effects.GainLife(3, EffectTarget.Controller)
     }
 
     metadata {

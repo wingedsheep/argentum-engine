@@ -49,9 +49,7 @@ class ExtraplanarLensScenarioTest : FunSpec({
         giveColorlessMana(player1, 3)
         castSpell(player1, inHand).error shouldBe null
 
-        // An `optional` trigger that also targets is asked in that order: the "you may" first
-        // (`TriggerProcessor.processMayThenTargetTrigger` unwraps the consent gate *before* putting
-        // the ability on the stack), then its target. So the first yes/no is the imprint gate.
+        // Announce the land target first. The first resolution yes/no is the imprint gate.
         //
         // Stop once the ability has left the stack — the exile happens on resolution, and passing
         // beyond it would carry the turn over and take priority away from the player who then needs
