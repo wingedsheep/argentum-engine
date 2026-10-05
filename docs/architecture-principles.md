@@ -1398,7 +1398,10 @@ modify both halves. `FlippedComponent` tracks independent status and the current
 `withCopyIdentity` selects the active half and refreshes its intrinsic/static/replacement abilities.
 `CopyHistoryComponent` stores ordered identities under temporary copies, separate from the printed
 identity used on zone exit. Expiry removes matching layers even when a newer permanent copy masks them,
-then reselects the exposed identity using current status. Serialized snapshots remain source-independent.
+then reselects the exposed identity using current status. Inline numeric/static token text travels
+with the identity rather than only its derived runtime components. Private departure snapshots stay
+separate from public face-down copy-source values. Saved identities missing flip halves recover them
+from their registered definition at identity installation. Serialized snapshots remain source-independent.
 
 **Why copy is resolved before entry, not as a continuous effect layer.**
 

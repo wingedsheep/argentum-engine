@@ -9,7 +9,8 @@ import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSour
 import com.wingedsheep.engine.state.components.identity.*
 
 /** Install copiable identity without changing status; a retained flipped status selects its alternative. */
-fun ComponentContainer.withCopyIdentity(upright: CardComponent, registry: CardRegistry): ComponentContainer {
+fun ComponentContainer.withCopyIdentity(identity: CardComponent, registry: CardRegistry): ComponentContainer {
+    val upright = identity.withRestoredFlipSide(registry)
     val flipped = has<FlippedComponent>()
     val active = (if (flipped) upright.flipSide ?: upright else upright)
         .copy(ownerId = upright.ownerId, isDoubleFaced = upright.isDoubleFaced)
@@ -36,6 +37,7 @@ fun ComponentContainer.withCopyIdentity(upright: CardComponent, registry: CardRe
     } else {
         result = result.without<ProtectionComponent>().without<SelfZoneRedirectComponent>()
         result = CardEntityFactory.applyNumericKeywords(result, active.copyNumericKeywords)
+        result = statics.addContinuousEffectComponent(result)
     }
     return result
 }

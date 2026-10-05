@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.dsl.*
 import com.wingedsheep.sdk.model.*
 import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.effects.CopyExceptions
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -329,4 +330,66 @@ class FlippedCopyIdentityTest : FunSpec({
         card(d, who).name shouldBe first.flipSide!!.name
         d.state.getEntity(who)!!.get<ToxicComponent>()!!.amount shouldBe 1
     }
+    test("face-down copiers restore their private printed identity on departure on both copy paths") {
+        for (linked in listOf(false, true)) {
+            val d = driver()
+            val who = d.putPermanentOnBattlefield(d.player1, first.name)
+            d.replaceState(d.state.updateEntity(who) { it.with(FaceDownComponent) })
+            if (linked) {
+                val equipment = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")
+                val exiled = d.putCardInExile(d.player2, "Grizzly Bears")
+                d.replaceState(d.state.updateEntity(equipment) {
+                    it.with(AttachedToComponent(who)).with(
+                        com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent(listOf(exiled)))
+                })
+                val result = BecomeCopyOfLinkedExileExecutor(d.cardRegistry).execute(d.state,
+                    com.wingedsheep.sdk.scripting.effects.BecomeCopyOfLinkedExileEffect(EffectTarget.SpecificEntity(who)),
+                    EffectContext(sourceId = equipment, controllerId = d.player1))
+                result.error shouldBe null
+                d.replaceState(result.state)
+            } else {
+                val source = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
+                copy(d, who, source)
+            }
+            roundTrip(d)
+            val moved = com.wingedsheep.engine.handlers.effects.ZoneTransitionService(d.cardRegistry,
+                PredicateEvaluator(cardRegistry = d.cardRegistry)).moveToZone(d.state, who, Zone.GRAVEYARD)
+            d.replaceState(moved.state)
+            card(d, who).name shouldBe first.name
+            card(d, who).flipSide!!.name shouldBe first.flipSide!!.name
+            d.state.getEntity(who)!!.has<FaceDownComponent>() shouldBe false
+        }
+    }
+
+    test("inline token numeric and static text returns after a serialized temporary copy") {
+        val d = driver()
+        val create = com.wingedsheep.engine.handlers.effects.token.CreateTokenExecutor(
+            PredicateEvaluator(cardRegistry = d.cardRegistry).conditions.amounts,
+            com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler(d.cardRegistry), d.cardRegistry)
+        val effect = com.wingedsheep.sdk.scripting.effects.CreateTokenEffect(
+            count = DynamicAmount.Fixed(1), power = 2, toughness = 2,
+            creatureTypes = setOf("Beast"), colors = setOf(Color.GREEN),
+            numericKeywords = listOf(KeywordAbility.Numeric(Keyword.TOXIC, 1)),
+            staticAbilities = listOf(GrantProtection(Color.BLACK, GroupFilter.source())))
+        val created = create.execute(d.state, effect, EffectContext(sourceId = null, controllerId = d.player1))
+        created.error shouldBe null
+        val who = (created.state.getBattlefield() - d.state.getBattlefield().toSet()).single()
+        d.replaceState(created.state)
+        d.state.getEntity(who)!!.get<ToxicComponent>()!!.amount shouldBe 1
+        d.state.projectedState.hasKeyword(who, "PROTECTION_FROM_BLACK") shouldBe true
+        val source = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
+        copy(d, who, source, Duration.EndOfTurn)
+        d.state.getEntity(who)!!.has<ToxicComponent>() shouldBe false
+        d.state.projectedState.hasKeyword(who, "PROTECTION_FROM_BLACK") shouldBe false
+        roundTrip(d)
+        d.passPriorityUntil(Step.UPKEEP)
+        card(d, who).name shouldBe "Beast Token"
+        d.state.getEntity(who)!!.get<ToxicComponent>()!!.amount shouldBe 1
+        d.state.projectedState.hasKeyword(who, "PROTECTION_FROM_BLACK") shouldBe true
+        val second = d.putPermanentOnBattlefield(d.player1, copier.name)
+        copy(d, second, who)
+        d.state.getEntity(second)!!.get<ToxicComponent>()!!.amount shouldBe 1
+        d.state.projectedState.hasKeyword(second, "PROTECTION_FROM_BLACK") shouldBe true
+    }
+
 })

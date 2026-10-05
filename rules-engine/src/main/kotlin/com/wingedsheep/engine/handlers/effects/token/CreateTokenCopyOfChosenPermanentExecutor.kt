@@ -126,7 +126,7 @@ class CreateTokenCopyOfChosenPermanentExecutor(
                 SummoningSicknessComponent
             )
             // Toxic N / bushido N ride components, not the CardComponent — carry them over too.
-            container = CopyExceptionApplier.withNumericKeywords(container, chosenContainer, CopyExceptions.None)
+            container = CopyExceptionApplier.withNumericKeywords(container, chosenContainer, CopyExceptions.None, cardRegistry)
 
             // CR 707.8a: a token copy of a double-faced permanent has both faces and enters
             // with the same face up as the source.

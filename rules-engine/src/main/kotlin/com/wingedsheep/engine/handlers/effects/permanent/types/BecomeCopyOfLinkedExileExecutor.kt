@@ -68,7 +68,8 @@ class BecomeCopyOfLinkedExileExecutor(private val cardRegistry: CardRegistry) : 
         // Keep the original pre-copy snapshot if the affected permanent is already a copy, so a
         // chain still reverts to the printed identity.
         val existingCopyOf = affectedContainer.get<CopyOfComponent>()
-        val originalSnapshot = existingCopyOf?.originalCardComponent ?: affectedContainer.copiableCardComponent()!!
+        val originalSnapshot = existingCopyOf?.originalCardComponent
+            ?: affectedContainer.get<com.wingedsheep.engine.state.components.identity.FlippedComponent>()?.unflippedCard ?: currentCard
         val originalDefinitionId = existingCopyOf?.originalCardDefinitionId ?: currentCard.cardDefinitionId
 
         val newState = state.updateEntity(affectedId) { c ->

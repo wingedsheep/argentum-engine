@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
 import com.wingedsheep.engine.handlers.effects.copy.withCopyIdentity
+import com.wingedsheep.engine.handlers.effects.copy.withRestoredFlipSide
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.FlippedEvent
 import com.wingedsheep.engine.handlers.EffectContext
@@ -56,7 +57,7 @@ internal fun flipPermanent(
     if (entityId !in state.getBattlefield()) return null
     val container = state.getEntity(entityId) ?: return null
     if (container.get<FlippedComponent>() != null) return null
-    val upright = container.get<CardComponent>() ?: return null
+    val upright = container.get<CardComponent>()?.withRestoredFlipSide(cardRegistry) ?: return null
     val alternative = upright.flipSide ?: return null
     val controllerId = container.get<ControllerComponent>()?.playerId ?: upright.ownerId ?: return null
     val newState = state.updateEntity(entityId) { c ->

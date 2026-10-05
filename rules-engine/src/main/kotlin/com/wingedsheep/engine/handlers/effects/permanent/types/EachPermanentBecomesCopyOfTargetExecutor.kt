@@ -142,7 +142,7 @@ class EachPermanentBecomesCopyOfTargetExecutor(
             // If this permanent is already a copy, keep the existing pre-copy snapshot
             // so a chain of copy effects still reverts to the printed identity on exit.
             val existingCopyOf = container.get<CopyOfComponent>()
-            val originalCardSnapshot = existingCopyOf?.originalCardComponent ?: container.copiableCardComponent()!!
+            val originalCardSnapshot = existingCopyOf?.originalCardComponent ?: container.get<com.wingedsheep.engine.state.components.identity.FlippedComponent>()?.unflippedCard ?: currentCard
             val originalDefinitionId =
                 existingCopyOf?.originalCardDefinitionId ?: currentCard.cardDefinitionId
 

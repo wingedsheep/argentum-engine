@@ -33,11 +33,9 @@ import com.wingedsheep.sdk.scripting.effects.CopyExceptions
  * tokens and silently did nothing on permanents. Keeping the arithmetic here means a new exception
  * is written once and every path above gets it.
  *
- * Not (yet) routed through here: the two paths whose only "except" clause is the single boolean
- * `removeLegendary` and which therefore have no arithmetic to share —
  * [com.wingedsheep.engine.handlers.effects.token.CreateTokenCopyOfEquippedCreatureExecutor]
- * (Helm of the Host) and
- * [com.wingedsheep.engine.handlers.effects.stack.StormCopyEffectExecutor] (copies of *spells*,
+ * (Helm of the Host) also routes its nonlegendary exception here, so it applies to both flip halves.
+ * Not routed through here: [com.wingedsheep.engine.handlers.effects.stack.StormCopyEffectExecutor] (copies of *spells*,
  * CR 707.10, where the copy lives on the stack rather than as a permanent's copiable values).
  *
  * Copiable values only: everything applied here lives on the [CardComponent], so it is itself
@@ -125,18 +123,28 @@ object CopyExceptionApplier {
      * entity creation into [ToxicComponent] / [NumericKeywordValuesComponent] — so a copy path that
      * builds its entity from a copied [CardComponent] alone silently loses them. Reading them off
      * [source]'s components (rather than its definition) is what makes a copy of a copy right: the
-     * first copy's components already carry its own exception-added values.
+     * first copy's components already carry its own exception-added values. A flipped source is
+     * different: its active components describe the alternative half, while a new token enters
+     * upright. Rebuild that half from its definition and frozen copy-added abilities instead.
      */
     fun withNumericKeywords(
         copy: ComponentContainer,
         source: ComponentContainer,
         exceptions: CopyExceptions,
+        registry: com.wingedsheep.engine.registry.CardRegistry? = null,
     ): ComponentContainer {
         val numeric = buildList {
             if (!source.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) {
-                source.get<ToxicComponent>()?.let { add(KeywordAbility.Numeric(Keyword.TOXIC, it.amount)) }
-                source.get<NumericKeywordValuesComponent>()?.values?.forEach { (keyword, n) ->
-                    add(KeywordAbility.Numeric(keyword, n))
+                val upright = source.get<com.wingedsheep.engine.state.components.identity.FlippedComponent>()?.unflippedCard
+                if (upright != null) {
+                    addAll(registry?.getCard(upright.cardDefinitionId)?.keywordAbilities
+                        ?.filterIsInstance<KeywordAbility.Numeric>().orEmpty())
+                    addAll(upright.copyNumericKeywords)
+                } else {
+                    source.get<ToxicComponent>()?.let { add(KeywordAbility.Numeric(Keyword.TOXIC, it.amount)) }
+                    source.get<NumericKeywordValuesComponent>()?.values?.forEach { (keyword, n) ->
+                        add(KeywordAbility.Numeric(keyword, n))
+                    }
                 }
             }
             addAll(exceptions.addedNumericKeywords)

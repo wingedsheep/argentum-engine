@@ -246,7 +246,9 @@ class CreateTokenExecutor(
                 baseKeywords = effect.keywords,
                 colors = effectiveColors,
                 ownerId = tokenControllerId,
-                imageUri = resolvedImageUri
+                imageUri = resolvedImageUri,
+                copyNumericKeywords = effect.numericKeywords,
+                copyStaticAbilities = effect.staticAbilities,
             )
 
             val components = mutableListOf<Component>(

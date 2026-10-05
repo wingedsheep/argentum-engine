@@ -307,12 +307,13 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 )) {
                 value.getValue("flipSide") shouldBe JsonNull
                 value.getValue("copyNumericKeywords") shouldBe JsonArray(emptyList())
+                value.getValue("copyStaticAbilities") shouldBe JsonArray(emptyList())
                 value.getValue("copyWardCosts") shouldBe JsonArray(emptyList())
                 value.getValue("copyTriggeredAbilities") shouldBe JsonArray(emptyList())
                 value.getValue("copyActivatedAbilities") shouldBe JsonArray(emptyList())
                 value.getValue("manaSpendingGrants") shouldBe JsonArray(emptyList())
                 value.getValue("hasCycling") shouldBe JsonPrimitive(false)
-                value - "copyNumericKeywords" - "flipSide" - "copyWardCosts" - "copyTriggeredAbilities" - "copyActivatedAbilities" - "manaSpendingGrants" - "hasCycling"
+                value - "copyStaticAbilities" - "copyNumericKeywords" - "flipSide" - "copyWardCosts" - "copyTriggeredAbilities" - "copyActivatedAbilities" - "manaSpendingGrants" - "hasCycling"
             } else if (value["type"] == JsonPrimitive(
                     "com.wingedsheep.engine.state.components.player.ManaPoolComponent"
                 )) {

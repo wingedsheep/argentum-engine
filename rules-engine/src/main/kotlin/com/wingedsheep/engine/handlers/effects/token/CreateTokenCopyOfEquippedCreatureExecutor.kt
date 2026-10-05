@@ -19,6 +19,11 @@ import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComp
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.sdk.core.Supertype
+import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantKeywordExecutor
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -72,19 +77,11 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
 
         // Copy the equipped creature's CardComponent. `isDoubleFaced` is cleared, not inherited:
         // a token is not a card (CR 111.1) — see CreateTokenCopyOfTargetExecutor.
-        var tokenCard = equippedCard.copy(ownerId = controllerId, isDoubleFaced = false)
-
-        // Remove legendary if requested
-        if (effect.removeLegendary) {
-            val newTypeLine = tokenCard.typeLine.withoutLegendary()
-            tokenCard = tokenCard.copy(typeLine = newTypeLine)
-        }
-
-        // Grant haste if requested
-        if (effect.grantHaste) {
-            val newKeywords = tokenCard.baseKeywords + Keyword.HASTE
-            tokenCard = tokenCard.copy(baseKeywords = newKeywords)
-        }
+        val exceptions = CopyExceptions(
+            removedSupertypes = if (effect.removeLegendary) setOf(Supertype.LEGENDARY) else emptySet(),
+        )
+        val tokenCard = CopyExceptionApplier.apply(equippedCard, exceptions)
+            .copy(ownerId = controllerId, isDoubleFaced = false)
 
         val components = mutableListOf<Component>(
             tokenCard,
@@ -96,14 +93,12 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
         // CR 707.8a: a token copy of a double-faced permanent has both faces and enters
         // with the same face up as the source.
         equippedContainer.copiableDoubleFacedComponent {
-            it.copy(ownerId = controllerId, isDoubleFaced = false,
-                typeLine = if (effect.removeLegendary) it.typeLine.withoutLegendary() else it.typeLine,
-                baseKeywords = if (effect.grantHaste) it.baseKeywords + Keyword.HASTE else it.baseKeywords)
+            CopyExceptionApplier.apply(it, exceptions).copy(ownerId = controllerId, isDoubleFaced = false)
         }?.let { components.add(it) }
 
         var container = ComponentContainer.of(*components.toTypedArray())
         // Toxic N / bushido N ride components, not the CardComponent — carry them over too.
-        container = CopyExceptionApplier.withNumericKeywords(container, equippedContainer, CopyExceptions.None)
+        container = CopyExceptionApplier.withNumericKeywords(container, equippedContainer, CopyExceptions.None, cardRegistry)
 
         // Add static abilities from the card definition
         if (staticAbilityHandler != null) {
@@ -117,6 +112,15 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
         newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
             .place(newState, controllerId, tokenId)
 
+        // Helm grants haste separately from its copy exception, so it survives face changes
+        // without becoming part of the token's copiable text.
+        val hasteEvents = if (effect.grantHaste) {
+            val grant = GrantKeywordExecutor().execute(newState,
+                GrantKeywordEffect(Keyword.HASTE.name, EffectTarget.SpecificEntity(tokenId), Duration.Permanent), context)
+            newState = grant.state
+            grant.events
+        } else emptyList()
+
         // A token copy honors global "[filter] enter tapped" replacements (Authority of the
         // Consuls / Dauntless Dismantler on an opponent's token copy).
         newState = com.wingedsheep.engine.handlers.effects.EnterTappedReplacements
@@ -125,9 +129,10 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
         // As-enters "enters with counters" (CR 614.1c): the copied creature's own EntersWithCounters
         // (a copy of a creature that "enters with a +1/+1 counter") plus global grants from other
         // permanents (Gev, Scaled Scorch). BattlefieldEntry.place skips this, so apply it here.
-        val (afterCounters, counterEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements
+        val (afterCounters, entryCounterEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements
             .applyOnEntry(newState, tokenId, controllerId, cardRegistry, predicateEvaluator = predicateEvaluator)
         newState = afterCounters
+        val counterEvents = hasteEvents + entryCounterEvents
 
         // As-enters "choose X as this enters" (CR 614.12) + granted riot (CR 702.136): pause for the
         // player's decision. Exactly one token is created, so there is no batch to resume; the entry
