@@ -1393,6 +1393,13 @@ face-up copy has ward without inheriting face-down status or hidden rules text. 
 face-down double-faced permanents store public snapshots of both faces on `DoubleFacedComponent`;
 transforming those tokens reads the snapshots rather than the hidden card definitions.
 
+Flip identities store the alternative copiable half on `CardComponent.flipSide`. Copy exceptions
+modify both halves. `FlippedComponent` tracks independent status and the current upright snapshot;
+`withCopyIdentity` selects the active half and refreshes its intrinsic/static/replacement abilities.
+`CopyHistoryComponent` stores ordered identities under temporary copies, separate from the printed
+identity used on zone exit. Expiry removes matching layers even when a newer permanent copy masks them,
+then reselects the exposed identity using current status. Serialized snapshots remain source-independent.
+
 **Why copy is resolved before entry, not as a continuous effect layer.**
 
 Rule 613 defines Layer 1 as the copy layer, applied before all other continuous effects. The engine

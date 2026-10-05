@@ -458,6 +458,7 @@ object ZoneMovementUtils {
             // (CR 400.7 / 707.2). ZoneTransitionService restores the printed
             // CardComponent before this strip runs.
             .without<com.wingedsheep.engine.state.components.identity.CopyOfComponent>()
+            .without<com.wingedsheep.engine.state.components.identity.CopyHistoryComponent>()
             // …and so do the markers that would have reverted a temporary copy later: the card is
             // already its printed self, and a new object must not inherit a stale revert.
             .without<com.wingedsheep.engine.state.components.identity.RevertCopyAtEndOfTurnComponent>()

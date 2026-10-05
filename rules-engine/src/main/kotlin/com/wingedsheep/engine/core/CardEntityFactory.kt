@@ -110,6 +110,15 @@ object CardEntityFactory {
         cardDef: CardDefinition
     ): ComponentContainer {
         var result = container
+        cardDef.flipSide?.let { alternative ->
+            val front = result.get<CardComponent>()!!
+            if (front.flipSide == null) {
+                val back = create(alternative, requireNotNull(front.ownerId))
+                    .get<CardComponent>()!!.copy(cardDefinitionId = alternative.name,
+                        manaCost = front.manaCost, colors = front.colors)
+                result = result.with(front.copy(flipSide = back))
+            }
+        }
 
         if (cardDef.script.cantBeCountered) {
             result = result.with(CantBeCounteredComponent)
@@ -184,7 +193,8 @@ object CardEntityFactory {
             )
         }
 
-        return applyNumericKeywords(result, cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Numeric>())
+        return applyNumericKeywords(result, cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Numeric>() +
+            result.get<CardComponent>()?.copyNumericKeywords.orEmpty())
     }
 
     /**

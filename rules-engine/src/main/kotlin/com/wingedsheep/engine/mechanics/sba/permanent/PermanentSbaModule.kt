@@ -14,7 +14,7 @@ class PermanentSbaModule(
     override fun checks(): List<StateBasedActionCheck> = listOf(
         DayNightCheck(cardRegistry),
         EndedDurationExpiryCheck(),
-        AttachedCopyExpiryCheck(),
+        AttachedCopyExpiryCheck(cardRegistry),
         AttackedPermanentRemovedFromCombatCheck(),
         PlaneswalkerLoyaltyCheck(zones),
         BattleDefenseCheck(zones),

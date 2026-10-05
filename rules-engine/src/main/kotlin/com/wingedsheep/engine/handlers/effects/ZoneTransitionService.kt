@@ -30,6 +30,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.types.restoreDfcFrontFa
 import com.wingedsheep.engine.handlers.effects.permanent.types.stampDoubleFacedFrontFace
 import com.wingedsheep.engine.handlers.effects.permanent.types.withFaceIntrinsicComponents
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
+import com.wingedsheep.engine.handlers.effects.copy.withCopyIdentity
 import com.wingedsheep.engine.state.components.identity.FlippedComponent
 import com.wingedsheep.engine.state.components.identity.PutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -701,7 +702,7 @@ class ZoneTransitionService(
                 ?.get<com.wingedsheep.engine.state.components.identity.CopyOfComponent>()
             val originalCardComponent = copyOf?.originalCardComponent
             if (originalCardComponent != null) {
-                newState = newState.updateEntity(entityId) { c -> c.with(originalCardComponent) }
+                newState = newState.updateEntity(entityId) { c -> c.without<FlippedComponent>().withCopyIdentity(originalCardComponent, cardRegistry) }
             }
 
             newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
@@ -913,10 +914,8 @@ class ZoneTransitionService(
         if (actualDestZone != Zone.BATTLEFIELD) {
             val flipped = newState.getEntity(entityId)?.get<FlippedComponent>()
             if (flipped != null) {
-                val uprightDef = cardRegistry.getCard(flipped.unflippedCard.cardDefinitionId)
                 newState = newState.updateEntity(entityId) { c ->
-                    val reverted = c.with(flipped.unflippedCard).without<FlippedComponent>()
-                    if (uprightDef != null) withFaceIntrinsicComponents(reverted, uprightDef) else reverted
+                    c.without<FlippedComponent>().withCopyIdentity(flipped.unflippedCard, cardRegistry)
                 }
             }
         }

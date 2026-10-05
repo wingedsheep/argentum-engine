@@ -86,6 +86,8 @@ object CopyExceptionApplier {
             if (exceptions.retainResolvingTriggeredAbility && resolvingTrigger != null) listOf(resolvingTrigger)
             else emptyList()
         return base.copy(
+            flipSide = base.flipSide?.let { apply(it, exceptions, resolvingTrigger, copierColors) },
+            copyNumericKeywords = base.copyNumericKeywords + exceptions.addedNumericKeywords,
             name = exceptions.nameOverride ?: base.name,
             // Each instance gets its own identity, including two copies of a once-per-turn
             // trigger. Plain subsequent copies retain these ids rather than adding instances.

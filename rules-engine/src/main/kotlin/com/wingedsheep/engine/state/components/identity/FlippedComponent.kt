@@ -8,7 +8,8 @@ import kotlinx.serialization.Serializable
  *
  * While present, the entity's [CardComponent] carries the flip half's name, type line, rules text
  * and P/T — with the card's own mana cost and colour kept (CR 710.1c). [unflippedCard] is the
- * upright [CardComponent] the entity had before it flipped, so
+ * current upright copiable identity, updated whenever the permanent recopies. It supplies the
+ * upright half to later copies and lets
  * [com.wingedsheep.engine.handlers.effects.ZoneTransitionService] can restore it when the permanent
  * leaves the battlefield: a flipped permanent that leaves retains no memory of its status
  * (CR 710.4). Its presence is also what makes flipping one-way — a flipped permanent can't flip

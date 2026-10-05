@@ -52,7 +52,7 @@ class RetainedCopyColorsTest : FunSpec({
         val source = d.putPermanentOnBattlefield(d.player2, recopy.name)
         val copier = d.putPermanentOnBattlefield(d.player1, green.name)
         val evaluator = PredicateEvaluator(cardRegistry = d.cardRegistry)
-        val executor = EachPermanentBecomesCopyOfTargetExecutor(evaluator)
+        val executor = EachPermanentBecomesCopyOfTargetExecutor(evaluator, d.cardRegistry)
         val result = executor.execute(d.state, EachPermanentBecomesCopyOfTargetEffect(
             target = EffectTarget.ContextTarget(0), affected = EffectTarget.Self),
             EffectContext(sourceId = copier, controllerId = d.player1, targets = listOf(com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent(source))))
@@ -77,7 +77,7 @@ class RetainedCopyColorsTest : FunSpec({
         d.replaceState(d.state.updateEntity(blue) { it.with(card(d, blue).copy(colors = setOf(Color.BLUE))) })
         val colorless = d.putPermanentOnBattlefield(d.player1, green.name)
         d.replaceState(d.state.updateEntity(colorless) { it.with(card(d, colorless).copy(colors = emptySet())) })
-        val result = EachPermanentBecomesCopyOfTargetExecutor(PredicateEvaluator(cardRegistry = d.cardRegistry))
+        val result = EachPermanentBecomesCopyOfTargetExecutor(PredicateEvaluator(cardRegistry = d.cardRegistry), d.cardRegistry)
             .execute(d.state, EachPermanentBecomesCopyOfTargetEffect(
                 target = EffectTarget.ContextTarget(0), filter = GroupFilter.AllCreaturesYouControl,
                 exceptions = CopyExceptions(retainColors = true)),

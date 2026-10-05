@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.handlers.effects.copy.copyExpiryEvents
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.engine.handlers.ObjectReferenceEnvironment
 import com.wingedsheep.engine.state.components.identity.TextChanges
@@ -392,7 +393,9 @@ class TurnManager(
                 it.without<InAdditionalCombatPhaseComponent>().without<InAdditionalBeginningPhaseComponent>()
             }
             .copy(step = Step.END, phase = Phase.ENDING, priorityPassedBy = emptySet())
+        val beforeCopyExpiry = redirectedState
         redirectedState = cleanupPhaseManager.performNextEndStepExpiry(redirectedState)
+        events += copyExpiryEvents(beforeCopyExpiry, redirectedState)
         events += PhaseChangedEvent(Phase.ENDING)
         events += StepChangedEvent(Step.END)
         return ExecutionResult.success(redirectedState.withPriority(activePlayer), events)
@@ -579,11 +582,13 @@ class TurnManager(
 
                 // An "until the next end step" effect created during the previous end step wears
                 // off now, on entry to this additional one (CR 500.9).
+                val beforeCopyExpiry = redirectedState
                 redirectedState = cleanupPhaseManager.performNextEndStepExpiry(redirectedState)
 
                 // Phase is unchanged (END and CLEANUP both live in the ending phase), so only the
                 // step-changed event is emitted — that re-fires the end-step triggers.
                 val events = mutableListOf<GameEvent>(StepChangedEvent(Step.END))
+                events += copyExpiryEvents(beforeCopyExpiry, redirectedState)
                 redirectedState = redirectedState.withPriority(activePlayer)
                 return ExecutionResult.success(redirectedState, events)
             }
@@ -840,7 +845,9 @@ class TurnManager(
             Step.END -> {
                 // "Until the next end step" effects and copies wear off on entry to the end step,
                 // alongside the paired "return it at the beginning of the next end step" triggers.
+                val beforeCopyExpiry = newState
                 newState = cleanupPhaseManager.performNextEndStepExpiry(newState)
+                events += copyExpiryEvents(beforeCopyExpiry, newState)
 
                 // "At the beginning of the next end step, you lose the game" (Final Fortune) is
                 // keyed to whoever took the extra turn. In a shared team turn (CR 805.8) that is
@@ -915,7 +922,8 @@ class TurnManager(
         var cleanedState = cleanupPhaseManager.cleanupEndOfTurn(state)
 
         cleanedState = cleanedState.copy(priorityPlayerId = null, priorityPassedBy = emptySet())
-        return selectNextTurn(cleanedState, cleanedState.getNextTeam(currentPlayer))
+        val next = selectNextTurn(cleanedState, cleanedState.getNextTeam(currentPlayer))
+        return next.copy(events = copyExpiryEvents(state, cleanedState) + next.events)
     }
 
     /** Walk skipped occurrences without allocating a recursive call per pending skip. */
@@ -949,7 +957,9 @@ class TurnManager(
             // Synthetic bypasses insert an extra turn ahead of the ordinary seat walk; departed
             // seats on that walk have not reached their would-be turns yet.
             if (!bypassedOrdinarySeats) {
+                val beforeCopyExpiry = current
                 current = expireEffectsOfDepartedSeatsWhoseTurnWouldBeginNow(current, previous, candidate)
+                events += copyExpiryEvents(beforeCopyExpiry, current)
             }
             bypassedOrdinarySeats = false
             val choices = turnStartChoices(current, team)
@@ -1102,7 +1112,7 @@ class TurnManager(
 
         // Advance to upkeep (this sets priority to the active player)
         val advanceResult = advanceStep(postUntapState)
-        return advanceResult.copy(events = goadEvents + advanceResult.events)
+        return advanceResult.copy(events = copyExpiryEvents(state, postUntapState) + goadEvents + advanceResult.events)
     }
 
     /** A standing skip affecting any member skips the shared team's step. */

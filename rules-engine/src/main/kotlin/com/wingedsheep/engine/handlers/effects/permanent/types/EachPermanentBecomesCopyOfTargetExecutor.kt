@@ -1,6 +1,9 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
 import com.wingedsheep.engine.state.components.identity.copiableCardComponent
+import com.wingedsheep.engine.state.components.identity.recordCopyLayer
+import com.wingedsheep.engine.handlers.effects.copy.withCopyIdentity
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.event.GrantedActivatedAbility
@@ -48,7 +51,8 @@ import kotlin.reflect.KClass
  * mana value X, except it has flying and this ability" is both riders at once.
  */
 class EachPermanentBecomesCopyOfTargetExecutor(
-    private val predicateEvaluator: PredicateEvaluator
+    private val predicateEvaluator: PredicateEvaluator,
+    private val cardRegistry: CardRegistry,
 ) : EffectExecutor<EachPermanentBecomesCopyOfTargetEffect> {
 
     override val effectType: KClass<EachPermanentBecomesCopyOfTargetEffect> =
@@ -138,12 +142,13 @@ class EachPermanentBecomesCopyOfTargetExecutor(
             // If this permanent is already a copy, keep the existing pre-copy snapshot
             // so a chain of copy effects still reverts to the printed identity on exit.
             val existingCopyOf = container.get<CopyOfComponent>()
-            val originalCardSnapshot = existingCopyOf?.originalCardComponent ?: currentCard
+            val originalCardSnapshot = existingCopyOf?.originalCardComponent ?: container.copiableCardComponent()!!
             val originalDefinitionId =
                 existingCopyOf?.originalCardDefinitionId ?: currentCard.cardDefinitionId
 
             newState = newState.updateEntity(entityId) { c ->
-                var updated = c.with(copiedCard)
+                var updated = c.recordCopyLayer(copiedCard, effect.duration, context.controllerId, attachedSourceId)
+                    .withCopyIdentity(copiedCard, cardRegistry)
                     .with(
                         CopyOfComponent(
                             originalCardDefinitionId = originalDefinitionId,
