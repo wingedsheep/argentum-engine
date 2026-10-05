@@ -788,6 +788,28 @@ class StepsTest : StringSpec({
         roundTrips("Whenever ~ attacks, defending player loses 2 life.")
     }
 
+    // Bitter Downfall, Despoil, Death Bomb — the third-person recipient is the controller of the
+    // permanent the first sentence chose, the same `TargetController` "its controller creates" sets.
+    "its controller loses life after a sentence that chose one permanent" {
+        val effects = (fragment("Destroy target creature. Its controller loses 2 life.").script.spellEffect
+            as com.wingedsheep.sdk.scripting.effects.CompositeEffect).effects
+        effects[1] shouldBe Effects.LoseLife(2, EffectTarget.TargetController)
+
+        roundTrips("Destroy target creature. Its controller loses 2 life.")
+        roundTrips("Destroy target land. Its controller loses 2 life.")
+        roundTrips("Return target permanent to its owner's hand. Its controller loses 3 life.")
+        // The drain's " and " join is the run's alternate spelling of the full stop, as elsewhere.
+        fragment("Destroy target creature. Its controller loses 2 life and you gain 2 life.") shouldBe
+            fragment("Destroy target creature. Its controller loses 2 life. You gain 2 life.")
+        // A first clause has nothing for "its" to name, nor does a spell or a player target.
+        Grammar.abilityLine.parseLine("Its controller loses 2 life.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+        Grammar.abilityLine.parseLine("Counter target spell. Its controller loses 3 life.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+        Grammar.abilityLine.parseLine("Target player draws a card. Its controller loses 1 life.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+    }
+
     // "You draw three cards" is the same model as "Draw three cards", so the subject cannot be
     // canonical — it is an `alsoSpelled` on the same row, which is what makes Ancient Craving and
     // Ambition's Cost VARIANTs rather than declines.
