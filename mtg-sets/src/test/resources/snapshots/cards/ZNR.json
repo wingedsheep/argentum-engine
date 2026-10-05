@@ -1,3 +1,90 @@
+// Attended Healer
+{
+    "name": "Attended Healer",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Kor Cleric",
+    "oracleText": "Whenever you gain life for the first time each turn, create a 1/1 white Cat creature token.\n{2}{W}: Another target Cleric gains lifelink until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Attended Healer:1",
+                "trigger": {
+                    "type": "LifeGainEvent",
+                    "firstTimeEachTurn": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Cat"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f458f39-27b6-4121-bda9-1a0d1b42f5fb.jpg?1783929500"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Attended Healer:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Cleric",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{W}: Another target Cleric gains lifelink until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "UNCOMMON",
+        "artist": "Wisnu Tan",
+        "flavorText": "\"My cats have taught me more about the sacred than anything in some old ruin.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6ca80b5a-3943-41ca-8cd1-8e3db1b2a1c8.jpg?1783929423",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "An ability that triggers whenever you gain life \"for the first time each turn\" won't trigger if you gain life during a turn before the permanent with that ability is on the battlefield, even if you gain life again later in the turn."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "In a Two-Headed Giant game, life gained by your teammate won't cause the ability to trigger, even though it caused your team's life total to increase."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Blood Price
 {
     "name": "Blood Price",

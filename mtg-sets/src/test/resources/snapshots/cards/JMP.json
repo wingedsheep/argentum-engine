@@ -47,6 +47,82 @@
     ]
 }
 
+// Blessed Sanctuary
+{
+    "name": "Blessed Sanctuary",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Prevent all noncombat damage that would be dealt to you and creatures you control.\nWhenever a nontoken creature you control enters, create a 2/2 white Unicorn creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blessed Sanctuary:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Unicorn"
+                    ]
+                },
+                "descriptionOverride": "Whenever a nontoken creature you control enters, create a 2/2 white Unicorn creature token."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    },
+                    "damageType": "DamageNonCombat"
+                }
+            },
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "creature ctrl:you"
+                    },
+                    "damageType": "DamageNonCombat"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "RARE",
+        "artist": "Anastasia Ovchinnikova",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff80029e-650e-469d-8393-0edf7d9cd695.jpg?1783930511",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Combat damage is the damage that's dealt automatically by attacking and blocking creatures. Any other damage is noncombat damage, even if it's dealt during a combat phase by an attacking or blocking creature."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Effects that cause you to lose life aren't prevented."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Branching Evolution
 {
     "name": "Branching Evolution",

@@ -171,6 +171,57 @@
     }
 }
 
+// Angelic Protector
+{
+    "name": "Angelic Protector",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhenever this creature becomes the target of a spell or ability, this creature gets +0/+3 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Angelic Protector:1",
+                "trigger": "BecomesTargetEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "UNCOMMON",
+        "artist": "DiTerlizzi",
+        "flavorText": "\"My family sheltered in her light, the dark was content to wait.\"\n—Crovax",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44faefbe-d5e7-48f3-ba88-833da0b19707.jpg?1783946671",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "The ability triggers when Angelic Protector is chosen as a target for a spell or ability. The Protectors ability will be put on the stack above that spell or ability, and so resolve first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Armor Sliver
 {
     "name": "Armor Sliver",

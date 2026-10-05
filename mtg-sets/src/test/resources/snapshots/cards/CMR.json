@@ -34,6 +34,68 @@
     ]
 }
 
+// Anointer of Valor
+{
+    "name": "Anointer of Valor",
+    "manaCost": "{5}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhenever a creature attacks, you may pay {3}. When you do, put a +1/+1 counter on that creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Anointer of Valor:1",
+                "trigger": "AttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCost",
+                        "cost": "{3}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "TriggeringEntity"
+                    },
+                    "descriptionOverride": "put a +1/+1 counter on that creature"
+                },
+                "descriptionOverride": "Whenever a creature attacks, you may pay {3}. When you do, put a +1/+1 counter on that creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "artist": "Antonio José Manzanedo",
+        "flavorText": "Light streaked down from the heavens, and a voice whispered in the soldier's ear: \"You shall not fall today.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d66fcbb8-0fa5-48a9-b40c-d5a12f09a858.jpg?1783928889",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "Anointer of Valor's triggered ability triggers when any creature attacks any player or planeswalker."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If you choose to pay {3}, a second triggered ability triggers. Players may respond to that reflexive triggered ability before the +1/+1 counter is put on the creature."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "You can't pay {3} more than once to put more than one +1/+1 counter on the attacking creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Apex Devastator
 {
     "name": "Apex Devastator",

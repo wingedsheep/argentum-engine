@@ -98,6 +98,71 @@
     ]
 }
 
+// Basri's Acolyte
+{
+    "name": "Basri's Acolyte",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Cat Cleric",
+    "oracleText": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)\nWhen this creature enters, put a +1/+1 counter on each of up to two other target creatures you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Basri's Acolyte:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, put a +1/+1 counter on each of up to two other target creatures you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "artist": "Leesha Hannigan",
+        "flavorText": "Basri carries on his god's legacy, spreading her teachings throughout the Multiverse.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08d1dd97-2675-4953-ab95-d47d23abfe05.jpg?1783930745",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "You can't target the same creature twice with the triggered ability of Basri's Acolyte to give it two +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Chandra's Magmutt
 {
     "name": "Chandra's Magmutt",
