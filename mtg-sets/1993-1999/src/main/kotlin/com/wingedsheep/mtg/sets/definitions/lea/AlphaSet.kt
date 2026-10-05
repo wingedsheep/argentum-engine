@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.lea
 
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
@@ -22,11 +21,14 @@ object AlphaSet : MtgSet {
     override val code = "LEA"
     override val displayName = "Limited Edition Alpha"
     override val releaseDate = "1993-08-05"
-    override val basicLandsFallback = PortalSet
     override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
+    }
+
+    override val basicLands: List<CardDefinition> by lazy {
+        CardDiscovery.findBasicLandsIn(CARDS_PACKAGE, code)
     }
 
     private const val CARDS_PACKAGE = "com.wingedsheep.mtg.sets.definitions.lea.cards"
