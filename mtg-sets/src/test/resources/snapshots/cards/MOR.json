@@ -414,6 +414,126 @@
     ]
 }
 
+// Vendilion Clique
+{
+    "name": "Vendilion Clique",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Legendary Creature — Faerie Wizard",
+    "oracleText": "Flash\nFlying\nWhen Vendilion Clique enters, look at target player's hand. You may choose a nonland card from it. If you do, that player reveals the chosen card, puts it on the bottom of their library, then draws a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vendilion Clique:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LookAtTargetHand",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "nonland",
+                            "storeSelected": "selected2",
+                            "prompt": "You may choose a nonland card to put on the bottom of its owner's library",
+                            "selectedLabel": "Bottom of library",
+                            "showAllCards": true,
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected2",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "RevealCollection",
+                                        "from": "selected2",
+                                        "fromZone": "Hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected2",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            },
+                                            "placement": "Bottom"
+                                        },
+                                        "order": "ControllerChooses"
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "RARE",
+        "artist": "Michael Sutfin",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f53d8540-fb6d-4d4c-b467-ebfbfa53c880.jpg?1783942794"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Walker of the Grove
 {
     "name": "Walker of the Grove",

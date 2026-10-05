@@ -2905,6 +2905,90 @@
     ]
 }
 
+// Svyelun of Sea and Sky
+{
+    "name": "Svyelun of Sea and Sky",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Legendary Creature — Merfolk God",
+    "oracleText": "Svyelun has indestructible as long as you control at least two other Merfolk.\nWhenever Svyelun attacks, draw a card.\nOther Merfolk you control have ward {1}. (Whenever another Merfolk you control becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Svyelun of Sea and Sky:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Merfolk",
+                        "excludeSelf": true
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            },
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{1}"
+                },
+                "filter": {
+                    "baseFilter": "permanent Merfolk ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "MYTHIC",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6f9ece1-669a-47c9-96c3-1e1dbf87421c.jpg?1783926868",
+        "rulings": [
+            {
+                "date": "2021-06-18",
+                "text": "Damage dealt to creatures remains on those creatures until the cleanup step or until an effect removes that damage. If you control Svyelun of Sea and Sky with at least 4 damage and two other Merfolk and one of those Merfolk leaves the battlefield (or stops being a Merfolk), Svyelun will be destroyed."
+            },
+            {
+                "date": "2021-06-18",
+                "text": "If a player casts a spell that targets multiple permanents their opponent controls with ward, each of those ward abilities will trigger. If that player doesn't pay for all of them, the spell will be countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sylvan Anthem
 {
     "name": "Sylvan Anthem",

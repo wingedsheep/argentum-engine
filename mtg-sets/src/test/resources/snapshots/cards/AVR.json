@@ -5086,6 +5086,157 @@
     ]
 }
 
+// Tamiyo, the Moon Sage
+{
+    "name": "Tamiyo, the Moon Sage",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Tamiyo",
+    "oracleText": "+1: Tap target permanent. It doesn't untap during its controller's next untap step.\n−2: Draw a card for each tapped creature target player controls.\n−8: You get an emblem with \"You have no maximum hand size\" and \"Whenever a card is put into your graveyard from anywhere, you may return it to your hand.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tamiyo, the Moon Sage:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Tap target permanent. It doesn't untap during its controller's next untap step."
+            },
+            {
+                "id": "Tamiyo, the Moon Sage:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Count",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "zone": "Battlefield",
+                        "filter": "creature tapped"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Draw a card for each tapped creature target player controls."
+            },
+            {
+                "id": "Tamiyo, the Moon Sage:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "RemoveMaximumHandSize",
+                        {
+                            "type": "CreateGlobalTriggeredAbility",
+                            "ability": {
+                                "id": "Tamiyo, the Moon Sage:3",
+                                "trigger": {
+                                    "type": "ZoneChangeEvent",
+                                    "filter": "nontoken own:you",
+                                    "to": "Graveyard"
+                                },
+                                "binding": "ANY",
+                                "effect": {
+                                    "type": "Gated",
+                                    "gate": "Gate.MayDecide",
+                                    "then": {
+                                        "type": "MoveToZone",
+                                        "target": "TriggeringEntity",
+                                        "destination": "Hand",
+                                        "fromZone": "Graveyard"
+                                    }
+                                }
+                            },
+                            "descriptionOverride": "Whenever a card is put into your graveyard from anywhere, you may return it to your hand."
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"You have no maximum hand size\" and \"Whenever a card is put into your graveyard from anywhere, you may return it to your hand.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9398926-13b9-47b8-b66b-1ab9d06bb704.jpg?1783940708",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "The ability can target a tapped permanent. If the targeted permanent is already tapped when it resolves, that permanent just remains tapped and doesn't untap during its controller's next untap step."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "Tamiyo's first ability tracks the permanent, but not its controller. If the permanent changes controllers before its first controller's next untap step has come around, then it won't untap during its new controller's next untap step."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "The number of tapped creatures the player controls is determined when Tamiyo's second ability resolves."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If you activate Tamiyo's third ability when she has eight loyalty counters on her, she'll be put into your graveyard before the emblem is created. She won't return to your hand."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "Cards that are put into your graveyard can be returned to your hand by the emblem's ability even if they were never in your hand."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Tandem Lookout
 {
     "name": "Tandem Lookout",

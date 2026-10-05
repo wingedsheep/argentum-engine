@@ -1818,6 +1818,79 @@
     ]
 }
 
+// Stolen by the Fae
+{
+    "name": "Stolen by the Fae",
+    "manaCost": "{X}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature with mana value X to its owner's hand. You create X 1/1 blue Faerie creature tokens with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "CreateToken",
+                    "count": "XValue",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Faerie"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcd82cb0-ff4b-4f4d-b3d0-3ac53883b099.jpg?1783932483"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "ManaValueEqualsX"
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Ryan Alexander Lee",
+        "flavorText": "Denizens of the wilds don't always seek to harm intruders. Sometimes they simply misplace them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a98a7698-57fb-41f6-86d4-251c7d444c6a.jpg?1783932648",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If a creature on the battlefield has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If the target creature is an illegal target by the time Stolen by the Fae tries to resolve, the spell won't resolve. You won't create any Faerie tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Syr Alin, the Lion's Claw
 {
     "name": "Syr Alin, the Lion's Claw",
@@ -1870,6 +1943,78 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Syr Elenora, the Discerning
+{
+    "name": "Syr Elenora, the Discerning",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Syr Elenora's power is equal to the number of cards in your hand.\nWhen Syr Elenora enters, draw a card.\nSpells your opponents cast that target Syr Elenora cost {2} more to cast.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Hand"
+            }
+        },
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Syr Elenora, the Discerning:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "OpponentsCastTargeting",
+                    "targetFilter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "UNCOMMON",
+        "artist": "Mila Pesic",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/050a0817-2e9c-4d98-974c-2d3e5c37e1a2.jpg?1783932648",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The ability that defines Syr Elenora's power works in all zones, not just the battlefield."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "To determine the total cost of an opponent's spell that targets Syr Elenora, start with the mana cost or alternative cost that player is paying, add any cost increases (such as that of Syr Elenora's effect), then apply any cost reductions. The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

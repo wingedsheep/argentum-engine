@@ -165,6 +165,55 @@
     "colorIdentityOverride": []
 }
 
+// Wake Thrasher
+{
+    "name": "Wake Thrasher",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Merfolk Soldier",
+    "oracleText": "Whenever a permanent you control becomes untapped, this creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wake Thrasher:1",
+                "trigger": {
+                    "type": "UntapEvent",
+                    "filter": "permanent ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Jesper Ejsing",
+        "flavorText": "Anyone who thinks merrows have more brains than brawn has never been run over by one.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93116209-636a-4b86-a8ed-d4a03e1d7212.jpg?1783942688",
+        "rulings": [
+            {
+                "date": "8/1/2008",
+                "text": "If permanents you control become untapped during your untap step, Wake Thrasher's ability will trigger that many times. However, since no player gets priority during the untap step, those abilities wait to be put on the stack until your upkeep starts. At that time, all your \"beginning of upkeep\" triggers will also trigger. You can put them and Wake Thrasher's abilities on the stack in any order."
+            }
+        ]
+    }
+}
+
 // Wickerbough Elder
 {
     "name": "Wickerbough Elder",

@@ -3979,6 +3979,88 @@
     ]
 }
 
+// Storm Sculptor
+{
+    "name": "Storm Sculptor",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "This creature can't be blocked.\nWhen this creature enters, return a creature you control to its owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Storm Sculptor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature",
+                                "player": "You"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Return a creature you control to its owner's hand",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, return a creature you control to its owner's hand."
+            }
+        ],
+        "staticAbilities": [
+            "CantBeBlocked"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "In his hands, the wind can become a weapon or a means of escape.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/9532b735-8390-4379-ae43-2bd00d281dd6.jpg?1783935768",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Storm Sculptor's last ability doesn't target the creature you'll return to hand. You choose one as the ability resolves. No player may take actions between the time you choose a creature to return and the time you do so."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Storm Sculptor's last ability isn't optional. If Storm Sculptor is the only creature you control when the ability resolves, you'll have to return it to its owner's hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sun-Crowned Hunters
 {
     "name": "Sun-Crowned Hunters",
@@ -4780,6 +4862,66 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Watertrap Weaver
+{
+    "name": "Watertrap Weaver",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "When this creature enters, tap target creature an opponent controls. That creature doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Watertrap Weaver:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "artist": "Josu Hernaiz",
+        "flavorText": "The river is a powerful friend.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d973568-d7b0-443f-a09d-44f6b02da5d4.jpg?1783935768"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

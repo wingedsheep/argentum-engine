@@ -1318,6 +1318,139 @@
     ]
 }
 
+// Tolarian Kraken
+{
+    "name": "Tolarian Kraken",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Kraken",
+    "oracleText": "Whenever you draw a card, you may pay {1}. When you do, you may tap or untap target creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tolarian Kraken:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "optional": false,
+                        "reflexiveEffect": {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Modal",
+                                "modes": [
+                                    {
+                                        "effect": {
+                                            "type": "TapUntap",
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        },
+                                        "description": "Tap that creature"
+                                    },
+                                    {
+                                        "effect": {
+                                            "type": "TapUntap",
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            },
+                                            "tap": false
+                                        },
+                                        "description": "Untap that creature"
+                                    }
+                                ],
+                                "countsAsModalSpell": false
+                            }
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                },
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "you may tap or untap target creature"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"It's contemplative, resourceful, and original. Everything else aside, it's the perfect student.\"\n—Naban, dean of iteration",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2776694-6183-498d-9a38-e4c5c9e78179.jpg?1783930716",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "While resolving Tolarian Kraken's ability, you can't pay more than {1} to tap or untap more than one creature."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If a spell or ability causes you to put a card into your hand without specifically using the word \"draw,\" it's not a card drawn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Tome Anima
+{
+    "name": "Tome Anima",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "This creature can't be blocked as long as you've drawn two or more cards this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBeBlocked",
+                "condition": {
+                    "type": "PlayerDrewCardsThisTurn",
+                    "atLeast": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "artist": "Johannes Voss",
+        "flavorText": "Sometimes knowledge takes on a life of its own.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/0360d27b-37e1-4e00-9cfc-b574efc38ea0.jpg?1783930716"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Valorous Steed
 {
     "name": "Valorous Steed",
