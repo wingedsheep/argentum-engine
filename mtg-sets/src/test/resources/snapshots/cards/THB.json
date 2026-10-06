@@ -4284,3 +4284,72 @@
         "BLUE"
     ]
 }
+
+// Wolfwillow Haven
+{
+    "name": "Wolfwillow Haven",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nWhenever enchanted land is tapped for mana, its controller adds an additional {G}.\n{4}{G}, Sacrifice this Aura: Create a 2/2 green Wolf creature token. Activate only during your turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Wolfwillow Haven:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{G}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wolf"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/1/411f4bf6-7f09-4e24-b483-0068d2f974e5.jpg?1783931451"
+                },
+                "restrictions": [
+                    "OnlyDuringYourTurn"
+                ],
+                "descriptionOverride": "{4}{G}, Sacrifice this Aura: Create a 2/2 green Wolf creature token. Activate only during your turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "AdditionalManaOnTap",
+                "color": "GREEN",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Jakub Kasper",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72b886c3-234c-49ce-9a11-456c1e8f092f.jpg?1783931526"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}

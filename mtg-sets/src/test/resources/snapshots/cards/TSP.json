@@ -234,6 +234,64 @@
     ]
 }
 
+// Assembly-Worker
+{
+    "name": "Assembly-Worker",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Assembly-Worker",
+    "oracleText": "{T}: Target Assembly-Worker creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Assembly-Worker:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature Assembly-Worker"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Target Assembly-Worker creature gets +1/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "rarity": "UNCOMMON",
+        "artist": "Chippy",
+        "flavorText": "With their factories long destroyed, some of Mishra's creations still toil in remote areas, endlessly performing and reperforming their last orders.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e086d662-3740-4704-9184-c42c6a16d829.jpg?1783943200",
+        "rulings": [
+            {
+                "date": "2018-03-16",
+                "text": "Assembly-Worker's ability can target any creature with the Assembly-Worker subtype, not only creatures named Assembly-Worker."
+            }
+        ]
+    }
+}
+
 // Basal Sliver
 {
     "name": "Basal Sliver",
@@ -605,6 +663,161 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Clockwork Hydra
+{
+    "name": "Clockwork Hydra",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Hydra",
+    "oracleText": "This creature enters with four +1/+1 counters on it.\nWhenever this creature attacks or blocks, remove a +1/+1 counter from it. If you do, it deals 1 damage to any target.\n{T}: Put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Clockwork Hydra:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RemoveCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Clockwork Hydra:2",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RemoveCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t1"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Clockwork Hydra:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{T}: Put a +1/+1 counter on this creature."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 4,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "253",
+        "rarity": "UNCOMMON",
+        "artist": "Daren Bader",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54522c50-5333-47ac-ba3e-d87c599404c4.jpg?1783943198",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "If Clockwork Hydra leaves the battlefield while its trigger is on the stack, you can't remove a +1/+1 counter from it, so it won't deal damage."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If the chosen target is an illegal target by the time Clockwork Hydra's triggered ability tries to resolve, the ability doesn't resolve. You don't remove a counter from Clockwork Hydra."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Corpulent Corpse

@@ -2670,6 +2670,106 @@
     ]
 }
 
+// Wicked Wolf
+{
+    "name": "Wicked Wolf",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "When this creature enters, it fights up to one target creature you don't control.\nSacrifice a Food: Put a +1/+1 counter on this creature. It gains indestructible until end of turn. Tap it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wicked Wolf:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Fight",
+                    "target1": "Self",
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, it fights up to one target creature you don't control."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Wicked Wolf:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "Food"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Put a +1/+1 counter on this creature. It gains indestructible until end of turn. Tap it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "RARE",
+        "artist": "Tomasz Jedruszek",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09476eac-55d2-4955-8951-ae4ce117c98b.jpg?1783932601",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "If an effect refers to a Food, it means any Food artifact, not just a Food artifact token."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If the target creature is an illegal target when Wicked Wolf's first ability tries to resolve, the ability doesn't resolve. If Wicked Wolf is no longer on the battlefield, the target creature won't deal or be dealt damage."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "You can activate Wicked Wolf's last ability any number of times while its first ability is on the stack."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "You can activate Wicked Wolf's last ability even if it's already tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Wildborn Preserver
 {
     "name": "Wildborn Preserver",
@@ -2847,5 +2947,60 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Wolf's Quarry
+{
+    "name": "Wolf's Quarry",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create three 1/1 green Boar creature tokens with \"When this token dies, create a Food token.\" (A Food token is an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "power": 1,
+            "toughness": 1,
+            "colors": [
+                "GREEN"
+            ],
+            "creatureTypes": [
+                "Boar"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/3/6/365b2234-c29d-42db-a8e0-80685a4b6434.jpg?1783932482",
+            "triggeredAbilities": [
+                {
+                    "id": "Wolf's Quarry:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "effect": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Food"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "artist": "Lars Grant-West",
+        "flavorText": "\"The monster was gaining on them. Twice it had found them. There was only one place left to hide.\"\n—Tales of the Fae",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d21c15f-378e-4abf-992f-9743aa6ab6b8.jpg?1783932600",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "Food is an artifact type. Even though it appears on some creatures, it's never a creature type."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }

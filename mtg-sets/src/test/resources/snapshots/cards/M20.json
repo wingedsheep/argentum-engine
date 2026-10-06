@@ -262,6 +262,163 @@
     ]
 }
 
+// Bag of Holding
+{
+    "name": "Bag of Holding",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you discard a card, exile that card from your graveyard.\n{2}, {T}: Draw a card, then discard a card.\n{4}, {T}, Sacrifice this artifact: Return all cards exiled with this artifact to their owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bag of Holding:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Exile",
+                    "fromZone": "Graveyard",
+                    "linkToSource": true
+                },
+                "descriptionOverride": "Whenever you discard a card, exile that card from your graveyard."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Bag of Holding:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}, {T}: Draw a card, then discard a card."
+            },
+            {
+                "id": "Bag of Holding:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{4}, {T}, Sacrifice this artifact: Return all cards exiled with this artifact to their owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Dmitry Burmak",
+        "flavorText": "There's no prepared like overprepared.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49283832-54f2-4619-b4a9-750493c93292.jpg?1783932947",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If you discard a card but that card is not in your graveyard as Bag of Holding's first ability resolves, that card remains wherever it has moved."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If you control more than one Bag of Holding, you choose which one will hold the discarded card. Other Bags of Holding can't return that card."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "You both draw and discard while Bag of Holding's second ability is resolving. No player may take any action—nor can anything else happen—until you've both drawn and discarded."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If Bag of Holding is moved to exile when you sacrifice it (most likely due to Leyline of the Void's effect), it remains in exile. It won't be returned to your hand."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If Bag of Holding leaves the battlefield, the items it contained are exiled forever (and, perhaps, scattered throughout the Astral Plane). If the same Bag of Holding card returns to the battlefield, it's considered a new object without access to the cards stored by the old object."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Bloodthirsty Aerialist
 {
     "name": "Bloodthirsty Aerialist",
@@ -2295,5 +2452,56 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Woodland Champion
+{
+    "name": "Woodland Champion",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Scout",
+    "oracleText": "Whenever one or more tokens you control enter, put that many +1/+1 counters on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Woodland Champion:1",
+                "trigger": {
+                    "type": "PermanentsEnteredEvent",
+                    "filter": "token"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "DistinctEntitiesInCollections",
+                        "collections": [
+                            "trigger.captured"
+                        ]
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "\"Every footfall on the forest floor is a heartbeat sending strength into my veins.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/250f5303-428a-478c-9bd5-2410f7fcc4dd.jpg?1783932953",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "The number of +1/+1 counters you put on Woodland Champion is the number of tokens that entered the battlefield under your control, even if some or all of them leave the battlefield before the triggered ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }

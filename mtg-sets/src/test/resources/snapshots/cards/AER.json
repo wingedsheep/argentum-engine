@@ -167,6 +167,74 @@
     ]
 }
 
+// Cogwork Assembler
+{
+    "name": "Cogwork Assembler",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Assembly-Worker",
+    "oracleText": "{7}: Create a token that's a copy of target artifact. That token gains haste. Exile it at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cogwork Assembler:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{7}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "addedKeywords": [
+                        "HASTE"
+                    ],
+                    "exileAtStep": "END"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "flavorText": "Duplication is neither thievery nor flattery. It is efficiency.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6dddacdd-bbc4-4f9b-be1c-5f2c64be3cbc.jpg?1783936731",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "The token copies exactly what was printed on the original artifact and nothing else (unless that artifact is copying something else or is a token). It doesn't copy whether that artifact is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, or so on."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If the copied artifact has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Any enters-the-battlefield abilities of the copied artifact will trigger when the token enters the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Destructive Tampering
 {
     "name": "Destructive Tampering",

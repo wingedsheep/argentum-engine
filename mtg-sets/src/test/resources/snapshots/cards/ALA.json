@@ -4475,6 +4475,50 @@
     ]
 }
 
+// Soul's Might
+{
+    "name": "Soul's Might",
+    "manaCost": "{4}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put X +1/+1 counters on target creature, where X is that creature's power.",
+    "script": {
+        "spellEffect": {
+            "type": "AddDynamicCounters",
+            "counterType": "PLUS_ONE_PLUS_ONE",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "artist": "Kev Walker",
+        "flavorText": "An avatar he sculpts of instinct and force.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77ef536d-d55b-447a-b6ab-04123f1cfaa3.jpg?1783942550"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Spearbreaker Behemoth
 {
     "name": "Spearbreaker Behemoth",

@@ -4386,6 +4386,79 @@
     ]
 }
 
+// Turntimber Basilisk
+{
+    "name": "Turntimber Basilisk",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Basilisk",
+    "oracleText": "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)\nLandfall — Whenever a land you control enters, you may have target creature block this creature this turn if able.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Turntimber Basilisk:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ForceBlock",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "UNCOMMON",
+        "artist": "Goran Josic",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b774563a-d2d4-4bdf-ad82-dd9e1fa953ba.jpg?1783942129",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "Tapped creatures, creatures that can't block as the result of an effect, creatures with unpaid costs to block (such as those from War Cadence), and creatures that aren't controlled by the defending player are exempt from effects that would require them to block. Such creatures can be targeted by Turntimber Basilisk's landfall ability, but the requirement to block does nothing."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "You decide whether to have the targeted creature block Turntimber Basilisk this turn if able at the time the landfall ability resolves, not at the time Turntimber Basilisk attacks."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If Turntimber Basilisk's landfall ability triggers multiple times during the same turn, you can have multiple creatures block it that turn if able."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "Deciding to have the targeted creature block doesn't force you to attack with Turntimber Basilisk that turn. If Turntimber Basilisk doesn't attack, the targeted creature is free to block whichever creature its controller chooses, or block no creatures at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Turntimber Grove
 {
     "name": "Turntimber Grove",

@@ -4033,3 +4033,136 @@
         "GREEN"
     ]
 }
+
+// Zask, Skittering Swarmlord
+{
+    "name": "Zask, Skittering Swarmlord",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Creature — Insect",
+    "oracleText": "You may play lands and cast Insect spells from your graveyard.\nWhenever another Insect you control dies, put it on the bottom of its owner's library, then mill two cards. (Put the top two cards of your library into your graveyard.)\n{1}{B/G}: Target Insect gets +1/+0 and gains deathtouch until end of turn. ({B/G} can be paid with either {B} or {G}.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zask, Skittering Swarmlord:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Insect ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "TriggeringEntity",
+                            "destination": "Library",
+                            "placement": "Bottom",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever another Insect you control dies, put it on the bottom of its owner's library, then mill two cards."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Zask, Skittering Swarmlord:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B/G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DEATHTOUCH",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Insect"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Target Insect gets +1/+0 and gains deathtouch until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            "MayPlayLandsFromGraveyard",
+            {
+                "type": "MayCastFromGraveyard",
+                "filter": "nonland Insect"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "RARE",
+        "artist": "Alexander Ostrowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4eafc507-973a-4aec-91b9-c29d70b0e25d.jpg?1783919177",
+        "rulings": [
+            {
+                "date": "2022-12-02",
+                "text": "You must pay all costs and follow all timing rules for cards played from your graveyard this way. For example, you may play a land this way only while the stack is empty during one of your own main phases, and only if you haven't played a land yet this turn."
+            }
+        ]
+    }
+}

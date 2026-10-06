@@ -1663,3 +1663,109 @@
         "RED"
     ]
 }
+
+// Swarm Shambler
+{
+    "name": "Swarm Shambler",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Fungus Beast",
+    "oracleText": "This creature enters with a +1/+1 counter on it.\nWhenever a creature you control with a +1/+1 counter on it becomes the target of a spell an opponent controls, create a 1/1 green Insect creature token.\n{1}, {T}: Put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Swarm Shambler:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "byOpponent": true,
+                    "spellsOnly": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Insect"
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Swarm Shambler:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "RARE",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a7e4f99-ece4-473e-b712-40e4c53558e8.jpg?1783929330",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If a spell targets a creature you control with a +1/+1 counter on it more than once, Swarm Shambler’s ability triggers only once."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "You create just one Insect token, no matter how many +1/+1 counters the target creature has on it."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "An ability that triggers when a creature becomes the target of a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If a creature without a +1/+1 counter on it becomes the target of a spell an opponent controls, putting a +1/+1 counter on it after that won’t cause Swarm Shambler’s middle ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
