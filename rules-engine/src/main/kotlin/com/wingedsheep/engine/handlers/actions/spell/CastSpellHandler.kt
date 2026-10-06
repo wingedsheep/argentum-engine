@@ -385,9 +385,9 @@ class CastSpellHandler(
             is CastPaymentOutcome.Paid -> outcome.payment
         }
 
-        // Only a flat target list announces a split to bind. A modal cast that sends its targets
-        // per mode (`modeTargetsOrdered`) leaves `targets` empty — binding that would narrow every
-        // mode's requirement to zero and drop the targets it chose.
+        // Only a cast that announced targets has a split to bind; binding an empty list would narrow
+        // every requirement to zero. A choose-N modal cast's `targets` is its per-mode slices
+        // flattened, and the validator binds each slice against its own mode.
         val targeting = spellTargeting(state, action, cardDef, transformedFace)
             .boundTo(action.targets.takeIf { it.isNotEmpty() }
                 ?.let { castValidator.targetBinding(state, action, cardDef, transformedFace)?.counts })

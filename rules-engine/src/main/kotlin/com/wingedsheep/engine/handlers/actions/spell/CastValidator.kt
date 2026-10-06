@@ -812,17 +812,40 @@ internal class CastValidator(
         if (action.targets.isEmpty() && targetRequirements.sumOf { it.effectiveMinCount } > 0) {
             return TargetValidator.TargetGroupBinding(targetRequirements.map { 0 }, "No valid targets available")
         }
+        val sourceColors = (transformedFace ?: cardDef).colors
+        val sourceSubtypes = (transformedFace ?: cardDef).typeLine.subtypes.map { it.value }.toSet()
+        // A choose-N modal cast that sends its targets per mode already says which mode each target
+        // belongs to; inferring a split of the flat union could hand one mode's target to another
+        // mode's optional group. Bind each mode's slice against that mode alone, then the tail.
+        val modeCounts = if (action.targetGroupCounts == null && modalEffect != null && !modalTargetsDeferred &&
+            action.modeTargetsOrdered.size == action.chosenModes.size && action.modeTargetsOrdered.isNotEmpty()
+        ) {
+            var cursor = 0
+            val perMode = action.chosenModes.zip(action.modeTargetsOrdered).map { (mode, modeTargets) ->
+                val size = modalEffect.modes.getOrNull(mode)?.targetRequirements?.size ?: 0
+                targetValidator.bindTargetGroups(
+                    state, modeTargets, targetRequirements.subList(cursor, cursor + size), action.playerId,
+                    sourceColors, sourceSubtypes, action.cardId, action.xValue, TargetingSourceType.SPELL,
+                ).also { cursor += size }
+            }
+            val tailTargets = action.targets.drop(action.modeTargetsOrdered.sumOf { it.size })
+            val tail = targetValidator.bindTargetGroups(
+                state, tailTargets, targetRequirements.subList(cursor, targetRequirements.size), action.playerId,
+                sourceColors, sourceSubtypes, action.cardId, action.xValue, TargetingSourceType.SPELL,
+            )
+            (perMode + tail).takeIf { bindings -> bindings.all { it.error == null } }?.flatMap { it.counts }
+        } else null
         return targetValidator.bindTargetGroups(
             state,
             action.targets,
             targetRequirements,
             action.playerId,
-            sourceColors = (transformedFace ?: cardDef).colors,
-            sourceSubtypes = (transformedFace ?: cardDef).typeLine.subtypes.map { it.value }.toSet(),
+            sourceColors = sourceColors,
+            sourceSubtypes = sourceSubtypes,
             sourceId = action.cardId,
             xValue = action.xValue,
             targetingSourceType = TargetingSourceType.SPELL,
-            explicitCounts = action.targetGroupCounts
+            explicitCounts = action.targetGroupCounts ?: modeCounts
         )
     }
 

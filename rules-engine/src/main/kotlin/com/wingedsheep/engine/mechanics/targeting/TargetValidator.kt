@@ -116,7 +116,8 @@ class TargetValidator(
         // way) say nothing about this one; the split is inferred instead, and still fully validated.
         if (explicitCounts != null && explicitCounts.size == requirements.size) {
             val shapeError = when {
-                explicitCounts.sum() != targets.size ->
+                // Each count is bounded before summing so client-supplied values can't wrap the sum.
+                explicitCounts.any { it < 0 || it > targets.size } || explicitCounts.sum() != targets.size ->
                     "Target groups don't match the chosen targets"
                 else -> requirements.indices.firstNotNullOfOrNull { i ->
                     when {

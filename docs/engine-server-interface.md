@@ -155,7 +155,7 @@ Used to use an activated ability of a permanent (or card in hand/graveyard).
 | `sourceId`     | `EntityId`              | The entity having the ability.                            |
 | `abilityIndex` | `Int`                   | 0-based index of the ability on the card (top to bottom). |
 | `targets`      | `List<TargetSelection>` | Required targets for the ability.                         |
-| `targetGroupCounts` | `List<Int>?`       | As for `CastSpell`.                                       |
+| `targetGroupCounts` | `List<Int>?`       | As for `CastSpell`; ignored when an opponent chooses any of the ability's targets (the stack keeps the printed requirements). |
 | `chosenCosts`  | `Map<Int, Int>`         | For optional additional costs in abilities.               |
 | `payment`      | `ManaPaymentStrategy?`  | Explicit payment instructions.                            |
 

@@ -5024,7 +5024,9 @@ Every `TargetRequirement` carries count semantics (defaults shown):
 - **A partly filled group keeps its boundary.** "Up to two target creatures and target opponent" with one
   creature chosen is legal: the cast carries `targetGroupCounts` (or the engine infers the split), and the
   stack records each requirement narrowed to the targets it holds, so the `targets(…)` handles, the
-  opponent's handle, the 608.2b re-check, splice slices and copies all read the right slots. A
+  opponent's handle, the 608.2b re-check, splice slices and copies all read the right slots. A choose-N
+  modal cast binds each chosen mode's targets against that mode alone. An activated ability with an
+  opponent-chosen target keeps its printed requirements. A
   `ContextTarget(n)` index is into the flat list and *does* shift — prefer the declared handles.
 - `optional = false` — when `true`, minimum becomes 0 ("up to N target ..."). An activated ability
   whose controller-chosen requirements are **all** optional (e.g. Boom Box's "Destroy up to one target

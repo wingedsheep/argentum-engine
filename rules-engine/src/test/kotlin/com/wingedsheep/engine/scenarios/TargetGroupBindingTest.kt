@@ -56,6 +56,22 @@ class TargetGroupBindingTest : FunSpec({
             effect = Effects.DealDamage(1, small) then Effects.DealDamage(3, big)
         }
     }
+    // "Choose one or both — • Up to two target creatures each take 1. • Up to one target creature takes 3."
+    val modalGroups = card("Test Modal Optional Groups") {
+        manaCost = "{R}"; typeLine = "Instant"
+        spell {
+            modal(chooseCount = 2, minChooseCount = 1) {
+                mode("Up to two target creatures each take 1") {
+                    val (first, second) = targets(TargetFilter.Creature, count = 2, optional = true)
+                    effect = Effects.DealDamage(1, first) then Effects.DealDamage(1, second)
+                }
+                mode("Up to one target creature takes 3") {
+                    val creature = target(TargetFilter.Creature, optional = true)
+                    effect = Effects.DealDamage(3, creature)
+                }
+            }
+        }
+    }
     val rod = card("Test Partial Group Rod") {
         manaCost = "{1}"; typeLine = "Artifact"
         activatedAbility {
@@ -68,7 +84,7 @@ class TargetGroupBindingTest : FunSpec({
     }
 
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(partial, twoOptional, rod))
+        it.registerCards(TestCards.all + listOf(partial, twoOptional, modalGroups, rod))
         it.initMirrorMatch(Deck.of("Mountain" to 40), startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -152,6 +168,36 @@ class TargetGroupBindingTest : FunSpec({
         val life = d.getLifeTotal(d.player2)
         d.bothPass().error shouldBe null
         d.damage(giant) shouldBe 2
+        d.getLifeTotal(d.player2) shouldBe life - 3
+    }
+
+    test("a choose-N modal cast binds each mode's targets to that mode, not to an inferred union split") {
+        val d = driver()
+        val bears = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")
+        val giant = d.putPermanentOnBattlefield(d.player2, "Hill Giant")
+        val id = d.putCardInHand(d.player1, modalGroups.name)
+        d.giveMana(d.player1, Color.RED)
+        // The shape the engine-driven per-mode target prompt finalizes with: per-mode slices plus
+        // their flat union. A greedy split of the union would hand both creatures to the first mode.
+        d.submit(CastSpell(d.player1, id, targets = listOf(ChosenTarget.Permanent(bears), ChosenTarget.Permanent(giant)),
+            chosenModes = listOf(0, 1),
+            modeTargetsOrdered = listOf(listOf(ChosenTarget.Permanent(bears)), listOf(ChosenTarget.Permanent(giant))),
+            paymentStrategy = PaymentStrategy.FromPool)).error shouldBe null
+        d.state.getEntity(id)!!.get<TargetsComponent>()!!.targetRequirements.map { it.count } shouldBe listOf(1, 1)
+        d.bothPass().error shouldBe null
+        d.damage(bears) shouldBe 1
+        (giant in d.state.getBattlefield()) shouldBe false
+    }
+
+    test("a partly filled group's creature leaving before resolution still lets the opponent's slot resolve") {
+        val d = driver()
+        val bears = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")
+        val (spell, error) = d.cast(partial.name, listOf(ChosenTarget.Permanent(bears), ChosenTarget.Player(d.player2)))
+        error shouldBe null
+        d.moveToGraveyard(bears)
+        val life = d.getLifeTotal(d.player2)
+        d.bothPass().error shouldBe null
+        (spell in d.state.stack) shouldBe false
         d.getLifeTotal(d.player2) shouldBe life - 3
     }
 
