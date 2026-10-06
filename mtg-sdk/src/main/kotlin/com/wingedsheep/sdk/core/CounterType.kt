@@ -662,6 +662,13 @@ value class CounterType(val name: String) {
          */
         val BOUNTY = CounterType("BOUNTY")
 
+        /**
+         * Corpse counter (LEA — Scavenging Ghoul). A passive spendable store with no inherent rule:
+         * the card's end-step trigger adds one per creature that died this turn, and its regeneration
+         * ability removes one as its cost.
+         */
+        val CORPSE = CounterType("CORPSE")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -780,6 +787,7 @@ value class CounterType(val name: String) {
             COLLECTION,
             REPRIEVE,
             BOUNTY,
+            CORPSE,
         )
 
         /**

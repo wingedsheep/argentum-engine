@@ -15561,6 +15561,7 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
 - `loyalty` — planeswalker loyalty.
 - `mire` (`CounterType.MIRE`): LEA — Cyclopean Tomb. Passive marker read by its counter-bounded Swamp duration and source-linked cleanup history; it has no inherent rule. The existing passive-counter badge displays its count.
 - `collection` (`CounterType.COLLECTION`): MH3 — Charitable Levy. Passive accumulate-then-threshold marker: its noncreature-cast trigger adds one, and `Conditions.SourceCounterCountAtLeast(COLLECTION, 3)` gates the sacrifice. No inherent rule; the passive-counter badge displays its count.
+- `corpse` (`CounterType.CORPSE`): LEA — Scavenging Ghoul. Passive spendable store with no inherent rule: its each-end-step trigger adds one per creature that died this turn (`DynamicAmounts.creaturesDiedThisTurn(Player.Each)`) and `Costs.RemoveCounterFromSelf(CounterType.CORPSE, 1)` pays for its regeneration. The passive-counter badge displays its count.
 - `bounty` (`CounterType.BOUNTY`): J22 — Termination Facilitator. Passive marker with no inherent rule: the card's own observer trigger (`Triggers.a(CreatureOrPlaneswalker.opponentControls().withCounter(BOUNTY)).isDealtDamage()`) destroys a marked permanent when it is dealt damage. The passive-counter badge displays its count.
 - `charge`, `time`, `level`, `quest`, `fade`, `vanishing`, `experience`, `age`, `velocity`, `awakening`,
   `blood`, `cage`, `doom`, `storage`, `divinity` (`CounterType.DIVINITY`, a passive counter used by the Myojin

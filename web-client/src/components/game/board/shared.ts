@@ -847,6 +847,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   // Sensei Golden-Tail's training marker records which creatures it trained.
   CounterType.TRAINING,
   CounterType.MIRE,
+  // Scavenging Ghoul's corpse tally is spent one at a time to regenerate.
+  CounterType.CORPSE,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

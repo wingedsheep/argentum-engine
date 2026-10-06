@@ -315,6 +315,65 @@
     ]
 }
 
+// Aspect of Wolf
+{
+    "name": "Aspect of Wolf",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +X/+Y, where X is half the number of Forests you control, rounded down, and Y is half the number of Forests you control, rounded up.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "Divide",
+                    "numerator": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Forest"
+                    },
+                    "denominator": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "roundUp": false
+                },
+                "toughnessBonus": {
+                    "type": "Divide",
+                    "numerator": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Forest"
+                    },
+                    "denominator": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "rarity": "RARE",
+        "artist": "Jeff A. Menges",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd9ac9e6-1395-4fbd-80e2-645f0d910c29.jpg?1783948679"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Bad Moon
 {
     "name": "Bad Moon",
@@ -1529,6 +1588,60 @@
     ]
 }
 
+// Cockatrice
+{
+    "name": "Cockatrice",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Cockatrice",
+    "oracleText": "Flying\nWhenever this creature blocks or becomes blocked by a non-Wall creature, destroy that creature at end of combat.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cockatrice:1",
+                "trigger": {
+                    "type": "BlocksOrBecomesBlockedByEvent",
+                    "partnerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Wall"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END_COMBAT",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                "descriptionOverride": "Whenever this creature blocks or becomes blocked by a non-Wall creature, destroy that creature at end of combat."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "RARE",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9cd91814-6177-4a3d-a1c1-a3be7d7c7957.jpg?1783948678"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Consecrate Land
 {
     "name": "Consecrate Land",
@@ -1645,6 +1758,67 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Conversion
+{
+    "name": "Conversion",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, sacrifice this enchantment unless you pay {W}{W}.\nAll Mountains are Plains.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Conversion:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{W}{W}"
+                        }
+                    },
+                    "suffer": "SacrificeSelf"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "SetLandTypesForGroup",
+                "filter": {
+                    "baseFilter": "land Mountain"
+                },
+                "landTypes": [
+                    "Plains"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Myrfors",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13186bc9-8d9c-433b-ba15-121ef94dd68a.jpg?1783948715",
+        "rulings": [
+            {
+                "date": "2006-10-15",
+                "text": "Will not add or remove the supertype snow to or from a land."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "The Conversion effect is a continuous effect. There is no chance to tap a just-played mountain for red mana before it becomes a plains."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3170,6 +3344,61 @@
     ]
 }
 
+// Force of Nature
+{
+    "name": "Force of Nature",
+    "manaCost": "{2}{G}{G}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Trample\nAt the beginning of your upkeep, this creature deals 8 damage to you unless you pay {G}{G}{G}{G}.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Force of Nature:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{G}{G}{G}{G}"
+                        }
+                    },
+                    "suffer": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 8
+                        },
+                        "target": "Controller"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, this creature deals 8 damage to you unless you pay {G}{G}{G}{G}."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "RARE",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21551cb6-3a53-42dd-9bbd-4bc56304d6d3.jpg?1783948677"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Forcefield
 {
     "name": "Forcefield",
@@ -3470,6 +3699,48 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/a/cafc2350-5d64-4379-9198-79a114654d45.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Gloom
+{
+    "name": "Gloom",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "White spells cost {3} more to cast.\nActivated abilities of white enchantments cost {3} more to activate.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "AnyCaster",
+                    "filter": "white"
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 3
+                }
+            },
+            {
+                "type": "IncreaseActivatedAbilityCost",
+                "filter": {
+                    "baseFilter": "enchantment white"
+                },
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8d10bc7-daeb-4c0d-9e4a-8eae8d11699f.jpg?1783948696"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Goblin Balloon Brigade
@@ -5615,6 +5886,83 @@
     ]
 }
 
+// Lord of the Pit
+{
+    "name": "Lord of the Pit",
+    "manaCost": "{4}{B}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying, trample\nAt the beginning of your upkeep, sacrifice a creature other than this creature. If you can't, this creature deals 7 damage to you.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lord of the Pit:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature",
+                            "excludeSelf": true
+                        }
+                    },
+                    "then": {
+                        "type": "Sacrifice",
+                        "filter": "creature",
+                        "excludeSource": true
+                    },
+                    "otherwise": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 7
+                        },
+                        "target": "Controller"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "RARE",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/2926777a-4f6e-4965-ba83-22cf7df02602.jpg?1783948694",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "If you control any other creatures as Lord of the Pit's triggered ability resolves, you must sacrifice one. You can't choose to be dealt 7 damage instead."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If Lord of the Pit has gained lifelink, being dealt 7 damage by it doesn't cause your life total to change, even though you gain and lose life. If your life total is less than 7, you won't lose the game."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If you have two Lords of the Pit, you can sacrifice them to each other."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Lure
 {
     "name": "Lure",
@@ -6021,6 +6369,70 @@
     ]
 }
 
+// Mind Twist
+{
+    "name": "Mind Twist",
+    "manaCost": "{X}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player discards X cards at random.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "Random",
+                        "count": "XValue"
+                    },
+                    "storeSelected": "selected1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "RARE",
+        "artist": "Julie Baroh",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/eee9e106-a248-49d2-b8c8-6bbcd56ce739.jpg?1783948693"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Mons's Goblin Raiders
 {
     "name": "Mons's Goblin Raiders",
@@ -6193,6 +6605,70 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Natural Selection
+{
+    "name": "Natural Selection",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Look at the top three cards of target player's library, then put them back in any order. You may have that player shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "player": "TargetPlayer"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "player": "TargetPlayer",
+                        "placement": "Top"
+                    },
+                    "order": "ControllerChooses"
+                },
+                {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ShuffleLibrary",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8917dc8-01c0-4e72-9310-c4d501775411.jpg?1783948673"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -6785,6 +7261,110 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Pestilence
+{
+    "name": "Pestilence",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of the end step, if no creatures are on the battlefield, sacrifice this enchantment.\n{B}: This enchantment deals 1 damage to each creature and each player.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pestilence:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "Each",
+                    "zone": "Battlefield",
+                    "filter": "creature",
+                    "negate": true
+                },
+                "descriptionOverride": "At the beginning of the end step, if no creatures are on the battlefield, sacrifice this enchantment."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Pestilence:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "Each"
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Controller"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Jesper Myrfors",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d42a6350-b16b-4e10-a273-e6cbb55dcb7a.jpg?1783948692",
+        "rulings": [
+            {
+                "date": "2011-06-01",
+                "text": "Note that \"until end of turn\" effects wear off after \"at the beginning of the end step\" triggered abilities, so an artifact that animates until end of turn can keep this on the battlefield."
+            },
+            {
+                "date": "2011-06-01",
+                "text": "It will stay on the battlefield if there is a creature that is put into the graveyard during the end step. This is because this ability will not trigger at all if there is at least one creature on the battlefield as the end step begins."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Each activation is considered a new damage effect. An activation can only be 1 point of damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -8107,6 +8687,69 @@
     ]
 }
 
+// Scavenging Ghoul
+{
+    "name": "Scavenging Ghoul",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "At the beginning of each end step, put a corpse counter on this creature for each creature that died this turn.\nRemove a corpse counter from this creature: Regenerate this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scavenging Ghoul:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "CORPSE",
+                    "amount": {
+                        "type": "TurnTracking",
+                        "player": "Each",
+                        "tracker": "CREATURES_DIED"
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "At the beginning of each end step, put a corpse counter on this creature for each creature that died this turn."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Scavenging Ghoul:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "CORPSE",
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Remove a corpse counter from this creature: Regenerate this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "UNCOMMON",
+        "artist": "Jeff A. Menges",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/426984e0-88e1-4a2d-9a1c-798b95864df3.jpg?1783948691"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Scrubland
 {
     "name": "Scrubland",
@@ -8450,6 +9093,59 @@
     ]
 }
 
+// Simulacrum
+{
+    "name": "Simulacrum",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "You gain life equal to the damage dealt to you this turn. Simulacrum deals damage to target creature you control equal to the damage dealt to you this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "DAMAGE_RECEIVED"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "DAMAGE_RECEIVED"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35c3a78d-cc79-4187-929a-8aa1d1469990.jpg?1783948691"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Sinkhole
 {
     "name": "Sinkhole",
@@ -8562,6 +9258,35 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Smoke
+{
+    "name": "Smoke",
+    "manaCost": "{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Players can't untap more than one creature during their untap steps.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "UntapLimitPerStep",
+                "filter": "creature",
+                "max": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "RARE",
+        "artist": "Jesper Myrfors",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c67788e-d713-47c3-ab9f-b8a6212ae24f.jpg?1783948681",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Animated lands are affected by this spell. If on the battlefield with an effect that limits the number of land you untap, untapping an animated land will count as the one creature and the one land you can untap... thereby limiting you to one thing to be untapped."
+            }
+        ]
+    }
 }
 
 // Sol Ring
@@ -9130,6 +9855,68 @@
     "colorIdentityOverride": []
 }
 
+// Thicket Basilisk
+{
+    "name": "Thicket Basilisk",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Basilisk",
+    "oracleText": "Whenever this creature blocks or becomes blocked by a non-Wall creature, destroy that creature at end of combat.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thicket Basilisk:1",
+                "trigger": {
+                    "type": "BlocksOrBecomesBlockedByEvent",
+                    "partnerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Wall"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END_COMBAT",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                "descriptionOverride": "Whenever this creature blocks or becomes blocked by a non-Wall creature, destroy that creature at end of combat."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Frazier",
+        "flavorText": "Moss-covered statues littered the area, a macabre monument to the Basilisk's power.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e92cce01-b3bd-4307-aae5-9a7c8fa386ab.jpg?1783948672",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Protection from Green does not stop the Basilisk's ability because the ability is not targeted."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "The ability destroys the creature at the end of the combat, which is after all first strike and normal damage dealing is done. This means that a creature may have to regenerate twice to survive the combat, once from damage and once again at end of combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Thoughtlace
 {
     "name": "Thoughtlace",
@@ -9321,6 +10108,82 @@
         "rarity": "RARE",
         "artist": "Amy Weber",
         "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0139f60-d48e-46fb-9f5a-1e3d7558c834.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Timetwister
+{
+    "name": "Timetwister",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player shuffles their hand and graveyard into their library, then draws seven cards. (Then put Timetwister into its owner's graveyard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromMultipleZones",
+                                    "zones": [
+                                        "Hand",
+                                        "Graveyard"
+                                    ]
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Shuffled"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 7
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a49dc44-616e-4bdd-8220-0bb71eccc512.jpg?1783948700",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "This card won’t be put into your graveyard until after it’s finished resolving, which means it won’t be shuffled into your library as part of its own effect."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -9556,6 +10419,42 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Two-Headed Giant of Foriys
+{
+    "name": "Two-Headed Giant of Foriys",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "Trample\nThis creature can block an additional creature each combat.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanBlockAdditionalForCreatureGroup",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "RARE",
+        "artist": "Anson Maddocks",
+        "flavorText": "None know if this Giant is the result of aberrant magics, Siamese twins, or a mentalist's schizophrenia.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31c687dc-ee0c-4e54-a2b3-5d8e633b3245.jpg?1783948680"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
