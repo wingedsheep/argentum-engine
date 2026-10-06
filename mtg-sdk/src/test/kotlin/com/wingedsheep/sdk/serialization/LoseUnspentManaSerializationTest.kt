@@ -14,4 +14,10 @@ class LoseUnspentManaSerializationTest : FunSpec({
         val encoded = CardSerialization.json.encodeToString<Effect>(effect)
         CardSerialization.json.decodeFromString<Effect>(encoded) shouldBe effect
     }
+
+    test("transfer recipient survives polymorphic effect round trip") {
+        val effect = Effects.LoseUnspentMana(EffectTarget.ContextTarget(0), transferTo = EffectTarget.Controller)
+        val encoded = CardSerialization.json.encodeToString<Effect>(effect)
+        CardSerialization.json.decodeFromString<Effect>(encoded) shouldBe effect
+    }
 })

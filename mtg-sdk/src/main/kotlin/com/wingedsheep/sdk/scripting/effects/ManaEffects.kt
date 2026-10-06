@@ -447,9 +447,20 @@ enum class ManaColorSource {
     CraftedMaterials,
 }
 
-/** Lose every unit of unspent mana, including restricted and combat-duration mana. */
+/**
+ * Lose every unit of unspent mana, including restricted and combat-duration mana.
+ *
+ * [transferTo], when set, names the player who then adds exactly the mana lost this way
+ * ("…loses all unspent mana and you add the mana lost this way", Drain Power). Each unit keeps its
+ * colour, restriction, riders, expiry, snow mark and provenance; mana a replacement converted
+ * instead of losing was never lost, so it doesn't move.
+ */
 @SerialName("LoseUnspentMana")
 @Serializable
-data class LoseUnspentManaEffect(val target: EffectTarget = EffectTarget.Controller) : Effect {
-    override val description: String = "${target.description} loses all unspent mana"
+data class LoseUnspentManaEffect(
+    val target: EffectTarget = EffectTarget.Controller,
+    val transferTo: EffectTarget? = null
+) : Effect {
+    override val description: String = "${target.description} loses all unspent mana" +
+        (transferTo?.let { ", and ${it.description} adds the mana lost this way" } ?: "")
 }

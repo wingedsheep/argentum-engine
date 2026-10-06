@@ -2250,6 +2250,12 @@ vocabulary; this primitive does not provide Word of Command's full mana restrict
   and player-set targets work. Step/phase retention does not apply; unconditional mana-conversion
   replacements still apply and preserve restrictions, expiry, and provenance. Emits `ManaPoolChangedEvent`,
   distinct from paying mana. Mana Short composes a land-tapping pipeline with this effect.
+  `transferTo` (an `EffectTarget`, default null) names the player who then adds the mana lost this
+  way — "that player loses all unspent mana and you add the mana lost this way" (Drain Power) is
+  `LoseUnspentMana(player, transferTo = EffectTarget.Controller)`. Every unit moves unchanged:
+  colour, spend restriction, riders, expiry, snow mark and provenance; per-activation spending
+  obligations stay behind. Mana a conversion replacement kept (it changed colour instead of being
+  lost) is not lost, so it doesn't move. Emits a `ManaAddedEvent` for the recipient.
 - `RetainUnspentMana(vararg colors)` — "Until end of turn, you don't lose unspent mana of these colours
   as steps and phases end." The colour-filtered, single-player, turn-scoped one-shot cousin of the
   permanent-static `PreventManaPoolEmptying` (Upwelling, which stops *all* emptying for *everyone*).
