@@ -3528,6 +3528,59 @@
     ]
 }
 
+// Spear Spewer
+{
+    "name": "Spear Spewer",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Defender\n{T}: This creature deals 1 damage to each player.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Spear Spewer:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Controller"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "artist": "Carl Critchlow",
+        "flavorText": "\"Don't waste time aiming, you lazy gob-slug! Fire!\"\n—Krenko, mob boss",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/dbee1daa-b4ba-49ee-bed1-e70fa09942a2.jpg?1783933675",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "In a Two-Headed Giant game, Spear Spewer's ability causes each team to lose 2 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Spire Mangler
 {
     "name": "Spire Mangler",

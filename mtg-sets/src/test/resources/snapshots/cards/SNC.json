@@ -2496,6 +2496,143 @@
     }
 }
 
+// Professional Face-Breaker
+{
+    "name": "Professional Face-Breaker",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Menace\nWhenever one or more creatures you control deal combat damage to a player, create a Treasure token.\nSacrifice a Treasure: Exile the top card of your library. You may play that card this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Professional Face-Breaker:1",
+                "trigger": "OneOrMoreDealCombatDamageToPlayerEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Professional Face-Breaker:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "artifact Treasure"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/42acbf52-b137-44f0-a815-2817fe8d2da2.jpg?1783923119"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Pyre-Sledge Arsonist
+{
+    "name": "Pyre-Sledge Arsonist",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Lizard Shaman",
+    "oracleText": "{1}, {T}: This creature deals X damage to any target, where X is the number of permanents you've sacrificed this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pyre-Sledge Arsonist:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PERMANENTS_SACRIFICED"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "UNCOMMON",
+        "artist": "Kekai Kotaki",
+        "flavorText": "Everything from damaged furniture to inconvenient corpses becomes fuel for Ziatora's ever-burning foundry.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33c5fd3e-3799-4535-8c33-9c567f4f5709.jpg?1783923116"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Racers' Ring
 {
     "name": "Racers' Ring",

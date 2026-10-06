@@ -1844,6 +1844,58 @@
     ]
 }
 
+// Prickly Marmoset
+{
+    "name": "Prickly Marmoset",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Monkey",
+    "oracleText": "First strike\nWhenever you cycle a card, this creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Prickly Marmoset:1",
+                "trigger": "CycleEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cycle a card, this creature gets +2/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "artist": "Simon Dominic",
+        "flavorText": "\"It's either terrified or extremely mad at us, definitely one of the two.\"\n—Jonald, mission naturalist",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/bad8512f-31b9-48ba-bb10-1497303dcfba.jpg?1783931046",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Some cards with cycling have an ability that triggers when you cycle them, and some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Pyroceratops
 {
     "name": "Pyroceratops",
@@ -2076,6 +2128,63 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Reptilian Reflection
+{
+    "name": "Reptilian Reflection",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cycle a card, you may have this enchantment become a 5/4 Dinosaur creature with trample and haste in addition to its other types until end of turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reptilian Reflection:1",
+                "trigger": "CycleEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "BecomeCreature",
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "keywords": [
+                            "TRAMPLE",
+                            "HASTE"
+                        ],
+                        "creatureTypes": [
+                            "Dinosaur"
+                        ]
+                    },
+                    "descriptionOverride": "Whenever you cycle a card, you may have this enchantment become a 5/4 Dinosaur creature with trample and haste in addition to its other types until end of turn."
+                },
+                "descriptionOverride": "Whenever you cycle a card, you may have this enchantment become a 5/4 Dinosaur creature with trample and haste in addition to its other types until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Antonio José Manzanedo",
+        "flavorText": "Danger often lurks in the allure of crystal shards.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/7871b4dd-9085-4a3f-a1ae-9a292f73689b.jpg?1783931045",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Some cards with cycling have an ability that triggers when you cycle them, and some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

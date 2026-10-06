@@ -2497,6 +2497,85 @@
     ]
 }
 
+// Mizzix, Replica Rider
+{
+    "name": "Mizzix, Replica Rider",
+    "manaCost": "{4}{R}",
+    "typeLine": "Legendary Creature — Goblin Wizard",
+    "oracleText": "Flying\nWhenever you cast a spell from anywhere other than your hand, you may pay {1}{U/R}. If you do, copy that spell and you may choose new targets for the copy. If the copy is a permanent spell, it gains haste and \"At the beginning of your end step, sacrifice this permanent.\" (A copy of a permanent spell becomes a token.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mizzix, Replica Rider:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        {
+                            "type": "SpellCastFromZoneOtherThan",
+                            "zone": "Hand"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}{U/R}"
+                        }
+                    },
+                    "then": {
+                        "type": "CopyTargetSpell",
+                        "target": "TriggeringEntity",
+                        "addedTokenKeywords": [
+                            "HASTE"
+                        ],
+                        "sacrificeTokenAtStep": "END",
+                        "sacrificeTokenOnlyOnControllersTurn": true
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8faf1d83-3b6b-4e07-a024-3dfd37c29814.jpg?1783919182",
+        "rulings": [
+            {
+                "date": "2022-12-02",
+                "text": "Any spell you cast will be copied if you pay the cost, not just one that requires targets."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "You may only pay the cost once, as the triggered ability resolves. You can't pay it more than once to get additional copies."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "If a copy is created, you control the copy. That copy is created on the stack, so it's not \"cast.\" Abilities that trigger when a player casts a spell won't trigger."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "You can't choose to pay any additional costs for the copy. However, effects based on any additional costs that were paid for the original spell are copied as though those same costs were paid for the copy too."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Ogre Battlecaster
 {
     "name": "Ogre Battlecaster",

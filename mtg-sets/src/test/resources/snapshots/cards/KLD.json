@@ -4704,6 +4704,99 @@
     }
 }
 
+// Spark of Creativity
+{
+    "name": "Spark of Creativity",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose target creature. Exile the top card of your library. You may have Spark of Creativity deal damage to that creature equal to the exiled card's mana value. If you don't, you may play that card until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Have Spark of Creativity deal damage to that creature equal to the exiled card's mana value? (If you don't, you may play that card until end of turn.)"
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "ManaValueSumOfCollection",
+                            "collectionName": "gathered0"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "GrantMayPlayFromExile",
+                        "from": "gathered0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "flavorText": "\"To invent is to rebel.\"\n—Pia Nalaar",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/718bf224-5e1b-439c-a998-ceec5c0a8903.jpg?1783937188",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "You can't cast Spark of Creativity without targeting a creature. If the creature becomes an illegal target for Spark of Creativity, none of its effects happen. You don't exile the top card of your library."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If a card in exile has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If a land card is exiled this way, you can play that land card until end of turn if you have any available land plays."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Spark of Creativity doesn't change when you can play the exiled card. For example, if you exile a creature card without flash, you can cast it only during your main phase when the stack is empty."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Spirebluff Canal
 {
     "name": "Spirebluff Canal",

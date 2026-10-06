@@ -3349,6 +3349,53 @@
     ]
 }
 
+// Rigging Runner
+{
+    "name": "Rigging Runner",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin Pirate",
+    "oracleText": "First strike\nRaid — This creature enters with a +1/+1 counter on it if you attacked this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "UNCOMMON",
+        "artist": "Simon Dominic",
+        "flavorText": "The hook makes him feel brave, and the hat makes him feel fancy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb9983ce-8ca6-450a-9cac-5396ba8e1690.jpg?1783935740"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ripjaw Raptor
 {
     "name": "Ripjaw Raptor",
