@@ -2089,7 +2089,7 @@
                         },
                         {
                             "type": "ZoneChangeEvent",
-                            "filter": "creature ctrl:you",
+                            "filter": "creature own:you",
                             "from": "Graveyard"
                         }
                     ]

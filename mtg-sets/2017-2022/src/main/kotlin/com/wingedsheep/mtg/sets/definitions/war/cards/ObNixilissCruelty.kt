@@ -7,14 +7,14 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
  * Ob Nixilis's Cruelty — War of the Spark #101 (canonical printing)
- * {2}{B}{B}
+ * {2}{B}
  * Instant
  * Target creature gets -5/-5 until end of turn. If that creature would die this turn, exile it instead.
  *
  * Same shape as Bleed Dry: the stat change, then the turn-long exile-on-death mark on the same target.
  */
 val ObNixilissCruelty = card("Ob Nixilis's Cruelty") {
-    manaCost = "{2}{B}{B}"
+    manaCost = "{2}{B}"
     colorIdentity = "B"
     typeLine = "Instant"
     oracleText = "Target creature gets -5/-5 until end of turn. If that creature would die this turn, exile it instead."

@@ -2845,7 +2845,7 @@
 // Ob Nixilis's Cruelty
 {
     "name": "Ob Nixilis's Cruelty",
-    "manaCost": "{2}{B}{B}",
+    "manaCost": "{2}{B}",
     "typeLine": "Instant",
     "oracleText": "Target creature gets -5/-5 until end of turn. If that creature would die this turn, exile it instead.",
     "script": {

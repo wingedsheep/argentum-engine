@@ -30,9 +30,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *  - "From anywhere other than the battlefield" has no exclude-from axis, so it is spelled as the
  *    union of every other zone a card can reach a graveyard from: hand, library, stack, exile,
  *    and the command zone.
- *  - "Leaves your graveyard" is `changesZone(from = GRAVEYARD)` with any destination; for a card
- *    leaving a non-battlefield zone, `.youControl()` falls back to the card's owner — exactly whose
- *    graveyard it was in (CR 400.3).
+ *  - "Leaves your graveyard" is `changesZone(from = GRAVEYARD)` with any destination, keyed on
+ *    `.ownedByYou()`: a card is only ever in its owner's graveyard (CR 400.3), whereas control
+ *    would follow a reanimated card to whoever returned it.
  */
 val SyrKonradTheGrim = card("Syr Konrad, the Grim") {
     manaCost = "{3}{B}{B}"
@@ -59,7 +59,7 @@ val SyrKonradTheGrim = card("Syr Konrad, the Grim") {
             creatureCard.changesZone(from = Zone.STACK, to = Zone.GRAVEYARD),
             creatureCard.changesZone(from = Zone.EXILE, to = Zone.GRAVEYARD),
             creatureCard.changesZone(from = Zone.COMMAND, to = Zone.GRAVEYARD),
-            Triggers.a(GameObjectFilter.Creature.youControl()).changesZone(from = Zone.GRAVEYARD),
+            Triggers.a(GameObjectFilter.Creature.ownedByYou()).changesZone(from = Zone.GRAVEYARD),
         )
         effect = Effects.DealDamage(1, EffectTarget.PlayerRef(Player.EachOpponent))
         description = "Syr Konrad deals 1 damage to each opponent."

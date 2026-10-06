@@ -7,6 +7,7 @@ import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.mtg.sets.definitions.eld.cards.SyrKonradTheGrim
 import com.wingedsheep.mtg.sets.definitions.lea.cards.RaiseDead
 import com.wingedsheep.mtg.sets.definitions.lea.cards.WrathOfGod
+import com.wingedsheep.mtg.sets.definitions.one.cards.VatEmergence
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
@@ -29,6 +30,7 @@ class SyrKonradTheGrimScenarioTest : ScenarioTestBase() {
         cardRegistry.register(SyrKonradTheGrim)
         cardRegistry.register(RaiseDead)
         cardRegistry.register(WrathOfGod)
+        cardRegistry.register(VatEmergence)
 
         context("Syr Konrad, the Grim") {
 
@@ -167,6 +169,44 @@ class SyrKonradTheGrimScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 game.isInHand(2, "Grizzly Bears") shouldBe true
+                game.getLifeTotal(2) shouldBe 20
+            }
+
+            test("an opponent reanimating your creature card still triggers it — it left your graveyard") {
+                val game = scenario()
+                    .withPlayers()
+                    .withCardOnBattlefield(1, "Syr Konrad, the Grim")
+                    .withCardInGraveyard(1, "Grizzly Bears")
+                    .withCardInHand(2, "Vat Emergence")
+                    .withLandsOnBattlefield(2, "Swamp", 5)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpellTargetingGraveyardCard(2, "Vat Emergence", 1, "Grizzly Bears").error shouldBe null
+                if (game.hasPendingDecision()) game.submitManaSourcesAutoPay()
+                game.resolveStack()
+
+                game.isOnBattlefield("Grizzly Bears") shouldBe true
+                game.getLifeTotal(2) shouldBe 19
+            }
+
+            test("reanimating an opponent's creature card under your control doesn't trigger it") {
+                val game = scenario()
+                    .withPlayers()
+                    .withCardOnBattlefield(1, "Syr Konrad, the Grim")
+                    .withCardInGraveyard(2, "Grizzly Bears")
+                    .withCardInHand(1, "Vat Emergence")
+                    .withLandsOnBattlefield(1, "Swamp", 5)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpellTargetingGraveyardCard(1, "Vat Emergence", 2, "Grizzly Bears").error shouldBe null
+                if (game.hasPendingDecision()) game.submitManaSourcesAutoPay()
+                game.resolveStack()
+
+                game.isOnBattlefield("Grizzly Bears") shouldBe true
                 game.getLifeTotal(2) shouldBe 20
             }
 
