@@ -308,6 +308,47 @@
     ]
 }
 
+// Overgrowth
+{
+    "name": "Overgrowth",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nWhenever enchanted land is tapped for mana, its controller adds an additional {G}{G}.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AdditionalManaOnTap",
+                "color": "GREEN",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Rob Alexander",
+        "flavorText": "Life needs no encouragement.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb9179f5-c3e0-4499-9cfb-6cb7e8329a59.jpg?1783946550",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "This is a triggered mana ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Primal Rage
 {
     "name": "Primal Rage",

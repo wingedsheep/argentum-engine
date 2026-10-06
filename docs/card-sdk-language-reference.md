@@ -1337,9 +1337,11 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 - `RedirectNextDamage(protectedTargets, redirectTo, amount?, scope, creaturesOnly, optional)`,
   `RedirectCombatDamageToController(target = Self)`, `ReflectCombatDamage(target = Controller)`,
   `RemoveDamageShield(target)` — the redirect / reflect / shield-removal effects.
-- `DealDamageExcessToController(amount, target)` — deal damage to a creature; any amount beyond
+- `DealDamageExcessToController(amount, target, damageSource?)` — deal damage to a creature; any amount beyond
   lethal (CR 120.4a) is dealt to that creature's controller instead (the creature is marked only with
-  the lethal portion). Backed by `DealDamageEffect.excessToController`. Used by Gandalf's Sanction.
+  the lethal portion). Backed by `DealDamageEffect.excessToController`. `damageSource` names another
+  source, as on `DealDamage` (deathtouch on that source makes 1 lethal). Used by Gandalf's Sanction
+  and Ram Through.
 - `DealXDamage(target)` — deal X damage (spell's X).
 - `AmplifyDamageThisTurn(bonus, appliesTo: EventPattern.DamageEvent)` — install an until-end-of-turn
   replacement (CR 616): every damage instance matching `appliesTo` deals `bonus` *additional* damage this

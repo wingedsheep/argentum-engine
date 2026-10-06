@@ -3416,6 +3416,117 @@
     ]
 }
 
+// Roots of Wisdom
+{
+    "name": "Roots of Wisdom",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Mill three cards, then return a land card or Elf card from your graveyard to your hand. If you can't, draw a card. (To mill a card, put the top card of your library into your graveyard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "isMill": true
+                    },
+                    "storeAs": "milled"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "milled",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Graveyard",
+                                        "filter": "land|Elf"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "returned",
+                                    "prompt": "Return a land card or Elf card from your graveyard to your hand",
+                                    "selectedLabel": "Return to hand"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "returned",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Hand"
+                                    }
+                                }
+                            ]
+                        },
+                        "successCriterion": {
+                            "type": "SuccessCriterion.CollectionNonEmpty",
+                            "name": "returned"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": []
+                    },
+                    "otherwise": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "Though imprisoned in Jaspera trees, the elvish gods known as the Einir still whisper through the ages.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/734afb5b-3163-47fa-856f-8a85b9da22d3.jpg?1783928206",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Roots of Wisdom doesn't target any cards in graveyards. You may return a land card or an Elf card that was just milled or one that was already there."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If there's a land card or Elf card in your graveyard, you must return one. You can't choose not to in order to draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Sarulf's Packmate
 {
     "name": "Sarulf's Packmate",

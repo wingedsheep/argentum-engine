@@ -1544,6 +1544,81 @@
     "layout": "MODAL_DFC"
 }
 
+// Scale the Heights
+{
+    "name": "Scale the Heights",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a +1/+1 counter on up to one target creature. You gain 2 life. You may play an additional land this turn.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "PlayAdditionalLands",
+                    "count": 1
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "artist": "Cristi Balanescu",
+        "flavorText": "Ever onward, ever skyward.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e781d6ad-950e-49bf-9645-e2354086ae49.jpg?1783929332",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If you choose a target creature and it's an illegal target by the time Scale the Heights tries to resolve, the spell doesn't resolve. You don't gain life, draw a card, or get to play an additional land."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "The permission to play lands is cumulative with other effects that allow you to play additional lands, such as that of Nahiri's Lithoforming."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "You don't play a land as Scale the Heights resolves; Scale the Heights fully resolves first and you draw a card, perhaps including a land you'll play later. If it's not your turn, you won't be able to play a land this turn at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Spitfire Lagac
 {
     "name": "Spitfire Lagac",

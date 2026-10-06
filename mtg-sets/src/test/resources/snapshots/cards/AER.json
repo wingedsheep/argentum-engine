@@ -787,6 +787,87 @@
     "colorIdentityOverride": []
 }
 
+// Scrounging Bandar
+{
+    "name": "Scrounging Bandar",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Cat Monkey",
+    "oracleText": "This creature enters with two +1/+1 counters on it.\nAt the beginning of your upkeep, you may move any number of +1/+1 counters from this creature onto another target creature.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scrounging Bandar:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChooseNumberThen",
+                    "then": {
+                        "type": "MoveCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "amount": "XValue",
+                        "source": "Self",
+                        "destination": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "maxValue": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    },
+                    "prompt": "Move how many +1/+1 counters from Scrounging Bandar?"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you may move any number of +1/+1 counters from this creature onto another target creature."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "artist": "Shreya Shetty",
+        "flavorText": "\"It was right here a second ago . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/761a11a7-175d-440d-b09d-918572c8e5d3.jpg?1783936737",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "You choose a target creature as Scrounging Bandar's triggered ability is put onto the stack. You choose how many counters to move (if any) as that ability resolves. If that creature becomes an illegal target or if Scrounging Bandar has left the battlefield, you can't move any counters."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "To move a counter from one creature to another, the counter is removed from the first creature and put onto the second. Any abilities that care about a counter being removed from or placed on a creature will apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Universal Solvent
 {
     "name": "Universal Solvent",

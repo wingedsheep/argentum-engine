@@ -3224,6 +3224,43 @@
     ]
 }
 
+// Prowling Serpopard
+{
+    "name": "Prowling Serpopard",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Cat Snake",
+    "oracleText": "This spell can't be countered.\nCreature spells you control can't be countered.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantCantBeCountered",
+                "filter": "creature ctrl:you"
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "flavorText": "The viziers serving Rhonas, the god of strength, maintain the menagerie of animals employed during his trial.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92921fc1-11d0-41a9-b9b2-b44fd0913d31.jpg?1783936471",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "A spell or ability that counters spells can still target a creature spell you control. When that spell or ability resolves, the creature spell won't be countered, but any additional effects of that spell or ability will still happen."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Pursue Glory
 {
     "name": "Pursue Glory",
@@ -3337,6 +3374,115 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Rhonas the Indomitable
+{
+    "name": "Rhonas the Indomitable",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Deathtouch, indestructible\nRhonas can't attack or block unless you control another creature with power 4 or greater.\n{2}{G}: Another target creature gets +2/+0 and gains trample until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rhonas the Indomitable:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature pow>=4",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "CantBlockUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature pow>=4",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50f23c47-278c-4188-8fb4-ae20a0c423c5.jpg?1783936470",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Once Rhonas has attacked or blocked, it will remain in combat even if you no longer control another creature with power 4 or greater."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "You don't have to attack with another creature with power 4 or greater for Rhonas to be able to attack. The same is true of blocking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

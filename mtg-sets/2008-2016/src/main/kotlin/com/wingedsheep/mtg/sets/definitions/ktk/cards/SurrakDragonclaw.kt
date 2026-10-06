@@ -32,7 +32,7 @@ val SurrakDragonclaw = card("Surrak Dragonclaw") {
 
     staticAbility {
         ability = GrantCantBeCountered(
-            filter = GameObjectFilter.Creature
+            filter = GameObjectFilter.Creature.youControl()
         )
     }
 

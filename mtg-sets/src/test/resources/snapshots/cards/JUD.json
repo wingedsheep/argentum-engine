@@ -1363,6 +1363,66 @@
     ]
 }
 
+// Phantom Nantuko
+{
+    "name": "Phantom Nantuko",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Insect Spirit",
+    "oracleText": "Trample\nThis creature enters with two +1/+1 counters on it.\nIf damage would be dealt to this creature, prevent that damage. Remove a +1/+1 counter from this creature.\n{T}: Put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Phantom Nantuko:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true
+            },
+            "PreventDamageByRemovingCounter"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "RARE",
+        "artist": "Wayne England",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66f8ca45-b60f-4bb9-9f7e-1b5e13478f22.jpg?1783945109",
+        "rulings": [
+            {
+                "date": "2022-12-08",
+                "text": "If this creature would be dealt damage from multiple sources at the same time (say, because it's blocked by multiple creatures), all of the damage is prevented and only one +1/+1 counter is removed."
+            },
+            {
+                "date": "2022-12-08",
+                "text": "If damage that would be dealt to this creature can't be prevented, the damage is dealt and a +1/+1 counter is removed from this creature."
+            },
+            {
+                "date": "2022-12-08",
+                "text": "If this creature has no +1/+1 counters on it (but is still on the battlefield because something else is raising its toughness), damage that would be dealt to it is still prevented."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ray of Revelation
 {
     "name": "Ray of Revelation",

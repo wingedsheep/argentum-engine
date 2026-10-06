@@ -1984,6 +1984,108 @@
     ]
 }
 
+// Ram Through
+{
+    "name": "Ram Through",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control deals damage equal to its power to target creature you don't control. If the creature you control has trample, excess damage is dealt to that creature's controller instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": "kw:trample"
+                }
+            },
+            "then": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "EntityProperty",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "numericProperty": "Power"
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t1"
+                },
+                "damageSource": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "excessToController": true
+            },
+            "otherwise": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "EntityProperty",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "numericProperty": "Power"
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t1"
+                },
+                "damageSource": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Need a medic! And some stonemasons!\"\n—Wyllon, Drannith merchant",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac0b24e7-14e7-45ee-b5d8-bdb8674b669c.jpg?1783931030",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If either creature is an illegal target as Ram Through tries to resolve, the creature you control won't deal damage to any creature or player."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the target creature you control has deathtouch, 1 damage from it is lethal."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Once you've determined how much damage is excess, the creature you control simultaneously deals damage to the creature and to its controller. This damage may be modified by replacement or prevention effects."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Raugrin Crystal
 {
     "name": "Raugrin Crystal",

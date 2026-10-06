@@ -4977,6 +4977,66 @@
     ]
 }
 
+// Reckless Amplimancer
+{
+    "name": "Reckless Amplimancer",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "{4}{G}: Double this creature's power and toughness until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Reckless Amplimancer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "toughnessModifier": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Toughness"
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{4}{G}: Double this creature's power and toughness until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "artist": "Yigit Koroglu",
+        "flavorText": "\"Linear growth? What am I, a first-year?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc8072b1-6080-45cd-b1c7-353b54a55931.jpg?1783927338",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If an effect instructs you to \"double\" a creature's power, that creature gets +X/+0, where X is its power as that effect begins to apply. The same is true for toughness."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If a creature's power is less than 0 when it's doubled, instead that creature gets -X/-0, where X is how much less than 0 its power is. For example, if an effect has given Reckless Amplimancer -4/-0 so that it's a -2/2 creature, doubling its power and toughness gives it -2/+2, and it becomes a -4/4 creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Relic Sloth
 {
     "name": "Relic Sloth",

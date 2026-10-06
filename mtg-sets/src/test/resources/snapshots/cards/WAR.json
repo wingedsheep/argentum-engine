@@ -3251,6 +3251,57 @@
     ]
 }
 
+// Paradise Druid
+{
+    "name": "Paradise Druid",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "This creature has hexproof as long as it's untapped. (It can't be the target of spells or abilities your opponents control.)\n{T}: Add one mana of any color.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Paradise Druid:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "untapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "flavorText": "\"There are many kinds of duty, and mine is to see our world grow and endure.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6ed8d9e7-cdad-450d-8329-fa653d387a63.jpg?1783933409"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Pouncing Lynx
 {
     "name": "Pouncing Lynx",

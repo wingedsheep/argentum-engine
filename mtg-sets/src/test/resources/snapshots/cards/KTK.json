@@ -11636,7 +11636,7 @@
         "staticAbilities": [
             {
                 "type": "GrantCantBeCountered",
-                "filter": "creature"
+                "filter": "creature ctrl:you"
             },
             {
                 "type": "GrantKeyword",

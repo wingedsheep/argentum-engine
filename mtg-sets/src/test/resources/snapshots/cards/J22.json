@@ -3300,6 +3300,89 @@
     ]
 }
 
+// Rampaging Growth
+{
+    "name": "Rampaging Growth",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Search your library for a basic land card, put it onto the battlefield, then shuffle. Until end of turn, that land becomes a 4/3 Insect creature with reach and haste. It's still a land.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "storeMovedAs": "moved2"
+                },
+                "ShuffleLibrary",
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "moved2"
+                    },
+                    "body": {
+                        "type": "BecomeCreature",
+                        "target": "IterationEntity",
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "keywords": [
+                            "REACH",
+                            "HASTE"
+                        ],
+                        "creatureTypes": [
+                            "Insect"
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Jordana",
+        "flavorText": "When they had the house checked for bugs, they didn't think big enough.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/57218779-7e18-4fa2-a0bb-c07052951a78.jpg?1783919179"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Rodolf Duskbringer
 {
     "name": "Rodolf Duskbringer",
