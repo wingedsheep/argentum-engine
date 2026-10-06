@@ -300,7 +300,7 @@
 {
     "name": "Hungry Flames",
     "manaCost": "{2}{R}",
-    "typeLine": "Sorcery",
+    "typeLine": "Instant",
     "oracleText": "Hungry Flames deals 3 damage to target creature and 2 damage to target player or planeswalker.",
     "script": {
         "spellEffect": {
@@ -382,37 +382,21 @@
                 "id": "Kari Zev, Skyship Raider:1",
                 "trigger": "AttackEvent",
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "CreateToken",
-                            "power": 2,
-                            "toughness": 1,
-                            "colors": [
-                                "RED"
-                            ],
-                            "creatureTypes": [
-                                "Monkey"
-                            ],
-                            "name": "Ragavan",
-                            "imageUri": "https://cards.scryfall.io/normal/front/1/e/1ebc91a9-23e0-4ca1-bc6d-e710ad2efb31.jpg?1783936712",
-                            "tapped": true,
-                            "attacking": true,
-                            "legendary": true
-                        },
-                        {
-                            "type": "CreateDelayedTrigger",
-                            "step": "END_COMBAT",
-                            "effect": {
-                                "type": "MoveToZone",
-                                "target": {
-                                    "type": "PipelineTarget",
-                                    "collectionName": "createdTokens"
-                                },
-                                "destination": "Exile"
-                            }
-                        }
-                    ]
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Monkey"
+                    ],
+                    "name": "Ragavan",
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/e/1ebc91a9-23e0-4ca1-bc6d-e710ad2efb31.jpg?1783936712",
+                    "tapped": true,
+                    "attacking": true,
+                    "legendary": true,
+                    "exileAtStep": "END_COMBAT"
                 }
             }
         ]

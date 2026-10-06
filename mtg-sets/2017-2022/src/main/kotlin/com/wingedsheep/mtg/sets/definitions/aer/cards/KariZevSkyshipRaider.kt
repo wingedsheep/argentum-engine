@@ -3,13 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.aer.cards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Kari Zev, Skyship Raider
@@ -45,12 +42,7 @@ val KariZevSkyshipRaider = card("Kari Zev, Skyship Raider") {
             tapped = true,
             attacking = true,
             imageUri = "https://cards.scryfall.io/normal/front/1/e/1ebc91a9-23e0-4ca1-bc6d-e710ad2efb31.jpg?1783936712",
-        ) then Effects.CreateDelayedTrigger(
-            step = Step.END_COMBAT,
-            effect = Effects.Move(
-                target = EffectTarget.PipelineTarget(CREATED_TOKENS, 0),
-                destination = Zone.EXILE,
-            ),
+            exileAtStep = Step.END_COMBAT,
         )
     }
 

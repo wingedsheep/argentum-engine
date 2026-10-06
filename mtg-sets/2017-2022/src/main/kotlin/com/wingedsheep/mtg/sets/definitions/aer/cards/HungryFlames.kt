@@ -9,13 +9,13 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 /**
  * Hungry Flames
  * {2}{R}
- * Sorcery
+ * Instant
  * Hungry Flames deals 3 damage to target creature and 2 damage to target player or planeswalker.
  */
 val HungryFlames = card("Hungry Flames") {
     manaCost = "{2}{R}"
     colorIdentity = "R"
-    typeLine = "Sorcery"
+    typeLine = "Instant"
     oracleText = "Hungry Flames deals 3 damage to target creature and 2 damage to target player or planeswalker."
 
     spell {

@@ -42,7 +42,7 @@ class GoldspanDragonScenarioTest : ScenarioTestBase() {
             }
         }
 
-        test("becoming the target of a spell creates a Treasure; the spell resolves after it") {
+        test("becoming the target of a spell creates a Treasure for its controller") {
             val game = scenario()
                 .withPlayers("Player1", "Player2")
                 .withCardOnBattlefield(1, "Goldspan Dragon")
@@ -57,7 +57,9 @@ class GoldspanDragonScenarioTest : ScenarioTestBase() {
             game.resolveStack()
 
             withClue("its controller got the Treasure, and the 4/4 survives Shock") {
-                game.findPermanents("Treasure").size shouldBe 1
+                val treasures = game.findPermanents("Treasure")
+                treasures.size shouldBe 1
+                game.state.projectedState.getController(treasures.single()) shouldBe game.player1Id
                 game.isOnBattlefield("Goldspan Dragon") shouldBe true
             }
         }
