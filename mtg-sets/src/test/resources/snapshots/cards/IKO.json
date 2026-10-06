@@ -536,6 +536,54 @@
     ]
 }
 
+// Drannith Stinger
+{
+    "name": "Drannith Stinger",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Whenever you cycle another card, this creature deals 1 damage to each opponent.\nCycling {1} ({1}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Drannith Stinger:1",
+                "trigger": "CycleEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "Whenever you cycle another card, this creature deals 1 damage to each opponent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "artist": "Denman Rooke",
+        "flavorText": "The first line of defense, and the last person you want to anger.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/612ee4be-e7a2-423c-a37c-7c6ca97f630e.jpg?1783931051"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Durable Coilbug
 {
     "name": "Durable Coilbug",
