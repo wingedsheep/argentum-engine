@@ -293,8 +293,19 @@ class ObjectTriggerSubject internal constructor(
         requires: Set<DamagePredicate> = emptySet(),
     ): TriggerSpec = dealsDamage(to, DamageType.Combat, requireExcess, batch, requires)
 
-    /** "is dealt damage [by a source matching [by]]". */
+    /**
+     * "is dealt damage [by a source matching [by]]". Under [Triggers.a] / [Triggers.another] the
+     * subject filter picks the damaged permanent, which becomes the triggering entity ("whenever a
+     * creature an opponent controls with a bounty counter on it is dealt damage, destroy it");
+     * that observer form takes no [by] filter.
+     */
     fun isDealtDamage(by: GameObjectFilter = GameObjectFilter.Any): TriggerSpec {
+        if (binding == TriggerBinding.ANY || binding == TriggerBinding.OTHER) {
+            require(by == GameObjectFilter.Any) {
+                "Triggers.a/another(…).isDealtDamage() can't filter the damage source"
+            }
+            return spec(DamageReceivedEvent(recipient = filterOrAny))
+        }
         unfiltered("isDealtDamage")
         return spec(DamageReceivedEvent(source = by))
     }

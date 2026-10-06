@@ -3370,6 +3370,85 @@
     ]
 }
 
+// Termination Facilitator
+{
+    "name": "Termination Facilitator",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Assassin",
+    "oracleText": "{T}: Put a bounty counter on target creature or planeswalker. Activate only as a sorcery.\nWhenever a creature or planeswalker an opponent controls with a bounty counter on it is dealt damage, destroy it.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Termination Facilitator:2",
+                "trigger": {
+                    "type": "DamageReceivedEvent",
+                    "recipient": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsCreature",
+                                    "IsPlaneswalker"
+                                ]
+                            }
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "BOUNTY"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByOpponent"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Termination Facilitator:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "BOUNTY",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetCreatureOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "RARE",
+        "artist": "Justine Cruz",
+        "flavorText": "\"You sign. They die. Simple as that.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5db59164-f0b1-4b5a-b821-ad0b2e1612d1.jpg?1783919185"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Towering Gibbon
 {
     "name": "Towering Gibbon",

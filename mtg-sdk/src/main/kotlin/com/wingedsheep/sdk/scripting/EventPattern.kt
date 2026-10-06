@@ -1269,18 +1269,24 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * When this permanent is dealt damage.
+     * When a permanent is dealt damage.
      * Binding SELF = "whenever this creature is dealt damage".
      *
      * The [source] filter distinguishes "damaged by a creature" vs "damaged by a spell".
+     *
+     * [recipient] is the observer form (binding ANY / OTHER): "whenever a creature an opponent
+     * controls with a bounty counter on it is dealt damage" (Termination Facilitator). It is matched
+     * against the damaged permanent as the damage is dealt, and the damaged permanent is the
+     * triggering entity. `null` under ANY means any recipient, players included.
      */
     @SerialName("DamageReceivedEvent")
     @Serializable
     data class DamageReceivedEvent(
-        val source: GameObjectFilter = GameObjectFilter.Any
+        val source: GameObjectFilter = GameObjectFilter.Any,
+        val recipient: GameObjectFilter? = null,
     ) : EventPattern {
         override val description: String = buildString {
-            append("this is dealt damage")
+            append(if (recipient != null) "${recipient.description} is dealt damage" else "this is dealt damage")
             if (source != GameObjectFilter.Any) {
                 append(" by ")
                 append(source.description)

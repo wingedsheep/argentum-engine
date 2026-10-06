@@ -256,7 +256,17 @@ class TriggerMatcher(
                 // Generic (source=Any) DamageReceivedEvent can match in the main loop
                 // Specific source-filtered ones are handled in detectDamagedBySourceTriggers
                 if (trigger.source != GameObjectFilter.Any) return false
-                event is DamageDealtEvent && (binding != TriggerBinding.SELF || event.targetId == sourceId)
+                if (event !is DamageDealtEvent) return false
+                if (binding == TriggerBinding.SELF) return event.targetId == sourceId
+                if (binding == TriggerBinding.OTHER && event.targetId == sourceId) return false
+                // Observer form: the damaged permanent must match the recipient filter. A player
+                // recipient never matches an object filter.
+                val recipient = trigger.recipient ?: return true
+                state.getEntity(event.targetId)?.get<CardComponent>() != null &&
+                    predicateEvaluator.matches(
+                        state, state.projectedState, event.targetId, recipient,
+                        com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = sourceId)
+                    )
             }
             is EventPattern.SpellCastEvent -> {
                 event is SpellCastEvent &&

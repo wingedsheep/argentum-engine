@@ -656,6 +656,12 @@ value class CounterType(val name: String) {
          */
         val REPRIEVE = CounterType("REPRIEVE")
 
+        /**
+         * Bounty counter (J22 — Termination Facilitator). A passive marker with no inherent rule: the
+         * card's own observer trigger reads it to destroy a marked permanent when it is dealt damage.
+         */
+        val BOUNTY = CounterType("BOUNTY")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -773,6 +779,7 @@ value class CounterType(val name: String) {
             MIRE,
             COLLECTION,
             REPRIEVE,
+            BOUNTY,
         )
 
         /**
