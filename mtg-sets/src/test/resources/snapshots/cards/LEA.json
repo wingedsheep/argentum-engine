@@ -1798,6 +1798,82 @@
     }
 }
 
+// Drain Power
+{
+    "name": "Drain Power",
+    "manaCost": "{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player activates a mana ability of each land they control. Then that player loses all unspent mana and you add the mana lost this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "player": "TargetPlayer",
+                        "filter": "land"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "gathered0"
+                    },
+                    "body": {
+                        "type": "ActivateManaAbility",
+                        "permanent": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "LoseUnspentMana",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "transferTo": "Controller"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "RARE",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea3830c5-cc66-453e-9e53-0636e00ee0ee.jpg?1783948706",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "A mana ability is an ability that (1) isn't a loyalty ability, (2) doesn't target, and (3) could add mana when it resolves."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "This card forces the target player to draw mana from lands if they are untapped, but that player can choose how to draw the mana if a land they control has multiple mana abilities, or mana abilities with choices."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Your opponent may use instants and abilities of permanents in response to this spell before you get the mana."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If a land can draw a variable amount of mana, the target player (not the player of this spell) chooses how much to draw."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Drudge Skeletons
 {
     "name": "Drudge Skeletons",

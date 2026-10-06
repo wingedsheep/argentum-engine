@@ -548,3 +548,15 @@ data class AddManaPipsContinuation(
 data class ReopenManaPaymentDecisionContinuation(
     val suspension: Suspension
 ) : AutomaticContinuation
+
+/**
+ * Resume after the controller of [source] picks which of its mana abilities to activate for an
+ * instructed activation ([com.wingedsheep.sdk.scripting.effects.ActivateManaAbilityEffect]).
+ * [options] are the activatable abilities, aligned with the decision's options.
+ */
+@Serializable
+data class ActivateManaAbilityChoiceContinuation(
+    val playerId: EntityId,
+    val source: com.wingedsheep.engine.state.ObjectRef,
+    val options: List<ActivateAbility>,
+) : AnswerContinuation

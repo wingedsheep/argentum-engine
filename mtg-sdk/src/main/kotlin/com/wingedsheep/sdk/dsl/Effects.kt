@@ -2702,6 +2702,10 @@ object Effects {
     fun LoseUnspentMana(target: EffectTarget = EffectTarget.Controller, transferTo: EffectTarget? = null): Effect =
         com.wingedsheep.sdk.scripting.effects.LoseUnspentManaEffect(target, transferTo)
 
+    /** [permanent]'s controller activates one of its mana abilities, if able (Drain Power). */
+    fun ActivateManaAbility(permanent: EffectTarget): Effect =
+        com.wingedsheep.sdk.scripting.effects.ActivateManaAbilityEffect(permanent)
+
     /**
      * Add a dynamic amount of colorless mana.
      */

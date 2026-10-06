@@ -464,3 +464,21 @@ data class LoseUnspentManaEffect(
     override val description: String = "${target.description} loses all unspent mana" +
         (transferTo?.let { ", and ${it.description} adds the mana lost this way" } ?: "")
 }
+
+/**
+ * "<Its controller> activates a mana ability of [permanent]" — a mandatory activation made during
+ * resolution; the mana ability resolves immediately, off the stack (CR 605.3b).
+ *
+ * The permanent's controller activates one of its mana abilities whose costs they can pay; if it has
+ * none (a tapped land with only `{T}` abilities, a land with no mana ability), nothing happens. When
+ * it has several, or one with a choice of colour or amount, the controller makes those choices.
+ * Compose with `ForEachInCollection` for "activates a mana ability of each land they control"
+ * (Drain Power).
+ */
+@SerialName("ActivateManaAbility")
+@Serializable
+data class ActivateManaAbilityEffect(
+    val permanent: EffectTarget
+) : Effect {
+    override val description: String = "its controller activates a mana ability of ${permanent.description}"
+}

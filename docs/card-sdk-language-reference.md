@@ -2256,6 +2256,18 @@ vocabulary; this primitive does not provide Word of Command's full mana restrict
   colour, spend restriction, riders, expiry, snow mark and provenance; per-activation spending
   obligations stay behind. Mana a conversion replacement kept (it changed colour instead of being
   lost) is not lost, so it doesn't move. Emits a `ManaAddedEvent` for the recipient.
+- `ActivateManaAbility(permanent)` — "<its controller> activates a mana ability of <permanent>": an
+  instructed activation made mid-resolution; the mana ability resolves at once (CR 605.3b). The candidates are the permanent's mana
+  abilities its controller could activate right now (the same affordable set the legal-action
+  enumerator offers), so a tapped land with only `{T}` abilities, a land with no mana ability or a
+  permanent that has left does nothing. One candidate activates directly; several raise a
+  `ChooseOptionDecision` for the controller. The activation runs through the ordinary activation
+  handler, so costs (life, sacrifice), colour and amount choices (City of Brass — the controller
+  picks), tap triggers and mana triggers (Heartbeat of Spring) all behave as at priority, and
+  priority stays with the resolving object's controller. Compose with `ForEachInCollection` for
+  "each land they control" — Drain Power is `Pipeline { gather(ControlledPermanents(TargetPlayer,
+  Land)) → ForEachInCollection(lands, ActivateManaAbility(IterationEntity)) } then
+  LoseUnspentMana(player, transferTo = Controller)`.
 - `RetainUnspentMana(vararg colors)` — "Until end of turn, you don't lose unspent mana of these colours
   as steps and phases end." The colour-filtered, single-player, turn-scoped one-shot cousin of the
   permanent-static `PreventManaPoolEmptying` (Upwelling, which stops *all* emptying for *everyone*).

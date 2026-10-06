@@ -23,6 +23,7 @@ class ContinuationHandler(
         registerModule(forcedPlayResumer)
         registerAutoResumerModule(forcedPlayResumer)
         registerAutoResumerModule(ManaAbilitySourcesResumer())
+        registerModule(ForcedManaActivationResumer(services))
         registerAutoResumerModule(ManaSpendingObligationsResumer())
         registerAutoResumerModule(ScopedManaProductionResumer(services))
         // Core engine resumers
