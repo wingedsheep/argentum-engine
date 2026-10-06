@@ -83,6 +83,33 @@ class KiboUktabiPrinceScenarioTest : ScenarioTestBase() {
             }
         }
 
+        test("cracking your own Banana does not grow Kibo") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Kibo, Uktabi Prince")
+                .withCardOnBattlefield(1, "Banana", isToken = true)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val kibo = game.findPermanent("Kibo, Uktabi Prince")!!
+            val banana = game.findPermanent("Banana")!!
+            game.execute(
+                ActivateAbility(
+                    playerId = game.player1Id,
+                    sourceId = banana,
+                    abilityId = bananaAbilityId,
+                    manaColorChoice = Color.RED,
+                )
+            ).error shouldBe null
+            game.resolveStack()
+
+            withClue("only an opponent's artifact feeds the trigger") {
+                game.getLifeTotal(1) shouldBe 22
+                game.plusOneCounters(kibo) shouldBe 0
+            }
+        }
+
         test("Kibo attacking makes the defending player sacrifice an artifact") {
             val game = scenario()
                 .withPlayers("Player1", "Player2")

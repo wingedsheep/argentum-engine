@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
  * Ilysian Caryatid
  * {1}{G}
  * Creature — Plant
- * 0/1
+ * 1/1
  * {T}: Add one mana of any color. If you control a creature with power 4 or greater, add two mana
  * of any one color instead.
  */
@@ -20,7 +20,7 @@ val IlysianCaryatid = card("Ilysian Caryatid") {
     manaCost = "{1}{G}"
     colorIdentity = "G"
     typeLine = "Creature — Plant"
-    power = 0
+    power = 1
     toughness = 1
     oracleText = "{T}: Add one mana of any color. If you control a creature with power 4 or greater, " +
         "add two mana of any one color instead."
