@@ -1650,24 +1650,34 @@ data class AdditionalDeathTriggers(
  *
  * Multiple copies are additive: two copies yield two additional land drops.
  *
- * @property count The number of additional land drops granted each turn (default 1)
+ * A null [count] is "any number of lands" (Fastbond) — not a large constant, so it never
+ * overflows when summed with the turn's base drop or other grants; once any applicable grant is
+ * unlimited the player's land plays are unbounded for as long as it applies.
+ *
+ * @property count The number of additional land drops granted each turn (default 1); null for
+ *   "any number of lands"
  * @property affected Who gets the extra drops, relative to the source's controller: [Player.You]
  *   (default), [Player.Each], or [Player.EachOpponent].
  */
 @SerialName("GrantAdditionalLandDrop")
 @Serializable
 data class GrantAdditionalLandDrop(
-    val count: Int = 1,
+    val count: Int? = 1,
     val affected: Player = Player.You
 ) : StaticAbility {
     init {
+        require(count == null || count > 0) { "GrantAdditionalLandDrop.count must be positive or null, was $count" }
         require(affected == Player.You || affected == Player.Each || affected == Player.EachOpponent) {
             "GrantAdditionalLandDrop.affected must be You, Each, or EachOpponent, was $affected"
         }
     }
 
     override val description: String = run {
-        val lands = if (count == 1) "an additional land" else "$count additional lands"
+        val lands = when (count) {
+            null -> "any number of lands"
+            1 -> "an additional land"
+            else -> "$count additional lands"
+        }
         when (affected) {
             Player.Each -> "Each player may play $lands on each of their turns"
             Player.EachOpponent -> "Each opponent may play $lands on each of their turns"

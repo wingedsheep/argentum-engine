@@ -9019,9 +9019,12 @@ in the declare-blockers step, even before the turn-based block action has comple
   additive. `affected` is `Player.You` (Hugs, Grisly Guardian; Oracle of Mul Daya), `Player.Each` for
   the symmetric "each player may play an additional land on each of their turns" (Rites of
   Flourishing, Ghirapur Orrery) or `Player.EachOpponent`, all relative to the source's projected
-  controller. Read by `LandDropUtils.getAdditionalLandDrops`, which scans the whole battlefield (a
+  controller. `count = null` is "you may play **any number of** lands on each of your turns"
+  (Fastbond) — unbounded rather than a large constant, and it wins over every finite grant. Read by
+  `LandDropUtils.getAdditionalLandDrops` (null = unlimited), which scans the whole battlefield (a
   symmetric grant usually sits on another player's side) and unwraps a `ConditionalStaticAbility`;
-  both `PlayLandHandler` and `EnumerationContext` go through it.
+  both `PlayLandHandler` and `EnumerationContext` ask `LandDropUtils.hasLandPlayLeft`. Pair it with
+  `DynamicAmounts.landsPlayedThisTurn()` for "if it wasn't the first land you played this turn".
 - `PlayersCantPlayLands(affected = Player.Each, condition = null, landFilter = GameObjectFilter.Any)`
   — the land-play sibling of `PlayersCantCastSpells` (Worms of the Earth). Playing a land is a
   *special action*, not casting a spell, so a card stopping one says nothing about the other.
@@ -13192,7 +13195,7 @@ forbids `DynamicAmount.X` in card definitions.
   `largestSharedCreatureTypeCount(player)`, `craftedMaterialsTotalPower() / TotalManaValue() /
   ColorCount()`, the entity readers `powerOf / toughnessOf / manaValueOf / countersOn /
   manaSpentToCast / propertyOf(entity, property)` (plus the `source…` / `triggering…` shortcuts), and
-  the turn trackers (`cardsDrawnThisTurn(player)`, `damageReceivedThisTurn(player)`,
+  the turn trackers (`cardsDrawnThisTurn(player)`, `landsPlayedThisTurn(player)`, `damageReceivedThisTurn(player)`,
   `creaturesDiedThisTurn(player)`, `creaturesLeftBattlefieldThisTurn(player)`,
   `distinctBendsThisTurn(player)`, `untappedLandsAtTurnStart(player)`, …).
 - **Every `ContextPropertyKey` a card reads has a named facade**: `triggerDamageAmount()`,

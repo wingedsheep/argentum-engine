@@ -1190,14 +1190,12 @@ class CastPermissionUtils(
         ability.isPowerUp && state.turnNumber in state.powerUpRestrictedTurns
 
     /**
-     * Count additional land drops granted by static abilities on permanents
-     * that apply to the given player (e.g., GrantAdditionalLandDrop from Hugs, Grisly Guardian, or a
-     * symmetric one such as Rites of Flourishing on any player's side).
-     * Multiple sources are additive.
+     * Does [playerId] have a land play left this turn, counting static grants such as
+     * GrantAdditionalLandDrop (Hugs, Grisly Guardian; a symmetric Rites of Flourishing on any
+     * player's side; Fastbond's "any number of lands")? See [LandDropUtils.hasLandPlayLeft].
      */
-    fun getAdditionalLandDrops(state: GameState, playerId: EntityId): Int {
-        return LandDropUtils.getAdditionalLandDrops(state, playerId, cardRegistry, conditionEvaluator)
-    }
+    fun hasLandPlayLeft(state: GameState, playerId: EntityId): Boolean =
+        LandDropUtils.hasLandPlayLeft(state, playerId, cardRegistry, conditionEvaluator)
 
     fun getMaxLoyaltyActivations(state: GameState, playerId: EntityId): Int {
         for (permanentId in state.getBattlefield()) {

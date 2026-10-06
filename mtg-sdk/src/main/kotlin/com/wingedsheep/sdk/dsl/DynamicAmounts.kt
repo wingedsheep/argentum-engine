@@ -732,6 +732,10 @@ object DynamicAmounts {
     fun plusOneCountersPutOnYourCreaturesThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.PLUS_ONE_COUNTERS_PUT_ON_YOUR_CREATURES)
 
+    /** The number of lands [player] has played this turn — the land-play action, not lands put onto the battlefield. */
+    fun landsPlayedThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.LANDS_PLAYED)
+
     /** The number of cards [player] has drawn this turn. */
     fun cardsDrawnThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.CARDS_DRAWN)

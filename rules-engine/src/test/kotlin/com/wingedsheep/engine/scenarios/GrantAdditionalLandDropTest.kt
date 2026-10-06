@@ -43,11 +43,23 @@ class GrantAdditionalLandDropTest : FunSpec({
         }
     }
 
+    val AnyNumberOfLandsBear = card("Any Number Of Lands Bear") {
+        manaCost = "{G}"
+        typeLine = "Creature — Bear"
+        power = 1
+        toughness = 1
+
+        staticAbility {
+            ability = GrantAdditionalLandDrop(count = null)
+        }
+    }
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
         driver.registerCard(LandDropBear)
         driver.registerCard(DoubleLandDropBear)
+        driver.registerCard(AnyNumberOfLandsBear)
         driver.initMirrorMatch(
             deck = Deck.of(
                 "Forest" to 30,
@@ -206,5 +218,49 @@ class GrantAdditionalLandDropTest : FunSpec({
         val forest = driver.putCardInHand(player, "Forest")
         val result = driver.submitExpectFailure(PlayLand(player, forest))
         result.outcome shouldNotBe Outcome.Done
+    }
+
+    test("count = null grants any number of land plays, offered and accepted alike") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.putPermanentOnBattlefield(player, "Any Number Of Lands Bear")
+        // A finite grant alongside must not turn "unlimited" back into a sum.
+        driver.putPermanentOnBattlefield(player, "Land Drop Bear")
+
+        repeat(6) {
+            val forest = driver.putCardInHand(player, "Forest")
+            driver.legalActions(player).any { (it.action as? PlayLand)?.cardId == forest } shouldBe true
+            driver.playLand(player, forest).outcome shouldBe Outcome.Done
+        }
+        driver.state.getEntity(player)?.get<LandDropsComponent>()!!.remaining shouldBe -5
+    }
+
+    test("count = null is lost with its source — the turn's ordinary limit applies again") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val bear = driver.putPermanentOnBattlefield(player, "Any Number Of Lands Bear")
+        repeat(3) { driver.playLand(player, driver.putCardInHand(player, "Forest")).outcome shouldBe Outcome.Done }
+
+        driver.moveToGraveyard(bear)
+        val forest = driver.putCardInHand(player, "Forest")
+        driver.legalActions(player).any { (it.action as? PlayLand)?.cardId == forest } shouldBe false
+        driver.submitExpectFailure(PlayLand(player, forest)).outcome shouldNotBe Outcome.Done
+    }
+
+    test("count = null only reaches the players it names") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val opponent = driver.getOpponent(player)
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.putPermanentOnBattlefield(opponent, "Any Number Of Lands Bear")
+
+        driver.playLand(player, driver.putCardInHand(player, "Forest")).outcome shouldBe Outcome.Done
+        driver.submitExpectFailure(PlayLand(player, driver.putCardInHand(player, "Forest"))).outcome shouldNotBe
+            Outcome.Done
     }
 })
