@@ -27,7 +27,7 @@ class DanceWithDevilsScenarioTest : ScenarioTestBase() {
 
             game.castSpell(1, "Dance with Devils").error shouldBe null
             game.resolveStack()
-            val devils = game.findPermanents("Devil Token").ifEmpty { game.findPermanents("Devil") }
+            val devils = game.findPermanents("Devil Token")
             devils shouldHaveSize 2
 
             game.castSpell(1, "Shock", devils.first()).error shouldBe null
@@ -41,7 +41,7 @@ class DanceWithDevilsScenarioTest : ScenarioTestBase() {
 
             withClue("life2=${game.getLifeTotal(2)} stack=${game.state.stack.size}") {
                 game.getLifeTotal(2) shouldBe 19
-                (game.findPermanents("Devil Token") + game.findPermanents("Devil")) shouldHaveSize 1
+                game.findPermanents("Devil Token") shouldHaveSize 1
             }
         }
     }
