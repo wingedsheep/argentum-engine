@@ -820,6 +820,82 @@
     ]
 }
 
+// Spiteful Prankster
+{
+    "name": "Spiteful Prankster",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "During your turn, this creature has first strike.\nWhenever another creature dies, this creature deals 1 damage to target player or planeswalker.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spiteful Prankster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayerOrPlaneswalker",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever another creature dies, this creature deals 1 damage to target player or planeswalker."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "UNCOMMON",
+        "artist": "Antonio José Manzanedo",
+        "flavorText": "The devil appreciated the irony of using doves for ammunition. The townsfolk, not so much.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d59ee7a6-3dfa-44c7-8f00-0183137c4d31.jpg?1783930500",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If another creature dies at the same time as Spiteful Prankster, Spiteful Prankster's last ability triggers for that creature."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If your life total is brought to 0 or less at the same time that a creature is dealt lethal damage, you lose the game before Spiteful Prankster's ability goes on the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Stone Haven Pilgrim
 {
     "name": "Stone Haven Pilgrim",

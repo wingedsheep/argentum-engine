@@ -5510,6 +5510,63 @@
     ]
 }
 
+// Welding Sparks
+{
+    "name": "Welding Sparks",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Welding Sparks deals X damage to target creature, where X is 3 plus the number of artifacts you control.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Add",
+                "left": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "right": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "artifact"
+                }
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "artist": "Raymond Swanland",
+        "flavorText": "\"The fires of invention burn in all of us. I fight for the freedom to unleash those flames.\"\n—Pia Nalaar",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe2d98db-64c4-40b4-b6c8-61da8cc09f42.jpg?1783937186",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "If you control zero artifacts, Welding Sparks deals 3 damage to the target creature."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "The number of artifacts you control is counted only as Welding Sparks resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Whirlermaker
 {
     "name": "Whirlermaker",

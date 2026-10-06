@@ -4185,6 +4185,65 @@
     "colorIdentityOverride": []
 }
 
+// Storm Fleet Pyromancer
+{
+    "name": "Storm Fleet Pyromancer",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Human Pirate Wizard",
+    "oracleText": "Raid — When this creature enters, if you attacked this turn, this creature deals 2 damage to any target.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Storm Fleet Pyromancer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab5f5e45-2abb-43e1-aecb-97f0390282a7.jpg?1783935739"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Storm Fleet Spy
 {
     "name": "Storm Fleet Spy",

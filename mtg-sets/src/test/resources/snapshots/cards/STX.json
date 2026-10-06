@@ -5951,6 +5951,66 @@
     ]
 }
 
+// Sudden Breakthrough
+{
+    "name": "Sudden Breakthrough",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+0 and gains first strike until end of turn.\nCreate a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "artist": "Colin Boyer",
+        "flavorText": "Rootha created constantly, passionately, in hopes of impressing her greatest critic: herself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b011707a-471b-41c2-bc73-376a55d26bee.jpg?1783927349"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Tangletrap
 {
     "name": "Tangletrap",

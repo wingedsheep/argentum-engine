@@ -1,3 +1,62 @@
+// Courser of Kruphix
+{
+    "name": "Courser of Kruphix",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Enchantment Creature — Centaur",
+    "oracleText": "Play with the top card of your library revealed.\nYou may play lands from the top of your library.\nLandfall — Whenever a land you control enters, you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Courser of Kruphix:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, you gain 1 life."
+            }
+        ],
+        "staticAbilities": [
+            "RevealTopOfLibrary",
+            {
+                "type": "PlayLandsAndCastFilteredFromTopOfLibrary",
+                "spellFilter": null
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/da5a807f-58e8-4d92-a61c-47bb9b28977f.jpg?1783939536",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "Playing a land from the top of your library counts as your land play for the turn."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Courser of Kruphix doesn't change when you can play lands. You can do so only during your main phase when you have priority and the stack is empty."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Cyclops of One-Eyed Pass
 {
     "name": "Cyclops of One-Eyed Pass",

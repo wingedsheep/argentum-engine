@@ -606,6 +606,106 @@
     ]
 }
 
+// Benevolent Hydra
+{
+    "name": "Benevolent Hydra",
+    "manaCost": "{X}{G}{G}",
+    "typeLine": "Creature — Hydra",
+    "oracleText": "This creature enters with X +1/+1 counters on it.\nIf one or more +1/+1 counters would be put on another creature you control, that many plus one +1/+1 counters are put on it instead.\n{T}, Remove a +1/+1 counter from this creature: Put a +1/+1 counter on another target creature you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Benevolent Hydra:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Put a +1/+1 counter on another target creature you control."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "XValue"
+            },
+            {
+                "type": "ModifyCounterPlacement",
+                "appliesTo": {
+                    "type": "CounterPlacementEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "StateNot",
+                                    "predicate": "IsSource"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c575ed35-6357-4b48-9d20-e4249577142b.jpg?1783919182",
+        "rulings": [
+            {
+                "date": "2022-12-02",
+                "text": "\"Put on another creature you control\" includes creatures other than Benevolent Hydra that enter the battlefield with +1/+1 counters on them. If another creature would enter the battlefield with a number of +1/+1 counters on it while you control Benevolent Hydra, it enters with that many counters plus one."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "Each additional Benevolent Hydra you control will increase the number of +1/+1 counters placed on another creature by one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Biblioplex Kraken
 {
     "name": "Biblioplex Kraken",

@@ -2996,6 +2996,49 @@
     ]
 }
 
+// Swaggering Corsair
+{
+    "name": "Swaggering Corsair",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Raid — This creature enters with a +1/+1 counter on it if you attacked this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Scott Murphy",
+        "flavorText": "\"I'm about to make you famous. From the golden city to High and Dry, they'll talk about how fast you died!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22da9f6a-9598-4cfe-b465-719266b65dee.jpg?1783935291"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Swift Warden
 {
     "name": "Swift Warden",

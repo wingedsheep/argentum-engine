@@ -180,6 +180,77 @@
     ]
 }
 
+// Arlinn, Voice of the Pack
+{
+    "name": "Arlinn, Voice of the Pack",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Arlinn",
+    "oracleText": "Each creature you control that's a Wolf or a Werewolf enters with an additional +1/+1 counter on it.\n−2: Create a 2/2 green Wolf creature token.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Arlinn, Voice of the Pack:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wolf"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/5/551f3219-3e98-4354-abcd-db22c3253105.jpg?1783933347"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Wolf|Werewolf ctrl:you",
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/5391d2f1-e8d3-4d39-98cf-367888e10534.jpg?1783933416",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "A creature that's a Wolf or Werewolf enters the battlefield with one +1/+1 counter if it would otherwise enter with no +1/+1 counters."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "A creature that's both a Wolf and a Werewolf receives only one additional +1/+1 counter from Arlinn's ability."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If Arlinn leaves the battlefield before her last ability resolves, most likely because she only had 2 loyalty when you activated the ability, the Wolf token won't enter the battlefield with a +1/+1 counter."
+            }
+        ]
+    },
+    "startingLoyalty": 7,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ashiok's Skulker
 {
     "name": "Ashiok's Skulker",
@@ -217,6 +288,99 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Band Together
+{
+    "name": "Band Together",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Up to two target creatures you control each deal damage equal to their power to another target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t1[0]"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t1[0]"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t1[1]"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t1[1]"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "artist": "Josh Hass",
+        "flavorText": "In times of peril, the vision the ancient paruns had for their city comes into focus.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d1d8aa1-d742-477c-819a-0113912d5011.jpg?1783933416",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If one of the two target creatures you control is an illegal target as Band Together resolves, the other will still deal damage equal to its power."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the last target creature is an illegal target as Band Together resolves, or if both of the first targets are illegal targets, no creature deals or is dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

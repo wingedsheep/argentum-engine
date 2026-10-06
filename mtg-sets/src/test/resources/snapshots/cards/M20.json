@@ -2098,6 +2098,83 @@
     ]
 }
 
+// Wildfire Elemental
+{
+    "name": "Wildfire Elemental",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Whenever an opponent is dealt noncombat damage, creatures you control get +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wildfire Elemental:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageNonCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent is dealt noncombat damage, creatures you control get +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "297",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Fire is always dancing, leaping and whirling, seeking more fuel. It never rests, so why should I?\"\n—Chandra Nalaar",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/272e317c-55c4-43b2-91aa-3e0009cfd7d5.jpg?1783932917",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Combat damage is the damage that's dealt automatically by attacking and blocking creatures. Any other damage is noncombat damage, even if it's dealt during a combat phase by an attacking or blocking creature."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "The last ability of Wildfire Elemental triggers once for each event in which an opponent is dealt noncombat damage, regardless of how much damage that player is dealt."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Wildfire Elemental's triggered ability affects only creatures you control at the time it resolves. Creatures you begin to control later in the turn won't get +1/+0."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "In a multiplayer game, if a source deals damage to multiple opponents at the same time, the last ability of Wildfire Elemental will trigger that many times."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Winged Words
 {
     "name": "Winged Words",
