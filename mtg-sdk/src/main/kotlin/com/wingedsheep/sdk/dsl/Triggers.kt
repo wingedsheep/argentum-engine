@@ -294,19 +294,26 @@ class ObjectTriggerSubject internal constructor(
     ): TriggerSpec = dealsDamage(to, DamageType.Combat, requireExcess, batch, requires)
 
     /**
-     * "is dealt damage [by a source matching [by]]". Under [Triggers.a] / [Triggers.another] the
-     * subject filter picks the damaged permanent, which becomes the triggering entity ("whenever a
-     * creature an opponent controls with a bounty counter on it is dealt damage, destroy it");
-     * that observer form takes no [by] filter.
+     * "is dealt damage" — or, with [by], "a source matching [by] deals damage to <subject>".
+     * Without [by], simultaneous damage to the subject is one event (CR 603.2c): it triggers once
+     * and "that much" is the total (Fungusaur, Boros Reckoner, Pain for All). With [by] it
+     * triggers once per damage source, which becomes the triggering entity — "whenever a source
+     * deals damage to this creature" is `by = GameObjectFilter.Any` (Nested Ghoul, Phyrexian
+     * Obliterator). Under [Triggers.a] / [Triggers.another] the subject filter picks the damaged
+     * permanent, which becomes the triggering entity ("whenever a creature an opponent controls
+     * with a bounty counter on it is dealt damage, destroy it"); that observer form takes no [by].
      */
-    fun isDealtDamage(by: GameObjectFilter = GameObjectFilter.Any): TriggerSpec {
+    fun isDealtDamage(by: GameObjectFilter? = null): TriggerSpec {
         if (binding == TriggerBinding.ANY || binding == TriggerBinding.OTHER) {
-            require(by == GameObjectFilter.Any) {
+            require(by == null) {
                 "Triggers.a/another(…).isDealtDamage() can't filter the damage source"
             }
             return spec(DamageReceivedEvent(recipient = filterOrAny))
         }
         unfiltered("isDealtDamage")
+        require(by == null || binding == TriggerBinding.SELF) {
+            "Triggers.attached.isDealtDamage() can't filter the damage source"
+        }
         return spec(DamageReceivedEvent(source = by))
     }
 

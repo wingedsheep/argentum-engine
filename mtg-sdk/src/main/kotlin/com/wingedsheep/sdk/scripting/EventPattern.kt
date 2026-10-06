@@ -1272,7 +1272,14 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * When a permanent is dealt damage.
      * Binding SELF = "whenever this creature is dealt damage".
      *
-     * The [source] filter distinguishes "damaged by a creature" vs "damaged by a spell".
+     * [source] picks between the two Oracle wordings, which trigger differently:
+     * - `null` — "whenever this is dealt damage" (Fungusaur, Boros Reckoner). Damage dealt to the
+     *   recipient simultaneously is one trigger event (CR 603.2c): two blockers' combat damage
+     *   (CR 510.2) triggers it once, and "that much damage" is the total. The damaged permanent is
+     *   the triggering entity.
+     * - a filter — "whenever a [source matching it] deals damage to this" (Nested Ghoul with
+     *   [GameObjectFilter.Any], Tephraderm with `Creature`). Triggers once per source, and the
+     *   damage source is the triggering entity, so "that source's controller" resolves.
      *
      * [recipient] is the observer form (binding ANY / OTHER): "whenever a creature an opponent
      * controls with a bounty counter on it is dealt damage" (Termination Facilitator). It is matched
@@ -1282,14 +1289,15 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     @SerialName("DamageReceivedEvent")
     @Serializable
     data class DamageReceivedEvent(
-        val source: GameObjectFilter = GameObjectFilter.Any,
+        val source: GameObjectFilter? = null,
         val recipient: GameObjectFilter? = null,
     ) : EventPattern {
         override val description: String = buildString {
-            append(if (recipient != null) "${recipient.description} is dealt damage" else "this is dealt damage")
-            if (source != GameObjectFilter.Any) {
-                append(" by ")
-                append(source.description)
+            val damaged = recipient?.description ?: "this"
+            when (source) {
+                null -> append("$damaged is dealt damage")
+                GameObjectFilter.Any -> append("a source deals damage to $damaged")
+                else -> append("$damaged is dealt damage by ${source.description}")
             }
         }
     }

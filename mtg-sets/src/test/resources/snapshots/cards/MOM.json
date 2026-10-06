@@ -19878,7 +19878,10 @@
             "triggeredAbilities": [
                 {
                     "id": "Rona, Tolarian Obliterator:1",
-                    "trigger": "DamageReceivedEvent",
+                    "trigger": {
+                        "type": "DamageReceivedEvent",
+                        "source": {}
+                    },
                     "effect": {
                         "type": "Composite",
                         "effects": [

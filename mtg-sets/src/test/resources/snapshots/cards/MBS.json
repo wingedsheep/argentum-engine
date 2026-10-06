@@ -355,7 +355,10 @@
         "triggeredAbilities": [
             {
                 "id": "Nested Ghoul:1",
-                "trigger": "DamageReceivedEvent",
+                "trigger": {
+                    "type": "DamageReceivedEvent",
+                    "source": {}
+                },
                 "effect": {
                     "type": "CreateToken",
                     "power": 2,

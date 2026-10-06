@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Whenever a source deals damage to this creature, that source's controller sacrifices that many
  * permanents of their choice.
  *
- * Same join as Belltower Sphinx: `Triggers.self.isDealtDamage()` binds the damage *source* as the
+ * Same join as Belltower Sphinx: `Triggers.self.isDealtDamage(by = GameObjectFilter.Any)` binds the damage *source* as the
  * triggering entity, so `Player.ControllerOfTriggeringEntity` is "that source's controller" (last-known
  * controller for a burn spell that has already left the stack), and the amount is the per-event
  * damage. Reprinted in ONE (Printing row there).
@@ -35,7 +35,7 @@ val PhyrexianObliterator = card("Phyrexian Obliterator") {
     keywords(Keyword.TRAMPLE)
 
     triggeredAbility {
-        trigger = Triggers.self.isDealtDamage()
+        trigger = Triggers.self.isDealtDamage(by = GameObjectFilter.Any)
         effect = Effects.Sacrifice(
             GameObjectFilter.Any,
             DynamicAmounts.triggerDamageAmount(),
