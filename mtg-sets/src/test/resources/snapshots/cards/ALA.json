@@ -1584,6 +1584,58 @@
     ]
 }
 
+// Feral Hydra
+{
+    "name": "Feral Hydra",
+    "manaCost": "{X}{G}",
+    "typeLine": "Creature — Hydra Beast",
+    "oracleText": "This creature enters with X +1/+1 counters on it.\n{3}: Put a +1/+1 counter on this creature. Any player may activate this ability.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Feral Hydra:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "restrictions": [
+                    "AnyPlayerMay"
+                ],
+                "descriptionOverride": "{3}: Put a +1/+1 counter on this creature. Any player may activate this ability."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "flavorText": "It shreds its prey as each head fights for the choicest bits.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46f76986-e9fb-4c51-b946-880b501775b0.jpg?1783942554"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Filigree Sages
 {
     "name": "Filigree Sages",
@@ -1675,6 +1727,114 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Gift of the Gargantuan
+{
+    "name": "Gift of the Gargantuan",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top four cards of your library. You may reveal a creature card and/or a land card from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in any order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "creature",
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "prompt": "You may reveal a creature card to put into your hand",
+                    "selectedLabel": "Put in hand",
+                    "remainderLabel": "Leave",
+                    "showAllCards": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "remainder1",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "land",
+                    "storeSelected": "selected2",
+                    "storeRemainder": "remainder2",
+                    "prompt": "You may reveal a land card to put into your hand",
+                    "selectedLabel": "Put in hand",
+                    "remainderLabel": "Put on bottom",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "ControllerChooses"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "artist": "Jean-Sébastien Rossbach",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/1850be87-54de-49b3-a407-6fb2b278b25c.jpg?1783942554",
+        "rulings": [
+            {
+                "date": "2008-10-01",
+                "text": "You may reveal a creature card, or you may reveal a land card, or you may reveal both a creature card and a land card."
+            },
+            {
+                "date": "2008-10-01",
+                "text": "If one of the cards is Dryad Arbor (a creature land card), you may reveal Dryad Arbor and another land card or Dryad Arbor and another creature card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

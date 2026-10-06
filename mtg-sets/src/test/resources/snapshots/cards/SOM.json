@@ -1420,6 +1420,89 @@
     ]
 }
 
+// Engulfing Slagwurm
+{
+    "name": "Engulfing Slagwurm",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Wurm",
+    "oracleText": "Whenever this creature blocks or becomes blocked by a creature, destroy that creature. You gain life equal to that creature's toughness.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Engulfing Slagwurm:1",
+                "trigger": {
+                    "type": "BlocksOrBecomesBlockedByEvent",
+                    "partnerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "number0",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            }
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": "TriggeringEntity",
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "number0"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature blocks or becomes blocked by a creature, destroy that creature. You gain life equal to that creature's toughness."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "flavorText": "Its teeth exist only for decoration.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8aeabc4a-7b4f-4e3d-bcc7-423bb703563a.jpg?1783941718",
+        "rulings": [
+            {
+                "date": "2011-01-01",
+                "text": "Engulfing Slagwurm's ability triggers and resolves during the declare blockers step. Creatures destroyed this way will not deal combat damage."
+            },
+            {
+                "date": "2011-01-01",
+                "text": "If your Engulfing Slagwurm blocks or becomes blocked by multiple creatures, its ability triggers that many times. Each trigger will be associated with a specific creature. You choose which order to have the abilities resolve."
+            },
+            {
+                "date": "2011-01-01",
+                "text": "If Engulfing Slagwurm's ability resolves and the other creature is not destroyed (perhaps because it has already left the battlefield or it regenerates), you'll still gain life equal to that creature's toughness."
+            },
+            {
+                "date": "2011-01-01",
+                "text": "As each ability resolves, the amount of life you gain is equal to the appropriate creature's current toughness (if it's somehow still on the battlefield), or its toughness as it last existed on the battlefield (in all other cases)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Exsanguinate
 {
     "name": "Exsanguinate",

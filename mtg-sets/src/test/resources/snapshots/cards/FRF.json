@@ -166,6 +166,49 @@
     ]
 }
 
+// Frontier Mastodon
+{
+    "name": "Frontier Mastodon",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elephant",
+    "oracleText": "Ferocious — This creature enters with a +1/+1 counter on it if you control a creature with power 4 or greater.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature pow>=4",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Nils Hamm",
+        "flavorText": "Each bronze disk on its harness is an offering from a young Temur hunter, a sign of respect to the spirits of the wild.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46c09fe7-d55f-49b4-95c9-a3bb36baa3aa.jpg?1783938681",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Frontier Mastodon's ferocious ability checks if you control a creature with power 4 or greater as Frontier Mastodon enters the battlefield. Because Frontier Mastodon isn't on the battlefield at this time, it won't count itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gore Swine
 {
     "name": "Gore Swine",

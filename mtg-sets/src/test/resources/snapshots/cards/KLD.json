@@ -2547,6 +2547,81 @@
     ]
 }
 
+// Ghirapur Guide
+{
+    "name": "Ghirapur Guide",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Scout",
+    "oracleText": "{2}{G}: Target creature you control can't be blocked by creatures with power 2 or less this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ghirapur Guide:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "CantBeBlockedBy",
+                        "blockerFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerAtMost",
+                                    "max": 2
+                                }
+                            ]
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{G}: Target creature you control can't be blocked by creatures with power 2 or less this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "UNCOMMON",
+        "artist": "Scott Murphy",
+        "flavorText": "Fairgoers were delighted to find that even outside the fairgrounds, Ghirapur was a city of wonders.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92b6ad4a-3701-4ee8-8e1e-46cdab8e730f.jpg?1783937179",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Once a creature with power 2 or less has blocked a creature, activating Ghirapur Guide's ability won't change or undo that block."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Once a creature with power 3 or greater has blocked the target creature, changing the power of the blocking creature won't change or undo that block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ghirapur Orrery
 {
     "name": "Ghirapur Orrery",

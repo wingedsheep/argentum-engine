@@ -911,6 +911,62 @@
     ]
 }
 
+// Declare Dominance
+{
+    "name": "Declare Dominance",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gets +3/+3 until end of turn. All creatures able to block it this turn do so.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MustBeBlocked",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "UNCOMMON",
+        "artist": "Simon Dominic",
+        "flavorText": "\"If you think yourself a chief, then prove your might.\"\n—Gar-Tun, Mistvalley silverback",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78271f34-f62e-4771-b430-b121097b8fb6.jpg?1783934538"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Demon of Catastrophes
 {
     "name": "Demon of Catastrophes",

@@ -325,6 +325,73 @@
     ]
 }
 
+// Giant Caterpillar
+{
+    "name": "Giant Caterpillar",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "{G}, Sacrifice this creature: Create a 1/1 green Insect creature token with flying named Butterfly at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Giant Caterpillar:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Insect"
+                        ],
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "name": "Butterfly",
+                        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7636957-f183-4f58-87a6-056cde657114.jpg?1783916646"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "artist": "Zina Saunders",
+        "flavorText": "\"'I've seen hornworms big as a man's fist,' the traveler said, and nodded soberly when our jaws went slack at his ignorance.\"\n—Afari, Tales",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7f602a6-3d35-49a3-b5cb-d754e03a9573.jpg?1783946983",
+        "rulings": [
+            {
+                "date": "2006-02-01",
+                "text": "It used to make Butterfly tokens. Now it makes Insect tokens named Butterfly."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Hulking Cyclops
 {
     "name": "Hulking Cyclops",

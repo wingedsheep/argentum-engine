@@ -677,6 +677,80 @@
     "colorIdentityOverride": []
 }
 
+// Enlarge
+{
+    "name": "Enlarge",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gets +7/+7 and gains trample until end of turn. It must be blocked this turn if able. (A creature with trample can deal excess combat damage to the player or planeswalker it's attacking.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 7
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 7
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MustBeBlocked",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "allCreatures": false
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "UNCOMMON",
+        "artist": "Michael Komarck",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b46cd181-59d8-4d4c-a8b6-e6b38704009c.jpg?1783939906",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "Only one creature is required to block the affected creature. Other creatures may also block it and are free to block other creatures or not block at all."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If each creature the defending player controls can't block for any reason (such as being tapped), then the affected creature isn't blocked. If there's a cost associated with blocking the affected creature, the defending player isn't forced to pay that cost, so it doesn't have to be blocked in that case either."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Galerider Sliver
 {
     "name": "Galerider Sliver",

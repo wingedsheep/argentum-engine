@@ -390,6 +390,53 @@
     ]
 }
 
+// Drowsing Tyrannodon
+{
+    "name": "Drowsing Tyrannodon",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Defender (This creature can't attack.)\nAs long as you control a creature with power 4 or greater, this creature can attack as though it didn't have defender.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanAttackDespiteDefender",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature pow>=4"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "artist": "Simon Dominic",
+        "flavorText": "What the rangers thought were warning growls turned out to be nothing but monstrous snoring.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/288b056a-ea80-4fdc-990d-0ee1e9a7bf64.jpg?1783930678",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Once Drowsing Tyrannodon has attacked, it will remain an attacking creature even if you no longer control a creature with power 4 or greater."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If Drowsing Tyrannodon's power is raised to 4 or greater, it will allow itself to attack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Elder Gargaroth
 {
     "name": "Elder Gargaroth",

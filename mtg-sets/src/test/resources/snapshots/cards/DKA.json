@@ -553,6 +553,72 @@
     ]
 }
 
+// Feed the Pack
+{
+    "name": "Feed the Pack",
+    "manaCost": "{5}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your end step, you may sacrifice a nontoken creature. If you do, create X 2/2 green Wolf creature tokens, where X is the sacrificed creature's toughness.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Feed the Pack:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature nontoken"
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "EntityProperty",
+                            "entity": "SacrificedAsCost",
+                            "numericProperty": "Toughness"
+                        },
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Wolf"
+                        ]
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, you may sacrifice a nontoken creature. If you do, create X 2/2 green Wolf creature tokens, where X is the sacrificed creature's toughness."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/9831e3cc-659b-4408-b5d8-a27ae2738680.jpg?1783940809",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "You choose whether to sacrifice a nontoken creature and which creature to sacrifice when Feed the Pack's ability resolves."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "Check the sacrificed creature's toughness as it last existed on the battlefield to determine how many Wolves you put onto the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gather the Townsfolk
 {
     "name": "Gather the Townsfolk",
