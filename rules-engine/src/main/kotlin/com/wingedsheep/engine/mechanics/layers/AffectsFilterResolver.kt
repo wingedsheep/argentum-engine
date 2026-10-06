@@ -1027,6 +1027,7 @@ internal class AffectsFilterResolver(
         is CardPredicate.ManaValueAtMostEntity -> false
         is CardPredicate.ManaValueAtMostEntityManaSpent -> false
         is CardPredicate.ManaValueAtMostColorsSpent -> false
+        CardPredicate.ManaCostPayableWithManaSpent -> false
         is CardPredicate.ManaValueAtMostDynamic -> false
         is CardPredicate.ManaValueEqualsDynamic -> false
         is CardPredicate.PowerEqualsDynamic -> false

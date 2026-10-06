@@ -1304,6 +1304,8 @@ class CostCalculator(
             // moment the filter is checked (Omnipresence: "mana value less than or equal to the
             // number of creatures you control"). With no source or state there is nothing to
             // resolve "you" against, so the predicate stays closed.
+            // Resolution-only: a cost-reduction filter has no resolving payment to read.
+            CardPredicate.ManaCostPayableWithManaSpent -> false
             is CardPredicate.ManaValueAtMostDynamic ->
                 sourceDynamicValue(state, sourceEntityId, predicate.amount)
                     ?.let { cardDef.manaCost.cmc <= it } ?: false

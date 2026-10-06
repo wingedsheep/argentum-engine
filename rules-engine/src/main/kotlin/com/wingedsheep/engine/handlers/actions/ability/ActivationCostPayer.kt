@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.mechanics.mana.SpentMana
+
 import com.wingedsheep.engine.mechanics.mana.allocateFloating
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -72,6 +74,8 @@ internal data class ActivationPayment(
      */
     val countersRemovedAsCost: Int,
     val snapshots: ActivationCostSnapshots,
+    /** The mana spent on the cost's mana portion, by type (Illusionary Mask reads it). */
+    val manaSpent: SpentMana = SpentMana(),
 )
 
 internal sealed interface ActivationPaymentOutcome {
@@ -155,6 +159,10 @@ internal class ActivationCostPayer(
         val manaCost = if (reducedManaCost == null) null else reducedManaCost.withPhyrexianPaidByLife(phyrexianLifePayments)
             ?: return ActivationPaymentOutcome.Failed("Invalid Phyrexian mana payment")
 
+        // What the pool held before any payment, and the mana the explicit path's sources made and
+        // spent directly without floating it — together they price what this activation spent.
+        var spentBaseline = manaPool
+        var sourceMana = SpentMana()
         val scopedDirect = currentState.activeManaSpendingScope(action.playerId) != null
         val scopedAllocation = if (scopedDirect && manaCost != null) manaPool.allocateFloating(
             manaCost, paymentContext, if (manaCost.hasX) xValue * manaCost.xCount else 0,
@@ -173,7 +181,11 @@ internal class ActivationCostPayer(
                 is ManaTapOutcome.Failed -> return ActivationPaymentOutcome.Failed(tapped.reason)
                 is ManaTapOutcome.Tapped -> {
                     currentState = tapped.state
+                    // Auto-tap floats what it taps, so the post-tap pool is the baseline; the
+                    // explicit path spends floating mana and taps its sources straight into the cost.
+                    if (action.paymentStrategy !is PaymentStrategy.Explicit) spentBaseline = tapped.pool
                     manaPool = tapped.pool
+                    sourceMana = tapped.sourceMana
                     events.addAll(tapped.events)
                 }
             }
@@ -311,6 +323,7 @@ internal class ActivationCostPayer(
                 discardedCards = costResult.events.filterIsInstance<CardsDiscardedEvent>().flatMap { it.cardIds },
                 countersRemovedAsCost = costResult.events.filterIsInstance<CountersRemovedEvent>().sumOf { it.amount },
                 snapshots = snapshots,
+                manaSpent = SpentMana.between(spentBaseline, manaPool) + sourceMana,
             )
         )
     }
@@ -363,7 +376,13 @@ internal class ActivationCostPayer(
     }
 
     private sealed interface ManaTapOutcome {
-        data class Tapped(val state: GameState, val pool: ManaPool, val events: List<GameEvent>) : ManaTapOutcome
+        data class Tapped(
+            val state: GameState,
+            val pool: ManaPool,
+            val events: List<GameEvent>,
+            /** Mana the chosen sources made and spent straight on the cost, never floating. */
+            val sourceMana: SpentMana = SpentMana(),
+        ) : ManaTapOutcome
         data class Failed(val reason: String) : ManaTapOutcome
     }
 
@@ -403,6 +422,7 @@ internal class ActivationCostPayer(
                 val events = mutableListOf<GameEvent>()
                 val partialResult = pool.payPartial(manaCost, paymentContext)
                 val remainingCost = partialResult.remainingCost
+                var sourceMana = SpentMana()
                 if (!remainingCost.isEmpty() || manaXValue > 0) {
                     // Solve the remainder against the chosen sources only (non-chosen excluded),
                     // matching CastPaymentProcessor.explicitPay so we never tap more than needed.
@@ -421,8 +441,13 @@ internal class ActivationCostPayer(
                         currentState = tappedState
                         events.addAll(tapEvents)
                     }
+                    for (production in solution.manaProduced.values) {
+                        sourceMana = if (production.color != null) sourceMana.plus(production.color, production.amount)
+                            else sourceMana.plus(null, production.colorless)
+                    }
+                    for ((color, amount) in solution.bonusManaSpentByColor) sourceMana = sourceMana.plus(color, amount)
                 }
-                ManaTapOutcome.Tapped(currentState, partialResult.newPool, events)
+                ManaTapOutcome.Tapped(currentState, partialResult.newPool, events, sourceMana)
             }
             else -> {
                 val autoTapResult = autoTapper.autoTapForManaCost(

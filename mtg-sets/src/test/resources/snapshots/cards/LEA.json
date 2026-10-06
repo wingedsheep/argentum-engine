@@ -3464,6 +3464,110 @@
     "colorIdentityOverride": []
 }
 
+// Illusionary Mask
+{
+    "name": "Illusionary Mask",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{X}: You may choose a creature card in your hand whose mana cost could be paid by some amount of, or all of, the mana you spent on {X}. If you do, you may cast that card face down as a 2/2 creature spell without paying its mana cost. If the creature that spell becomes as it resolves has not been turned face up and would assign or deal damage, be dealt damage, or become tapped, instead it's turned face up and assigns or deals damage, is dealt damage, or becomes tapped. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Illusionary Mask:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{X}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        "ManaCostPayableWithManaSpent"
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may choose a creature card whose mana cost the mana spent on X could pay",
+                            "selectedLabel": "Choose"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "selected1",
+                                "castFaceDown": true,
+                                "turnsFaceUpInstead": true
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Choose a creature card in your hand and cast it face down"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "rarity": "RARE",
+        "artist": "Amy Weber",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62ef2f37-b8ad-47ad-89ca-d6abcb7ff21b.jpg?1783948666",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "Illusionary Mask's ability will continue to apply to creatures cast face down with it, even if Illusionary Mask has left the battlefield."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "While the creature card is face down, it's a 2/2 creature with no name, mana cost, color, creature type, abilities, or expansion symbol. Since it has no mana cost, its mana value is 0."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "You can turn a face-down permanent face up if it would have morph while face up. This applies to creatures you cast face down as a result of Illusionary Mask's effect. The rest of Illusionary Mask's effect applies to it as well."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "You actually cast the card face-down, much as when playing a spell with Morph. It can be responded to and countered."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "The effect that turns it face-up is a replacement effect. It doesn't use the stack and can't be responded to."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "Both the amount and types of mana you spend on {X} are taken into account while you're choosing a creature card from your hand. For example, if you spent {U}{U} on {X}, you can choose a creature card with mana cost {U}{U}, {1}{U}, {2}, or {W/U}{W/U}, among other possibilities, but not one that costs {2}{U} or one that costs {G}."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "The creature enters face down, so none of its \"enters\" abilities will trigger or have any effect. Also none of its \"As this enters\" abilities apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Instill Energy
 {
     "name": "Instill Energy",

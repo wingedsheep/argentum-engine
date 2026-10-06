@@ -397,6 +397,7 @@ class PredicateEvaluator(
             is CardPredicate.ManaValueAtLeast,
             is CardPredicate.ManaValueAtMost,
             is CardPredicate.ManaValueAtMostColorsSpent,
+            CardPredicate.ManaCostPayableWithManaSpent,
             is CardPredicate.ManaValueAtMostDynamic,
             is CardPredicate.ManaValueAtMostEntity,
             is CardPredicate.ManaValueAtMostEntityManaSpent,
@@ -911,6 +912,13 @@ class PredicateEvaluator(
                 val colorsSpent = ManaSpentReader.distinctColorsSpent(state, refEntityId)
                 val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
                 cmc <= colorsSpent
+            }
+            // Illusionary Mask: the resolving ability's recorded payment, allocated exactly against
+            // the card's mana cost. A face-down object has no mana cost, and with no recorded
+            // payment (not resolving, or a triggered ability) nothing matches.
+            CardPredicate.ManaCostPayableWithManaSpent -> {
+                val spent = context?.resolution?.manaSpent ?: return false
+                projectedValues?.isFaceDown != true && spent.couldPay(card.manaCost)
             }
             is CardPredicate.ManaValueAtMostDynamic -> {
                 val cap = evaluateDynamicCap(state, predicate.amount, context) ?: return false
@@ -2540,6 +2548,7 @@ class PredicateEvaluator(
             is CardPredicate.ManaValueAtMostEntity -> false
             is CardPredicate.ManaValueAtMostEntityManaSpent -> false
             is CardPredicate.ManaValueAtMostColorsSpent -> false
+            CardPredicate.ManaCostPayableWithManaSpent -> false
             is CardPredicate.ManaValueAtMostDynamic -> false
             is CardPredicate.ManaValueEqualsDynamic -> false
             is CardPredicate.PowerEqualsDynamic -> false

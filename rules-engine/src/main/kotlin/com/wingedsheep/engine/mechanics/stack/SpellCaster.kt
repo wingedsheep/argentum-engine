@@ -219,6 +219,10 @@ internal class SpellCaster(
             modeDamageDistribution = modeDamageDistribution,
             sacrificedPermanents = sacrificedPermanents,
             castFaceDown = castFaceDown,
+            // Read off the authorizing permission before consumeCastPermissions spends it below.
+            turnsFaceUpInstead = castFaceDown && state.mayPlayPermissions.any {
+                it.castFaceDown && it.turnsFaceUpInstead && it.controllerId == casterId && cardId in it.cardIds
+            },
             damageDistribution = damageDistribution,
             chosenCreatureType = chosenCreatureType,
             exiledCardCount = exiledCardCount,

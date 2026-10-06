@@ -428,12 +428,19 @@ internal class CastValidator(
         val castableFaceDown = cardDef?.keywordAbilities?.any {
             it is KeywordAbility.Morph || it is KeywordAbility.Disguise
         } == true
-        if (!castableFaceDown) {
+        // An effect may allow casting any card face down (Illusionary Mask), through a permission
+        // naming the card; without one, only morph and disguise do (CR 702.37c / 702.168a).
+        val permittedFaceDown = state.mayPlayPermissions.any {
+            it.castFaceDown && it.controllerId == action.playerId && action.cardId in it.cardIds
+        }
+        if (!castableFaceDown && !permittedFaceDown) {
             return "This card cannot be cast face down (no morph or disguise ability)"
         }
         if (!duringResolution && !turnManager.canPlaySorcerySpeed(state, action.playerId)) {
             return "You can only cast face-down creatures at sorcery speed"
         }
+        // "Cast it face down without paying its mana cost": the face-down {3} is waived too.
+        if (zoneResolver.hasPlayWithoutPayingCost(state, action.playerId, action.cardId)) return null
         return castCostPayer.validateManaPayment(state, action, costCalculator.calculateFaceDownCost(state, action.playerId))
     }
 

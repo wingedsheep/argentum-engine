@@ -251,6 +251,10 @@ internal class PermanentEntry(
             val castDef = state.getEntity(spellId)?.get<CardComponent>()
                 ?.let { cardRegistry.getCard(it.cardDefinitionId) }
             FaceDownTurnUp.castMode(castDef)?.let { updated = updated.with(FaceDownModeComponent(it)) }
+            // Illusionary Mask's rider belongs to "the creature that spell becomes as it resolves".
+            if (spellComponent.turnsFaceUpInstead) {
+                updated = com.wingedsheep.engine.mechanics.FaceUpInstead.stamp(updated, staticAbilityHandler)
+            }
         }
 
         // All permanents enter summoning sick (CR 302.6 / 508.1a — the control-continuity

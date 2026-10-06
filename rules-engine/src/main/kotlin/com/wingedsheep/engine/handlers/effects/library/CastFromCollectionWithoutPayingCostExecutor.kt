@@ -112,8 +112,9 @@ class CastFromCollectionWithoutPayingCostExecutor(
         }
 
         // Check targeting *before* granting: a grant made ahead of a cast that never happens
-        // would follow the card out of exile and stay live until end-of-turn cleanup.
-        val prep = prepareTargetSelection(
+        // would follow the card out of exile and stay live until end-of-turn cleanup. A face-down
+        // spell is a vanilla 2/2 (CR 708.2) — nothing on it targets.
+        val prep = if (effect.castFaceDown) TargetPrep.NotNeeded else prepareTargetSelection(
             state, cardId, controllerId, cardRegistry, targetFinder, effect.storeCastTo,
             castTransformed = castTransformed,
             faceIndex = faceIndex,
@@ -138,6 +139,8 @@ class CastFromCollectionWithoutPayingCostExecutor(
             faceIndex = faceIndex,
             alternativeCost = alternativeCost,
             additionalManaCost = effect.additionalManaCost,
+            castFaceDown = effect.castFaceDown,
+            turnsFaceUpInstead = effect.turnsFaceUpInstead,
         )
 
         if (prep is TargetPrep.NeedsTargets) {
@@ -148,7 +151,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
         }
 
         // No targets needed (or modal — CastSpellHandler will handle per-mode targets).
-        return invokeCast(newState, controllerId, cardId, permId, emptyList(), effect.storeCastTo, faceIndex)
+        return invokeCast(newState, controllerId, cardId, permId, emptyList(), effect.storeCastTo, faceIndex, effect.castFaceDown)
     }
 
     /** True when [cardId]'s definition has a back face to be cast transformed as. */
@@ -165,11 +168,12 @@ class CastFromCollectionWithoutPayingCostExecutor(
         targets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget>,
         storeCastTo: String?,
         faceIndex: Int?,
+        castFaceDown: Boolean = false,
     ): EffectResult {
         val stateForCast = state.copy(priorityPlayerId = casterId)
         val castResult = castSpellHandlerProvider().execute(
             stateForCast,
-            CastSpell(casterId, cardId, targets, faceIndex = faceIndex),
+            CastSpell(casterId, cardId, targets, faceIndex = faceIndex, castFaceDown = castFaceDown),
         )
 
         if (castResult.error != null) {
@@ -237,6 +241,8 @@ class CastFromCollectionWithoutPayingCostExecutor(
             faceIndex: Int? = null,
             alternativeCost: AdditionalCost? = null,
             additionalManaCost: ManaCost? = null,
+            castFaceDown: Boolean = false,
+            turnsFaceUpInstead: Boolean = false,
         ): Pair<EntityId, GameState> {
             var stamped = if (!withoutPayingCost) state else state.updateEntity(cardId) { container ->
                 container.with(PlayWithoutPayingCostComponent(controllerId = controllerId))
@@ -274,6 +280,8 @@ class CastFromCollectionWithoutPayingCostExecutor(
                     controllerId = controllerId,
                     sourceId = sourceId,
                     castTransformed = castTransformed,
+                    castFaceDown = castFaceDown,
+                    turnsFaceUpInstead = turnsFaceUpInstead,
                     castFaceIndex = faceIndex,
                     timestamp = stateWithPerm.timestamp,
                 )

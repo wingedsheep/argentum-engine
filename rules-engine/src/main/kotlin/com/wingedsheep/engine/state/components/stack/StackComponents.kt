@@ -85,6 +85,11 @@ data class SpellOnStackComponent(
     /** Snapshots of permanents sacrificed as additional cost (Rule 113.7a — last known info). */
     val sacrificedPermanents: List<EntitySnapshot> = emptyList(),
     val castFaceDown: Boolean = false,  // For morph - creature enters face-down
+    /**
+     * The face-down spell was cast through a permission carrying Illusionary Mask's rider, so the
+     * permanent it becomes gets [com.wingedsheep.engine.state.components.identity.TurnsFaceUpInsteadComponent].
+     */
+    val turnsFaceUpInstead: Boolean = false,
     val damageDistribution: Map<EntityId, Int>? = null,  // For DividedDamageEffect - pre-chosen damage allocation
     val chosenCreatureType: String? = null,  // For spells that choose a creature type during casting (e.g., Aphetto Dredging)
     val exiledCardCount: Int = 0,  // For variable exile additional costs (e.g., Chill Haunting)
@@ -368,6 +373,13 @@ data class ActivatedAbilityOnStackComponent(
     /** Snapshots of permanents sacrificed as additional cost (Rule 113.7a — last known info). */
     val sacrificedPermanents: List<EntitySnapshot> = emptyList(),
     val xValue: Int? = null,
+    /**
+     * The mana spent on the activation's mana cost, by type, so the resolving ability can ask
+     * what was spent on it (Illusionary Mask). Copies keep it: a copy's costs weren't paid, but an
+     * effect that copies an ability copies the choices made for it, and this is what they read.
+     */
+    val manaSpent: com.wingedsheep.engine.mechanics.mana.SpentMana =
+        com.wingedsheep.engine.mechanics.mana.SpentMana(),
     val tappedPermanents: List<EntityId> = emptyList(),
     /** LKI snapshots for [tappedPermanents] — see [sacrificedPermanents]. */
     val tappedEntitySnapshots: List<EntitySnapshot> = emptyList(),

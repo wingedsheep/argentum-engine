@@ -470,6 +470,7 @@ class ActivateAbilityHandler(
             // VariablePermanents X (exiled total mana value) is stored so 608.2b re-validation of the
             // "mana value X or less" target and any XValue read resolve against it; else action.xValue.
             xValue = activation.effectiveXValue,
+            manaSpent = payment.manaSpent,
             tappedPermanents = payment.firstTapSlice,
             tappedEntitySnapshots = snapshots.tapped,
             // An exile cost records its selection so the resolving effect can refer back to the
@@ -583,6 +584,8 @@ class ActivateAbilityHandler(
                 repeatPool = autoTapResult.newPool
                 events.addAll(autoTapResult.events)
             }
+            // Auto-tap floats what it taps, so this repeat spent the difference from here.
+            val repeatSpentBaseline = repeatPool
 
             // Station-style batch: this activation taps the i-th chosen creature (1-indexed
             // list, so iteration `i` consumes element `i - 1`). Other repeatable abilities
@@ -636,6 +639,7 @@ class ActivateAbilityHandler(
                 effect = effect,
                 sacrificedPermanents = emptyList(),
                 xValue = action.xValue,
+                manaSpent = com.wingedsheep.engine.mechanics.mana.SpentMana.between(repeatSpentBaseline, repeatPool),
                 tappedPermanents = repeatTapSlice,
                 tappedEntitySnapshots = repeatTapSnapshots,
                 descriptionOverride = ability.descriptionOverride,

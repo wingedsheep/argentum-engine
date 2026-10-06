@@ -555,6 +555,24 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
+     * The card's mana cost could be paid by some amount of, or all of, the mana spent to activate
+     * the resolving ability (or cast the resolving spell) — Illusionary Mask's "a creature card in
+     * your hand whose mana cost could be paid by some amount of, or all of, the mana you spent on
+     * {X}" (its whole cost is {X}, so the mana spent on {X} is the mana spent to activate it).
+     *
+     * Both the amount and the types of the mana count: having spent {U}{U}, a card costing {U}{U},
+     * {1}{U}, {2} or {W/U}{W/U} matches, but not {2}{U} or {G}. Generic pips take any mana, {C}
+     * needs colorless mana, hybrid pips either half, {X} counts as 0 (CR 107.3g), and a {S} pip is
+     * never payable this way. Read only during resolution; anywhere else it matches nothing.
+     */
+    @SerialName("ManaCostPayableWithManaSpent")
+    @Serializable
+    data object ManaCostPayableWithManaSpent : CardPredicate {
+        override val description: String =
+            "whose mana cost could be paid by some amount of, or all of, the mana spent"
+    }
+
+    /**
      * Mana value at most a resolved [DynamicAmount]. The general "mana value X or less, where X is
      * <some game value>" cap: feed it any [DynamicAmount] (a turn-tracking total, a count over a
      * filter, a life total, an arithmetic composition, …) and the engine evaluates it at the moment
