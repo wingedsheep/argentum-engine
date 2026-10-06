@@ -66,6 +66,7 @@ import com.wingedsheep.engine.state.components.player.PlayerProtectionComponent
 import com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsPutIntoHandFromBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreatureCardsPutIntoGraveyardThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardFromLibraryThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent
@@ -820,6 +821,9 @@ class CleanupPhaseManager(
                 }
                 if (result.has<CardsPutIntoGraveyardFromLibraryThisTurnComponent>()) {
                     result = result.without<CardsPutIntoGraveyardFromLibraryThisTurnComponent>()
+                }
+                if (result.has<CardsPutIntoGraveyardThisTurnComponent>()) {
+                    result = result.without<CardsPutIntoGraveyardThisTurnComponent>()
                 }
                 if (result.has<FlippedCoinsThisTurnComponent>()) {
                     result = result.without<FlippedCoinsThisTurnComponent>()

@@ -107,7 +107,9 @@ class SuspensionTraceTest : ScenarioTestBase() {
      * independently verifies their capture, retention after departure and serialization.
      */
     private fun normalizeRouting(value: JsonElement, root: Boolean = false): JsonElement = when (value) {
-        is JsonObject -> JsonObject(((if (root) value - "controlAtTurnStart" else value) - "targetObjectRefs" - "referencedObjects").mapValues { (key, child) ->
+        is JsonObject -> JsonObject(((if (root) value - "controlAtTurnStart" else value) - "targetObjectRefs" - "referencedObjects" -
+            // The graveyard turn history (Crawling Sensation) postdates the capture.
+            "com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardThisTurnComponent").mapValues { (key, child) ->
             when {
                 root && key == "nextRoutingId" -> JsonPrimitive(0)
                 key == "question" && "answer" in value -> {

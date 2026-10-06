@@ -738,6 +738,7 @@ val engineSerializersModule = SerializersModule {
         subclass(OpponentCreaturesExiledThisTurnComponent::class)
         subclass(PlayerDescendedThisTurnComponent::class)
         subclass(CreatureCardsPutIntoGraveyardThisTurnComponent::class)
+        subclass(CardsPutIntoGraveyardThisTurnComponent::class)
         subclass(CardsPutIntoGraveyardFromLibraryThisTurnComponent::class)
         subclass(FlippedCoinsThisTurnComponent::class)
         subclass(PermanentsSacrificedThisTurnComponent::class)

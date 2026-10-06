@@ -2753,11 +2753,20 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * Examples:
      * - "Whenever one or more permanent cards are put into your graveyard from anywhere"
      *   → CardsPutIntoYourGraveyardEvent(filter = GameObjectFilter.Permanent)
+     * - "Whenever one or more land cards are put into your graveyard from anywhere for the first
+     *   time each turn" → CardsPutIntoYourGraveyardEvent(filter = Land, firstTimeEachTurn = true)
+     *   (Crawling Sensation)
+     *
+     * [firstTimeEachTurn] fires only for the batch that carries the turn's *first* matching card
+     * into your graveyard. It is turn history, not a cap on this trigger: a land that hit your
+     * graveyard earlier in the turn — even before the source was on the battlefield — closes the
+     * window, which is what separates it from `oncePerTurn`.
      */
     @SerialName("CardsPutIntoYourGraveyardEvent")
     @Serializable
     data class CardsPutIntoYourGraveyardEvent(
-        val filter: GameObjectFilter = GameObjectFilter.Any
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val firstTimeEachTurn: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
             append("one or more ")
@@ -2766,6 +2775,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 append(" ")
             }
             append("cards are put into your graveyard from anywhere")
+            if (firstTimeEachTurn) append(" for the first time each turn")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {

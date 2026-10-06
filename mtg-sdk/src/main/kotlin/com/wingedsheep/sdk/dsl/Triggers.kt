@@ -697,12 +697,17 @@ class BatchTriggerSubject internal constructor(
     /**
      * "are put into your graveyard [from your library]" — from anywhere by default. The matching
      * cards are the captured collection (Hedge Shredder's "put them onto the battlefield").
+     * [firstTimeEachTurn] is "… from anywhere for the first time each turn" (Crawling Sensation) —
+     * only the batch holding the turn's first matching card, whether or not the source saw the earlier one.
      */
-    fun putIntoYourGraveyard(fromLibrary: Boolean = false): TriggerSpec {
+    fun putIntoYourGraveyard(fromLibrary: Boolean = false, firstTimeEachTurn: Boolean = false): TriggerSpec {
         noOther("putIntoYourGraveyard")
+        require(!(fromLibrary && firstTimeEachTurn)) {
+            "putIntoYourGraveyard: firstTimeEachTurn is only modelled for the from-anywhere trigger"
+        }
         return spec(
             if (fromLibrary) CardsPutIntoGraveyardFromLibraryEvent(filter = filter)
-            else CardsPutIntoYourGraveyardEvent(filter = filter)
+            else CardsPutIntoYourGraveyardEvent(filter = filter, firstTimeEachTurn = firstTimeEachTurn)
         )
     }
 

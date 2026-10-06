@@ -58,6 +58,7 @@ import com.wingedsheep.engine.state.components.player.CreatureLeftBattlefieldThi
 import com.wingedsheep.engine.state.components.player.PermanentsSacrificedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreatureCardsPutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardFromLibraryThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PlayerDescendedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.SacrificedArtifactThisTurnComponent
 import com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent
@@ -1196,6 +1197,20 @@ class ZoneTransitionService(
                 val existing = playerContainer.get<CreatureCardsPutIntoGraveyardThisTurnComponent>()
                     ?: CreatureCardsPutIntoGraveyardThisTurnComponent()
                 playerContainer.with(CreatureCardsPutIntoGraveyardThisTurnComponent(existing.count + 1))
+            }
+        }
+
+        // 8d2b. Every card put into a player's graveyard from another zone this turn, by id — the
+        // turn history behind "for the first time each turn" on the batched to-graveyard trigger
+        // (Crawling Sensation). Keyed on the owner, tokens excluded, like 8d2.
+        if (actualDestZone == Zone.GRAVEYARD &&
+            fromZone != Zone.GRAVEYARD &&
+            !container.has<TokenComponent>()
+        ) {
+            newState = newState.updateEntity(ownerId) { playerContainer ->
+                val existing = playerContainer.get<CardsPutIntoGraveyardThisTurnComponent>()
+                    ?: CardsPutIntoGraveyardThisTurnComponent()
+                playerContainer.with(CardsPutIntoGraveyardThisTurnComponent(existing.cardIds + entityId))
             }
         }
 

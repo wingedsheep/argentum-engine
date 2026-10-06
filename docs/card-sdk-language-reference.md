@@ -6527,7 +6527,7 @@ only, `beginningOf(step)` (the enchanted creature's controller's step) and
 
 **Batch verbs** (`oneOrMore` / `oneOrMoreOther`): `enter()`, `die()`, `leaveWithoutDying()`,
 `dealCombatDamageToAPlayer()`, `dealCombatDamageToAPlayerOrBattle()`, `dealCombatDamageToYou()`, `becomeTapped(reason?)`, `becomeUntapped()`,
-`putIntoYourGraveyard(fromLibrary?)`, `leaveYourGraveyard()`, `putIntoExile(from, includeTokens)`.
+`putIntoYourGraveyard(fromLibrary?, firstTimeEachTurn?)`, `leaveYourGraveyard()`, `putIntoExile(from, includeTokens)`.
 For `enter()` and `die()`, a filter with no controller predicate means "you control"; say
 `.youControl()` anyway.
 
@@ -7130,6 +7130,10 @@ in the repo today):
 - `Triggers.you.revealsFirstDraw()` — generic reveal-from-draw trigger.
 - `Triggers.oneOrMore(filter).putIntoYourGraveyard()` — when matching cards enter your yard.
 - `Triggers.oneOrMore(GameObjectFilter.Permanent).putIntoYourGraveyard()` — only permanent cards.
+- `Triggers.oneOrMore(GameObjectFilter.Land).putIntoYourGraveyard(firstTimeEachTurn = true)` — "… from anywhere for the first
+  time each turn" (Crawling Sensation): only the batch carrying the turn's first matching card into your graveyard. Turn
+  history, not a cap — a land that arrived earlier in the turn, even before the source was on the battlefield, closes the
+  window (`oncePerTurn` would not). Backed by the owner's `CardsPutIntoGraveyardThisTurnComponent`; not combinable with `fromLibrary`.
 - `Triggers.oneOrMore(GameObjectFilter.Creature).putIntoYourGraveyard(fromLibrary = true)` — mill-trigger shape.
 - `Triggers.oneOrMore(GameObjectFilter.Land).putIntoYourGraveyard(fromLibrary = true)` — batching mill-trigger filtered to land cards. The matching
   land cards are captured into the resolving ability's pipeline under

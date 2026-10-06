@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.event
 
+import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.core.ClassLevelChangedEvent
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.AttackersDeclaredEvent
@@ -2419,6 +2420,9 @@ class TriggerDetector(
                 val hasMatch = ownerEvents.any { event ->
                     cardMatchesGraveyardBatchFilter(state, event.entityId, trigger.filter)
                 }
+                if (hasMatch && trigger.firstTimeEachTurn &&
+                    matchedGraveyardEarlierThisTurn(state, controllerId, ownerEvents, trigger.filter)
+                ) continue
 
                 if (hasMatch) {
                     triggers.add(
@@ -2578,6 +2582,28 @@ class TriggerDetector(
      * matches [filter] for graveyard batching triggers. Card-characteristic predicates are
      * evaluated against the card's base [CardComponent]; [GameObjectFilter.Any] always matches.
      */
+    /**
+     * "For the first time each turn": did a card matching [filter] reach [ownerId]'s graveyard this
+     * turn *before* the current batch? The owner's [CardsPutIntoGraveyardThisTurnComponent] already
+     * lists this batch's arrivals (the move recorded them), so they are taken off the tail once per
+     * event before the earlier history is searched.
+     */
+    private fun matchedGraveyardEarlierThisTurn(
+        state: GameState,
+        ownerId: EntityId,
+        batch: List<ZoneChangeEvent>,
+        filter: GameObjectFilter
+    ): Boolean {
+        val arrivals = state.getEntity(ownerId)?.get<CardsPutIntoGraveyardThisTurnComponent>()?.cardIds
+            ?: return false
+        val earlier = arrivals.toMutableList()
+        for (event in batch) {
+            val at = earlier.lastIndexOf(event.entityId)
+            if (at >= 0) earlier.removeAt(at)
+        }
+        return earlier.any { cardMatchesGraveyardBatchFilter(state, it, filter) }
+    }
+
     private fun cardMatchesGraveyardBatchFilter(
         state: GameState,
         entityId: EntityId,
