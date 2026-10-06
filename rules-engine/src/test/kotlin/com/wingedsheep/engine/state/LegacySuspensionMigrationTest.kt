@@ -344,6 +344,13 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 )) {
                 // The recorded activation payment postdates the capture.
                 value - "manaSpent"
+            } else if (value["type"] == JsonPrimitive(
+                    "com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent"
+                )) {
+                // The turn-keyed waiver expiry (Ignite the Future) postdates the capture.
+                value.getValue("expiresAfterTurn") shouldBe JsonNull
+                value.getValue("expiryControllerId") shouldBe JsonNull
+                value - "expiresAfterTurn" - "expiryControllerId"
             } else value
             JsonObject(fields.mapValues { withoutPostCaptureCardDefaults(it.value) })
         }

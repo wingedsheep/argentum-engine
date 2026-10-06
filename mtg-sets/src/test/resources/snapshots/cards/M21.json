@@ -502,6 +502,79 @@
     ]
 }
 
+// Gadrak, the Crown-Scourge
+{
+    "name": "Gadrak, the Crown-Scourge",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Dragon",
+    "oracleText": "Flying\nGadrak can't attack unless you control four or more artifacts.\nAt the beginning of your end step, create a Treasure token for each nontoken creature that died this turn. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gadrak, the Crown-Scourge:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "dynamicCount": {
+                        "type": "TurnTracking",
+                        "player": "Each",
+                        "tracker": "NONTOKEN_CREATURES_DIED"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44b83bb7-00c8-4078-b27f-42a830a544b5.jpg?1783930689",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Once Gadrak has attacked, it will remain an attacking creature even if you no longer control four or more artifacts."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Gadrak's last ability counts creatures that died during the entire turn, even ones that died before Gadrak entered the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Garruk's Gorehorn
 {
     "name": "Garruk's Gorehorn",

@@ -134,11 +134,18 @@ data class MiracleWindowComponent(
  * @param controllerId The player who may play this card for free.
  * @param permanent If true, this permission persists indefinitely (not cleaned up at end of turn).
  *   Used for "for as long as it remains exiled" effects like Kheru Spellsnatcher / Spelljack.
+ * @param expiresAfterTurn When set, the waiver survives cleanup until the first turn of
+ *   [expiryControllerId] (or [controllerId]) at or after this turn number — the same floor
+ *   [com.wingedsheep.engine.state.permissions.MayPlayPermission.expiresAfterTurn] uses, so a free
+ *   play granted "until the end of your next turn" (Ignite the Future) ends with its permission.
+ * @param expiryControllerId The player whose turns measure [expiresAfterTurn], when not [controllerId].
  */
 @Serializable
 data class PlayWithoutPayingCostComponent(
     val controllerId: EntityId,
-    val permanent: Boolean = false
+    val permanent: Boolean = false,
+    val expiresAfterTurn: Int? = null,
+    val expiryControllerId: EntityId? = null
 ) : Component
 
 /**

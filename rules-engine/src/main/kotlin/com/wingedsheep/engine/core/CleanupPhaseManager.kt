@@ -1141,7 +1141,13 @@ class CleanupPhaseManager(
         // cleanup runs, so the stamp has served its purpose either way.
         for ((entityId, container) in newState.entities) {
             val playFree = container.get<PlayWithoutPayingCostComponent>()
-            val removePlayFree = playFree != null && !playFree.permanent
+            // A turn-keyed waiver (Ignite the Future's "until the end of your next turn") uses the
+            // same floor + active-player guard as the may-play permissions below.
+            val removePlayFree = playFree != null && !playFree.permanent &&
+                playFree.expiresAfterTurn.let { floor ->
+                    floor == null || (newState.turnNumber >= floor &&
+                        newState.isActiveTurnFor(playFree.expiryControllerId ?: playFree.controllerId))
+                }
             val removePlayAdditionalCost = container.get<PlayWithAdditionalCostComponent>() != null
             val removeLinkedExileUsed = container.get<MayCastFromLinkedExileUsedThisTurnComponent>() != null
             val removeFreeCastUsed = container.get<MayCastWithoutPayingCostUsedThisTurnComponent>() != null
@@ -1172,7 +1178,7 @@ class CleanupPhaseManager(
         // would expire the grant at the end of whichever opponent's turn happened to come first,
         // one or more turns early (Burning Curiosity, Sizzling Changeling). Pairing a floor with
         // the controller guard is also what makes this survive skipped turns, extra turns and
-        // eliminated seats; see ExileTopCardMayPlayFreeExecutor.resolveStepTurn.
+        // eliminated seats; see resolveControllerStepTurn (ExileTopCardMayPlayFreeExecutor.kt).
         if (newState.mayPlayPermissions.isNotEmpty()) {
             newState = newState.copy(
                 mayPlayPermissions = newState.mayPlayPermissions.filterNot { permission ->

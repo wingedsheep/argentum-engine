@@ -1828,20 +1828,27 @@ data class ConditionalOnCollectionEffect(
 
 /**
  * Grant "play without paying mana cost" permission to all cards in a named
- * collection until end of turn. Adds a PlayWithoutPayingCostComponent.
+ * collection. Adds a PlayWithoutPayingCostComponent.
  *
  * The card must still be in a playable zone (hand, or exile with
  * [GrantMayPlayFromExileEffect]). Used by Mind's Desire, Cascade, etc.
  *
  * @property from Name of the collection containing the card(s)
+ * @property expiry How long the waiver lasts. Defaults to this turn; give it the same expiry as the
+ *   paired [GrantMayPlayFromExileEffect] when the free play outlasts the turn — "until the end of
+ *   your next turn, you may play those cards … without paying their mana costs" (Ignite the
+ *   Future). A non-turn-keyed expiry ([MayPlayExpiry.Permanent], the source-keyed ones) never
+ *   expires at cleanup: the paired permission's own revocation is what ends the play.
  */
 @SerialName("GrantPlayWithoutPayingCost")
 @Serializable
 data class GrantPlayWithoutPayingCostEffect(
-    val from: String
+    val from: String,
+    val expiry: MayPlayExpiry = MayPlayExpiry.EndOfTurn
 ) : Effect {
     override val description: String =
-        "Until end of turn, you may play those cards without paying their mana costs"
+        if (expiry == MayPlayExpiry.EndOfTurn) "Until end of turn, you may play those cards without paying their mana costs"
+        else "You may play those cards without paying their mana costs ${expiry.description}"
 }
 
 /**

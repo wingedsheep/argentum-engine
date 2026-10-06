@@ -299,38 +299,38 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
         // Source-keyed, not turn-keyed: revoked by EndedDurationExpiryCheck, never by cleanup.
         is MayPlayExpiry.WhileYouControlSource,
         is MayPlayExpiry.WhileSourceOnBattlefield -> null
-        is MayPlayExpiry.UntilControllerStep -> resolveStepTurn(state, controllerId, expiry)
+        is MayPlayExpiry.UntilControllerStep -> resolveControllerStepTurn(state, controllerId, expiry)
     }
+}
 
-    /**
-     * Resolve the earliest turn whose cleanup may mark "the controller's next [step]", given the
-     * current step and active player. The cleanup-driven removal is coarse — it runs once per turn
-     * at cleanup — so we map any step in the turn to that turn's cleanup.
-     *
-     * This is a *floor*, not an exact turn: the expiry check in [CleanupPhaseManager] also requires
-     * `isActiveTurnFor(controllerId)`, so the permission dies at the cleanup of the first turn the
-     * controller actually takes at or after this number. That pairing is what keeps the answer right
-     * across skipped turns, extra turns and eliminated seats — none of which a turn count computed
-     * from seat positions would survive.
-     *
-     * So the whole question is only ever "does the current turn still count?": if it does, this
-     * turn's cleanup is the deadline; otherwise the deadline is the controller's next turn, which is
-     * some turn strictly after this one. Since [GameState.turnNumber] counts player turns, that is
-     * just `turnNumber + 1`.
-     */
-    private fun resolveStepTurn(
-        state: GameState,
-        controllerId: EntityId,
-        expiry: MayPlayExpiry.UntilControllerStep
-    ): Int {
-        val onControllerTurn = state.isActiveTurnFor(controllerId)
-        val targetReachedThisTurn = state.step.ordinal >= expiry.step.ordinal
-        val thisTurnStillCounts = onControllerTurn && expiry.includeCurrentTurn && !targetReachedThisTurn
+/**
+ * Resolve the earliest turn whose cleanup may mark "the controller's next [step]", given the
+ * current step and active player. The cleanup-driven removal is coarse — it runs once per turn
+ * at cleanup — so we map any step in the turn to that turn's cleanup.
+ *
+ * This is a *floor*, not an exact turn: the expiry check in
+ * [com.wingedsheep.engine.core.CleanupPhaseManager] also requires `isActiveTurnFor(controllerId)`, so the permission dies at the cleanup of the first turn the
+ * controller actually takes at or after this number. That pairing is what keeps the answer right
+ * across skipped turns, extra turns and eliminated seats — none of which a turn count computed
+ * from seat positions would survive.
+ *
+ * So the whole question is only ever "does the current turn still count?": if it does, this
+ * turn's cleanup is the deadline; otherwise the deadline is the controller's next turn, which is
+ * some turn strictly after this one. Since [GameState.turnNumber] counts player turns, that is
+ * just `turnNumber + 1`.
+ */
+internal fun resolveControllerStepTurn(
+    state: GameState,
+    controllerId: EntityId,
+    expiry: MayPlayExpiry.UntilControllerStep
+): Int {
+    val onControllerTurn = state.isActiveTurnFor(controllerId)
+    val targetReachedThisTurn = state.step.ordinal >= expiry.step.ordinal
+    val thisTurnStillCounts = onControllerTurn && expiry.includeCurrentTurn && !targetReachedThisTurn
 
-        // This turn's matching step still counts — expire at this turn's cleanup. Otherwise the
-        // controller's next turn is the deadline, and every later turn number qualifies as a floor.
-        return if (thisTurnStillCounts) state.turnNumber else state.turnNumber + 1
-    }
+    // This turn's matching step still counts — expire at this turn's cleanup. Otherwise the
+    // controller's next turn is the deadline, and every later turn number qualifies as a floor.
+    return if (thisTurnStillCounts) state.turnNumber else state.turnNumber + 1
 }
 
 /**
@@ -413,11 +413,27 @@ class GrantPlayWithoutPayingCostExecutor : EffectExecutor<GrantPlayWithoutPaying
         val controllerId = context.controllerId
         val collection = context.pipeline.storedCollections[effect.from] ?: emptyList()
 
+        // Same anchor and turn math as GrantMayPlayFromExileExecutor, so a waiver given the paired
+        // grant's expiry ends at the same cleanup. Every non-turn-keyed expiry is ended by the
+        // paired permission's revocation, never by cleanup, so the waiver itself is permanent.
+        val activatingPlayer = context.effectControllerId ?: controllerId
+        val component = when (val expiry = effect.expiry) {
+            MayPlayExpiry.EndOfTurn -> PlayWithoutPayingCostComponent(controllerId = controllerId)
+            is MayPlayExpiry.UntilControllerStep -> PlayWithoutPayingCostComponent(
+                controllerId = controllerId,
+                expiresAfterTurn = resolveControllerStepTurn(state, activatingPlayer, expiry),
+                expiryControllerId = activatingPlayer.takeIf { it != controllerId },
+            )
+            MayPlayExpiry.Permanent,
+            MayPlayExpiry.UntilSourceExilesAnother,
+            is MayPlayExpiry.WhileYouControlSource,
+            is MayPlayExpiry.WhileSourceOnBattlefield ->
+                PlayWithoutPayingCostComponent(controllerId = controllerId, permanent = true)
+        }
+
         var newState = state
         for (cardId in collection) {
-            newState = newState.updateEntity(cardId) { container ->
-                container.with(PlayWithoutPayingCostComponent(controllerId = controllerId))
-            }
+            newState = newState.updateEntity(cardId) { container -> container.with(component) }
         }
 
         return EffectResult.success(newState)

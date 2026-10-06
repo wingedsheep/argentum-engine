@@ -1080,6 +1080,130 @@
     ]
 }
 
+// Magmatic Channeler
+{
+    "name": "Magmatic Channeler",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "As long as there are four or more instant and/or sorcery cards in your graveyard, this creature gets +3/+1.\n{T}, Discard a card: Exile the top two cards of your library, then choose one of them. You may play that card this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Magmatic Channeler:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "Choose a card you may play this turn"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "selected2"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantDynamicStats",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    },
+                    "powerBonus": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessBonus": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "RARE",
+        "artist": "Bryan Sola",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8be6570-5b5f-4ffc-a5e5-67d7c41c8caa.jpg?1783929356",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Magmatic Channeler gets just +3/+1 from its first ability, no matter how many instant and sorcery cards are in your graveyard beyond the fourth."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "You choose which card you'll be allowed to play this turn while Magmatic Channeler's ability is resolving, but you must follow the normal timing permissions and restrictions for the card when you play it. If it's a land, you can't play it unless you have land plays available."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If you don't play the exiled card you chose, it remains exiled. The card you didn't choose remains exiled whether you play the chosen card or not."
+            }
+        ]
+    }
+}
+
 // Marauding Blight-Priest
 {
     "name": "Marauding Blight-Priest",

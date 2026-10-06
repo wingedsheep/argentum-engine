@@ -1011,6 +1011,92 @@
     ]
 }
 
+// Goblin Rabblemaster
+{
+    "name": "Goblin Rabblemaster",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Other Goblin creatures you control attack each combat if able.\nAt the beginning of combat on your turn, create a 1/1 red Goblin creature token with haste.\nWhenever this creature attacks, it gets +1/+0 until end of turn for each other attacking Goblin.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goblin Rabblemaster:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Goblin"
+                    ],
+                    "keywords": [
+                        "HASTE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/8/98993a45-4aff-4f9b-a030-7d72fbb4ec6c.jpg?1783939141"
+                }
+            },
+            {
+                "id": "Goblin Rabblemaster:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": "creature Goblin attacking",
+                        "excludeSelf": true
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever this creature attacks, it gets +1/+0 until end of turn for each other attacking Goblin."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MustAttack",
+                "filter": {
+                    "baseFilter": "creature Goblin ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee9c697e-d2c0-413b-9142-ecf5d7cf5322.jpg?1783939173",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Although Goblin Rabblemaster doesn't force itself to attack, if you control two of them, they'll force each other to attack if able."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The number of attacking Goblins is counted as the last ability resolves, and the bonus is locked in at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Hammerhand
 {
     "name": "Hammerhand",
