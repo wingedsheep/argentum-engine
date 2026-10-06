@@ -34,7 +34,7 @@ class TapAtomTest : ScenarioTestBase() {
                 .build()
             val wurm = game.findPermanent("Spined Wurm")!!
 
-            val (newState, event) = tap(game.state, wurm)
+            val (newState, event) = tap(game.state, wurm).let { it.state to it.tapped }
 
             newState.getEntity(wurm)?.has<TappedComponent>() shouldBe true
             event.shouldBeInstanceOf<TappedEvent>()
@@ -48,7 +48,7 @@ class TapAtomTest : ScenarioTestBase() {
                 .build()
             val wurm = game.findPermanent("Spined Wurm")!!
 
-            val (_, event) = tap(game.state, wurm)
+            val (_, event) = tap(game.state, wurm).let { it.state to it.tapped }
 
             // Every tap a permanent's own controller performs on it — a cost payment, a mana
             // ability, crew/saddle, declaring it as an attacker — is theirs, so the default has to
@@ -73,7 +73,7 @@ class TapAtomTest : ScenarioTestBase() {
             // Sanity: only the projection flipped; the base component still says player 2.
             game.state.getEntity(wurm)?.get<ControllerComponent>()?.playerId shouldBe game.player2Id
 
-            val (_, event) = tap(game.state, wurm)
+            val (_, event) = tap(game.state, wurm).let { it.state to it.tapped }
 
             // A stolen creature tapped for a cost or to attack is tapped by the player who stole it,
             // not by its owner — so the default reads projected control, not ControllerComponent.
@@ -87,7 +87,7 @@ class TapAtomTest : ScenarioTestBase() {
                 .build()
             val wurm = game.findPermanent("Spined Wurm")!!
 
-            val (_, event) = tap(game.state, wurm, tappedById = game.player1Id)
+            val (_, event) = tap(game.state, wurm, tappedById = game.player1Id).let { it.state to it.tapped }
 
             event?.tappedById shouldBe game.player1Id
         }
@@ -99,7 +99,7 @@ class TapAtomTest : ScenarioTestBase() {
                 .build()
             val wurm = game.findPermanent("Spined Wurm")!!
 
-            val (newState, event) = tap(game.state, wurm)
+            val (newState, event) = tap(game.state, wurm).let { it.state to it.tapped }
 
             event shouldBe null
             newState shouldBe game.state

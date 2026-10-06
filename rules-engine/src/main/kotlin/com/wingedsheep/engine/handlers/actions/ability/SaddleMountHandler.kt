@@ -139,10 +139,10 @@ class SaddleMountHandler(
 
         // Pay the cost: tap each saddling creature (CR 702.171c — these creatures "saddle" it).
         for (creatureId in action.saddleCreatures) {
-            val (tappedState, tapEvent) = tap(currentState, creatureId)
-            currentState = tappedState
-            tapEvent?.let {
-                events.add(it)
+            val tapOutcome = tap(currentState, creatureId)
+            currentState = tapOutcome.state
+            events.addAll(tapOutcome.events)
+            if (tapOutcome.tapped != null) {
                 events.add(
                     CrewOrSaddleContributionEvent(
                         contributorId = creatureId,

@@ -38,7 +38,7 @@ class TapUntapCollectionExecutor : EffectExecutor<TapUntapCollectionEffect> {
                 // Attribute the tap to this effect's controller (see TapUntapExecutor).
                 val (next, event) = tap(currentState, entityId, tappedById = context.controllerId)
                 currentState = next
-                event?.let(events::add)
+                events.addAll(event)
             } else {
                 val (next, untapEvents) = untapOrConsumeStun(currentState, entityId)
                 currentState = next

@@ -123,7 +123,7 @@ object VariablePermanentsCost {
         for (id in chosen) {
             val (tappedState, tapEvent) = tap(newState, id, reason = reason)
             newState = tappedState
-            tapEvent?.let(events::add)
+            events.addAll(tapEvent)
         }
         return newState to events
     }

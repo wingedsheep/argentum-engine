@@ -122,3 +122,33 @@ data object HasDisguiseAbilityComponent : Component
  */
 @Serializable
 data class FaceDownModeComponent(val mode: FaceDownMode) : Component
+
+/**
+ * A face-down permanent that turns face up *instead of* becoming tapped, assigning or dealing
+ * damage, or being dealt damage — Illusionary Mask's "If the creature that spell becomes as it
+ * resolves has not been turned face up and would assign or deal damage, be dealt damage, or become
+ * tapped, instead it's turned face up and assigns or deals damage, is dealt damage, or becomes
+ * tapped."
+ *
+ * The rider belongs to the permanent, not to its source: per the card's rulings it keeps applying
+ * after the source has left the battlefield, and it ends the first time the permanent is turned
+ * face up by any means ("has not been turned face up"), so every turn-up path drops it. Leaving the
+ * battlefield drops it too (CR 400.7). [com.wingedsheep.engine.mechanics.FaceUpInstead] owns the
+ * replacement and its three read sites — the tap atom, the non-combat damage pipeline and the
+ * combat-damage step.
+ *
+ * The face-up static-ability components are baked when the rider is stamped, because the tap atom
+ * that applies the replacement has no card registry. A face-down permanent's card never changes
+ * underneath it, so they are exactly what turning face up would compute (CR 708.8).
+ *
+ * @property faceUpStatics the [com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent]
+ *   the permanent gets once face up, or null when its card has no continuous statics.
+ * @property faceUpReplacements the
+ *   [com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent] it gets
+ *   once face up, or null when its card has no replacement effects.
+ */
+@Serializable
+data class TurnsFaceUpInsteadComponent(
+    val faceUpStatics: com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent? = null,
+    val faceUpReplacements: com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent? = null,
+) : Component

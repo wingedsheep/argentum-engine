@@ -225,7 +225,7 @@ internal class CastCostPayer(
         for (creatureId in ledger.action.conspiredCreatures) {
             val (tappedState, tapEvent) = tap(ledger.state, creatureId)
             ledger.state = tappedState
-            tapEvent?.let(ledger.events::add)
+            ledger.events.addAll(tapEvent)
         }
     }
 

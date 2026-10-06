@@ -42,6 +42,6 @@ class TapUntapExecutor : EffectExecutor<TapUntapEffect> {
         // doing the tapping, so their tap is correctly attributed to them and not to the card's
         // controller.
         val (newState, event) = tap(state, targetId, tappedById = context.controllerId)
-        return EffectResult.success(newState, listOfNotNull(event))
+        return EffectResult.success(newState, event)
     }
 }

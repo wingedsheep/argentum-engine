@@ -60,7 +60,7 @@ class ControlHistoryTest : FunSpec({
     test("ordinary tap instructions preserve history while a base control change interrupts it") {
         val state = ControlHistory.beginTurn(board())
         val (tapped, event) = tap(state, id)
-        val recorded = ControlHistory.record(tapped, listOfNotNull(event))
+        val recorded = ControlHistory.record(tapped, event)
         recorded.controlAtTurnStart shouldBe state.controlAtTurnStart
         matches(recorded) shouldBe true
         val changed = recorded.updateEntity(id) { it.with(ControllerComponent(other)) }

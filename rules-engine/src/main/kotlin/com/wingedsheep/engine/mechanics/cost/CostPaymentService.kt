@@ -749,7 +749,7 @@ class CostPaymentService(private val services: EngineServices) {
         for (permanentId in selected) {
             val (tappedState, tapEvent) = tap(newState, permanentId)
             newState = tappedState
-            tapEvent?.let(events::add)
+            events.addAll(tapEvent)
         }
         return CostPaymentExecution(newState, events, success = true)
     }

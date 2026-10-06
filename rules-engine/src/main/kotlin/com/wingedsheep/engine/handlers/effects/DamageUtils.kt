@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.mechanics.FaceUpInstead
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -258,6 +259,21 @@ object DamageUtils {
                     appliedRedirects + staticRedirectSource, damageSourceRef = damageSourceRef
                 )
             }
+        }
+
+        // Illusionary Mask's rider: a face-down source that would deal damage, or a face-down
+        // recipient that would be dealt it, is turned face up instead and then deals or is dealt
+        // the damage. Applied after redirection and before every prevention effect; the rest of
+        // the pipeline then re-runs against the face-up permanents (CR 616.1f), so their own
+        // protection, damage replacements, deathtouch and lifelink apply. The amount is already
+        // fixed, so turning face up never changes it.
+        if (FaceUpInstead.applies(state, targetId) || (sourceId != null && FaceUpInstead.applies(state, sourceId))) {
+            val (faceUpState, faceUpEvents) = FaceUpInstead.turnFaceUpAll(state, listOfNotNull(sourceId, targetId))
+            val rest = dealDamageToTarget(
+                zones, faceUpState, targetId, amount, sourceId, cantBePrevented, isCombatDamage,
+                appliedRedirects, excessToController, damageSourceRef
+            )
+            return rest.copy(events = faceUpEvents + rest.events)
         }
 
         // Protection from color/subtype: damage from sources of the stated quality is prevented (Rule 702.16)

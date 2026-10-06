@@ -1709,7 +1709,7 @@ class ManaPaymentContinuationResumer(
         for (chosen in response.selectedCards) {
             val (tappedState, tapEvent) = tap(currentState, chosen)
             currentState = tappedState
-            tapEvent?.let(events::add)
+            events.addAll(tapEvent)
         }
 
         // Read current pool, add the source's mana, persist.

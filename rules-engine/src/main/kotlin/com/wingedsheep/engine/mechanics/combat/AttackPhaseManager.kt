@@ -285,7 +285,7 @@ internal class AttackPhaseManager(
             }
         }
 
-        val tapEvents = mutableListOf<TappedEvent>()
+        val tapEvents = mutableListOf<GameEvent>()
         for ((attackerId, defenderId) in attackers) {
             val hasVigilance = projected.hasKeyword(attackerId, Keyword.VIGILANCE)
             newState = newState.updateEntity(attackerId) { container ->
@@ -298,7 +298,7 @@ internal class AttackPhaseManager(
             if (!hasVigilance) {
                 val (tappedState, event) = tap(newState, attackerId)
                 newState = tappedState
-                event?.let(tapEvents::add)
+                tapEvents.addAll(event)
             }
         }
 

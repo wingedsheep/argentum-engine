@@ -136,10 +136,17 @@ data class DamageAssignmentOrderComponent(
 ) : Component
 
 /**
- * Marks a creature as having dealt first strike damage this combat.
+ * Marks an attacking or blocking creature that had first strike or double strike as the first-strike
+ * combat damage step began — the creatures that assign combat damage in that step (CR 510.4).
+ *
+ * The regular combat damage step reads it rather than the creature's keywords *now*: its assigners
+ * are the creatures that had neither first strike nor double strike as the first step began, plus
+ * the double strikers. So gaining first strike after the first step doesn't stop a creature from
+ * assigning in the second, and losing it doesn't let a creature assign twice (CR 702.7c). Stamped by
+ * `CombatDamageManager` as the first-strike step's damage is applied; cleared at end of combat.
  */
 @Serializable
-data object DealtFirstStrikeDamageComponent : Component
+data object FirstStrikeStepAssignerComponent : Component
 
 /**
  * Marks an attacker as needing manual damage assignment.

@@ -272,7 +272,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 // payAbilityCost caller gets the event for free (ActivateAbilityHandler used to
                 // re-derive it by hand, silently dropping it on any other payment path).
                 val (newState, event) = tap(state, sourceId)
-                CostPaymentResult.success(newState, manaPool, listOfNotNull(event))
+                CostPaymentResult.success(newState, manaPool, event)
             }
             is AbilityCost.Untap -> {
                 // Route through the untap atom so a "{Q}:" cost emits UntappedEvent and a stun
@@ -463,7 +463,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 // Through the shared tap helper so the TappedEvent fires — a "whenever this becomes
                 // tapped" trigger must see an Equipment tapped to pay a granted ability's cost.
                 val (newState, event) = tap(state, granterId)
-                CostPaymentResult.success(newState, manaPool, listOfNotNull(event))
+                CostPaymentResult.success(newState, manaPool, event)
             }
             is AbilityCost.RemoveAllCounters -> {
                 val holderId = if (cost.fromGrantingPermanent) {
@@ -525,7 +525,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 val attachedId = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId
                     ?: return CostPaymentResult.failure("Source is not attached to a creature")
                 val (newState, event) = tap(state, attachedId)
-                CostPaymentResult.success(newState, manaPool, listOfNotNull(event))
+                CostPaymentResult.success(newState, manaPool, event)
             }
             is AbilityCost.TapXPermanents -> {
                 val xCount = choices.xValue
@@ -542,7 +542,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                     for (permanentId in toTap.take(xCount)) {
                         val (tappedState, event) = tap(newState, permanentId)
                         newState = tappedState
-                        event?.let(events::add)
+                        events.addAll(event)
                     }
 
                     CostPaymentResult.success(newState, manaPool, events)
@@ -1372,7 +1372,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
             // AttackPhaseManager.commitAttackDeclaration).
             val (tappedState, event) = tap(newState, permanentId)
             newState = tappedState
-            event?.let(events::add)
+            events.addAll(event)
         }
         return CostPaymentResult.success(newState, manaPool, events)
     }

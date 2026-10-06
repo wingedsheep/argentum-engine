@@ -152,10 +152,10 @@ class CrewVehicleHandler(
 
         // Pay the cost: tap each crew creature
         for (creatureId in action.crewCreatures) {
-            val (tappedState, tapEvent) = tap(currentState, creatureId)
-            currentState = tappedState
-            tapEvent?.let {
-                events.add(it)
+            val tapOutcome = tap(currentState, creatureId)
+            currentState = tapOutcome.state
+            events.addAll(tapOutcome.events)
+            if (tapOutcome.tapped != null) {
                 events.add(
                     CrewOrSaddleContributionEvent(
                         contributorId = creatureId,

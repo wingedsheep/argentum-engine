@@ -581,7 +581,7 @@ internal object TapPermanentsCostKind : SpellCostKind<CostAtom.TapPermanents> {
         for (permId in ledger.payment.tappedPermanents) {
             val (tappedState, tapEvent) = tap(ledger.state, permId)
             ledger.state = tappedState
-            tapEvent?.let(ledger.events::add)
+            ledger.events.addAll(tapEvent)
         }
         return null
     }

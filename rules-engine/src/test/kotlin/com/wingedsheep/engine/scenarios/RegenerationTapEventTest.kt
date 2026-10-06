@@ -156,7 +156,7 @@ class RegenerationTapEventTest : FunSpec({
         driver.untapPermanent(creature)
 
         // Stamp the window the way a real tap would, then regenerate while untapped.
-        val (tappedState, firstEvent) = com.wingedsheep.engine.core.tap(driver.state, creature)
+        val (tappedState, firstEvent) = com.wingedsheep.engine.core.tap(driver.state, creature).let { it.state to it.tapped }
         firstEvent.shouldNotBeNull().firstThisTurn shouldBe true
         driver.replaceState(tappedState)
         driver.untapPermanent(creature)

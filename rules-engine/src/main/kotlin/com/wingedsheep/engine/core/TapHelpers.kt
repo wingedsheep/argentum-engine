@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.mechanics.FaceUpInstead
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.engine.state.GameState
@@ -30,12 +31,12 @@ import com.wingedsheep.sdk.scripting.TapReason
  * Tapping is a transition (CR 701.26a — "only untapped permanents can be tapped"):
  * a permanent that is *already* tapped does not
  * become tapped again, so this is a no-op that emits no event. The same is true for an
- * entity that no longer exists. In both cases the original [state] is returned paired
- * with `null`, so callers can fold the event in without a special case:
+ * entity that no longer exists. In both cases the original [state] is returned with no
+ * events, so callers can fold the events in without a special case:
  *
  * ```
- * val (next, event) = tap(state, id)
- * return EffectResult.success(next, listOfNotNull(event))
+ * val (next, events) = tap(state, id)
+ * return EffectResult.success(next, events)
  * ```
  *
  * **Not for permanents entering tapped.** A permanent that *enters the battlefield
@@ -94,19 +95,27 @@ import com.wingedsheep.sdk.scripting.TapReason
  *   controller.
  * @param reason why the permanent is becoming tapped; [TapReason.UNSPECIFIED] (the default) leaves
  *   the cause unnamed.
- * @return the updated state paired with the emitted [TappedEvent], or `state to null`
- *   when the permanent was already tapped or doesn't exist (no mutation performed).
+ * **Turned face up instead.** A face-down permanent carrying Illusionary Mask's rider is turned
+ * face up as it would become tapped, and then becomes tapped ([FaceUpInstead]). That is why the
+ * result can carry a [TurnFaceUpEvent] ahead of the [TappedEvent].
+ *
+ * @return a [TapOutcome] — the updated state and the emitted events, or the original state and
+ *   no events when the permanent was already tapped or doesn't exist (no mutation performed).
  */
 fun tap(
     state: GameState,
     entityId: EntityId,
     tappedById: EntityId? = null,
     reason: TapReason = TapReason.UNSPECIFIED,
-): Pair<GameState, TappedEvent?> {
-    val container = state.getEntity(entityId) ?: return state to null
+): TapOutcome {
+    val original = state.getEntity(entityId) ?: return TapOutcome(state, null)
     // CR 701.26a: only untapped permanents can be tapped, so tapping an already-tapped
     // permanent is not a transition — no event.
-    if (container.has<TappedComponent>()) return state to null
+    if (original.has<TappedComponent>()) return TapOutcome(state, null)
+    val (faceUpState, turnedFaceUp) = FaceUpInstead.turnFaceUp(state, entityId)
+    @Suppress("NAME_SHADOWING")
+    val state = faceUpState
+    val container = state.getEntity(entityId)!!
     val cardName = nameVisibleToAll(state, entityId, container.get<CardComponent>()?.name ?: "Permanent")
     val tapper = tappedById
         ?: state.projectedState.getController(entityId)
@@ -117,7 +126,24 @@ fun tap(
         it.with(TappedComponent)
             .with(HasBecomeTappedComponent(state.turnNumber, priorTapsThisTurn + 1))
     }
-    return newState to TappedEvent(entityId, cardName, tapper, reason, priorTapsThisTurn == 0)
+    return TapOutcome(newState, TappedEvent(entityId, cardName, tapper, reason, priorTapsThisTurn == 0), turnedFaceUp)
+}
+
+/**
+ * The result of the [tap] atom: the new state, the [TappedEvent] when the permanent really became
+ * tapped, and the [TurnFaceUpEvent] when it was turned face up first ([FaceUpInstead]).
+ *
+ * Destructures as `(state, events)` — the events in the order they happened — which is what almost
+ * every caller wants; read [tapped] directly to ask whether the tap happened at all.
+ */
+class TapOutcome(
+    val state: GameState,
+    val tapped: TappedEvent?,
+    val turnedFaceUp: TurnFaceUpEvent? = null,
+) {
+    val events: List<GameEvent> get() = listOfNotNull(turnedFaceUp, tapped)
+    operator fun component1(): GameState = state
+    operator fun component2(): List<GameEvent> = events
 }
 
 /**
@@ -134,14 +160,15 @@ fun tapForMana(
     sourceId: EntityId,
     tapperId: EntityId,
 ): Pair<GameState, List<GameEvent>> {
-    val (tapped, tapEvent) = tap(state, sourceId)
-    if (tapEvent == null) return state to emptyList()
+    val outcome = tap(state, sourceId)
+    val tapEvent = outcome.tapped ?: return state to emptyList()
+    val tapped = outcome.state
     // Tapping for mana activates the source's mana ability, so auto-pay marks it "activated this
     // turn" exactly as the manual activation pipeline does.
     val stamped = tapped.updateEntity(sourceId) { c ->
         c.with((c.get<AbilityActivatedThisTurnComponent>() ?: AbilityActivatedThisTurnComponent()).withAnyActivated())
     }
-    return stamped to listOfNotNull(tapEvent, landTappedForManaEvent(state, sourceId, tapperId))
+    return stamped to listOfNotNull(outcome.turnedFaceUp, tapEvent, landTappedForManaEvent(state, sourceId, tapperId))
 }
 
 /**

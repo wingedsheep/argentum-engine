@@ -351,7 +351,7 @@ class AlternativePaymentHandler(
                 ?.timestamp ?: 0L
             val (tappedState, tapEvent) = tap(currentState, creatureId)
             currentState = tappedState
-            tapEvent?.let(events::add)
+            events.addAll(tapEvent)
 
             // Apply the payment
             val paymentColor = payment.color
@@ -398,7 +398,7 @@ class AlternativePaymentHandler(
         // negative power reduces the cost by nothing (you can't add to it).
         val power = (projected.getPower(creatureId) ?: 0).coerceAtLeast(0)
         val (newState, tapEvent) = tap(state, creatureId)
-        val events = listOfNotNull<GameEvent>(tapEvent)
+        val events = tapEvent
         val reducedCost = if (power > 0) reduceGenericCost(cost, power) else cost
         return AlternativePaymentResult(reducedCost, newState, events)
     }
@@ -814,7 +814,7 @@ class AlternativePaymentHandler(
 
             val (tappedState, tapEvent) = tap(currentState, permanentId)
             currentState = tappedState
-            tapEvent?.let(events::add)
+            events.addAll(tapEvent)
             if (paysX) {
                 overflowed++
             } else {

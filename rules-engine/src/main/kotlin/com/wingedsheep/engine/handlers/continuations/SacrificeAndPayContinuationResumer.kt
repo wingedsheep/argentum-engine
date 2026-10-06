@@ -461,7 +461,7 @@ class SacrificeAndPayContinuationResumer(
         for (permanentId in selectedPermanents) {
             val (tappedState, tapEvent) = tap(newState, permanentId)
             newState = tappedState
-            tapEvent?.let(events::add)
+            events.addAll(tapEvent)
         }
 
         return checkForMore(newState, events)
