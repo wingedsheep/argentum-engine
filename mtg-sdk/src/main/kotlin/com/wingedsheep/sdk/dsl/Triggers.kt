@@ -231,16 +231,16 @@ class ObjectTriggerSubject internal constructor(
      * "becomes blocked [by a creature matching [by]]". Under [Triggers.self] the bare form fires
      * **once** however many creatures block, with the source as the triggering entity (Rampage);
      * `by` fires once **per matching blocker**, with that blocker as the triggering entity
-     * (Sylvan Basilisk, "destroy that creature"). `by` is [Triggers.self]-only, and a
-     * `self.matching(…)` subject is rejected: the event's one filter axis is the blocker under SELF.
+     * (Sylvan Basilisk, "destroy that creature"). `by` also supports [Triggers.attached]. A
+     * filtered SELF/ATTACHED subject is rejected: the event's filter axis is the blocker.
      * Under [Triggers.a] the subject filter is the blocked creature ("whenever a Beast becomes blocked").
      */
     fun becomesBlocked(by: GameObjectFilter? = null): TriggerSpec {
-        if (binding == TriggerBinding.SELF) {
+        if (binding == TriggerBinding.SELF || binding == TriggerBinding.ATTACHED) {
             unfiltered("becomesBlocked")
             return spec(BecomesBlockedEvent(filter = by))
         }
-        require(by == null) { "becomesBlocked(by) is only supported with Triggers.self" }
+        require(by == null) { "becomesBlocked(by) requires Triggers.self or Triggers.attached" }
         return spec(BecomesBlockedEvent(filter = filter))
     }
 

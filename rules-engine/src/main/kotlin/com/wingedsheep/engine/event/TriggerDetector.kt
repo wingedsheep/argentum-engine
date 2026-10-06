@@ -1486,21 +1486,27 @@ class TriggerDetector(
                             }
                         }
                     }
-                    // "Whenever this creature becomes blocked[ by ...]" (BecomesBlockedEvent, SELF).
+                    // "Whenever this creature becomes blocked[ by ...]" (BecomesBlockedEvent, SELF/ATTACHED).
                     // Two shapes that differ in firing count:
                     //   - Unfiltered ("becomes blocked"): becoming blocked is a single event no
-                    //     matter how many creatures block, so fire exactly ONCE with the source as
+                    //     matter how many creatures block, so fire exactly ONCE with the combat creature as
                     //     the triggering entity. This keeps blocker-count payoffs correct (Rampage:
                     //     +N/+N for each creature blocking it beyond the first) and avoids prompting
                     //     "may" abilities once per blocker (Gustcloak).
                     //   - Filtered ("becomes blocked by a creature matching [filter]"): fire once per
                     //     matching blocker, with triggeringEntityId = the blocker, so effects targeting
                     //     the triggering entity resolve to that blocker (Flanking gives each -1/-1).
-                    else if (ability.trigger is EventPattern.BecomesBlockedEvent && ability.binding == TriggerBinding.SELF &&
+                    else if (ability.trigger is EventPattern.BecomesBlockedEvent &&
+                        (ability.binding == TriggerBinding.SELF || ability.binding == TriggerBinding.ATTACHED) &&
                         event is com.wingedsheep.engine.core.BlockingRelationshipsEvent) {
+                        val combatCreatureId = if (ability.binding == TriggerBinding.ATTACHED) {
+                            state.getEntity(entityId)
+                                ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                                ?.targetId ?: continue
+                        } else entityId
                         val blockerFilter = (ability.trigger as EventPattern.BecomesBlockedEvent).filter
                         if (blockerFilter == null) {
-                            val isBlocked = entityId in event.newlyBlockedAttackers
+                            val isBlocked = combatCreatureId in event.newlyBlockedAttackers
                             if (isBlocked) {
                                 triggers.add(
                                     PendingTrigger(
@@ -1508,13 +1514,13 @@ class TriggerDetector(
                                         sourceId = entityId,
                                         sourceName = cardComponent.name,
                                         controllerId = controllerId,
-                                        triggerContext = TriggerContext(triggeringEntityId = entityId)
+                                        triggerContext = TriggerContext(triggeringEntityId = combatCreatureId)
                                     )
                                 )
                             }
                         } else {
                             for ((blockerId, attackerIds) in event.blockers) {
-                                if (!attackerIds.contains(entityId)) continue
+                                if (!attackerIds.contains(combatCreatureId)) continue
                                 if (!predicateEvaluator.matches(
                                         state, projected, blockerId, blockerFilter,
                                         PredicateContext(controllerId = controllerId, sourceId = entityId)

@@ -221,14 +221,16 @@ class TriggerIndex(
          */
         fun triggerToCategories(trigger: SdkGameEvent, binding: TriggerBinding): List<TriggerCategory> {
             // ATTACHED triggers are generally handled by AttachmentTriggerDetector via the
-            // aurasByTarget index. Two exceptions, both needing the full BlockersDeclaredEvent
-            // block map that the per-entity attachment path never sees, so both stay indexed under
+            // aurasByTarget index. Combat exceptions need the full BlockersDeclaredEvent
+            // block map that the per-entity attachment path never sees, so they stay indexed under
             // BLOCKERS_DECLARED and are handled in the main detectTriggersForEvent loop (which
             // resolves ATTACHED → the equipped/enchanted creature):
+            //   - BecomesBlockedEvent, to fire once per matching blocker (Infiltration Lens)
             //   - BlocksOrBecomesBlockedByEvent, to compute the combat partner (Barrow-Blade)
             //   - BecomesUnblockedEvent, whose "isn't blocked" is a *negative* over the whole map
             //     (Farrel's Mantle)
             if (binding == TriggerBinding.ATTACHED &&
+                trigger !is SdkGameEvent.BecomesBlockedEvent &&
                 trigger !is SdkGameEvent.BlocksOrBecomesBlockedByEvent &&
                 trigger !is SdkGameEvent.BecomesUnblockedEvent
             ) return emptyList()

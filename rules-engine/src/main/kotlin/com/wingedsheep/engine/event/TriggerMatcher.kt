@@ -61,13 +61,15 @@ class TriggerMatcher(
         state: GameState
     ): Boolean {
         // ATTACHED triggers are generally handled by AttachmentTriggerDetector, not the main loop.
-        // Two exceptions, both needing the full BlockersDeclaredEvent block map that the per-entity
+        // Combat exceptions need the full BlockersDeclaredEvent block map that the per-entity
         // attachment path never sees:
+        //   - BecomesBlockedEvent, to fire once per matching blocker (Infiltration Lens)
         //   - BlocksOrBecomesBlockedByEvent, to find the equipped creature's combat partner
         //     (Barrow-Blade)
         //   - BecomesUnblockedEvent, whose "isn't blocked" is a negative over the whole map
         //     (Farrel's Mantle)
         if (binding == TriggerBinding.ATTACHED &&
+            trigger !is EventPattern.BecomesBlockedEvent &&
             trigger !is EventPattern.BlocksOrBecomesBlockedByEvent &&
             trigger !is EventPattern.BecomesUnblockedEvent
         ) return false
@@ -200,10 +202,15 @@ class TriggerMatcher(
                 else before < trigger.minBlockedAttackers && (event.blockedCounts[sourceId] ?: 0) >= trigger.minBlockedAttackers
             }
             is EventPattern.BecomesBlockedEvent -> {
-                event is com.wingedsheep.engine.core.BlockingRelationshipsEvent &&
-                    (binding != TriggerBinding.SELF ||
-                        if (trigger.filter == null) sourceId in event.newlyBlockedAttackers
-                        else event.blockers.values.any { sourceId in it })
+                if (event !is com.wingedsheep.engine.core.BlockingRelationshipsEvent) return false
+                if (binding != TriggerBinding.SELF && binding != TriggerBinding.ATTACHED) return true
+                val combatCreatureId = if (binding == TriggerBinding.ATTACHED) {
+                    state.getEntity(sourceId)
+                        ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                        ?.targetId ?: return false
+                } else sourceId
+                if (trigger.filter == null) combatCreatureId in event.newlyBlockedAttackers
+                else event.blockers.values.any { combatCreatureId in it }
             }
             is EventPattern.BecomesUnblockedEvent -> {
                 // CR 509.3g: fires for an attacker with no creatures declared as blockers.

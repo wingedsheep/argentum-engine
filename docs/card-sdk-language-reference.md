@@ -1314,6 +1314,12 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 `GrantDynamicStats` (a static ability), `OnEnterRun`, `ReplaceDrawWith` and `RedirectZoneChangeWith`
 (replacement effects). Their serial names are unchanged.
 
+`Triggers.attached.becomesBlocked(by = filter)` uses the same per-blocker semantics for an equipped
+or enchanted creature (Infiltration Lens). Omit `by` for one trigger when that creature first becomes
+blocked. The source and controller remain the attachment; the triggering entity is the blocker with
+`by`, or the attached creature without it. Both declared blocks and later blocking relationships use
+this path, with blocker filters evaluated against projected state.
+
 ### Damage
 
 - `DealDamage(amount, target, damageSource = null, cantBePrevented = false, excessDamageVariable = null, damageDealtVariable = null)`
@@ -6907,7 +6913,7 @@ The shapes in this family, with their engine notes.
 - `Triggers.self.becomesBlocked()` — SELF, no filter.
 - `Triggers.self.becomesBlocked(by = filter)` — "becomes blocked by a [filter] creature": SELF, the
   filter constrains the **blocker** (Ogre Leadfoot, Sylvan Basilisk, Battering Ram). `by` is
-  SELF-only, and `Triggers.self.matching(…).becomesBlocked()` is rejected — under SELF the event's
+  supported by SELF and ATTACHED. Filtered subjects are rejected — for these bindings the event's
   one filter axis is the blocker, so a subject filter would silently be read as a blocker filter.
 - `Triggers.<subject>.blocks(attackerFilter, minBlockedAttackers)` — `filter`
   constrains the blocker (ANY binding). `attackerFilter` constrains the blocked attacker — requires

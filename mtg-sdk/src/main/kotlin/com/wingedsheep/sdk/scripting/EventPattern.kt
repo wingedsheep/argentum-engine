@@ -1091,7 +1091,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
 
     /**
      * When a creature becomes blocked.
-     * Binding SELF = "when this creature becomes blocked",
+     * Binding SELF / ATTACHED = this / equipped or enchanted creature becomes blocked.
+     * With those bindings, a filter matches blockers and fires once per matching blocker.
      * ANY = "whenever a creature you control becomes blocked" (filter=null),
      * ANY + filter = "whenever a [filter] becomes blocked" (any controller).
      */

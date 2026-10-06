@@ -93,11 +93,18 @@ class TriggersSubjectVerbTest : DescribeSpec({
             shouldThrow<IllegalArgumentException> { Triggers.self.changesZone(to = Zone.BATTLEFIELD) }
         }
 
-        it("becomesBlocked(by) filters the blocker, and only under self") {
+        it("becomesBlocked(by) filters the blocker under self and attached") {
             Triggers.self.becomesBlocked(by = GameObjectFilter.Creature) shouldBe TriggerSpec(
                 EventPattern.BecomesBlockedEvent(filter = GameObjectFilter.Creature),
                 TriggerBinding.SELF,
             )
+            Triggers.attached.becomesBlocked(by = GameObjectFilter.Creature) shouldBe TriggerSpec(
+                EventPattern.BecomesBlockedEvent(filter = GameObjectFilter.Creature),
+                TriggerBinding.ATTACHED,
+            )
+            shouldThrow<IllegalArgumentException> {
+                Triggers.attached.matching(GameObjectFilter.Creature).becomesBlocked()
+            }
             Triggers.self.becomesBlocked().event shouldBe EventPattern.BecomesBlockedEvent(filter = null)
             shouldThrow<IllegalArgumentException> {
                 Triggers.a(GameObjectFilter.Creature).becomesBlocked(by = GameObjectFilter.Creature)

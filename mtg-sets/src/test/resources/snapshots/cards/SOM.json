@@ -2056,6 +2056,81 @@
     ]
 }
 
+// Infiltration Lens
+{
+    "name": "Infiltration Lens",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Whenever equipped creature becomes blocked by a creature, you may draw two cards.\nEquip {1}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Infiltration Lens:1",
+                "trigger": {
+                    "type": "BecomesBlockedEvent",
+                    "filter": "creature"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Infiltration Lens:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "Neurok spies carry devices that let them look a few moments into the future, giving them an almost insurmountable edge.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1baa10da-2733-4657-a1ea-74eb5a5a82b1.jpg?1783941707",
+        "rulings": [
+            {
+                "date": "2011-01-01",
+                "text": "If the equipped creature becomes blocked by multiple creatures, Infiltration Lens’s ability triggers that many times."
+            }
+        ]
+    }
+}
+
 // Kuldotha Forgemaster
 {
     "name": "Kuldotha Forgemaster",
