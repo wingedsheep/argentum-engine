@@ -669,6 +669,13 @@ value class CounterType(val name: String) {
          */
         val CORPSE = CounterType("CORPSE")
 
+        /**
+         * Vitality counter (LEA — Living Artifact). A passive spendable store with no inherent rule:
+         * the card's damage trigger adds one per point of damage dealt to its controller, and its
+         * upkeep trigger may remove one to gain 1 life.
+         */
+        val VITALITY = CounterType("VITALITY")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -788,6 +795,7 @@ value class CounterType(val name: String) {
             REPRIEVE,
             BOUNTY,
             CORPSE,
+            VITALITY,
         )
 
         /**

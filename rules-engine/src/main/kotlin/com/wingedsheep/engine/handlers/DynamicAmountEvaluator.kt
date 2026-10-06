@@ -541,8 +541,10 @@ class DynamicAmountEvaluator(
             }
 
             is DynamicAmount.Conditional -> {
-                val eval = conditions
-                val met = eval.evaluate(state, amount.condition, context)
+                // Thread the caller's projection: a CDA ("*/*") is evaluated mid-projection, and a
+                // condition that reads the source's characteristics (Gaea's Liege's "is attacking")
+                // would otherwise re-enter GameState.projectedState and recurse.
+                val met = conditions.evaluate(state, amount.condition, context, projectedState)
                 if (met) evaluate(state, amount.ifTrue, context, projectedState)
                 else evaluate(state, amount.ifFalse, context, projectedState)
             }

@@ -632,6 +632,7 @@ export enum CounterType {
   REPRIEVE = 'REPRIEVE',
   BOUNTY = 'BOUNTY',
   CORPSE = 'CORPSE',
+  VITALITY = 'VITALITY',
 }
 
 export const CounterTypeDisplayNames: Record<CounterType, string> = {
@@ -752,6 +753,7 @@ export const CounterTypeDisplayNames: Record<CounterType, string> = {
   [CounterType.REPRIEVE]: 'Reprieve',
   [CounterType.BOUNTY]: 'Bounty',
   [CounterType.CORPSE]: 'Corpse',
+  [CounterType.VITALITY]: 'Vitality',
 }
 
 /**

@@ -2361,6 +2361,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   THEFT: { bg: 'rgba(24, 22, 30, 0.95)', border: 'rgba(150, 140, 110, 0.7)', color: '#d8cfa8' },
   MIRE: { bg: 'rgba(30, 34, 22, 0.95)', border: 'rgba(128, 148, 80, 0.7)', color: '#b7c68c' },
   CORPSE: { bg: 'rgba(28, 26, 24, 0.95)', border: 'rgba(160, 150, 130, 0.7)', color: '#d4cbb8' },
+  VITALITY: { bg: 'rgba(20, 40, 24, 0.95)', border: 'rgba(110, 190, 120, 0.7)', color: '#a8e0b0' },
   TRAINING: { bg: 'rgba(48, 40, 22, 0.95)', border: 'rgba(214, 170, 90, 0.7)', color: '#ecd09a' },
   MINUS_ZERO_MINUS_ONE: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },
 }
