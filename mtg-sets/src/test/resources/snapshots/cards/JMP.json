@@ -580,6 +580,115 @@
     "colorIdentityOverride": []
 }
 
+// Muxus, Goblin Grandee
+{
+    "name": "Muxus, Goblin Grandee",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Legendary Creature — Goblin Noble",
+    "oracleText": "When Muxus enters, reveal the top six cards of your library. Put all Goblin creature cards with mana value 5 or less from among them onto the battlefield and the rest on the bottom of your library in a random order.\nWhenever Muxus attacks, it gets +1/+1 until end of turn for each other Goblin you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Muxus, Goblin Grandee:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "creature Goblin mv<=5",
+                            "storeMatching": "matching2",
+                            "storeNonMatching": "rest2"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Muxus enters, reveal the top six cards of your library. Put all Goblin creature cards with mana value 5 or less from among them onto the battlefield and the rest on the bottom of your library in a random order."
+            },
+            {
+                "id": "Muxus, Goblin Grandee:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Goblin",
+                        "excludeSelf": true
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Goblin",
+                        "excludeSelf": true
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever Muxus attacks, it gets +1/+1 until end of turn for each other Goblin you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Dmitry Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c716d10-2130-43b7-a939-349d437e1091.jpg?1783930502",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If a card in a player's library has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "The bonus Muxus gets is determined only as its last ability resolves. Once that happens, the bonus won't change later in the turn even if the number of Goblins you control changes."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Release the Dogs
 {
     "name": "Release the Dogs",

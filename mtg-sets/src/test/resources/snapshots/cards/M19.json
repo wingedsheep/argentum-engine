@@ -3345,6 +3345,70 @@
     ]
 }
 
+// Sarkhan's Whelp
+{
+    "name": "Sarkhan's Whelp",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever you activate an ability of a Sarkhan planeswalker, this creature deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sarkhan's Whelp:1",
+                "trigger": {
+                    "type": "AbilityActivatedEvent",
+                    "sourceFilter": {
+                        "cardPredicates": [
+                            "IsPlaneswalker",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Sarkhan"
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsOnBattlefield"
+                        ]
+                    },
+                    "includeManaAbilities": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you activate an ability of a Sarkhan planeswalker, this creature deals 1 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "299",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07135c4d-b4de-4054-800a-11090ed32692.jpg?1783934487"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Satyr Enchanter
 {
     "name": "Satyr Enchanter",
@@ -3769,6 +3833,74 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Sparktongue Dragon
+{
+    "name": "Sparktongue Dragon",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhen this creature enters, you may pay {2}{R}. When you do, it deals 3 damage to any target.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sparktongue Dragon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCost",
+                        "cost": "{2}{R}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "damageSource": "Self"
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "it deals 3 damage to any target"
+                },
+                "descriptionOverride": "When this creature enters, you may pay {2}{R}. When you do, it deals 3 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "artist": "Daarken",
+        "flavorText": "Fools believe that Kolaghan's brood follows lightning storms. The wise know that it is the other way around.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc0dbc86-cc12-49e7-9721-dd52b35efcbe.jpg?1783934547",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "You don't choose a target for Sparktongue Dragon's last ability at the time it triggers. Rather, a second \"reflexive\" ability triggers when you pay {2}{R} this way. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

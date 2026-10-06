@@ -3901,6 +3901,54 @@
     ]
 }
 
+// Pillar of Flame
+{
+    "name": "Pillar of Flame",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Pillar of Flame deals 2 damage to any target. If a creature dealt damage this way would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"May the worthy spend an eternity in Blessed Sleep. May the wicked find the peace of oblivion.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c983e879-d9d2-47cc-9958-506711ca80cd.jpg?1783940678"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Polluted Dead
 {
     "name": "Polluted Dead",

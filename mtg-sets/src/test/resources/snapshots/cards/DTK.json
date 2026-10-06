@@ -2501,6 +2501,74 @@
     ]
 }
 
+// Sarkhan's Rage
+{
+    "name": "Sarkhan's Rage",
+    "manaCost": "{4}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Sarkhan's Rage deals 5 damage to any target. If you control no Dragons, Sarkhan's Rage deals 2 damage to you.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Dragon",
+                            "negate": true
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "Controller"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "artist": "Chris Rahn",
+        "flavorText": "The people of Tarkir speak of an ancient legend, of the dragon-man called Sarkhan who was greatest of all khans.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/4787924f-3186-4e18-b53c-dd67c5f42220.jpg?1783938586",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Sarkhan's Rage checks whether you control a Dragon as it resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sarkhan's Triumph
 {
     "name": "Sarkhan's Triumph",

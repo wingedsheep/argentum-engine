@@ -2399,6 +2399,76 @@
     ]
 }
 
+// Sokenzan Smelter
+{
+    "name": "Sokenzan Smelter",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Artificer",
+    "oracleText": "At the beginning of combat on your turn, you may pay {1} and sacrifice an artifact. If you do, create a 3/1 red Construct artifact creature token with haste.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sokenzan Smelter:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "PayManaCost",
+                                    "cost": "{1}"
+                                },
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "artifact"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 3,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Construct"
+                        ],
+                        "keywords": [
+                            "HASTE"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cbafdfc0-380a-482b-b5f8-a7a00ecf8da6.jpg?1783923715",
+                        "artifactToken": true
+                    },
+                    "descriptionOverride": "You may pay {1} and sacrifice an artifact. If you do, create a 3/1 red Construct artifact creature token with haste."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Among the artisans of Sokenzan City, reusing every scrap of metal is a point of pride.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/758724f9-93c9-4178-ae40-3fefc75a010e.jpg?1783923858"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sokenzan, Crucible of Defiance
 {
     "name": "Sokenzan, Crucible of Defiance",

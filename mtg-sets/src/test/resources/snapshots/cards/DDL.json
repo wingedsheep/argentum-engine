@@ -1,3 +1,102 @@
+// Ordeal of Purphoros
+{
+    "name": "Ordeal of Purphoros",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhenever enchanted creature attacks, put a +1/+1 counter on it. Then if it has three or more +1/+1 counters on it, sacrifice this Aura.\nWhen you sacrifice this Aura, it deals 3 damage to any target.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ordeal of Purphoros:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "EnchantedCreature"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "TriggeringEntity",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "PLUS_ONE_PLUS_ONE"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "SacrificeTarget",
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Ordeal of Purphoros:2",
+                "trigger": "PermanentsSacrificedEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When you sacrifice this Aura, it deals 3 damage to any target."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Maciej Kuciara",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16d4e46d-7aae-4fe5-9b0b-9a39e02e4883.jpg?1783939855",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "The check of whether the enchanted creature has three or more +1/+1 counters on it happens as part of the resolution of the attack triggered ability. If the third +1/+1 counter is put on the enchanted creature any other way, you won't sacrifice the Ordeal until the next time the creature attacks."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If you sacrifice the Ordeal in some other way, its last ability will trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Satyr Hedonist
 {
     "name": "Satyr Hedonist",
