@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Nested Ghoul — Mirrodin Besieged #48
@@ -12,7 +13,7 @@ import com.wingedsheep.sdk.model.Rarity
  *
  * Whenever a source deals damage to this creature, create a 2/2 black Phyrexian Zombie creature token.
  *
- * `Triggers.self.isDealtDamage()` fires once per damage event, i.e. once per source dealing damage
+ * `Triggers.self.isDealtDamage(by = GameObjectFilter.Any)` — "a source deals damage" — fires once per source dealing damage
  * simultaneously (same trigger Phyrexian Obliterator uses). Reprinted in J22 (Printing row there).
  */
 val NestedGhoul = card("Nested Ghoul") {
@@ -24,7 +25,7 @@ val NestedGhoul = card("Nested Ghoul") {
     oracleText = "Whenever a source deals damage to this creature, create a 2/2 black Phyrexian Zombie creature token."
 
     triggeredAbility {
-        trigger = Triggers.self.isDealtDamage()
+        trigger = Triggers.self.isDealtDamage(by = GameObjectFilter.Any)
         effect = Effects.CreateToken(
             power = 2,
             toughness = 2,

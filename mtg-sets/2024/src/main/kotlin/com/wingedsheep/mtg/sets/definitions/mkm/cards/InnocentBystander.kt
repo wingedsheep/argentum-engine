@@ -17,10 +17,11 @@ import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
  * A 2/1 that turns overkill into a card: anything that bothers to point a real burn spell or a
  * big blocker at it hands you a Clue on the way out.
  *
- * The "3 or more" gate is measured **per damage event**, not cumulatively over the turn — the
- * engine models damage as one `DamageDealtEvent` per source/recipient pair, so being blocked by
- * two 2/2s deals two separate 2-damage instances and this never fires, exactly as the printed
- * card behaves. `Triggers.self.isDealtDamage()` is the SELF "whenever this is dealt damage" event and the
+ * The "3 or more" gate is measured **per damage event**, not cumulatively over the turn (its
+ * ruling: "all at once"). Simultaneous damage is one event, so being blocked by two 2/2s is 4
+ * damage at once and fires it — the detector folds simultaneous combat damage into one
+ * "is dealt damage" trigger carrying the total — while a 2-damage ping followed by another does
+ * not. `Triggers.self.isDealtDamage()` is the SELF "whenever this is dealt damage" event and the
  * threshold rides on it as a `triggerRestriction` comparing that event's damage
  * ([ContextPropertyKey.TRIGGER_DAMAGE_AMOUNT]) against 3 with [ComparisonOperator.GTE] — the same
  * idiom Spinneret and Spiderling uses on the outgoing side.

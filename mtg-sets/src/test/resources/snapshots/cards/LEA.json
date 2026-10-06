@@ -2782,6 +2782,48 @@
     ]
 }
 
+// Fungusaur
+{
+    "name": "Fungusaur",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Fungus Dinosaur",
+    "oracleText": "Whenever this creature is dealt damage, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fungusaur:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "RARE",
+        "artist": "Daniel Gelon",
+        "flavorText": "Rather than sheltering her young, the female Fungusaur often injures her own offspring, thereby ensuring their rapid growth.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5ad89f0d-b09b-40a0-84d6-3ee60dec7e23.jpg",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "If more than one creature damages it at one time, it only gets one counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Giant Growth
 {
     "name": "Giant Growth",

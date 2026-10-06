@@ -76,7 +76,7 @@ private val RonaTolarianObliterator = card("Rona, Tolarian Obliterator") {
     keywords(Keyword.TRAMPLE)
 
     triggeredAbility {
-        trigger = Triggers.self.isDealtDamage()
+        trigger = Triggers.self.isDealtDamage(by = GameObjectFilter.Any)
         effect = Effects.Pipeline {
             val hand = gather(CardSource.FromZone(Zone.HAND, Player.ControllerOfTriggeringEntity))
             val exiled = chooseRandom(1, from = hand)

@@ -266,6 +266,9 @@ class TriggerDetector(
     ): List<PendingTrigger> {
         val index = buildTriggerIndex(state)
         val triggers = mutableListOf<PendingTrigger>()
+        // Slot in [triggers] of each "is dealt damage" trigger already raised by this batch's
+        // combat damage, keyed by ability instance and recipient — see [foldSimultaneousDamage].
+        val combatDamageSlots = mutableMapOf<List<Any?>, Int>()
 
         for ((eventIndex, event) in events.withIndex()) {
             // DrawEvent firing counts are derived from CardsDrawnThisTurnComponent, which `state`
@@ -280,6 +283,7 @@ class TriggerDetector(
                     .sumOf { it.count }
             } else 0
             val detected = detectTriggersForEvent(state, event, index, samePlayerDrawsLaterInBatch)
+                .let { foldSimultaneousDamage(it, event, triggers, combatDamageSlots) }
             triggers.addAll(detected.map { pending ->
                 val selfZoneEvent = event is ZoneChangeEvent && event.entityId == pending.sourceId
                 val attachedDeparture = selfZoneEvent && pending.ability.binding == TriggerBinding.ATTACHED &&
@@ -1709,16 +1713,7 @@ class TriggerDetector(
                                         enchantedCreatureLastKnownPower = enchantedPower,
                                         // Never clobber a capture the event itself carries
                                         // (manifest dread's graveyard cards).
-                                        capturedEntityIds = capturedTargets ?: ctx.capturedEntityIds,
-                                        // "Whenever a source deals damage to this creature" binds
-                                        // the damage *source*, so "that source's controller …"
-                                        // (Belltower Sphinx) resolves. DamageTriggerDetector owns
-                                        // the same rule for the case where the creature died to
-                                        // that damage; both paths must agree.
-                                        triggeringEntityId =
-                                            if (event is DamageDealtEvent &&
-                                                DamageTriggerDetector.bindsDamageSource(ability)
-                                            ) event.sourceId else ctx.triggeringEntityId
+                                        capturedEntityIds = capturedTargets ?: ctx.capturedEntityIds
                                     )
                                 }
                             )
@@ -3119,6 +3114,48 @@ class TriggerDetector(
         }
         triggers.clear()
         triggers.addAll(merged)
+    }
+
+    /**
+     * "Whenever this is dealt damage" triggers once per damage *event* (CR 603.2c), and combat
+     * damage is dealt simultaneously (CR 510.2): two blockers hitting Fungusaur are one event,
+     * one +1/+1 counter, and Boros Reckoner's "that much damage" is the total. The engine emits
+     * one [DamageDealtEvent] per source, so the recipient form ([EventPattern.DamageReceivedEvent]
+     * with no `source` filter) folds a combat event's triggers into the one this batch already
+     * raised for the same ability and recipient, summing the damage. Returns the triggers still
+     * to add. The per-source form ("a source deals damage to this") is untouched — it triggers
+     * once per source by its own wording (Nested Ghoul's ruling).
+     */
+    private fun foldSimultaneousDamage(
+        detected: List<PendingTrigger>,
+        event: EngineGameEvent,
+        triggers: MutableList<PendingTrigger>,
+        slots: MutableMap<List<Any?>, Int>
+    ): List<PendingTrigger> {
+        if (event !is DamageDealtEvent || !event.isCombatDamage) return detected
+        val kept = mutableListOf<PendingTrigger>()
+        for (pending in detected) {
+            val trigger = pending.ability.trigger
+            if (trigger !is EventPattern.DamageReceivedEvent || trigger.source != null) {
+                kept.add(pending)
+                continue
+            }
+            val key = listOf(pending.sourceId, pending.ability.id, pending.granterId, event.targetId)
+            val slot = slots[key]
+            if (slot == null) {
+                // The caller appends `kept` to `triggers` in order, so this is its final slot.
+                slots[key] = triggers.size + kept.size
+                kept.add(pending)
+                continue
+            }
+            val first = triggers[slot]
+            val ctx = first.triggerContext
+            triggers[slot] = first.copy(triggerContext = ctx.copy(
+                damageAmount = (ctx.damageAmount ?: 0) + event.amount,
+                excessDamageAmount = ((ctx.excessDamageAmount ?: 0) + event.excessAmount).takeIf { it > 0 }
+            ))
+        }
+        return kept
     }
 
     private fun isPerRecipientCounterTrigger(pending: PendingTrigger): Boolean {

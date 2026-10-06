@@ -253,9 +253,9 @@ class TriggerMatcher(
                 false
             }
             is EventPattern.DamageReceivedEvent -> {
-                // Generic (source=Any) DamageReceivedEvent can match in the main loop
-                // Specific source-filtered ones are handled in detectDamagedBySourceTriggers
-                if (trigger.source != GameObjectFilter.Any) return false
+                // The recipient form ("is dealt damage") matches in the main loop; the per-source
+                // form ("a source deals damage to this") is detectDamagedBySourceTriggers' alone.
+                if (trigger.source != null) return false
                 if (event !is DamageDealtEvent) return false
                 if (binding == TriggerBinding.SELF) return event.targetId == sourceId
                 if (binding == TriggerBinding.OTHER && event.targetId == sourceId) return false

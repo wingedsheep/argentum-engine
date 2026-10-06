@@ -254,7 +254,7 @@ class TriggerIndex(
                 is SdkGameEvent.BecomesUnblockedEvent -> listOf(TriggerCategory.BLOCKERS_DECLARED)
                 is SdkGameEvent.BlocksOrBecomesBlockedByEvent -> listOf(TriggerCategory.BLOCKERS_DECLARED)
                 is SdkGameEvent.DamageReceivedEvent ->
-                    if (trigger.source == GameObjectFilter.Any) listOf(TriggerCategory.DAMAGE_RECEIVED) else emptyList()
+                    if (trigger.source == null) listOf(TriggerCategory.DAMAGE_RECEIVED) else emptyList()
                 is SdkGameEvent.SpellCastEvent -> listOf(TriggerCategory.SPELL_CAST)
                 is SdkGameEvent.NthSpellCastEvent -> listOf(TriggerCategory.SPELL_CAST)
                 is SdkGameEvent.SpellCopiedEvent -> listOf(TriggerCategory.SPELL_COPIED)
@@ -334,8 +334,8 @@ class TriggerIndex(
                 // need data the per-event loop doesn't carry (the source face of a door, the damage
                 // source, the dying creature's damage history). DamagePreventedEvent and
                 // CardPlayedFromPermissionEvent back linked delayed triggers only. Indexing any of
-                // these here would fire them a second time. DamageReceivedEvent with a non-Any
-                // source filter goes to the damage detector too (branch above).
+                // these here would fire them a second time. DamageReceivedEvent with a source filter
+                // ("a source deals damage to this") goes to the damage detector too (branch above).
                 is SdkGameEvent.BecomesPlottedEvent,
                 is SdkGameEvent.CardPlayedFromPermissionEvent,
                 is SdkGameEvent.ControlChangeEvent,

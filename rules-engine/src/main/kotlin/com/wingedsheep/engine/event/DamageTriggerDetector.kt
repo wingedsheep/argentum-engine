@@ -26,39 +26,6 @@ class DamageTriggerDetector(
 ) {
 
 
-    companion object {
-        /**
-         * Whether [ability] is the SELF-bound "whenever a source deals damage to this creature"
-         * shape ([GameObjectFilter.Any]) — the one whose triggering entity is the **damage source**
-         * rather than the creature that was dealt the damage.
-         *
-         * "That source's controller mills that many cards" (Belltower Sphinx) has nothing to name
-         * otherwise: the damaged creature is the trigger's own `sourceId`, and its controller is
-         * already `controllerId`, so binding it carried no information. This matches what the
-         * source-filtered variants have always done (`detectDamagedBySourceTriggers`) and what
-         * `TriggerContext.fromEvent` does for `DamagePreventedEvent`.
-         *
-         * Shared because this trigger is detected in **two** places — the main battlefield scan in
-         * `TriggerDetector` while the creature is still alive, and
-         * [detectDamageReceivedTriggers] once it has died to that same damage. They must agree, or
-         * a card would behave differently depending on whether the damage happened to be lethal.
-         */
-        fun bindsDamageSource(ability: TriggeredAbility): Boolean {
-            val trigger = ability.trigger
-            return ability.binding == TriggerBinding.SELF &&
-                trigger is EventPattern.DamageReceivedEvent &&
-                trigger.source == GameObjectFilter.Any
-        }
-
-        /** The trigger context for [bindsDamageSource] abilities, built off the damage event. */
-        fun damageReceivedContext(event: DamageDealtEvent): TriggerContext = TriggerContext(
-            triggeringEntityId = event.sourceId,
-            damageAmount = event.amount,
-            excessDamageAmount = event.excessAmount.takeIf { it > 0 },
-            recipientToughnessAtDamage = event.targetToughnessAtDamage
-        )
-    }
-
     /**
      * Detect "whenever this creature is dealt damage" triggers on creatures that
      * are no longer on the battlefield (e.g., died from the damage via SBAs).
@@ -88,20 +55,18 @@ class DamageTriggerDetector(
 
         for (ability in abilities) {
             val trigger = ability.trigger
-            // Only match generic (source=Any) DamageReceivedEvent triggers here.
-            // Source-filtered triggers (DamagedByCreature, DamagedBySpell) are handled
-            // exclusively by detectDamagedBySourceTriggers.
-            if (trigger is EventPattern.DamageReceivedEvent && bindsDamageSource(ability)) {
+            // Only the recipient form ("is dealt damage") here; the per-source form ("a source
+            // deals damage to this") is handled, dead or alive, by detectDamagedBySourceTriggers.
+            if (trigger is EventPattern.DamageReceivedEvent && trigger.source == null &&
+                ability.binding == TriggerBinding.SELF
+            ) {
                 triggers.add(
                     PendingTrigger(
                         ability = ability,
                         sourceId = entityId,
                         sourceName = cardComponent.name,
                         controllerId = controllerId,
-                        // Binds the damage *source*, not the creature that was dealt the damage —
-                        // see [bindsDamageSource]. The main battlefield scan in TriggerDetector
-                        // applies the same rule for the case where the creature survived.
-                        triggerContext = damageReceivedContext(event)
+                        triggerContext = TriggerContext.fromEvent(event)
                     )
                 )
             }
@@ -156,9 +121,11 @@ class DamageTriggerDetector(
     }
 
     /**
-     * Detect source-filtered "whenever [a source matching X] deals damage to this" triggers
-     * (Tephraderm: "a creature", "a spell"). The triggering entity is the damage SOURCE, for
-     * retaliation effects.
+     * Detect the per-source "whenever [a source matching X] deals damage to this" triggers
+     * (Tephraderm: "a creature", "a spell"; Nested Ghoul and Belltower Sphinx: "a source"). One
+     * trigger per damage source, even when several deal damage at once (Nested Ghoul's ruling).
+     * The triggering entity is the damage SOURCE, for retaliation effects and "that source's
+     * controller".
      *
      * Neither end has to still be on the battlefield: the damaged permanent may have died to the
      * damage, and combat damage is dealt simultaneously, so the attacker may have died to the same
@@ -182,7 +149,6 @@ class DamageTriggerDetector(
 
         // Face-down creatures have no abilities (Rule 708.2)
         if (container.has<FaceDownComponent>() || event.targetWasFaceDown) return
-        if (state.getEntity(sourceId) == null) return
 
         val abilities = abilityResolver.getTriggeredAbilities(damagedEntityId, cardComponent.cardDefinitionId, state, statics)
         val context = PredicateContext(controllerId = controllerId, sourceId = damagedEntityId)
@@ -190,8 +156,12 @@ class DamageTriggerDetector(
         for (ability in abilities) {
             val trigger = ability.trigger
             if (trigger !is EventPattern.DamageReceivedEvent || ability.binding != TriggerBinding.SELF) continue
-            if (trigger.source == GameObjectFilter.Any) continue
-            if (!predicateEvaluator.matches(state, state.projectedState, sourceId, trigger.source, context)) continue
+            val sourceFilter = trigger.source ?: continue
+            // "A source" asks nothing of the source, so it needn't still exist (a token that
+            // dealt the damage and died to the same combat exchange has ceased to exist).
+            if (sourceFilter != GameObjectFilter.Any && (state.getEntity(sourceId) == null ||
+                    !predicateEvaluator.matches(state, state.projectedState, sourceId, sourceFilter, context))
+            ) continue
             triggers.add(
                 PendingTrigger(
                     ability = ability,
