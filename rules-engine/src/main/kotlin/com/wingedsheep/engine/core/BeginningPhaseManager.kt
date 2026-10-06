@@ -19,6 +19,7 @@ import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.CardsInHandAtTurnStartComponent
 import com.wingedsheep.engine.state.components.player.SkipNextUntapStepComponent
+import com.wingedsheep.engine.state.components.player.UntappedLandsAtTurnStartComponent
 import com.wingedsheep.engine.state.components.player.SkipUntapComponent
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.sdk.core.AbilityFlag
@@ -110,11 +111,18 @@ class BeginningPhaseManager(
         // "At the beginning of this turn" has to be captured here rather than read later: by the
         // upkeep, the very cards a card like Mindstorm Crown is measuring may already have moved.
         // Recorded for every player, not just the active one, so an opponent-scoped reading of the
-        // same tracker is available for free.
+        // same tracker is available for free. Untapped lands (Power Surge) are counted here too,
+        // before anything phases in or untaps; phased-out lands aren't controlled and don't count.
+        val turnStartProjected = newState.projectedState
+        val untappedLands = newState.getBattlefield()
+            .filter { turnStartProjected.hasType(it, "LAND") && newState.getEntity(it)?.has<TappedComponent>() != true }
+            .groupingBy { turnStartProjected.getController(it) }
+            .eachCount()
         for (pid in newState.turnOrder) {
             val handSize = newState.getZone(ZoneKey(pid, Zone.HAND)).size
             newState = newState.updateEntity(pid) { container ->
                 container.with(CardsInHandAtTurnStartComponent(count = handSize))
+                    .with(UntappedLandsAtTurnStartComponent(count = untappedLands[pid] ?: 0))
             }
         }
 

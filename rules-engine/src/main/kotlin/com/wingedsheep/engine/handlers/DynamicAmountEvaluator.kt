@@ -818,6 +818,17 @@ class DynamicAmountEvaluator(
                                 com.wingedsheep.engine.state.ZoneKey(playerId, Zone.HAND)
                             ).size
                     }
+                    // Same untap-step snapshot. Before the first untap step every land is still
+                    // untapped where it entered, so a live count is the same answer.
+                    TurnTracker.UNTAPPED_LANDS_AT_TURN_START -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.UntappedLandsAtTurnStartComponent>()
+                            ?.count
+                            ?: state.controlledBattlefield(playerId).count { id ->
+                                state.projectedState.hasType(id, "LAND") &&
+                                    state.getEntity(id)?.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>() != true
+                            }
+                    }
                     TurnTracker.CARDS_DISCARDED -> playerIds.sumOf { playerId ->
                         state.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComponent>()

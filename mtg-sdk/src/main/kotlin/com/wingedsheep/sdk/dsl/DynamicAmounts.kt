@@ -736,6 +736,13 @@ object DynamicAmounts {
     fun cardsDrawnThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.CARDS_DRAWN)
 
+    /**
+     * The number of untapped lands [player] controlled at the beginning of this turn — an untap-step
+     * snapshot taken before anything untaps (Power Surge).
+     */
+    fun untappedLandsAtTurnStart(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.UNTAPPED_LANDS_AT_TURN_START)
+
     /** The damage [player] has been dealt this turn. */
     fun damageReceivedThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.DAMAGE_RECEIVED)

@@ -13160,7 +13160,7 @@ forbids `DynamicAmount.X` in card definitions.
   manaSpentToCast / propertyOf(entity, property)` (plus the `source…` / `triggering…` shortcuts), and
   the turn trackers (`cardsDrawnThisTurn(player)`, `damageReceivedThisTurn(player)`,
   `creaturesDiedThisTurn(player)`, `creaturesLeftBattlefieldThisTurn(player)`,
-  `distinctBendsThisTurn(player)`, …).
+  `distinctBendsThisTurn(player)`, `untappedLandsAtTurnStart(player)`, …).
 - **Every `ContextPropertyKey` a card reads has a named facade**: `triggerDamageAmount()`,
   `triggerExcessDamageAmount()`, `triggerRecipientToughness()`, `triggerLifeGained()`,
   `triggerLifeLost()`, `triggerDiscardCount()`, `triggerScryCount()`, `triggerCountersPlaced()`,
@@ -14268,6 +14268,14 @@ this turn").
   `Conditions.YouHadNoCardsInHandAtTurnStart`, which backs **Mindstorm Crown**. Do not reach for
   `Conditions.EmptyHand` for these wordings: that reads the hand *now*, and resolves differently on
   any turn where something touched the hand before the upkeep.
+- `UNTAPPED_LANDS_AT_TURN_START` — how many untapped lands the player controlled **at the beginning
+  of the current turn**. The board-side sibling of `CARDS_IN_HAND_AT_TURN_START`, snapshotted in the
+  same `performUntapStep` pass *before* the active player's permanents phase in or untap, backed by
+  `UntappedLandsAtTurnStartComponent`. Type and controller come from projected state; phased-out
+  lands aren't counted. Recorded for every player every turn, so a permanent that entered after the
+  turn began still knows the number. Facade `DynamicAmounts.untappedLandsAtTurnStart(player)`;
+  `untappedLandsAtTurnStart(Player.TriggeringPlayer)` on an each-player upkeep trigger is
+  **Power Surge**.
 - `LOYALTY_ABILITIES_ACTIVATED` — how many loyalty abilities (CR 606) the player activated this turn,
   counted at activation (CR 602.2) on the per-player `LoyaltyAbilitiesActivatedThisTurnComponent` and reset
   for every player at turn start. Wrapped by `Conditions.YouActivatedLoyaltyAbilityThisTurn` (Kiora of Salt

@@ -5509,6 +5509,45 @@
     ]
 }
 
+// Power Surge
+{
+    "name": "Power Surge",
+    "manaCost": "{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of each player's upkeep, this enchantment deals X damage to that player, where X is the number of untapped lands they controlled at the beginning of this turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Power Surge:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "TurnTracking",
+                        "player": "TriggeringPlayer",
+                        "tracker": "UNTAPPED_LANDS_AT_TURN_START"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "RARE",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62858604-ca5a-4f69-a045-a7515ebfabf2.jpg?1783948682"
+    }
+}
+
 // Prodigal Sorcerer
 {
     "name": "Prodigal Sorcerer",

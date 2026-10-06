@@ -1135,6 +1135,19 @@ data class CardsInHandAtTurnStartComponent(
 ) : Component
 
 /**
+ * How many untapped lands this player controlled **at the beginning of the current turn**. Written
+ * alongside [CardsInHandAtTurnStartComponent] in `BeginningPhaseManager.performUntapStep`, before the
+ * active player's permanents phase in or untap, and overwritten there each turn.
+ *
+ * Backs [com.wingedsheep.sdk.scripting.values.TurnTracker.UNTAPPED_LANDS_AT_TURN_START] and, through
+ * it, Power Surge.
+ */
+@Serializable
+data class UntappedLandsAtTurnStartComponent(
+    val count: Int = 0
+) : Component
+
+/**
  * Number of equip abilities this player has activated during the current turn. Reset to 0 at
  * turn start by TurnManager. Read by Forge Anew's [com.wingedsheep.sdk.scripting.FreeFirstEquipEachTurn]
  * to know whether the next equip is the "first equip this turn" (count == 0) that may be paid for

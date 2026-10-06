@@ -289,6 +289,19 @@ enum class TurnTracker {
      */
     CARDS_IN_HAND_AT_TURN_START,
     /**
+     * How many untapped lands the player controlled **at the beginning of this turn** — the
+     * board-side sibling of [CARDS_IN_HAND_AT_TURN_START], snapshotted in the same untap-step pass
+     * *before* the active player's permanents untap or phase in, and backed by
+     * `UntappedLandsAtTurnStartComponent`. Lands are read off projected state (type and
+     * controller), and phased-out permanents don't count because they aren't controlled then.
+     *
+     * Only a snapshot can answer it: by the upkeep, the active player's lands have untapped.
+     * Because it is recorded for every player whether or not anything is watching, a permanent
+     * that enters later in the turn still knows the count. `TurnTracking(TriggeringPlayer,
+     * UNTAPPED_LANDS_AT_TURN_START)` powers Power Surge.
+     */
+    UNTAPPED_LANDS_AT_TURN_START,
+    /**
      * Number of loyalty abilities (CR 606) the player has activated this turn. Backed by
      * `LoyaltyAbilitiesActivatedThisTurnComponent`, reset to 0 for every player at the start of
      * each turn and counted at activation time (CR 602.2), so an ability that was later countered —
@@ -377,6 +390,8 @@ enum class TurnTracker {
         }
         CARDS_IN_HAND_AT_TURN_START ->
             "the number of cards ${player.description} had in hand at the beginning of this turn"
+        UNTAPPED_LANDS_AT_TURN_START ->
+            "the number of untapped lands ${player.description} controlled at the beginning of this turn"
         ENERGY_PAID_OR_LOST -> "the amount of {E} ${player.description} paid or lost this turn"
         PLUS_ONE_COUNTERS_PUT_ON_YOUR_CREATURES ->
             "the number of +1/+1 counters ${player.description} put on creatures under " +

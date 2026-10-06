@@ -685,6 +685,7 @@ val engineSerializersModule = SerializersModule {
         subclass(LoseAtEndStepComponent::class)
         subclass(CardsDrawnThisTurnComponent::class)
         subclass(CardsInHandAtTurnStartComponent::class)
+        subclass(UntappedLandsAtTurnStartComponent::class)
         subclass(BendsThisTurnComponent::class)
         subclass(EquipActivationsThisTurnComponent::class)
         subclass(ExhaustAbilitiesActivatedThisTurnComponent::class)
