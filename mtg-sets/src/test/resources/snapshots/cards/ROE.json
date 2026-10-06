@@ -2552,6 +2552,52 @@
     "colorIdentityOverride": []
 }
 
+// Runed Servitor
+{
+    "name": "Runed Servitor",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature dies, each player draws a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Runed Servitor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Bierek",
+        "flavorText": "Scholars had puzzled for centuries over the ruins at Tal Terig. Its secrets had always lived within one rune-carved head.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9dbbbbf6-e3ed-4a36-bedf-11c3514ff965.jpg?1783941955"
+    },
+    "colorIdentityOverride": []
+}
+
 // Sea Gate Oracle
 {
     "name": "Sea Gate Oracle",
