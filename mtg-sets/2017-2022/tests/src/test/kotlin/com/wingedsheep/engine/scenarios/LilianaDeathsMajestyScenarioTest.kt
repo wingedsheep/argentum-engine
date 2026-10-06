@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -105,6 +106,35 @@ class LilianaDeathsMajestyScenarioTest : ScenarioTestBase() {
                     game.isInGraveyard(2, "Savannah Lions") shouldBe true
                 }
             }
+
+            test("a creature the −3 made a Zombie survives the −7") {
+                val game = scenario()
+                    .withPlayers("Alice", "Bob")
+                    .withCardOnBattlefield(1, "Liliana, Death's Majesty")
+                    .withCardInGraveyard(1, "Grizzly Bears")
+                    .withCardOnBattlefield(2, "Savannah Lions")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val liliana = game.findPermanent("Liliana, Death's Majesty")!!
+                setLoyalty(game, liliana, 5)
+                val bears = game.findCardsInGraveyard(1, "Grizzly Bears").single()
+                activate(
+                    game, liliana, index = 1,
+                    targets = listOf(ChosenTarget.Card(bears, game.player1Id, Zone.GRAVEYARD)),
+                )
+                game.resolveStack()
+
+                setLoyalty(game, liliana, 7)
+                activate(game, liliana, index = 2)
+                game.resolveStack()
+
+                withClue("the Bear is a Zombie only through the −3, and survives") {
+                    game.isOnBattlefield("Grizzly Bears") shouldBe true
+                }
+                withClue("the non-Zombie is destroyed") { game.isInGraveyard(2, "Savannah Lions") shouldBe true }
+            }
         }
     }
 
@@ -131,6 +161,7 @@ class LilianaDeathsMajestyScenarioTest : ScenarioTestBase() {
     private fun setLoyalty(game: TestGame, id: EntityId, amount: Int) {
         game.state = game.state.updateEntity(id) { c ->
             c.with(CountersComponent().withAdded(CounterType.LOYALTY, amount))
+                .without<AbilityActivatedThisTurnComponent>()
         }
     }
 }

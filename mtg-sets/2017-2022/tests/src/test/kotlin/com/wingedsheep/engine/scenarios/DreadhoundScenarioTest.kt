@@ -81,5 +81,25 @@ class DreadhoundScenarioTest : FunSpec({
 
         d.getGraveyardCardNames(opp).count { it == "Grizzly Bears" } shouldBe 1
         d.getLifeTotal(opp) shouldBe 19
+        d.getLifeTotal(you) shouldBe 20
+    }
+
+    test("Dreadhound dying sees itself die") {
+        val d = setup()
+        val you = d.activePlayer!!
+        val opp = d.getOpponent(you)
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val hound = d.putCreatureOnBattlefield(you, "Dreadhound")
+
+        d.giveMana(you, Color.RED, 2)
+        repeat(2) {
+            val bolt = d.putCardInHand(you, "Lightning Bolt")
+            d.castSpell(you, bolt, listOf(hound)).error shouldBe null
+            d.drainStack()
+        }
+
+        d.getGraveyardCardNames(you).count { it == "Dreadhound" } shouldBe 1
+        d.getLifeTotal(opp) shouldBe 19
+        d.getLifeTotal(you) shouldBe 20
     }
 })
