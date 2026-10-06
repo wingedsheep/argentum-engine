@@ -112,6 +112,90 @@
     ]
 }
 
+// Cone of Flame
+{
+    "name": "Cone of Flame",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Cone of Flame deals 1 damage to any target, 2 damage to another target, and 3 damage to a third target.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": "AnyTarget",
+                "id": "t1"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": "AnyTarget",
+                "id": "t2"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "UNCOMMON",
+        "artist": "Ron Spencer",
+        "flavorText": "\"Mine is not the warmth of compassion.\"\n—Ertai, wizard adept",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/5713f17a-9a57-41f8-b492-ced876e1a37f.jpg?1783946729",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Each of the three targets must be different. If there aren't three different legal targets available, you can't cast the spell."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If one or two of Cone of Flame's targets are illegal when it resolves, you can't change how much damage will be dealt to the remaining legal targets."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Disrupt
 {
     "name": "Disrupt",

@@ -1910,6 +1910,68 @@
     ]
 }
 
+// Fireslinger
+{
+    "name": "Fireslinger",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{T}: This creature deals 1 damage to any target and 1 damage to you.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fireslinger:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "You"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "artist": "Jeff Reitz",
+        "flavorText": "\"Remember the moral of the fireslinger fable: with power comes isolation.\"\n—Karn, silver golem",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de253d94-9968-47da-bb7a-9c8ebf50f4e0.jpg?1783946631"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Flickering Ward
 {
     "name": "Flickering Ward",

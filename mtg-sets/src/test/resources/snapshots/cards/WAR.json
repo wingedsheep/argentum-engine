@@ -977,6 +977,69 @@
     ]
 }
 
+// Cyclops Electromancer
+{
+    "name": "Cyclops Electromancer",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Cyclops Wizard",
+    "oracleText": "When this creature enters, it deals X damage to target creature an opponent controls, where X is the number of instant and sorcery cards in your graveyard.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cyclops Electromancer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "flavorText": "Every storm has an eye.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/da0966a6-f378-4975-88ae-23b600d578bf.jpg?1783933430",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "The number of instant and sorcery cards in your graveyard is counted only as Cyclops Electromancer's ability resolves."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "A split card that's both an instant and a sorcery is counted only once for Cyclops Electromancer's ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Despark
 {
     "name": "Despark",

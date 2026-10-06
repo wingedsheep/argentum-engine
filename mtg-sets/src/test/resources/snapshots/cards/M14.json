@@ -488,6 +488,84 @@
     ]
 }
 
+// Dragon Egg
+{
+    "name": "Dragon Egg",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Dragon Egg",
+    "oracleText": "Defender\nWhen this creature dies, create a 2/2 red Dragon creature token with flying and \"{R}: This token gets +1/+0 until end of turn.\"",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dragon Egg:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/e/0efaa5b5-984d-4eff-81b6-9b4989f149eb.jpg?1783939882",
+                    "activatedAbilities": [
+                        {
+                            "id": "Dragon Egg:1",
+                            "cost": {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{R}"
+                                }
+                            },
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "Self"
+                            },
+                            "descriptionOverride": "{R}: This token gets +1/+0 until end of turn."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature dies, create a 2/2 red Dragon creature token with flying and \"{R}: This token gets +1/+0 until end of turn.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "UNCOMMON",
+        "artist": "Jack Wang",
+        "flavorText": "Dragon birth lairs are littered with treasure to entice the young from their eggs.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc2048f7-0c68-4142-9aad-de9b91fe5958.jpg?1783939914"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Elvish Mystic
 {
     "name": "Elvish Mystic",

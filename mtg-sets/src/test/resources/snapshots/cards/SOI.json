@@ -1395,6 +1395,68 @@
     ]
 }
 
+// Dance with Devils
+{
+    "name": "Dance with Devils",
+    "manaCost": "{3}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Create two 1/1 red Devil creature tokens. They have \"When this token dies, it deals 1 damage to any target.\"",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "power": 1,
+            "toughness": 1,
+            "colors": [
+                "RED"
+            ],
+            "creatureTypes": [
+                "Devil"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e78c4b8-371b-43d7-a315-fb299704aa60.jpg?1783937682",
+            "triggeredAbilities": [
+                {
+                    "id": "Dance with Devils:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    },
+                    "descriptionOverride": "When this token dies, it deals 1 damage to any target."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "UNCOMMON",
+        "artist": "Wayne England",
+        "flavorText": "Devils sow chaos and reap panic.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1112ebe-2a42-48b9-b0e5-f708305d088a.jpg?1783937757"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dauntless Cathar
 {
     "name": "Dauntless Cathar",
