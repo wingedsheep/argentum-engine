@@ -944,6 +944,226 @@
     ]
 }
 
+// Chaoslace
+{
+    "name": "Chaoslace",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target spell or permanent becomes red. (Its mana symbols remain unchanged.)",
+    "script": {
+        "spellEffect": {
+            "type": "ChangeColor",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "colors": [
+                "RED"
+            ],
+            "duration": "Permanent"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetSpellOrPermanent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "RARE",
+        "artist": "Dameon Willich",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72ea2048-57bc-43d5-8987-33ca727f1a97.jpg?1783948689"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Circle of Protection: Blue
+{
+    "name": "Circle of Protection: Blue",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "{1}: The next time a blue source of your choice would deal damage to you this turn, prevent that damage.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Circle of Protection: Blue:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "sourceFilter": {
+                        "type": "PreventFromChosen",
+                        "eligible": {
+                            "cardPredicates": [
+                                {
+                                    "type": "HasColor",
+                                    "color": "BLUE"
+                                }
+                            ]
+                        }
+                    },
+                    "nextInstanceOnly": true
+                },
+                "descriptionOverride": "{1}: The next time a blue source of your choice would deal damage to you this turn, prevent that damage."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "artist": "Dameon Willich",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/848b1a7f-e8ba-40b5-92b7-af1e963a0319.jpg?1783948716"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Circle of Protection: Green
+{
+    "name": "Circle of Protection: Green",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "{1}: The next time a green source of your choice would deal damage to you this turn, prevent that damage.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Circle of Protection: Green:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "sourceFilter": {
+                        "type": "PreventFromChosen",
+                        "eligible": {
+                            "cardPredicates": [
+                                {
+                                    "type": "HasColor",
+                                    "color": "GREEN"
+                                }
+                            ]
+                        }
+                    },
+                    "nextInstanceOnly": true
+                },
+                "descriptionOverride": "{1}: The next time a green source of your choice would deal damage to you this turn, prevent that damage."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Sandra Everingham",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1ae32d20-b438-4f43-b603-e8f706ecfb03.jpg?1783948716"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Circle of Protection: Red
+{
+    "name": "Circle of Protection: Red",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "{1}: The next time a red source of your choice would deal damage to you this turn, prevent that damage.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Circle of Protection: Red:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "sourceFilter": {
+                        "type": "PreventFromChosen",
+                        "eligible": {
+                            "cardPredicates": [
+                                {
+                                    "type": "HasColor",
+                                    "color": "RED"
+                                }
+                            ]
+                        }
+                    },
+                    "nextInstanceOnly": true
+                },
+                "descriptionOverride": "{1}: The next time a red source of your choice would deal damage to you this turn, prevent that damage."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3dd94c5-42f6-4148-be6e-2a3a4226cc0e.jpg?1783948715"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Circle of Protection: White
+{
+    "name": "Circle of Protection: White",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "{1}: The next time a white source of your choice would deal damage to you this turn, prevent that damage.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Circle of Protection: White:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "sourceFilter": {
+                        "type": "PreventFromChosen",
+                        "eligible": {
+                            "cardPredicates": [
+                                {
+                                    "type": "HasColor",
+                                    "color": "WHITE"
+                                }
+                            ]
+                        }
+                    },
+                    "nextInstanceOnly": true
+                },
+                "descriptionOverride": "{1}: The next time a white source of your choice would deal damage to you this turn, prevent that damage."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92df19c9-e127-42d9-8dd2-7fa5a7095428.jpg?1783948715"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Clockwork Beast
 {
     "name": "Clockwork Beast",
@@ -1786,6 +2006,42 @@
     ]
 }
 
+// Deathlace
+{
+    "name": "Deathlace",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target spell or permanent becomes black. (Mana symbols on that permanent remain unchanged.)",
+    "script": {
+        "spellEffect": {
+            "type": "ChangeColor",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "colors": [
+                "BLACK"
+            ],
+            "duration": "Permanent"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetSpellOrPermanent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "RARE",
+        "artist": "Sandra Everingham",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6ff1cefc-62cb-4525-b0c5-2b09603b4314.jpg?1783948696"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Demonic Tutor
 {
     "name": "Demonic Tutor",
@@ -2501,6 +2757,52 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Feedback
+{
+    "name": "Feedback",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant enchantment\nAt the beginning of the upkeep of enchanted enchantment's controller, this Aura deals 1 damage to that player.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Feedback:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "enchantment"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "UNCOMMON",
+        "artist": "Quinton Hoover",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0eb8f591-d763-49bf-8ef9-86265aaa72f7.jpg?1783948705"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3494,6 +3796,60 @@
     ]
 }
 
+// Howling Mine
+{
+    "name": "Howling Mine",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of each player's draw step, if this artifact is untapped, that player draws an additional card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Howling Mine:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "DRAW",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "untapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "RARE",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/51f8f6e1-a451-4262-90d3-5107caf54175.jpg?1783948666",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "It does not trigger at all if this is tapped at the start of the draw step, and it checks this again on resolution."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If Howling Mine leaves the battlefield before it resolves, then the last known tap or untap state of the card is used for resolution."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Hurloon Minotaur
 {
     "name": "Hurloon Minotaur",
@@ -3997,6 +4353,43 @@
         "artist": "Dan Frazier",
         "imageUri": "https://cards.scryfall.io/normal/front/5/7/5786de12-cade-43c2-a6b0-0c5b294b9d0e.jpg?1783948665"
     }
+}
+
+// Ironclaw Orcs
+{
+    "name": "Ironclaw Orcs",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Orc",
+    "oracleText": "This creature can't block creatures with power 2 or greater.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanOnlyBlockCreaturesWith",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "PowerAtMost",
+                            "max": 1
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "artist": "Anson Maddocks",
+        "flavorText": "Generations of genetic weeding have given rise to the deviously cowardly Ironclaw clan. To say that Orcs in general are vicious, depraved, and ignoble does not do justice to the Ironclaw.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d56421a8-34ae-4033-943f-c59a7bf2b6f9.jpg?1783948684"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Ironroot Treefolk
@@ -4653,6 +5046,42 @@
         "rarity": "UNCOMMON",
         "artist": "Dameon Willich",
         "imageUri": "https://cards.scryfall.io/normal/front/e/2/e292577e-6232-44fa-a9c2-cc09949c6ed3.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Lifelace
+{
+    "name": "Lifelace",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target spell or permanent becomes green. (Mana symbols on that permanent remain unchanged.)",
+    "script": {
+        "spellEffect": {
+            "type": "ChangeColor",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "colors": [
+                "GREEN"
+            ],
+            "duration": "Permanent"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetSpellOrPermanent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "RARE",
+        "artist": "Amy Weber",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38cb601b-a35c-412e-b386-e77dad3daa54.jpg?1783948675"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -5670,6 +6099,69 @@
     "colorIdentityOverride": []
 }
 
+// Orcish Artillery
+{
+    "name": "Orcish Artillery",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Orc Warrior",
+    "oracleText": "{T}: This creature deals 2 damage to any target and 3 damage to you.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Orcish Artillery:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "You"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "flavorText": "In a rare display of ingenuity, the Orcs invented an incredibly destructive weapon. Most Orcish artillerists are those who dared criticize its effectiveness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a97208b1-a91b-4129-8a00-2f97b418accc.jpg?1783948683"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Orcish Oriflamme
 {
     "name": "Orcish Oriflamme",
@@ -6096,6 +6588,94 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Psionic Blast
+{
+    "name": "Psionic Blast",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Psionic Blast deals 4 damage to any target and 2 damage to you.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6a86e6e-bfff-46af-9d36-c912901fea92.jpg?1783948702"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Purelace
+{
+    "name": "Purelace",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target spell or permanent becomes white. (Mana symbols on that permanent remain unchanged.)",
+    "script": {
+        "spellEffect": {
+            "type": "ChangeColor",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "colors": [
+                "WHITE"
+            ],
+            "duration": "Permanent"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetSpellOrPermanent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "RARE",
+        "artist": "Sandra Everingham",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2facf462-55cd-4da4-997f-2cf4add75628.jpg?1783948710"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -7790,6 +8370,42 @@
     ]
 }
 
+// Thoughtlace
+{
+    "name": "Thoughtlace",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target spell or permanent becomes blue. (Mana symbols on that permanent remain unchanged.)",
+    "script": {
+        "spellEffect": {
+            "type": "ChangeColor",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "colors": [
+                "BLUE"
+            ],
+            "duration": "Permanent"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetSpellOrPermanent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "RARE",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23749375-1416-47a4-9251-52f41fe2fae9.jpg?1783948700"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Throne of Bone
 {
     "name": "Throne of Bone",
@@ -8855,6 +9471,52 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Warp Artifact
+{
+    "name": "Warp Artifact",
+    "manaCost": "{B}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact\nAt the beginning of the upkeep of enchanted artifact's controller, this Aura deals 1 damage to that player.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Warp Artifact:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "RARE",
+        "artist": "Amy Weber",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e5e07a2-fbdf-4c4c-996a-fce40bab5de5.jpg?1783948689"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
