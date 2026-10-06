@@ -386,11 +386,13 @@ class CastSpellHandler(
         }
 
         // Only a cast that announced targets has a split to bind; binding an empty list would narrow
-        // every requirement to zero. A choose-N modal cast's `targets` is its per-mode slices
-        // flattened, and the validator binds each slice against its own mode.
-        val targeting = spellTargeting(state, action, cardDef, transformedFace)
-            .boundTo(action.targets.takeIf { it.isNotEmpty() }
-                ?.let { castValidator.targetBinding(state, action, cardDef, transformedFace)?.counts })
+        // every requirement to zero. A choose-N modal cast may announce them per mode only, and the
+        // validator binds each slice against its own mode. Fixed-size groups bind one way only.
+        val unbound = spellTargeting(state, action, cardDef, transformedFace)
+        val announced = action.targets.isNotEmpty() || action.modeTargetsOrdered.any { it.isNotEmpty() }
+        val targeting = if (!announced || TargetValidator.hasFixedGroups(unbound.requirements)) unbound
+            else unbound.boundTo(castValidator.targetBinding(state, action, cardDef, transformedFace)
+                ?.takeIf { it.error == null }?.counts)
 
         // A creature type chosen as the spell is cast (e.g., Aphetto Dredging).
         cardDef?.script?.castTimeCreatureTypeChoice?.let { castTimeChoice ->

@@ -808,36 +808,47 @@ internal class CastValidator(
             addAll(SpliceCasts.targetRequirementsFor(state, action.splicedCardIds, cardRegistry))
         }.map { req -> castText?.let { req.applyTextReplacement(it) } ?: req }
         if (targetRequirements.isEmpty()) return null
-        // Reject casting if spell requires targets but none were provided
-        if (action.targets.isEmpty() && targetRequirements.sumOf { it.effectiveMinCount } > 0) {
-            return TargetValidator.TargetGroupBinding(targetRequirements.map { 0 }, "No valid targets available")
-        }
         val sourceColors = (transformedFace ?: cardDef).colors
         val sourceSubtypes = (transformedFace ?: cardDef).typeLine.subtypes.map { it.value }.toSet()
         // A choose-N modal cast that sends its targets per mode already says which mode each target
-        // belongs to; inferring a split of the flat union could hand one mode's target to another
-        // mode's optional group. Bind each mode's slice against that mode alone, then the tail.
-        val modeCounts = if (action.targetGroupCounts == null && modalEffect != null && !modalTargetsDeferred &&
-            action.modeTargetsOrdered.size == action.chosenModes.size && action.modeTargetsOrdered.isNotEmpty()
-        ) {
+        // belongs to, and those slices are what the stack records. Bind each slice against its own
+        // mode — inferring a split of the union could hand one mode's target to another mode's
+        // optional group — then the tail (spliced cards' targets) after them.
+        val modeSlices = action.modeTargetsOrdered.takeIf {
+            modalEffect != null && !modalTargetsDeferred && it.isNotEmpty() && it.size == action.chosenModes.size
+        }
+        var modeCounts: List<Int>? = null
+        val flatTargets = if (modeSlices == null) action.targets else {
+            val union = modeSlices.flatten()
+            if (action.targets.isNotEmpty() && action.targets.take(union.size) != union) {
+                return TargetValidator.TargetGroupBinding(targetRequirements.map { 0 }, "Targets don't match the per-mode targets")
+            }
             var cursor = 0
-            val perMode = action.chosenModes.zip(action.modeTargetsOrdered).map { (mode, modeTargets) ->
-                val size = modalEffect.modes.getOrNull(mode)?.targetRequirements?.size ?: 0
+            val perMode = action.chosenModes.zip(modeSlices).map { (mode, modeTargets) ->
+                val size = modalEffect!!.modes.getOrNull(mode)?.targetRequirements?.size ?: 0
                 targetValidator.bindTargetGroups(
                     state, modeTargets, targetRequirements.subList(cursor, cursor + size), action.playerId,
                     sourceColors, sourceSubtypes, action.cardId, action.xValue, TargetingSourceType.SPELL,
                 ).also { cursor += size }
             }
-            val tailTargets = action.targets.drop(action.modeTargetsOrdered.sumOf { it.size })
+            val tailTargets = action.targets.drop(union.size)
             val tail = targetValidator.bindTargetGroups(
                 state, tailTargets, targetRequirements.subList(cursor, targetRequirements.size), action.playerId,
                 sourceColors, sourceSubtypes, action.cardId, action.xValue, TargetingSourceType.SPELL,
             )
-            (perMode + tail).takeIf { bindings -> bindings.all { it.error == null } }?.flatMap { it.counts }
-        } else null
+            (perMode + tail).firstNotNullOfOrNull { it.error }?.let {
+                return TargetValidator.TargetGroupBinding(targetRequirements.map { 0 }, it)
+            }
+            modeCounts = (perMode + tail).flatMap { it.counts }
+            union + tailTargets
+        }
+        // Reject casting if spell requires targets but none were provided
+        if (flatTargets.isEmpty() && targetRequirements.sumOf { it.effectiveMinCount } > 0) {
+            return TargetValidator.TargetGroupBinding(targetRequirements.map { 0 }, "No valid targets available")
+        }
         return targetValidator.bindTargetGroups(
             state,
-            action.targets,
+            flatTargets,
             targetRequirements,
             action.playerId,
             sourceColors = sourceColors,

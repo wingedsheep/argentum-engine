@@ -189,6 +189,27 @@ class TargetGroupBindingTest : FunSpec({
         (giant in d.state.getBattlefield()) shouldBe false
     }
 
+    test("a choose-N modal cast's per-mode targets are validated, and must agree with the flat list") {
+        val d = driver()
+        val bears = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")
+        val giant = d.putPermanentOnBattlefield(d.player2, "Hill Giant")
+        val id = d.putCardInHand(d.player1, modalGroups.name)
+        d.giveMana(d.player1, Color.RED)
+        fun cast(targets: List<ChosenTarget>, perMode: List<List<ChosenTarget>>) = d.submit(CastSpell(
+            d.player1, id, targets = targets, chosenModes = listOf(0, 1), modeTargetsOrdered = perMode,
+            paymentStrategy = PaymentStrategy.FromPool))
+        // A player is no creature: the slice is illegal even though no flat list was sent.
+        cast(emptyList(), listOf(listOf(ChosenTarget.Player(d.player2)), listOf(ChosenTarget.Permanent(giant))))
+            .error shouldNotBe null
+        // A legal flat list can't launder different per-mode targets onto the stack.
+        cast(listOf(ChosenTarget.Permanent(bears), ChosenTarget.Permanent(giant)),
+            listOf(listOf(ChosenTarget.Permanent(giant)), listOf(ChosenTarget.Permanent(bears)))).error shouldNotBe null
+        // Per-mode slices alone are a complete announcement.
+        cast(emptyList(), listOf(listOf(ChosenTarget.Permanent(bears)), listOf(ChosenTarget.Permanent(giant))))
+            .error shouldBe null
+        d.state.getEntity(id)!!.get<TargetsComponent>()!!.targetRequirements.map { it.count } shouldBe listOf(1, 1)
+    }
+
     test("a partly filled group's creature leaving before resolution still lets the opponent's slot resolve") {
         val d = driver()
         val bears = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")

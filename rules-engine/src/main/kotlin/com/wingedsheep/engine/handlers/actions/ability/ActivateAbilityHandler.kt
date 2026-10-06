@@ -418,7 +418,9 @@ class ActivateAbilityHandler(
     private fun boundTargetRequirements(state: GameState, activation: Activation): List<TargetRequirement> {
         val requirements = activation.targetRequirements
         val action = activation.action
-        if (action.targets.isEmpty() || requirements.any { it.chooser != TargetChooser.Controller }) return requirements
+        if (action.targets.isEmpty() || TargetValidator.hasFixedGroups(requirements) ||
+            requirements.any { it.chooser != TargetChooser.Controller }
+        ) return requirements
         val source = state.getEntity(action.sourceId)?.get<CardComponent>()
         val binding = targetValidator.bindTargetGroups(
             state, action.targets, requirements, action.playerId,

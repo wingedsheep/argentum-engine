@@ -393,9 +393,17 @@ class TargetValidator(
     /** One [TargetValidator.bindTargetGroups] answer: the per-requirement counts, and why they're illegal if they are. */
     data class TargetGroupBinding(val counts: List<Int>, val error: String?)
 
-    private companion object {
+    companion object {
         /** A bound on the splits tried for one announcement; real spells have a handful of target words. */
-        const val MAX_TARGET_GROUP_SPLITS = 512
+        private const val MAX_TARGET_GROUP_SPLITS = 512
+
+        /**
+         * Whether every group has one possible size, so a flat list binds only one way and
+         * [bindTargetGroups] would hand back the printed counts unchanged.
+         */
+        fun hasFixedGroups(requirements: List<TargetRequirement>): Boolean = requirements.all {
+            !it.unlimited && it.effectiveMinCount == it.count && (it as? TargetObject)?.dynamicMaxCount == null
+        }
     }
 
     /** A card's printed creature types; a changeling card has every creature type (CR 702.73a). */

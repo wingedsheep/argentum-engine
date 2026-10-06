@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.SubmitDecision
+import com.wingedsheep.engine.core.TargetsResponse
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -11,8 +13,12 @@ import com.wingedsheep.mtg.sets.definitions.lea.cards.AncestralRecall
 import com.wingedsheep.mtg.sets.definitions.lea.cards.Fork
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Targets
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -22,10 +28,20 @@ import io.kotest.matchers.shouldBe
  * new targets for the copy."
  */
 class ForkScenarioTest : FunSpec({
+    // "Up to two target creatures each take 2; target opponent loses 3." — a partly filled group.
+    val partial = card("Test Fork Partial Group") {
+        manaCost = "{R}"; typeLine = "Instant"
+        spell {
+            val (first, second) = targets(TargetFilter.Creature, count = 2, optional = true)
+            val opponent = target(Targets.Opponent)
+            effect = Effects.DealDamage(2, first) then Effects.DealDamage(2, second) then
+                Effects.LoseLife(3, opponent)
+        }
+    }
 
     fun driver(): GameTestDriver {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + Fork + AncestralRecall)
+        d.registerCards(TestCards.all + Fork + AncestralRecall + partial)
         d.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingPlayer = 0, startingLife = 20)
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return d
@@ -81,5 +97,26 @@ class ForkScenarioTest : FunSpec({
             listOf(ChosenTarget.Player(d.player2))
         d.resolveAll()
         d.getLifeTotal(d.player2) shouldBe 14
+    }
+
+    test("a copy of a spell with a partly filled up-to group keeps the original's split") {
+        val d = driver()
+        val giant = d.putPermanentOnBattlefield(d.player2, "Hill Giant")
+        val spell = d.putCardInHand(d.player1, partial.name)
+        d.giveMana(d.player1, Color.RED, 1)
+        d.castSpellWithTargets(d.player1, spell, listOf(ChosenTarget.Permanent(giant), ChosenTarget.Player(d.player2)))
+            .error shouldBe null
+        d.fork(spell)
+
+        val question = d.state.pendingDecision as ChooseTargetsDecision
+        d.submit(SubmitDecision(d.player1, TargetsResponse(question.id, emptyMap()))).error shouldBe null
+        val copyTargets = d.state.getEntity(d.copyOnStack())!!.get<TargetsComponent>()!!
+        withClue("one creature and one opponent, as the original chose, not the printed two creatures") {
+            copyTargets.targetRequirements.map { it.count } shouldBe listOf(1, 1)
+            copyTargets.targets shouldBe listOf(ChosenTarget.Permanent(giant), ChosenTarget.Player(d.player2))
+        }
+        d.resolveAll()
+        d.getLifeTotal(d.player2) shouldBe 14
+        (giant in d.state.getBattlefield()) shouldBe false
     }
 })
