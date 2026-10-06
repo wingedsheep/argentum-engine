@@ -1,0 +1,62 @@
+{
+  "player1Name": "Builder",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Edifice of Authority"
+    ],
+    "battlefield": [
+      {
+        "name": "Edifice of Authority",
+        "counters": {
+          "BRICK": 3
+        }
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      }
+    ],
+    "library": [
+      "Mountain",
+      "Mountain",
+      "Mountain",
+      "Mountain",
+      "Mountain"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Llanowar Elves"
+      },
+      {
+        "name": "Grizzly Bears"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

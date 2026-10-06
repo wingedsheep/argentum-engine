@@ -1307,6 +1307,161 @@
     ]
 }
 
+// Edifice of Authority
+{
+    "name": "Edifice of Authority",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}: Target creature can't attack this turn. Put a brick counter on this artifact.\n{1}, {T}: Until your next turn, target creature can't attack or block and its activated abilities can't be activated. Activate only if there are three or more brick counters on this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Edifice of Authority:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantAttack",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "BRICK",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Target creature can't attack this turn. Put a brick counter on this artifact."
+            },
+            {
+                "id": "Edifice of Authority:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantAttack",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "PreventActivatedAbilities",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "statePredicates": [
+                                        "IsSource"
+                                    ]
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "BRICK"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Until your next turn, target creature can't attack or block and its activated abilities can't be activated."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "UNCOMMON",
+        "artist": "Florian de Gesincourt",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66e6fa29-087f-4da6-9114-30feec708560.jpg?1783936452",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Once a player has announced that they are activating the ability of a creature, Edifice of Authority can’t be used to undo it. Its last ability must be activated before the player activates that creature’s ability. The player may respond to Edifice of Authority’s ability with the target creature’s ability if able."
+            }
+        ]
+    }
+}
+
 // Electrify
 {
     "name": "Electrify",

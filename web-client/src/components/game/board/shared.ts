@@ -849,6 +849,7 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.MIRE,
   // Scavenging Ghoul's corpse tally is spent one at a time to regenerate.
   CounterType.CORPSE,
+  CounterType.BRICK,
   // Living Artifact's vitality store is spent one at a time to gain life.
   CounterType.VITALITY,
   CounterType.PLUS_ONE_PLUS_TWO,

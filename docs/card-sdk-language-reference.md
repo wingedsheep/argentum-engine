@@ -15573,6 +15573,7 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
 
 - `+1/+1`, `-1/-1` — power/toughness counters.
 - `loyalty` — planeswalker loyalty.
+- `brick` (`CounterType.BRICK`): AKH — Edifice of Authority. Passive progress marker with no inherent rule; `Conditions.SourceCounterCountAtLeast(BRICK, 3)` gates its second activation. The passive-counter badge displays its count.
 - `mire` (`CounterType.MIRE`): LEA — Cyclopean Tomb. Passive marker read by its counter-bounded Swamp duration and source-linked cleanup history; it has no inherent rule. The existing passive-counter badge displays its count.
 - `collection` (`CounterType.COLLECTION`): MH3 — Charitable Levy. Passive accumulate-then-threshold marker: its noncreature-cast trigger adds one, and `Conditions.SourceCounterCountAtLeast(COLLECTION, 3)` gates the sacrifice. No inherent rule; the passive-counter badge displays its count.
 - `corpse` (`CounterType.CORPSE`): LEA — Scavenging Ghoul. Passive spendable store with no inherent rule: its each-end-step trigger adds one per creature that died this turn (`DynamicAmounts.creaturesDiedThisTurn(Player.Each)`) and `Costs.RemoveCounterFromSelf(CounterType.CORPSE, 1)` pays for its regeneration. The passive-counter badge displays its count.

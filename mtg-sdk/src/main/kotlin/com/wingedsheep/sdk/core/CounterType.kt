@@ -669,6 +669,9 @@ value class CounterType(val name: String) {
          */
         val CORPSE = CounterType("CORPSE")
 
+        /** Passive progress marker used by Amonkhet artifacts such as Edifice of Authority. */
+        val BRICK = CounterType("BRICK")
+
         /**
          * Vitality counter (LEA — Living Artifact). A passive spendable store with no inherent rule:
          * the card's damage trigger adds one per point of damage dealt to its controller, and its
@@ -795,6 +798,7 @@ value class CounterType(val name: String) {
             REPRIEVE,
             BOUNTY,
             CORPSE,
+            BRICK,
             VITALITY,
         )
 

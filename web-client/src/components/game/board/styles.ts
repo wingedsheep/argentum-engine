@@ -2360,6 +2360,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   DEVOTION: { bg: 'rgba(40, 18, 30, 0.95)', border: 'rgba(190, 90, 140, 0.7)', color: '#e3a9c8' },
   THEFT: { bg: 'rgba(24, 22, 30, 0.95)', border: 'rgba(150, 140, 110, 0.7)', color: '#d8cfa8' },
   MIRE: { bg: 'rgba(30, 34, 22, 0.95)', border: 'rgba(128, 148, 80, 0.7)', color: '#b7c68c' },
+  BRICK: { bg: 'rgba(60, 35, 22, 0.95)', border: 'rgba(200, 145, 95, 0.7)', color: '#e8bb8b' },
   CORPSE: { bg: 'rgba(28, 26, 24, 0.95)', border: 'rgba(160, 150, 130, 0.7)', color: '#d4cbb8' },
   VITALITY: { bg: 'rgba(20, 40, 24, 0.95)', border: 'rgba(110, 190, 120, 0.7)', color: '#a8e0b0' },
   TRAINING: { bg: 'rgba(48, 40, 22, 0.95)', border: 'rgba(214, 170, 90, 0.7)', color: '#ecd09a' },
