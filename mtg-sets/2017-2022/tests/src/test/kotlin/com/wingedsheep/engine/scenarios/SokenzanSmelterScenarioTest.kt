@@ -101,6 +101,25 @@ class SokenzanSmelterScenarioTest : ScenarioTestBase() {
                 (game.state.getEntity(game.findPermanent("Mountain")!!)?.has<TappedComponent>() == true) shouldBe false
                 game.findPermanents("Construct Token").size shouldBe 0
             }
+
+            test("with an artifact but no mana for {1}, the offer is skipped and nothing is sacrificed") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Sokenzan Smelter", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Millstone")
+                    .withCardInLibrary(1, "Mountain")
+                    .withCardInLibrary(2, "Mountain")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.passUntilPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
+                game.resolveStack()
+
+                (game.getPendingDecision() is YesNoDecision) shouldBe false
+                (game.findPermanent("Millstone") != null) shouldBe true
+                game.findPermanents("Construct Token").size shouldBe 0
+            }
         }
     }
 }
