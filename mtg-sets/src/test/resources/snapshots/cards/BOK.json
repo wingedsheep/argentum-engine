@@ -119,3 +119,82 @@
         "BLACK"
     ]
 }
+
+// Takenuma Bleeder
+{
+    "name": "Takenuma Bleeder",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Ogre Shaman",
+    "oracleText": "Whenever this creature attacks or blocks, you lose 1 life if you don't control a Demon.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Takenuma Bleeder:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "permanent Demon"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Controller"
+                    }
+                }
+            },
+            {
+                "id": "Takenuma Bleeder:2",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "permanent Demon"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Controller"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "artist": "Kev Walker",
+        "flavorText": "\"I prefer to weave my magic through oni blood, but yours will do in a pinch.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bfa3d318-83ff-41db-b33a-e4f5b7cd7a77.jpg?1783944195"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}

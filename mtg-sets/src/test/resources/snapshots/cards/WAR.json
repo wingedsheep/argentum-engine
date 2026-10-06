@@ -2842,6 +2842,154 @@
     ]
 }
 
+// Ob Nixilis's Cruelty
+{
+    "name": "Ob Nixilis's Cruelty",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -5/-5 until end of turn. If that creature would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -5
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Trapped on Ravnica with no affection for either side, Ob Nixilis sought gratification in random acts of torment.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94db72a8-57f7-4f17-9f09-cae90ef50304.jpg?1783933440"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Ob Nixilis, the Hate-Twisted
+{
+    "name": "Ob Nixilis, the Hate-Twisted",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Planeswalker — Nixilis",
+    "oracleText": "Whenever an opponent draws a card, Ob Nixilis deals 1 damage to that player.\n−2: Destroy target creature. Its controller draws two cards.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ob Nixilis, the Hate-Twisted:1",
+                "trigger": {
+                    "type": "DrawEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ob Nixilis, the Hate-Twisted:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "TargetController"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "UNCOMMON",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14916e2d-73af-4747-a927-d2d4cb3e32db.jpg?1783933441",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If the target creature is an illegal target by the time Ob Nixilis's last ability tries to resolve, the ability doesn't resolve. No player draws two cards. If the target is legal but not destroyed (most likely because it has indestructible), its controller does draw two cards."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If Ob Nixilis leaves the battlefield before his last ability resolves, most likely because he only had 2 loyalty when you activated the ability, his first ability won't exist to trigger when the creature's controller draws two cards."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pouncing Lynx
 {
     "name": "Pouncing Lynx",

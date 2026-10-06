@@ -1438,6 +1438,104 @@
     ]
 }
 
+// Shadowborn Demon
+{
+    "name": "Shadowborn Demon",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying\nWhen this creature enters, destroy target non-Demon creature.\nAt the beginning of your upkeep, if there are fewer than six creature cards in your graveyard, sacrifice a creature.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shadowborn Demon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Demon"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Shadowborn Demon:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Sacrifice",
+                    "filter": "creature"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "creature"
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 6
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "MYTHIC",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/3884c05b-c10e-4f1d-a8bd-8b5118657972.jpg?1783939920",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "Shadowborn Demon's enters-the-battlefield ability is mandatory. If you control the only non-Demon creature, you must choose it as the target."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "The last ability checks whether you have fewer than six creature cards in your graveyard when it would trigger. If you have six or more, it won't trigger at all. The ability will check again when it tries to resolve. If at that time you have six or more, the ability won't do anything."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Sliver Construct
 {
     "name": "Sliver Construct",
