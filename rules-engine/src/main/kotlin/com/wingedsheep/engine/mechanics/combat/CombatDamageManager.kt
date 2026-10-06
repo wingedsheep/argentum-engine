@@ -82,19 +82,21 @@ internal class CombatDamageManager(
      * @param firstStrike If true, only creatures with first strike/double strike deal damage
      */
     fun applyCombatDamage(state: GameState, firstStrike: Boolean = false): ExecutionResult {
-        // CR 510.4: remember who assigns in the first-strike step, so the regular step can tell
-        // them apart from creatures that only gained first strike since (CR 702.7c).
-        val stamped = if (firstStrike) stampFirstStrikeStepAssigners(state) else state
         // Illusionary Mask: a face-down creature that would assign combat damage is turned face up
         // first and assigns with its real characteristics (CR 510.1). Assignment happens even when
         // the damage will be prevented, so this runs ahead of the prevent-all short circuit.
-        val (faceUpState, faceUpEvents) = turnFaceUpAssigners(stamped, firstStrike)
+        val (faceUpState, faceUpEvents) = turnFaceUpAssigners(state, firstStrike)
         val result = assignAndDealCombatDamage(faceUpState, firstStrike)
         return if (faceUpEvents.isEmpty()) result else result.copy(events = faceUpEvents + result.events)
     }
 
-    /** Stamp [FirstStrikeStepAssignerComponent] on every combatant with first or double strike now. */
-    private fun stampFirstStrikeStepAssigners(state: GameState): GameState {
+    /**
+     * Stamp [FirstStrikeStepAssignerComponent] on every combatant with first or double strike as the
+     * first-strike combat damage step begins (CR 510.4). Called once, on entering the step — not on
+     * each re-entry after a paused decision — so a creature that gains first strike mid-step (say from
+     * a permanent Illusionary Mask turns face up) neither joins this step nor skips the regular one.
+     */
+    fun stampFirstStrikeStepAssigners(state: GameState): GameState {
         val projected = state.projectedState
         val combatants = state.findEntitiesWith<AttackingComponent>().map { it.first } +
             state.findEntitiesWith<BlockingComponent>().map { it.first }
@@ -445,7 +447,7 @@ internal class CombatDamageManager(
         newState = consumeBatchRedirectShields(newState, finalAssignments)
 
         // Lifelink
-        val lifelinkResult = applyLifelinkFromDamageEvents(newState, events, projected)
+        val lifelinkResult = applyLifelinkFromDamageEvents(newState, events, modifierProjected)
         newState = lifelinkResult.first
         events.addAll(lifelinkResult.second)
 
@@ -976,17 +978,16 @@ internal class CombatDamageManager(
 
     /**
      * Whether [creatureId] assigns combat damage in this step (CR 510.4). The first-strike step's
-     * assigners are the creatures with first or double strike now; the regular step's are the double
+     * assigners are the creatures stamped as it began; the regular step's are the double
      * strikers plus every creature that wasn't one of the first step's assigners — not the ones
      * lacking first strike *now*, which CR 702.7c rules out in both directions.
      */
     private fun dealsDamageThisStep(state: GameState, projected: ProjectedState, creatureId: EntityId, firstStrike: Boolean): Boolean {
-        val hasFirstStrike = projected.hasKeyword(creatureId, Keyword.FIRST_STRIKE)
-        val hasDoubleStrike = projected.hasKeyword(creatureId, Keyword.DOUBLE_STRIKE)
+        val stamped = state.getEntity(creatureId)?.has<FirstStrikeStepAssignerComponent>() == true
         return if (firstStrike) {
-            hasFirstStrike || hasDoubleStrike
+            stamped
         } else {
-            hasDoubleStrike || state.getEntity(creatureId)?.has<FirstStrikeStepAssignerComponent>() != true
+            projected.hasKeyword(creatureId, Keyword.DOUBLE_STRIKE) || !stamped
         }
     }
 

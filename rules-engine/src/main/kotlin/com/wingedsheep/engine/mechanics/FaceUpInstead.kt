@@ -43,7 +43,10 @@ import com.wingedsheep.sdk.model.EntityId
  * controller chooses the order, and every choice is legal (CR 616.1e). The engine always applies
  * this one after redirection and before every prevention effect, and then re-evaluates the rest
  * against the face-up permanent (CR 616.1f) — so a face-up creature's own protection or damage
- * replacement applies to the damage that turned it face up.
+ * replacement applies to the damage that turned it face up. In combat, "after redirection" means
+ * after chosen-source redirection only: recipients are fixed and turned face up before the
+ * modifier-stage and static redirects (Pariah's Shield, Blood of the Martyr), which that choice
+ * of order permits.
  */
 object FaceUpInstead {
 

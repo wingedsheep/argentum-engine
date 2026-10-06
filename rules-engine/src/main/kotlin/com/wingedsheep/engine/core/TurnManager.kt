@@ -786,6 +786,7 @@ class TurnManager(
                 if (!hasAttackingCreatures(newState) || !hasCombatFirstStrikeOrDoubleStrike(newState)) {
                     return advanceStep(newState.copy(step = Step.FIRST_STRIKE_COMBAT_DAMAGE))
                 }
+                newState = combatManager.stampFirstStrikeStepAssigners(newState)
                 val damageResult = combatManager.applyCombatDamage(newState, firstStrike = true)
                 if (damageResult.outcome !is Outcome.Done) return damageResult
                 newState = damageResult.newState

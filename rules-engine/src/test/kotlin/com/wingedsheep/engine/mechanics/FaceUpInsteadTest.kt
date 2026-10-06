@@ -328,6 +328,32 @@ class FaceUpInsteadTest : FunSpec({
         d.getLifeTotal(d.player2) shouldBe opponentLife - 3
     }
 
+    test("a creature that gains first strike after the first-strike step still assigns in the regular step (CR 702.7c)") {
+        val d = driver()
+        val knight = d.putCreatureOnBattlefield(d.player1, "First Strike Knight")
+        val bears = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        d.removeSummoningSickness(knight)
+        d.removeSummoningSickness(bears)
+        val opponentLife = d.getLifeTotal(d.player2)
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(d.player1, listOf(knight, bears), d.player2).error shouldBe null
+        d.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        d.declareNoBlockers(d.player2)
+        d.passPriorityUntil(Step.FIRST_STRIKE_COMBAT_DAMAGE)
+        d.getLifeTotal(d.player2) shouldBe opponentLife - 3
+        d.replaceState(d.state.addFloatingEffect(
+            layer = com.wingedsheep.engine.mechanics.layers.Layer.ABILITY,
+            modification = com.wingedsheep.engine.mechanics.layers.SerializableModification.GrantKeyword(Keyword.FIRST_STRIKE.name),
+            affectedEntities = setOf(bears),
+            duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,
+            context = com.wingedsheep.engine.handlers.EffectContext(sourceId = bears, controllerId = d.player1),
+        ))
+        d.passPriorityUntil(Step.END_COMBAT)
+
+        d.getLifeTotal(d.player2) shouldBe opponentLife - 5
+    }
+
     // ---------------------------------------------------------------- serialization
 
     test("the rider and its baked face-up statics survive a serialization round trip") {
