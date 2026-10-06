@@ -198,21 +198,32 @@ class BeginningPhaseManager(
         // cleared unconditionally below regardless of whether this filter actually skipped an
         // untap (2024-06-07 ruling: an exerted-but-already-untapped permanent's marker still
         // expires having done nothing).
-        val permanentsAfterCantUntap = permanentsToUntap.filter { entityId ->
+        val permanentsNotRestricted = permanentsToUntap.filter { entityId ->
             !projected.doesntUntapDuringUntapStep(entityId) &&
                 newState.getEntity(entityId)?.has<ExertedComponent>() != true
         }
+
+        // Freeze restrictions before the simultaneous untap: a tapped conditional source may
+        // untap alongside everything else without retroactively restricting that same action.
+        // A zero cap (Meekstone — "creatures with power 3 or greater don't untap") leaves the
+        // player nothing to choose, so its permanents simply drop out of the untap like
+        // DOESNT_UNTAP ones, and the remaining caps are recomputed over what is left. Caps read
+        // the final projected state, so a filter on power sees every layer-7 modification.
+        val allUntapLimits = untapLimitChoices(
+            newState, cardRegistry, predicateEvaluator, permanentsNotRestricted
+        )
+        val keptTappedByZeroCap = allUntapLimits.filter { it.max == 0 }
+            .flatMapTo(HashSet()) { it.matchingPermanents }
+        val permanentsAfterCantUntap = permanentsNotRestricted.filter { it !in keptTappedByZeroCap }
+        val untapLimits = if (keptTappedByZeroCap.isEmpty()) allUntapLimits else untapLimitChoices(
+            newState, cardRegistry, predicateEvaluator, permanentsAfterCantUntap
+        )
 
         // Check if any permanents have MAY_NOT_UNTAP keyword (e.g., Everglove Courier)
         val mayNotUntapPermanents = permanentsAfterCantUntap.filter { entityId ->
             projected.hasKeyword(entityId, AbilityFlag.MAY_NOT_UNTAP)
         }
 
-        // Freeze restrictions before the simultaneous untap: a tapped conditional source may
-        // untap alongside everything else without retroactively restricting that same action.
-        val untapLimits = untapLimitChoices(
-            newState, cardRegistry, predicateEvaluator, permanentsAfterCantUntap
-        )
         // Overlapping caps share kept permanents. A sum can exceed the whole option pool;
         // this lower bound stays reachable, and the resumer validates every cap separately.
         val forcedKeepCount = untapLimits.maxOfOrNull { it.matchingPermanents.size - it.max } ?: 0

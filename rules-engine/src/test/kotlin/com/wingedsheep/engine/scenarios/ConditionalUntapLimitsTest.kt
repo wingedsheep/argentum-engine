@@ -198,13 +198,28 @@ class ConditionalUntapLimitsTest : FunSpec({
         d.bothPass()
         limits(d, own + opposing).single().matchingPermanents.toSet() shouldBe own.toSet()
     }
-    test("a zero cap keeps every matching permanent tapped") {
+    test("a zero cap keeps every matching permanent tapped without a prompt") {
         val d = driver(); val me = d.activePlayer!!; val opponent = d.getOpponent(me)
         d.putPermanentOnBattlefield(me, nested.name); val ids = lands(d, opponent)
-        d.passPriorityUntil(Step.UNTAP)
-        (d.pendingDecision as SelectCardsDecision).minSelections shouldBe 3
-        d.submitCardSelection(opponent, ids).error shouldBe null
+        d.passPriorityUntil(Step.UPKEEP)
+        d.activePlayer shouldBe opponent
+        d.pendingDecision shouldBe null
         ids.forEach { d.state.getEntity(it)!!.has<TappedComponent>() shouldBe true }
+    }
+    test("a zero cap's permanents drop out before the remaining caps are counted") {
+        val d = driver(); val me = d.activePlayer!!; val opponent = d.getOpponent(me)
+        d.putPermanentOnBattlefield(me, nested.name); d.putPermanentOnBattlefield(me, artifactCap.name)
+        lands(d, opponent)
+        val artifactLands = List(2) { d.putPermanentOnBattlefield(opponent, artifactLand.name).also(d::tapPermanent) }
+        val widgets = List(2) { d.putPermanentOnBattlefield(opponent, widget.name).also(d::tapPermanent) }
+        d.passPriorityUntil(Step.UNTAP)
+        // The artifact lands are frozen by the zero land cap; only the two widgets contest the artifact cap.
+        val decision = d.pendingDecision as SelectCardsDecision
+        decision.minSelections shouldBe 1
+        decision.options.toSet() shouldBe widgets.toSet()
+        d.submitCardSelection(opponent, widgets.take(1)).error shouldBe null
+        artifactLands.forEach { d.state.getEntity(it)!!.has<TappedComponent>() shouldBe true }
+        d.state.getEntity(widgets.last())!!.has<TappedComponent>() shouldBe false
     }
     test("a cap phased in before untapping restricts that same step") {
         val d = driver(); val me = d.activePlayer!!; val opponent = d.getOpponent(me)

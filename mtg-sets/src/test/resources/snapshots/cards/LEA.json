@@ -5954,6 +5954,29 @@
     ]
 }
 
+// Meekstone
+{
+    "name": "Meekstone",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Creatures with power 3 or greater don't untap during their controllers' untap steps.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "UntapLimitPerStep",
+                "filter": "creature pow>=3",
+                "max": 0
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "260",
+        "rarity": "RARE",
+        "artist": "Quinton Hoover",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13a68a17-22ee-47c9-870a-83e911862b94.jpg?1783948664"
+    }
+}
+
 // Merfolk of the Pearl Trident
 {
     "name": "Merfolk of the Pearl Trident",

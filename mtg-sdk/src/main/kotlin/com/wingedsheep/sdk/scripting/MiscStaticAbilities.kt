@@ -1422,6 +1422,11 @@ data object UntapSelfDuringOtherUntapSteps : StaticAbility {
  *
  * Used by Damping Field — "Players can't untap more than one artifact during their untap steps"
  * (`filter = GameObjectFilter.Artifact`, `max = 1`).
+ *
+ * `max = 0` is the global "[filter] don't untap during their controllers' untap steps" (Meekstone:
+ * creatures with power 3 or greater). With nothing to choose, the engine drops the matching
+ * permanents from the untap without a prompt. Unlike a layer-6 `DOESNT_UNTAP` grant, the filter is
+ * read at the untap step over the final projected state, so a power filter sees layer-7 changes.
  */
 @SerialName("UntapLimitPerStep")
 @Serializable
@@ -1430,7 +1435,8 @@ data class UntapLimitPerStep(
     val max: Int
 ) : StaticAbility {
     override val description: String =
-        "Players can't untap more than $max ${filter.description} during their untap steps"
+        if (max == 0) "${filter.description} don't untap during their controllers' untap steps"
+        else "Players can't untap more than $max ${filter.description} during their untap steps"
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
