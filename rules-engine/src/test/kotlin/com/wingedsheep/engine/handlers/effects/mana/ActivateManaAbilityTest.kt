@@ -28,7 +28,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Engine coverage for `ActivateManaAbilityEffect` — "<its controller> activates a mana ability of
- * <permanent>", an instructed activation during resolution (CR 605.3a). Driven through a Drain
+ * <permanent>", an instructed activation during resolution, resolving at once (CR 605.3b). Driven through a Drain
  * Power-shaped test spell: for each land the target player controls, that player activates one of
  * its mana abilities they can activate; the activation is theirs, so every choice is theirs.
  */
