@@ -378,6 +378,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CascadeMayCastContinuation::class)
         subclass(DiscoverMayCastContinuation::class)
         subclass(ForcedPlayContinuation::class)
+        subclass(ActivateManaAbilityChoiceContinuation::class)
         subclass(CastFromCollectionTargetsContinuation::class)
         subclass(CastAnyNumberFromCollectionContinuation::class)
         subclass(LeylineDecisionContinuation::class)

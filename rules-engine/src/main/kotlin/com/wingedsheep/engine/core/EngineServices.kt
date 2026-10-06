@@ -105,7 +105,8 @@ class EngineServices(
         costPaymentService = { costPaymentService },
         targetFinder = targetFinder,
         targetValidator = targetValidator,
-        legalActionEnumerator = { legalActionEnumerator }
+        legalActionEnumerator = { legalActionEnumerator },
+        activateAbilityHandler = { activateAbilityHandler },
     )
     val manaAbilitySideEffectExecutor = ManaAbilitySideEffectExecutor(
         zones,
@@ -160,6 +161,9 @@ class EngineServices(
     /** The cast pipeline (CR 601.2). Built last: it draws on nearly every service above. */
     val castSpellHandler: CastSpellHandler = CastSpellHandler.create(this)
     val playLandHandler: PlayLandHandler = PlayLandHandler.create(this)
+    /** Activated abilities, for effects that instruct an activation mid-resolution (Drain Power). */
+    val activateAbilityHandler: com.wingedsheep.engine.handlers.actions.ability.ActivateAbilityHandler =
+        com.wingedsheep.engine.handlers.actions.ability.ActivateAbilityHandler.create(this)
 
     /** Pays [com.wingedsheep.sdk.scripting.costs.PayCost]s — for "pay or suffer" executors and resumers alike. */
     val costPaymentService = com.wingedsheep.engine.mechanics.cost.CostPaymentService(this)
