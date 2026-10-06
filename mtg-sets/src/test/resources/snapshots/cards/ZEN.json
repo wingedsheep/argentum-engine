@@ -2503,6 +2503,44 @@
     ]
 }
 
+// Mire Blight
+{
+    "name": "Mire Blight",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen enchanted creature is dealt damage, destroy it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mire Blight:1",
+                "trigger": "DamageReceivedEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "EnchantedCreature",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "artist": "Dave Kendall",
+        "flavorText": "\"Is there anything in Guul Draz that *doesn't* suck the life out of you?\"\n—Tarsa, Sea Gate sell-sword",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e63238d-a022-4ea1-a83d-0b2260d56a17.jpg?1783942150"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Misty Rainforest
 {
     "name": "Misty Rainforest",

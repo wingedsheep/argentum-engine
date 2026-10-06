@@ -362,6 +362,41 @@
     ]
 }
 
+// Marauding Boneslasher
+{
+    "name": "Marauding Boneslasher",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie Minotaur",
+    "oracleText": "This creature can't block unless you control another Zombie.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBlockUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Zombie",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "With the Hekma destroyed, the wandering dead that sought entrance to Naktamun had free rein to lay waste to the city.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/ddfb7f50-14b1-4c7d-b4c8-f50bc14f4fb7.jpg?1783936039"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Overcome
 {
     "name": "Overcome",

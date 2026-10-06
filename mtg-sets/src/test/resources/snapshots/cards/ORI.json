@@ -1640,6 +1640,59 @@
     ]
 }
 
+// Graveblade Marauder
+{
+    "name": "Graveblade Marauder",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)\nWhenever this creature deals combat damage to a player, that player loses life equal to the number of creature cards in your graveyard.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Graveblade Marauder:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "creature"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, that player loses life equal to the number of creature cards in your graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/85880be1-65b2-432f-8788-79716e4c8066.jpg?1783938340"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Guardian Automaton
 {
     "name": "Guardian Automaton",
@@ -2091,6 +2144,75 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Kothophed, Soul Hoarder
+{
+    "name": "Kothophed, Soul Hoarder",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Legendary Creature — Demon",
+    "oracleText": "Flying\nWhenever a permanent owned by another player is put into a graveyard from the battlefield, you draw a card and you lose 1 life.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kothophed, Soul Hoarder:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent own:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "RARE",
+        "artist": "Jakub Kasper",
+        "flavorText": "\"I will be your most demanding master, Liliana. But I have great things in mind for you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/036e696a-b2aa-40ba-9ed6-3a859c4288a0.jpg?1783938340",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "It doesn't matter who controlled the permanent when it was put into a graveyard."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "The triggered ability is mandatory. You can't decline to draw the card and lose life, even if you want to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

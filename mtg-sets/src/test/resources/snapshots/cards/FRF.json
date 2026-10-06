@@ -206,6 +206,93 @@
     ]
 }
 
+// Hooded Assassin
+{
+    "name": "Hooded Assassin",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Assassin",
+    "oracleText": "When this creature enters, choose one —\n• Put a +1/+1 counter on this creature.\n• Destroy target creature that was dealt damage this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hooded Assassin:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            "description": "Put a +1/+1 counter on this creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                "IsCreature"
+                                            ],
+                                            "statePredicates": [
+                                                "WasDealtDamageThisTurn"
+                                            ]
+                                        }
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Destroy target creature that was dealt damage this turn"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/05d4da1d-5b8c-43be-aa30-22df69c0cc23.jpg?1783938696",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If a creature was dealt damage but regenerated (which removes all damage from it), it will still be a legal target for the second mode of the triggered ability."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "You choose which mode you're using as you put the ability on the stack, after the creature has entered the battlefield. Once you've chosen a mode, you can't change that mode even if the creature leaves the battlefield in response to that ability."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If a mode requires a target and there are no legal targets available, that mode can't be chosen. You must choose another mode if able."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Mardu Strike Leader
 {
     "name": "Mardu Strike Leader",

@@ -1596,6 +1596,64 @@
     ]
 }
 
+// Lurking Deadeye
+{
+    "name": "Lurking Deadeye",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Human Assassin",
+    "oracleText": "Flash\nWhen this creature enters, destroy target creature that was dealt damage this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lurking Deadeye:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "WasDealtDamageThisTurn"
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "artist": "Livia Prima",
+        "flavorText": "\"There's no roar so mighty that it can't be silenced.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43925a8d-dd02-4907-929e-c015d678bb49.jpg?1783931058"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Maned Serval
 {
     "name": "Maned Serval",

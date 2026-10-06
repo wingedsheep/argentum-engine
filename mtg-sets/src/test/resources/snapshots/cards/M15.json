@@ -1626,6 +1626,85 @@
     ]
 }
 
+// Necromancer's Stockpile
+{
+    "name": "Necromancer's Stockpile",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "{1}{B}, Discard a creature card: Draw a card. If the discarded card was a Zombie card, create a tapped 2/2 black Zombie creature token.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Necromancer's Stockpile:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": "DiscardedAsCost",
+                                    "filter": "Zombie"
+                                }
+                            },
+                            "then": {
+                                "type": "CreateToken",
+                                "power": 2,
+                                "toughness": 2,
+                                "colors": [
+                                    "BLACK"
+                                ],
+                                "creatureTypes": [
+                                    "Zombie"
+                                ],
+                                "tapped": true
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "flavorText": "The experiments decided to perform some research of their own.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2ba07e86-fdef-4f51-808e-7780883eefe3.jpg?1783939181"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nightfire Giant
 {
     "name": "Nightfire Giant",

@@ -3327,6 +3327,57 @@
     ]
 }
 
+// Liliana's Elite
+{
+    "name": "Liliana's Elite",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "This creature gets +1/+1 for each creature card in your graveyard.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                },
+                "toughnessBonus": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "UNCOMMON",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "\"You have to admit, Gideon—he has great form.\"\n—Liliana Vess",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad542aa9-5c0e-4962-b167-9071e66f9c03.jpg?1783937484",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "The ability applies only while Liliana's Elite is on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Lunarch Mantle
 {
     "name": "Lunarch Mantle",

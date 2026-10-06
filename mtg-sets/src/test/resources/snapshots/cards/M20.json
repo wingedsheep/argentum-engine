@@ -940,6 +940,82 @@
     ]
 }
 
+// Gorging Vulture
+{
+    "name": "Gorging Vulture",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nWhen this creature enters, mill four cards. You gain 1 life for each creature card milled this way. (To mill four cards, put the top four cards of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gorging Vulture:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "SelectAll",
+                            "filter": "creature",
+                            "storeSelected": "selected2"
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "DistinctEntitiesInCollections",
+                                "collections": [
+                                    "selected2"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, mill four cards. You gain 1 life for each creature card milled this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "artist": "Caio Monteiro",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37cbe5f2-5b6b-41de-9586-c7cc83464cf2.jpg?1783932992"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Hanged Executioner
 {
     "name": "Hanged Executioner",

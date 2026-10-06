@@ -611,6 +611,93 @@
     ]
 }
 
+// Liliana's Steward
+{
+    "name": "Liliana's Steward",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "{T}, Sacrifice this creature: Target opponent discards a card. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Liliana's Steward:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{T}, Sacrifice this creature: Target opponent discards a card. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Jason A. Engle",
+        "flavorText": "Servants at Vess Manor are chosen for their strong work ethic and respectful demeanor. Being alive is not required.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/1945fc78-8aa4-46fb-9571-eaa1c4729e3d.jpg?1783930705"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Mazemind Tome
 {
     "name": "Mazemind Tome",
