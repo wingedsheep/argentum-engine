@@ -3,8 +3,10 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.card
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 
@@ -19,6 +21,22 @@ import io.kotest.matchers.shouldBe
  * gated on that creature having trample as the spell resolves.
  */
 class RamThroughScenarioTest : ScenarioTestBase() {
+
+    private val deathtouchTrampler = card("Test Deathtouch Trampler") {
+        manaCost = "{3}{G}"
+        typeLine = "Creature — Beast"
+        power = 4
+        toughness = 4
+        keywords(Keyword.DEATHTOUCH, Keyword.TRAMPLE)
+    }
+
+    private val lifelinker = card("Test Lifelinker") {
+        manaCost = "{2}{G}"
+        typeLine = "Creature — Beast"
+        power = 3
+        toughness = 3
+        keywords(Keyword.LIFELINK)
+    }
 
     private fun cast(game: TestGame, mine: String, theirs: String) {
         val spell = game.findCardsInHand(1, "Ram Through").first()
@@ -46,6 +64,9 @@ class RamThroughScenarioTest : ScenarioTestBase() {
         .build()
 
     init {
+        cardRegistry.register(deathtouchTrampler)
+        cardRegistry.register(lifelinker)
+
         context("Ram Through") {
 
             test("a trampler deals the excess past lethal to the bitten creature's controller") {
@@ -61,6 +82,16 @@ class RamThroughScenarioTest : ScenarioTestBase() {
                 game.getLifeTotal(1) shouldBe 20
             }
 
+            test("a deathtouch trampler needs only 1 damage for lethal, so the rest is excess") {
+                val game = board("Test Deathtouch Trampler") // 4/4 deathtouch, trample
+                cast(game, "Test Deathtouch Trampler", "Grizzly Bears")
+
+                game.isInGraveyard(2, "Grizzly Bears") shouldBe true
+                withClue("the creature is the source: 1 lethal (deathtouch), 3 excess to its controller") {
+                    game.getLifeTotal(2) shouldBe 17
+                }
+            }
+
             test("without trample all the damage goes to the creature") {
                 val game = board("Craw Wurm") // 6/4, no trample
                 cast(game, "Craw Wurm", "Grizzly Bears")
@@ -68,6 +99,16 @@ class RamThroughScenarioTest : ScenarioTestBase() {
                 game.isInGraveyard(2, "Grizzly Bears") shouldBe true
                 withClue("no excess is routed to the controller without trample") {
                     game.getLifeTotal(2) shouldBe 20
+                }
+            }
+
+            test("the damage is dealt by the creature, so its lifelink applies") {
+                val game = board("Test Lifelinker") // 3/3 lifelink
+                cast(game, "Test Lifelinker", "Grizzly Bears")
+
+                game.isInGraveyard(2, "Grizzly Bears") shouldBe true
+                withClue("lifelink on the biting creature gains its controller 3") {
+                    game.getLifeTotal(1) shouldBe 23
                 }
             }
         }

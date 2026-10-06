@@ -5670,7 +5670,7 @@
         "staticAbilities": [
             {
                 "type": "GrantCantBeCountered",
-                "filter": "creature"
+                "filter": "creature ctrl:you"
             }
         ],
         "replacementEffects": [

@@ -31,7 +31,7 @@ val FrenziedBaloth = card("Frenzied Baloth") {
     keywords(Keyword.TRAMPLE, Keyword.HASTE)
 
     staticAbility {
-        ability = GrantCantBeCountered(filter = GameObjectFilter.Creature)
+        ability = GrantCantBeCountered(filter = GameObjectFilter.Creature.youControl())
     }
 
     replacementEffect(
