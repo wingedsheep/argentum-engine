@@ -418,6 +418,53 @@
     ]
 }
 
+// Pierce Strider
+{
+    "name": "Pierce Strider",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Phyrexian Construct",
+    "oracleText": "When this creature enters, target opponent loses 3 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pierce Strider:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, target opponent loses 3 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"Pain isn't a negative stimulus. Pain is a sign of your imperfection.\"\n—Sheoldred, Whispering One",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88b449a5-634f-47b1-a757-86a6849f6777.jpg?1783941365"
+    },
+    "colorIdentityOverride": []
+}
+
 // Quilled Slagwurm
 {
     "name": "Quilled Slagwurm",

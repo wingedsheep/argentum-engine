@@ -1,0 +1,42 @@
+{
+  "player1Name": "Pierce Strider",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Pierce Strider"
+    ],
+    "battlefield": [
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Island",
+      "Island"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [],
+    "graveyard": [],
+    "library": [
+      "Island",
+      "Island"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}
