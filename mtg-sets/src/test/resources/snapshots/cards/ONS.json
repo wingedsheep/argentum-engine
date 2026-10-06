@@ -15604,13 +15604,14 @@
                     "target": {
                         "type": "PlayerRef",
                         "player": "EachOpponent"
-                    }
+                    },
+                    "damageDealtVariable": "storedNumber0"
                 },
                 {
                     "type": "GainLife",
                     "amount": {
-                        "type": "Fixed",
-                        "amount": 2
+                        "type": "VariableReference",
+                        "variableName": "storedNumber0"
                     }
                 }
             ]

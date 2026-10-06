@@ -259,16 +259,19 @@ object Effects {
      * @param damageSource The object dealing the damage, when it isn't the resolving spell or
      *   ability's source ("target creature you control deals damage equal to its power …").
      * @param cantBePrevented "This damage can't be prevented" (Arrow Storm's raid rider).
+     * @param damageDealtVariable stores the total damage actually dealt ("the damage dealt this
+     *   way"); bind it with `runStoringNumber { DealDamage(..., damageDealtVariable = it) }`.
      */
     fun DealDamage(
         amount: Int,
         target: EffectTarget,
         damageSource: EffectTarget? = null,
         cantBePrevented: Boolean = false,
-        excessDamageVariable: String? = null
+        excessDamageVariable: String? = null,
+        damageDealtVariable: String? = null
     ): Effect = DealDamageEffect(
         DynamicAmount.Fixed(amount), target, cantBePrevented = cantBePrevented, damageSource = damageSource,
-        excessDamageVariable = excessDamageVariable
+        excessDamageVariable = excessDamageVariable, damageDealtVariable = damageDealtVariable
     )
 
     /**
@@ -280,10 +283,11 @@ object Effects {
         target: EffectTarget,
         damageSource: EffectTarget? = null,
         cantBePrevented: Boolean = false,
-        excessDamageVariable: String? = null
+        excessDamageVariable: String? = null,
+        damageDealtVariable: String? = null
     ): Effect = DealDamageEffect(
         amount, target, cantBePrevented = cantBePrevented, damageSource = damageSource,
-        excessDamageVariable = excessDamageVariable
+        excessDamageVariable = excessDamageVariable, damageDealtVariable = damageDealtVariable
     )
 
     /**

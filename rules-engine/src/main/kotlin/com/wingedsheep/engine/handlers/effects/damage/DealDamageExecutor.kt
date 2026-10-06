@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects.damage
 
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.EffectResult
+import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -26,6 +27,21 @@ class DealDamageExecutor(
     override val effectType: KClass<DealDamageEffect> = DealDamageEffect::class
 
     override fun execute(
+        state: GameState,
+        effect: DealDamageEffect,
+        context: EffectContext
+    ): EffectResult {
+        val result = dealDamage(state, effect, context)
+        val dealtVariable = effect.damageDealtVariable
+        if (dealtVariable == null || result.outcome is Outcome.Paused) return result
+        // "The damage dealt this way": the total this instruction actually dealt, summed
+        // over every recipient off the DamageDealtEvents, so prevention, redirection and a source
+        // that already left the battlefield are all accounted for. 0 when nothing was dealt.
+        val dealt = result.events.filterIsInstance<DamageDealtEvent>().sumOf { it.amount }
+        return result.copy(updatedStoredNumbers = result.updatedStoredNumbers + (dealtVariable to dealt))
+    }
+
+    private fun dealDamage(
         state: GameState,
         effect: DealDamageEffect,
         context: EffectContext

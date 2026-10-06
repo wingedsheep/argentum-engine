@@ -52,7 +52,15 @@ data class DealDamageEffect(
      * prevented or the target is gone). Violent Echoes: "If excess damage was dealt to that
      * permanent this way, empower Jace X, where X is that excess damage."
      */
-    val excessDamageVariable: String? = null
+    val excessDamageVariable: String? = null,
+    /**
+     * When set, the total damage this effect actually dealt — summed over every recipient off the
+     * `DamageDealtEvent`s, so prevention and redirection are accounted for and the read survives
+     * the source leaving the battlefield — is stored into this pipeline number variable. 0 when
+     * nothing was dealt. "You gain life equal to the damage dealt this way" (Creeping Bloodsucker,
+     * Syphon Soul).
+     */
+    val damageDealtVariable: String? = null
 ) : Effect {
     /** Convenience constructor for fixed amounts */
     constructor(amount: Int, target: EffectTarget, cantBePrevented: Boolean = false, damageSource: EffectTarget? = null)

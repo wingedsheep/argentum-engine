@@ -733,6 +733,63 @@
     ]
 }
 
+// Creeping Bloodsucker
+{
+    "name": "Creeping Bloodsucker",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "At the beginning of your upkeep, this creature deals 1 damage to each opponent. You gain life equal to the damage dealt this way.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Creeping Bloodsucker:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            },
+                            "damageDealtVariable": "storedNumber0"
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "storedNumber0"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "artist": "Antonio José Manzanedo",
+        "flavorText": "\"If a vampire were feeding on you every night, wouldn't you have bite marks? Stop wasting my time.\"\n—Donya, village healer",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e5e3a9e1-fafe-4859-a550-7ae09804aced.jpg?1783919188"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Deadly Plot
 {
     "name": "Deadly Plot",

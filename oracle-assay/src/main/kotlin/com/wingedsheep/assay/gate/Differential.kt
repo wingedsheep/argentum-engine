@@ -742,7 +742,7 @@ internal object Folds {
     private val PIPELINE_WRITERS = setOf(
         "storeAs", "storeSelected", "storeRemainder", "storeMatching", "storeNonMatching", "storeMatch",
         "storeRevealed", "storeChosenAs", "storeOtherAs", "storeMovedAs", "countVariable", "storeCastTo",
-        "storeCountAs", "excessDamageVariable", "storeHeadsAs", "storeGuessedRightAs", "storeWinsAs",
+        "storeCountAs", "excessDamageVariable", "damageDealtVariable", "storeHeadsAs", "storeGuessedRightAs", "storeWinsAs",
         "storeDestroyedAs", "storeExiledAs", "storeDiscoveredAs",
     )
     private val OPTIONAL_WRITERS = setOf("storeRemainder", "storeNonMatching", "storeMovedAs")

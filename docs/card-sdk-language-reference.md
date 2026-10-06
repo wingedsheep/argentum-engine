@@ -1297,7 +1297,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 
 ### Damage
 
-- `DealDamage(amount, target, damageSource = null, cantBePrevented = false, excessDamageVariable = null)`
+- `DealDamage(amount, target, damageSource = null, cantBePrevented = false, excessDamageVariable = null, damageDealtVariable = null)`
   — deal fixed/dynamic damage; `damageSource` names the object dealing it when that isn't the
   resolving source, `cantBePrevented` is "this damage can't be prevented". `excessDamageVariable`
   stores the excess damage (CR 120.4a) dealt to the single permanent target — above lethal for a
@@ -1307,6 +1307,13 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   `val excess = runStoringNumber { Effects.DealDamage(6, t, excessDamageVariable = it) }` and gate the
   payoff on `Conditions.CompareAmounts(excess.amount, GT, DynamicAmounts.fixed(0))` — Violent Echoes:
   "If excess damage was dealt to that permanent this way, empower Jace X, where X is that excess damage."
+  `damageDealtVariable` stores the **total** damage the instruction actually dealt, summed over every
+  recipient off the `DamageDealtEvent`s — prevention and redirection are accounted for, the read
+  survives the source leaving the battlefield, and a "you may have it dealt to you instead" pause
+  carries it through. "You gain life equal to the damage dealt this way" is
+  `val dealt = runStoringNumber { Effects.DealDamage(1, EffectTarget.PlayerRef(Player.EachOpponent), damageDealtVariable = it) }`
+  then `run(Effects.GainLife(dealt.amount))` (Creeping Bloodsucker, Syphon Soul) — never a fixed
+  `GainLife(n)`, which ignores prevention and the opponent count.
 - `DamageCantBePreventedThisTurn(target)` — the per-recipient form of the turn-wide shutoff (Whippoorwill).
 - `RedirectNextDamage(protectedTargets, redirectTo, amount?, scope, creaturesOnly, optional)`,
   `RedirectCombatDamageToController(target = Self)`, `ReflectCombatDamage(target = Controller)`,

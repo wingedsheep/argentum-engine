@@ -12,7 +12,8 @@ import com.wingedsheep.sdk.scripting.references.Player
  * Sorcery
  * Syphon Soul deals 2 damage to each other player. You gain life equal to the damage dealt this way.
  *
- * In a 1v1 game, this always deals 2 damage and gains 2 life.
+ * The gain reads the damage actually dealt (`damageDealtVariable`), so it scales with the number
+ * of opponents and ignores prevented damage.
  */
 val SyphonSoul = card("Syphon Soul") {
     manaCost = "{2}{B}"
@@ -21,7 +22,12 @@ val SyphonSoul = card("Syphon Soul") {
     oracleText = "Syphon Soul deals 2 damage to each other player. You gain life equal to the damage dealt this way."
 
     spell {
-        effect = Effects.DealDamage(2, EffectTarget.PlayerRef(Player.EachOpponent)) then Effects.GainLife(2)
+        effect = Effects.Pipeline {
+            val dealt = runStoringNumber {
+                Effects.DealDamage(2, EffectTarget.PlayerRef(Player.EachOpponent), damageDealtVariable = it)
+            }
+            run(Effects.GainLife(dealt.amount))
+        }
     }
 
     metadata {
