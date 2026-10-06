@@ -186,6 +186,102 @@
     ]
 }
 
+// Animate Wall
+{
+    "name": "Animate Wall",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant Wall\nEnchanted Wall can attack as though it didn't have defender.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanAttackDespiteDefender",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Wall"
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsAttachedToBySource"
+                        ]
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "permanent Wall"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "RARE",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5c83259-9b90-47c2-b48e-c7d78519e792.jpg?1783948717",
+        "rulings": [
+            {
+                "date": "2007-09-16",
+                "text": "This is a change from the most recent wording. As was the case in the past, Animate Wall can now enchant only a Wall."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Ankh of Mishra
+{
+    "name": "Ankh of Mishra",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a land enters, this artifact deals 2 damage to that land's controller.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ankh of Mishra:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "ControllerOfTriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "RARE",
+        "artist": "Amy Weber",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f594b7aa-d44e-47c4-989b-565f881e25f1.jpg?1783948670",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "This triggers on any land entering. This includes playing a land or putting a land onto the battlefield using a spell or ability."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "It determines the land's controller at the time the ability resolves. If the land leaves the battlefield before the ability resolves, the land's last controller before it left is used."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Armageddon
 {
     "name": "Armageddon",
@@ -467,6 +563,70 @@
         "rarity": "RARE",
         "artist": "Christopher Rush",
         "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0faa7f2-b547-42c4-a810-839da50dadfe.jpg?1783948669"
+    },
+    "colorIdentityOverride": []
+}
+
+// Black Vise
+{
+    "name": "Black Vise",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "As this artifact enters, choose an opponent.\nAt the beginning of the chosen player's upkeep, this artifact deals X damage to that player, where X is the number of cards in their hand minus 4.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Black Vise:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "ChosenOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Subtract",
+                        "left": {
+                            "type": "AggregateZone",
+                            "player": "ChosenOpponent",
+                            "zone": "Hand"
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "ChosenOpponent"
+                    }
+                },
+                "descriptionOverride": "At the beginning of the chosen player's upkeep, Black Vise deals damage to that player equal to the number of cards in their hand minus 4."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "OPPONENT"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "UNCOMMON",
+        "artist": "Richard Thomas",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76ac72f8-5b1e-4d67-a796-ef69cde27424.jpg?1783948669",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "If the chosen player has four or fewer cards in their hand as Black Vise's ability resolves, the ability just won't do anything that turn."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "You choose one opposing player as it enters and it only affects that one player. This choice is not changed even if Black Vise changes controllers. It becomes useless but stays on the battlefield if that player leaves the game."
+            }
+        ]
     },
     "colorIdentityOverride": []
 }
@@ -2095,6 +2255,46 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Dingus Egg
+{
+    "name": "Dingus Egg",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a land is put into a graveyard from the battlefield, this artifact deals 2 damage to that land's controller.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dingus Egg:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "241",
+        "rarity": "RARE",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65eb6cda-e512-40a8-9c1f-335b713409ff.jpg?1783948668"
+    },
+    "colorIdentityOverride": []
 }
 
 // Disenchant
@@ -4686,6 +4886,55 @@
     ]
 }
 
+// Karma
+{
+    "name": "Karma",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of each player's upkeep, this enchantment deals damage to that player equal to the number of Swamps they control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Karma:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "TriggeringPlayer",
+                        "filter": "land Swamp"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "At the beginning of each player's upkeep, this enchantment deals damage to that player equal to the number of Swamps they control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "UNCOMMON",
+        "artist": "Richard Thomas",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f30ad61-fcb7-4d55-ba86-94de1bf545e4.jpg?1783948713",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Amount of damage is determined when the ability resolves and not when it is placed on the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Keldon Warlord
 {
     "name": "Keldon Warlord",
@@ -4741,6 +4990,50 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Kormus Bell
+{
+    "name": "Kormus Bell",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "All Swamps are 1/1 black creatures that are still lands.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AnimateLandGroup",
+                "filter": {
+                    "baseFilter": "land Swamp"
+                },
+                "power": 1,
+                "toughness": 1,
+                "colors": [
+                    "BLACK"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "256",
+        "rarity": "RARE",
+        "artist": "Christopher Rush",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f4ef7a1-148d-44ac-89ed-0ef379cca0c6.jpg?1783948664",
+        "rulings": [
+            {
+                "date": "2008-08-01",
+                "text": "A noncreature permanent that turns into a creature can attack, and its {T} abilities can be activated, only if its controller has continuously controlled that permanent since the beginning of their most recent turn. It doesn't matter how long the permanent has been a creature."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "The lands are both lands and creatures at the same time. They are affected by anything that affects either permanent type."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "It affects Swamps controlled by any and all players."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Lance
@@ -5169,6 +5462,41 @@
     ]
 }
 
+// Living Lands
+{
+    "name": "Living Lands",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "All Forests are 1/1 creatures that are still lands.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AnimateLandGroup",
+                "filter": {
+                    "baseFilter": "land Forest"
+                },
+                "power": 1,
+                "toughness": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "RARE",
+        "artist": "Jesper Myrfors",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80be0580-7948-4d8e-8c0f-5e2797ac411b.jpg?1783948674",
+        "rulings": [
+            {
+                "date": "2008-08-01",
+                "text": "A noncreature permanent that turns into a creature can attack, and its {T} abilities can be activated, only if its controller has continuously controlled that permanent since the beginning of their most recent turn. It doesn't matter how long the permanent has been a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Living Wall
 {
     "name": "Living Wall",
@@ -5488,6 +5816,141 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Mana Vault
+{
+    "name": "Mana Vault",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact doesn't untap during your untap step.\nAt the beginning of your upkeep, you may pay {4}. If you do, untap this artifact.\nAt the beginning of your draw step, if this artifact is tapped, it deals 1 damage to you.\n{T}: Add {C}{C}{C}.",
+    "flags": [
+        "DOESNT_UNTAP"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mana Vault:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{4}"
+                        }
+                    },
+                    "then": {
+                        "type": "TapUntap",
+                        "target": "Self",
+                        "tap": false
+                    }
+                }
+            },
+            {
+                "id": "Mana Vault:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "DRAW"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    }
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "tapped"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Mana Vault:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "259",
+        "rarity": "RARE",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19499cb7-eccb-4e69-af32-6002d447a160.jpg?1783948664"
+    },
+    "colorIdentityOverride": []
+}
+
+// Manabarbs
+{
+    "name": "Manabarbs",
+    "manaCost": "{3}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a player taps a land for mana, this enchantment deals 1 damage to that player.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Manabarbs:1",
+                "trigger": "LandTappedForMana",
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "RARE",
+        "artist": "Christopher Rush",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/6121f72f-680f-4bb4-ae4d-37ee4ebed4d8.jpg?1783948683",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "This ability is not a mana ability. It goes on the stack and can be responded to."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "The ability will trigger each time a land is tapped for mana. Each ability is separate."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If any lands are tapped for mana while a player is casting a spell or activating an ability, Manabarbs's ability will trigger that many times and wait. When the player finishes casting that spell or activating that ability, it's put on the stack, then Manabarbs's triggered abilities are put on the stack on top of it. The Manabarbs abilities will resolve first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -6191,6 +6654,97 @@
     ]
 }
 
+// Paralyze
+{
+    "name": "Paralyze",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature doesn't untap during its controller's untap step.\nAt the beginning of the upkeep of enchanted creature's controller, that player may pay {4}. If the player does, untap the creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Paralyze:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                },
+                "descriptionOverride": "When this Aura enters, tap enchanted creature."
+            },
+            {
+                "id": "Paralyze:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayDynamicManaCost",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "payer": "TriggeringPlayer"
+                        }
+                    },
+                    "then": {
+                        "type": "TapUntap",
+                        "target": "EnchantedCreature",
+                        "tap": false
+                    },
+                    "decisionMaker": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    },
+                    "descriptionOverride": "Pay {4} to untap the creature enchanted by Paralyze?"
+                },
+                "descriptionOverride": "At the beginning of the upkeep of enchanted creature's controller, that player may pay {4}. If the player does, untap the creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be33a155-de26-43d1-88f1-c926f1b7cb7c.jpg?1783948693",
+        "rulings": [
+            {
+                "date": "2007-09-16",
+                "text": "Paralyze itself has the last triggered ability, rather than granting that ability to the enchanted creature."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "The creature can only be untapped using Paralyze once per turn."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Two Paralyzes are not cumulative. Paying either one will untap the creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pearled Unicorn
 {
     "name": "Pearled Unicorn",
@@ -6388,6 +6942,41 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Plague Rats
+{
+    "name": "Plague Rats",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Rat",
+    "oracleText": "Plague Rats's power and toughness are each equal to the number of creatures named Plague Rats on the battlefield.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "Each",
+                "filter": "creature name:Plague Rats"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "Each",
+                "filter": "creature name:Plague Rats"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "artist": "Anson Maddocks",
+        "flavorText": "\"Should you a Rat to madness tease\nWhy ev'n a Rat may plague you...\"\n—Samuel Coleridge, \"Recantation\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3724e40-0622-4aee-9334-6c9fff88bcd5.jpg?1783948692"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -6637,6 +7226,51 @@
         "rarity": "UNCOMMON",
         "artist": "Douglas Shuler",
         "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6a86e6e-bfff-46af-9d36-c912901fea92.jpg?1783948702"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Psychic Venom
+{
+    "name": "Psychic Venom",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nWhenever enchanted land becomes tapped, this Aura deals 2 damage to that land's controller.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Psychic Venom:1",
+                "trigger": "TapEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "ControllerOfTriggeringEntity"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "artist": "Brian Snõddy",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f3f5b68a-6b0e-431e-89f0-ff60f17687a5.jpg?1783948702",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Whenever the land is tapped for any reason, the ability triggers."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -7604,6 +8238,58 @@
     ]
 }
 
+// Sengir Vampire
+{
+    "name": "Sengir Vampire",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\nWhenever a creature dealt damage by this creature this turn dies, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sengir Vampire:1",
+                "trigger": "CreatureDealtDamageBySourceDiesEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/510840f4-7c0e-4b47-8ebf-23c20cac4bd9.jpg?1783948692",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "Each time a creature is put into a graveyard from the battlefield, check whether Sengir Vampire had dealt any damage to it at any time during that turn. If so, Sengir Vampire's ability will trigger. It doesn't matter who controlled the creature or whose graveyard it was put into."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "If Sengir Vampire and a creature it dealt damage to are both put into a graveyard at the same time, Sengir Vampire's ability will trigger, but it will do nothing when it resolves."
+            },
+            {
+                "date": "2007-07-15",
+                "text": "If Sengir Vampire deals nonlethal damage to a creature and then a different effect or damage source causes that creature to be put into a graveyard later in the turn, Sengir Vampire's ability will trigger and it will get a +1/+1 counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Serra Angel
 {
     "name": "Serra Angel",
@@ -8368,6 +9054,57 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// The Hive
+{
+    "name": "The Hive",
+    "manaCost": "{5}",
+    "typeLine": "Artifact",
+    "oracleText": "{5}, {T}: Create a 1/1 colorless Insect artifact creature token with flying named Wasp. (It can't be blocked except by creatures with flying or reach.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Hive:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Insect"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "name": "Wasp",
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/9/09921372-126f-4c81-b6d8-ea50b1d0eb44.jpg?1783919200",
+                    "artifactToken": true
+                },
+                "descriptionOverride": "{5}, {T}: Create a 1/1 colorless Insect artifact creature token with flying named Wasp."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "272",
+        "rarity": "RARE",
+        "artist": "Sandra Everingham",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/544a7138-eae8-4ff9-9e17-680bfa717183.jpg?1783948661"
+    },
+    "colorIdentityOverride": []
 }
 
 // Thoughtlace
