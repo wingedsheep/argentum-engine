@@ -2132,6 +2132,11 @@ class TriggerDetector(
      * Detect cycling triggers on the card that was cycled.
      * Cards like Renewed Faith have "When you cycle this card, you may gain 2 life."
      * The card is now in the graveyard, but its cycling trigger still fires.
+     *
+     * Only [TriggerBinding.SELF] cycle triggers belong here: an `ANY`-bound
+     * [EventPattern.CycleEvent] is an observer ("whenever you cycle another card", Drannith
+     * Stinger) owned by the battlefield pass. The card being cycled was in hand, not on the
+     * battlefield, so its observer ability isn't functioning and must not fire off its own cycling.
      */
     private fun detectCyclingCardTriggers(
         state: GameState,
@@ -2146,7 +2151,7 @@ class TriggerDetector(
         val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state, statics)
 
         for (ability in abilities) {
-            if (ability.trigger is EventPattern.CycleEvent) {
+            if (ability.trigger is EventPattern.CycleEvent && ability.binding == TriggerBinding.SELF) {
                 triggers.add(
                     PendingTrigger(
                         ability = ability,

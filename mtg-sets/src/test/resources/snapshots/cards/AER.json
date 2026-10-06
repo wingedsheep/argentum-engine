@@ -167,6 +167,74 @@
     ]
 }
 
+// Destructive Tampering
+{
+    "name": "Destructive Tampering",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Destroy target artifact.\n• Creatures without flying can't block this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Destroy target artifact"
+                },
+                {
+                    "effect": {
+                        "type": "CantBlockGroup",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "FLYING"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Creatures without flying can't block this turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Titus Lunter",
+        "flavorText": "\"I don't think they'll appreciate my . . . adjustments.\"\n—Karavin, renegade saboteur",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00154b70-57d2-4c32-860f-1c36fc49b10c.jpg?1783936756",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Because the effect of Destructive Tampering's second mode doesn't change the characteristics of any permanents, the set of creatures affected by it is constantly updated. Creatures without flying that enter the battlefield later in the turn won't be able to block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Druid of the Cowl
 {
     "name": "Druid of the Cowl",

@@ -914,6 +914,47 @@
     ]
 }
 
+// Chandra's Pyrohelix
+{
+    "name": "Chandra's Pyrohelix",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Chandra's Pyrohelix deals 2 damage divided as you choose among one or two targets.",
+    "script": {
+        "spellEffect": {
+            "type": "DividedDamage",
+            "totalDamage": 2,
+            "maxTargets": 2
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "count": 2,
+                "minCount": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"This one's for my mom, and this one's for me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/05659715-3002-4bd0-919e-664814c1ca57.jpg?1783937196",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You divide the damage as you cast Chandra's Pyrohelix, not as it resolves. Each target must be assigned at least 1 damage. In other words, as you cast Chandra's Pyrohelix, you choose whether to have it deal 2 damage to a single target, or deal 1 damage to each of two targets."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If Chandra's Pyrohelix targets two creatures and one becomes an illegal target, the remaining target is dealt 1 damage, not 2."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Chandra, Torch of Defiance
 {
     "name": "Chandra, Torch of Defiance",

@@ -942,6 +942,79 @@
     ]
 }
 
+// Coalborn Entity
+{
+    "name": "Coalborn Entity",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "{2}{R}: This creature deals 1 damage to target creature token, player, or planeswalker.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Coalborn Entity:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPermanentOrPlayer",
+                        "id": "t0",
+                        "permanentFilter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsCreature",
+                                                    "IsToken"
+                                                ]
+                                            },
+                                            "IsPlaneswalker"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "descriptionOverride": "target creature token, player, or planeswalker"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "UNCOMMON",
+        "artist": "Liiga Smilshkalne",
+        "flavorText": "The blacksmith forgot to feed the forge, so the forge fed itself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d581e4f-77a7-4ad1-a263-882babffded8.jpg?1783919184"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Conductor of Cacophony
 {
     "name": "Conductor of Cacophony",
@@ -1091,6 +1164,52 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Daring Piracy
+{
+    "name": "Daring Piracy",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of combat on your turn, create a 1/1 red Pirate creature token with menace and haste. Exile it at the beginning of the next end step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Daring Piracy:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Pirate"
+                    ],
+                    "keywords": [
+                        "MENACE",
+                        "HASTE"
+                    ],
+                    "exileAtStep": "END"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "UNCOMMON",
+        "artist": "Manuel Castañón",
+        "flavorText": "Sky pirates often leap randomly into the fray and assume there will be something to land on.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec6ce176-a4f3-44dd-b66a-a23b6cf512e4.jpg?1783919183"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

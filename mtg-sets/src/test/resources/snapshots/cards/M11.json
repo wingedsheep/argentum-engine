@@ -541,6 +541,74 @@
     ]
 }
 
+// Chandra's Spitfire
+{
+    "name": "Chandra's Spitfire",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Flying\nWhenever an opponent is dealt noncombat damage, this creature gets +3/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chandra's Spitfire:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageNonCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever an opponent is dealt noncombat damage, this creature gets +3/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Justin Sweet",
+        "flavorText": "\"I've lit most everything on fire—trees, rocks, even the water. Now it's time to burn the clouds.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84a460bb-276f-45f7-b0da-8457eb3192eb.jpg?1783941809",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Combat damage is the damage that's dealt automatically by attacking and blocking creatures. Any other damage is noncombat damage, even if it's dealt during a combat phase by an attacking or blocking creature."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "The last ability of Chandra's Spitfire triggers just once for each event in which an opponent is dealt noncombat damage, regardless of how much damage that player is dealt."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "In a multiplayer game, if a source deals damage to multiple opponents at the same time, the last ability of Chandra's Spitfire will trigger as many times as there are opponents who were dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Cloud Crusader
 {
     "name": "Cloud Crusader",

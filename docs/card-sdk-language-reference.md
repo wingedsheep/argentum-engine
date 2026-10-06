@@ -7570,7 +7570,9 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   "**Enters transformed**" (CR 701.27g) is the enter trigger over `.transformed()` —
   `Triggers.a(Permanent.youControl().transformed()).enters()`; Corruption of Towashi `Triggers.or`s the two.
 - `Triggers.self.isCycled()` — you cycle source.
-- `Triggers.anyPlayer.cycles()` — anyone cycles.
+- `Triggers.anyPlayer.cycles()` — anyone cycles. `Triggers.you.cycles()` is also "whenever you cycle
+  **another** card" (Drannith Stinger): the observer only functions on the battlefield and a card is cycled
+  from hand, so the source can't see its own cycling — only a `self.isCycled()` trigger fires off that.
 - `Triggers.anyPlayer.tapsLandForMana()` / `Triggers.<player>.tapsLandForMana(land)` — "whenever
   [player] taps a [land] for mana" (`EventPattern.LandTappedForMana`). `Triggers.self.tappedForMana()`
   is "whenever you tap **this** land for mana" (Forbidden Orchard — SELF only, no subject filter). The
