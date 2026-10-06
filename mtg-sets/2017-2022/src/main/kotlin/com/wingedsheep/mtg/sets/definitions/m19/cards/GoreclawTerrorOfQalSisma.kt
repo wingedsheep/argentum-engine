@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.blc.cards
+package com.wingedsheep.mtg.sets.definitions.m19.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Triggers
@@ -49,9 +49,9 @@ val GoreclawTerrorOfQalSisma = card("Goreclaw, Terror of Qal Sisma") {
 
     metadata {
         rarity = Rarity.RARE
-        collectorNumber = "222"
+        collectorNumber = "186"
         artist = "Svetlin Velinov"
-        imageUri = "https://cards.scryfall.io/normal/front/d/e/de8a64e5-9986-4692-b173-43475f4b5005.jpg?1721753137"
+        imageUri = "https://cards.scryfall.io/normal/front/3/6/36d4574a-3266-4497-b145-fb25820d8a7f.jpg?1783934534"
         flavorText = "You don't want to know how she got that name."
         ruling("2018-07-13", "If you cast a creature spell that will enter the battlefield with a number of +1/+1 counters, such as Hungering Hydra, those counters aren't considered when determining whether Goreclaw reduces that spell's cost. Similarly, effects that will raise the creature's power once it has entered the battlefield won't apply.")
         ruling("2018-07-13", "Goreclaw's last ability affects only creatures you control with the appropriate power at the time it resolves. Creatures you begin to control later in the turn won't get either bonus, and a creature you control whose power decreases later in the turn won't lose either bonus.")
