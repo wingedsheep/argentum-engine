@@ -230,6 +230,75 @@
     "colorIdentityOverride": []
 }
 
+// Bogardan Dragonheart
+{
+    "name": "Bogardan Dragonheart",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Sacrifice another creature: Until end of turn, this creature becomes a Dragon with base power and toughness 4/4, flying, and haste.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bogardan Dragonheart:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "keywords": [
+                        "FLYING",
+                        "HASTE"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ]
+                },
+                "descriptionOverride": "Sacrifice another creature: Until end of turn, this creature becomes a Dragon with base power and toughness 4/4, flying, and haste."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Randy Vargas",
+        "flavorText": "A hunger to soar must be sated.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/feb81f44-8f22-4d28-a452-a50bef69a3e3.jpg?1783933116",
+        "rulings": [
+            {
+                "date": "2019-06-14",
+                "text": "Bogardan Dragonheart's ability overwrites all previous effects that set its creature types, power, and/or toughness to specific values. Other effects that set these characteristics to specific values that start to apply after the ability resolves will overwrite that part of this effect."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "Effects that modify Bogardan Dragonheart's power or toughness (such as the effects of Force of Virtue or Giant Growth) will apply no matter when they started to take effect. The same is true for counters that change its power or toughness (such as +1/+1 counters)."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "Bogardan Dragonheart doesn't lose any abilities when it becomes a Dragon."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Cave of Temptation
 {
     "name": "Cave of Temptation",
@@ -3537,6 +3606,63 @@
         "artist": "Eric Deschamps",
         "flavorText": "\"Be ever loyal to your own best interests.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/a/f/afbbb742-0317-4266-bcf5-cfea8d21f108.jpg?1783933118"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Undead Augur
+{
+    "name": "Undead Augur",
+    "manaCost": "{B}{B}",
+    "typeLine": "Creature — Zombie Wizard",
+    "oracleText": "Whenever this creature or another Zombie you control dies, you draw a card and lose 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Undead Augur:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Zombie ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature or another Zombie you control dies, you draw a card and lose 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "Sara Winters",
+        "flavorText": "\"To see past the veil of death, cross it.\"\n—The Red Book of Mezdrithalik",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6e3049e-9397-4bef-914b-e9664661419c.jpg?1783933118"
     },
     "colorIdentityOverride": [
         "BLACK"
