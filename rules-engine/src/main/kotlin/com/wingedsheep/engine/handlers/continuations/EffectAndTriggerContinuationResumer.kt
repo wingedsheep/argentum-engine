@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffec
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.Gate
+import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.targets.withCount
 
@@ -228,16 +229,20 @@ class EffectAndTriggerContinuationResumer(
     /**
      * The effect whose division a triggered ability announces as it goes on the stack: the ability's
      * whole effect, or the one divided step of a sequence ("distribute three +1/+1 counters …, then
-     * you gain life …"). Null when there is none, or more than one to tell apart — those divide at
-     * resolution instead.
+     * you gain life …"), or the divided payoff of a gate ("you may sacrifice an artifact. If you do,
+     * … deals 4 damage divided as you choose among any number of targets" — Kuldotha Flamefiend). The
+     * targets were chosen now, so their division is announced now too, whether or not the gate later
+     * opens. Null when there is none, or more than one to tell apart — those divide at resolution
+     * instead.
      */
     private fun announcedDivision(effect: Effect): Effect? {
-        fun isDivided(e: Effect) = e is DividedDamageEffect || e is DistributeCountersAmongTargetsEffect
-        return when {
-            isDivided(effect) -> effect
-            effect is CompositeEffect -> effect.effects.filter(::isDivided).singleOrNull()
-            else -> null
+        fun divisions(e: Effect): List<Effect> = when (e) {
+            is DividedDamageEffect, is DistributeCountersAmongTargetsEffect -> listOf(e)
+            is CompositeEffect -> e.effects.flatMap(::divisions)
+            is GatedEffect -> divisions(e.then) + (e.otherwise?.let(::divisions) ?: emptyList())
+            else -> emptyList()
         }
+        return divisions(effect).singleOrNull()
     }
 
     /**

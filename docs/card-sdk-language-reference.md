@@ -1360,7 +1360,12 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   a `TargetObject(unlimited = true, dynamicMaxCount = ..., filter = ...)`. Set `dynamicTotal` (a
   `DynamicAmount`) for totals computed when the ability resolves/goes on the stack — Ureni, the Song
   Unending: `dynamicTotal = DynamicAmounts.landsYouControl()`. Works for creatures and planeswalkers
-  (`GameObjectFilter.CreatureOrPlaneswalker`); zero chosen targets ⇒ no-op.
+  (`GameObjectFilter.CreatureOrPlaneswalker`); zero chosen targets ⇒ no-op, fixed or dynamic total.
+  A triggered ability announces the division as it goes on the stack (CR 603.3d) even when the
+  divided damage sits behind a gate — Kuldotha Flamefiend: `Effects.MayPay(cost =
+  Effects.SacrificeOwn(filter = GameObjectFilter.Artifact), then = Effects.DividedDamage(total = 4,
+  minTargets = 0, maxTargets = 4))` with `AnyTarget(count = 4, minCount = 0, optional = true)`; the
+  announced split is dealt only if the gate opens.
 
   **A total fixed "as you activate this ability"** (Lukka, Bound to Ruin's −4: "X damage divided …,
   where X is the greatest power among creatures you control as you activate this ability") is a

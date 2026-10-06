@@ -51,11 +51,9 @@ class DividedDamageExecutor(
         val total = effect.dynamicTotal?.let { amountEvaluator.evaluate(state, it, context) }
             ?: effect.totalDamage
 
-        if (targets.isEmpty()) {
-            // "Any number of target" forms can resolve with zero targets — nothing happens.
-            return if (effect.dynamicTotal != null) EffectResult.success(state)
-            else EffectResult.error(state, "No targets for divided damage")
-        }
+        // "Any number of targets" forms can resolve with zero targets — nothing happens. (A spell
+        // whose every required target became illegal never gets here; it doesn't resolve.)
+        if (targets.isEmpty()) return EffectResult.success(state)
 
         val distribution = context.damageDistribution
         if (distribution != null) {
