@@ -857,7 +857,9 @@ internal class BlockPhaseManager(
 
     /**
      * Validate `CantBeBlockedByMoreThan` restrictions (CR 509.1b).
-     * Each attacker with this static ability caps the number of creatures that may block it.
+     * Each attacker with this static ability caps the number of creatures that may block it —
+     * whether the ability is its own, granted to it, or projected onto it by a battlefield
+     * permanent's group clause ([hostScopedMaxBlockers]).
      */
     private fun validateMaxBlockersRequirements(
         state: GameState,
@@ -869,12 +871,15 @@ internal class BlockPhaseManager(
                 attackerToBlockerCount.merge(attackerId, 1, Int::plus)
             }
         }
+        val hostLimits = hostScopedMaxBlockers(state, attackerToBlockerCount.keys)
 
         for ((attackerId, count) in attackerToBlockerCount) {
             val attackerContainer = state.getEntity(attackerId) ?: continue
-            if (attackerContainer.has<FaceDownComponent>()) continue
             val attackerCard = attackerContainer.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId)
+            // A face-down attacker has no printed abilities (CR 708.2a), but a face-up host's
+            // group clause still covers it.
+            val cardDef = if (attackerContainer.has<FaceDownComponent>()) null
+                else cardRegistry.getCard(attackerCard.cardDefinitionId)
 
             // Printed "can't be blocked by more than N", including the conditional form
             // (Akawalli's descend-8 "can't be blocked by more than one creature") — unwrap a
@@ -918,14 +923,49 @@ internal class BlockPhaseManager(
                     com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_BLOCKED_BY_MORE_THAN_ONE
                 )
             ) 1 else null
-            val limit = listOfNotNull(staticLimit, grantedLimit, flagLimit).minOrNull() ?: continue
+            val limit = listOfNotNull(staticLimit, grantedLimit, flagLimit, hostLimits[attackerId]).minOrNull()
+                ?: continue
 
             if (count > limit) {
                 val countText = if (limit == 1) "more than one creature" else "more than $limit creatures"
-                return "${attackerCard.name} can't be blocked by $countText"
+                return "${nameVisibleToAll(state, attackerId, attackerCard.name)} can't be blocked by $countText"
             }
         }
         return null
+    }
+
+    /**
+     * The tightest `CantBeBlockedByMoreThan` cap each of [attackers] gets from a battlefield
+     * permanent's group clause — Flopsie, Bumi's Buddy's and Challenger Troll's "each creature you
+     * control with power 4 or greater can't be blocked by more than one creature", Rocksteady's
+     * Boars. The filter is resolved relative to the permanent carrying the static and matched
+     * against projected state, so a creature pumped to power 4 after the host arrived is covered
+     * and one shrunk below it drops out. `Scope.Self` is left to the attacker's own read; a host
+     * that is itself an attacker is covered by its own group clause unless the filter says "other".
+     */
+    private fun hostScopedMaxBlockers(state: GameState, attackers: Set<EntityId>): Map<EntityId, Int> {
+        if (attackers.isEmpty()) return emptyMap()
+        val projected = state.projectedState
+        val limits = mutableMapOf<EntityId, Int>()
+        for (hostId in state.getBattlefield()) {
+            val container = state.getEntity(hostId) ?: continue
+            if (container.has<FaceDownComponent>()) continue
+            val cardId = container.get<CardComponent>()?.cardDefinitionId ?: continue
+            for (ability in cardRegistry.getCard(cardId)?.staticAbilities.orEmpty()) {
+                val unwrapped = if (ability is ConditionalStaticAbility) ability.ability else ability
+                if (unwrapped !is CantBeBlockedByMoreThan || unwrapped.filter.scope is Scope.Self) continue
+                val controller = projected.getController(hostId) ?: continue
+                if (ability is ConditionalStaticAbility &&
+                    !conditionEvaluator.evaluate(
+                        state, ability.condition, EffectContext(sourceId = hostId, controllerId = controller)
+                    )
+                ) continue
+                resolveFilteredAttackers(state, projected, hostId, controller, unwrapped.filter, attackers)
+                    .filterNot { it == hostId && unwrapped.filter.excludeSelf }
+                    .forEach { limits.merge(it, unwrapped.maxBlockers, ::minOf) }
+            }
+        }
+        return limits
     }
 
     /**
@@ -1260,7 +1300,7 @@ internal class BlockPhaseManager(
                     )
                 ) continue
                 result.addAll(
-                    resolveFilteredMustBeBlockedAttackers(state, projected, sourceId, controller, filter, attackerSet)
+                    resolveFilteredAttackers(state, projected, sourceId, controller, filter, attackerSet)
                 )
             }
         }
@@ -1269,13 +1309,13 @@ internal class BlockPhaseManager(
     }
 
     /**
-     * Resolve which declared attackers a filtered [MustBeBlocked] static (carried by [sourceId])
-     * applies to. Source-relative scopes resolve against [sourceId]: `AttachedTo` -> the creature it
+     * Resolve which declared attackers a filtered static (carried by [sourceId]) applies to —
+     * [MustBeBlocked] and [CantBeBlockedByMoreThan] both read it. Source-relative scopes resolve against [sourceId]: `AttachedTo` -> the creature it
      * is attached to (equipped creature), `Self` -> the source, `Specific` -> the bound entity;
      * `Battlefield` matches every attacker against the base filter. Only attackers pass, and each
      * must also satisfy the base filter (evaluated with the static's source as context).
      */
-    private fun resolveFilteredMustBeBlockedAttackers(
+    private fun resolveFilteredAttackers(
         state: GameState,
         projected: ProjectedState,
         sourceId: EntityId,

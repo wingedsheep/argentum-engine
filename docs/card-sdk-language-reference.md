@@ -8871,8 +8871,14 @@ in the declare-blockers step, even before the turn-based block action has comple
   **not** skipped when it is itself the attacker, so a creature whose own group clause covers
   "creatures you control" gets the evasion too; set `excludeSelf` on the `GroupFilter` for the
   "other creatures you control …" wording.
-- `CantBeBlockedByMoreThan(maxBlockers)` — static cap on how many creatures may block the source (CR
-  509.1b). For the **turn-scoped, granted** form (Glorfindel, Dauntless Rescuer: "can't be blocked by
+- `CantBeBlockedByMoreThan(maxBlockers, filter = GroupFilter.source())` — static cap on how many
+  creatures may block the source (CR 509.1b). A **group** filter projects the cap from the host onto
+  every attacker matching it — Challenger Troll / Flopsie, Bumi's Buddy's "each creature you control
+  with power 4 or greater can't be blocked by more than one creature" =
+  `CantBeBlockedByMoreThan(1, GroupFilter(GameObjectFilter.Creature.youControl().powerAtLeast(4)))`.
+  Blocker validation scans battlefield hosts and matches attackers on *projected* state, so the
+  covered set is live; the host covers itself unless the filter sets `excludeSelf`, and a face-down
+  attacker is still covered by a face-up host. For the **turn-scoped, granted** form (Glorfindel, Dauntless Rescuer: "can't be blocked by
   more than one creature each combat this turn"), grant `AbilityFlag.CANT_BE_BLOCKED_BY_MORE_THAN_ONE`
   via `Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED_BY_MORE_THAN_ONE, target, duration)`;
   `BlockPhaseManager.validateMaxBlockersRequirements` reads the projected flag (cap = 1) alongside the

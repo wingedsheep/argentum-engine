@@ -1058,6 +1058,39 @@
     ]
 }
 
+// Challenger Troll
+{
+    "name": "Challenger Troll",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Troll",
+    "oracleText": "Each creature you control with power 4 or greater can't be blocked by more than one creature.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedByMoreThan",
+                "maxBlockers": 1,
+                "filter": {
+                    "baseFilter": "creature pow>=4 ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "For most, war is a calamity. For some, an opportunity. And for the very few, a pleasure.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/328d778a-ef16-437f-9a9d-204cf061919b.jpg?1783933416"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Charity Extractor
 {
     "name": "Charity Extractor",
