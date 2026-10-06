@@ -66,9 +66,20 @@ class FaceDownCastFromCollectionTest : FunSpec({
     val green = creature("Test Green", "{G}")
     val hybrid = creature("Test Hybrid", "{W/U}{W/U}")
     val generic = creature("Test Generic", "{2}")
+    val colorlessOne = creature("Test Colorless One", "{1}")
+    val solRing = card("Face Down Test Sol Ring") {
+        manaCost = "{1}"
+        typeLine = "Artifact"
+        activatedAbility {
+            cost = com.wingedsheep.sdk.scripting.AbilityCost.Tap
+            effect = Effects.AddColorlessMana(2)
+            manaAbility = true
+            timing = TimingRule.ManaAbility
+        }
+    }
 
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(mask, oneU, twoU, green, hybrid, generic))
+        it.registerCards(TestCards.all + listOf(mask, oneU, twoU, green, hybrid, generic, colorlessOne, solRing))
         it.initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -125,6 +136,18 @@ class FaceDownCastFromCollectionTest : FunSpec({
         val options = d.activate(me, maskId, 2, PaymentStrategy.Explicit(islands))
         options shouldBe listOf(blueCard)
         (twoBlue in options || greenCard in options) shouldBe false
+    }
+
+    test("a two-mana source chosen for X = 1 spent only the mana the cost took") {
+        val d = driver()
+        val me = d.player1
+        val maskId = d.putPermanentOnBattlefield(me, mask.name)
+        val ring = d.putPermanentOnBattlefield(me, solRing.name)
+        val oneCard = d.putCardInHand(me, colorlessOne.name)
+        d.putCardInHand(me, generic.name)
+
+        // Sol Ring makes {C}{C} but {X} = 1 spends one: {1} fits, {2} doesn't.
+        d.activate(me, maskId, 1, PaymentStrategy.Explicit(listOf(ring))) shouldBe listOf(oneCard)
     }
 
     test("floating mana of several types counts by type") {

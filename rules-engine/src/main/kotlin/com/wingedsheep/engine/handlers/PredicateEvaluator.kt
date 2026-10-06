@@ -915,10 +915,11 @@ class PredicateEvaluator(
             }
             // Illusionary Mask: the resolving ability's recorded payment, allocated exactly against
             // the card's mana cost. A face-down object has no mana cost, and with no recorded
-            // payment (not resolving, or a triggered ability) nothing matches.
+            // payment (not resolving, or a triggered ability) nothing matches. No mana cost at all
+            // is an unpayable cost (CR 202.1b); a printed {0} is a one-symbol cost and matches.
             CardPredicate.ManaCostPayableWithManaSpent -> {
                 val spent = context?.resolution?.manaSpent ?: return false
-                projectedValues?.isFaceDown != true && spent.couldPay(card.manaCost)
+                projectedValues?.isFaceDown != true && !card.manaCost.isEmpty() && spent.couldPay(card.manaCost)
             }
             is CardPredicate.ManaValueAtMostDynamic -> {
                 val cap = evaluateDynamicCap(state, predicate.amount, context) ?: return false

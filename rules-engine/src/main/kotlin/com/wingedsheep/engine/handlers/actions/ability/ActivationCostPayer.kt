@@ -446,6 +446,14 @@ internal class ActivationCostPayer(
                             else sourceMana.plus(null, production.colorless)
                     }
                     for ((color, amount) in solution.bonusManaSpentByColor) sourceMana = sourceMana.plus(color, amount)
+                    // manaProduced holds a multi-mana source's whole output (Sol Ring's {C}{C}); the
+                    // part the solve left unspent comes back as excess and was not spent here.
+                    for (entry in solution.remainingBonusMana) {
+                        if (!entry.countsTowardSpent) {
+                            sourceMana = sourceMana.plus(if (entry.colorless) null else entry.color, -entry.amount)
+                        }
+                    }
+                    sourceMana = sourceMana.nonNegative()
                 }
                 ManaTapOutcome.Tapped(currentState, partialResult.newPool, events, sourceMana)
             }

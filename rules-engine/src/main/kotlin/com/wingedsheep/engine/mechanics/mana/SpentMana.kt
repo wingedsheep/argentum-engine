@@ -35,6 +35,11 @@ data class SpentMana(
         null -> copy(colorless = colorless + amount)
     }
 
+    fun nonNegative() = SpentMana(
+        white.coerceAtLeast(0), blue.coerceAtLeast(0), black.coerceAtLeast(0),
+        red.coerceAtLeast(0), green.coerceAtLeast(0), colorless.coerceAtLeast(0),
+    )
+
     /**
      * Whether some amount of, or all of, this mana could pay [cost]: an exact allocation over these
      * units, so hybrid pips take whichever half is left, generic takes anything, {C} only colorless
