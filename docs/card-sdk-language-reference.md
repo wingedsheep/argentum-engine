@@ -87,6 +87,11 @@ section; do not let SDK additions land without a corresponding doc update.
 - `dynamicStats(source, powerOffset?, toughnessOffset?)` — the `*`/`*` cycle: composes
   `dynamicPower` + `dynamicToughness` over one shared source, with optional `±` deltas
   (Tarmogoyf's `toughnessOffset = 1`).
+- A characteristic-defining stat works in every zone (CR 604.3). Off the battlefield — library,
+  hand, graveyard, exile, the stack — P/T filters (`powerAtMost`, `toughnessAtLeast`, …), cast-trigger
+  P/T predicates and `EntityProperty` power/toughness reads evaluate the `*` from the card's own
+  side: "you" is its controller, or its owner when it has none (CR 108.4a). So Keldon Warlord in a
+  library has power equal to its owner's non-Wall creatures when Imperial Recruiter searches.
 - `startingLoyalty: Int?` — starting loyalty for planeswalkers. Placed as loyalty counters by the
   engine's intrinsic enters-with replacement (CR 306.5b) on *every* battlefield entry — resolving from
   the stack, reanimation, an "exile until this leaves" return, any other put-onto-the-battlefield

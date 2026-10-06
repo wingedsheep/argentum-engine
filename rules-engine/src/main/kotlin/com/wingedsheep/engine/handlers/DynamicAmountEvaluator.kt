@@ -928,7 +928,7 @@ class DynamicAmountEvaluator(
                     if (materials == null) 0 else {
                         var total = 0
                         for (exiledId in materials.exiledIds) {
-                            total += basePowerOfPrintedCard(state, exiledId)
+                            total += offBattlefieldStat(state, exiledId, isPower = true) ?: 0
                         }
                         total
                     }
@@ -1761,44 +1761,29 @@ class DynamicAmountEvaluator(
             if (lastKnown != null) return lastKnown
         }
         // Fall back to base stats (entity not on battlefield or projection disabled)
-        return resolveCharacteristicValue(state, entityId, isPower, context)
+        return offBattlefieldStat(state, entityId, isPower) ?: 0
     }
 
     /**
-     * Resolve a characteristic value (power or toughness) from base stats.
-     * Handles Fixed, Dynamic, and DynamicWithOffset characteristic values.
+     * An object's power or toughness where it has no projection entry — a card in a library, hand,
+     * graveyard or exile, or a spell on the stack. A characteristic-defining ability functions in
+     * every zone (CR 604.3), so a `*` stat is evaluated here rather than read as its printed `0`:
+     * Keldon Warlord in a library has power equal to the non-Wall creatures its owner controls.
+     * The CDA is read from the object's own perspective — "you" is its controller, or its owner
+     * when it has none (CR 108.4a) — never from whichever effect is asking. Null when the object
+     * has no power/toughness box.
      */
-    private fun resolveCharacteristicValue(
-        state: GameState,
-        entityId: EntityId,
-        isPower: Boolean,
-        context: EffectContext
-    ): Int {
-        val card = state.getEntity(entityId)?.get<CardComponent>() ?: return 0
-        val value = if (isPower) card.baseStats?.power else card.baseStats?.toughness
+    fun offBattlefieldStat(state: GameState, entityId: EntityId, isPower: Boolean): Int? {
+        val container = state.getEntity(entityId) ?: return null
+        val card = container.get<CardComponent>() ?: return null
+        val value = (if (isPower) card.baseStats?.power else card.baseStats?.toughness) ?: return null
+        if (value is CharacteristicValue.Fixed) return value.value
+        val controllerId = container.get<ControllerComponent>()?.playerId ?: card.ownerId ?: return null
+        val context = EffectContext(sourceId = entityId, controllerId = controllerId)
         return when (value) {
             is CharacteristicValue.Fixed -> value.value
             is CharacteristicValue.Dynamic -> evaluate(state, value.source, context)
             is CharacteristicValue.DynamicWithOffset -> evaluate(state, value.source, context) + value.offset
-            null -> 0
-        }
-    }
-
-    /**
-     * Read the printed base power of a card. Used by
-     * [DynamicAmount.CraftedMaterialsTotalPower] to sum the power of cards in exile (CR 712.8a:
-     * a card outside the battlefield/stack shows only its front-face characteristics, which is
-     * the printed face for non-DFCs). Dynamic CDA values on the printed card are evaluated with
-     * a fresh context targeting that card, falling back to 0 if anything is unset.
-     */
-    private fun basePowerOfPrintedCard(state: GameState, entityId: EntityId): Int {
-        val card = state.getEntity(entityId)?.get<CardComponent>() ?: return 0
-        val ctx = EffectContext(sourceId = entityId, controllerId = card.ownerId ?: return 0)
-        return when (val p = card.baseStats?.power) {
-            is CharacteristicValue.Fixed -> p.value
-            is CharacteristicValue.Dynamic -> evaluate(state, p.source, ctx)
-            is CharacteristicValue.DynamicWithOffset -> evaluate(state, p.source, ctx) + p.offset
-            null -> 0
         }
     }
 

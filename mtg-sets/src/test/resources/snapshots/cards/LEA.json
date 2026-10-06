@@ -4293,6 +4293,63 @@
     ]
 }
 
+// Keldon Warlord
+{
+    "name": "Keldon Warlord",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Human Barbarian",
+    "oracleText": "Keldon Warlord's power and toughness are each equal to the number of non-Wall creatures you control.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "NotSubtype",
+                            "subtype": "Wall"
+                        }
+                    ]
+                }
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "NotSubtype",
+                            "subtype": "Wall"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Brockschmidt",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8fe3fd83-969c-4add-888f-86f4306b067c.jpg",
+        "rulings": [
+            {
+                "date": "2008-08-01",
+                "text": "This is a Characteristic-Defining Ability. It checks the number of non-Wall creatures you control continuously, and applies in all zones. It is never “locked in”."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lance
 {
     "name": "Lance",

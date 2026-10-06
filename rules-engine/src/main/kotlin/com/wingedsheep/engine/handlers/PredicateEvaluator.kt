@@ -57,6 +57,7 @@ import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
@@ -460,6 +461,18 @@ class PredicateEvaluator(
             CardPredicate.ToughnessGreaterThanPower -> null
         }
     }
+
+    /**
+     * Power or toughness of an object with no projection entry (off the battlefield). A printed
+     * number is read directly; a `*` is its characteristic-defining ability evaluated in place
+     * (CR 604.3) — see [DynamicAmountEvaluator.offBattlefieldStat]. Null with no P/T box.
+     */
+    private fun unprojectedStat(state: GameState, entityId: EntityId, card: CardComponent, isPower: Boolean): Int? =
+        when (val value = if (isPower) card.baseStats?.power else card.baseStats?.toughness) {
+            null -> null
+            is CharacteristicValue.Fixed -> value.value
+            else -> amounts.offBattlefieldStat(state, entityId, isPower)
+        }
 
     /**
      * [ControllerPredicate] against a snapshot's frozen [EntitySnapshot.controllerId]. Only the
@@ -934,17 +947,17 @@ class PredicateEvaluator(
             is CardPredicate.PowerEqualsDynamic -> {
                 val want = evaluateDynamicCap(state, predicate.amount, context) ?: return false
                 // No power at all (a noncreature spell) never matches — `null == want` is false.
-                (projectedValues?.power ?: card.baseStats?.basePower) == want
+                (projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true)) == want
             }
             is CardPredicate.PowerAtMostDynamic -> {
                 val cap = evaluateDynamicCap(state, predicate.amount, context) ?: return false
                 // No power at all (a noncreature spell) never matches.
-                val power = projectedValues?.power ?: card.baseStats?.basePower ?: return false
+                val power = projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true) ?: return false
                 power <= cap
             }
             is CardPredicate.ToughnessEqualsDynamic -> {
                 val want = evaluateDynamicCap(state, predicate.amount, context) ?: return false
-                (projectedValues?.toughness ?: card.baseStats?.baseToughness) == want
+                (projectedValues?.toughness ?: unprojectedStat(state, entityId, card, isPower = false)) == want
             }
             CardPredicate.ManaValueIsEven -> {
                 val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
@@ -968,17 +981,17 @@ class PredicateEvaluator(
 
             // Base P/T — the layer-7b snapshot on the battlefield, the printed value elsewhere.
             is CardPredicate.BasePowerEquals -> {
-                val basePower = projectedValues?.basePower ?: card.baseStats?.basePower
+                val basePower = projectedValues?.basePower ?: unprojectedStat(state, entityId, card, isPower = true)
                 basePower == predicate.value
             }
             is CardPredicate.BaseToughnessEquals -> {
-                val baseToughness = projectedValues?.baseToughness ?: card.baseStats?.baseToughness
+                val baseToughness = projectedValues?.baseToughness ?: unprojectedStat(state, entityId, card, isPower = false)
                 baseToughness == predicate.value
             }
 
             // Power/toughness predicates - use projected P/T
             is CardPredicate.PowerEquals -> {
-                val power = projectedValues?.power ?: card.baseStats?.basePower
+                val power = projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true)
                 power == predicate.value
             }
             is CardPredicate.PowerEqualsX -> {
@@ -989,16 +1002,16 @@ class PredicateEvaluator(
                 val xValue = context?.xValue
                 if (xValue == null) true
                 else {
-                    val power = projectedValues?.power ?: card.baseStats?.basePower
+                    val power = projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true)
                     power == xValue
                 }
             }
             is CardPredicate.PowerAtMost -> {
-                val power = projectedValues?.power ?: card.baseStats?.basePower ?: 0
+                val power = projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true) ?: 0
                 power <= predicate.max
             }
             is CardPredicate.PowerAtLeast -> {
-                val power = projectedValues?.power ?: card.baseStats?.basePower ?: 0
+                val power = projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true) ?: 0
                 power >= predicate.min
             }
             is CardPredicate.PowerAtLeastX -> {
@@ -1009,16 +1022,16 @@ class PredicateEvaluator(
                 val xValue = context?.xValue
                 if (xValue == null) false
                 else {
-                    val power = projectedValues?.power ?: card.baseStats?.basePower ?: 0
+                    val power = projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true) ?: 0
                     power >= xValue
                 }
             }
             is CardPredicate.ToughnessEquals -> {
-                val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness
+                val toughness = projectedValues?.toughness ?: unprojectedStat(state, entityId, card, isPower = false)
                 toughness == predicate.value
             }
             is CardPredicate.ToughnessAtMost -> {
-                val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
+                val toughness = projectedValues?.toughness ?: unprojectedStat(state, entityId, card, isPower = false) ?: 0
                 toughness <= predicate.max
             }
             is CardPredicate.ToughnessAtMostX -> {
@@ -1028,32 +1041,32 @@ class PredicateEvaluator(
                 val xValue = context?.xValue
                 if (xValue == null) false
                 else {
-                    val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
+                    val toughness = projectedValues?.toughness ?: unprojectedStat(state, entityId, card, isPower = false) ?: 0
                     toughness <= xValue
                 }
             }
             is CardPredicate.ToughnessAtLeast -> {
-                val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
+                val toughness = projectedValues?.toughness ?: unprojectedStat(state, entityId, card, isPower = false) ?: 0
                 toughness >= predicate.min
             }
             is CardPredicate.PowerOrToughnessAtLeast -> {
-                val power = projectedValues?.power ?: card.baseStats?.basePower ?: 0
-                val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
+                val power = projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true) ?: 0
+                val toughness = projectedValues?.toughness ?: unprojectedStat(state, entityId, card, isPower = false) ?: 0
                 power >= predicate.min || toughness >= predicate.min
             }
             is CardPredicate.PowerOrToughnessAtMost -> {
-                val power = projectedValues?.power ?: card.baseStats?.basePower ?: 0
-                val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
+                val power = projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true) ?: 0
+                val toughness = projectedValues?.toughness ?: unprojectedStat(state, entityId, card, isPower = false) ?: 0
                 power <= predicate.max || toughness <= predicate.max
             }
             is CardPredicate.TotalPowerAndToughnessAtMost -> {
-                val power = projectedValues?.power ?: card.baseStats?.basePower ?: 0
-                val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
+                val power = projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true) ?: 0
+                val toughness = projectedValues?.toughness ?: unprojectedStat(state, entityId, card, isPower = false) ?: 0
                 (power + toughness) <= predicate.max
             }
             CardPredicate.ToughnessGreaterThanPower -> {
-                val power = projectedValues?.power ?: card.baseStats?.basePower ?: 0
-                val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
+                val power = projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true) ?: 0
+                val toughness = projectedValues?.toughness ?: unprojectedStat(state, entityId, card, isPower = false) ?: 0
                 toughness > power
             }
 
@@ -1061,11 +1074,11 @@ class PredicateEvaluator(
                 val value = when (predicate.property) {
                     CardNumericProperty.POWER -> {
                         if (entityId in state.getBattlefield() && "CREATURE" !in types) return false
-                        projectedValues?.power ?: card.baseStats?.basePower ?: return false
+                        projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true) ?: return false
                     }
                     CardNumericProperty.TOUGHNESS -> {
                         if (entityId in state.getBattlefield() && "CREATURE" !in types) return false
-                        projectedValues?.toughness ?: card.baseStats?.baseToughness ?: return false
+                        projectedValues?.toughness ?: unprojectedStat(state, entityId, card, isPower = false) ?: return false
                     }
                     CardNumericProperty.MANA_VALUE ->
                         if (projectedValues?.isFaceDown == true) 0 else card.manaValue
@@ -1079,7 +1092,7 @@ class PredicateEvaluator(
 
             is CardPredicate.PowerGreaterThanEntity -> {
                 val refPower = referencePower(state, projected, predicate.reference, context) ?: return false
-                val candidatePower = projectedValues?.power ?: card.baseStats?.basePower ?: 0
+                val candidatePower = projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true) ?: 0
                 candidatePower > refPower
             }
 
@@ -1098,13 +1111,13 @@ class PredicateEvaluator(
 
             is CardPredicate.PowerAtMostEntity -> {
                 val refPower = referencePower(state, projected, predicate.reference, context) ?: return false
-                val candidatePower = projectedValues?.power ?: card.baseStats?.basePower ?: 0
+                val candidatePower = projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true) ?: 0
                 candidatePower <= refPower
             }
 
             is CardPredicate.PowerLessThanEntity -> {
                 val refPower = referencePower(state, projected, predicate.reference, context) ?: return false
-                val candidatePower = projectedValues?.power ?: card.baseStats?.basePower ?: 0
+                val candidatePower = projectedValues?.power ?: unprojectedStat(state, entityId, card, isPower = true) ?: 0
                 candidatePower < refPower
             }
 

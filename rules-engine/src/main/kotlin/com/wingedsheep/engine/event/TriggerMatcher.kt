@@ -1319,6 +1319,14 @@ class TriggerMatcher(
             val entity = projected.getBaseState().getEntity(entityId) ?: return false
             return entity.has<com.wingedsheep.engine.state.components.identity.TokenComponent>()
         }
+        // Off the battlefield (a spell on the stack, a card that just moved) a printed P/T is read
+        // directly and a `*` is its characteristic-defining ability evaluated in place (CR 604.3).
+        fun unprojectedStat(isPower: Boolean): Int? =
+            when (val value = if (isPower) cardComponent.baseStats?.power else cardComponent.baseStats?.toughness) {
+                null -> null
+                is com.wingedsheep.sdk.model.CharacteristicValue.Fixed -> value.value
+                else -> predicateEvaluator.amounts.offBattlefieldStat(projected.getBaseState(), entityId, isPower)
+            }
         return when (predicate) {
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> cardComponent.typeLine.isCreature
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsLand -> cardComponent.typeLine.isLand
@@ -1385,27 +1393,27 @@ class TriggerMatcher(
                 else cardComponent.manaCost.coloredSymbolCount(predicate.colors.toSet()) >= predicate.min
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerAtLeast -> {
                 val power = if (isFaceDown) 2
-                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
+                    else lastKnownPower ?: projected.getPower(entityId) ?: unprojectedStat(isPower = true) ?: 0
                 power >= predicate.min
             }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerAtMost -> {
                 val power = if (isFaceDown) 2
-                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
+                    else lastKnownPower ?: projected.getPower(entityId) ?: unprojectedStat(isPower = true) ?: 0
                 power <= predicate.max
             }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerEquals -> {
                 val power = if (isFaceDown) 2
-                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
+                    else lastKnownPower ?: projected.getPower(entityId) ?: unprojectedStat(isPower = true) ?: 0
                 power == predicate.value
             }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessAtLeast -> {
                 val toughness = if (isFaceDown) 2
-                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
+                    else lastKnownToughness ?: projected.getToughness(entityId) ?: unprojectedStat(isPower = false) ?: 0
                 toughness >= predicate.min
             }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessAtMost -> {
                 val toughness = if (isFaceDown) 2
-                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
+                    else lastKnownToughness ?: projected.getToughness(entityId) ?: unprojectedStat(isPower = false) ?: 0
                 toughness <= predicate.max
             }
             // Resolution-time only — TriggerMatcher has no X context, so the predicate never matches here.
@@ -1415,46 +1423,46 @@ class TriggerMatcher(
             com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerAtLeastX -> false
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessEquals -> {
                 val toughness = if (isFaceDown) 2
-                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
+                    else lastKnownToughness ?: projected.getToughness(entityId) ?: unprojectedStat(isPower = false) ?: 0
                 toughness == predicate.value
             }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerOrToughnessAtLeast -> {
                 val power = if (isFaceDown) 2
-                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
+                    else lastKnownPower ?: projected.getPower(entityId) ?: unprojectedStat(isPower = true) ?: 0
                 val toughness = if (isFaceDown) 2
-                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
+                    else lastKnownToughness ?: projected.getToughness(entityId) ?: unprojectedStat(isPower = false) ?: 0
                 power >= predicate.min || toughness >= predicate.min
             }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerOrToughnessAtMost -> {
                 val power = if (isFaceDown) 2
-                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
+                    else lastKnownPower ?: projected.getPower(entityId) ?: unprojectedStat(isPower = true) ?: 0
                 val toughness = if (isFaceDown) 2
-                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
+                    else lastKnownToughness ?: projected.getToughness(entityId) ?: unprojectedStat(isPower = false) ?: 0
                 power <= predicate.max || toughness <= predicate.max
             }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.TotalPowerAndToughnessAtMost -> {
                 val power = if (isFaceDown) 2
-                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
+                    else lastKnownPower ?: projected.getPower(entityId) ?: unprojectedStat(isPower = true) ?: 0
                 val toughness = if (isFaceDown) 2
-                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
+                    else lastKnownToughness ?: projected.getToughness(entityId) ?: unprojectedStat(isPower = false) ?: 0
                 (power + toughness) <= predicate.max
             }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessGreaterThanPower -> {
                 val power = if (isFaceDown) 2
-                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
+                    else lastKnownPower ?: projected.getPower(entityId) ?: unprojectedStat(isPower = true) ?: 0
                 val toughness = if (isFaceDown) 2
-                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
+                    else lastKnownToughness ?: projected.getToughness(entityId) ?: unprojectedStat(isPower = false) ?: 0
                 toughness > power
             }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.BasePowerEquals -> {
                 // Face-down: a 2/2 set by CR 708.2a, so its base power is 2.
                 val basePower = if (isFaceDown) 2
-                    else projected.getBasePower(entityId) ?: cardComponent.baseStats?.basePower
+                    else projected.getBasePower(entityId) ?: unprojectedStat(isPower = true)
                 basePower == predicate.value
             }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.BaseToughnessEquals -> {
                 val baseToughness = if (isFaceDown) 2
-                    else projected.getBaseToughness(entityId) ?: cardComponent.baseStats?.baseToughness
+                    else projected.getBaseToughness(entityId) ?: unprojectedStat(isPower = false)
                 baseToughness == predicate.value
             }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerGreaterThanBase -> {
