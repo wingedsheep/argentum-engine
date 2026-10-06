@@ -80,6 +80,9 @@ class GraveyardEnchantingAuraTest : ScenarioTestBase() {
             game.state.getEntity(aura)?.get<AttachedToComponent>()?.targetId shouldBe giant
             (giant in game.state.getGraveyard(game.player2Id)) shouldBe true
             game.state.getEntity(giant)?.get<AttachmentsComponent>()?.attachedIds shouldBe listOf(aura)
+            // "Enchanted creature gets -1/-0" affects only a permanent (CR 109.2): the card in the
+            // graveyard gets no projected characteristics.
+            game.state.projectedState.getPower(giant) shouldBe null
         }
 
         test("the return swaps the enchant ability: the Aura enchants only the creature it put onto the battlefield") {
