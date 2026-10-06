@@ -1337,6 +1337,71 @@
     ]
 }
 
+// Impending Doom
+{
+    "name": "Impending Doom",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +3/+3 and attacks each combat if able.\nWhen enchanted creature dies, this Aura deals 3 damage to that creature's controller.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Impending Doom:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": "ControllerOfTriggeringEntity"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "MustAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Feast, for your next meal may be your last!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/5681db91-5dab-41e6-96f2-275ec9495e5b.jpg?1783931550",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If the enchanted creature can't attack for any reason (such as being tapped or having come under that player's control that turn), then it doesn't attack. If there's a cost associated with having it attack, the player isn't forced to pay that cost, so it doesn't have to attack in that case either."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Inevitable End
 {
     "name": "Inevitable End",

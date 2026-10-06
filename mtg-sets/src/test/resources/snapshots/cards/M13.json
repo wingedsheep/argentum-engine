@@ -295,6 +295,37 @@
     ]
 }
 
+// Flames of the Firebrand
+{
+    "name": "Flames of the Firebrand",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Flames of the Firebrand deals 3 damage divided as you choose among one, two, or three targets.",
+    "script": {
+        "spellEffect": {
+            "type": "DividedDamage",
+            "totalDamage": 3
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "count": 3,
+                "minCount": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Argyle",
+        "flavorText": "\"You're in luck. I brought enough to share.\"\n—Chandra Nalaar",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/aca215b1-7b98-49ce-afae-eeb61058125a.jpg?1783940483"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Griffin Protector
 {
     "name": "Griffin Protector",

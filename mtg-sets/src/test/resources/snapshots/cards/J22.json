@@ -1601,6 +1601,95 @@
     ]
 }
 
+// Goblin Researcher
+{
+    "name": "Goblin Researcher",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Goblin Wizard",
+    "oracleText": "When this creature enters, exile the top card of your library. During any turn you attacked with this creature, you may play that card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goblin Researcher:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0",
+                            "expiry": "Permanent",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "AttackedThisTurn"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, exile the top card of your library. During any turn you attacked with this creature, you may play that card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Izzy",
+        "flavorText": "Slonk was struck by lightning twenty-seven times before he got the idea. Another forty-three hits and he'd perfected it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/529e62a1-a32f-477a-ae5c-955f3df2a628.jpg?1783919182",
+        "rulings": [
+            {
+                "date": "2022-12-02",
+                "text": "The card Goblin Researcher exiles is exiled face up."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "You can play the exiled card if Goblin Researcher attacked and is still in combat, has left combat, has left the battlefield, or even if combat is over."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "If you control more than one card named Goblin Researcher, each one's effect is independent from the other. Specifically, attacking with one will not allow you to play the card exiled by the other."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "Goblin Researcher's effect doesn't change when you can play the exiled card. For example, if you exile a sorcery card, you can cast it only during your main phase when the stack is empty."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Hold for Questioning
 {
     "name": "Hold for Questioning",

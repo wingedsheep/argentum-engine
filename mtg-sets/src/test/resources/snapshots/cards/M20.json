@@ -1003,6 +1003,100 @@
     ]
 }
 
+// Glint-Horn Buccaneer
+{
+    "name": "Glint-Horn Buccaneer",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Minotaur Pirate",
+    "oracleText": "Haste\nWhenever you discard a card, this creature deals 1 damage to each opponent.\n{1}{R}, Discard a card: Draw a card. Activate only if this creature is attacking.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Glint-Horn Buccaneer:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "Whenever you discard a card, this creature deals 1 damage to each opponent."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Glint-Horn Buccaneer:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "attacking"
+                        }
+                    }
+                ],
+                "descriptionOverride": "{1}{R}, Discard a card: Draw a card. Activate only if this creature is attacking."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df2df9cb-14f5-470f-b438-20f4ae8d0d59.jpg?1783932979",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "The middle ability of Glint-Horn Buccaneer is a triggered ability, not an activated ability. It doesn't allow you to discard a card whenever you want; rather, you need some other way of discarding a card, such as by activating its last ability."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "In a Two-Headed Giant game, Glint-Horn Buccaneer's triggered ability causes the opposing team to be dealt 1 damage twice."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Gnarlback Rhino
 {
     "name": "Gnarlback Rhino",

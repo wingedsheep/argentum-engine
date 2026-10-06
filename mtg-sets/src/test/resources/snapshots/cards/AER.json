@@ -296,6 +296,145 @@
     ]
 }
 
+// Hungry Flames
+{
+    "name": "Hungry Flames",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Hungry Flames deals 3 damage to target creature and 2 damage to target player or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetPlayerOrPlaneswalker",
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "In the hold of the *Heart of Kiran*, Chandra answered Dovin Baan's sabotage with an explosive retort.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4ca23676-f36f-4266-ba4f-5e9ebf3adb57.jpg?1783936754",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "You can't cast Hungry Flames unless you target both a creature and a player. If one target is illegal as Hungry Flames resolves, the spell deals damage to the remaining legal target."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Kari Zev, Skyship Raider
+{
+    "name": "Kari Zev, Skyship Raider",
+    "manaCost": "{1}{R}",
+    "typeLine": "Legendary Creature — Human Pirate",
+    "oracleText": "First strike, menace\nWhenever Kari Zev attacks, create Ragavan, a legendary 2/1 red Monkey creature token. Ragavan enters tapped and attacking. Exile that token at end of combat.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kari Zev, Skyship Raider:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 1,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Monkey"
+                            ],
+                            "name": "Ragavan",
+                            "imageUri": "https://cards.scryfall.io/normal/front/1/e/1ebc91a9-23e0-4ca1-bc6d-e710ad2efb31.jpg?1783936712",
+                            "tapped": true,
+                            "attacking": true,
+                            "legendary": true
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END_COMBAT",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "createdTokens"
+                                },
+                                "destination": "Exile"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "RARE",
+        "artist": "Brad Rigney",
+        "flavorText": "Aboard her ship, the *Dragon's Smile*, Kari follows no one's rules but her own.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72495879-39ce-449d-ad2f-ef32ea46f3aa.jpg?1783936752",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "The delayed triggered ability that exiles Ragavan triggers at end of combat even if Kari Zev is no longer on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lathnu Sailback
 {
     "name": "Lathnu Sailback",
