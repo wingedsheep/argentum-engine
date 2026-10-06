@@ -187,7 +187,17 @@ internal class AffectsFilterResolver(
             is AffectsFilter.AttachedPermanent -> {
                 val attachedTo = state.getEntity(sourceId)
                     ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
-                if (attachedTo != null) setOf(attachedTo.targetId) else emptySet()
+                    ?.targetId
+                // An Aura can enchant a card off the battlefield ("Enchant creature card in a
+                // graveyard", Animate Dead). Its "enchanted creature gets …" applies only to a
+                // permanent (CR 109.2), so a host that is a card in another zone is no affected
+                // object — projecting onto it would give the card a characteristics entry that
+                // shadows its printed ones.
+                when {
+                    attachedTo == null -> emptySet()
+                    attachedTo !in state.getBattlefield() && state.getEntity(attachedTo)?.has<CardComponent>() == true -> emptySet()
+                    else -> setOf(attachedTo)
+                }
             }
             // CR 702.95b: "both creatures" of a soulbond pair. Empty while unpaired, so a payoff
             // static's "as long as this creature is paired" clause needs no separate gate.

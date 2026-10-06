@@ -570,6 +570,7 @@ val engineSerializersModule = SerializersModule {
         subclass(AttachmentsComponent::class)
         subclass(PairedComponent::class)
         subclass(AttachmentHostLeftComponent::class)
+        subclass(com.wingedsheep.engine.state.components.battlefield.GainedEnchantRestrictionComponent::class)
         subclass(LastKnownPermanentComponent::class)
         subclass(EnteredThisTurnComponent::class)
         subclass(WasDealtDamageThisTurnComponent::class)

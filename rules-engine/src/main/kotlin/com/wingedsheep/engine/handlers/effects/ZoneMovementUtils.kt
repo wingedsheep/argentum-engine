@@ -556,6 +556,9 @@ object ZoneMovementUtils {
             // A blink returns a new object (CR 400.7); it must not carry a stale "host left" marker
             // from a prior attachment, and an Equipment that itself re-enters starts unmarked.
             .without<AttachmentHostLeftComponent>()
+            // An enchant ability the Aura gained on the battlefield (Animate Dead) belongs to that
+            // object; the card that leaves has its printed enchant ability again (CR 400.7).
+            .without<com.wingedsheep.engine.state.components.battlefield.GainedEnchantRestrictionComponent>()
             .without<EnteredThisTurnComponent>()
             .without<ExileOnLeaveBattlefieldComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.EnteredViaAbilityComponent>()

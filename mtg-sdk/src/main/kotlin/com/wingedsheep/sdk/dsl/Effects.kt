@@ -6227,6 +6227,17 @@ object Effects {
     ): Effect = com.wingedsheep.sdk.scripting.effects.AttachToChosenHostEffect(attachment, hostFilter)
 
     /**
+     * "It loses its enchant ability and gains 'enchant [filter] put onto the battlefield with this
+     * Aura' … attach this Aura to it" — the reanimation-Aura sentence (Animate Dead). Replaces the
+     * source Aura's enchant restriction with "the objects in [from] that match [filter]" and attaches
+     * it to the first one it legally can. See [com.wingedsheep.sdk.scripting.effects.EnchantPutOntoBattlefieldEffect].
+     */
+    fun EnchantPutOntoBattlefield(
+        from: CollectionSlot,
+        filter: GameObjectFilter = GameObjectFilter.Creature
+    ): Effect = com.wingedsheep.sdk.scripting.effects.EnchantPutOntoBattlefieldEffect(from.key, filter)
+
+    /**
      * Unattach an Aura/Equipment from its host without moving zones (CR 701.3d). No-op if [target]
      * isn't currently attached. Inverse of [AttachEquipment] — e.g. Stolen Uniform's "unattach it".
      */

@@ -79,12 +79,15 @@ internal class PermanentEntry(
 
         // For Auras: get the target before removing TargetsComponent. The target is usually a
         // permanent, but "enchant player" Auras (Grievous Wound) attach to a player — both are
-        // entities, so AttachedToComponent holds either id (CR 303.4).
+        // entities, so AttachedToComponent holds either id (CR 303.4) — and an Aura whose enchant
+        // ability names a card in a graveyard (Animate Dead) enters attached to that card
+        // (CR 303.4a/608.3c); the enchant state-based action keeps it there while the card matches.
         val auraTargetId = if (cardComponent?.isAura == true) {
             state.getEntity(spellId)?.get<TargetsComponent>()?.targets?.firstOrNull()?.let { target ->
                 when (target) {
                     is ChosenTarget.Permanent -> target.entityId
                     is ChosenTarget.Player -> target.playerId
+                    is ChosenTarget.Card -> target.cardId
                     else -> null
                 }
             }

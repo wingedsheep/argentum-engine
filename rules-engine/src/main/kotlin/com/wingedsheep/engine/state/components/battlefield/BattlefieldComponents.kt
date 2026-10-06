@@ -521,6 +521,22 @@ data class AttachedToComponent(
 ) : Component
 
 /**
+ * The enchant ability an Aura *gained* in place of its printed one — "it loses 'enchant creature
+ * card in a graveyard' and gains 'enchant creature put onto the battlefield with this Aura'"
+ * (Animate Dead), set by `EnchantPutOntoBattlefieldEffect`. While present it is the Aura's whole
+ * enchant restriction (CR 303.4c): the Aura may enchant only one of [hosts] — each pinned to the
+ * object it was when it was put onto the battlefield, so one that leaves and returns is a new object
+ * it can't enchant (CR 400.7) — and only while that object matches [filter]. The printed
+ * `auraTarget` is no longer consulted. A battlefield-scoped characteristic of this object, so it is
+ * stripped when the Aura leaves the battlefield.
+ */
+@Serializable
+data class GainedEnchantRestrictionComponent(
+    val filter: com.wingedsheep.sdk.scripting.GameObjectFilter,
+    val hosts: Set<com.wingedsheep.engine.state.ObjectRef>
+) : Component
+
+/**
  * Tracks what is attached to this permanent.
  */
 @Serializable

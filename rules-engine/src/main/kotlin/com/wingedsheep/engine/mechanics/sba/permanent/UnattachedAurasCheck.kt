@@ -185,8 +185,13 @@ class UnattachedAurasCheck(
                 }
                 continue
             } else {
-                // Check if attached target still exists on battlefield
+                // Check if attached target still exists on battlefield — unless this Aura's enchant
+                // ability names a card in the zone its host is in ("Enchant creature card in a
+                // graveyard", Animate Dead between entering and its return trigger resolving).
                 if (attachedTo.targetId !in state.getBattlefield()) {
+                    if (isAura && enchantsCardOffBattlefield(state, projected, entityId, cardComponent, attachedTo.targetId)) {
+                        continue
+                    }
                     if (isAura) {
                         // Aura's target gone - goes to graveyard
                         val result = SbaZoneMovementHelper.putPermanentInGraveyard(
@@ -285,14 +290,50 @@ class UnattachedAurasCheck(
     ): Boolean {
         if (!com.wingedsheep.engine.handlers.predicates.EnchantRestriction.sourceRestrictionsAllowAura(
                 state, projected, predicateEvaluator, auraId, hostId)) return true
-        val requirement = cardRegistry.getCard(auraCard.cardDefinitionId)?.script?.auraTarget ?: return false
         // "you" in "Enchant creature you control" is the Aura's controller, read from the
         // projection so a control-changing effect on the Aura itself is honored.
         val controllerId = projected.getController(auraId) ?: return false
+        // An enchant ability the Aura gained in place of its printed one (Animate Dead's "enchant
+        // creature put onto the battlefield with this Aura") is its whole restriction now.
+        com.wingedsheep.engine.handlers.predicates.EnchantRestriction.gainedRestrictionAdmits(
+            state, projected, predicateEvaluator, auraId, hostId, controllerId
+        )?.let { return !it }
+        val requirement = cardRegistry.getCard(auraCard.cardDefinitionId)?.script?.auraTarget ?: return false
+        // An enchant ability that names only cards in another zone ("Enchant creature card in a
+        // graveyard") can't be enchanting a permanent — Animate Dead whose card another effect
+        // returned to the battlefield first is illegally attached.
+        val clauses = com.wingedsheep.engine.handlers.predicates.EnchantRestriction.filterOf(requirement)?.clauses()
+        if (clauses != null && clauses.none { it.zone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD }) return true
         val satisfied = com.wingedsheep.engine.handlers.predicates.EnchantRestriction.hostSatisfies(
             state, projected, predicateEvaluator, requirement, hostId, controllerId, auraId
         ) ?: return false
         return !satisfied
+    }
+
+    /**
+     * True when the Aura [auraId] is legally enchanting a card that is not on the battlefield: its
+     * printed enchant ability names a card in the zone [hostId] is in and the card matches it
+     * (CR 303.4a/c — "Enchant creature card in a graveyard"). An enchant ability the Aura gained in
+     * place of its printed one only ever admits permanents, so it never qualifies. Protection and
+     * other host-side abilities don't function off the battlefield, so only the filter is read.
+     */
+    private fun enchantsCardOffBattlefield(
+        state: GameState,
+        projected: ProjectedState,
+        auraId: EntityId,
+        auraCard: CardComponent,
+        hostId: EntityId
+    ): Boolean {
+        if (state.getEntity(auraId)?.has<com.wingedsheep.engine.state.components.battlefield.GainedEnchantRestrictionComponent>() == true) {
+            return false
+        }
+        val zone = com.wingedsheep.engine.handlers.predicates.EnchantRestriction.zoneOf(state, hostId) ?: return false
+        if (zone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD) return false
+        val requirement = cardRegistry.getCard(auraCard.cardDefinitionId)?.script?.auraTarget ?: return false
+        val controllerId = projected.getController(auraId) ?: return false
+        return com.wingedsheep.engine.handlers.predicates.EnchantRestriction.hostSatisfies(
+            state, projected, predicateEvaluator, requirement, hostId, controllerId, auraId, hostZone = zone
+        ) == true
     }
 
     /** CR 702.16c/d — see [com.wingedsheep.engine.handlers.predicates.EnchantRestriction.hostProtectedFromAttachment]. */

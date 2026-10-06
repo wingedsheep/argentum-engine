@@ -517,6 +517,41 @@ data class AttachToChosenHostEffect(
 }
 
 /**
+ * "This Aura loses its enchant ability and gains 'enchant [filter] put onto the battlefield with
+ * this Aura.' … attach this Aura to it." — the reanimation-Aura idiom (Animate Dead, Dance of the
+ * Dead, Necromancy) whose printed enchant ability ("Enchant creature card in a graveyard") stops
+ * being satisfiable the moment the card it enchants is put onto the battlefield.
+ *
+ * The source Aura's enchant restriction is **replaced** for as long as it stays on the battlefield:
+ * from now on it may only enchant the objects in the pipeline collection [from] (the objects this
+ * Aura's ability put onto the battlefield) that still match [filter], each identified as the object
+ * it is *now* — one that later leaves and returns is a new object it can't enchant (CR 400.7). The
+ * Aura is then attached to the first such object it can legally enchant (CR 701.3a; protection from
+ * the Aura's color stops it). Nothing to attach to leaves the Aura where it is — still enchanting
+ * the card it enchanted, which its new enchant ability no longer allows, so the CR 704.5m
+ * state-based action puts it into its owner's graveyard. The replacement is set either way, which is
+ * exactly the Animate Dead ruling: an Aura that can't be attached to the returned creature goes to
+ * the graveyard.
+ *
+ * Compose after the move that returns the card: `gather(FromZone(GRAVEYARD, Each,
+ * Creature.attachedToBySource()))` → `move(…, ToZone(BATTLEFIELD, You))` → this effect.
+ *
+ * @property from The pipeline collection holding the objects put onto the battlefield with this Aura.
+ * @property filter What the Aura's new enchant ability requires of them ("enchant **creature** put
+ *   onto the battlefield with this Aura").
+ */
+@SerialName("EnchantPutOntoBattlefield")
+@Serializable
+data class EnchantPutOntoBattlefieldEffect(
+    val from: String,
+    val filter: GameObjectFilter = GameObjectFilter.Creature
+) : Effect {
+    override val description: String =
+        "this Aura loses its enchant ability and gains \"enchant ${filter.description.lowercase()} put onto the " +
+            "battlefield with this Aura,\" then attach it to that ${filter.description.lowercase()}"
+}
+
+/**
  * Unattach an Aura/Equipment from its host without moving it to another zone (CR 701.3d). Removes
  * the [target] attachment's `AttachedToComponent` and drops it from the host's attachment list; a
  * no-op if [target] isn't currently attached to anything. The inverse of [AttachEquipmentEffect] /

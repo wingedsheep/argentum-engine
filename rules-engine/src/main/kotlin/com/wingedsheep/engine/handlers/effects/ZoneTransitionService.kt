@@ -633,6 +633,28 @@ class ZoneTransitionService(
         newState = newState.removeFromZone(removeZoneKey, entityId)
         if (fromZone == Zone.STACK) newState = newState.removeFromStack(entityId)
 
+        // A card off the battlefield can be enchanted ("Enchant creature card in a graveyard",
+        // Animate Dead). When it leaves that zone the Aura becomes unattached on the spot
+        // (CR 701.3d: "the object leaves the zone it was in") — the card is a new object
+        // (CR 400.7), even when it comes back under the same entity id — and the CR 704.5m
+        // state-based action then puts the unattached Aura into its owner's graveyard unless an
+        // effect attaches it again first. (A battlefield host's attachments are instead marked
+        // and judged by that state-based action, after leaves-trigger detection.)
+        val enchantingIds = if (leavingBattlefield) emptyList() else newState.getEntity(entityId)
+            ?.get<com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent>()?.attachedIds.orEmpty()
+        if (enchantingIds.isNotEmpty()) {
+            for (attachmentId in enchantingIds) {
+                if (newState.getEntity(attachmentId)
+                        ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()?.targetId != entityId) continue
+                val (detached, unattachEvents) = ZoneMovementUtils.unattachEmittingEvent(newState, attachmentId)
+                newState = detached
+                events.addAll(unattachEvents)
+            }
+            newState = newState.updateEntity(entityId) {
+                it.without<com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent>()
+            }
+        }
+
         // Drop any remaining linked-exile reference held by a granter still on the
         // battlefield (e.g. Maralen, Fae Ascendant). The card has just left exile by
         // some non-cast path — return, blink, exile-elsewhere — so the granter must

@@ -114,6 +114,14 @@ section; do not let SDK additions land without a corresponding doc update.
   every type the Aura's *own* effects can turn its host into, exactly as the printed card does — Imprisoned
   in the Moon makes its host a land and so enchants "creature, land, or planeswalker"; an Aura that turns a
   creature into a land while enchanting only `TargetObject(filter = TargetFilter.Creature)` would destroy itself on resolution.
+  **An enchant restriction may name a card in another zone** — "Enchant creature card in a graveyard"
+  is `auraTarget = TargetObject(filter = TargetFilter.CreatureInGraveyard)` (Animate Dead). The Aura spell
+  targets the card, resolves onto the battlefield attached to it (CR 608.3c), and the enchant
+  state-based action keeps it there for as long as the card is still in that zone and matches; the
+  card leaving its zone unattaches the Aura on the spot (CR 701.3d) and the SBA graveyards it. The same
+  requirement does **not** admit the card once it is on the battlefield, so such an Aura swaps its
+  enchant ability before attaching to what it returns — see `Effects.EnchantPutOntoBattlefield`. An
+  "enchanted creature gets …" static doesn't touch a host that is a card off the battlefield (CR 109.2).
 - `auraCastTarget: TargetRequirement?` — a narrower requirement the Aura *spell's* target must meet
   only while it is cast (Dream Leash: "You can't choose an untapped permanent as this spell's target as
   you cast it" → `TargetObject(filter = TargetFilter.Permanent.tapped())`). Legal-action enumeration
@@ -1227,6 +1235,7 @@ serialized shape; the facade for each is:
 | `DrawUpToEffect` | `Effects.DrawUpTo` |
 | `EachPermanentBecomesCopyOfTargetEffect` | `Effects.EachPermanentBecomesCopyOfTarget` |
 | `EachPlayerDiscardsOrLoseLifeEffect` | `Effects.EachPlayerDiscardsOrLosesLife` |
+| `EnchantPutOntoBattlefieldEffect` | `Effects.EnchantPutOntoBattlefield(from, filter)` |
 | `FlipCoinEffect` | `Effects.FlipCoin` |
 | `FlipTwoCoinsEffect` | `Effects.FlipTwoCoins` |
 | `ForEachEffect` | `Effects.ForEachTarget(body)` / `Effects.ForEachPlayer(players, body)` |
@@ -3276,6 +3285,25 @@ vocabulary; this primitive does not provide Word of Command's full mana restrict
   another permanent it can enchant", `hostFilter = GameObjectFilter.Permanent`).
   All three attach effects share `AttachmentMover` in the engine: a move emits
   `PermanentUnattachedEvent` (old host) then `PermanentAttachedEvent` (new host).
+- `EnchantPutOntoBattlefieldEffect(from, filter = Creature)` — facade
+  `Effects.EnchantPutOntoBattlefield(from, filter)`. The reanimation-Aura sentence: "it loses 'enchant
+  creature card in a graveyard' and gains 'enchant creature put onto the battlefield with this Aura.' …
+  attach this Aura to it". Replaces the **source Aura's** enchant restriction (for as long as it stays on
+  the battlefield) with "an object in the pipeline collection `from` that matches `filter`" — each pinned
+  to the object it is now, so one that leaves and returns is a new object it can't enchant (CR 400.7) —
+  then attaches the Aura to the first such object it can legally enchant (CR 701.3a: protection from its
+  colors stops it). The swap happens even when nothing can be attached, so an Aura left on the card it
+  enchanted (the return was prevented, or the creature has protection) is illegally attached and the
+  CR 704.5m SBA puts it into the graveyard. The gained restriction is what `AttachmentMover.canAttach` and
+  the enchant SBA read from then on — the Aura can't be moved to another creature. A no-op once the source
+  has left the battlefield. **Animate Dead** (Dance of the Dead adds `ZonePlacement.Tapped`):
+  `auraTarget = TargetObject(filter = TargetFilter.CreatureInGraveyard)`, then
+  `triggeredAbility { trigger = Triggers.self.enters(); interveningIf = Conditions.SourceInZone(BATTLEFIELD);
+  effect = Pipeline { val returned = gather(FromZone(GRAVEYARD, Player.Each, Creature.attachedToBySource()));
+  move(returned, ToZone(BATTLEFIELD, Player.You)); run(Effects.EnchantPutOntoBattlefield(returned));
+  run(CreateDelayedTrigger(trigger = Triggers.self.leaves(), watchedTarget = Self, fireOnce = true,
+  expiry = Never, carryCollections = [returned.key], effect = SacrificeTarget(returned.asTarget,
+  sacrificedByItsController = true))) } }` + `staticAbility { ModifyStats(-1, 0) }`.
 - `UnattachEquipmentEffect(target = Self)` — facade `Effects.UnattachEquipment(target)`. The inverse of
   the attach effects: **unattach** an Aura/Equipment from its host *without moving zones* (CR 701.3d) —
   clears the attachment's `AttachedToComponent` and drops it from the host's attachment list, emitting
