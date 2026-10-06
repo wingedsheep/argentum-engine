@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.fdn.cards
+package com.wingedsheep.mtg.sets.definitions.ths.cards
 
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.dsl.Conditions
@@ -70,8 +70,8 @@ val OrdealOfNylea = card("Ordeal of Nylea") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "641"
+        collectorNumber = "170"
         artist = "David Palumbo"
-        imageUri = "https://cards.scryfall.io/normal/front/1/a/1a70424d-86a7-44a3-acda-4463d7ac503b.jpg?1730491029"
+        imageUri = "https://cards.scryfall.io/normal/front/e/5/e5c48950-c246-47ad-94e1-bf42a62c2fe7.jpg?1783939741"
     }
 }
