@@ -352,7 +352,13 @@ data class AdditionalCostInfo(
      */
     val tapForPowerCreatures: List<TapForPowerCreatureInfo> = emptyList(),
     /** Total projected power the [tapForPowerCreatures] selection must reach. 0 = no such cost. */
-    val tapForPowerRequired: Int = 0
+    val tapForPowerRequired: Int = 0,
+    /**
+     * Further selection costs the same cast demands ("discard a card and sacrifice a creature"),
+     * prompted in order after this one. Each is a plain single-cost entry. See
+     * [com.wingedsheep.engine.legalactions.AdditionalCostData.alsoRequired].
+     */
+    val alsoRequired: List<AdditionalCostInfo> = emptyList()
 )
 
 @Serializable

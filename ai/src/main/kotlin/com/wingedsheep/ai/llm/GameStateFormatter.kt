@@ -497,7 +497,8 @@ class GameStateFormatter(
             // Additional costs: show sacrifice/discard/etc. requirements
             val costInfo = action.additionalCostInfo
             if (costInfo != null) {
-                sb.append(" [additional cost: ${costInfo.description}]")
+                val all = listOf(costInfo) + costInfo.alsoRequired
+                sb.append(" [additional cost: ${all.joinToString(" and ") { it.description }}]")
             }
 
             // Convoke: show that creatures can help pay

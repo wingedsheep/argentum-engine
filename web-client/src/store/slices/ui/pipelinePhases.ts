@@ -5,7 +5,14 @@
  * - mergeResult: applies a phase result to the accumulated action
  * - enterPhase: calls the appropriate start* method for a phase
  */
-import type { ChosenTarget, EntityId, LegalActionInfo, GameAction, ClientGameState } from '@/types'
+import type {
+  ChosenTarget,
+  EntityId,
+  LegalActionInfo,
+  GameAction,
+  ClientGameState,
+} from '@/types'
+import type { AdditionalCostInfo } from '@/types/messages'
 import { TAP_FOR_GENERIC_LABEL_IMPROVISE, TAP_FOR_GENERIC_LABEL_WATERBEND } from '@/types'
 import { materializeX, parseManaCost } from '@/utils/manaCost'
 import type {
@@ -44,6 +51,20 @@ function targetEntityId(target: ChosenTarget): EntityId {
     case 'Card':
       return target.cardId
   }
+}
+
+/**
+ * The additional cost a `costPayment` phase pays: the action's own `additionalCostInfo`, or — for a
+ * spell with several selection costs ("discard a card and sacrifice a creature") — the
+ * `costIndex`-th entry of its `alsoRequired` chain.
+ */
+export function costInfoForPhase(
+  actionInfo: LegalActionInfo,
+  phase: PipelinePhase | undefined,
+): AdditionalCostInfo | undefined {
+  const costInfo = actionInfo.additionalCostInfo
+  const index = phase?.type === 'costPayment' ? (phase.costIndex ?? 0) : 0
+  return index === 0 ? costInfo : costInfo?.alsoRequired?.[index - 1]
 }
 
 // ---------------------------------------------------------------------------
@@ -285,6 +306,10 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
       if (!isAutoSelectable) {
         phases.push({ type: 'costPayment' })
       }
+      // Every further selection cost the cast demands gets its own picker, in order (CR 601.2h).
+      actionInfo.additionalCostInfo.alsoRequired?.forEach((_, i) => {
+        phases.push({ type: 'costPayment', costIndex: i + 1 })
+      })
     } else if (costType === 'BlightVariable') {
       phases.push({ type: 'blightVariable' })
     } else if (costType === 'PayXLife') {
@@ -886,7 +911,7 @@ export function enterPhase(
     }
 
     case 'costPayment': {
-      const costInfo = actionInfo.additionalCostInfo!
+      const costInfo = costInfoForPhase(actionInfo, phase)!
       const costType = costInfo.costType!
 
       let validTargets: EntityId[]

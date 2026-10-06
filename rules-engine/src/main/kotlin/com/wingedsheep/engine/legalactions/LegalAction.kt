@@ -550,7 +550,15 @@ data class AdditionalCostData(
      */
     val tapForPowerCreatures: List<TapForPowerCreatureData> = emptyList(),
     /** Total projected power the [tapForPowerCreatures] selection must reach. 0 = no such cost. */
-    val tapForPowerRequired: Int = 0
+    val tapForPowerRequired: Int = 0,
+    /**
+     * The further selection costs the same cast demands — "discard a card **and** sacrifice a
+     * creature" (Ruthless Disposal). CR 601.2h has the caster pay every additional cost, so a spell
+     * with several pickers advertises the first here and the rest in this list, each a plain
+     * one-cost entry (never itself chained). The client prompts them in order and merges each
+     * pick into its own `additionalCostPayment` field. Empty for every single-cost spell.
+     */
+    val alsoRequired: List<AdditionalCostData> = emptyList()
 )
 
 /**

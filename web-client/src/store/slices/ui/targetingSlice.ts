@@ -10,6 +10,7 @@ import type {
   EntityId,
   TargetingState,
 } from '../types'
+import { costInfoForPhase } from './pipelinePhases'
 
 export interface TargetingSliceState {
   targetingState: TargetingState | null
@@ -113,7 +114,7 @@ export const createTargetingSlice: SliceCreator<TargetingSlice> = (set, get) => 
       const costInfo =
         currentPhase.type === 'escalateCost'
           ? pipelineState.actionInfo.modalEnumeration?.additionalCostPerExtraMode
-          : pipelineState.actionInfo.additionalCostInfo
+          : costInfoForPhase(pipelineState.actionInfo, currentPhase)
       const costType = costInfo?.costType ?? 'SacrificePermanent'
       set({ targetingState: null })
       get().advancePipeline({

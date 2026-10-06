@@ -3867,6 +3867,68 @@
     ]
 }
 
+// Ruthless Disposal
+{
+    "name": "Ruthless Disposal",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, discard a card and sacrifice a creature.\nTwo target creatures each get -13/-13 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -13
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -13
+                },
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": "AtomDiscard"
+            },
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "UNCOMMON",
+        "artist": "Dave Kendall",
+        "flavorText": "\"Do try to pull your weight, Geralf. I feel like I'm doing everything.\"\n—Ghoulcaller Gisa",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe81c78f-e3e2-4513-9711-896e6a1e6aba.jpg?1783937476"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Savage Alliance
 {
     "name": "Savage Alliance",

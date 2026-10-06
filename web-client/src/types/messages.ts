@@ -1254,6 +1254,11 @@ export interface AdditionalCostInfo {
   readonly tapForPowerCreatures?: readonly TapForPowerCreatureInfo[]
   /** Total power the `tapForPowerCreatures` selection must reach. */
   readonly tapForPowerRequired?: number
+  /**
+   * Further selection costs the same cast demands — "discard a card and sacrifice a creature"
+   * (Ruthless Disposal). Each is a plain single-cost entry, prompted in order after this one.
+   */
+  readonly alsoRequired?: readonly AdditionalCostInfo[]
 }
 
 export interface CounterRemovalCreatureInfo {

@@ -821,20 +821,7 @@ class Strategist(
             is ActivateAbility -> gameAction.costPayment
             else -> null
         } ?: AdditionalCostPayment()
-        val payment = when (info.costType) {
-            "Blight" -> existing.copy(blightTargets = info.validBlightTargets.take(1))
-            "Behold" -> existing.copy(beheldCards = info.validBeholdTargets.take(info.beholdCount))
-            "TapPermanents" -> existing.copy(tappedPermanents = info.validTapTargets.take(info.tapCount))
-            "DiscardCard" -> existing.copy(discardedCards = info.validDiscardTargets.take(info.discardCount))
-            "SacrificePermanent" -> existing.copy(
-                sacrificedPermanents = info.validSacrificeTargets.take(info.sacrificeCount)
-            )
-            "BouncePermanent" -> existing.copy(bouncedPermanents = info.validBounceTargets.take(info.bounceCount))
-            "ExileFromGraveyard" -> existing.copy(exiledCards = info.validExileTargets.take(info.exileMinCount))
-            // "Sacrifice any number of …": only the floor, so a zero-floor cost sacrifices nothing.
-            "SacrificeVariable" -> existing.copy(
-                variableCostPermanents = info.validSacrificeTargets.take(info.sacrificeCount)
-            )
+        val primary = deterministicPayment(info, existing) ?: when (info.costType) {
             // Teamwork N (CR 702.194a): tap as *few* creatures as will clear the total-power
             // threshold, and among equally-few selections the *smallest* bodies — a board with a
             // 5/5 and a 1/1 paying teamwork 1 should turn the 1/1 sideways and keep the better
@@ -869,11 +856,37 @@ class Strategist(
             }
             else -> return gameAction
         }
+        // "Discard a card and sacrifice a creature": every further selection cost is paid too.
+        val payment = info.alsoRequired.fold(primary) { acc, extra -> deterministicPayment(extra, acc) ?: acc }
         return when (gameAction) {
             is CastSpell -> gameAction.copy(additionalCostPayment = payment)
             is ActivateAbility -> gameAction.copy(costPayment = payment)
             else -> gameAction
         }
+    }
+
+    /**
+     * The first-candidates payment for a plain selection cost, merged into [existing]; null for a
+     * cost kind that needs more than "take the first N".
+     */
+    private fun deterministicPayment(
+        info: com.wingedsheep.engine.legalactions.AdditionalCostData,
+        existing: AdditionalCostPayment,
+    ): AdditionalCostPayment? = when (info.costType) {
+        "Blight" -> existing.copy(blightTargets = info.validBlightTargets.take(1))
+        "Behold" -> existing.copy(beheldCards = info.validBeholdTargets.take(info.beholdCount))
+        "TapPermanents" -> existing.copy(tappedPermanents = info.validTapTargets.take(info.tapCount))
+        "DiscardCard" -> existing.copy(discardedCards = info.validDiscardTargets.take(info.discardCount))
+        "SacrificePermanent" -> existing.copy(
+            sacrificedPermanents = info.validSacrificeTargets.take(info.sacrificeCount)
+        )
+        "BouncePermanent" -> existing.copy(bouncedPermanents = info.validBounceTargets.take(info.bounceCount))
+        "ExileFromGraveyard" -> existing.copy(exiledCards = info.validExileTargets.take(info.exileMinCount))
+        // "Sacrifice any number of …": only the floor, so a zero-floor cost sacrifices nothing.
+        "SacrificeVariable" -> existing.copy(
+            variableCostPermanents = info.validSacrificeTargets.take(info.sacrificeCount)
+        )
+        else -> null
     }
 
     /** The entity a chosen target points at, whichever arm of the union it is. */

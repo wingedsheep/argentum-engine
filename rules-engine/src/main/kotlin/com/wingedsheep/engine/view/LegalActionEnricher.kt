@@ -264,7 +264,7 @@ class LegalActionEnricher(
         mustDifferFromEarlier = mustDifferFromEarlier
     )
 
-    private fun AdditionalCostData.toDto() = AdditionalCostInfo(
+    private fun AdditionalCostData.toDto(): AdditionalCostInfo = AdditionalCostInfo(
         description = description,
         costType = costType,
         validSacrificeTargets = validSacrificeTargets,
@@ -299,7 +299,8 @@ class LegalActionEnricher(
         craftMinCount = craftMinCount,
         craftMaxCount = craftMaxCount,
         tapForPowerCreatures = tapForPowerCreatures.map { it.toDto() },
-        tapForPowerRequired = tapForPowerRequired
+        tapForPowerRequired = tapForPowerRequired,
+        alsoRequired = alsoRequired.map { it.toDto() }
     )
 
     private fun ConvokeCreatureData.toDto() = ConvokeCreatureInfo(
