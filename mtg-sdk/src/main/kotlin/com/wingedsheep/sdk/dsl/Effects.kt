@@ -1555,8 +1555,11 @@ object Effects {
     /**
      * Grant "play without paying mana cost" permission to all cards in a named collection.
      * Card must still be in a playable zone (hand, or exile with GrantMayPlayFromExile).
+     * Lasts this turn unless [expiry] says otherwise — match the paired grant's expiry for
+     * "until the end of your next turn … without paying their mana costs".
      */
-    fun GrantPlayWithoutPayingCost(from: String): Effect = GrantPlayWithoutPayingCostEffect(from)
+    fun GrantPlayWithoutPayingCost(from: String, expiry: MayPlayExpiry = MayPlayExpiry.EndOfTurn): Effect =
+        GrantPlayWithoutPayingCostEffect(from, expiry)
 
     /**
      * Require [additionalCost] when casting cards in a named collection. Compose with
@@ -4451,8 +4454,9 @@ object Effects {
     fun MakePlotted(from: CollectionSlot, ownerControls: Boolean = false): Effect =
         MakePlottedEffect(from.key, ownerControls)
 
-    /** Until end of turn, the cards in [from] may be played without paying their mana costs. */
-    fun GrantPlayWithoutPayingCost(from: CollectionSlot): Effect = GrantPlayWithoutPayingCostEffect(from.key)
+    /** The cards in [from] may be played without paying their mana costs — this turn, or until [expiry]. */
+    fun GrantPlayWithoutPayingCost(from: CollectionSlot, expiry: MayPlayExpiry = MayPlayExpiry.EndOfTurn): Effect =
+        GrantPlayWithoutPayingCostEffect(from.key, expiry)
 
     /** Casting the cards in [from] this turn requires [additionalCost]. */
     fun GrantPlayWithAdditionalCost(from: CollectionSlot, additionalCost: AdditionalCost): Effect =
