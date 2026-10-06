@@ -1265,6 +1265,7 @@ object DamageUtils {
             .toSet()
         val snapshot = DamageSourceLki(
             sourceControllerId = controllerId,
+            sourceId = sourceId,
             sourceSubtypes = subtypes,
             sourceWasCreature = projected.isCreature(sourceId),
         )

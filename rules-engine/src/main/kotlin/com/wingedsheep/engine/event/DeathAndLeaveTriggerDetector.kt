@@ -193,6 +193,71 @@ class DeathAndLeaveTriggerDetector(
     }
 
     /**
+     * Rule 603.10a look-back for "whenever a creature dealt damage by this creature this turn dies"
+     * (SELF shape: Soul Collector, Dread Slaver) when the damaging creature died in the same event as
+     * its victim — the combat where they trade, or a source that damaged itself (Dread Slaver ruling,
+     * 2012-05-01). [detectCreatureDealtDamageBySourceDiesTriggers] only walks live battlefield
+     * trackers, and the source's own damage tracker is stripped as it leaves, so the damaging source
+     * is read off the *victim's* last-known damage snapshot ([DamageSourceLki.sourceId]) instead.
+     */
+    fun detectDepartedDamagingSourceDiesTriggers(
+        state: GameState,
+        statics: BattlefieldStaticsIndex,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val deathEvents = events.filterIsInstance<ZoneChangeEvent>().filter {
+            it.toZone == Zone.GRAVEYARD && it.fromZone == Zone.BATTLEFIELD
+        }
+        if (deathEvents.isEmpty()) return
+
+        for (sourceEvent in deathEvents) {
+            val sourceId = sourceEvent.entityId
+            // Still on the battlefield → the live tracker path already saw it.
+            if (sourceId in state.getBattlefield()) continue
+            if (sourceEvent.lastKnown?.lostAllAbilities == true) continue
+
+            val info = resolveDyingEntity(state, sourceEvent) ?: continue
+            val abilities = abilityResolver.getDepartedTriggeredAbilities(sourceEvent, info.cardDefinitionId, state, statics)
+                .filter {
+                    val trigger = it.trigger
+                    trigger is EventPattern.CreatureDealtDamageBySourceDiesEvent &&
+                        trigger.sourceFilter == null &&
+                        it.binding == TriggerBinding.SELF &&
+                        Zone.BATTLEFIELD in it.activeZones
+                }
+            if (abilities.isEmpty()) continue
+            val controllerId = sourceEvent.lastKnown?.controllerId ?: sourceEvent.ownerId
+
+            for (victimEvent in deathEvents) {
+                val damagedBySource = victimEvent.lastKnown?.damageSources?.any { it.sourceId == sourceId } == true
+                if (!damagedBySource) continue
+                for (ability in abilities) {
+                    val dyingFilter = (ability.trigger as EventPattern.CreatureDealtDamageBySourceDiesEvent).dyingFilter
+                    if (dyingFilter != null && !matcher.matchesZoneChangeTrigger(
+                            EventPattern.ZoneChangeEvent(filter = dyingFilter, from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
+                            TriggerBinding.ANY,
+                            victimEvent,
+                            sourceId,
+                            controllerId,
+                            state
+                        )
+                    ) continue
+                    triggers.add(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = sourceId,
+                            sourceName = info.name,
+                            controllerId = controllerId,
+                            triggerContext = TriggerContext.fromEvent(victimEvent)
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /**
      * Detect ATTACHED zone-change triggers on auras that went to graveyard with their creature.
      * When an aura goes to graveyard because its enchanted creature died/left, the ZoneChangeEvent
      * for the aura carries [ZoneChangeEvent.lastKnown?.attachedTo] = the creature's ID.
