@@ -748,7 +748,7 @@ class DynamicAmountEvaluator(
                         val landDrops = state.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.player.LandDropsComponent>()
                             ?: return@sumOf 0
-                        landDrops.maxPerTurn - landDrops.remaining
+                        landDrops.playedThisTurn
                     }
                     TurnTracker.LANDS_ENTERED_UNDER_CONTROL -> playerIds.sumOf { playerId ->
                         state.getEntity(playerId)

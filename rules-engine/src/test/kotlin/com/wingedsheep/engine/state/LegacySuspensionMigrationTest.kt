@@ -321,6 +321,12 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value.getValue("snowMana") shouldBe JsonObject(emptyMap())
                 value.getValue("snowColorless") shouldBe JsonPrimitive(0)
                 value - "snowMana" - "snowColorless"
+            } else if (value["type"] == JsonPrimitive(
+                    "com.wingedsheep.engine.state.components.player.LandDropsComponent"
+                )) {
+                // The direct lands-played count postdates the capture.
+                value.getValue("playedThisTurn") shouldBe JsonPrimitive(0)
+                value - "playedThisTurn"
             } else if ("colorlessAsAnyColor" in value && "singleUse" in value) {
                 // MayPlayPermission's colorless-as-any-color and face-down riders postdate the capture.
                 value.getValue("colorlessAsAnyColor") shouldBe JsonPrimitive(false)

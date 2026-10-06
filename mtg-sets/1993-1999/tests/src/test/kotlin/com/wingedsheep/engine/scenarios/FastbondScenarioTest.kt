@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.lea.cards.Fastbond
@@ -54,6 +55,22 @@ class FastbondScenarioTest : FunSpec({
 
         d.playLand(me, d.putCardInHand(me, "Forest")).outcome shouldBe Outcome.Done
         resolveStack(d)
+
+        d.getLifeTotal(me) shouldBe 19
+    }
+
+    test("an effect-granted extra land drop doesn't hide the second land from the tracker") {
+        // Explore-style extra drops raise only `remaining`; the lands-played count must still
+        // see the second land as non-first.
+        val d = driver()
+        val me = d.activePlayer!!
+        d.replaceState(d.state.updateEntity(me) { it.with(LandDropsComponent(remaining = 2, maxPerTurn = 1)) })
+        d.putPermanentOnBattlefield(me, "Fastbond")
+
+        repeat(2) {
+            d.playLand(me, d.putCardInHand(me, "Forest")).outcome shouldBe Outcome.Done
+            resolveStack(d)
+        }
 
         d.getLifeTotal(me) shouldBe 19
     }

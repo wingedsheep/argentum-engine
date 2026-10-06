@@ -42,11 +42,7 @@ internal class PlayerProjector(
         )
 
         // Determine lands played this turn
-        val landsPlayed = if (landDropsComponent != null) {
-            landDropsComponent.maxPerTurn - landDropsComponent.remaining
-        } else {
-            0
-        }
+        val landsPlayed = landDropsComponent?.playedThisTurn ?: 0
 
         // A player has lost when the engine has marked them (mid-game elimination in a
         // multiplayer pod — drives the opponent-rail tombstone while the game continues),

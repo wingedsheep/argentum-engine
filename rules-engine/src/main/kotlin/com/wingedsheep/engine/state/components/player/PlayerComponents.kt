@@ -392,21 +392,26 @@ data class PlayerTurnsTakenComponent(
 
 /**
  * Tracks land drops for the turn.
+ *
+ * [playedThisTurn] counts land plays directly rather than deriving them from
+ * `maxPerTurn - remaining`: an effect-granted extra drop (Explore) raises [remaining] alone, so
+ * the derived count would come up short — Fastbond's "if it wasn't the first land" would miss.
  */
 @Serializable
 data class LandDropsComponent(
     val remaining: Int = 1,
-    val maxPerTurn: Int = 1
+    val maxPerTurn: Int = 1,
+    val playedThisTurn: Int = 0
 ) : Component {
     /**
      * Use a land drop.
      */
-    fun use(): LandDropsComponent = copy(remaining = remaining - 1)
+    fun use(): LandDropsComponent = copy(remaining = remaining - 1, playedThisTurn = playedThisTurn + 1)
 
     /**
      * Reset for a new turn.
      */
-    fun reset(): LandDropsComponent = copy(remaining = maxPerTurn)
+    fun reset(): LandDropsComponent = copy(remaining = maxPerTurn, playedThisTurn = 0)
 
     /**
      * Check if a land can be played.
