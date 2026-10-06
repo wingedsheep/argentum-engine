@@ -2156,6 +2156,64 @@
     ]
 }
 
+// Oathsworn Vampire
+{
+    "name": "Oathsworn Vampire",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire Knight",
+    "oracleText": "This creature enters tapped.\nYou may cast this card from your graveyard if you gained life this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Opalinski",
+        "flavorText": "\"My conquistadors are never slain, merely laid to rest.\"\n—Queen Miralda the Pious",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/405f82d6-2991-4958-a563-572f0d298346.jpg?1783935309",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Oathsworn Vampire's last ability cares only whether you gained life in the turn, even if Oathsworn Vampire wasn't in your graveyard when that happened. It doesn't care how much you gained, whether you also lost life, or even whether you lost more life than you gained."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Casting Oathsworn Vampire from your graveyard follows the normal rules for casting that card. You must pay its costs, and you must follow all applicable timing rules."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Orazca Frillback
 {
     "name": "Orazca Frillback",

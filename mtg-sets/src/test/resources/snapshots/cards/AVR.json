@@ -5035,6 +5035,51 @@
     ]
 }
 
+// Soulcage Fiend
+{
+    "name": "Soulcage Fiend",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "When this creature dies, each player loses 3 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Soulcage Fiend:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                },
+                "descriptionOverride": "When this creature dies, each player loses 3 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Jason A. Engle",
+        "flavorText": "Vowing to free the souls of her children, Kastinne followed the tormentors into the ghastly network of caves below Stensia.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dce1b1d3-9602-42bf-b341-d96976ff1e60.jpg?1783940692"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Spectral Gateguards
 {
     "name": "Spectral Gateguards",

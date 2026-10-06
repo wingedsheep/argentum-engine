@@ -485,6 +485,67 @@
     ]
 }
 
+// Returned Reveler
+{
+    "name": "Returned Reveler",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie Satyr",
+    "oracleText": "When this creature dies, each player mills three cards.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Returned Reveler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "Each",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature dies, each player mills three cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "artist": "Allen Williams",
+        "flavorText": "The flesh is dead and the life forgotten, but old habits persist.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9ea61098-2c6a-48d2-b99f-f3065c67d8e3.jpg?1783939432"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Rotted Hulk
 {
     "name": "Rotted Hulk",

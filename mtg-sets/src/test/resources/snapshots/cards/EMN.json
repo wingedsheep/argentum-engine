@@ -4151,6 +4151,72 @@
     ]
 }
 
+// Skirsdag Supplicant
+{
+    "name": "Skirsdag Supplicant",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "{B}, {T}, Discard a card: Each player loses 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Skirsdag Supplicant:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "artist": "Anastasia Ovchinnikova",
+        "flavorText": "\"I can no longer stand by as these Skirsdag infiltrators rot the church from within. Even the Lunarch Council is compromised. What a fool I've been.\"\n—Odric",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3f63897-15a1-4b34-9916-d9df62f66785.jpg?1783937475",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If Skirsdag Supplicant's ability causes each player's life total to become 0 or less, the game ends in a draw."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "In a Two-Headed Giant game, Skirsdag Supplicant's ability causes each player to lose 2 life, so each team loses a total of 4 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Smoldering Werewolf
 {
     "name": "Smoldering Werewolf",

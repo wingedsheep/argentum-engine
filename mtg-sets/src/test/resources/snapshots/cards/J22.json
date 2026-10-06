@@ -2083,6 +2083,59 @@
     }
 }
 
+// Ossuary Rats
+{
+    "name": "Ossuary Rats",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Rat",
+    "oracleText": "When this creature enters, it deals X damage to target creature or planeswalker an opponent controls, where X is the number of creature cards in your graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ossuary Rats:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "creature"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|planeswalker ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, it deals X damage to target creature or planeswalker an opponent controls, where X is the number of creature cards in your graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "artist": "Ralph Horsley",
+        "flavorText": "You know you've ventured too deep when the rats stop running and hold their ground.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c93dc52c-6f62-45cc-a5e2-95f794e04b94.jpg?1783919186"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pirated Copy
 {
     "name": "Pirated Copy",
@@ -2475,6 +2528,100 @@
     ]
 }
 
+// Rodolf Duskbringer
+{
+    "name": "Rodolf Duskbringer",
+    "manaCost": "{5}{B}",
+    "typeLine": "Legendary Creature — Vampire Angel",
+    "oracleText": "Flying, deathtouch, lifelink\nWhenever you gain life, Rodolf Duskbringer gains indestructible until end of turn.\nAt the beginning of your end step, you may pay {1}{W/B}. When you do, return target creature card with mana value X or less from your graveyard to the battlefield, where X is the amount of life you gained this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "DEATHTOUCH",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rodolf Duskbringer:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Rodolf Duskbringer:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCost",
+                        "cost": "{1}{W/B}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield"
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "ManaValueAtMostDynamic",
+                                            "amount": {
+                                                "type": "TurnTracking",
+                                                "player": "You",
+                                                "tracker": "LIFE_GAINED"
+                                            }
+                                        }
+                                    ],
+                                    "controllerPredicate": "OwnedByYou"
+                                },
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may pay {1}{W/B}. When you do, return target creature card with mana value X or less from your graveyard to the battlefield, where X is the amount of life you gained this turn."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "RARE",
+        "artist": "Billy Christian",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9afd47b-ff94-4fdd-bb04-bdf9b8b61a6d.jpg?1783919187",
+        "rulings": [
+            {
+                "date": "2022-12-02",
+                "text": "X is the total amount of life you gained this turn, regardless of any life lost. For example, if you gained 3 life this turn and also lost 2 life this turn, X is 3, not 1."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "WHITE"
+    ]
+}
+
 // Runadi, Behemoth Caller
 {
     "name": "Runadi, Behemoth Caller",
@@ -2564,6 +2711,122 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Skullslither Worm
+{
+    "name": "Skullslither Worm",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Worm",
+    "oracleText": "When this creature enters, each opponent discards a card. For each opponent who can't, put two +1/+1 counters on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skullslither Worm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "Exists",
+                                        "player": "You",
+                                        "zone": "Hand",
+                                        "negate": true
+                                    }
+                                },
+                                "then": {
+                                    "type": "StorePlayer",
+                                    "storeAs": "players1"
+                                }
+                            },
+                            "collectCollections": {
+                                "players1": "collected2"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "Multiply",
+                                "amount": {
+                                    "type": "VariableReference",
+                                    "variableName": "collected2_count"
+                                },
+                                "multiplier": 2
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, each opponent discards a card. For each opponent who can't, put two +1/+1 counters on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "UNCOMMON",
+        "artist": "Uriah Voth",
+        "flavorText": "As larvae, they burrow into a host's brain to feed upon it, growing until they're large enough to burst free and seek out larger prey.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fdd4db9-8cab-4df2-ae65-0d7546c2d06b.jpg?1783919188"
+    }
 }
 
 // Soul Read

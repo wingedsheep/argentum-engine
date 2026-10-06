@@ -285,6 +285,60 @@
     ]
 }
 
+// Nested Ghoul
+{
+    "name": "Nested Ghoul",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Phyrexian Zombie Warrior",
+    "oracleText": "Whenever a source deals damage to this creature, create a 2/2 black Phyrexian Zombie creature token.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nested Ghoul:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Phyrexian",
+                        "Zombie"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/6/46769d11-a7ae-43ac-8c00-e1681955949b.jpg?1783941356"
+                },
+                "descriptionOverride": "Whenever a source deals damage to this creature, create a 2/2 black Phyrexian Zombie creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "UNCOMMON",
+        "artist": "Dave Kendall",
+        "flavorText": "\"The chest cavity is cleared of useless meat. I know just what to do with the space.\"\n—Gyed, Vault Priest",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c035ff58-9df3-4db4-b9d0-97d58080ecfe.jpg?1783941383",
+        "rulings": [
+            {
+                "date": "2011-06-01",
+                "text": "Nested Ghoul's ability will trigger if a source with infect deals damage to it."
+            },
+            {
+                "date": "2011-06-01",
+                "text": "If multiple sources deal damage to Nested Ghoul simultaneously (because it was blocked by multiple creatures, for example), the ability will trigger for each source dealing damage to Nested Ghoul."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ogre Resister
 {
     "name": "Ogre Resister",

@@ -2018,6 +2018,159 @@
     ]
 }
 
+// Syr Konrad, the Grim
+{
+    "name": "Syr Konrad, the Grim",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Whenever another creature dies, or a creature card is put into a graveyard from anywhere other than the battlefield, or a creature card leaves your graveyard, Syr Konrad deals 1 damage to each opponent.\n{1}{B}: Each player mills a card. (They each put the top card of their library into their graveyard.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Syr Konrad, the Grim:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "Syr Konrad deals 1 damage to each opponent."
+            },
+            {
+                "id": "Syr Konrad, the Grim:2",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature",
+                            "from": "Hand",
+                            "to": "Graveyard"
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature",
+                            "from": "Library",
+                            "to": "Graveyard"
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature",
+                            "from": "Stack",
+                            "to": "Graveyard"
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature",
+                            "from": "Exile",
+                            "to": "Graveyard"
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature",
+                            "from": "Command",
+                            "to": "Graveyard"
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature ctrl:you",
+                            "from": "Graveyard"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "Syr Konrad deals 1 damage to each opponent."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Syr Konrad, the Grim:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "Each",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Each player mills a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a808868f-aea8-4651-9357-85a4d7b4f290.jpg?1783932632",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If one or more creatures die at the same time as Syr Konrad, its first ability triggers for each of those creatures."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "In a Two-Headed Giant game, Syr Konrad's first ability causes it to deal 1 damage twice."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // The Circle of Loyalty
 {
     "name": "The Circle of Loyalty",
