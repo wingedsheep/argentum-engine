@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.drk.cards
 
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
@@ -18,9 +19,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * At the beginning of the upkeep of enchanted land's controller, destroy that land unless that
  * player pays {1} or 1 life.
  *
- * Lingering Death's trigger shape — an ATTACHED-bound step trigger, which the engine resolves
- * against the *enchanted permanent's* controller and makes that player the ability's controller.
- * That is what makes `PayOrSufferEffect`'s default payer correct here: the tax falls on whoever
+ * Lingering Death's trigger shape — an ATTACHED-bound step trigger, timed off the *enchanted
+ * permanent's* controller, who is bound as the triggering player. The Aura's controller still
+ * controls the ability, so the payer is named `TriggeringPlayer`: the tax falls on whoever
  * controls the land, not on whoever cast the Aura.
  *
  * "{1} **or** 1 life" is a genuine choice of costs, so it is `Costs.pay.Choice` rather than two
@@ -43,6 +44,7 @@ val Erosion = card("Erosion") {
         effect = Effects.PayOrSuffer(
             cost = Costs.pay.Choice(listOf(Costs.pay.Mana("{1}"), Costs.pay.PayLife(1))),
             suffer = Effects.Destroy(EffectTarget.EnchantedPermanent),
+            player = EffectTarget.PlayerRef(Player.TriggeringPlayer),
         )
         description = "At the beginning of the upkeep of enchanted land's controller, destroy " +
             "that land unless that player pays {1} or 1 life."

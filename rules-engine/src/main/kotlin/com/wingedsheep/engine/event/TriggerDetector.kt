@@ -648,8 +648,14 @@ class TriggerDetector(
             }
         }
 
-        // Check ATTACHED step triggers on auras (e.g., Custody Battle, Lingering Death)
-        // For ATTACHED + StepEvent(Player.You), "you" = the attached creature's controller
+        // Check ATTACHED step triggers on auras — "at the beginning of the upkeep of enchanted
+        // creature's controller" (Lingering Death, Wanderlust). The binding re-scopes only the
+        // *timing*: StepEvent(Player.You) reads the attached permanent's controller. The trigger is
+        // still the Aura's, so the Aura's controller controls it (CR 113.8) and it is put on the
+        // stack in that player's APNAP slot (CR 603.3b). "That player" — the attached permanent's
+        // controller — is bound as the triggering player, for `Player.TriggeringPlayer` to read.
+        // An ability the Aura *grants* the creature ("enchanted creature has 'at the beginning of
+        // your upkeep …'") is a GrantTriggeredAbility instead (Custody Battle), owned by the creature.
         for ((targetId, attachments) in index.aurasByTarget) {
             val enchantedController = projected.getController(targetId) ?: continue
             for (entry in attachments) {
@@ -664,8 +670,12 @@ class TriggerDetector(
                                 ability = ability,
                                 sourceId = entry.entityId,
                                 sourceName = entry.cardComponent.name,
-                                controllerId = enchantedController,
-                                triggerContext = TriggerContext(step = step, triggeringEntityId = activePlayerId)
+                                controllerId = entry.controllerId,
+                                triggerContext = TriggerContext(
+                                    step = step,
+                                    triggeringEntityId = enchantedController,
+                                    triggeringPlayerId = enchantedController
+                                )
                             )
                         )
                     }

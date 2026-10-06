@@ -1,5 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.msh.cards
 
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -16,10 +18,10 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * Enchant creature
  * At the beginning of the upkeep of enchanted creature's controller, that player draws a card.
  *
- * The ATTACHED-binding step trigger (Custody Battle / Lingering Death shape) fires only on the
- * upkeep of the *enchanted creature's* controller, and the resulting ability's controller is that
- * same player — so the default [com.wingedsheep.sdk.scripting.targets.EffectTarget.Controller] on
- * the draw resolves to "that player", not to the Aura's controller.
+ * The ATTACHED-binding step trigger (Lingering Death shape) fires only on the upkeep of the
+ * *enchanted creature's* controller. The Aura's controller still controls the ability, so "that
+ * player" is the triggering player the step binds, not the default
+ * [com.wingedsheep.sdk.scripting.targets.EffectTarget.Controller].
  */
 val SuperIntelligence = card("Super Intelligence") {
     manaCost = "{U}"
@@ -32,7 +34,7 @@ val SuperIntelligence = card("Super Intelligence") {
 
     triggeredAbility {
         trigger = Triggers.attached.beginningOf(Step.UPKEEP)
-        effect = Effects.DrawCards(1)
+        effect = Effects.DrawCards(1, EffectTarget.PlayerRef(Player.TriggeringPlayer))
     }
 
     metadata {

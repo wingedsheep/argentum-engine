@@ -7081,6 +7081,16 @@ The shapes in this family, with their engine notes.
 
 **Factory** — `Triggers.<player>.beginningOf(step)` / `Triggers.attached.beginningOf(step)`.
 
+`Triggers.attached.beginningOf(step)` is "at the beginning of the [step] of enchanted
+creature's controller" printed **on the Aura** (Wanderlust, Lingering Death, Erosion). Only the
+timing is the attached permanent's controller's: the trigger is the Aura's, so the Aura's
+controller controls it (CR 113.8) and it takes that player's APNAP slot. "That player" is the
+triggering player — `EffectTarget.PlayerRef(Player.TriggeringPlayer)`, and the payer of a
+`PayOrSuffer` (`player = …`) — never the default `EffectTarget.Controller`, which is the Aura's
+controller. An ability the Aura *grants* the creature ("enchanted creature has 'at the beginning
+of your upkeep …'") is `GrantTriggeredAbility(grantedTriggeredAbility { trigger = Triggers.you.beginningOf(step); … })`
+instead, controlled by the creature's controller (Custody Battle, Commander's Authority).
+
 ### Aura / equipment
 
 No named constants for the "enchanted/equipped creature does X" shapes — they all collapse to

@@ -3895,34 +3895,38 @@
     "typeLine": "Enchantment — Aura",
     "oracleText": "Enchant creature\nEnchanted creature has \"At the beginning of your upkeep, target opponent gains control of this creature unless you sacrifice a land.\"",
     "script": {
-        "triggeredAbilities": [
+        "staticAbilities": [
             {
-                "id": "Custody Battle:1",
-                "trigger": {
-                    "type": "StepEvent",
-                    "step": "UPKEEP"
-                },
-                "binding": "ATTACHED",
-                "effect": {
-                    "type": "PayOrSuffer",
-                    "cost": {
-                        "type": "PayAtom",
-                        "atom": {
-                            "type": "AtomSacrifice",
-                            "filter": "land"
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Custody Battle:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "PayOrSuffer",
+                        "cost": {
+                            "type": "PayAtom",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land"
+                            }
+                        },
+                        "suffer": {
+                            "type": "GiveControlToTargetPlayer",
+                            "permanent": "Self",
+                            "newController": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
                         }
                     },
-                    "suffer": {
-                        "type": "GiveControlToTargetPlayer",
-                        "newController": {
-                            "type": "BoundVariable",
-                            "name": "t0"
-                        }
+                    "targetRequirement": {
+                        "type": "TargetOpponent",
+                        "id": "t0"
                     }
-                },
-                "targetRequirement": {
-                    "type": "TargetOpponent",
-                    "id": "t0"
                 }
             }
         ],

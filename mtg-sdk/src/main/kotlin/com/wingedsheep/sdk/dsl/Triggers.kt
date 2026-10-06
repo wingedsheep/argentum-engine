@@ -592,8 +592,12 @@ class ObjectTriggerSubject internal constructor(
     }
 
     /**
-     * "at the beginning of enchanted creature's controller's [step]" (Lingering Death) — the step
-     * belongs to the attached permanent's controller.
+     * "at the beginning of the [step] of enchanted creature's controller" (Lingering Death,
+     * Wanderlust) — the step belongs to the attached permanent's controller, but the ability is
+     * still the Aura's: the Aura's controller controls it. "That player" is bound as the triggering
+     * player — reach them with `Player.TriggeringPlayer`, not `EffectTarget.Controller`. For an
+     * ability the Aura *grants* ("enchanted creature has 'at the beginning of your upkeep …'"),
+     * use `GrantTriggeredAbility` with `Triggers.you.beginningOf(step)` (Custody Battle).
      */
     fun beginningOf(step: Step): TriggerSpec {
         unfiltered("beginningOf")

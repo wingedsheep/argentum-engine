@@ -15652,6 +15652,10 @@
                     "count": {
                         "type": "Fixed",
                         "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
                     }
                 }
             }
