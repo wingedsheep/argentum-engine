@@ -217,6 +217,7 @@
                     "type": "Fixed",
                     "amount": 1
                 },
+                "otherOnly": true,
                 "appliesTo": {
                     "type": "ZoneChangeEvent",
                     "filter": "creature Wolf|Werewolf ctrl:you",

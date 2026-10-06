@@ -64,6 +64,7 @@ class DeadbridgeGoliathScenarioTest : ScenarioTestBase() {
                 .withCardInLibrary(1, "Forest")
                 .withCardInLibrary(2, "Forest")
                 .withActivePlayer(2)
+                .withPriorityPlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                 .build()
 
@@ -78,7 +79,9 @@ class DeadbridgeGoliathScenarioTest : ScenarioTestBase() {
                     targets = listOf(entityIdToChosenTarget(game.state, bears)),
                 ),
             )
-            result.error shouldNotBe null
+            withClue("${result.error}") {
+                result.error shouldNotBe null
+            }
             game.state.getZone(game.player1Id, Zone.GRAVEYARD).contains(goliath) shouldBe true
         }
     }

@@ -20,7 +20,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  * −2: Create a 2/2 green Wolf creature token.
  *
  * The static is the Grumgully shape: an [EntersWithDynamicCounters] replacement scoped to Wolf-or-
- * Werewolf creatures you control. Being a single replacement, a creature that's both types gets
+ * Werewolf creatures you control, with `otherOnly` routing it through the global entry sweep. Being a single replacement, a creature that's both types gets
  * exactly one counter; it is active only on the battlefield, so the −2's Wolf gets no counter if
  * Arlinn has left by the time the ability resolves.
  */
@@ -39,6 +39,7 @@ val ArlinnVoiceOfThePack = card("Arlinn, Voice of the Pack") {
                 filter = GameObjectFilter.Creature.withAnySubtype("Wolf", "Werewolf").youControl(),
                 to = Zone.BATTLEFIELD,
             ),
+            otherOnly = true,
         )
     )
 
