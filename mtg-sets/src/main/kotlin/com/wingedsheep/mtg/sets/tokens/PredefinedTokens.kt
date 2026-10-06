@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.TimingRule
+import com.wingedsheep.sdk.scripting.values.ManaColorSet
 import com.wingedsheep.sdk.model.CardDefinition.Companion.doubleFacedPermanent
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
 import com.wingedsheep.sdk.scripting.CantBlock
@@ -133,6 +134,30 @@ object PredefinedTokens {
 
         metadata {
             imageUri = "https://cards.scryfall.io/normal/front/0/d/0dce2241-e58b-41d4-b57c-9794fc8ee004.jpg?1721425221"
+        }
+    }
+
+    /**
+     * Banana — the colorless artifact token of Kibo, Uktabi Prince (J22):
+     * "{T}, Sacrifice this token: Add {R} or {G}. You gain 2 life." No subtype, only the name.
+     * Still a mana ability with the life-gain rider — it doesn't target (CR 605.1a).
+     * Scryfall has no Banana token printing, so it borrows Kibo's own card art.
+     */
+    val Banana = card("Banana") {
+        typeLine = "Artifact"
+        oracleText = "{T}, Sacrifice this token: Add {R} or {G}. You gain 2 life."
+
+        activatedAbility {
+            cost = Costs.Composite(Costs.Tap, Costs.SacrificeSelf)
+            effect = Effects.AddManaOfChoice(
+                ManaColorSet.Specific(setOf(Color.RED, Color.GREEN))
+            ) then Effects.GainLife(2)
+            manaAbility = true
+            timing = TimingRule.ManaAbility
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/8/b/8b71345a-c3e8-4b35-beb7-6347e41d7626.jpg?1783919180"
         }
     }
 
@@ -1091,6 +1116,7 @@ object PredefinedTokens {
         Treasure,
         Meteorite,
         Food,
+        Banana,
         Blood,
         Clue,
         Shard,

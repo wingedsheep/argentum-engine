@@ -2030,6 +2030,116 @@
     ]
 }
 
+// Khalni Heart Expedition
+{
+    "name": "Khalni Heart Expedition",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Landfall — Whenever a land you control enters, you may put a quest counter on this enchantment.\nRemove three quest counters from this enchantment and sacrifice it: Search your library for up to two basic land cards, put them onto the battlefield tapped, then shuffle.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Khalni Heart Expedition:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "QUEST",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Khalni Heart Expedition:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "QUEST",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "self": true
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "artist": "Jason Chan",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/797d8cd6-fc6b-4560-9c6f-1a867dfce85a.jpg?1783942135",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "A landfall ability triggers whenever a land you control enters for any reason. It triggers whenever you play a land, as well as whenever a spell or ability puts a land onto the battlefield under your control."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "A landfall ability doesn't trigger if a permanent already on the battlefield becomes a land."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Kor Cartographer
 {
     "name": "Kor Cartographer",

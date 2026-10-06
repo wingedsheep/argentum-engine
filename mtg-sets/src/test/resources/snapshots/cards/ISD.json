@@ -3480,6 +3480,66 @@
     ]
 }
 
+// Kessig Cagebreakers
+{
+    "name": "Kessig Cagebreakers",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Whenever this creature attacks, create a 2/2 green Wolf creature token that's tapped and attacking for each creature card in your graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kessig Cagebreakers:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "creature"
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wolf"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/5/a53f8031-aaa8-424c-929a-5478538a8cc6.jpg?1783940880",
+                    "tapped": true,
+                    "attacking": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "RARE",
+        "artist": "Wayne England",
+        "flavorText": "\"They put bars on these noble beasts and then wonder why werewolves target our towns.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fae22886-da03-49f2-873c-98a7ea2ee17d.jpg?1783940916",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "You count the number of creature cards in your graveyard when the triggered ability resolves."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "Although the tokens are attacking, they were never declared as attacking creatures (for purposes of abilities that trigger whenever a creature attacks, for example)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Kessig Wolf
 {
     "name": "Kessig Wolf",

@@ -2205,6 +2205,64 @@
     ]
 }
 
+// Howl of the Hunt
+{
+    "name": "Howl of the Hunt",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nWhen this Aura enters, if enchanted creature is a Wolf or Werewolf, untap that creature.\nEnchanted creature gets +2/+2 and has vigilance.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Howl of the Hunt:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature",
+                    "tap": false
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature Wolf|Werewolf"
+                },
+                "descriptionOverride": "When this Aura enters, if enchanted creature is a Wolf or Werewolf, untap that creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a48a42e-5cc5-4f9a-8745-99936f4cae5f.jpg?1783925578"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Infernal Grasp
 {
     "name": "Infernal Grasp",

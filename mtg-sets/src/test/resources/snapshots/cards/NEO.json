@@ -1445,6 +1445,60 @@
     ]
 }
 
+// Master's Rebuke
+{
+    "name": "Master's Rebuke",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control deals damage equal to its power to target creature or planeswalker you don't control.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t1"
+            },
+            "damageSource": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "artist": "Francisco Miyara",
+        "flavorText": "\"You have always been a promising student, but your arrogance far outstrips your prowess.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d42ca7c-5b36-45a9-b235-4f90e66f4377.jpg?1783923843"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Moonfolk Puzzlemaker
 {
     "name": "Moonfolk Puzzlemaker",

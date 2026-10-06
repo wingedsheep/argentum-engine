@@ -1290,6 +1290,77 @@
     ]
 }
 
+// Hydra's Growth
+{
+    "name": "Hydra's Growth",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, put a +1/+1 counter on enchanted creature.\nAt the beginning of your upkeep, double the number of +1/+1 counters on enchanted creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hydra's Growth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "EnchantedCreature"
+                }
+            },
+            {
+                "id": "Hydra's Growth:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "EnchantedCreature",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    },
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "UNCOMMON",
+        "artist": "Bayard Wu",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/5112ee2a-a6f3-4280-a915-000a97a9cdef.jpg?1783931539",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If Hydra's Growth leaves the battlefield before its enters-the-battlefield triggered ability resolves, the creature it last enchanted before it left gets the +1/+1 counter."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "To double the number of +1/+1 counters on a creature, put a number of +1/+1 counters on it equal to the number it already has. Other cards that interact with putting counters on it will interact with this effect accordingly."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Hyrax Tower Scout
 {
     "name": "Hyrax Tower Scout",
@@ -1331,6 +1402,58 @@
         "artist": "Micah Epstein",
         "flavorText": "The scouts of Hyrax Tower keep watch at the edge of Setessan territory, protecting the polis from inhuman monsters and enemy armies.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb7f2638-d757-4df6-90b0-b616534dd3a0.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Ilysian Caryatid
+{
+    "name": "Ilysian Caryatid",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Plant",
+    "oracleText": "{T}: Add one mana of any color. If you control a creature with power 4 or greater, add two mana of any one color instead.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ilysian Caryatid:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature pow>=4"
+                        }
+                    },
+                    "then": {
+                        "type": "AddManaOfChoice",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "otherwise": "AddManaOfChoice"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add one mana of any color. If you control a creature with power 4 or greater, add two mana of any one color instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "artist": "Winona Nelson",
+        "flavorText": "Those who die as heroes are permitted to dwell in Ilysia, a protected realm of the Underworld as tranquil and vibrant as the rest is bleak.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7cdf8ab8-f221-4f7b-9af9-3849cad1f596.jpg?1783931537"
     },
     "colorIdentityOverride": [
         "GREEN"

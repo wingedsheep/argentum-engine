@@ -1915,6 +1915,51 @@
     ]
 }
 
+// Might of the Masses
+{
+    "name": "Might of the Masses",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +1/+1 until end of turn for each creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            },
+            "toughnessModifier": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "artist": "Johann Bodin",
+        "flavorText": "The Joraga elves never need ask a troll to leave their territory. They merely grant it their combined strength, and it can't resist embarking on a merry rampage.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/10465f4f-f4ff-45d8-bc97-3ec85e5eea70.jpg?1783941962"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nema Siltlurker
 {
     "name": "Nema Siltlurker",

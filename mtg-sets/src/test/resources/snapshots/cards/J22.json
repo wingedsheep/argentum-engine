@@ -2194,6 +2194,87 @@
     }
 }
 
+// Kibo, Uktabi Prince
+{
+    "name": "Kibo, Uktabi Prince",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Monkey Noble",
+    "oracleText": "{T}: Each player creates a colorless artifact token named Banana with \"{T}, Sacrifice this token: Add {R} or {G}. You gain 2 life.\"\nWhenever an artifact an opponent controls is put into a graveyard from the battlefield, put a +1/+1 counter on each creature you control that's an Ape or a Monkey.\nWhenever Kibo attacks, defending player sacrifices an artifact of their choice.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kibo, Uktabi Prince:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Ape|Monkey ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever an artifact an opponent controls is put into a graveyard from the battlefield, put a +1/+1 counter on each creature you control that's an Ape or a Monkey."
+            },
+            {
+                "id": "Kibo, Uktabi Prince:3",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "artifact",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Kibo, Uktabi Prince:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Banana"
+                    }
+                },
+                "descriptionOverride": "Each player creates a Banana token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "MYTHIC",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b71345a-c3e8-4b35-beb7-6347e41d7626.jpg?1783919180"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Launch Mishap
 {
     "name": "Launch Mishap",

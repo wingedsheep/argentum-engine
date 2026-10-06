@@ -1547,6 +1547,89 @@
     ]
 }
 
+// Nightpack Ambusher
+{
+    "name": "Nightpack Ambusher",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "Flash\nOther Wolves and Werewolves you control get +1/+1.\nAt the beginning of your end step, if you didn't cast a spell this turn, create a 2/2 green Wolf creature token.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nightpack Ambusher:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wolf"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd05e304-1a16-436d-a05c-4a38a839759b.jpg?1783932856",
+                    "controller": "Controller"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "PlayerCastSpellsThisTurn",
+                        "atLeast": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if you didn't cast a spell this turn, create a 2/2 green Wolf creature token."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Wolf|Werewolf ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "A strong leader means a growing pack.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c9b1f70-9861-4c66-a52f-c40002679e75.jpg?1783932960",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "A creature that's both a Wolf and a Werewolf gets only +1/+1 from Nightpack Ambusher's ability."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Nightpack Ambusher looks at the entire turn to see if you have cast a spell, even if Nightpack Ambusher wasn't on the battlefield when that spell was cast. Notably, you won't get a Wolf token during your end step if you cast Nightpack Ambusher during your turn."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If you cast a spell that was countered, Nightpack Ambusher's last ability doesn't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Octoprophet
 {
     "name": "Octoprophet",

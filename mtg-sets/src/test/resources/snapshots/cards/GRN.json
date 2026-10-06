@@ -2059,6 +2059,163 @@
     ]
 }
 
+// Kraul Foragers
+{
+    "name": "Kraul Foragers",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Insect Scout",
+    "oracleText": "Undergrowth — When this creature enters, you gain 1 life for each creature card in your graveyard.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kraul Foragers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "creature"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "artist": "Aaron Miller",
+        "flavorText": "Feed on food, you eventually rot. Feed on rot, you live forever.\n—Kraul saying",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5ed4b08-8583-4ad4-b0ba-0463d367efc8.jpg?1783934150",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Because tokens aren't cards, they never count for undergrowth abilities."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Creature cards with other types, such as artifact creature cards, count for undergrowth abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Kraul Harpooner
+{
+    "name": "Kraul Harpooner",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Insect Warrior",
+    "oracleText": "Reach\nUndergrowth — When this creature enters, choose up to one target creature you don't control with flying. This creature gets +X/+0 until end of turn, where X is the number of creature cards in your graveyard, then you may have this creature fight that creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kraul Harpooner:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": "creature"
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "Fight",
+                                    "target1": "Self",
+                                    "target2": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature kw:flying ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6d3c086-9ce4-41c3-8402-2818f1b27192.jpg?1783934150",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "The value of X is determined only as the undergrowth ability resolves. If the number of creature cards in your graveyard changes later in the turn, Kraul Harpooner is unaffected."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You choose the target of the triggered ability (or that it has no target) as it goes on the stack, but you choose whether the creatures fight as that ability resolves."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If you choose a target and the target creature is an illegal target when Kraul Harpooner's ability tries to resolve, the ability doesn't resolve and Kraul Harpooner doesn't get +X/+0. If the target creature is legal but Kraul Harpooner is no longer on the battlefield, the target creature won't deal or be dealt damage."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If you don't choose a target creature, Kraul Harpooner simply gets +X/+0 until end of turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Kraul Raider
 {
     "name": "Kraul Raider",

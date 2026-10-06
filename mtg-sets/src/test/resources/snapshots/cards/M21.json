@@ -815,6 +815,88 @@
     ]
 }
 
+// Hunter's Edge
+{
+    "name": "Hunter's Edge",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a +1/+1 counter on target creature you control. Then that creature deals damage equal to its power to target creature you don't control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "artist": "Johann Bodin",
+        "flavorText": "The hunt ends. Lunch begins.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c08c80f-f27c-4e3a-b048-143aea740096.jpg?1783930673",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "You can't cast Hunter's Edge unless you choose both a creature you control and a creature you don't control as targets."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If either creature is an illegal target as Hunter's Edge tries to resolve, the creature you control won't deal damage."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If the creature you don't control is an illegal target as Hunter's Edge tries to resolve but the creature you control is a legal target, you just put a +1/+1 counter on the creature you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Library Larcenist
 {
     "name": "Library Larcenist",

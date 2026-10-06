@@ -926,6 +926,90 @@
     ]
 }
 
+// Nantuko Cultivator
+{
+    "name": "Nantuko Cultivator",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Insect Druid",
+    "oracleText": "When this creature enters, you may discard any number of land cards. Put that many +1/+1 counters on this creature and draw that many cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nantuko Cultivator:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "filter": "land"
+                                    },
+                                    "storeAs": "stored0_candidates"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "stored0_candidates",
+                                    "selection": "ChooseAnyNumber",
+                                    "storeSelected": "stored0",
+                                    "prompt": "Choose any number of land cards to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "stored0",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "stored0_count"
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "stored0_count"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, you may discard any number of land cards. Put that many +1/+1 counters on this creature and draw that many cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "RARE",
+        "artist": "Darrell Riche",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d258fe7-7906-43ca-8ebd-344aa81cb85b.jpg?1783945141"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nantuko Shade
 {
     "name": "Nantuko Shade",

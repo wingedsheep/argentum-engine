@@ -2756,6 +2756,41 @@
     ]
 }
 
+// Howlgeist
+{
+    "name": "Howlgeist",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Spirit Wolf",
+    "oracleText": "Creatures with power less than this creature's power can't block it.\nUndying (When this creature dies, if it had no +1/+1 counters on it, return it to the battlefield under its owner's control with a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "UNDYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            "CantBeBlockedByCreaturesWithLessPower"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "UNCOMMON",
+        "artist": "David Rapoza",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/dad60d45-1c99-41d1-a237-c0ee18ce5361.jpg?1783940666",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "The comparison of power is performed only when blockers are declared. Increasing the power of a blocking creature (or decreasing the power of Howlgeist) after this point won't cause any creature to stop blocking or become unblocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Human Frailty
 {
     "name": "Human Frailty",
