@@ -172,7 +172,13 @@ export const createTargetingSlice: SliceCreator<TargetingSlice> = (set, get) => 
         // All requirements filled
         const allTargets = [...allSelected.flat()]
         set({ targetingState: null })
-        get().advancePipeline({ type: 'targeting', selectedTargets: allTargets })
+        // How many targets each requirement got: the flat list alone can't tell a partly filled
+        // "up to N" group from the next requirement's targets.
+        get().advancePipeline({
+          type: 'targeting',
+          selectedTargets: allTargets,
+          targetGroupCounts: allSelected.map((group) => group.length),
+        })
         return
       }
 

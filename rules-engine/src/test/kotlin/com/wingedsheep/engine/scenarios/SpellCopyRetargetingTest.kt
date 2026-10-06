@@ -194,6 +194,24 @@ class SpellCopyRetargetingTest : FunSpec({
         d.submitTargetSelection(d.player2, listOf(a)).error shouldBe null
         d.state.getEntity(copies(d).last())!!.get<TargetsComponent>()!!.targetEntryStamps[a] shouldBe oldStamp + 100
     }
+    test("copy-each explicit reselection captures the current battlefield visit") {
+        val d = driver()
+        val a = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")
+        val source = cast(d, blueBolt.name, listOf(a))
+        val oldStamp = d.state.getEntity(source)!!.get<TargetsComponent>()!!.targetEntryStamps.getValue(a)
+        d.replaceState(d.state.updateEntity(a) { it.with(
+            com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent(oldStamp + 100)) })
+        val result = com.wingedsheep.engine.handlers.effects.stack.CopyEachTargetSpellExecutor(
+            TargetFinder(PredicateEvaluator(cardRegistry = d.cardRegistry))
+        ).execute(d.state, CopyEachTargetSpellEffect(),
+            EffectContext(sourceId = null, controllerId = d.player2, targets = listOf(ChosenTarget.Spell(source))))
+        result.error shouldBe null
+        d.replaceState(result.state)
+        d.submitTargetSelection(d.player2, listOf(a)).error shouldBe null
+        d.state.getEntity(copies(d).single())!!.get<TargetsComponent>()!!.targetEntryStamps[a] shouldBe oldStamp + 100
+        d.bothPass().error shouldBe null
+        (a in d.state.getBattlefield()) shouldBe false
+    }
     test("an optional group keeps the number actually chosen rather than its printed maximum") {
         val d = driver()
         val a = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")

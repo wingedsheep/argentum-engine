@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 import com.wingedsheep.engine.state.components.battlefield.withCastChoice
 import com.wingedsheep.engine.legalactions.utils.TargetEnumerationUtils
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.targets.withCount
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -276,6 +277,11 @@ class ModalAndCloneContinuationResumer(
                 }
             }
 
+        // Each requirement owns only the targets picked for it, so a short "up to N" group
+        // doesn't absorb a later requirement's targets.
+        val boundRequirements = continuation.targetRequirements.mapIndexed { i, req ->
+            req.withCount(response.selectedTargets[i]?.size ?: 0)
+        }
         val context = EffectContext(
             resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
@@ -283,7 +289,7 @@ class ModalAndCloneContinuationResumer(
             controllerId = continuation.controllerId,
             xValue = continuation.xValue,
             targets = chosenTargets,
-            pipeline = continuation.pipeline.copy(namedTargets = continuation.pipeline.namedTargets + EffectContext.buildNamedTargets(continuation.targetRequirements, chosenTargets)),
+            pipeline = continuation.pipeline.copy(namedTargets = continuation.pipeline.namedTargets + EffectContext.buildNamedTargets(boundRequirements, chosenTargets)),
             triggeringEntityId = continuation.triggeringEntityId
         )
 

@@ -743,9 +743,21 @@ internal class CastValidator(
      * The chosen targets (CR 601.2c), against the requirements of the face and modes being cast —
      * the aura target included, and each spliced card's own after the spell's.
      */
-    private fun validateTargets(state: GameState, action: CastSpell, cardDef: CardDefinition?, source: CastSource): String? {
+    private fun validateTargets(state: GameState, action: CastSpell, cardDef: CardDefinition?, source: CastSource): String? =
+        targetBinding(state, action, cardDef, source.transformedFace)?.error
+
+    /**
+     * How the cast's flat target list splits across its requirements (CR 601.2c) — see
+     * [TargetValidator.bindTargetGroups] — or null when the cast has no targets to bind. The same
+     * requirements [validate] checks, so the handler records exactly the split that was validated.
+     */
+    internal fun targetBinding(
+        state: GameState,
+        action: CastSpell,
+        cardDef: CardDefinition?,
+        transformedFace: CardDefinition?,
+    ): TargetValidator.TargetGroupBinding? {
         if (cardDef == null) return null
-        val transformedFace = source.transformedFace
         // Adventure / split face cast (CR 715 / 709) — read targets from the face's script. A
         // disturb cast reads the back face's script instead (CR 712.8c): the Innistrad disturb
         // cycle's Aura backs choose what to enchant as the spell is cast.
@@ -777,7 +789,7 @@ internal class CastValidator(
         } else if (isOverloadCast(action, cardDef)) {
             // Overload (CR 702.96b): "target" became "each", so the spell takes no targets — and a
             // client-supplied target list on an overloaded cast is malformed, not ignorable.
-            if (action.targets.isNotEmpty()) return "An overloaded spell has no targets"
+            if (action.targets.isNotEmpty()) return TargetValidator.TargetGroupBinding(emptyList(), "An overloaded spell has no targets")
             emptyList()
         } else {
             effectiveScript.targetRequirements
@@ -796,20 +808,55 @@ internal class CastValidator(
             addAll(SpliceCasts.targetRequirementsFor(state, action.splicedCardIds, cardRegistry))
         }.map { req -> castText?.let { req.applyTextReplacement(it) } ?: req }
         if (targetRequirements.isEmpty()) return null
-        // Reject casting if spell requires targets but none were provided
-        if (action.targets.isEmpty() && targetRequirements.sumOf { it.effectiveMinCount } > 0) {
-            return "No valid targets available"
+        val sourceColors = (transformedFace ?: cardDef).colors
+        val sourceSubtypes = (transformedFace ?: cardDef).typeLine.subtypes.map { it.value }.toSet()
+        // A choose-N modal cast that sends its targets per mode already says which mode each target
+        // belongs to, and those slices are what the stack records. Bind each slice against its own
+        // mode — inferring a split of the union could hand one mode's target to another mode's
+        // optional group — then the tail (spliced cards' targets) after them.
+        val modeSlices = action.modeTargetsOrdered.takeIf {
+            modalEffect != null && !modalTargetsDeferred && it.isNotEmpty() && it.size == action.chosenModes.size
         }
-        return targetValidator.validateTargets(
+        var modeCounts: List<Int>? = null
+        val flatTargets = if (modeSlices == null) action.targets else {
+            val union = modeSlices.flatten()
+            if (action.targets.isNotEmpty() && action.targets.take(union.size) != union) {
+                return TargetValidator.TargetGroupBinding(targetRequirements.map { 0 }, "Targets don't match the per-mode targets")
+            }
+            var cursor = 0
+            val perMode = action.chosenModes.zip(modeSlices).map { (mode, modeTargets) ->
+                val size = modalEffect!!.modes.getOrNull(mode)?.targetRequirements?.size ?: 0
+                targetValidator.bindTargetGroups(
+                    state, modeTargets, targetRequirements.subList(cursor, cursor + size), action.playerId,
+                    sourceColors, sourceSubtypes, action.cardId, action.xValue, TargetingSourceType.SPELL,
+                ).also { cursor += size }
+            }
+            val tailTargets = action.targets.drop(union.size)
+            val tail = targetValidator.bindTargetGroups(
+                state, tailTargets, targetRequirements.subList(cursor, targetRequirements.size), action.playerId,
+                sourceColors, sourceSubtypes, action.cardId, action.xValue, TargetingSourceType.SPELL,
+            )
+            (perMode + tail).firstNotNullOfOrNull { it.error }?.let {
+                return TargetValidator.TargetGroupBinding(targetRequirements.map { 0 }, it)
+            }
+            modeCounts = (perMode + tail).flatMap { it.counts }
+            union + tailTargets
+        }
+        // Reject casting if spell requires targets but none were provided
+        if (flatTargets.isEmpty() && targetRequirements.sumOf { it.effectiveMinCount } > 0) {
+            return TargetValidator.TargetGroupBinding(targetRequirements.map { 0 }, "No valid targets available")
+        }
+        return targetValidator.bindTargetGroups(
             state,
-            action.targets,
+            flatTargets,
             targetRequirements,
             action.playerId,
-            sourceColors = (transformedFace ?: cardDef).colors,
-            sourceSubtypes = (transformedFace ?: cardDef).typeLine.subtypes.map { it.value }.toSet(),
+            sourceColors = sourceColors,
+            sourceSubtypes = sourceSubtypes,
             sourceId = action.cardId,
             xValue = action.xValue,
-            targetingSourceType = TargetingSourceType.SPELL
+            targetingSourceType = TargetingSourceType.SPELL,
+            explicitCounts = action.targetGroupCounts ?: modeCounts
         )
     }
 

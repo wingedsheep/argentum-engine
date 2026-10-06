@@ -604,7 +604,9 @@ export function mergeResult(
         return { type: 'Permanent' as const, entityId: targetId }
       })
       if (action.type === 'CastSpell' || action.type === 'ActivateAbility') {
-        return { ...action, targets }
+        return result.targetGroupCounts
+          ? { ...action, targets, targetGroupCounts: result.targetGroupCounts }
+          : { ...action, targets }
       }
       return action
     }

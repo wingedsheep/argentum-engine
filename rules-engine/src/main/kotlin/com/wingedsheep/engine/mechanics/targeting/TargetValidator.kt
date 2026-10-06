@@ -70,71 +70,149 @@ class TargetValidator(
          * is made to say which it is.
          */
         targetingSourceType: TargetingSourceType,
-        retainedTargetIndices: Set<Int>? = null
-    ): String? {
-        // Use the game state for validation
-        // StateProjector is used for P/T checks to account for continuous effects
+        retainedTargetIndices: Set<Int>? = null,
+        /** How many of [targets] each requirement owns, when the announcer said so; see [bindTargetGroups]. */
+        groupCounts: List<Int>? = null
+    ): String? = bindTargetGroups(
+        state, targets, requirements, casterId, sourceColors, sourceSubtypes, sourceId, xValue,
+        targetingSourceType, retainedTargetIndices, groupCounts
+    ).error
 
-        // Match targets to requirements (assuming targets are in order of requirements).
-        // For TargetObject with a dynamicMaxCount, the resolved dynamic value clamps the
-        // per-req max count (the static `count` field is just a placeholder). XValue is
-        // threaded via the chosen [xValue]; every other DynamicAmount is evaluated against
-        // board state here, mirroring TriggerProcessor.snapshotDynamicCount — so a cast-time
-        // spell with e.g. `dynamicMaxCount = Count(...)` caps correctly instead of falling
-        // back to the static placeholder.
-        // An explicit `dynamicMaxCount` outranks the `unlimited` flag. `unlimited` means "no
-        // *static* upper bound" — it is the count the author didn't write down — whereas a
-        // dynamic cap is a bound the author did write down and is simply not knowable until
-        // cast time. Grove's Bounty needs both: "any number of target creatures you control"
-        // with X counters to hand out, where CR 601.2d still forbids declaring more targets
-        // than there are counters. Checking `unlimited` first would drop that cap on the floor.
-        fun effectiveMaxCount(req: TargetRequirement): Int {
-            if (retainedTargetIndices != null) return req.count
-            val unboundedFallback = if (req.unlimited) Int.MAX_VALUE else req.count
-            if (req is TargetObject) {
-                val dyn = req.dynamicMaxCount
-                if (dyn == DynamicAmount.XValue) {
-                    return xValue ?: unboundedFallback
-                }
-                if (dyn != null) {
-                    return try {
-                        val context = EffectContext(
-                            sourceId = sourceId,
-                            controllerId = casterId,
-                            xValue = xValue
-                        )
-                        amountEvaluator.evaluate(state, dyn, context).coerceAtLeast(0)
-                    } catch (_: Exception) {
-                        unboundedFallback
+    /**
+     * How many of a flat target list each requirement owns, and whether that binding is legal.
+     *
+     * Each requirement is one instance of the word "target" (CR 601.2c), and the announced targets
+     * arrive as one list, requirement after requirement. A group that may hold fewer than its
+     * maximum ("up to two target creatures") makes that list ambiguous: one creature and an opponent
+     * is a short creature group followed by the opponent, not two creature slots. [explicitCounts]
+     * is the announcer's own split and is taken as given when it has one count per requirement. Without it the groups fill greedily —
+     * every group as full as it can be, the historical reading — and only when that reading is
+     * illegal are the other splits tried, earlier groups fullest first, the first legal one winning.
+     *
+     * The returned counts are what the stack object records: narrowing each requirement to its
+     * count (`withCount`) is what keeps every later `req.count` walk over the flat list — named
+     * targets, the 608.2b re-check, splice slices, copies — on the right slots.
+     */
+    fun bindTargetGroups(
+        state: GameState,
+        targets: List<ChosenTarget>,
+        requirements: List<TargetRequirement>,
+        casterId: EntityId,
+        sourceColors: Set<Color> = emptySet(),
+        sourceSubtypes: Set<String> = emptySet(),
+        sourceId: EntityId? = null,
+        xValue: Int? = null,
+        targetingSourceType: TargetingSourceType,
+        retainedTargetIndices: Set<Int>? = null,
+        explicitCounts: List<Int>? = null
+    ): TargetGroupBinding {
+        if (requirements.isEmpty()) return TargetGroupBinding(emptyList(), null)
+        val maxCounts = requirements.map { effectiveMaxCount(state, it, casterId, sourceId, xValue, retainedTargetIndices) }
+        fun check(counts: List<Int>) = validateGroups(
+            state, targets, requirements, counts, casterId, sourceColors, sourceSubtypes, sourceId, xValue,
+            targetingSourceType, retainedTargetIndices
+        )
+        // Counts for a different requirement list (a client that saw the targets grouped another
+        // way) say nothing about this one; the split is inferred instead, and still fully validated.
+        if (explicitCounts != null && explicitCounts.size == requirements.size) {
+            val shapeError = when {
+                // Each count is bounded before summing so client-supplied values can't wrap the sum.
+                explicitCounts.any { it < 0 || it > targets.size } || explicitCounts.sum() != targets.size ->
+                    "Target groups don't match the chosen targets"
+                else -> requirements.indices.firstNotNullOfOrNull { i ->
+                    when {
+                        explicitCounts[i] < 0 || explicitCounts[i] > maxCounts[i] -> "Too many targets for ${requirements[i].description}"
+                        explicitCounts[i] < requirements[i].effectiveMinCount -> "Not enough targets for ${requirements[i].description}"
+                        else -> null
                     }
                 }
             }
-            return unboundedFallback
+            return TargetGroupBinding(explicitCounts, shapeError ?: check(explicitCounts))
         }
-        for ((index, requirement) in requirements.withIndex()) {
-            // Get targets for this requirement (handle multi-target requirements)
-            val targetCount = effectiveMaxCount(requirement)
-            val startIdx = requirements.take(index).sumOf { effectiveMaxCount(it) }
-            // Use Long for the end index so an unlimited requirement (targetCount = Int.MAX_VALUE)
-            // doesn't overflow to a negative value and make subList throw.
-            val endIdx = (startIdx.toLong() + targetCount.toLong())
-                .coerceAtMost(targets.size.toLong()).toInt()
-            val targetsForReq = targets.subList(
-                startIdx.coerceAtMost(targets.size),
-                endIdx
-            )
+        var left = targets.size
+        val greedy = maxCounts.map { max -> minOf(max, left).also { left -= it } }
+        if (left > 0) return TargetGroupBinding(greedy, "Too many targets for ${requirements.first().description}")
+        val greedyError = check(greedy) ?: return TargetGroupBinding(greedy, null)
+        val alternative = splits(requirements.map { it.effectiveMinCount }, maxCounts, targets.size)
+            .take(MAX_TARGET_GROUP_SPLITS)
+            .firstOrNull { it != greedy && check(it) == null }
+        return alternative?.let { TargetGroupBinding(it, null) } ?: TargetGroupBinding(greedy, greedyError)
+    }
 
-            // Reject if too many targets were declared. When a requirement is *effectively*
-            // unbounded ("any number of target ...", Drafna's Restoration) there is no upper
-            // bound, so skip this check — summing Int.MAX_VALUE would overflow to a negative cap
-            // and spuriously reject a legal cast. An unlimited requirement that also carries a
-            // resolved `dynamicMaxCount` (Grove's Bounty) is bounded after all, so it is checked.
-            if (requirements.none { effectiveMaxCount(it) == Int.MAX_VALUE }) {
-                val totalMax = requirements.sumOf { effectiveMaxCount(it) }
-                if (targets.size > totalMax) {
-                    return "Too many targets for ${requirement.description}"
+    /** Every split of [total] targets into groups within [mins]..[maxes], earlier groups fullest first. */
+    private fun splits(mins: List<Int>, maxes: List<Int>, total: Int, index: Int = 0): Sequence<List<Int>> = sequence {
+        if (index == mins.size) {
+            if (total == 0) yield(emptyList())
+            return@sequence
+        }
+        val restMin = mins.drop(index + 1).sum()
+        for (count in minOf(maxes[index], total - restMin) downTo mins[index]) {
+            for (rest in splits(mins, maxes, total - count, index + 1)) yield(listOf(count) + rest)
+        }
+    }
+
+    // For TargetObject with a dynamicMaxCount, the resolved dynamic value clamps the
+    // per-req max count (the static `count` field is just a placeholder). XValue is
+    // threaded via the chosen [xValue]; every other DynamicAmount is evaluated against
+    // board state here, mirroring TriggerProcessor.snapshotDynamicCount — so a cast-time
+    // spell with e.g. `dynamicMaxCount = Count(...)` caps correctly instead of falling
+    // back to the static placeholder.
+    // An explicit `dynamicMaxCount` outranks the `unlimited` flag. `unlimited` means "no
+    // *static* upper bound" — it is the count the author didn't write down — whereas a
+    // dynamic cap is a bound the author did write down and is simply not knowable until
+    // cast time. Grove's Bounty needs both: "any number of target creatures you control"
+    // with X counters to hand out, where CR 601.2d still forbids declaring more targets
+    // than there are counters. Checking `unlimited` first would drop that cap on the floor.
+    private fun effectiveMaxCount(
+        state: GameState,
+        req: TargetRequirement,
+        casterId: EntityId,
+        sourceId: EntityId?,
+        xValue: Int?,
+        retainedTargetIndices: Set<Int>?
+    ): Int {
+        if (retainedTargetIndices != null) return req.count
+        val unboundedFallback = if (req.unlimited) Int.MAX_VALUE else req.count
+        if (req is TargetObject) {
+            val dyn = req.dynamicMaxCount
+            if (dyn == DynamicAmount.XValue) {
+                return xValue ?: unboundedFallback
+            }
+            if (dyn != null) {
+                return try {
+                    val context = EffectContext(
+                        sourceId = sourceId,
+                        controllerId = casterId,
+                        xValue = xValue
+                    )
+                    amountEvaluator.evaluate(state, dyn, context).coerceAtLeast(0)
+                } catch (_: Exception) {
+                    unboundedFallback
                 }
             }
+        }
+        return unboundedFallback
+    }
+
+    /** Validate one binding of [targets] to [requirements], [counts] targets per requirement. */
+    private fun validateGroups(
+        state: GameState,
+        targets: List<ChosenTarget>,
+        requirements: List<TargetRequirement>,
+        counts: List<Int>,
+        casterId: EntityId,
+        sourceColors: Set<Color>,
+        sourceSubtypes: Set<String>,
+        sourceId: EntityId?,
+        xValue: Int?,
+        targetingSourceType: TargetingSourceType,
+        retainedTargetIndices: Set<Int>?
+    ): String? {
+        val starts = counts.runningFold(0, Int::plus)
+        for ((index, requirement) in requirements.withIndex()) {
+            val startIdx = starts[index]
+            val endIdx = starts[index + 1]
+            val targetsForReq = targets.subList(startIdx, endIdx)
 
             // Check minimum targets
             if (targetsForReq.size < requirement.effectiveMinCount) {
@@ -310,6 +388,22 @@ class TargetValidator(
         }
 
         return null
+    }
+
+    /** One [TargetValidator.bindTargetGroups] answer: the per-requirement counts, and why they're illegal if they are. */
+    data class TargetGroupBinding(val counts: List<Int>, val error: String?)
+
+    companion object {
+        /** A bound on the splits tried for one announcement; real spells have a handful of target words. */
+        private const val MAX_TARGET_GROUP_SPLITS = 512
+
+        /**
+         * Whether every group has one possible size, so a flat list binds only one way and
+         * [bindTargetGroups] would hand back the printed counts unchanged.
+         */
+        fun hasFixedGroups(requirements: List<TargetRequirement>): Boolean = requirements.all {
+            !it.unlimited && it.effectiveMinCount == it.count && (it as? TargetObject)?.dynamicMaxCount == null
+        }
     }
 
     /** A card's printed creature types; a changeling card has every creature type (CR 702.73a). */

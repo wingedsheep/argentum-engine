@@ -115,6 +115,7 @@ import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.StormCopyEffect
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
+import com.wingedsheep.sdk.scripting.targets.withCount
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
@@ -384,7 +385,14 @@ class CastSpellHandler(
             is CastPaymentOutcome.Paid -> outcome.payment
         }
 
-        val targeting = spellTargeting(state, action, cardDef, transformedFace)
+        // Only a cast that announced targets has a split to bind; binding an empty list would narrow
+        // every requirement to zero. A choose-N modal cast may announce them per mode only, and the
+        // validator binds each slice against its own mode. Fixed-size groups bind one way only.
+        val unbound = spellTargeting(state, action, cardDef, transformedFace)
+        val announced = action.targets.isNotEmpty() || action.modeTargetsOrdered.any { it.isNotEmpty() }
+        val targeting = if (!announced || TargetValidator.hasFixedGroups(unbound.requirements)) unbound
+            else unbound.boundTo(castValidator.targetBinding(state, action, cardDef, transformedFace)
+                ?.takeIf { it.error == null }?.counts)
 
         // A creature type chosen as the spell is cast (e.g., Aphetto Dredging).
         cardDef?.script?.castTimeCreatureTypeChoice?.let { castTimeChoice ->
@@ -531,7 +539,30 @@ class CastSpellHandler(
         /** For a modal spell with modes chosen at cast time, each chosen mode's own requirements. */
         val perMode: Map<Int, List<TargetRequirement>>,
         val modalEffect: ModalEffect?,
-    )
+        /** The chosen modes, in order, while their requirements are bound to [requirements]' counts. */
+        val chosenModes: List<Int> = emptyList(),
+    ) {
+        /**
+         * Narrow each requirement to the number of targets the announcement bound to it (CR 601.2c).
+         * Everything after the cast walks the flat target list by `count` — named targets, the 608.2b
+         * re-check, splice slices, mode slices, copies — so a partly filled "up to N" group must
+         * record what it holds, or every later group would read the wrong slots. A mode chosen more
+         * than once keeps its printed requirements: [perMode] can hold only one binding per mode.
+         */
+        fun boundTo(counts: List<Int>?): SpellTargeting {
+            if (counts == null || counts.size != requirements.size) return this
+            val bound = requirements.zip(counts) { req, count -> req.withCount(count) }
+            if (chosenModes.isEmpty() || chosenModes.distinct().size != chosenModes.size) {
+                return SpellTargeting(bound, perMode, modalEffect, chosenModes)
+            }
+            var cursor = 0
+            val boundPerMode = chosenModes.associateWith { mode ->
+                val size = perMode[mode].orEmpty().size
+                bound.subList(cursor, cursor + size).also { cursor += size }
+            }
+            return SpellTargeting(bound, boundPerMode, modalEffect, chosenModes)
+        }
+    }
 
     private fun spellTargeting(
         state: GameState,
@@ -575,7 +606,7 @@ class CastSpellHandler(
             // StackResolver slices off to hand each spliced card its own targets.
             addAll(SpliceCasts.targetRequirementsFor(state, action.splicedCardIds, cardRegistry))
         }
-        return SpellTargeting(requirements, perMode, modalEffect)
+        return SpellTargeting(requirements, perMode, modalEffect, action.chosenModes.takeIf { perMode.isNotEmpty() }.orEmpty())
     }
 
     /** Puts the paid-for spell on the stack with everything its resolution will read. */
@@ -602,7 +633,7 @@ class CastSpellHandler(
             action.modeTargetsOrdered.isEmpty() && action.chosenModes.isNotEmpty() &&
             modalEffect != null && action.targets.isNotEmpty()
         ) {
-            deriveModeTargetsFromFlat(modalEffect, action.chosenModes, action.targets)
+            deriveModeTargetsFromFlat(modalEffect, action.chosenModes, action.targets, targeting.perMode)
         } else {
             action.modeTargetsOrdered
         }
@@ -1303,7 +1334,9 @@ class CastSpellHandler(
     private fun deriveModeTargetsFromFlat(
         modalEffect: com.wingedsheep.sdk.scripting.effects.ModalEffect,
         chosenModes: List<Int>,
-        flatTargets: List<ChosenTarget>
+        flatTargets: List<ChosenTarget>,
+        /** Each mode's requirements as the announcement bound them, when it could. */
+        boundPerMode: Map<Int, List<TargetRequirement>> = emptyMap()
     ): List<List<ChosenTarget>> {
         // Choose-1: all flat targets belong to the single chosen mode. Using the mode's
         // max `count` here would mis-slice "up to N target" modes when the player picks
@@ -1313,7 +1346,7 @@ class CastSpellHandler(
         }
 
         val perModeSlotCounts = chosenModes.map { idx ->
-            modalEffect.modes.getOrNull(idx)?.targetRequirements?.sumOf { it.count } ?: 0
+            (boundPerMode[idx] ?: modalEffect.modes.getOrNull(idx)?.targetRequirements)?.sumOf { it.count } ?: 0
         }
         if (perModeSlotCounts.sum() != flatTargets.size) return emptyList()
 

@@ -1241,7 +1241,13 @@ class LibraryAndZoneContinuationResumer(
         val stateForCast = state.copy(priorityPlayerId = continuation.casterId)
         val castResult = castSpellHandler.execute(
             stateForCast,
-            CastSpell(continuation.casterId, continuation.cardId, chosenTargets, faceIndex = continuation.faceIndex),
+            CastSpell(
+                continuation.casterId, continuation.cardId, chosenTargets, faceIndex = continuation.faceIndex,
+                // The response is keyed by requirement, so it knows each group's size; inference
+                // can't always recover it (two optional groups with overlapping filters).
+                targetGroupCounts = response.selectedTargets.keys.maxOrNull()
+                    ?.let { last -> (0..last).map { response.selectedTargets[it]?.size ?: 0 } },
+            ),
         )
 
         if (castResult.error != null) {

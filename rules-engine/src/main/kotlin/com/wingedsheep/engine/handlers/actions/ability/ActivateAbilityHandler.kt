@@ -50,6 +50,9 @@ import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
+import com.wingedsheep.sdk.scripting.targets.TargetChooser
+import com.wingedsheep.sdk.scripting.targets.withCount
+import com.wingedsheep.engine.handlers.TargetingSourceType
 import kotlin.reflect.KClass
 
 /**
@@ -407,6 +410,32 @@ class ActivateAbilityHandler(
     }
 
     /**
+     * The ability's requirements narrowed to how many of the action's flat targets each one owns —
+     * see [TargetValidator.bindTargetGroups]. Bound against the state the activation was validated
+     * in, so the split recorded is the split that was checked. Left as printed when an opponent
+     * chooses some of the targets: their slots are merged in by the resume, not announced here.
+     */
+    private fun boundTargetRequirements(state: GameState, activation: Activation): List<TargetRequirement> {
+        val requirements = activation.targetRequirements
+        val action = activation.action
+        if (action.targets.isEmpty() || TargetValidator.hasFixedGroups(requirements) ||
+            requirements.any { it.chooser != TargetChooser.Controller }
+        ) return requirements
+        val source = state.getEntity(action.sourceId)?.get<CardComponent>()
+        val binding = targetValidator.bindTargetGroups(
+            state, action.targets, requirements, action.playerId,
+            sourceColors = source?.colors.orEmpty(),
+            sourceSubtypes = source?.typeLine?.subtypes?.mapTo(mutableSetOf()) { it.value }.orEmpty(),
+            sourceId = action.sourceId,
+            xValue = activation.effectiveXValue,
+            targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY,
+            explicitCounts = action.targetGroupCounts
+        )
+        if (binding.error != null) return requirements
+        return requirements.zip(binding.counts) { req, count -> req.withCount(count) }
+    }
+
+    /**
      * Stage 5 for a non-mana ability: put it on the stack, then queue any repeated activations
      * (repeatCount > 1).
      *
@@ -476,8 +505,9 @@ class ActivateAbilityHandler(
             damageDistribution = action.damageDistribution
         )
 
-        // Apply text-changing effects to the target requirements for resolution-time re-validation
-        val effectiveTargetReqs = activation.targetRequirements
+        // Apply text-changing effects to the target requirements for resolution-time re-validation,
+        // each narrowed to the targets the activation bound to it (CR 601.2c via 602.2b).
+        val effectiveTargetReqs = boundTargetRequirements(stateBeforeActivation, activation)
 
         val stackResult = stackResolver.putActivatedAbility(
             state, abilityOnStack, action.targets,

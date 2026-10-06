@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.stack
 
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.core.*
@@ -57,16 +58,27 @@ internal class NonPermanentSpellResolver(
      * A spliced card contributes its *rules text*, so what is queued is its `spellEffect`; a splice
      * card with no spell effect (nothing splice-able) simply drops out.
      */
-    private fun buildSpliceEntries(spellComponent: SpellOnStackComponent): List<PreTargetedEffectEntry> =
-        spellComponent.splicedCardNames.mapIndexedNotNull { index, name ->
+    private fun buildSpliceEntries(
+        spellComponent: SpellOnStackComponent,
+        boundRequirements: List<TargetRequirement>,
+    ): List<PreTargetedEffectEntry> {
+        // Each spliced card's requirements as the cast bound them — the tail of the recorded list,
+        // in splice order — so a partly filled "up to N" spliced group names the targets it holds.
+        val printed = spellComponent.splicedCardNames.map { cardRegistry.getCard(it)?.script?.targetRequirements.orEmpty() }
+        var cursor = boundRequirements.size - printed.sumOf { it.size }
+        val bound = printed.map { reqs ->
+            (if (cursor >= 0) boundRequirements.subList(cursor, cursor + reqs.size) else reqs).also { cursor += reqs.size }
+        }
+        return spellComponent.splicedCardNames.mapIndexedNotNull { index, name ->
             val splicedDef = cardRegistry.getCard(name) ?: return@mapIndexedNotNull null
             val effect = splicedDef.script.spellEffect ?: return@mapIndexedNotNull null
             PreTargetedEffectEntry(
                 effect = effect,
                 targets = spellComponent.splicedTargetsOrdered.getOrNull(index) ?: emptyList(),
-                targetRequirements = splicedDef.script.targetRequirements
+                targetRequirements = bound[index]
             )
         }
+    }
 
     /**
      * Resolve a non-permanent spell - execute effects, put in graveyard.
@@ -101,15 +113,15 @@ internal class NonPermanentSpellResolver(
         // that consumes "all targets" would swallow the spliced card's as well.
         // A spell with no effect of its own can't be a splice host in practice (a splice card is
         // spliced onto a spell that has text), so the tail lives inside the `spellEffect != null` guard.
-        val spliceEntries = buildSpliceEntries(spellComponent)
         val splicedRequirementCount = spellComponent.splicedCardNames.sumOf { name ->
             cardRegistry.getCard(name)?.script?.targetRequirements?.size ?: 0
         }
+        val allTargetRequirements = state.getEntity(spellId)?.get<TargetsComponent>()?.targetRequirements ?: emptyList()
+        val spliceEntries = buildSpliceEntries(spellComponent, allTargetRequirements)
         val splicedSlotCount = SpliceCasts
-            .splicedTargetSlotCounts(spellComponent.splicedCardNames, cardRegistry).sum()
+            .splicedTargetSlotCounts(spellComponent.splicedCardNames, cardRegistry, allTargetRequirements).sum()
 
         if (spellEffect != null) {
-            val allTargetRequirements = state.getEntity(spellId)?.get<TargetsComponent>()?.targetRequirements ?: emptyList()
             // Requirements are never filtered, so the tail comes straight off the end.
             val targetRequirements = allTargetRequirements.dropLast(splicedRequirementCount)
             // The tail is dropped from `alignedTargets`, NOT from `targets`: only the aligned list is

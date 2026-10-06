@@ -140,7 +140,12 @@ class FrozenBaselineTest : FunSpec({
          * **`LEGACY_V0` did not move.** With `", declaredCostIndices=[]"` stripped from the recorded
          * action text, this branch reproduces the previous golden `5abfc5a4162d88b6` exactly. Seat 1
          * still wins on turn 20 at life -8 / 16.
+         *
+         * Re-blessed 2026-10-06 for target-group binding adding `CastSpell.targetGroupCounts`.
+         * **`LEGACY_V0` did not move.** With `", targetGroupCounts=null"` stripped from the recorded
+         * action text, this branch reproduces the previous golden `e42743d277e9ae6d` exactly. Seat 1
+         * still wins on turn 20 at life -8 / 16.
          */
-        private const val GOLDEN_HASH = "e42743d277e9ae6d"
+        private const val GOLDEN_HASH = "ad0d0b20c33d2434"
     }
 }

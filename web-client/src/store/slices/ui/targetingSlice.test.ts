@@ -88,7 +88,11 @@ describe('targetingSlice — multi-target back navigation', () => {
 
     store.getState().addTarget(id('a'))
     store.getState().confirmTargeting('test-epoch')
-    expect(advancePipeline).toHaveBeenCalledWith({ type: 'targeting', selectedTargets: [id('a'), id('a')] })
+    expect(advancePipeline).toHaveBeenCalledWith({
+      type: 'targeting',
+      selectedTargets: [id('a'), id('a')],
+      targetGroupCounts: [1, 1],
+    })
   })
 
   it('goBackTargeting restores the previous requirement with its picks selected', () => {
@@ -150,6 +154,10 @@ describe('targetingSlice — multi-target back navigation', () => {
     store.getState().confirmTargeting('test-epoch')
 
     expect(store.getState().targetingState).toBeNull()
-    expect(advancePipeline).toHaveBeenCalledWith({ type: 'targeting', selectedTargets: [id('a'), id('c')] })
+    expect(advancePipeline).toHaveBeenCalledWith({
+      type: 'targeting',
+      selectedTargets: [id('a'), id('c')],
+      targetGroupCounts: [1, 1],
+    })
   })
 })
