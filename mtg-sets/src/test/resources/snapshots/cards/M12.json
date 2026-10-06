@@ -930,6 +930,33 @@
     ]
 }
 
+// Tormented Soul
+{
+    "name": "Tormented Soul",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "This creature can't block and can't be blocked.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            "CantBlock",
+            "CantBeBlocked"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "artist": "Karl Kopinski",
+        "flavorText": "Those who raged most bitterly at the world in life are cursed to roam the nether realms in death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2699c42-99bb-4b5a-82ec-9c6424c14ec1.jpg?1783941076"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Trollhide
 {
     "name": "Trollhide",

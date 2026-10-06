@@ -301,6 +301,75 @@
     ]
 }
 
+// Captain Lannery Storm
+{
+    "name": "Captain Lannery Storm",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Human Pirate",
+    "oracleText": "Haste\nWhenever Captain Lannery Storm attacks, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")\nWhenever you sacrifice a Treasure, Captain Lannery Storm gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Captain Lannery Storm:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                },
+                "descriptionOverride": "Whenever Captain Lannery Storm attacks, create a Treasure token."
+            },
+            {
+                "id": "Captain Lannery Storm:2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "artifact Treasure",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you sacrifice a Treasure, Captain Lannery Storm gets +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5ab86a8a-7a0a-473e-9a97-da2fe0ab866c.jpg?1783935752",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Captain Lannery Storm's last ability triggers whenever you sacrifice a Treasure for any reason, not just to activate a Treasure's mana ability."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If you sacrifice Treasures to cast Captain Lannery Storm, its last ability won't trigger for those Treasures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Carnage Tyrant
 {
     "name": "Carnage Tyrant",

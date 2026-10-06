@@ -2596,85 +2596,97 @@ class CastSpellEnumerator(
         if (variablePermanentsCost != null && offer.variablePermanentsTargets.isNotEmpty()) {
             return VariablePermanentsCostKind.sacrificeVariableData(variablePermanentsCost, offer.variablePermanentsTargets)
         }
-        return if (offer.variableSacrificeTargets.isNotEmpty()) {
-            val varSacCost = additionalCosts.filterIsInstance<AdditionalCost.SacrificeCreaturesForCostReduction>().firstOrNull()
-            AdditionalCostData(
-                description = varSacCost?.description ?: "You may sacrifice any number of creatures",
-                costType = "SacrificeForCostReduction",
-                validSacrificeTargets = offer.variableSacrificeTargets,
-                sacrificeCount = 0 // min 0 — sacrifice is optional
-            )
-        } else if (offer.sacrificeTargets.isNotEmpty()) {
-            val sacCost = additionalCosts.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.Sacrifice }
-            AdditionalCostData(
-                description = sacCost?.description?.replaceFirstChar { it.uppercase() } ?: "Sacrifice a creature",
-                costType = "SacrificePermanent",
-                validSacrificeTargets = offer.sacrificeTargets,
-                sacrificeCount = sacCost?.count ?: 1
-            )
-        } else if (offer.exileTargets.isNotEmpty()) {
-            val exileCostDesc = additionalCosts
-                .filterIsInstance<AdditionalCost.ExileVariableCards>()
-                .firstOrNull()?.description
-                ?: additionalCosts
-                    .firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.ExileFrom }
-                    ?.description?.replaceFirstChar { it.uppercase() }
-                ?: "Exile cards from your graveyard"
-            AdditionalCostData(
-                description = exileCostDesc,
-                costType = "ExileFromGraveyard",
-                validExileTargets = offer.exileTargets,
-                exileMinCount = offer.exileMinCount,
-                exileMaxCount = offer.exileTargets.size
-            )
-        } else if (offer.discardTargets.isNotEmpty()) {
-            val discardCost = additionalCosts.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.Discard }
-            AdditionalCostData(
-                description = discardCost?.description?.replaceFirstChar { it.uppercase() } ?: "Discard a card",
-                costType = "DiscardCard",
-                validDiscardTargets = offer.discardTargets,
-                discardCount = offer.discardCount
-            )
-        } else if (offer.bounceTargets.isNotEmpty()) {
-            val bounceCost = additionalCosts.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.ReturnToHand }
-            AdditionalCostData(
-                description = bounceCost?.description?.replaceFirstChar { it.uppercase() } ?: "Return a permanent you control to its owner's hand",
-                // "BouncePermanent" is the bounce picker's costType everywhere else (activated
-                // abilities, Sneak, Web-slinging); "ReturnToHand" matches no client phase.
-                costType = "BouncePermanent",
-                validBounceTargets = offer.bounceTargets,
-                bounceCount = offer.bounceCount
-            )
-        } else if (offer.tapTargets.isNotEmpty()) {
-            val tapCostAtom = additionalCosts.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.TapPermanents }
-            AdditionalCostData(
-                description = tapCostAtom?.description?.replaceFirstChar { it.uppercase() } ?: "Tap permanents you control",
-                costType = "TapPermanents",
-                validTapTargets = offer.tapTargets,
-                tapCount = offer.tapCount
-            )
-        } else if (offer.revealTargets.isNotEmpty()) {
-            val revealCostAtom = additionalCosts.firstNotNullOfOrNull {
-                (it as? AdditionalCost.Atom)?.atom as? CostAtom.RevealFromHand
+        // Every selection cost the spell carries is offered — "discard a card and sacrifice a
+        // creature" asks for both (CR 601.2h). The first leads; the rest ride in `alsoRequired`.
+        val selections = buildList {
+            if (offer.variableSacrificeTargets.isNotEmpty()) {
+                val varSacCost = additionalCosts.filterIsInstance<AdditionalCost.SacrificeCreaturesForCostReduction>().firstOrNull()
+                add(AdditionalCostData(
+                    description = varSacCost?.description ?: "You may sacrifice any number of creatures",
+                    costType = "SacrificeForCostReduction",
+                    validSacrificeTargets = offer.variableSacrificeTargets,
+                    sacrificeCount = 0 // min 0 — sacrifice is optional
+                ))
             }
-            AdditionalCostData(
-                description = revealCostAtom?.description?.replaceFirstChar { it.uppercase() }
-                    ?: "Reveal a card from your hand",
-                costType = "RevealCard",
-                validRevealTargets = offer.revealTargets,
-                revealCount = offer.revealCount
-            )
-        } else if (offer.beholdTargets.isNotEmpty()) {
-            val flatCosts = additionalCosts.flatMap { if (it is AdditionalCost.Composite) it.steps else listOf(it) }
-            val beholdCost = flatCosts.filterIsInstance<AdditionalCost.Behold>().firstOrNull()
-            val chooseCost = flatCosts.filterIsInstance<AdditionalCost.ChooseEntity>().firstOrNull()
-            AdditionalCostData(
-                description = chooseCost?.description ?: beholdCost?.description ?: "Behold a card",
-                costType = if (chooseCost != null) "ChooseEntity" else "Behold",
-                validBeholdTargets = offer.beholdTargets,
-                beholdCount = offer.beholdCount
-            )
-        } else null
+            if (offer.sacrificeTargets.isNotEmpty()) {
+                val sacCost = additionalCosts.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.Sacrifice }
+                add(AdditionalCostData(
+                    description = sacCost?.description?.replaceFirstChar { it.uppercase() } ?: "Sacrifice a creature",
+                    costType = "SacrificePermanent",
+                    validSacrificeTargets = offer.sacrificeTargets,
+                    sacrificeCount = sacCost?.count ?: 1
+                ))
+            }
+            if (offer.exileTargets.isNotEmpty()) {
+                val exileCostDesc = additionalCosts
+                    .filterIsInstance<AdditionalCost.ExileVariableCards>()
+                    .firstOrNull()?.description
+                    ?: additionalCosts
+                        .firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.ExileFrom }
+                        ?.description?.replaceFirstChar { it.uppercase() }
+                    ?: "Exile cards from your graveyard"
+                add(AdditionalCostData(
+                    description = exileCostDesc,
+                    costType = "ExileFromGraveyard",
+                    validExileTargets = offer.exileTargets,
+                    exileMinCount = offer.exileMinCount,
+                    exileMaxCount = offer.exileTargets.size
+                ))
+            }
+            if (offer.discardTargets.isNotEmpty()) {
+                val discardCost = additionalCosts.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.Discard }
+                add(AdditionalCostData(
+                    description = discardCost?.description?.replaceFirstChar { it.uppercase() } ?: "Discard a card",
+                    costType = "DiscardCard",
+                    validDiscardTargets = offer.discardTargets,
+                    discardCount = offer.discardCount
+                ))
+            }
+            if (offer.bounceTargets.isNotEmpty()) {
+                val bounceCost = additionalCosts.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.ReturnToHand }
+                add(AdditionalCostData(
+                    description = bounceCost?.description?.replaceFirstChar { it.uppercase() } ?: "Return a permanent you control to its owner's hand",
+                    // "BouncePermanent" is the bounce picker's costType everywhere else (activated
+                    // abilities, Sneak, Web-slinging); "ReturnToHand" matches no client phase.
+                    costType = "BouncePermanent",
+                    validBounceTargets = offer.bounceTargets,
+                    bounceCount = offer.bounceCount
+                ))
+            }
+            if (offer.tapTargets.isNotEmpty()) {
+                val tapCostAtom = additionalCosts.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.TapPermanents }
+                add(AdditionalCostData(
+                    description = tapCostAtom?.description?.replaceFirstChar { it.uppercase() } ?: "Tap permanents you control",
+                    costType = "TapPermanents",
+                    validTapTargets = offer.tapTargets,
+                    tapCount = offer.tapCount
+                ))
+            }
+            if (offer.revealTargets.isNotEmpty()) {
+                val revealCostAtom = additionalCosts.firstNotNullOfOrNull {
+                    (it as? AdditionalCost.Atom)?.atom as? CostAtom.RevealFromHand
+                }
+                add(AdditionalCostData(
+                    description = revealCostAtom?.description?.replaceFirstChar { it.uppercase() }
+                        ?: "Reveal a card from your hand",
+                    costType = "RevealCard",
+                    validRevealTargets = offer.revealTargets,
+                    revealCount = offer.revealCount
+                ))
+            }
+            if (offer.beholdTargets.isNotEmpty()) {
+                val flatCosts = additionalCosts.flatMap { if (it is AdditionalCost.Composite) it.steps else listOf(it) }
+                val beholdCost = flatCosts.filterIsInstance<AdditionalCost.Behold>().firstOrNull()
+                val chooseCost = flatCosts.filterIsInstance<AdditionalCost.ChooseEntity>().firstOrNull()
+                add(AdditionalCostData(
+                    description = chooseCost?.description ?: beholdCost?.description ?: "Behold a card",
+                    costType = if (chooseCost != null) "ChooseEntity" else "Behold",
+                    validBeholdTargets = offer.beholdTargets,
+                    beholdCount = offer.beholdCount
+                ))
+            }
+        }
+        return selections.firstOrNull()?.copy(alsoRequired = selections.drop(1))
     }
 
     /**

@@ -69,7 +69,7 @@ internal class JevActions(
                 xConstrainsManaValueExactly = info.xConstrainsTargetManaValueExactly,
                 xConstrainsPower = info.xConstrainsTargetPower, xConstrainsCount = info.xConstrainsTargetCount,
             )) else emptyList(), x)
-        val costs = listOfNotNull(info.additionalCostInfo) + modes.mapNotNull { it.additionalCostInfo } +
+        val costs = listOfNotNull(info.additionalCostInfo) + info.additionalCostInfo?.alsoRequired.orEmpty() + modes.mapNotNull { it.additionalCostInfo } +
             List((modes.size - 1).coerceAtLeast(0)) { modal?.additionalCostPerExtraMode }.filterNotNull()
         val payment = costs.map(::cost).reduceOrNull(::combine)
         val manaPayment = manaPayment(info)

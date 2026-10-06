@@ -54,6 +54,59 @@
     ]
 }
 
+// Aftershock
+{
+    "name": "Aftershock",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target artifact, creature, or land. Aftershock deals 3 damage to you.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|creature|land"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "artist": "Hannibal King",
+        "flavorText": "\"Every act of destruction has a repercussion.\"\n—Karn, silver golem",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c91a26b2-03f8-43f0-a3a4-ff6c5a3690c4.jpg?1783946633"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Altar of Dementia
 {
     "name": "Altar of Dementia",

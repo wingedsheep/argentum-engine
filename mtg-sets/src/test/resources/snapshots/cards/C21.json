@@ -201,3 +201,103 @@
         "RED"
     ]
 }
+
+// Tivash, Gloom Summoner
+{
+    "name": "Tivash, Gloom Summoner",
+    "manaCost": "{4}{B}",
+    "typeLine": "Legendary Creature — Human Warlock",
+    "oracleText": "Lifelink\nAt the beginning of your end step, if you gained life this turn, you may pay X life, where X is the amount of life you gained this turn. If you do, create an X/X black Demon creature token with flying.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tivash, Gloom Summoner:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayDynamicLife",
+                            "amount": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "LIFE_GAINED"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 0,
+                        "toughness": 0,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Demon"
+                        ],
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6df5992-9c1c-407d-9602-a6c659342a15.jpg?1783927202",
+                        "dynamicPower": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "LIFE_GAINED"
+                        },
+                        "dynamicToughness": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "LIFE_GAINED"
+                        }
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if you gained life this turn, you may pay X life, where X is the amount of life you gained this turn. If you do, create an X/X black Demon creature token with flying."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3b2a152-7bb9-495d-ac84-516097754137.jpg?1783927596",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Tivash's ability counts the total amount of life gained without considering any life you lost during that turn. For example, if you lost 3 life and gained 4 life earlier in the turn, you may pay 4 life to create a 4/4 Demon."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You can't pay less life than the amount of life you gained to create a smaller but less harmful Demon."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You need to gain life before the end step begins for the last ability to trigger."
+            }
+        ]
+    }
+}

@@ -868,6 +868,11 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
 
 **`Costs.additional.*`** (wraps `AdditionalCost`) — extra costs paid alongside the mana cost. Card
 definitions construct these through the facade, e.g. `Costs.additional.SacrificePermanent(Filters.Creature)`.
+Several `additionalCost(...)` calls on one card are all owed (CR 601.2h) — "discard a card and sacrifice
+a creature" is `additionalCost(Costs.additional.DiscardCards())` plus
+`additionalCost(Costs.additional.SacrificePermanent(GameObjectFilter.Creature))` (Ruthless Disposal). The
+cast action advertises the first selection cost as `additionalCostInfo` and the rest in its
+`alsoRequired` list; the client prompts each picker in turn.
 
 - `Costs.additional.SacrificePermanent(filter = Any, count = 1)` — sacrifice exactly `count` distinct
   matching permanents you control as a casting cost. Extra selections and repeated entities are rejected

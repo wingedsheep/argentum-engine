@@ -44,6 +44,75 @@
     ]
 }
 
+// Bloodhaze Wolverine
+{
+    "name": "Bloodhaze Wolverine",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Wolverine",
+    "oracleText": "Whenever you draw your second card each turn, this creature gets +1/+1 and gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bloodhaze Wolverine:1",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FIRST_STRIKE",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "artist": "Evan Shipard",
+        "flavorText": "\"Build a moat. If we're lucky, it can't swim.\"\n—Syr Branigan, knight of Ardenvale",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d6c0bc1-cb07-4009-83b1-1122381cf9c4.jpg?1783932628",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If Bloodhaze Wolverine gains first strike after first-strike combat damage has been dealt, it will just deal regular combat damage."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "The triggered ability can trigger only once each turn. It doesn't matter whether the permanent with that ability was on the battlefield when the first card was drawn. If it's not on the battlefield when the second card is drawn, the ability can't trigger at all that turn. It won't trigger when the third or fourth card is drawn."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If a spell or ability causes you to put cards into your hand without specifically using the word \"draw,\" it's not a card drawn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Castle Ardenvale
 {
     "name": "Castle Ardenvale",
@@ -2367,6 +2436,114 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Wicked Guardian
+{
+    "name": "Wicked Guardian",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Human Noble",
+    "oracleText": "When this creature enters, you may have it deal 2 damage to another creature you control. If you do, draw a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wicked Guardian:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "BattlefieldMatching",
+                                            "filter": "creature",
+                                            "player": "You",
+                                            "excludeSelf": true
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "wickedGuardianDamaged",
+                                        "prompt": "Choose another creature you control to deal 2 damage to",
+                                        "useTargetingUI": true
+                                    },
+                                    {
+                                        "type": "ForEach",
+                                        "space": {
+                                            "type": "IterationSpace.Collection",
+                                            "collection": "wickedGuardianDamaged"
+                                        },
+                                        "body": {
+                                            "type": "DealDamage",
+                                            "amount": {
+                                                "type": "Fixed",
+                                                "amount": 2
+                                            },
+                                            "target": "IterationEntity"
+                                        }
+                                    }
+                                ]
+                            },
+                            "successCriterion": {
+                                "type": "SuccessCriterion.CollectionNonEmpty",
+                                "name": "wickedGuardianDamaged"
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                },
+                "descriptionOverride": "When this creature enters, you may have it deal 2 damage to another creature you control. If you do, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "artist": "Matt Stewart",
+        "flavorText": "\"Some are born to greatness. You were born to scrub greatness's floors.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71cd91b2-0f9b-4582-ad90-32fa3ee1fde7.jpg?1783932630",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If Wicked Guardian leaves the battlefield before its triggered ability resolves, you may still have it deal 2 damage to another creature you control and draw a card."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If the damage Wicked Guardian deals is prevented (perhaps because you chose for it to deal 2 damage to a creature with protection from black), you still draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

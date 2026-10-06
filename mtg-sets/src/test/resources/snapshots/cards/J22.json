@@ -278,6 +278,83 @@
     ]
 }
 
+// Ardoz, Cobbler of War
+{
+    "name": "Ardoz, Cobbler of War",
+    "manaCost": "{1}{R}",
+    "typeLine": "Legendary Creature — Goblin Shaman",
+    "oracleText": "Haste\nWhenever Ardoz or another creature you control enters, that creature gets +2/+0 until end of turn.\n{3}{R}: Create a 1/1 red Goblin creature token with haste. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ardoz, Cobbler of War:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "TriggeringEntity"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ardoz, Cobbler of War:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Goblin"
+                    ],
+                    "keywords": [
+                        "HASTE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed418a8b-f158-492d-a323-6265b3175292.jpg?1562640121"
+                },
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a012f05-0009-42cf-8a69-07140b2a2aef.jpg?1783919185"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ashcoat of the Shadow Swarm
 {
     "name": "Ashcoat of the Shadow Swarm",
@@ -439,6 +516,96 @@
     ]
 }
 
+// Auntie Blyte, Bad Influence
+{
+    "name": "Auntie Blyte, Bad Influence",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Devil Advisor",
+    "oracleText": "Flying\nWhenever a source you control deals damage to you, put that many +1/+1 counters on Auntie Blyte.\n{1}{R}, {T}, Remove X +1/+1 counters from Auntie Blyte: It deals X damage to any target.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Auntie Blyte, Bad Influence:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    },
+                    "sourceFilter": "ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Auntie Blyte, Bad Influence:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": "XValue",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "MYTHIC",
+        "artist": "Tatiana Kirgetova",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/85c18d01-62cd-45c2-94b8-a63a4239311d.jpg?1783919186"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Biblioplex Kraken
 {
     "name": "Biblioplex Kraken",
@@ -539,6 +706,143 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Brazen Cannonade
+{
+    "name": "Brazen Cannonade",
+    "manaCost": "{3}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an attacking creature you control dies, this enchantment deals 2 damage to each opponent.\nRaid — At the beginning of each of your postcombat main phases, if you attacked this turn, exile the top card of your library. Until end of combat on your next turn, you may play that card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brazen Cannonade:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature attacking ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "Whenever an attacking creature you control dies, this enchantment deals 2 damage to each opponent."
+            },
+            {
+                "id": "Brazen Cannonade:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "POSTCOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            },
+                            "condition": {
+                                "type": "Any",
+                                "conditions": [
+                                    "IsNotYourTurn",
+                                    {
+                                        "type": "IsInPhase",
+                                        "phases": [
+                                            "BEGINNING",
+                                            "PRECOMBAT_MAIN"
+                                        ]
+                                    },
+                                    {
+                                        "type": "All",
+                                        "conditions": [
+                                            {
+                                                "type": "IsInPhase",
+                                                "phases": [
+                                                    "COMBAT"
+                                                ]
+                                            },
+                                            "IsFirstCombatPhaseOfTurn"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Raid — At the beginning of each of your postcombat main phases, if you attacked this turn, exile the top card of your library. Until end of combat on your next turn, you may play that card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Ralph Horsley",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbcbad10-475e-41cf-b3fb-68c1ca6c2caa.jpg?1783919184",
+        "rulings": [
+            {
+                "date": "2022-12-02",
+                "text": "Playing a card exiled with this ability follows the normal rules for playing the card. You must pay its costs, and you must follow all applicable timing rules."
+            },
+            {
+                "date": "2022-12-02",
+                "text": "If you exile a land card with the raid ability, you may play that land only if you have any available land plays."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

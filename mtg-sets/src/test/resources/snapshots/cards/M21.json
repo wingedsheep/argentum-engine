@@ -163,6 +163,61 @@
     ]
 }
 
+// Bolt Hound
+{
+    "name": "Bolt Hound",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Elemental Dog",
+    "oracleText": "Haste (This creature can attack and {T} as soon as it comes under your control.)\nWhenever this creature attacks, other creatures you control get +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bolt Hound:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "UNCOMMON",
+        "artist": "Forrest Imel",
+        "flavorText": "Its spark is worse than its bite.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f8cf3f9-4e3b-4af2-b5ef-a97eb1d2b674.jpg?1783930695"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Chandra's Magmutt
 {
     "name": "Chandra's Magmutt",
@@ -203,6 +258,78 @@
         "artist": "Kimonas Theodossiou",
         "flavorText": "\"Is it purebred? No, but it's pure fire.\" —Chandra Nalaar",
         "imageUri": "https://cards.scryfall.io/normal/front/9/1/91d3e366-4da5-42c8-bbd5-a0c178c0da28.jpg?1783930694"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Chandra's Pyreling
+{
+    "name": "Chandra's Pyreling",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Elemental Lizard",
+    "oracleText": "Whenever a source you control deals noncombat damage to an opponent, this creature gets +1/+0 and gains double strike until end of turn. (It deals both first-strike and regular combat damage.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chandra's Pyreling:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageNonCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    },
+                    "sourceFilter": "ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOUBLE_STRIKE",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a source you control deals noncombat damage to an opponent, this creature gets +1/+0 and gains double strike until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"I think Chandra just wanted something to blame random scorch marks on.\"\n—Jace Beleren",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7744fcf-2336-489d-bc05-f3fce78713a9.jpg?1783930694",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Combat damage is the damage that's dealt automatically by attacking and blocking creatures. Any other damage is noncombat damage, even if it's dealt during a combat phase by an attacking or blocking creature."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "The ability of Chandra's Pyreling triggers just once per event for each opponent who is dealt noncombat damage by a source you control, regardless of how much damage that player is dealt. For example, if a sorcery you control deals 2 damage to each opponent in a four-player game, the ability will trigger three times."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -1616,6 +1743,101 @@
         "artist": "Bud Cook",
         "flavorText": "\"You were so eager to take and consume. Yet when asked to give, you refuse?\"",
         "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c0f60a6-b5c8-4704-8b61-94e8fc463e5d.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Vito, Thorn of the Dusk Rose
+{
+    "name": "Vito, Thorn of the Dusk Rose",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — Vampire Cleric",
+    "oracleText": "Whenever you gain life, target opponent loses that much life.\n{3}{B}{B}: Creatures you control gain lifelink until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vito, Thorn of the Dusk Rose:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_LIFE_GAINED"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Vito, Thorn of the Dusk Rose:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{B}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "LIFELINK",
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Creatures you control gain lifelink until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "flavorText": "\"Through the blood of the wicked, we shall be redeemed. Let us pray.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0fe79ee4-c3f3-4a6b-a967-203ca3b70ee5.jpg?1783930698",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Because Vito's first ability doesn't deal damage, you won't gain life when it resolves if Vito has lifelink."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If an ability triggers whenever an opponent loses life and causes you to gain life, such as the ability of Exquisite Blood, this will loop until either you win the game or a player takes an action to break the loop."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Each creature with lifelink dealing combat damage causes a separate life-gaining event. For example, if two creatures you control with lifelink deal combat damage at the same time, Vito's first ability will trigger twice and you may choose a different opponent for each trigger. However, if a single creature you control with lifelink deals combat damage to multiple creatures, players, and/or planeswalkers at the same time (perhaps because it has trample or was blocked by more than one creature), the ability will trigger only once."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If you gain an amount of life \"for each\" of something, that life is gained as one event and Vito's first ability triggers only once."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "In a Two-Headed Giant game, life gained by your teammate won't cause the ability to trigger, even though it caused your team's life total to increase."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"

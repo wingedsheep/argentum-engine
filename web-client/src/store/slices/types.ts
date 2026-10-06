@@ -845,7 +845,11 @@ export type PipelinePhase =
   | { type: 'tapForGeneric' }
   | { type: 'harmonize' }
   | { type: 'manaSource' }
-  | { type: 'costPayment' }
+  /**
+   * Pays one additional cost. `costIndex` picks it out of `[additionalCostInfo, ...alsoRequired]`
+   * for a spell with several selection costs; absent means the first.
+   */
+  | { type: 'costPayment'; costIndex?: number }
   /**
    * Non-mana escalate (CR 702.120a): pay the escalate cost once for each mode chosen beyond the
    * first. Its own phase rather than a plain `costPayment` because the cost and its count come

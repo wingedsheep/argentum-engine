@@ -227,6 +227,64 @@ describe('Force of Vigor hand-exile payment', () => {
   })
 })
 
+describe('several selection costs on one spell (Ruthless Disposal)', () => {
+  const info = castAction({
+    actionType: 'CastSpell',
+    description: 'Cast Ruthless Disposal',
+    action: { type: 'CastSpell', playerId: 'p1', cardId: 'disposal' },
+    additionalCostInfo: {
+      costType: 'SacrificePermanent',
+      description: 'Sacrifice a creature',
+      validSacrificeTargets: ['bear'],
+      sacrificeCount: 1,
+      alsoRequired: [
+        {
+          costType: 'DiscardCard',
+          description: 'Discard a card',
+          validDiscardTargets: ['rock'],
+          discardCount: 1,
+        },
+      ],
+    },
+  })
+
+  it('runs one picker per cost, in order', () => {
+    expect(computePhases(info, { autoTapEnabled: true })).toEqual([
+      { type: 'costPayment' },
+      { type: 'costPayment', costIndex: 1 },
+    ])
+  })
+
+  it('each picker offers its own cost\'s candidates', () => {
+    const captured: Record<string, unknown>[] = []
+    const store = {
+      startTargeting: (arg: Record<string, unknown>) => { captured.push(arg) },
+    } as unknown as Parameters<typeof enterPhase>[3]
+    enterPhase({ type: 'costPayment' }, info, info.action, store)
+    enterPhase({ type: 'costPayment', costIndex: 1 }, info, info.action, store)
+    expect(captured[0]).toMatchObject({ validTargets: ['bear'], minTargets: 1, maxTargets: 1 })
+    expect(captured[1]).toMatchObject({ validTargets: ['rock'], minTargets: 1, isDiscardSelection: true })
+  })
+
+  it('both picks land in the submitted payment', () => {
+    const afterSacrifice = mergeResult(
+      info.action,
+      info,
+      { type: 'costPayment', costType: 'SacrificePermanent', selectedTargets: ['bear' as never] },
+      {} as never,
+    )
+    const afterDiscard = mergeResult(
+      afterSacrifice,
+      info,
+      { type: 'costPayment', costType: 'DiscardCard', selectedTargets: ['rock' as never] },
+      {} as never,
+    )
+    expect(afterDiscard).toMatchObject({
+      additionalCostPayment: { sacrificedPermanents: ['bear'], discardedCards: ['rock'] },
+    })
+  })
+})
+
 describe('enterPhase — sum-gated graveyard exile costs', () => {
   /**
    * Collect evidence N (CR 701.59a) and Baron Helmut Zemo's pip total are the same picker: any
