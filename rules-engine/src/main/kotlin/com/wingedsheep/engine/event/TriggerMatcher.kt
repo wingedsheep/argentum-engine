@@ -1322,11 +1322,7 @@ class TriggerMatcher(
         // Off the battlefield (a spell on the stack, a card that just moved) a printed P/T is read
         // directly and a `*` is its characteristic-defining ability evaluated in place (CR 604.3).
         fun unprojectedStat(isPower: Boolean): Int? =
-            when (val value = if (isPower) cardComponent.baseStats?.power else cardComponent.baseStats?.toughness) {
-                null -> null
-                is com.wingedsheep.sdk.model.CharacteristicValue.Fixed -> value.value
-                else -> predicateEvaluator.amounts.offBattlefieldStat(projected.getBaseState(), entityId, isPower)
-            }
+            predicateEvaluator.amounts.offBattlefieldStat(projected.getBaseState(), entityId, isPower, projected)
         return when (predicate) {
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> cardComponent.typeLine.isCreature
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsLand -> cardComponent.typeLine.isLand

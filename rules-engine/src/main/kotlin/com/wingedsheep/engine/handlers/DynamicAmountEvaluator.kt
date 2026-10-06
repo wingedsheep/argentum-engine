@@ -928,7 +928,7 @@ class DynamicAmountEvaluator(
                     if (materials == null) 0 else {
                         var total = 0
                         for (exiledId in materials.exiledIds) {
-                            total += offBattlefieldStat(state, exiledId, isPower = true) ?: 0
+                            total += offBattlefieldStat(state, exiledId, isPower = true, projectedState) ?: 0
                         }
                         total
                     }
@@ -1761,7 +1761,7 @@ class DynamicAmountEvaluator(
             if (lastKnown != null) return lastKnown
         }
         // Fall back to base stats (entity not on battlefield or projection disabled)
-        return offBattlefieldStat(state, entityId, isPower) ?: 0
+        return offBattlefieldStat(state, entityId, isPower, explicitProjected) ?: 0
     }
 
     /**
@@ -1771,9 +1771,15 @@ class DynamicAmountEvaluator(
      * Keldon Warlord in a library has power equal to the non-Wall creatures its owner controls.
      * The CDA is read from the object's own perspective — "you" is its controller, or its owner
      * when it has none (CR 108.4a) — never from whichever effect is asking. Null when the object
-     * has no power/toughness box.
+     * has no power/toughness box. A mid-projection caller passes its intermediate [projectedState]
+     * so the CDA's battlefield reads don't re-enter [GameState.projectedState].
      */
-    fun offBattlefieldStat(state: GameState, entityId: EntityId, isPower: Boolean): Int? {
+    fun offBattlefieldStat(
+        state: GameState,
+        entityId: EntityId,
+        isPower: Boolean,
+        projectedState: ProjectedState? = null
+    ): Int? {
         val container = state.getEntity(entityId) ?: return null
         val card = container.get<CardComponent>() ?: return null
         val value = (if (isPower) card.baseStats?.power else card.baseStats?.toughness) ?: return null
@@ -1782,8 +1788,8 @@ class DynamicAmountEvaluator(
         val context = EffectContext(sourceId = entityId, controllerId = controllerId)
         return when (value) {
             is CharacteristicValue.Fixed -> value.value
-            is CharacteristicValue.Dynamic -> evaluate(state, value.source, context)
-            is CharacteristicValue.DynamicWithOffset -> evaluate(state, value.source, context) + value.offset
+            is CharacteristicValue.Dynamic -> evaluate(state, value.source, context, projectedState)
+            is CharacteristicValue.DynamicWithOffset -> evaluate(state, value.source, context, projectedState) + value.offset
         }
     }
 
