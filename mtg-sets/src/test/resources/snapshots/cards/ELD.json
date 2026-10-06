@@ -1669,6 +1669,42 @@
     ]
 }
 
+// Shambling Suit
+{
+    "name": "Shambling Suit",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Shambling Suit's power is equal to the number of artifacts and/or enchantments you control.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "artifact|enchantment"
+            }
+        },
+        "toughness": 3
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "flavorText": "\"The young squire gripped her sword as the clanking stranger emerged. It was no knight that had come to challenge her.\"\n—*Beyond the Great Henge*",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/1100b898-31a8-4fdf-a54f-a1470ec032f3.jpg?1783932584",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "The ability that defines Shambling Suit's power works in all zones, not just the battlefield."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "A permanent that's both an artifact and an enchantment is only counted once."
+            }
+        ]
+    }
+}
+
 // Shimmer Dragon
 {
     "name": "Shimmer Dragon",
