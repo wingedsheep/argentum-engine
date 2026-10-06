@@ -23,10 +23,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * the top card of your library. Until end of combat on your next turn, you may play that card.
  *
  * Implementation notes:
- * - The death trigger is Ares, God of War's shape: a dies trigger over every creature you control
- *   with "attacking" tested at resolution through [Conditions.EntityMatches] on the triggering
- *   entity, which reads the last-known `wasAttacking` snapshot. An `.attacking()` in the trigger
- *   filter itself is not gated for zone-change triggers (see AresGodOfWar's notes).
+ * - "Attacking" is gated in the dies-trigger filter, which reads the zone-change event's last-known
+ *   `wasAttacking` — a dead token is gone before the trigger resolves, so a resolution-time check
+ *   would miss it.
  * - "Until end of combat on your next turn" has no single [MayPlayExpiry]: may-play windows are
  *   removed only at cleanup, so `UntilControllerStep(END_COMBAT)` would leave the card playable in
  *   the next turn's postcombat main phase. The window is composed from two grants on the same card:
@@ -47,14 +46,8 @@ val BrazenCannonade = card("Brazen Cannonade") {
         "exile the top card of your library. Until end of combat on your next turn, you may play that card."
 
     triggeredAbility {
-        trigger = Triggers.a(GameObjectFilter.Creature.youControl()).dies()
-        effect = Effects.If(
-            condition = Conditions.EntityMatches(
-                EffectTarget.TriggeringEntity,
-                GameObjectFilter.Any.attacking(),
-            ),
-            then = Effects.DealDamage(2, EffectTarget.PlayerRef(Player.EachOpponent)),
-        )
+        trigger = Triggers.a(GameObjectFilter.Creature.attacking().youControl()).dies()
+        effect = Effects.DealDamage(2, EffectTarget.PlayerRef(Player.EachOpponent))
         description = "Whenever an attacking creature you control dies, this enchantment deals 2 " +
             "damage to each opponent."
     }

@@ -721,31 +721,20 @@
                 "id": "Brazen Cannonade:1",
                 "trigger": {
                     "type": "ZoneChangeEvent",
-                    "filter": "creature ctrl:you",
+                    "filter": "creature attacking ctrl:you",
                     "from": "Battlefield",
                     "to": "Graveyard"
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "EntityMatches",
-                            "entity": "TriggeringEntity",
-                            "filter": "attacking"
-                        }
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
                     },
-                    "then": {
-                        "type": "DealDamage",
-                        "amount": {
-                            "type": "Fixed",
-                            "amount": 2
-                        },
-                        "target": {
-                            "type": "PlayerRef",
-                            "player": "EachOpponent"
-                        }
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
                     }
                 },
                 "descriptionOverride": "Whenever an attacking creature you control dies, this enchantment deals 2 damage to each opponent."

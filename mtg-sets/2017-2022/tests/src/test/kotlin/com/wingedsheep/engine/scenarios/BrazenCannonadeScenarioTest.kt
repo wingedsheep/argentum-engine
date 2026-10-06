@@ -51,6 +51,29 @@ class BrazenCannonadeScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("an attacking token you control dying deals 2 damage to each opponent") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Brazen Cannonade")
+                    .withCardOnBattlefield(1, "Grizzly Bears", summoningSickness = false, isToken = true)
+                    .withCardOnBattlefield(2, "Hill Giant", summoningSickness = false)
+                    .withCardInLibrary(1, "Mountain")
+                    .withCardInLibrary(2, "Mountain")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                    .build()
+
+                game.declareAttackers(mapOf("Grizzly Bears" to 2)).error shouldBe null
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareBlockers(mapOf("Hill Giant" to listOf("Grizzly Bears"))).error shouldBe null
+                game.passUntilPhase(Phase.COMBAT, Step.END_COMBAT)
+
+                game.isOnBattlefield("Grizzly Bears") shouldBe false
+                withClue("The token ceased to exist before the trigger resolved; it still counts") {
+                    game.getLifeTotal(2) shouldBe 18
+                }
+            }
+
             test("a non-attacking creature you control dying deals no damage") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
