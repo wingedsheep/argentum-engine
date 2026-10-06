@@ -207,6 +207,13 @@ interface ObjectFilterBuilder<out Self> {
         withCardPredicate(CardPredicate.ManaValueAtMostColorsSpent(reference))
 
     /**
+     * Mana cost payable with some or all of the mana spent on the resolving ability or spell
+     * (Illusionary Mask). Resolution-only.
+     */
+    fun manaCostPayableWithManaSpent() =
+        withCardPredicate(CardPredicate.ManaCostPayableWithManaSpent)
+
+    /**
      * Mana value at most a resolved [DynamicAmount] (e.g. "X or less, where X is the life you gained
      * this turn"). On a target filter the cap is re-read both when targets are chosen and again on
      * resolution (CR 608.2b) — Spellstutter Sprite.

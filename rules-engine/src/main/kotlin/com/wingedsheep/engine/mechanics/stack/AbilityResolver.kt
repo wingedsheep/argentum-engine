@@ -209,6 +209,7 @@ internal class AbilityResolver(
             alignedTargets = alignedActivatedTargets,
             sacrificedPermanents = abilityComponent.sacrificedPermanents,
             xValue = abilityComponent.xValue,
+            manaSpent = abilityComponent.manaSpent,
             tappedPermanents = abilityComponent.tappedPermanents,
             tappedEntitySnapshots = abilityComponent.tappedEntitySnapshots,
             exiledAsCostCards = abilityComponent.exiledAsCostCards,

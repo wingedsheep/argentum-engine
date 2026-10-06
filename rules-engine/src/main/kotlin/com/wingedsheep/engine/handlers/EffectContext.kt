@@ -128,6 +128,13 @@ data class EffectContext(
      */
     val manaSpentOnXByColor: Map<Color, Int> = emptyMap(),
     /**
+     * The mana spent to cast the resolving spell or activate the resolving ability, by type — what
+     * `CardPredicate.ManaCostPayableWithManaSpent` (Illusionary Mask) allocates against. Null when
+     * the resolving object recorded no payment (a triggered ability), which that predicate treats
+     * as nothing matching.
+     */
+    val manaSpent: com.wingedsheep.engine.mechanics.mana.SpentMana? = null,
+    /**
      * The optional-additional-cost mechanic declared for the spell being cast or resolved
      * ([com.wingedsheep.sdk.scripting.ChoiceSlot.KICKED] for kicker, `BARGAINED` for bargain), or
      * null when none was. Read by `WasKicked` and by `CastChoiceMade(slot)` — the latter is how a

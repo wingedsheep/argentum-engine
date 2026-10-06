@@ -4472,6 +4472,24 @@ object Effects {
     ): Effect = CastFromCollectionWithoutPayingCost(from.key, storeCastTo, insteadOfGraveyard, caster)
 
     /**
+     * "You may cast that card face down as a 2/2 creature spell without paying its mana cost" —
+     * the first card in [from], during this effect's resolution; the card needs no morph. With
+     * [turnsFaceUpInstead] the permanent it becomes carries Illusionary Mask's rider: until turned
+     * face up, it turns face up instead of assigning/dealing damage, being dealt damage, or
+     * becoming tapped, and then does so.
+     */
+    fun CastFaceDownFromCollection(
+        from: CollectionSlot,
+        turnsFaceUpInstead: Boolean = false,
+        storeCastTo: String? = null,
+    ): Effect = CastFromCollectionWithoutPayingCostEffect(
+        from = from.key,
+        storeCastTo = storeCastTo,
+        castFaceDown = true,
+        turnsFaceUpInstead = turnsFaceUpInstead,
+    )
+
+    /**
      * Cast a card from [from], paying its mana cost (see the String overload). [additionalManaCost]
      * is "by paying {R}{R} in addition to its other costs" (Ogre Battlecaster) — owed on top of the
      * mana cost for this one cast.

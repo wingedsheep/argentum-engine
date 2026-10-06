@@ -322,9 +322,22 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value.getValue("snowColorless") shouldBe JsonPrimitive(0)
                 value - "snowMana" - "snowColorless"
             } else if ("colorlessAsAnyColor" in value && "singleUse" in value) {
-                // MayPlayPermission's colorless-as-any-color rider postdates the capture.
+                // MayPlayPermission's colorless-as-any-color and face-down riders postdate the capture.
                 value.getValue("colorlessAsAnyColor") shouldBe JsonPrimitive(false)
-                value - "colorlessAsAnyColor"
+                value.getValue("castFaceDown") shouldBe JsonPrimitive(false)
+                value.getValue("turnsFaceUpInstead") shouldBe JsonPrimitive(false)
+                value - "colorlessAsAnyColor" - "castFaceDown" - "turnsFaceUpInstead"
+            } else if (value["type"] == JsonPrimitive(
+                    "com.wingedsheep.engine.state.components.stack.SpellOnStackComponent"
+                )) {
+                // The turns-face-up-instead rider (Illusionary Mask) postdates the capture.
+                value.getValue("turnsFaceUpInstead") shouldBe JsonPrimitive(false)
+                value - "turnsFaceUpInstead"
+            } else if (value["type"] == JsonPrimitive(
+                    "com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent"
+                )) {
+                // The recorded activation payment postdates the capture.
+                value - "manaSpent"
             } else value
             JsonObject(fields.mapValues { withoutPostCaptureCardDefaults(it.value) })
         }

@@ -246,6 +246,11 @@ internal class NonPermanentSpellResolver(
                 spellComponent.manaSpentBlack + spellComponent.manaSpentRed +
                 spellComponent.manaSpentGreen + spellComponent.manaSpentColorless,
             manaSpentOnXByColor = spellComponent.manaSpentOnXByColor,
+            manaSpent = com.wingedsheep.engine.mechanics.mana.SpentMana(
+                white = spellComponent.manaSpentWhite, blue = spellComponent.manaSpentBlue,
+                black = spellComponent.manaSpentBlack, red = spellComponent.manaSpentRed,
+                green = spellComponent.manaSpentGreen, colorless = spellComponent.manaSpentColorless,
+            ),
             declaredCostSlot = spellComponent.declaredCostSlot,
             wasBlightPaid = spellComponent.wasBlightPaid,
             wasWaterbendPaid = spellComponent.wasWaterbendPaid,

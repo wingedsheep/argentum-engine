@@ -389,6 +389,18 @@ data class ExileLibraryUntilManaValueEffect(
  * (CR 601.2f): added to the mana cost and to every other cost increase, stamped on the card for this
  * one cast only, and removed if the cast never initiates. A caster who can't pay the total simply
  * doesn't cast it (CR 601.2h).
+ *
+ * **Casting it face down.** Set [castFaceDown] for "you may cast that card face down as a 2/2
+ * creature spell without paying its mana cost" (Illusionary Mask). The spell is a face-down spell
+ * exactly as a morph cast makes one (CR 708.2, 708.4: a nameless, colorless 2/2 creature spell with no
+ * abilities and mana value 0), but the card needs no morph — the effect is what allows it — and
+ * nothing is paid. It can be responded to and countered like any spell. Once a permanent it can
+ * be turned face up only by a rule or effect that allows it: its own morph or disguise, if the
+ * card has one. [turnsFaceUpInstead] adds the Mask's rider to the permanent the spell becomes:
+ * until it is turned face up, if it would assign or deal damage, be dealt damage, or become
+ * tapped, it is turned face up instead and then does so. Face-down casts take no targets, so the
+ * free-cast-only shape is enforced: no [payManaCost], [castTransformed], [alternativeCost] or
+ * [additionalManaCost].
  */
 @SerialName("CastFromCollectionWithoutPayingCost")
 @Serializable
@@ -419,8 +431,18 @@ data class CastFromCollectionWithoutPayingCostEffect(
     val alternativeCost: AdditionalCost? = null,
     /** Mana owed on top of the mana cost, or null — see the class KDoc. */
     val additionalManaCost: ManaCost? = null,
+    /** Cast the card face down as a 2/2 creature spell — see the class KDoc. */
+    val castFaceDown: Boolean = false,
+    /** The face-down permanent turns face up instead of dealing/being dealt damage or tapping. */
+    val turnsFaceUpInstead: Boolean = false,
 ) : Effect {
     init {
+        require(!castFaceDown || (!payManaCost && !castTransformed && alternativeCost == null && additionalManaCost == null)) {
+            "A face-down cast is a free cast of the card's face-down 2/2; it takes no other cost or face"
+        }
+        require(!turnsFaceUpInstead || castFaceDown) {
+            "turnsFaceUpInstead is a rider on a face-down cast; it needs castFaceDown"
+        }
         require(alternativeCost == null || !payManaCost) {
             "An alternative cost replaces the mana cost; it can't be combined with payManaCost"
         }
@@ -432,6 +454,7 @@ data class CastFromCollectionWithoutPayingCostEffect(
     override val description: String = buildString {
         append("Cast that card")
         if (castTransformed) append(" transformed")
+        if (castFaceDown) append(" face down as a 2/2 creature spell")
         when {
             alternativeCost != null -> append(
                 " by ${alternativeCost.description.replaceFirstChar { it.lowercaseChar() }.replaceFirst("pay ", "paying ")}" +
@@ -441,6 +464,11 @@ data class CastFromCollectionWithoutPayingCostEffect(
             additionalManaCost != null -> append(" by paying $additionalManaCost in addition to its other costs")
         }
         insteadOfGraveyard?.let { append(it.riderText) }
+        if (turnsFaceUpInstead) {
+            append(". If the creature that spell becomes as it resolves has not been turned face up and would " +
+                "assign or deal damage, be dealt damage, or become tapped, instead it's turned face up and " +
+                "assigns or deals damage, is dealt damage, or becomes tapped")
+        }
     }
 
     override fun applyTextReplacement(replacer: com.wingedsheep.sdk.scripting.text.TextReplacer): Effect {
