@@ -6248,7 +6248,13 @@ work for abilities-on-stack (which carry no `CardComponent`).
   Sanctum: "enchanted permanent's activated abilities can't be activated" via
   `PreventActivatedAbilities(GameObjectFilter.Permanent.attachedToBySource())`. Resolves
   against `PredicateContext.sourceId`; inert with no source / unattached source, and never matches in
-  group-static projection or trigger-gating contexts (no source there).
+  trigger-gating contexts (no source there). In **group-static projection** it resolves against the
+  projecting permanent, which is how an Aura narrows "enchanted X" with a filter the bare
+  `Scope.AttachedTo` can't carry — Animate Artifact: "as long as enchanted artifact isn't a creature,
+  it's an artifact creature with power and toughness each equal to its mana value" is a
+  `CompositeStaticAbility` of `GrantCardType("CREATURE", …)` and `SetBasePowerToughnessDynamicStatic`
+  over `GroupFilter(GameObjectFilter.Artifact.notCreature().attachedToBySource())`. The filter isn't
+  creature-keyed, so the set resolved at collection stays locked into Layer 7b (CR 613.6).
 - `IsSource` (filter builder `sourceItself()`) — source-relative: matches only the effect's source
   permanent itself. During ability resolution it also matches the captured battlefield visit, so a
   card that left and returned is not the old source. Consequently `notSourceItself()` allows that
@@ -6276,7 +6282,7 @@ work for abilities-on-stack (which carry no `CardComponent`).
   `AttachedToComponent.targetId == sourceId`. Use it to scope a static ability on the *host* to its own
   attachments — Cloud, Midgar Mercenary's "an Equipment attached to it" via
   `GameObjectFilter.Artifact.withSubtype("Equipment").attachedToSource()`. Source-relative; inert with no
-  source context. Negated builder `notAttachedToSource()` — excludes all of the source's own attachments.
+  source context. Also resolves in group-static projection, against the projecting permanent. Negated builder `notAttachedToSource()` — excludes all of the source's own attachments.
   Also legal inside an **activated-ability cost filter** — "{T}, Sacrifice an Equipment attached to Ronin"
   (Ronin, Shadow Stalker), "{1}, Sacrifice an Aura attached to this creature" (Faunsbane Troll) — because
   the sacrifice enumeration (`CostEnumerationUtils.findAbilitySacrificeTargets`) and payment

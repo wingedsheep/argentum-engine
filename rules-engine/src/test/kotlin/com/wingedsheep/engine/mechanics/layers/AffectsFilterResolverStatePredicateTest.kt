@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.ProtectorComponent
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
@@ -734,6 +735,39 @@ class AffectsFilterResolverStatePredicateTest : FunSpec({
     // =========================================================================
     // Combinators
     // =========================================================================
+
+    test("IsAttachedToBySource matches only the permanent the projecting source is attached to") {
+        val host = EntityId.generate()
+        val bystander = EntityId.generate()
+        val aura = EntityId.generate()
+        val state = battlefield(
+            listOf(
+                host to container(playerB, creature(playerB), AttachmentsComponent(listOf(aura))),
+                bystander to container(playerA, creature(playerA)),
+                aura to container(playerA, auraCard(playerA), AttachedToComponent(host))
+            )
+        )
+        resolver.resolveAffectedEntities(state, aura, filterWith(StatePredicate.IsAttachedToBySource)) shouldContainExactlyInAnyOrder setOf(host)
+        withClue("an unattached source matches nothing") {
+            resolver.resolveAffectedEntities(state, bystander, filterWith(StatePredicate.IsAttachedToBySource)) shouldBe emptySet()
+        }
+    }
+
+    test("IsAttachedToSource matches only the attachments on the projecting source") {
+        val host = EntityId.generate()
+        val otherHost = EntityId.generate()
+        val ownEquipment = EntityId.generate()
+        val otherEquipment = EntityId.generate()
+        val state = battlefield(
+            listOf(
+                host to container(playerA, creature(playerA), AttachmentsComponent(listOf(ownEquipment))),
+                otherHost to container(playerA, creature(playerA), AttachmentsComponent(listOf(otherEquipment))),
+                ownEquipment to container(playerA, equipmentCard(playerA), AttachedToComponent(host)),
+                otherEquipment to container(playerA, equipmentCard(playerA), AttachedToComponent(otherHost))
+            )
+        )
+        resolver.resolveAffectedEntities(state, host, filterWith(StatePredicate.IsAttachedToSource)) shouldContainExactlyInAnyOrder setOf(ownEquipment)
+    }
 
     test("Or matches entities that satisfy any sub-predicate") {
         val tapped = EntityId.generate()

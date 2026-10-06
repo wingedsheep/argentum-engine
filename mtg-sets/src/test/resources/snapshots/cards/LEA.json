@@ -59,6 +59,83 @@
     ]
 }
 
+// Animate Artifact
+{
+    "name": "Animate Artifact",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact\nAs long as enchanted artifact isn't a creature, it's an artifact creature with power and toughness each equal to its mana value.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CompositeStaticAbility",
+                "abilities": [
+                    {
+                        "type": "GrantCardType",
+                        "cardType": "CREATURE",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsArtifact",
+                                    {
+                                        "type": "Not",
+                                        "predicate": "IsCreature"
+                                    }
+                                ],
+                                "statePredicates": [
+                                    "IsAttachedToBySource"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "type": "SetBasePowerToughnessDynamicStatic",
+                        "power": {
+                            "type": "EntityProperty",
+                            "entity": "AffectedEntity",
+                            "numericProperty": "ManaValue"
+                        },
+                        "toughness": {
+                            "type": "EntityProperty",
+                            "entity": "AffectedEntity",
+                            "numericProperty": "ManaValue"
+                        },
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsArtifact",
+                                    {
+                                        "type": "Not",
+                                        "predicate": "IsCreature"
+                                    }
+                                ],
+                                "statePredicates": [
+                                    "IsAttachedToBySource"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "UNCOMMON",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/664b46f5-0424-4f4e-9f26-6bd2cf5e0357.jpg?1783948707"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Animate Dead
 {
     "name": "Animate Dead",
