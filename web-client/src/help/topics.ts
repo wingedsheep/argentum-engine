@@ -145,10 +145,11 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'ul', items: [
         '“Lobby still open” — if you reloaded with a lobby open, Rejoin takes you back; × forgets it.',
         '“Jump back in” — your saved setups and your last setup, one click each.',
-        '“Pick a game” — the mode catalogue, grouped into Play right now, Build from packs and Multiplayer tables. Next to it, “Have a code?” joins any lobby.',
+        '“Pick a game” — the mode catalogue, grouped into Play right now, Build from packs and Multiplayer tables.',
       ] },
       { kind: 'h', text: 'Side column' },
       { kind: 'ul', items: [
+        '“Have a code?” — at the top of the column (above the catalogue on a phone): type an invite code and Join.',
         'Public Lobbies — open lobbies anyone may join, with an online-player count. Refreshes every few seconds.',
         'Live Games — games in progress, each with a Spectate button.',
         'A Learn to Play row, and for guests a reminder of what a free account adds.',

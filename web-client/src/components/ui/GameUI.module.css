@@ -389,8 +389,8 @@
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-3);
-  background: rgba(10, 12, 20, 0.62);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(10, 12, 20, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
@@ -481,8 +481,8 @@
 
 .publicTournamentMeta,
 .publicTournamentEmpty {
-  color: var(--text-tertiary);
-  font-size: 11px;
+  color: #a7afc0;
+  font-size: 12.5px;
   line-height: 1.4;
 }
 
@@ -3008,10 +3008,15 @@
   align-items: stretch;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(10, 12, 20, 0.6);
+  background: rgba(10, 12, 20, 0.72);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   max-width: 100%;
+}
+
+/* A phone: each chip is a full-width row, so the Play pill lines up down the right edge. */
+@media (max-width: 560px) {
+  .setupChipWrap { flex: 1 1 100%; }
 }
 
 .setupChipWrap:hover {
@@ -3021,10 +3026,11 @@
 
 .setupChip {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-height: 44px;
-  padding: 10px 14px;
+  align-items: center;
+  gap: 14px;
+  flex: 1 1 auto;
+  min-height: 52px;
+  padding: 10px 12px 10px 14px;
   background: none;
   border: none;
   color: var(--text-secondary);
@@ -3032,6 +3038,33 @@
   cursor: pointer;
   text-align: left;
   min-width: 0;
+}
+
+.setupChipText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* The one gold control above the catalogue: this chip is the fastest way back into a game. */
+.setupChipGo {
+  flex: none;
+  padding: 6px 12px;
+  border-radius: 9px;
+  background: rgba(242, 180, 92, 0.16);
+  border: 1px solid rgba(242, 180, 92, 0.4);
+  color: #f6cf8f;
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  transition: background-color 0.12s, color 0.12s;
+}
+
+.setupChipWrap:hover .setupChipGo {
+  background: #f2b45c;
+  color: #1d1405;
 }
 
 .setupChipName {

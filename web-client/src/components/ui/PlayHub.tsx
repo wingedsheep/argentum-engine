@@ -62,14 +62,11 @@ export function PlayHub({
   aiEnabled,
   onLaunch,
   aside,
-  headerAction,
 }: {
   aiEnabled: boolean
   onLaunch: (recipe: LobbyRecipe) => void
   /** The side column when no mode is open: open lobbies, live games, callouts. */
   aside: ReactNode
-  /** Beside the catalogue heading — the invite-code field, which is not a mode but is a way in. */
-  headerAction?: ReactNode
 }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -96,41 +93,42 @@ export function PlayHub({
   return (
     <div className={styles.hub}>
       <section className={styles.catalog} aria-labelledby="play-heading">
-        <div className={styles.catalogHeader}>
-          <h2 id="play-heading" className={styles.catalogHeading}>Pick a game</h2>
-          {headerAction}
-        </div>
-        {MODE_GROUPS.map((group) => (
-          <div key={group.id} className={styles.group}>
-            <div className={styles.groupHeading}>
-              <span className={styles.groupSwatch} data-group={group.id} aria-hidden />
-              <h3 className={styles.groupLabel}>{group.label}</h3>
-              <span className={styles.groupCaption}>{group.caption}</span>
-            </div>
-            <div className={styles.tiles}>
-              {MODES.filter((m) => m.group === group.id).map((mode) => (
-                <button
-                  key={mode.id}
-                  type="button"
-                  className={styles.tile}
-                  data-selected={selected === mode.id}
-                  data-testid={`mode-${mode.slug}`}
-                  aria-pressed={selected === mode.id}
-                  onClick={() => (selected === mode.id ? close() : open(mode.id))}
-                >
-                  <ModeIcon mode={mode.id} group={mode.group} />
-                  <span className={styles.tileText}>
-                    <span className={styles.tileTop}>
-                      <span className={styles.tileLabel}>{mode.label}</span>
-                      <span className={styles.tilePlayers}>{mode.players}</span>
+        <h2 id="play-heading" className={styles.catalogHeading}>Pick a game</h2>
+        {MODE_GROUPS.map((group) => {
+          const modes = MODES.filter((m) => m.group === group.id)
+          return (
+            <div key={group.id} className={styles.group}>
+              <div className={styles.groupHeading}>
+                <span className={styles.groupSwatch} data-group={group.id} aria-hidden />
+                <h3 className={styles.groupLabel}>{group.label}</h3>
+                <span className={styles.groupCaption}>{group.caption}</span>
+              </div>
+              <div className={styles.tiles} data-count={modes.length}>
+                {modes.map((mode) => (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    className={styles.tile}
+                    data-group={mode.group}
+                    data-selected={selected === mode.id}
+                    data-testid={`mode-${mode.slug}`}
+                    aria-pressed={selected === mode.id}
+                    onClick={() => (selected === mode.id ? close() : open(mode.id))}
+                  >
+                    <ModeIcon mode={mode.id} group={mode.group} />
+                    <span className={styles.tileText}>
+                      <span className={styles.tileTop}>
+                        <span className={styles.tileLabel}>{mode.label}</span>
+                        <span className={styles.tilePlayers}>{mode.players}</span>
+                      </span>
+                      <span className={styles.tileCaption}>{mode.caption}</span>
                     </span>
-                    <span className={styles.tileCaption}>{mode.caption}</span>
-                  </span>
-                </button>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </section>
 
       <div className={styles.side} data-panel-open={selected !== null}>

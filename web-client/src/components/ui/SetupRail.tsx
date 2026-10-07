@@ -76,20 +76,24 @@ export function SetupRail({
                 ? `${recipeSummary(setup.recipe, availableSets)}\n\n${setup.notes.join('\n')}`
                 : recipeSummary(setup.recipe, availableSets)}
             >
-              <span className={styles.setupChipName}>
-                {setup.id === LAST_SETUP_ID && <span aria-hidden>↺ </span>}
-                {setup.name}
-              </span>
-              <span className={styles.setupChipBody}>
-                {recipeSummary(setup.recipe, availableSets)}
-              </span>
-              {/* Stated on the chip, not only in the tooltip: a setup that will come back missing
-                  its cube should say so before it is clicked, not after. */}
-              {setup.notes.length > 0 && (
-                <span className={styles.setupChipNote}>
-                  {setup.notes.length === 1 ? '1 setting can’t be restored' : `${setup.notes.length} settings can’t be restored`}
+              <span className={styles.setupChipText}>
+                <span className={styles.setupChipName}>
+                  {setup.id === LAST_SETUP_ID && <span aria-hidden>↺ </span>}
+                  {setup.name}
                 </span>
-              )}
+                <span className={styles.setupChipBody}>
+                  {recipeSummary(setup.recipe, availableSets)}
+                </span>
+                {/* Stated on the chip, not only in the tooltip: a setup that will come back missing
+                    its cube should say so before it is clicked, not after. */}
+                {setup.notes.length > 0 && (
+                  <span className={styles.setupChipNote}>
+                    {setup.notes.length === 1 ? '1 setting can’t be restored' : `${setup.notes.length} settings can’t be restored`}
+                  </span>
+                )}
+              </span>
+              {/* Says what the click does: the chip launches, it doesn't open a settings page. */}
+              <span className={styles.setupChipGo} aria-hidden>Play ▸</span>
             </button>
             <button
               type="button"

@@ -8,6 +8,12 @@
  */
 
 .overlay {
+  /* The page column, shared by the top bar, the content and the footer so their edges line up.
+     It grows on a big screen rather than leaving the content a narrow strip in the middle of the
+     art; the side column grows with it (`PlayHub.module.css`). */
+  --page-max: 1320px;
+  --page-gutter: 24px;
+  --side-width: minmax(320px, 380px);
   /* Replaces the base overlay's padding/gap and centring: this layout spaces itself. */
   background-color: #07080d;
   gap: 0;
@@ -15,12 +21,15 @@
   align-items: stretch;
 }
 
-/* A light tint over the art, strongest at the bottom where the attribution sits. */
+/* A tint over the art: a soft dark pool behind the page column, so text on the glass panels reads
+   over bright or busy art, and the art left at full strength at the edges where nothing sits on it. */
 .artTint {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(6, 7, 12, 0.35) 0%, rgba(6, 7, 12, 0.18) 35%, rgba(6, 7, 12, 0.55) 100%);
+  background:
+    radial-gradient(ellipse 70% 75% at 50% 52%, rgba(6, 7, 12, 0.42) 0%, rgba(6, 7, 12, 0.12) 100%),
+    linear-gradient(180deg, rgba(6, 7, 12, 0.4) 0%, rgba(6, 7, 12, 0.1) 30%, rgba(6, 7, 12, 0.55) 100%);
 }
 
 /* ── Top bar ───────────────────────────────────────────────────────────── */
@@ -32,9 +41,9 @@
   flex-wrap: wrap;
   gap: 10px 20px;
   width: 100%;
-  max-width: 1320px;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 10px 24px;
+  padding: 10px var(--page-gutter);
   box-sizing: border-box;
 }
 
@@ -101,9 +110,9 @@
   flex-direction: column;
   gap: 14px;
   width: 100%;
-  max-width: 1320px;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 4px 24px 28px;
+  padding: 4px var(--page-gutter) 28px;
   box-sizing: border-box;
 }
 
@@ -117,18 +126,26 @@
   font-size: 14px;
 }
 
-/* ── Jump back in ──────────────────────────────────────────────────────── */
+/* ── Jump back in ──────────────────────────────────────────────────────────
+ * The same two columns as the hub below it: saved setups over the catalogue, the invite code over
+ * the side column, so every edge on the page lines up with one above or below it. */
 
 .quickRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--side-width);
+  align-items: end;
+  gap: 12px 20px;
 }
 
-.quickRow:empty { display: none; }
-.quickRow > * { flex: 1 1 420px; min-width: 0; }
-.quickRow > .resume { flex: 0 1 auto; }
+.quickStart {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  min-width: 0;
+}
+.quickStart:empty { display: none; }
+.quickStart > * { flex: 0 1 auto; min-width: 0; }
 
 .resume {
   display: flex;
@@ -173,16 +190,21 @@
 .resumeDismiss:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 
 .joinCard {
-  flex: 0 1 340px;
+  grid-column: 2;
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 6px 6px 6px 10px;
+  border-radius: 14px;
+  background: rgba(10, 12, 20, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .joinLabel {
-  padding-left: 6px;
   font-size: 13px;
-  color: #b4bccd;
+  color: #c3cad8;
   white-space: nowrap;
 }
 
@@ -224,9 +246,9 @@
   position: relative;
   flex: none;
   width: 100%;
-  max-width: 1320px;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 0 24px calc(10px + env(safe-area-inset-bottom, 0px));
+  padding: 0 var(--page-gutter) calc(10px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
 }
 
@@ -374,10 +396,12 @@
     scrollbar-width: none;
   }
   .nav::-webkit-scrollbar { display: none; }
-  .joinCard { flex: 1 1 100%; }
+  .quickRow { grid-template-columns: minmax(0, 1fr); }
+  .joinCard { grid-column: auto; }
 }
 
 @media (max-width: 560px) {
+  .quickStart > * { flex: 1 1 100%; }
   .brand { font-size: 19px; }
   .joinLabel { display: none; }
   .navItem { padding: 0 12px; }
@@ -387,4 +411,13 @@
    and the footer instead of leaving it all at the top. */
 @media (min-width: 1500px) and (min-height: 940px) {
   .main { justify-content: center; padding-bottom: 6vh; }
+}
+
+/* A big monitor: widen the column so the tiles get room for their names, instead of a 1320px strip
+   in the middle of 2560px of art. */
+@media (min-width: 1800px) {
+  .overlay { --page-max: 1520px; --page-gutter: 32px; --side-width: minmax(360px, 420px); }
+}
+@media (min-width: 2300px) {
+  .overlay { --page-max: 1720px; --side-width: minmax(380px, 460px); }
 }

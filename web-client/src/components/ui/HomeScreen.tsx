@@ -375,59 +375,60 @@ export function HomeScreen({
           {error && <p className={home.error}>Error: {error}</p>}
 
           <div className={home.quickRow}>
-            {resumableLobbyId && (
-              <div className={home.resume}>
-                <div className={home.resumeText}>
-                  <span className={home.resumeLabel}>Lobby still open</span>
-                  <span className={home.resumeCode}>{resumableLobbyId}</span>
+            <div className={home.quickStart}>
+              {resumableLobbyId && (
+                <div className={home.resume}>
+                  <div className={home.resumeText}>
+                    <span className={home.resumeLabel}>Lobby still open</span>
+                    <span className={home.resumeCode}>{resumableLobbyId}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className={home.resumeButton}
+                    onClick={() => joinQuickGameLobby(resumableLobbyId)}
+                  >
+                    Rejoin
+                  </button>
+                  <button
+                    type="button"
+                    className={home.resumeDismiss}
+                    aria-label="Dismiss"
+                    title="I'm done with that lobby"
+                    onClick={() => { clearLobbyId(); setResumableLobbyId(null) }}
+                  >
+                    ×
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  className={home.resumeButton}
-                  onClick={() => joinQuickGameLobby(resumableLobbyId)}
-                >
-                  Rejoin
-                </button>
-                <button
-                  type="button"
-                  className={home.resumeDismiss}
-                  aria-label="Dismiss"
-                  title="I'm done with that lobby"
-                  onClick={() => { clearLobbyId(); setResumableLobbyId(null) }}
-                >
-                  ×
-                </button>
-              </div>
-            )}
-            {/* Absent until you have played something: a returning player gets one click, a
-                first-time player sees only the catalogue. */}
-            <SetupRail onLaunch={applyRecipe} />
+              )}
+              {/* Absent until you have played something: a returning player gets one click, a
+                  first-time player sees only the catalogue. */}
+              <SetupRail onLaunch={applyRecipe} />
+            </div>
+            {/* Not a mode: someone with a code has had every question answered for them. It sits
+                above the side column, so it lines up with the other ways in that aren't a mode. */}
+            <form
+              className={home.joinCard}
+              onSubmit={(e) => { e.preventDefault(); handleJoin() }}
+            >
+              <label htmlFor="join-code" className={home.joinLabel}>Have a code?</label>
+              <input
+                id="join-code"
+                type="text"
+                value={joinSessionId}
+                onChange={(e) => setJoinSessionId(e.target.value)}
+                placeholder="Invite code"
+                autoComplete="off"
+                className={home.joinInput}
+              />
+              <button type="submit" disabled={!joinSessionId.trim()} className={home.joinButton} data-testid="join-code-submit">
+                Join
+              </button>
+            </form>
           </div>
 
           <PlayHub
             aiEnabled={aiEnabled}
             onLaunch={(recipe) => applyRecipe(recipe)}
-            // Not a mode: someone with a code has had every question answered for them.
-            headerAction={
-              <form
-                className={home.joinCard}
-                onSubmit={(e) => { e.preventDefault(); handleJoin() }}
-              >
-                <label htmlFor="join-code" className={home.joinLabel}>Have a code?</label>
-                <input
-                  id="join-code"
-                  type="text"
-                  value={joinSessionId}
-                  onChange={(e) => setJoinSessionId(e.target.value)}
-                  placeholder="Invite code"
-                  autoComplete="off"
-                  className={home.joinInput}
-                />
-                <button type="submit" disabled={!joinSessionId.trim()} className={home.joinButton} data-testid="join-code-submit">
-                  Join
-                </button>
-              </form>
-            }
             aside={
               <>
                 <FindOpponentPanel onSignIn={() => setLoginOpen(true)} />
@@ -711,7 +712,9 @@ function PublicLobbyList({
         </div>
       </div>
       {lobbies.length === 0 && !error ? (
-        <p className={styles.publicTournamentEmpty}>No public lobbies right now.</p>
+        <p className={styles.publicTournamentEmpty}>
+          None open right now. Host one: pick a mode and choose <strong>Anyone</strong>.
+        </p>
       ) : error && lobbies.length === 0 ? (
         <p className={styles.publicTournamentEmpty}>{error}</p>
       ) : (

@@ -7,15 +7,17 @@
  */
 
 .hub {
-  --hub-glass: rgba(10, 12, 20, 0.5);
+  /* Opaque enough that a caption reads over the brightest art in the rotation; the blur keeps the
+     art's colour coming through. */
+  --hub-glass: rgba(10, 12, 20, 0.7);
   --hub-glass-strong: rgba(10, 12, 20, 0.84);
   --hub-line: rgba(255, 255, 255, 0.09);
   --hub-line-strong: rgba(255, 255, 255, 0.18);
-  --hub-tile: rgba(255, 255, 255, 0.045);
-  --hub-tile-hover: rgba(255, 255, 255, 0.09);
+  --hub-tile: rgba(255, 255, 255, 0.055);
+  --hub-tile-hover: rgba(255, 255, 255, 0.1);
   --hub-text: #eef0f6;
-  --hub-muted: #b4bccd;
-  --hub-faint: #8f98ac;
+  --hub-muted: #c3cad8;
+  --hub-faint: #9aa3b6;
   --hub-play: #f2b45c;
   --hub-play-hover: #f7c67f;
   --hub-play-text: #1d1405;
@@ -24,7 +26,9 @@
   --hub-table: #b9a4ff;
 
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  /* The side column's width comes from the page (`Home.module.css`), which widens it on a big
+     screen and lines the invite-code card up over it. */
+  grid-template-columns: minmax(0, 1fr) var(--side-width, minmax(320px, 380px));
   gap: 20px;
   align-items: start;
   width: 100%;
@@ -45,14 +49,6 @@
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   min-width: 0;
-}
-
-.catalogHeader {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 10px 16px;
 }
 
 .catalogHeading {
@@ -105,11 +101,20 @@
   gap: 8px;
 }
 
-@container catalog (min-width: 820px) {
-  .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* Four across once there's room, with the icon over the name so a name like "Two-Headed Giant"
+   gets the tile's whole width and doesn't wrap. A two-mode group spans the full row too, as two
+   wide tiles, rather than leaving half a row empty. */
+@container catalog (min-width: 640px) {
+  .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .tiles[data-count='2'] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tiles:not([data-count='2']) .tile { flex-direction: column; gap: 10px; padding: 14px; }
+  /* The name scales with the catalogue so the longest one still fits a quarter of it on one line. */
+  .tiles:not([data-count='2']) .tileLabel { font-size: clamp(16px, 2.15cqi, 19px); white-space: nowrap; }
 }
 
 .tile {
+  --tile-accent: var(--hub-now);
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: 12px;
@@ -125,9 +130,12 @@
   transition: background var(--transition-fast, 0.12s), border-color var(--transition-fast, 0.12s), transform var(--transition-fast, 0.12s);
 }
 
+.tile[data-group='PACKS'] { --tile-accent: var(--hub-packs); }
+.tile[data-group='TABLE'] { --tile-accent: var(--hub-table); }
+
 .tile:hover {
   background: var(--hub-tile-hover);
-  border-color: var(--hub-line-strong);
+  border-color: color-mix(in srgb, var(--tile-accent) 55%, transparent);
 }
 
 .tile:active { transform: scale(0.99); }
@@ -180,8 +188,8 @@
 }
 
 .tileCaption {
-  font-size: 13px;
-  line-height: 1.35;
+  font-size: 13.5px;
+  line-height: 1.4;
   color: var(--hub-muted);
 }
 
