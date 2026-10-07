@@ -98,7 +98,7 @@ class GeistOfSaintThaliaScenarioTest : ScenarioTestBase() {
                 .withCardInLibrary(1, "Island").withCardInLibrary(1, "Island")
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
             val thinkTwice = game.findCardsInGraveyard(1, "Think Twice").single()
-            val offer = game.legalActions(game.player1Id).first {
+            val offer = game.getLegalActions(1).first {
                 (it.action as? CastSpell)?.let { a -> a.cardId == thinkTwice && a.alternativeCostType == AlternativeCostType.FLASHBACK } == true
             }
             offer.manaCostString shouldBe "{1}{U}"
