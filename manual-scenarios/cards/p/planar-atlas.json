@@ -1,0 +1,43 @@
+{
+  "player1Name": "Atlas",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Planar Atlas"
+    ],
+    "battlefield": [
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Planar Atlas"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Grizzly Bears",
+      "Mountain",
+      "Hill Giant",
+      "Island",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [],
+    "graveyard": [],
+    "library": [
+      "Island",
+      "Island"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}
