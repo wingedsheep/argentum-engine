@@ -30,6 +30,13 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'mode-jump-in',
+    date: '2026-10-07',
+    kind: 'mode',
+    title: 'Jump In / Jumpstart',
+    body: 'Choose two themed 20-card packs and play their combined deck, lands included. No deckbuilding needed. Play with friends or AI, starting with Jumpstart 2022 or the original Jumpstart set. Find Jump In under Play → What are you playing with?',
+  },
+  {
     id: 'set-om1',
     date: '2026-10-05',
     kind: 'set',

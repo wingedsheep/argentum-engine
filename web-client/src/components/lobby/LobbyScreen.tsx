@@ -22,6 +22,7 @@ import type { LobbyState } from '@/store/slices/types'
 import { randomBackground } from '@/utils/background'
 import { buildJoinUrl } from '@/utils/joinLink'
 import { labelForFormat } from '@/utils/deckLegality'
+import { JumpInEmblem } from './JumpInEmblem'
 import momirVigUrl from '@/assets/momir-vig.svg'
 import { DeckPicker, type DeckPickerTab } from '../ui/DeckPicker'
 import { DeckPickerModal } from '../ui/DeckPickerModal'
@@ -154,6 +155,7 @@ export function LobbyScreen() {
       <div className={styles.lobbyContent}>
         <div className={styles.lobbyHeader}>
           {isMomir && <MomirCrest />}
+          {view.axes.cards.kind === 'JUMP_IN' && <JumpInEmblem className={styles.jumpInLobbyEmblem} />}
           <h1 className={styles.lobbyTitle}>{view.title}</h1>
           <p className={styles.lobbySubtitle}>{view.subtitle}</p>
           <LobbyAxisSummary axes={view.axes} jumpstart={Boolean(lobbyState?.settings.jumpstartActive)} />

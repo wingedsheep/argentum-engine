@@ -31,6 +31,7 @@
  */
 import { useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { JumpInEmblem } from '../lobby/JumpInEmblem'
 import { HelpTip } from '@/components/help/HelpTip'
 import {
   cardsChoices,
@@ -407,7 +408,7 @@ function OptionGrid<V extends string>({
         // interactive elements is invalid HTML (and unreachable by keyboard).
         <div
           key={choice.value}
-          className={`${styles.presetCard} ${choice.value === selected ? styles.presetCardSelected : ''}`}
+          className={`${styles.presetCard} ${choice.value === selected ? styles.presetCardSelected : ''} ${choice.value === 'JUMP_IN' ? styles.presetCardJumpIn : ''}`}
         >
           <span className={styles.presetCardHelp}>
             <HelpTip topicId={choice.topicId} label={`What is ${choice.label}?`} size="sm" />
@@ -420,7 +421,9 @@ function OptionGrid<V extends string>({
             className={styles.presetCardButton}
             title={choice.disabledReason ?? ''}
           >
+            {choice.value === 'JUMP_IN' && <JumpInEmblem className={styles.jumpInPickerEmblem} />}
             <span className={styles.presetCardTitle}>{choice.label}</span>
+            {choice.value === 'JUMP_IN' && <span className={styles.jumpInSetLabel}>Jumpstart · two packs, one deck</span>}
             <span className={styles.presetCardTagline}>
               {choice.disabledReason ?? choice.caption}
             </span>

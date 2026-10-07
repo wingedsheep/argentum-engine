@@ -4117,3 +4117,32 @@
     gap: var(--space-4);
   }
 }
+
+/* Jump In is a ready-to-play entry point; its two packs also identify the lobby. */
+.presetCardJumpIn {
+  --preset-accent: #6fd3c0;
+  border-color: rgba(111, 211, 192, 0.45);
+  background: linear-gradient(125deg, rgba(111, 211, 192, 0.16), rgba(239, 196, 119, 0.08));
+}
+
+.presetCardJumpIn:hover:not(:has(.presetCardButton:disabled)) {
+  border-color: #6fd3c0;
+  background: linear-gradient(125deg, rgba(111, 211, 192, 0.24), rgba(239, 196, 119, 0.12));
+}
+
+.jumpInPickerEmblem {
+  width: 48px;
+  height: 48px;
+}
+
+.jumpInSetLabel {
+  font-size: var(--font-xs, 0.75rem);
+  color: #efc477;
+}
+
+.jumpInLobbyEmblem {
+  display: block;
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 8px;
+}

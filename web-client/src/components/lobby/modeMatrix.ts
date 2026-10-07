@@ -208,14 +208,14 @@ export function rosterChoices(aiEnabled: boolean): Choice<Roster>[] {
 /* ── Step 2: cards ──────────────────────────────────────────────────────── */
 
 /** The order the Cards values are offered in — cheapest on-ramp first. */
-const CARDS_ORDER: readonly CardsKind[] = ['BRING_A_DECK', 'RANDOM', 'MOMIR', 'JUMP_IN', 'SEALED', 'DRAFT']
+const CARDS_ORDER: readonly CardsKind[] = ['BRING_A_DECK', 'JUMP_IN', 'RANDOM', 'MOMIR', 'SEALED', 'DRAFT']
 
 function cardsCaption(kind: CardsKind): string {
   switch (kind) {
     case 'BRING_A_DECK': return 'Play one of your own constructed decks.'
     case 'RANDOM': return 'The server rolls you a deck. Zero preparation.'
     case 'MOMIR': return '60 basics; flip a random creature each turn. No deckbuilding.'
-    case 'JUMP_IN': return 'Choose two Jumpstart 2022 themes. Your 40-card deck is ready, lands included.'
+    case 'JUMP_IN': return 'Choose two themed Jumpstart packs. A 40-card deck, lands included. No deckbuilding.'
     case 'SEALED': return 'Open boosters and build a deck from what you get.'
     case 'DRAFT': return 'Pick cards one at a time from packs, then build.'
   }
