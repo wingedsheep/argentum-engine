@@ -3956,6 +3956,42 @@
     ]
 }
 
+// Shimmerdrift Vale
+{
+    "name": "Shimmerdrift Vale",
+    "manaCost": "",
+    "typeLine": "Snow Land",
+    "oracleText": "This land enters tapped.\nAs this land enters, choose a color.\n{T}: Add one mana of the chosen color.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shimmerdrift Vale:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "colorSet": "ManaColorSet.SourceChosenColor"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped",
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "COLOR"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "267",
+        "artist": "Titus Lunter",
+        "flavorText": "Reflections from the wind-sculpted snow gleam with every color of the rainbow.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f09d98db-0176-41a7-b99b-ead29876cdab.jpg?1783928172"
+    },
+    "colorIdentityOverride": []
+}
+
 // Skemfar Elderhall
 {
     "name": "Skemfar Elderhall",
