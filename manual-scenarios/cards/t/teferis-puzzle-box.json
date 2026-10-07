@@ -1,0 +1,60 @@
+{
+  "player1Name": "Puzzle Box controller",
+  "player2Name": "Drawing player",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Island"
+    ],
+    "battlefield": [
+      {
+        "name": "Teferi's Puzzle Box"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Island",
+      "Island",
+      "Island",
+      "Island",
+      "Island",
+      "Island",
+      "Island",
+      "Island"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Forest",
+      "Swamp"
+    ],
+    "battlefield": [],
+    "graveyard": [],
+    "library": [
+      "Mountain",
+      "Plains",
+      "Island",
+      "Island",
+      "Island",
+      "Island"
+    ]
+  },
+  "phase": "BEGINNING",
+  "step": "UPKEEP",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [
+    "DRAW"
+  ],
+  "player2StopAtSteps": [
+    "UPKEEP",
+    "DRAW"
+  ],
+  "player1OpponentStopAtSteps": [
+    "DRAW"
+  ],
+  "player2OpponentStopAtSteps": [
+    "DRAW"
+  ]
+}
