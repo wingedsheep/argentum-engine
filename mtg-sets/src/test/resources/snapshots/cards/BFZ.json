@@ -2509,6 +2509,69 @@
     ]
 }
 
+// Mortuary Mire
+{
+    "name": "Mortuary Mire",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you may put target creature card from your graveyard on top of your library.\n{T}: Add {B}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mortuary Mire:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Library",
+                        "placement": "Top"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Mortuary Mire:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "artist": "James Paick",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6b31722-9626-4fea-9971-54c9aa8238e8.jpg?1783938176"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Murasa Ranger
 {
     "name": "Murasa Ranger",
