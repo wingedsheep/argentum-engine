@@ -1,0 +1,45 @@
+{
+  "player1Name": "Village",
+  "player2Name": "Blocker",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Treetop Village"
+    ],
+    "battlefield": [
+      {
+        "name": "Treetop Village"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}
