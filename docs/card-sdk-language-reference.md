@@ -2149,7 +2149,8 @@ vocabulary; this primitive does not provide Word of Command's full mana restrict
   from a may-pay-{X} reflexive) of `counterType` from `source` onto `destination`. The count is capped at the
   number actually on `source`, and adding to `destination` honors counter-placement replacement effects
   (Hardened Scales). No-op when source/destination missing, they're the same permanent, amount ≤ 0, or source has
-  none of that kind. The count-fixed counterpart to the interactive `MoveChosenCountersToTarget`.
+  none of that kind. If the destination can't receive counters, none are removed from the source.
+  The count-fixed counterpart to the interactive `MoveChosenCountersToTarget`.
 - **Passive named counters** — flavor counters with no inherent rule; the card that uses one accumulates
   it (`AddCounters(CounterType.X, …)`) and reads the count via `Conditions.SourceCounterCountAtLeast(CounterType.X, …)`
   or `DynamicAmounts.countersOnSelf(…)`, and may spend it as a cost (`Costs.RemoveCounterFromSelf(CounterType.X, …)`).

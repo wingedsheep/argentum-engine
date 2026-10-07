@@ -45,6 +45,10 @@ class MoveCountersExecutor(
             ?: return EffectResult.success(state, emptyList())
         if (sourceId == destinationId) return EffectResult.success(state, emptyList())
 
+        if (!state.projectedState.canReceiveCounters(destinationId)) {
+            return EffectResult.success(state, emptyList())
+        }
+
         val counterType = effect.counterType
 
         val requested = amountEvaluator.evaluate(state, effect.amount, context)

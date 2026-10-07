@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CountersAddedEvent
+import com.wingedsheep.engine.core.CountersRemovedEvent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -8,7 +10,10 @@ import com.wingedsheep.mtg.sets.definitions.eld.cards.WeaponRack
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CantReceiveCounters
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import io.kotest.matchers.shouldBe
 
 class WeaponRackScenarioTest : ScenarioTestBase() {
@@ -25,6 +30,37 @@ class WeaponRackScenarioTest : ScenarioTestBase() {
     )
 
     init {
+        val wardedCreature = card("Rack Test Warded Creature") {
+            typeLine = "Creature"
+            power = 2
+            toughness = 2
+            staticAbility { ability = CantReceiveCounters(GroupFilter.source()) }
+        }
+        cardRegistry.register(wardedCreature)
+
+        test("retains its counter when the target cannot receive counters") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Weapon Rack")
+                .withCardOnBattlefield(1, wardedCreature.name)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val rack = game.findPermanent("Weapon Rack")!!
+            val creature = game.findPermanent(wardedCreature.name)!!
+            game.state = game.state.updateEntity(rack) {
+                it.with(CountersComponent(mapOf(CounterType.PLUS_ONE_PLUS_ONE to 3)))
+            }
+            game.state.projectedState.canReceiveCounters(creature) shouldBe false
+            game.activate(rack, creature).error shouldBe null
+            val results = game.resolveStack()
+            results.forEach { it.error shouldBe null }
+            game.state.stack.size shouldBe 0
+            game.counters(rack) shouldBe 3
+            game.counters(creature) shouldBe 0
+            results.flatMap { it.events }.any { it is CountersAddedEvent || it is CountersRemovedEvent } shouldBe false
+        }
+
         test("enters with three counters and can move one onto an opponent's creature") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")
