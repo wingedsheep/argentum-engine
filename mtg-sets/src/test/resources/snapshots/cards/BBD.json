@@ -63,6 +63,94 @@
     ]
 }
 
+// Inner Demon
+{
+    "name": "Inner Demon",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2, has flying, and is a Demon in addition to its other types.\nWhen this Aura enters, all non-Demon creatures get -2/-2 until end of turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Inner Demon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Demon"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Demon",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Behm",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dcbfc305-f3b3-4f8f-b18f-bb7af01a39a4.jpg?1783934861",
+        "rulings": [
+            {
+                "date": "2018-06-08",
+                "text": "Inner Demon's triggered ability affects only non-Demon creatures on the battlefield at the time it resolves. Creatures that enter the battlefield later in the turn won't get -2/-2. Unless Inner Demon leaves the battlefield before that ability resolves, the enchanted creature won't get -2/-2."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Saltwater Stalwart
 {
     "name": "Saltwater Stalwart",
