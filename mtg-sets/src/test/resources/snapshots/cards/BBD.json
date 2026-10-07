@@ -62,3 +62,53 @@
         "GREEN"
     ]
 }
+
+// Saltwater Stalwart
+{
+    "name": "Saltwater Stalwart",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Merfolk Warrior",
+    "oracleText": "Whenever this creature deals damage to an opponent, target player draws a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Saltwater Stalwart:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "artist": "Sam Burley",
+        "flavorText": "Every attack is a test of your defenses. Every hit marks the map of your defeat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae11adef-57b1-4f39-951b-cd4d5c0a0b80.jpg?1783934865"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
