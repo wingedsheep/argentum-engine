@@ -198,9 +198,8 @@ sealed interface SpellCostTarget {
      *
      * The opponent-only half of [AnyCaster]: the source's own controller is never taxed. Narrower
      * siblings add a second axis on top of "an opponent cast it" — [OpponentsCastFromZones] (where
-     * the spell was cast from) and [OpponentsCastTargeting] (what it targets). Being a tax, it also
-     * applies to alternative costs (CR 118.9d), so the cost calculator's alternative-base path reads
-     * it alongside [AnyCaster].
+     * the spell was cast from) and [OpponentsCastTargeting] (what it targets). Like every cost
+     * modifier, it also applies to alternative costs (CR 118.9d).
      */
     @SerialName("OpponentsCast")
     @Serializable

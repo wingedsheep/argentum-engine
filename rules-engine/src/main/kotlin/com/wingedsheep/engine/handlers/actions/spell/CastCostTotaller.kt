@@ -322,7 +322,12 @@ internal class CastCostTotaller(
     }
 
     private fun AlternativeBaseQuery.priced(base: ManaCost): ManaCost =
-        costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, base, playerId)
+        costCalculator.calculateEffectiveCostWithAlternativeBase(
+            state, cardDef, base, playerId,
+            action.targets.map { it.toEntityId() },
+            fromZone = castSourceZone(state, cardId),
+            declaredCostSlot = action.declaredCostSlot,
+        )
 
     /**
      * The alternative costs that can replace a spell's mana cost (CR 118.9), in the order they are
@@ -333,8 +338,8 @@ internal class CastCostTotaller(
      * cost isn't available to this cast, and a cast with no available base is rejected — a specific
      * alternative cost whose own permission gate failed never falls back to an unrelated one.
      *
-     * Every base runs through a cost-modifier pipeline, so battlefield cost
-     * modifiers apply to it.
+     * Every base runs through the full cost-modifier pipeline: CR 118.9d applies every cost
+     * increase and reduction that affects the spell to the alternative cost.
      */
     private val alternativeBases: List<Pair<AlternativeCostType, AlternativeBaseQuery.() -> ManaCost?>> = listOf(
         // Flashback — printed, granted per-entity by Archmage's Newt, or granted to the whole
