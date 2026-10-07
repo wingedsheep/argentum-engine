@@ -29,15 +29,11 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
  * instant or sorcery spell with only the Adventure's characteristics (CR 715.3b), so the discount must
  * not touch it.
  *
- * What actually keeps it off is the engine's *pricing path*, not the [Filters.Permanent] predicate:
- * cost filters are matched against the card definition (`CostCalculator.matchesCardDefinition`), i.e.
- * the front face, which is a permanent either way. Secondary faces price through
- * `calculateEffectiveCostWithAlternativeBase`, which consults only `AnyCaster` *increases* and never
- * `YouCast` reductions — an engine-wide simplification that CR 118.9d does not license in general.
- * `WoeCardsBatch12ScenarioTest` therefore pins the outcome ("Rip the Seams still costs {2}{W} with
- * Beluna out"), so closing that gap turns a silent rules break into a red test. The creature half cast
- * from hand — or cast from exile after its Adventure resolved — goes through the normal path with the
- * adventurer card's own type line, so it gets the {1}.
+ * The engine prices an Adventure cast against the Adventure face alone
+ * (`CostCalculator.calculateFaceCastCost`), so the [Filters.Permanent] predicate is what keeps the
+ * discount off it; `WoeCardsBatch12ScenarioTest` pins "Rip the Seams still costs {2}{W} with Beluna
+ * out". The creature half cast from hand — or from exile after its Adventure resolved — is a
+ * permanent spell with an Adventure, so it gets the {1}.
  *
  * Seek Thrills is the pipeline `mill` (an `isMill = true` gather of the top seven, then a move to
  * the graveyard) followed by a filtered move back out of that same milled collection. Filtering the collection rather than the graveyard is what makes "from among the milled

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.state.components.battlefield.PreparedComponent
 import com.wingedsheep.engine.state.components.battlefield.PreparedSpellCopyComponent
@@ -87,6 +88,30 @@ class GeistOfSaintThaliaScenarioTest : ScenarioTestBase() {
             ).error shouldBe null
             game.resolveStack()
             game.state.projectedState.getPower(geist) shouldBe 3
+        }
+        // CR 118.9d: cost reductions that affect a spell apply to an alternative cost it is cast for.
+        test("discounts a flashback cost") {
+            val game = scenario().withPlayers()
+                .withCardOnBattlefield(1, "Geist of Saint Thalia")
+                .withCardInGraveyard(1, "Think Twice")
+                .withLandsOnBattlefield(1, "Island", 2)
+                .withCardInLibrary(1, "Island").withCardInLibrary(1, "Island")
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
+            val thinkTwice = game.findCardsInGraveyard(1, "Think Twice").single()
+            val offer = game.legalActions(game.player1Id).first {
+                (it.action as? CastSpell)?.let { a -> a.cardId == thinkTwice && a.alternativeCostType == AlternativeCostType.FLASHBACK } == true
+            }
+            offer.manaCostString shouldBe "{1}{U}"
+            // Flashback {2}{U}; two Islands pay it only with the discount.
+            game.execute(
+                CastSpell(
+                    game.player1Id, thinkTwice,
+                    useAlternativeCost = true,
+                    alternativeCostType = AlternativeCostType.FLASHBACK,
+                )
+            ).error shouldBe null
+            game.resolveStack()
+            game.findCardsInHand(1, "Island").size shouldBe 1
         }
     }
 }

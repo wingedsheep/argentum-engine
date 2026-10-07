@@ -1867,45 +1867,27 @@ class CostCalculator(
     }
 
     /**
-     * Calculate the effective cost of casting a spell using an alternative base cost.
-     * Applies cost increases (tax effects) to the alternative cost.
-     * Per Rule 118.9a, cost reductions and increases apply to alternative costs.
+     * Calculate the effective cost of casting a spell for an alternative cost — flashback, escape,
+     * warp, dash, evoke, overload, a granted "rather than pay its mana cost" cost, and so on.
      *
-     * Note: Self-reduction (`SpellCostTarget.SelfCast`) and Affinity are NOT applied to
-     * alternative costs, since those modify the card's own mana cost. Only
-     * battlefield-sourced AnyCaster and OpponentsCast increases apply (CR 118.9d).
+     * CR 118.9d: when an alternative cost is paid, every additional cost, cost increase and cost
+     * reduction that affects the spell applies to that alternative cost. So this is a normal cast
+     * with [alternativeCost] as the base: the spell's own "this spell costs {N} less", affinity,
+     * and battlefield "spells you cast cost {1} less" all reduce it, exactly as they would the
+     * printed cost. Only the base changes — the mana cost (and mana value) stays the card's own
+     * (CR 118.9c).
      */
     fun calculateEffectiveCostWithAlternativeBase(
         state: GameState,
         cardDef: CardDefinition,
         alternativeCost: ManaCost,
         casterId: EntityId,
-    ): ManaCost {
-        var totalIncrease = 0
-        for ((sourceId, ability) in scanBattlefieldModifySpellCost(state)) {
-            val applies = when (val target = ability.target) {
-                is SpellCostTarget.AnyCaster ->
-                    matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState)
-                is SpellCostTarget.OpponentsCast ->
-                    opponentsCastMatches(target, cardDef, casterId, sourceId, state)
-                else -> false
-            }
-            if (!applies) continue
-            when (val mod = ability.modification) {
-                is CostModification.IncreaseGeneric -> totalIncrease += mod.amount
-                is CostModification.IncreaseGenericBy ->
-                    totalIncrease += evaluateReduction(
-                        state, mod.source, casterId, abilitySourceId = sourceId
-                    )
-                is CostModification.IncreaseGenericPerOtherSpellThisTurn -> {
-                    val spellsCast = state.playerSpellsCastThisTurn[casterId] ?: 0
-                    totalIncrease += spellsCast * mod.amountPerSpell
-                }
-                else -> { /* Battlefield reductions don't apply to alternative casting costs. */ }
-            }
-        }
-        return LifePayableMana.apply(state, cardRegistry, casterId, increaseGenericCost(alternativeCost, totalIncrease))
-    }
+        chosenTargets: List<EntityId> = emptyList(),
+        fromZone: Zone? = null,
+        declaredCostSlot: ChoiceSlot? = null,
+    ): ManaCost = calculateEffectiveCost(
+        state, cardDef, casterId, chosenTargets, fromZone, declaredCostSlot, baseCost = alternativeCost,
+    )
 
     /**
      * Calculate the additional life [casterId] must pay as part of casting a spell with

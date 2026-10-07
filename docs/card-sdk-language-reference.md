@@ -9253,7 +9253,8 @@ staticAbility {
 
 - `target: SpellCostTarget` — `SelfCast`, `YouCast(filter)`, `AnyCaster(filter)`, `OpponentsCast(filter)`,
   `OpponentsCastTargeting(GroupFilter)`, `OpponentsCastFromZones(zones, filter?)`, `YouCastFromZones(zones, filter?)`, `FaceDownYouCast`, `MorphActivation`.
-  - `OpponentsCast(filter = Any)` — spells matching `filter` cast by an **opponent** of the source's controller, from any zone; the controller's own spells are untouched. Thalia, the Survivor: `OpponentsCast(Noncreature)` + `IncreaseGeneric(1)`. Like `AnyCaster`, it also taxes alternative costs such as flashback (CR 118.9d).
+  - Every target applies to an **alternative cost** (flashback, escape, warp, dash, evoke, a granted "rather than pay its mana cost") exactly as to the mana cost — reductions included, the spell's own `SelfCast` and affinity too (CR 118.9d). A spell cast as one **face** (Adventure, Omen, split half, modal back, prepare-spell copy) is judged by that face's characteristics alone, so a creature card's Adventure is a noncreature spell and the creature face's `SelfCast` does not reach it.
+  - `OpponentsCast(filter = Any)` — spells matching `filter` cast by an **opponent** of the source's controller, from any zone; the controller's own spells are untouched. Thalia, the Survivor: `OpponentsCast(Noncreature)` + `IncreaseGeneric(1)`. Like every target, it also taxes alternative costs such as flashback (CR 118.9d).
   - `OpponentsCastFromZones(zones, filter = Any)` — spells the source-controller's opponents cast **from one of `zones`** (matched against the spell's actual cast zone, threaded as `fromZone`), matching `filter`. Pair with `CostModification.IncreaseGeneric(n)` for the Aven Interrupter shape: `OpponentsCastFromZones(setOf(Zone.GRAVEYARD, Zone.EXILE))` + `IncreaseGeneric(2)` = "Spells your opponents cast from graveyards or from exile cost {2} more to cast."
   - `YouCastFromZones(zones, filter = Any)` — the you-cast analogue: spells the **source's controller** casts **from one of `zones`**, matching `filter`. Pair with `CostModification.ReduceGeneric(n)` for Doc Aurlock, Grizzled Genius: `YouCastFromZones(setOf(Zone.GRAVEYARD, Zone.EXILE))` + `ReduceGeneric(2)` = "Spells you cast from your graveyard or from exile cost {2} less to cast." (Only the normal-cast path threads `fromZone`; alternative-cost casts such as flashback compute their own base cost and are unaffected.)
 - `modification: CostModification` — `ReduceGeneric(amount)`, `ReduceGenericBy(source)`,
@@ -9284,7 +9285,7 @@ staticAbility {
   `IncreaseGenericBy(ArtifactsYouControl)`. The source is evaluated against the **casting** player,
   exactly as on the reduction side, which is what makes "its controller controls" fall out without a
   second vocabulary: an opponent pays for *their* artifacts. Applies to alternative base costs too,
-  per CR 118.9a), `IncreaseLife(amount)`.
+  per CR 118.9d), `IncreaseLife(amount)`.
   Reduction `source: CostReductionSource` covers fixed amounts, counts of permanents/cards in
   zones, target gates, and a few mechanic-specific shapes — e.g. `Fixed`, `CreaturesYouControl`,
   `ArtifactsYouControl`, `PermanentsYouControlMatching(filter)` (the filtered "you control" count —

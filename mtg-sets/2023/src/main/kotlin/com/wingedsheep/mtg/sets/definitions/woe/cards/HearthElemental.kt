@@ -30,8 +30,8 @@ import com.wingedsheep.sdk.scripting.SpellCostTarget
  * Crucially the reduction does **not** apply to the Adventure half: per CR 715.3 a spell cast as an
  * Adventure has only the Adventure's characteristics, so the creature face's static ability isn't
  * there to reduce it. Stoke Genius always costs {1}{R}. The engine gets this right for free —
- * secondary faces price through `calculateEffectiveCostWithAlternativeBase`, which deliberately
- * skips `SelfCast` reductions.
+ * an Adventure is priced against the Adventure face alone (`CostCalculator.calculateFaceCastCost`),
+ * whose script has no static abilities.
  *
  * Stoke Genius is an ordered composite: discard the whole hand *first*, then draw two, so the drawn
  * cards are never discarded. An empty hand discards nothing and still draws two.
