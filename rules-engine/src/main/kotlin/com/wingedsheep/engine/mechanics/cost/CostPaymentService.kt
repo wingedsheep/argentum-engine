@@ -447,6 +447,8 @@ class CostPaymentService(private val services: EngineServices) {
 
         var remaining = required
         if (atom.self) {
+            // Match affordability even when the source has never had counters.
+            if (required == 0) return CostPaymentExecution(state, emptyList(), success = true)
             val selfId = sourceId
             val container = newState.getEntity(selfId)
                 ?: return CostPaymentExecution(state, emptyList(), success = false)

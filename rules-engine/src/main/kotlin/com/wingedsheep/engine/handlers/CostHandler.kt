@@ -762,10 +762,10 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 CostAtomAmounts.evaluate(state, atom.amount)
         is CostAtom.RemoveCounters -> {
             if (atom.self) {
-                val counters = state.getEntity(sourceId)?.get<CountersComponent>() ?: return false
-                val ct = atom.counterType
                 val needed = getAtomCount(atom.count)
                 if (needed <= 0) return true
+                val counters = state.getEntity(sourceId)?.get<CountersComponent>() ?: return false
+                val ct = atom.counterType
                 if (ct != null) counters.getCount(ct) >= needed
                 else counters.counters.values.sum() >= needed
             } else {
@@ -1038,6 +1038,8 @@ class CostHandler(private val zones: ZoneTransitionService) {
             val events = mutableListOf<GameEvent>()
 
             if (atom.self) {
+                // Removing zero counters pays the cost without changing state or emitting an event.
+                if (requiredCount == 0) return CostPaymentResult.success(state, manaPool)
                 // Remove from source permanent (self-cost)
                 val counters = state.getEntity(sourceId)?.get<CountersComponent>()
                     ?: return CostPaymentResult.failure("Source has no counters")
