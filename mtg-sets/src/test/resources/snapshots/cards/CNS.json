@@ -1,1 +1,43 @@
-
+// Predator's Howl
+{
+    "name": "Predator's Howl",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Create a 2/2 green Wolf creature token.\nMorbid — Create three 2/2 green Wolf creature tokens instead if a creature died this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Conditional",
+                "condition": "CreatureDiedThisTurn",
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            },
+            "power": 2,
+            "toughness": 2,
+            "colors": [
+                "GREEN"
+            ],
+            "creatureTypes": [
+                "Wolf"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4cd989d-e274-4058-876f-3c20f28def0d.jpg?1783939332"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "UNCOMMON",
+        "artist": "Ralph Horsley",
+        "flavorText": "\"And Muzzio says my arguments have no teeth.\"\n—Selvala, ranger of the Lowlands",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/cae61a9d-39fc-4c25-adec-d578d57c2903.jpg?1783939373"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
