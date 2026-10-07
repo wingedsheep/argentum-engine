@@ -167,6 +167,49 @@
     ]
 }
 
+// Phyrexian Ironfoot
+{
+    "name": "Phyrexian Ironfoot",
+    "manaCost": "{3}",
+    "typeLine": "Snow Artifact Creature — Phyrexian Construct",
+    "oracleText": "This creature doesn't untap during your untap step.\n{1}{S}: Untap this creature. ({S} can be paid with one mana from a snow source.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "flags": [
+        "DOESNT_UNTAP"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Phyrexian Ironfoot:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{S}"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self",
+                    "tap": false
+                },
+                "descriptionOverride": "{1}{S}: Untap this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "UNCOMMON",
+        "artist": "Stephan Martiniere",
+        "flavorText": "It took the Rimewind cultists days to realize they had successfully activated the creature—it just wasn't interested in moving.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49ff9859-92a4-4732-94bf-6c02b0a57338.jpg?1783943320"
+    },
+    "colorIdentityOverride": []
+}
+
 // Ronom Unicorn
 {
     "name": "Ronom Unicorn",
