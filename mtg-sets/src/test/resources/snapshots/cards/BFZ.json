@@ -4296,6 +4296,77 @@
     "colorIdentityOverride": []
 }
 
+// Unnatural Aggression
+{
+    "name": "Unnatural Aggression",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nTarget creature you control fights target creature an opponent controls. If the creature an opponent controls would die this turn, exile it instead.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "artist": "James Ryman",
+        "flavorText": "The battle served as a grim reminder of what a final victory for the Eldrazi would mean.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/8293c66d-9a9b-4817-9bc3-ffd57fda290c.jpg?1783938189",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If the creature an opponent controls survives the fight but would die later in the turn for another reason, it will be exiled instead, whether your creature dealt it damage or not."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If the creature you control becomes an illegal target (perhaps due to being destroyed by another spell or ability), Unnatural Aggression will resolve, but the target creature an opponent controls will neither deal nor receive any damage. If that creature would die later in the turn for another reason, it will be exiled instead."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Valakut Invoker
 {
     "name": "Valakut Invoker",
