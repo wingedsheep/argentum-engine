@@ -700,6 +700,17 @@
   text-align: center;
 }
 
+/* Two columns: the side column is as tall as the catalogue, and its last card (the Learn row, or
+   the account callout) sits at the bottom, so both columns end on the same line. A side column
+   shorter than the catalogue otherwise leaves an empty block under it and the page looks heavier
+   on the left. `align-content: start` sizes the row to its content, not to the free height. */
+@media (min-width: 901px) {
+  .hub { align-content: start; }
+  .side { align-self: stretch; }
+  .aside { flex: 1 0 auto; }
+  .aside > :last-child { margin-top: auto; }
+}
+
 /* Inside a page that fits the viewport (`Home.module.css`), the hub fills what is left and each
    column scrolls on its own rather than the page. */
 @media (min-width: 901px) and (min-height: 600px) {
