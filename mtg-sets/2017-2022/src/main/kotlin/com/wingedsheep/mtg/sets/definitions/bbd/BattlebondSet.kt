@@ -17,7 +17,7 @@ object BattlebondSet : MtgSet {
     }
 
     override val basicLands: List<CardDefinition> by lazy {
-        CardDiscovery.findBasicLandsIn(CARDS_PACKAGE)
+        CardDiscovery.findBasicLandsIn(CARDS_PACKAGE, code)
     }
 
     override val printings: List<Printing> by lazy {
