@@ -2606,6 +2606,61 @@
     ]
 }
 
+// Icebind Pillar
+{
+    "name": "Icebind Pillar",
+    "manaCost": "{2}{U}",
+    "typeLine": "Snow Artifact",
+    "oracleText": "{S}, {T}: Tap target artifact or creature. ({S} can be paid with one mana from a snow source.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Icebind Pillar:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{S}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{S}, {T}: Tap target artifact or creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "Wisnu Tan",
+        "flavorText": "\"Oh, Valki. I'm disappointed in you. How could the god of lies be so gullible?\"\n—Tibalt",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3152f1f-5d3f-4bc4-9b6f-f2983ab3f691.jpg?1783928261"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Immersturm Predator
 {
     "name": "Immersturm Predator",

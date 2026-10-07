@@ -1,0 +1,17 @@
+{
+  "player1Name": "Pillar controller",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "battlefield": [{"name": "Icebind Pillar"}, {"name": "Snow-Covered Mountain"}, {"name": "Island"}],
+    "library": ["Island", "Island", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "battlefield": [{"name": "Grizzly Bears"}, {"name": "Icy Manipulator"}, {"name": "Forest"}],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}
