@@ -17,7 +17,6 @@ object Jumpstart2022Set : MtgSet {
     override val code = "J22"
     override val displayName = "Jumpstart 2022"
     override val releaseDate = "2022-12-02"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
