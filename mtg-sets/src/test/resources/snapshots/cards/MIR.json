@@ -3084,6 +3084,47 @@
     ]
 }
 
+// Pacifism
+{
+    "name": "Pacifism",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't attack or block.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Robert Bliss",
+        "flavorText": "For the first time in his life, Grakk felt a little warm and fuzzy inside.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c891df1b-bae6-4d6d-85ee-42901c149f98.jpg?1783947119"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Patagia Golem
 {
     "name": "Patagia Golem",

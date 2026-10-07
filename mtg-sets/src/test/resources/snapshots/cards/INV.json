@@ -5092,41 +5092,6 @@
     ]
 }
 
-// Fertile Ground
-{
-    "name": "Fertile Ground",
-    "manaCost": "{1}{G}",
-    "typeLine": "Enchantment — Aura",
-    "oracleText": "Enchant land\nWhenever enchanted land is tapped for mana, its controller adds an additional one mana of any color.",
-    "script": {
-        "staticAbilities": [
-            {
-                "type": "AdditionalManaOnTap",
-                "amount": {
-                    "type": "Fixed",
-                    "amount": 1
-                },
-                "anyColor": true
-            }
-        ],
-        "auraTarget": {
-            "type": "TargetObject",
-            "filter": {
-                "baseFilter": "land"
-            }
-        }
-    },
-    "metadata": {
-        "collectorNumber": "188",
-        "artist": "Carl Critchlow",
-        "flavorText": "As Phyrexians descended, Multani paused to reflect on the beauty that might never be seen again.",
-        "imageUri": "https://cards.scryfall.io/normal/front/7/8/789e3582-b541-4916-ac7e-015214d7a27a.jpg?1562919190"
-    },
-    "colorIdentityOverride": [
-        "GREEN"
-    ]
-}
-
 // Fight or Flight
 {
     "name": "Fight or Flight",

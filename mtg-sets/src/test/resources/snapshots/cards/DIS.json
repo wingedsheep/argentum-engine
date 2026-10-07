@@ -601,6 +601,37 @@
     ]
 }
 
+// Spell Snare
+{
+    "name": "Spell Snare",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell with mana value 2.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "mv=2",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "UNCOMMON",
+        "artist": "Hideaki Takamura",
+        "flavorText": "Every culture has its unlucky numbers. In a city where you're either alone, in a crowd, or being stabbed in the back, two is the worst number of all.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35554fdf-c70a-4baa-a35a-414caa9978be.jpg?1783943435"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Trygon Predator
 {
     "name": "Trygon Predator",

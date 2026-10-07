@@ -1,0 +1,64 @@
+// Grothama, All-Devouring
+{
+    "name": "Grothama, All-Devouring",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Creature — Wurm",
+    "oracleText": "Other creatures have \"Whenever this creature attacks, you may have it fight Grothama, All-Devouring.\"\nWhen Grothama, All-Devouring leaves the battlefield, each player draws cards equal to the amount of damage dealt to Grothama this turn by sources they controlled.",
+    "creatureStats": {
+        "power": 10,
+        "toughness": 8
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grothama, All-Devouring:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": "EachPlayerDrawsForDamageDealtToSource"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Grothama, All-Devouring:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "Fight",
+                            "target1": "Self",
+                            "target2": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature name:Grothama, All-Devouring"
+                        },
+                        "id": "t0"
+                    }
+                },
+                "filter": {
+                    "baseFilter": "creature",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "MYTHIC",
+        "artist": "Mark Behm",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab8935b1-ec87-4330-9952-9ef8cd344531.jpg?1783934853"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}

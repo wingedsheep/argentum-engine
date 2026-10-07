@@ -16354,37 +16354,6 @@
     ]
 }
 
-// Spell Snare
-{
-    "name": "Spell Snare",
-    "manaCost": "{U}",
-    "typeLine": "Instant",
-    "oracleText": "Counter target spell with mana value 2.",
-    "script": {
-        "spellEffect": "Counter",
-        "targetRequirements": [
-            {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": "mv=2",
-                    "zone": "Stack"
-                },
-                "id": "t0"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "71",
-        "rarity": "UNCOMMON",
-        "artist": "Iris Compiet",
-        "flavorText": "Shadowmoor merrow swindle and steal not only for profit but for spite.",
-        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7551b61-656e-4f37-b9da-73174db983b7.jpg?1767659595"
-    },
-    "colorIdentityOverride": [
-        "BLUE"
-    ]
-}
-
 // Spinerock Tyrant
 {
     "name": "Spinerock Tyrant",

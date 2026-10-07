@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.blc.cards
+package com.wingedsheep.mtg.sets.definitions.nph.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Effects
@@ -35,8 +35,9 @@ val BeastWithin = card("Beast Within") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "206"
-        artist = "Efflam Mercier"
-        imageUri = "https://cards.scryfall.io/normal/front/6/0/601c59cf-f3df-4003-9ae9-613a1d4a620b.jpg?1721429205"
+        collectorNumber = "103"
+        artist = "Dave Allsop"
+        flavorText = "\"Kill the weak so they can't drag the strong down to their level. This is true compassion.\"\n—Benzir, archdruid of Temple Might"
+        imageUri = "https://cards.scryfall.io/normal/front/c/e/ce5b6d19-22e3-4f57-8f4d-a17e982286c7.jpg?1783941304"
     }
 }

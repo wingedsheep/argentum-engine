@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.ons.cards
+package com.wingedsheep.mtg.sets.definitions.mir.cards
 
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.dsl.card
@@ -33,9 +33,9 @@ val Pacifism = card("Pacifism") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "47"
-        artist = "Matthew D. Wilson"
-        flavorText = "Even those born to battle could only lay their blades at Akroma’s feet."
-        imageUri = "https://cards.scryfall.io/normal/front/e/e/ee262fde-8df1-431f-9e5c-0cafe9212b49.jpg?1562951573"
+        collectorNumber = "32"
+        artist = "Robert Bliss"
+        flavorText = "For the first time in his life, Grakk felt a little warm and fuzzy inside."
+        imageUri = "https://cards.scryfall.io/normal/front/c/8/c891df1b-bae6-4d6d-85ee-42901c149f98.jpg?1783947119"
     }
 }

@@ -178,61 +178,6 @@
     ]
 }
 
-// Beast Within
-{
-    "name": "Beast Within",
-    "manaCost": "{2}{G}",
-    "typeLine": "Instant",
-    "oracleText": "Destroy target permanent. Its controller creates a 3/3 green Beast creature token.",
-    "script": {
-        "spellEffect": {
-            "type": "Composite",
-            "effects": [
-                {
-                    "type": "MoveToZone",
-                    "target": {
-                        "type": "BoundVariable",
-                        "name": "t0"
-                    },
-                    "destination": "Graveyard",
-                    "byDestruction": true
-                },
-                {
-                    "type": "CreateToken",
-                    "power": 3,
-                    "toughness": 3,
-                    "colors": [
-                        "GREEN"
-                    ],
-                    "creatureTypes": [
-                        "Beast"
-                    ],
-                    "imageUri": "https://cards.scryfall.io/normal/front/d/9/d93d0098-2147-4e84-af15-91dec8b98d21.jpg?1721427669",
-                    "controller": "TargetController"
-                }
-            ]
-        },
-        "targetRequirements": [
-            {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": "permanent"
-                },
-                "id": "t0"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "206",
-        "rarity": "UNCOMMON",
-        "artist": "Efflam Mercier",
-        "imageUri": "https://cards.scryfall.io/normal/front/6/0/601c59cf-f3df-4003-9ae9-613a1d4a620b.jpg?1721429205"
-    },
-    "colorIdentityOverride": [
-        "GREEN"
-    ]
-}
-
 // Beastmaster Ascension
 {
     "name": "Beastmaster Ascension",
@@ -1412,71 +1357,6 @@
                 "text": "If you somehow manage to cast Explore when it's not your turn, you'll draw a card when it resolves, but you won't be able to play a land that turn."
             }
         ]
-    },
-    "colorIdentityOverride": [
-        "GREEN"
-    ]
-}
-
-// Grothama, All-Devouring
-{
-    "name": "Grothama, All-Devouring",
-    "manaCost": "{3}{G}{G}",
-    "typeLine": "Legendary Creature — Wurm",
-    "oracleText": "Other creatures have \"Whenever this creature attacks, you may have it fight Grothama, All-Devouring.\"\nWhen Grothama, All-Devouring leaves the battlefield, each player draws cards equal to the amount of damage dealt to Grothama this turn by sources they controlled.",
-    "creatureStats": {
-        "power": 10,
-        "toughness": 8
-    },
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Grothama, All-Devouring:2",
-                "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "from": "Battlefield"
-                },
-                "effect": "EachPlayerDrawsForDamageDealtToSource"
-            }
-        ],
-        "staticAbilities": [
-            {
-                "type": "GrantTriggeredAbility",
-                "ability": {
-                    "id": "Grothama, All-Devouring:1",
-                    "trigger": "AttackEvent",
-                    "effect": {
-                        "type": "Gated",
-                        "gate": "Gate.MayDecide",
-                        "then": {
-                            "type": "Fight",
-                            "target1": "Self",
-                            "target2": {
-                                "type": "BoundVariable",
-                                "name": "t0"
-                            }
-                        }
-                    },
-                    "targetRequirement": {
-                        "type": "TargetObject",
-                        "filter": {
-                            "baseFilter": "creature name:Grothama, All-Devouring"
-                        },
-                        "id": "t0"
-                    }
-                },
-                "filter": {
-                    "baseFilter": "creature",
-                    "excludeSelf": true
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "224",
-        "rarity": "RARE",
-        "artist": "Filip Burburan",
-        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08b5301b-9f3c-4fb2-a308-a47a16c08fc0.jpg?1721429302"
     },
     "colorIdentityOverride": [
         "GREEN"

@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.inv.cards
+package com.wingedsheep.mtg.sets.definitions.usg.cards
 
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
@@ -33,9 +33,9 @@ val FertileGround = card("Fertile Ground") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "188"
-        artist = "Carl Critchlow"
-        flavorText = "As Phyrexians descended, Multani paused to reflect on the beauty that might never be seen again."
-        imageUri = "https://cards.scryfall.io/normal/front/7/8/789e3582-b541-4916-ac7e-015214d7a27a.jpg?1562919190"
+        collectorNumber = "252"
+        artist = "Heather Hudson"
+        flavorText = "The forest was too lush for the brothers to despoil—almost."
+        imageUri = "https://cards.scryfall.io/normal/front/0/9/091dda35-59e5-456d-8804-61513a610aed.jpg?1783946315"
     }
 }

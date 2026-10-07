@@ -2086,6 +2086,41 @@
     ]
 }
 
+// Fertile Ground
+{
+    "name": "Fertile Ground",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nWhenever enchanted land is tapped for mana, its controller adds an additional one mana of any color.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AdditionalManaOnTap",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "anyColor": true
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "252",
+        "artist": "Heather Hudson",
+        "flavorText": "The forest was too lush for the brothers to despoil—almost.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/091dda35-59e5-456d-8804-61513a610aed.jpg?1783946315"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Fire Ants
 {
     "name": "Fire Ants",

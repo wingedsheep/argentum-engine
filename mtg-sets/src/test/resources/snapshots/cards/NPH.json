@@ -29,6 +29,62 @@
     "colorIdentityOverride": []
 }
 
+// Beast Within
+{
+    "name": "Beast Within",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target permanent. Its controller creates a 3/3 green Beast creature token.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Beast"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/9/d93d0098-2147-4e84-af15-91dec8b98d21.jpg?1721427669",
+                    "controller": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "UNCOMMON",
+        "artist": "Dave Allsop",
+        "flavorText": "\"Kill the weak so they can't drag the strong down to their level. This is true compassion.\"\n—Benzir, archdruid of Temple Might",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce5b6d19-22e3-4f57-8f4d-a17e982286c7.jpg?1783941304"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Deceiver Exarch
 {
     "name": "Deceiver Exarch",

@@ -12,9 +12,9 @@ import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.mtg.sets.definitions.inv.cards.FertileGround
 import com.wingedsheep.mtg.sets.definitions.inv.cards.Overabundance
 import com.wingedsheep.mtg.sets.definitions.inv.cards.PulseOfLlanowar
+import com.wingedsheep.mtg.sets.definitions.usg.cards.FertileGround
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone

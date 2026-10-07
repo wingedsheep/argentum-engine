@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.blc.cards
+package com.wingedsheep.mtg.sets.definitions.bbd.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -64,9 +64,9 @@ val GrothamaAllDevouring = card("Grothama, All-Devouring") {
     }
 
     metadata {
-        rarity = Rarity.RARE
-        collectorNumber = "224"
-        artist = "Filip Burburan"
-        imageUri = "https://cards.scryfall.io/normal/front/0/8/08b5301b-9f3c-4fb2-a308-a47a16c08fc0.jpg?1721429302"
+        rarity = Rarity.MYTHIC
+        collectorNumber = "71"
+        artist = "Mark Behm"
+        imageUri = "https://cards.scryfall.io/normal/front/a/b/ab8935b1-ec87-4330-9952-9ef8cd344531.jpg?1783934853"
     }
 }

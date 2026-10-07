@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.ecl.cards
+package com.wingedsheep.mtg.sets.definitions.dis.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -24,9 +24,9 @@ val SpellSnare = card("Spell Snare") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "71"
-        artist = "Iris Compiet"
-        flavorText = "Shadowmoor merrow swindle and steal not only for profit but for spite."
-        imageUri = "https://cards.scryfall.io/normal/front/b/7/b7551b61-656e-4f37-b9da-73174db983b7.jpg?1767659595"
+        collectorNumber = "33"
+        artist = "Hideaki Takamura"
+        flavorText = "Every culture has its unlucky numbers. In a city where you're either alone, in a crowd, or being stabbed in the back, two is the worst number of all."
+        imageUri = "https://cards.scryfall.io/normal/front/3/5/35554fdf-c70a-4baa-a35a-414caa9978be.jpg?1783943435"
     }
 }

@@ -16,7 +16,7 @@ import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.engine.view.LegalActionEnricher
 import com.wingedsheep.mtg.sets.definitions.inv.cards.ChaoticStrike
-import com.wingedsheep.mtg.sets.definitions.inv.cards.FertileGround
+import com.wingedsheep.mtg.sets.definitions.usg.cards.FertileGround
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
