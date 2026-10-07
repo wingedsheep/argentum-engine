@@ -15548,49 +15548,6 @@
     ]
 }
 
-// Syphon Soul
-{
-    "name": "Syphon Soul",
-    "manaCost": "{2}{B}",
-    "typeLine": "Sorcery",
-    "oracleText": "Syphon Soul deals 2 damage to each other player. You gain life equal to the damage dealt this way.",
-    "script": {
-        "spellEffect": {
-            "type": "Composite",
-            "effects": [
-                {
-                    "type": "DealDamage",
-                    "amount": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "target": {
-                        "type": "PlayerRef",
-                        "player": "EachOpponent"
-                    },
-                    "damageDealtVariable": "storedNumber0"
-                },
-                {
-                    "type": "GainLife",
-                    "amount": {
-                        "type": "VariableReference",
-                        "variableName": "storedNumber0"
-                    }
-                }
-            ]
-        }
-    },
-    "metadata": {
-        "collectorNumber": "176",
-        "artist": "Ron Spears",
-        "flavorText": "As Phage drank their energy, a vague memory of Jeska stirred. Then she lost herself again in the joy of her victims' suffering.",
-        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3bdaef0f-9965-463b-902d-72ec24b2db7b.jpg?1562909040"
-    },
-    "colorIdentityOverride": [
-        "BLACK"
-    ]
-}
-
 // Taunting Elf
 {
     "name": "Taunting Elf",

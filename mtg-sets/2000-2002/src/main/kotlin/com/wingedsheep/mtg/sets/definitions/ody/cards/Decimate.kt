@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.blc.cards
+package com.wingedsheep.mtg.sets.definitions.ody.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -32,9 +32,9 @@ val Decimate = card("Decimate") {
 
     metadata {
         rarity = Rarity.RARE
-        collectorNumber = "251"
-        artist = "Zoltan Boros"
-        flavorText = "Anarchy comes in many forms: social, individual, Gruul . . ."
-        imageUri = "https://cards.scryfall.io/normal/front/e/d/ed38da33-c230-4eec-b7c7-3b0c5cdf727a.jpg?1721429459"
+        collectorNumber = "287"
+        artist = "Alex Horley-Orlandelli"
+        imageUri = "https://cards.scryfall.io/normal/front/9/1/912c398a-e49a-4399-ac41-7b1d4328a59d.jpg?1783945206"
+        flavorText = "\"Anyone can admire creation. Only a barbarian sees the beauty in demolition.\"\n—Kamahl, pit fighter"
     }
 }

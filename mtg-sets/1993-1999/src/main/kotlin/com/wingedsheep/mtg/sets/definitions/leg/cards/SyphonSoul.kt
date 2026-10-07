@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.ons.cards
+package com.wingedsheep.mtg.sets.definitions.leg.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -32,9 +32,9 @@ val SyphonSoul = card("Syphon Soul") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "176"
-        artist = "Ron Spears"
-        flavorText = "As Phage drank their energy, a vague memory of Jeska stirred. Then she lost herself again in the joy of her victims' suffering."
-        imageUri = "https://cards.scryfall.io/normal/front/3/b/3bdaef0f-9965-463b-902d-72ec24b2db7b.jpg?1562909040"
+        collectorNumber = "118"
+        artist = "Melissa A. Benson"
+        imageUri = "https://cards.scryfall.io/normal/front/f/3/f3020304-7a39-411e-b055-3ade72b4bff8.jpg?1783948063"
+        flavorText = "\"Her lips suck forth; see, where it flies!\"\n—Christopher Marlowe, *The Tragical History of Doctor Faustus*"
     }
 }
