@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 val TeferisPuzzleBox = card("Teferi's Puzzle Box") {
     manaCost = "{4}"
@@ -18,11 +17,11 @@ val TeferisPuzzleBox = card("Teferi's Puzzle Box") {
 
     triggeredAbility {
         trigger = Triggers.anyPlayer.beginningOf(Step.DRAW)
-        effect = Effects.Pipeline {
-            val hand = gather(CardSource.FromZone(Zone.HAND, Player.TriggeringPlayer))
-            toLibraryBottom(hand, Player.TriggeringPlayer, CardOrder.OwnerChooses)
-            run(Effects.DrawCards(hand.count, EffectTarget.PlayerRef(Player.TriggeringPlayer)))
-        }
+        effect = Effects.ForEachPlayer(Player.TriggeringPlayer, Effects.Pipeline {
+            val hand = gather(CardSource.FromZone(Zone.HAND))
+            toLibraryBottom(hand, order = CardOrder.OwnerChooses)
+            run(Effects.DrawCards(hand.count))
+        })
     }
 
     metadata {

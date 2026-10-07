@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ReorderLibraryDecision
+import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -47,6 +48,23 @@ class TeferisPuzzleBoxScenarioTest : FunSpec({
             d.state.getZone(ZoneKey(opponent, Zone.LIBRARY)).takeLast(hand.size) shouldBe hand.reversed()
             d.getHand(controller) shouldBe controllerHand
         }
+    }
+
+    test("a single hidden card stays private when the opponent puts it on the bottom") {
+        val d = driver()
+        val controller = d.activePlayer!!
+        val opponent = d.getOpponent(controller)
+        d.putPermanentOnBattlefield(controller, "Teferi's Puzzle Box")
+        d.passPriorityUntil(Step.DRAW, maxPasses = 200)
+        val hand = d.getHand(opponent)
+        hand.drop(1).forEach(d::moveToGraveyard)
+        val hiddenCard = hand.first()
+        d.bothPass()
+        d.pendingDecision shouldBe null
+        d.state.getZone(ZoneKey(opponent, Zone.LIBRARY)).last() shouldBe hiddenCard
+        val visibility = d.state.getEntity(hiddenCard)?.get<RevealedToComponent>()
+        visibility?.isRevealedTo(controller) shouldBe false
+        visibility?.isRevealedTo(opponent) shouldBe true
     }
 
     test("an empty hand at resolution draws nothing and requires no ordering") {

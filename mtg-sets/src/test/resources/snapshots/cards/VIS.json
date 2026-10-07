@@ -1267,40 +1267,41 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand",
-                                "player": "TriggeringPlayer"
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "TriggeringPlayer"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "gathered0"
                             },
-                            "storeAs": "gathered0"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "gathered0",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Library",
-                                "player": "TriggeringPlayer",
-                                "placement": "Bottom"
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Bottom"
+                                },
+                                "order": "OwnerChooses"
                             },
-                            "order": "OwnerChooses"
-                        },
-                        {
-                            "type": "DrawCards",
-                            "count": {
-                                "type": "VariableReference",
-                                "variableName": "gathered0_count"
-                            },
-                            "target": {
-                                "type": "PlayerRef",
-                                "player": "TriggeringPlayer"
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "gathered0_count"
+                                }
                             }
-                        }
-                    ]
+                        ]
+                    }
                 }
             }
         ]
