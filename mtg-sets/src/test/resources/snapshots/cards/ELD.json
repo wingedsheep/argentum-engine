@@ -1,3 +1,46 @@
+// Arcane Signet
+{
+    "name": "Arcane Signet",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add one mana of any color in your commander's color identity.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Arcane Signet:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "colorSet": "ManaColorSet.CommanderIdentity"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "331",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "It started as a mere drop of water. The Magic Mirror crystallized it into much more.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84128e98-87d6-4c2f-909b-9435a7833e63.jpg?1783932545",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "If your commander is a card that has no colors in its color identity, Arcane Signet's ability produces no mana. It doesn't produce {C}."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If you have two commanders, the ability adds one mana of any color in their combined color identities."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If you don't have a commander, Arcane Signet's ability produces no mana."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Bake into a Pie
 {
     "name": "Bake into a Pie",

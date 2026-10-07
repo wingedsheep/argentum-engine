@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.blc.cards
+package com.wingedsheep.mtg.sets.definitions.eld.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -28,10 +28,10 @@ val ArcaneSignet = card("Arcane Signet") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "127"
-        artist = "Ioannis Fiore"
-        flavorText = "The dark nights of Valley hold no horrors for batfolk clerics and warriors."
-        imageUri = "https://cards.scryfall.io/normal/front/2/8/28180667-cc1e-4f64-9a69-00425ef85ba0.jpg?1721428800"
+        collectorNumber = "331"
+        artist = "Dan Murayama Scott"
+        flavorText = "It started as a mere drop of water. The Magic Mirror crystallized it into much more."
+        imageUri = "https://cards.scryfall.io/normal/front/8/4/84128e98-87d6-4c2f-909b-9435a7833e63.jpg?1783932545"
         ruling("2020-11-10", "If your commander is a card that has no colors in its color identity, Arcane Signet's ability produces no mana. It doesn't produce {C}.")
         ruling("2020-11-10", "If you have two commanders, the ability adds one mana of any color in their combined color identities.")
         ruling("2020-11-10", "If you don't have a commander, Arcane Signet's ability produces no mana.")

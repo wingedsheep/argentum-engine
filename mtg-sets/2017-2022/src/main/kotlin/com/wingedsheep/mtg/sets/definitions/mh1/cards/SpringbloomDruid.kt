@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.fdn.cards
+package com.wingedsheep.mtg.sets.definitions.mh1.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -41,9 +41,9 @@ val SpringbloomDruid = card("Springbloom Druid") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "646"
+        collectorNumber = "181"
         artist = "Randy Gallegos"
         flavorText = "\"New growth applies a healing poultice to wounds long scabbed over.\""
-        imageUri = "https://cards.scryfall.io/normal/front/f/a/fa87cb5f-4dc9-49a4-9ae6-ebc7fedac018.jpg?1730491047"
+        imageUri = "https://cards.scryfall.io/normal/front/6/1/6161d2ed-7cff-4c90-9e74-1d179a6c1498.jpg?1783933092"
     }
 }

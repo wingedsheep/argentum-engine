@@ -178,49 +178,6 @@
     ]
 }
 
-// Arcane Signet
-{
-    "name": "Arcane Signet",
-    "manaCost": "{2}",
-    "typeLine": "Artifact",
-    "oracleText": "{T}: Add one mana of any color in your commander's color identity.",
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "Arcane Signet:1",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddManaOfChoice",
-                    "colorSet": "ManaColorSet.CommanderIdentity"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "127",
-        "artist": "Ioannis Fiore",
-        "flavorText": "The dark nights of Valley hold no horrors for batfolk clerics and warriors.",
-        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28180667-cc1e-4f64-9a69-00425ef85ba0.jpg?1721428800",
-        "rulings": [
-            {
-                "date": "2020-11-10",
-                "text": "If your commander is a card that has no colors in its color identity, Arcane Signet's ability produces no mana. It doesn't produce {C}."
-            },
-            {
-                "date": "2020-11-10",
-                "text": "If you have two commanders, the ability adds one mana of any color in their combined color identities."
-            },
-            {
-                "date": "2020-11-10",
-                "text": "If you don't have a commander, Arcane Signet's ability produces no mana."
-            }
-        ]
-    },
-    "colorIdentityOverride": []
-}
-
 // Beast Within
 {
     "name": "Beast Within",
