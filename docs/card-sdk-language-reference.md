@@ -419,6 +419,13 @@ plus the frame fields:
 metadata (set code, collector number, art, artist, Scryfall id, and the back-face art for genuine DFCs) and leaves the
 card's oracle identity untouched.
 
+**Echoed-pair boosters** — override `MtgSet.boosterStrategy` with
+`EchoedPairsPlayBooster(echoedPairs = listOf("First half" to "Second half", ...))`.
+Both halves must be in the pool to open as a pair; the third echoed card excludes the selected pair.
+Missing echoed slots use remaining echoed cards, then unused regular uncommons, commons, rares, and
+mythics in that order. This preserves those slots when host bans or incomplete pools exhaust uncommons,
+without duplicating names. Other regular slots exclude echoed names; the wildcard includes them.
+
 **Showcase / borderless in boosters** — a set advertises a per-card variant rate via `MtgSet.boosterVariantChance`
 (default `0.0`). When non-zero, `BoosterGenerator` rolls each generated card independently and, on a hit, re-skins it
 with one of its `isAlternateFrame` `printings` of the same name (via `applyVariantPrintings` →

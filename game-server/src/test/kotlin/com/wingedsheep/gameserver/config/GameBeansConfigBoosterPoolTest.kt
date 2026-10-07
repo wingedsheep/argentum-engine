@@ -1,13 +1,16 @@
 package com.wingedsheep.gameserver.config
 
 import com.wingedsheep.gameserver.coverage.SetCoverageService
+import com.wingedsheep.sdk.limited.EchoedPairsPlayBooster
 import com.wingedsheep.sdk.model.Rarity
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Guards booster-pool construction for both all-reprint sets and mixed sets. Every distinct
@@ -28,6 +31,16 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         fra.cards.map { it.name } shouldContain "Unsummon"
         fra.cards.all { it.metadata.inBooster } shouldBe true
         boosterGenerator.generateBooster("FRA").size shouldBeGreaterThan 0
+    }
+
+    test("every Reality Fracture pack opens a complete echoed pair") {
+        val strategy = boosterGenerator.availableSets["FRA"].shouldNotBeNull().boosterStrategy
+            .shouldBeInstanceOf<EchoedPairsPlayBooster>()
+        repeat(200) {
+            val names = boosterGenerator.generateBooster("FRA").map { it.name }.toSet()
+            val pairs = strategy.echoedPairs.filter { it.first in names && it.second in names }
+            withClue("pack $names has no echoed pair") { pairs.size shouldBeGreaterThan 0 }
+        }
     }
 
     test("Eighth Edition appears as a selectable set") {
