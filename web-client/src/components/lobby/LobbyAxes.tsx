@@ -51,6 +51,7 @@ const CARDS_CAPTIONS: Record<CardsKind, string> = {
     'The server rolls you a pool, so there is nothing to prepare. This one is per player: your opponent can still bring a deck of their own.',
   MOMIR:
     'No deckbuilding — everyone runs 60 basics. Discard a card and pay {X} to flip a random creature with mana value X.',
+  JUMP_IN: 'Choose two themed packs, combine them into a 40-card deck, and play. Lands included — no deckbuilding needed.',
   SEALED: 'Open boosters and build a deck from what you get.',
   DRAFT: 'Pass packs around and pick one card at a time, then build from your picks.',
 }

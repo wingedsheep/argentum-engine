@@ -100,10 +100,11 @@ export function useLobbyCommands(
         // A recreate deliberately does *not* carry the old lobby's settings across: the confirm
         // dialog has just told the host that "set selection and any submitted decks are reset",
         // because the new lobby is a different shape and most of what was configured wouldn't mean
-        // the same thing. It is the one path that still opens on the bootstrap set.
+        // the same thing. Jump In names its published set; other modes use the bootstrap set.
         s().createTournamentLobby(
-          [BOOTSTRAP_SET_CODE], spec.format, 6, 8, 45, view.isPublic, spec.gameMode,
+          [spec.jumpIn ? 'J22' : BOOTSTRAP_SET_CODE], spec.format, 6, 8, 45, view.isPublic, spec.gameMode,
         )
+        if (spec.jumpIn) s().updateLobbySettings({ useJumpstart: true, gamesPerMatch: 1 })
       }
     }
 
@@ -132,8 +133,14 @@ export function useLobbyCommands(
         }
         switch (kind) {
           case 'BRING_A_DECK': s().updateLobbySettings({ format: 'PREMADE_DECKS' }); return
-          case 'SEALED': s().updateLobbySettings({ format: 'SEALED' }); return
-          case 'DRAFT': s().updateLobbySettings({ format: 'DRAFT' }); return
+          case 'JUMP_IN':
+            s().updateLobbySettings({
+              cubeCards: [], setCodes: ['J22'], format: 'SEALED', rules: 'STANDARD',
+              deckFormat: '', useJumpstart: true, gamesPerMatch: 1,
+            })
+            return
+          case 'SEALED': s().updateLobbySettings({ format: 'SEALED', useJumpstart: false }); return
+          case 'DRAFT': s().updateLobbySettings({ format: 'DRAFT', useJumpstart: false }); return
           default: return
         }
       },

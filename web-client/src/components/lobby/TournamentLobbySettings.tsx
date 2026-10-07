@@ -233,7 +233,7 @@ export function TournamentLobbySettings({
 
       {group === 'CARDS' && s.jumpstartEligible && (
         <div className={styles.settingsRow}>
-          <span className={styles.settingsLabel}>Jumpstart</span>
+          <span className={styles.settingsLabel}>Jump In</span>
           <div className={styles.variantGroup}>
             <div className={styles.settingsButtons}>
               <button aria-pressed={s.useJumpstart !== false}

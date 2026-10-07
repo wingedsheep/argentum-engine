@@ -9,15 +9,15 @@ data class JumpstartPack(val id: String, val cards: List<CardDefinition>) {
     val theme: String get() = id.substringBefore(" (")
 }
 
-class JumpstartPacks(generator: BoosterGenerator) {
-    // JMP packs also contain M21 cards, whose canonical definition can live in any earlier set.
+class JumpstartPacks(generator: BoosterGenerator, setCode: String = "JMP") {
+    // Packs include reprints whose canonical definitions can live in any earlier set.
     private val cardsByName = generator.availableSets.values
         .flatMap { it.cards + it.basicLands }
-        .associateBy { it.name } + generator.getSetConfig("JMP")?.let {
+        .associateBy { it.name } + generator.getSetConfig(setCode)?.let {
             (it.cards + it.basicLands).associateBy { card -> card.name }
         }.orEmpty()
 
-    val packs: List<JumpstartPack> = lists.mapNotNull { (id, names) ->
+    val packs: List<JumpstartPack> = listsFor(setCode).mapNotNull { (id, names) ->
         val cards = names.map { cardsByName[it] ?: return@mapNotNull null }
         JumpstartPack(id, cards)
     }
@@ -32,10 +32,19 @@ class JumpstartPacks(generator: BoosterGenerator) {
             .map { it.random(random).id }
 
     companion object {
-        val lists: Map<String, List<String>> by lazy {
+        val lists: Map<String, List<String>> get() = listsFor("JMP")
+
+        private val published by lazy {
+            setOf("JMP", "J22").associateWith { loadLists(it) }
+        }
+
+        fun listsFor(setCode: String): Map<String, List<String>> =
+            requireNotNull(published[setCode]) { "Unsupported Jumpstart set: $setCode" }
+
+        private fun loadLists(setCode: String): Map<String, List<String>> {
             val result = linkedMapOf<String, MutableList<String>>()
             var current: MutableList<String>? = null
-            requireNotNull(JumpstartPacks::class.java.getResourceAsStream("/jumpstart/jmp.txt"))
+            requireNotNull(JumpstartPacks::class.java.getResourceAsStream("/jumpstart/${setCode.lowercase()}.txt"))
                 .bufferedReader().useLines { lines ->
                     lines.filter { it.isNotBlank() && !it.startsWith("#") }.forEach { line ->
                         if (line.startsWith("[")) {
@@ -48,7 +57,7 @@ class JumpstartPacks(generator: BoosterGenerator) {
                 }
             require(result.size == 121)
             require(result.values.all { it.size == 20 }) { "Every Jumpstart pack must contain exactly 20 cards" }
-            result
+            return result
         }
     }
 }

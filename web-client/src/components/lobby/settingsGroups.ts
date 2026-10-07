@@ -92,7 +92,7 @@ export function groupSummary(id: GroupId, view: UnifiedLobbyView, lobbyState: Lo
 
   switch (id) {
     case 'CARDS': {
-      if (s?.jumpstartActive) return 'Jumpstart · two themed packs · 40 cards'
+      if (s?.jumpstartActive) return `Jump In · ${s.setNames.join(' + ')} · two packs · 40 cards`
       parts.push(cardsLabel(view.axes.cards))
       if (s) {
         if (s.cubeName) parts.push(`${s.cubeName} (${s.cubeCardCount ?? 0})`)

@@ -21,6 +21,7 @@ import type { AvailableSet } from '@/types'
 const SETS: readonly AvailableSet[] = [
   { code: 'ECL', name: 'Eclipse' },
   { code: 'BLB', name: 'Bloomburrow' },
+  { code: 'J22', name: 'Jumpstart 2022' },
 ]
 
 /** Every selection the wizard can actually reach — the same space `modeMatrix.test.ts` walks. */
@@ -46,6 +47,7 @@ function defaultAxisFor(kind: (typeof CARDS_KINDS)[number]): CardsAxis {
     case 'BRING_A_DECK': return { kind: 'BRING_A_DECK', legality: null }
     case 'RANDOM': return { kind: 'RANDOM' }
     case 'MOMIR': return { kind: 'MOMIR' }
+    case 'JUMP_IN': return { kind: 'JUMP_IN' }
     case 'SEALED': return { kind: 'SEALED', shape: 'STANDARD' }
     case 'DRAFT': return { kind: 'DRAFT', shape: 'BOOSTER' }
   }
@@ -81,10 +83,11 @@ describe('recipeFromSelection', () => {
     }
   })
 
-  it('carries no settings — a fresh selection has not chosen any', () => {
+  it('chooses published J22 packs for Jump In and leaves other selections unconfigured', () => {
     // The whole point of Phase 0: the launch path used to invent `['ECL'], 6, 45`.
     for (const selection of everyReachableSelection()) {
-      expect(recipeFromSelection(selection).settings).toEqual({})
+      expect(recipeFromSelection(selection).settings).toEqual(selection.cards.kind === 'JUMP_IN'
+        ? { setCodes: ['J22'], useJumpstart: true, gamesPerMatch: 1 } : {})
     }
   })
 

@@ -103,6 +103,7 @@ describe('modeMatrix', () => {
       } else {
         const axes = axesFromLobbySettings({
           format: spec.format,
+          jumpstartActive: selection.cards.kind === 'JUMP_IN',
           gameMode: spec.gameMode,
           deckFormat: null,
         } as never)

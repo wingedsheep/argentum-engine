@@ -938,10 +938,14 @@ class TournamentLobby(
      * Only the host can trigger this. Valid for SEALED and COMMANDER_SEALED formats.
      */
     /** Automatic only for a single Jumpstart set using ordinary limited rules. */
-    val jumpstartEligible: Boolean get() = !isCube && setCodes == listOf("JMP") &&
+    val jumpstartEligible: Boolean get() = !isCube && setCodes.size == 1 && setCodes.single() in setOf("JMP", "J22") &&
         !usesCommanderRules && format in setOf(TournamentFormat.SEALED, TournamentFormat.DRAFT)
     val isJumpstart: Boolean get() = jumpstartEligible && useJumpstart
-    private val jumpstartPacks by lazy { com.wingedsheep.gameserver.jumpstart.JumpstartPacks(boosterGenerator) }
+    // Settings can switch sets before starting; cache by set rather than freezing the first choice.
+    private val jumpstartPackCatalogs = mutableMapOf<String, com.wingedsheep.gameserver.jumpstart.JumpstartPacks>()
+    private val jumpstartPacks get() = jumpstartPackCatalogs.getOrPut(setCodes.single()) {
+        com.wingedsheep.gameserver.jumpstart.JumpstartPacks(boosterGenerator, setCodes.single())
+    }
 
     fun jumpstartStartError(): String? = if (isJumpstart &&
         jumpstartPacks.available(bannedCardNames).map { it.theme }.distinct().size < 3

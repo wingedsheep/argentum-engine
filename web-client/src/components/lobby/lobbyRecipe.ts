@@ -141,9 +141,10 @@ export interface LobbyRecipe {
 /* ── From the wizard ────────────────────────────────────────────────────── */
 
 /**
- * The recipe a fresh wizard selection describes: the three answers and nothing else.
+ * The recipe a fresh wizard selection describes.
  *
- * Every settings field is absent, which means the lobby opens on the server's defaults for that
+ * Jump In selects J22 published packs and one game per matchup. Other modes leave settings
+ * absent, which means the lobby opens on the server's defaults for that
  * shape — no sets, six packs, 45 seconds. That is the honest starting point, and notably *not* what
  * the old launch path did: it sent `['ECL']`, so every draft lobby created from the wizard opened
  * on a set nobody had chosen.
@@ -153,7 +154,7 @@ export function recipeFromSelection(selection: Selection): LobbyRecipe {
   return {
     v: RECIPE_VERSION,
     selection,
-    settings: {},
+    settings: cards.kind === 'JUMP_IN' ? { setCodes: ['J22'], useJumpstart: true, gamesPerMatch: 1 } : {},
     deck: deckForCards(cards),
     aiSeats: roster === 'SOLO' && lobbyNeedsAiSeats(selection)
       ? defaultSoloAiSeats(cards, shape)
@@ -169,6 +170,7 @@ function deckForCards(cards: CardsAxis): RecipeDeck {
   switch (cards.kind) {
     case 'MOMIR': return { kind: 'NONE' }
     case 'RANDOM': return { kind: 'RANDOM' }
+    case 'JUMP_IN':
     case 'SEALED':
     case 'DRAFT': return { kind: 'NONE' }
     case 'BRING_A_DECK': return { kind: 'NONE' }

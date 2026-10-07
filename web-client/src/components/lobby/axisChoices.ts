@@ -58,7 +58,7 @@ export type RecreateSpec =
        */
       deckTab: DeckPickerTab
     }
-  | { to: 'TOURNAMENT'; format: TournamentFormat; gameMode: LobbyGameMode }
+  | { to: 'TOURNAMENT'; format: TournamentFormat; gameMode: LobbyGameMode; jumpIn?: boolean }
 
 export type ChoiceAvailability =
   | { kind: 'DIRECT' }
@@ -114,6 +114,8 @@ function cardsAvailability(view: UnifiedLobbyView, kind: CardsKind): ChoiceAvail
       case 'RANDOM':
       case 'MOMIR':
         return DIRECT
+      case 'JUMP_IN':
+        return recreate({ to: 'TOURNAMENT', format: 'SEALED', gameMode: 'TOURNAMENT', jumpIn: true })
       case 'SEALED':
         return recreate({ to: 'TOURNAMENT', format: 'SEALED', gameMode: 'TOURNAMENT' })
       case 'DRAFT':
@@ -124,6 +126,7 @@ function cardsAvailability(view: UnifiedLobbyView, kind: CardsKind): ChoiceAvail
   // Tournament-backed.
   switch (kind) {
     case 'BRING_A_DECK':
+    case 'JUMP_IN':
     case 'SEALED':
     case 'DRAFT':
       return DIRECT

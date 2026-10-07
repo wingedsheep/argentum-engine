@@ -18,7 +18,7 @@ import { expect, type Page } from '@playwright/test'
  */
 
 export type Roster = 'solo' | 'friend' | 'group'
-export type Cards = 'bring-a-deck' | 'random' | 'momir' | 'sealed' | 'draft'
+export type Cards = 'bring-a-deck' | 'random' | 'momir' | 'jump-in' | 'sealed' | 'draft'
 export type Shape = 'one-game' | 'bracket' | 'free-for-all' | 'two-headed-giant' | 'team-vs-team'
 
 /** The placeholder on the join field, so specs don't each hard-code the copy. */
@@ -51,12 +51,13 @@ export async function createLobby(page: Page, choice: WizardChoice): Promise<str
   // Step 3 is only rendered when there is more than one reachable shape.
   if (choice.shape) {
     const tile = page.getByTestId(`wizard-shape-${choice.shape}`)
-    if (await tile.isVisible({ timeout: 2000 }).catch(() => false)) await tile.click()
+    await expect(tile.or(page.getByTestId('wizard-create'))).toBeVisible()
+    if (await tile.isVisible()) await tile.click()
   }
 
   // No seat step: the lobby opens at the cap its shape allows and people join until it is full.
   await page.getByTestId('wizard-create').click()
-  await expect(page.getByText('Invite Code')).toBeVisible({ timeout: 10000 })
+  await expect(page.getByTestId('invite-code')).toBeVisible({ timeout: 10000 })
   const lobbyId = await page.getByTestId('invite-code').textContent() ?? ''
   expect(lobbyId).toBeTruthy()
   return lobbyId
@@ -71,7 +72,7 @@ export async function createLobby(page: Page, choice: WizardChoice): Promise<str
  */
 export async function launchSetup(page: Page, name: string): Promise<string> {
   await page.getByTestId(`setup-chip-${name}`).click()
-  await expect(page.getByText('Invite Code')).toBeVisible({ timeout: 10000 })
+  await expect(page.getByTestId('invite-code')).toBeVisible({ timeout: 10000 })
   return await page.getByTestId('invite-code').textContent() ?? ''
 }
 
@@ -95,7 +96,7 @@ export async function openSettingsGroup(page: Page, group: string): Promise<void
 export async function joinLobby(page: Page, lobbyId: string): Promise<void> {
   await page.getByPlaceholder(JOIN_PLACEHOLDER).fill(lobbyId)
   await page.getByRole('button', { name: 'Join' }).click()
-  await expect(page.getByText('Invite Code')).toBeVisible({ timeout: 10000 })
+  await expect(page.getByTestId('invite-code')).toBeVisible({ timeout: 10000 })
 }
 
 /** A group sealed bracket — what the tournament specs all want. */

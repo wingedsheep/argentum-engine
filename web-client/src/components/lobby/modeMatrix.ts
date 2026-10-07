@@ -207,14 +207,15 @@ export function rosterChoices(aiEnabled: boolean): Choice<Roster>[] {
 
 /* ── Step 2: cards ──────────────────────────────────────────────────────── */
 
-/** The order the five Cards values are offered in — cheapest on-ramp first. */
-const CARDS_ORDER: readonly CardsKind[] = ['BRING_A_DECK', 'RANDOM', 'MOMIR', 'SEALED', 'DRAFT']
+/** The order the Cards values are offered in — cheapest on-ramp first. */
+const CARDS_ORDER: readonly CardsKind[] = ['BRING_A_DECK', 'RANDOM', 'MOMIR', 'JUMP_IN', 'SEALED', 'DRAFT']
 
 function cardsCaption(kind: CardsKind): string {
   switch (kind) {
     case 'BRING_A_DECK': return 'Play one of your own constructed decks.'
     case 'RANDOM': return 'The server rolls you a deck. Zero preparation.'
     case 'MOMIR': return '60 basics; flip a random creature each turn. No deckbuilding.'
+    case 'JUMP_IN': return 'Choose two Jumpstart 2022 themes. Your 40-card deck is ready, lands included.'
     case 'SEALED': return 'Open boosters and build a deck from what you get.'
     case 'DRAFT': return 'Pick cards one at a time from packs, then build.'
   }
@@ -222,6 +223,7 @@ function cardsCaption(kind: CardsKind): string {
 
 /** Sealed and draft put a pool-building step in front of the game; the other three do not. */
 function cardsBadge(kind: CardsKind): { text: string; weight: ChoiceWeight } {
+  if (kind === 'JUMP_IN') return { text: 'Two picks, then play', weight: 'QUICK' }
   return kind === 'SEALED' || kind === 'DRAFT'
     ? { text: 'Build a deck first', weight: 'EVENT' }
     : { text: 'Play right away', weight: 'QUICK' }
@@ -245,6 +247,7 @@ export function defaultCardsAxis(kind: CardsKind): CardsAxis {
     case 'BRING_A_DECK': return { kind: 'BRING_A_DECK', legality: null }
     case 'RANDOM': return { kind: 'RANDOM' }
     case 'MOMIR': return { kind: 'MOMIR' }
+    case 'JUMP_IN': return { kind: 'JUMP_IN' }
     case 'SEALED': return { kind: 'SEALED', shape: 'STANDARD' }
     case 'DRAFT': return { kind: 'DRAFT', shape: 'BOOSTER' }
   }
@@ -418,6 +421,7 @@ export function flowStages(selection: Selection): string[] {
     case 'BRING_A_DECK': stages.push('Pick one of your decks'); break
     case 'RANDOM': stages.push('The server rolls you a deck'); break
     case 'MOMIR': stages.push('60 basics — no deckbuilding'); break
+    case 'JUMP_IN': stages.push('Choose two themes', 'Your deck is ready'); break
     case 'SEALED': stages.push('Open boosters', 'Build a deck'); break
     case 'DRAFT': stages.push(`${cardsLabel(cards)}`, 'Build a deck'); break
   }

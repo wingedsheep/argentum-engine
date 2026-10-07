@@ -88,6 +88,7 @@ function cardsSlug(kind: CardsKind): string {
     case 'BRING_A_DECK': return 'bring-a-deck'
     case 'RANDOM': return 'random'
     case 'MOMIR': return 'momir'
+    case 'JUMP_IN': return 'jump-in'
     case 'SEALED': return 'sealed'
     case 'DRAFT': return 'draft'
   }

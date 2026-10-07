@@ -475,7 +475,7 @@ function tournamentTitle(lobbyState: LobbyState): string {
 
 function tournamentSubtitle(lobbyState: LobbyState): string {
   const s = lobbyState.settings
-  if (s.jumpstartActive) return 'Jumpstart · choose two themed packs · 40-card deck'
+  if (s.jumpstartActive) return 'Jump In · choose two themed packs · 40-card deck'
   // With more than one set selected the header names the split rather than a bare total.
   const distText = s.setCodes.length > 1 && Object.keys(s.boosterDistribution).length > 0
     ? Object.entries(s.boosterDistribution)

@@ -2882,6 +2882,23 @@ class LobbyHandler(
                     return
                 }
 
+                // Choosing the second pack is the ready signal for Jump In. Keep everyone on
+                // their private pack screen until the whole table has decks, then start round one.
+                if (lobby.isJumpstart) {
+                    if (result.allReady && lobby.state == LobbyState.DECK_BUILDING) {
+                        tournamentMatchHandler.startTournament(lobby)
+                        val tournament = lobbyRepository.findTournamentById(lobbyId)!!
+                        lobby.players.values.filterNot { it.identity.isAi }.forEach { player ->
+                            player.identity.webSocketSession?.takeIf { it.isOpen }?.let {
+                                tournamentMatchHandler.handleReadyForNextRound(it)
+                            }
+                        }
+                        tournamentMatchHandler.autoReadyAiPlayers(lobby, tournament)
+                    }
+                    lobbyRepository.saveLobby(lobby)
+                    return
+                }
+
                 // Ensure tournament is created (for matchup info)
                 val tournament = tournamentMatchHandler.ensureTournamentCreated(lobby)
 

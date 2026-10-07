@@ -43,13 +43,14 @@ export type CardsAxis =
   | { kind: 'RANDOM' }
   /** Momir Basic: no deckbuilding, 60 basics, flip creatures off the avatar. */
   | { kind: 'MOMIR' }
+  | { kind: 'JUMP_IN' }
   | { kind: 'SEALED'; shape: 'STANDARD' | 'COMMANDER' }
   | { kind: 'DRAFT'; shape: 'BOOSTER' | 'WINSTON' | 'GRID' | 'COMMANDER' }
 
-/** The five top-level Cards values, without their sub-options. One button each in the lobby. */
+/** The top-level Cards values, without their sub-options. One button each in the lobby. */
 export type CardsKind = CardsAxis['kind']
 
-export const CARDS_KINDS: readonly CardsKind[] = ['BRING_A_DECK', 'RANDOM', 'MOMIR', 'SEALED', 'DRAFT']
+export const CARDS_KINDS: readonly CardsKind[] = ['BRING_A_DECK', 'RANDOM', 'MOMIR', 'JUMP_IN', 'SEALED', 'DRAFT']
 
 /**
  * Which rules the game runs under. Mirrors the SDK's `GameRules`, and is deliberately the *same*
@@ -141,6 +142,7 @@ export function cardsLabel(cards: CardsAxis): string {
       return 'Random pool'
     case 'MOMIR':
       return 'Momir Basic'
+    case 'JUMP_IN': return 'Jump In'
     case 'SEALED':
       return cards.shape === 'COMMANDER' ? 'Commander Sealed' : 'Sealed'
     case 'DRAFT':
@@ -159,6 +161,7 @@ export function cardsKindLabel(kind: CardsKind): string {
     case 'BRING_A_DECK': return 'Bring a deck'
     case 'RANDOM': return 'Random pool'
     case 'MOMIR': return 'Momir Basic'
+    case 'JUMP_IN': return 'Jump In'
     case 'SEALED': return 'Sealed'
     case 'DRAFT': return 'Draft'
   }
@@ -188,6 +191,7 @@ export function cardsSeatCap(cards: CardsAxis): number {
     // Both live only on the two-seat quick-game lobby.
     case 'RANDOM':
     case 'MOMIR': return 2
+    case 'JUMP_IN':
     case 'SEALED': return 8
     case 'DRAFT':
       switch (cards.shape) {
@@ -334,6 +338,7 @@ export function cardsKindTopicId(kind: CardsKind): string {
     case 'BRING_A_DECK': return 'cards-bring-a-deck'
     case 'RANDOM': return 'cards-random'
     case 'MOMIR': return 'cards-momir'
+    case 'JUMP_IN': return 'cards-jump-in'
     case 'SEALED': return 'cards-sealed'
     case 'DRAFT': return 'cards-draft'
   }
@@ -409,6 +414,7 @@ export function tournamentFormatForCards(cards: CardsAxis): TournamentFormat | n
       return 'PREMADE_DECKS'
     case 'MOMIR':
       return null
+    case 'JUMP_IN': return 'SEALED'
     case 'SEALED':
       return cards.shape === 'COMMANDER' ? 'COMMANDER_SEALED' : 'SEALED'
     case 'DRAFT':
@@ -455,7 +461,7 @@ export function rulesFromLobbySettings(settings: LobbySettings): RulesAxis {
 
 export function axesFromLobbySettings(settings: LobbySettings): AxisSelection {
   return {
-    cards: cardsFromTournamentFormat(settings.format, settings.deckFormat),
+    cards: settings.jumpstartActive ? { kind: 'JUMP_IN' } : cardsFromTournamentFormat(settings.format, settings.deckFormat),
     rules: rulesFromLobbySettings(settings),
     table: tableFromGameMode(settings.gameMode),
     event: eventFromGameMode(settings.gameMode),

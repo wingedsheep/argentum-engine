@@ -847,7 +847,10 @@ costs remain unchanged. The field defaults to empty and is public information.
 
 ### Jumpstart pack selection
 
-For a lobby selecting only `JMP`, ordinary `SEALED` and `DRAFT` use Jumpstart by default.
+For a lobby selecting only `JMP` or only `J22`, ordinary `SEALED` and `DRAFT` use Jumpstart by default.
+The client presents this as **Jump In**; its wizard creates a `SEALED` lobby selecting `J22`,
+with `useJumpstart: true` and one game per matchup. It uses the existing tournament transport,
+AI seats, private pack selections, reconnect and automatic deck submission.
 `LobbySettings.useJumpstart` is the host's persistent preference; `jumpstartEligible` and
 `jumpstartActive` are server-derived. Selecting multiple sets, a cube, Commander rules, or another
 pack format disables Jumpstart. Setting `useJumpstart: false` in `updateLobbySettings` retains the
@@ -858,11 +861,15 @@ Starting Jumpstart enters `DECK_BUILDING`, but sends no editable sealed pool. Ea
 (`id`, `theme`, `cards`). The client sends `pickJumpstartPack { packId, pickNumber }`. The server
 validates both fields against the current offer, adds the entire 20-card pack, and offers three
 new themes for the second pick. After two picks, the 40 cards are submitted unchanged through the
-normal tournament readiness flow. AI seats select packs server-side. Players cannot add lands,
+normal deck submission path. Players remain on the private pack screen until everyone has
+chosen, then the server readies the first matchup automatically. Later rounds use the ordinary
+tournament readiness flow. AI seats select packs server-side. Players cannot add lands,
 remove cards, or edit this deck. Offers, selections, and the preference survive persistence and
 reconnection; retransmitting an earlier pick cannot choose another pack.
 
-The checked-in `game-server/src/main/resources/jumpstart/jmp.txt` contains Wizards' 121 paper JMP
+The checked-in `game-server/src/main/resources/jumpstart/j22.txt` contains Wizards' 121 paper J22
+variants across 46 themes, taken from the [published decklists](https://magic.wizards.com/en/news/feature/jumpstart-2022-booster-themes-and-card-lists).
+`game-server/src/main/resources/jumpstart/jmp.txt` contains Wizards' 121 paper JMP
 lists (including cards printed in M21). Themed basic-land labels are normalized to their printed
 names. A variant is available only when every card resolves in the enabled catalog and no card is
 banned; missing cards are never substituted. Start requires three complete themes. Three distinct
