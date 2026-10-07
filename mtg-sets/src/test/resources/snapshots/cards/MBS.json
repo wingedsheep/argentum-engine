@@ -465,6 +465,65 @@
     "colorIdentityOverride": []
 }
 
+// Psychosis Crawler
+{
+    "name": "Psychosis Crawler",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Phyrexian Horror",
+    "oracleText": "Psychosis Crawler's power and toughness are each equal to the number of cards in your hand.\nWhenever you draw a card, each opponent loses 1 life.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Hand"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Hand"
+            }
+        }
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Psychosis Crawler:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "RARE",
+        "artist": "Stephan Martiniere",
+        "flavorText": "\"If that brain can't figure out the secret of the serum, then add more brains.\"\n—Rhmir, Hand of the Augur",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4dd84701-857e-4948-8cb8-39b8a321a177.jpg?1783941364",
+        "rulings": [
+            {
+                "date": "2011-06-01",
+                "text": "If an effect causes you to draw multiple cards, Psychosis Crawler will trigger that many times."
+            }
+        ]
+    }
+}
+
 // Quilled Slagwurm
 {
     "name": "Quilled Slagwurm",

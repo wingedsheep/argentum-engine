@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 141 / 312
+**Implemented:** 142 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -210,7 +210,7 @@
 - [ ] Promise of Loyalty
 - [x] Prosperous Bandit
 - [ ] Prosperous Innkeeper
-- [ ] Psychosis Crawler
+- [x] Psychosis Crawler
 - [ ] Pull from Tomorrow
 - [ ] Putrefy
 - [x] Pyreswipe Hawk
