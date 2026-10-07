@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.ktk.cards
+package com.wingedsheep.mtg.sets.definitions.m10.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
@@ -21,10 +21,10 @@ val ActOfTreason = card("Act of Treason") {
     }
 
     metadata {
-        rarity = Rarity.COMMON
-        collectorNumber = "95"
-        artist = "Min Yum"
-        flavorText = "\"The Sultai take our dead, so we shall take their living!\"\n—Taklai, Mardu ragesinger"
-        imageUri = "https://cards.scryfall.io/normal/front/e/2/e20d6dfd-5f7b-4c71-89e6-8f996d85801d.jpg?1562794896"
+        rarity = Rarity.UNCOMMON
+        collectorNumber = "124"
+        artist = "Eric Deschamps"
+        flavorText = "\"Rage courses in every heart, yearning to betray its rational prison.\"\n—Sarkhan Vol"
+        imageUri = "https://cards.scryfall.io/normal/front/8/b/8b63bee5-d8e5-4c2f-8514-8c86d025f7c9.jpg?1783942376"
     }
 }

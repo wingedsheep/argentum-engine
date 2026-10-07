@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.ktk.cards
+package com.wingedsheep.mtg.sets.definitions.ddn.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Effects
@@ -44,9 +44,9 @@ val MysticMonastery = card("Mystic Monastery") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "236"
+        collectorNumber = "73"
         artist = "Florian de Gesincourt"
         flavorText = "When asked how many paths reach enlightenment, the monk kicked a heap of sand. \"Count,\" he smiled, \"and then find more grains.\""
-        imageUri = "https://cards.scryfall.io/normal/front/b/a/bae51d77-e06b-4e5a-9543-a17dd0b2a333.jpg?1562792634"
+        imageUri = "https://cards.scryfall.io/normal/front/5/8/58fd5f88-2739-493e-9232-610f3a4645c3.jpg?1783939103"
     }
 }

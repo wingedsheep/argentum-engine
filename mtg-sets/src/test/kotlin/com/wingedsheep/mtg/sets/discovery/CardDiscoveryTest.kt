@@ -37,9 +37,9 @@ class CardDiscoveryTest : FunSpec({
         // Ravnica-block shock land reprints (`BreedingPoolReprint.kt`, `GodlessShrineReprint.kt`,
         // `SacredFoundryReprint.kt`, `StompingGroundReprint.kt`, `WateryGraveReprint.kt`) plus
         // `VirusBeetleReprint.kt` (canonical relocated to NEO, its earliest printing) and
-        // `BombardReprint.kt` (canonical relocated to RIX, likewise); KTK's is
-        // `cards/NaturalizeReprint.kt`. All should surface via [findPrintingsIn] without a
-        // hand-maintained list.
+        // `BombardReprint.kt` (canonical relocated to RIX, likewise). KTK also includes
+        // its DDN debut reprints and Act of Treason (canonical in M10). All should
+        // surface via [findPrintingsIn] without a hand-maintained registry.
         val eoePrintings = CardDiscovery.findPrintingsIn("com.wingedsheep.mtg.sets.definitions.eoe.cards")
         eoePrintings.map { it.name } shouldContainExactlyInAnyOrder listOf(
             "Annul", "Banishing Light", "Bombard", "Breeding Pool", "Godless Shrine",
@@ -49,6 +49,7 @@ class CardDiscoveryTest : FunSpec({
 
         val ktkPrintings = CardDiscovery.findPrintingsIn("com.wingedsheep.mtg.sets.definitions.ktk.cards")
         ktkPrintings.map { it.name } shouldContainExactlyInAnyOrder listOf(
+            "Act of Treason",
             "Arc Lightning",
             "Bloodstained Mire",
             "Cancel",
@@ -56,13 +57,19 @@ class CardDiscoveryTest : FunSpec({
             "Erase",
             "Flooded Strand",
             "Incremental Growth",
+            "Jeskai Elder",
+            "Mardu Heart-Piercer",
+            "Mystic Monastery",
             "Naturalize",
+            "Nomad Outpost",
             "Polluted Delta",
             "Shatter",
             "Smite the Monstrous",
+            "Thousand Winds",
             "Trumpet Blast",
             "Windswept Heath",
             "Wooded Foothills",
+            "Zurgo Helmsmasher",
         )
         ktkPrintings.forEach { it.setCode shouldBe "KTK" }
     }

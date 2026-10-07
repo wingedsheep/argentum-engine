@@ -1,3 +1,61 @@
+// Act of Treason
+{
+    "name": "Act of Treason",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap that creature. It gains haste until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"Rage courses in every heart, yearning to betray its rational prison.\"\n—Sarkhan Vol",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b63bee5-d8e5-4c2f-8514-8c86d025f7c9.jpg?1783942376"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Angel's Mercy
 {
     "name": "Angel's Mercy",

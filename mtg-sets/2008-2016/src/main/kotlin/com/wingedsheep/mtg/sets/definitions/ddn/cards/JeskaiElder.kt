@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.ktk.cards
+package com.wingedsheep.mtg.sets.definitions.ddn.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
@@ -33,8 +33,8 @@ val JeskaiElder = card("Jeskai Elder") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "43"
+        collectorNumber = "46"
         artist = "Craig J Spearing"
-        imageUri = "https://cards.scryfall.io/normal/front/b/f/bff9907c-4090-4dcc-aaf5-bc2a8dacce8b.jpg?1562792976"
+        imageUri = "https://cards.scryfall.io/normal/front/e/a/ea4ff6f3-cc53-4f4a-b884-2e751732f9c8.jpg?1783939113"
     }
 }

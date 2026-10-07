@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.ktk.cards
+package com.wingedsheep.mtg.sets.definitions.ddn.cards
 
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.CounterType
@@ -52,8 +52,8 @@ val ZurgoHelmsmasher = card("Zurgo Helmsmasher") {
 
     metadata {
         rarity = Rarity.MYTHIC
-        collectorNumber = "214"
-        artist = "Aleksi Briclot"
-        imageUri = "https://cards.scryfall.io/normal/front/1/3/13f4bafe-0d21-47ba-8f16-0274107d618c.jpg?1562782879"
+        collectorNumber = "1"
+        artist = "Ryan Alexander Lee"
+        imageUri = "https://cards.scryfall.io/normal/front/3/1/31f21aae-e25b-4d14-b558-a848a9372f92.jpg?1783939129"
     }
 }

@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.dmu.cards
+package com.wingedsheep.mtg.sets.definitions.vis.cards
 
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
@@ -32,9 +32,9 @@ val Impulse = card("Impulse") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "55"
-        artist = "Sam Guay"
-        flavorText = "\"I've always made snap decisions. I'm just better at making the right ones now that I'm older and wiser.\"\n—Teferi"
-        imageUri = "https://cards.scryfall.io/normal/front/5/a/5aec2b2c-0764-4869-814d-aad921122af9.jpg?1673306762"
+        collectorNumber = "34"
+        artist = "Bryan Talbot"
+        flavorText = "\"Controlling time ensures you need never look impulsive again.\"\n—Teferi"
+        imageUri = "https://cards.scryfall.io/normal/front/9/d/9d710a97-062f-4773-b6c6-8aeddeb3b6e8.jpg?1783947000"
     }
 }

@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.ktk.cards
+package com.wingedsheep.mtg.sets.definitions.ddn.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Triggers
@@ -43,6 +43,6 @@ val ThousandWinds = card("Thousand Winds") {
         rarity = Rarity.RARE
         collectorNumber = "58"
         artist = "Raymond Swanland"
-        imageUri = "https://cards.scryfall.io/normal/front/2/4/249b453c-0d5b-4af9-aaec-ebd2f19c5d23.jpg?1562783727"
+        imageUri = "https://cards.scryfall.io/normal/front/9/a/9a5817e2-3834-4137-a0ec-c0e61c634ce6.jpg?1783939107"
     }
 }

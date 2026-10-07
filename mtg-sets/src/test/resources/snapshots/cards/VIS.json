@@ -418,6 +418,74 @@
     ]
 }
 
+// Impulse
+{
+    "name": "Impulse",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Look at the top four cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "selectedLabel": "Put in hand",
+                    "remainderLabel": "Put on bottom"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "ControllerChooses"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Bryan Talbot",
+        "flavorText": "\"Controlling time ensures you need never look impulsive again.\"\n—Teferi",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d710a97-062f-4773-b6c6-8aeddeb3b6e8.jpg?1783947000"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Infantry Veteran
 {
     "name": "Infantry Veteran",

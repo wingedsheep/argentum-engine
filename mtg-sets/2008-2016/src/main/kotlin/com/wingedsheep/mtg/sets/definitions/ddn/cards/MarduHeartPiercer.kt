@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.ktk.cards
+package com.wingedsheep.mtg.sets.definitions.ddn.cards
 
 import com.wingedsheep.sdk.dsl.Conditions
 
@@ -33,9 +33,9 @@ val MarduHeartPiercer = card("Mardu Heart-Piercer") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "116"
+        collectorNumber = "13"
         artist = "Karl Kopinski"
         flavorText = "\"Those who have never ridden before the wind do not know the true joy of war.\""
-        imageUri = "https://cards.scryfall.io/normal/front/d/1/d17b6eee-da22-48aa-ba8a-cbd1a3389bcb.jpg?1562793937"
+        imageUri = "https://cards.scryfall.io/normal/front/0/1/019be6df-da52-4cb0-81ee-a684e6f73e43.jpg?1783939124"
     }
 }
