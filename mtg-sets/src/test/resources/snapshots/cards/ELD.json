@@ -2551,6 +2551,69 @@
     ]
 }
 
+// Weapon Rack
+{
+    "name": "Weapon Rack",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters with three +1/+1 counters on it.\n{T}: Move a +1/+1 counter from this artifact onto target creature. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Weapon Rack:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "MoveCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "source": "Self",
+                    "destination": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Move a +1/+1 counter onto target creature. Activate only as a sorcery."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 3,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "artist": "Joe Slucher",
+        "flavorText": "No weapon stays on the rack for long in the Burning Yard.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89ca22d2-3ba5-4173-9c8c-6587a901ff4a.jpg?1783932580",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "Once Weapon Rack runs out of +1/+1 counters, it remains on the battlefield. You can activate its last ability, but it won't do anything."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If Weapon Rack has left the battlefield or has no +1/+1 counters on it by the time its activated ability resolves, you won't put a +1/+1 counter on the target creature. If the creature becomes an illegal target or can't have a +1/+1 counter put onto it for some other reason, you won't remove a +1/+1 counter from Weapon Rack."
+            }
+        ]
+    }
+}
+
 // Weaselback Redcap
 {
     "name": "Weaselback Redcap",
