@@ -1,0 +1,52 @@
+{
+  "player1Name": "Vehicles",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Peacewalker Colossus"
+      },
+      {
+        "name": "Sleek Schooner"
+      },
+      {
+        "name": "Hill Giant"
+      },
+      {
+        "name": "Savannah Lions"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Plains",
+      "Plains",
+      "Plains"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

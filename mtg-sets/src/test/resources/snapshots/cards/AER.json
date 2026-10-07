@@ -776,6 +776,86 @@
     "colorIdentityOverride": []
 }
 
+// Peacewalker Colossus
+{
+    "name": "Peacewalker Colossus",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "{1}{W}: Another target Vehicle you control becomes an artifact creature until end of turn.\nCrew 4 (Tap any number of creatures you control with total power 4 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 4
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Peacewalker Colossus:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCardType",
+                            "cardType": "Artifact",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "AddCardType",
+                            "cardType": "Creature",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Vehicle ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Another target Vehicle you control becomes an artifact creature until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "RARE",
+        "artist": "Vincent Proce",
+        "flavorText": "\"Peace? Its sole purpose is fear.\"\n—Saheeli Rai",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/1599b545-6b8e-4350-980a-59349374400d.jpg?1783936720"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Pendulum of Patterns
 {
     "name": "Pendulum of Patterns",
