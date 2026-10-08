@@ -2442,23 +2442,14 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadCounters
 
     /**
-     * If the triggering entity had [subtype] among its **projected** subtypes when it left the
-     * battlefield (CR 603.10 last-known information). Wrap in [Not] for the "if it wasn't a X"
-     * wording — e.g. Infernal Vessel's `Not(TriggeringEntityHadSubtype(Subtype.DEMON.value))`,
-     * where the Demon type the card grants itself on return is what stops it looping.
+     * "If it was [filter]" — the triggering permanent's **last-known** projected type line when it
+     * left the battlefield matches [filter] (CR 603.10 / 608.2h). [filter] may use card types and
+     * subtypes only. Wrap in [Not] for "if it wasn't …": Infernal Vessel's
+     * `Not(TriggeringEntityWas(GameObjectFilter.Any.withSubtype(Subtype.DEMON)))`; Tom, Bert, and
+     * William's `TriggeringEntityWas(GameObjectFilter.Creature)`.
      */
-    fun TriggeringEntityHadSubtype(subtype: String): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadSubtype(subtype)
-
-    /**
-     * If the triggering entity had [cardType] among its **projected** card types when it left the
-     * battlefield (CR 603.10 last-known information). The card-type sibling of
-     * [TriggeringEntityHadSubtype] — e.g. Tom, Bert, and William's
-     * `TriggeringEntityHadCardType(CardType.CREATURE.name)`, where returning as an artifact is what
-     * stops the death trigger looping.
-     */
-    fun TriggeringEntityHadCardType(cardType: String): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadCardType(cardType)
+    fun TriggeringEntityWas(filter: GameObjectFilter): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWas(filter)
 
     /**
      * "**If you won**" — the partial rider on a "Whenever you clash" trigger (CR 701.30d). True when

@@ -12532,24 +12532,17 @@ answer it and would silently return `false`.
   `Effects.MoveAllLastKnownCounters` for "whenever this or another creature you control dies, if it
   had counters on it, move its counters" (Host of the Hereafter). Companion to the existing
   `TriggeringEntityHadMinusOneMinusOneCounter` (which checks only -1/-1 counters, e.g. Retched Wretch).
-- `TriggeringEntityHadSubtype(subtype)` — intervening-if for dies/leaves triggers: true when the
-  triggering entity had `subtype` among its **projected** subtypes the moment it left the battlefield
-  (CR 603.10), so continuous-effect-granted types count and not just printed ones. Resolution-only.
-  Wrap in `Conditions.Not(...)` for the "if it wasn't a X" wording — Infernal Vessel's
-  `interveningIf = Conditions.Not(Conditions.TriggeringEntityHadSubtype(Subtype.DEMON.value))`,
-  where the Demon type the card grants itself on return (`Effects.AddCreatureType(..., Duration.Permanent)`)
-  is what stops the second death from returning it again. Reads `TriggerContext.lastKnownSubtypes`,
-  populated from the `ZoneChangeEvent`'s `EntitySnapshot.subtypes`.
-- `TriggeringEntityHadCardType(cardType)` — the card-type sibling of `TriggeringEntityHadSubtype`:
-  intervening-if for dies/leaves triggers, true when the triggering entity had `cardType` among its
-  **projected** card types the moment it left the battlefield (CR 603.10), so a type set by a
-  continuous effect counts and not just the printed line. Resolution-only; pass `CardType.X.name`
-  (matched case-insensitively). Tom, Bert, and William's `interveningIf =
-  Conditions.TriggeringEntityHadCardType(CardType.CREATURE.name)` is the self-recursion guard for
-  "if they were a creature, return them … They're an artifact" — the second death is of the artifact
-  they came back as, so the guard fails and the loop stops. Reads
-  `TriggerContext.lastKnownCardTypes`, populated from the `ZoneChangeEvent`'s
-  `EntitySnapshot.typeLine`.
+- `TriggeringEntityWas(filter)` — "if it was [filter]": intervening-if for dies/leaves triggers, true when
+  the triggering permanent's **last-known projected type line** — card types and subtypes as it left the
+  battlefield (CR 603.10 / 608.2h) — matches `filter`, so types set or granted by continuous effects count,
+  not just the printed line. `filter` may use only card-type and subtype predicates (and `And`/`Or`/`Not`
+  over them); anything else is rejected at construction. Resolution-only; false when the trigger's source
+  never left the battlefield. Self-recursion loop guards: Infernal Vessel's `interveningIf =
+  Conditions.Not(Conditions.TriggeringEntityWas(GameObjectFilter.Any.withSubtype(Subtype.DEMON)))` (the Demon
+  type it grants itself on return stops the second return) and Tom, Bert, and William's
+  `Conditions.TriggeringEntityWas(GameObjectFilter.Creature)` ("if they were a creature … They're an
+  artifact"). Reads `TriggerContext.lastKnownCardTypes` / `lastKnownSubtypes` (populated from the
+  `ZoneChangeEvent`'s `EntitySnapshot`) through `PredicateEvaluator.matchesSnapshot`.
 - `YouWonTheClash` — the "if you won" rider inside a `Triggers.you.clashes()` effect (CR 701.30d).
   True when the clash that fired this trigger was won by the ability's controller; false on a tie,
   on revealing nothing from an empty library, and on any trigger a clash did not fire.

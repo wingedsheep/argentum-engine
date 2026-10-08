@@ -28,7 +28,7 @@ import com.wingedsheep.engine.core.Outcome
  * *artifact*; the second death must not return him again, and the only thing telling the two deaths
  * apart is a card type that — by the time the trigger is considered — exists solely as last-known
  * information on a card sitting in the graveyard wearing its printed `Legendary Creature — Troll`
- * line again. That is what `Conditions.TriggeringEntityHadCardType` reads.
+ * line again. That is what `Conditions.TriggeringEntityWas` reads.
  *
  * Deaths are staged with real removal rather than the blunt `moveToGraveyard` test helper, which by
  * design skips dies triggers entirely and would make the guard assertions vacuous. Two Lightning

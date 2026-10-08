@@ -23,7 +23,7 @@ import io.kotest.matchers.shouldBe
  * 4/3 Demon; the *second* death must not return it again, and the only thing distinguishing the two
  * is the Demon subtype the card granted itself — which by then exists solely as last-known
  * information on a card sitting in the graveyard. That is what
- * `Conditions.TriggeringEntityHadSubtype` reads.
+ * `Conditions.TriggeringEntityWas` reads.
  *
  * Deaths are staged with real damage (Lightning Bolt, 3 damage) rather than the blunt
  * `moveToGraveyard` test helper, which by design skips dies triggers entirely. Three damage is

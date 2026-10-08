@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -23,7 +24,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * The intervening-if is the loop guard, and it has to read *last-known* information: by the time the
  * trigger is considered, the Vessel is already a card in the graveyard with its printed
  * `Human Cleric` type line, so asking the live entity would answer "not a Demon" forever.
- * [Conditions.TriggeringEntityHadSubtype] reads the projected subtypes captured when the permanent
+ * [Conditions.TriggeringEntityWas] reads the projected type line captured when the permanent
  * left the battlefield (CR 603.10), which is exactly where the granted Demon type shows up.
  *
  * The three effects run in order on the same entity id — the graveyard → battlefield return keeps
@@ -43,7 +44,7 @@ val InfernalVessel = card("Infernal Vessel") {
 
     triggeredAbility {
         trigger = Triggers.self.dies()
-        interveningIf = Conditions.Not(Conditions.TriggeringEntityHadSubtype(Subtype.DEMON.value))
+        interveningIf = Conditions.Not(Conditions.TriggeringEntityWas(GameObjectFilter.Any.withSubtype(Subtype.DEMON)))
         effect = Effects.Move(
             target = EffectTarget.Self,
             destination = Zone.BATTLEFIELD,

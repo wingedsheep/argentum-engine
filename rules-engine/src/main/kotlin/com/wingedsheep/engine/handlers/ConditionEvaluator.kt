@@ -63,8 +63,7 @@ import com.wingedsheep.sdk.scripting.conditions.PlayerPlayedLandThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PlayerTurnedPermanentFaceUpThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PutCounterKindOnCreatureThisTurn
 import com.wingedsheep.sdk.scripting.conditions.CounterPutOnPermanentYouControlledThisTurn
-import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadCardType
-import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadSubtype
+import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWas
 import com.wingedsheep.sdk.scripting.conditions.TriggeringSpellCastWithoutPayingMana
 import com.wingedsheep.sdk.scripting.conditions.TriggeringSpellManaSpentAtLeast
 import com.wingedsheep.sdk.scripting.conditions.YouWonTheClash
@@ -370,10 +369,9 @@ class ConditionEvaluator(
             is TargetSharesMostCommonColor,
             is ThisAbilityActivatedThisTurnAtLeast,
             TriggeringEntityEnteredOrWasCastFromGraveyard,
-            is TriggeringEntityHadCardType,
             TriggeringEntityHadCounters,
             TriggeringEntityHadMinusOneMinusOneCounter,
-            is TriggeringEntityHadSubtype,
+            is TriggeringEntityWas,
             TriggeringEntityWasCast,
             TriggeringEntityWasHistoric,
             TriggeringEntityWasNotPutByThisSource,
@@ -883,18 +881,12 @@ class ConditionEvaluator(
                 ifResolution { (it.triggerContext?.minusOneMinusOneCounterCount ?: 0) > 0 }
             is TriggeringEntityHadCounters ->
                 ifResolution { (it.triggerContext?.totalCounterCount ?: 0) > 0 }
-            is com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadSubtype ->
-                // Subtype names are captured in projected form (e.g. "Demon"); compare
-                // case-insensitively so card authors can pass either Subtype.X.value or a literal.
+            // "If it was …" against the departure-time type line the trigger carries (CR 603.10),
+            // not the card's graveyard characteristics.
+            is TriggeringEntityWas ->
                 ifResolution { ctx ->
-                    ctx.triggerContext?.lastKnownSubtypes.orEmpty().any { it.equals(condition.subtype, ignoreCase = true) }
-                }
-            is com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadCardType ->
-                // Card-type names are captured from the projected TypeLine's enum names (e.g.
-                // "CREATURE"); compare case-insensitively so card authors can pass either
-                // CardType.X.name or a literal.
-                ifResolution { ctx ->
-                    ctx.triggerContext?.lastKnownCardTypes.orEmpty().any { it.equals(condition.cardType, ignoreCase = true) }
+                    val snapshot = ctx.triggerContext?.lastKnownTypeLineSnapshot() ?: return@ifResolution false
+                    predicates.matchesSnapshot(state, snapshot, condition.filter, PredicateContext.fromEffectContext(ctx))
                 }
             // CR 701.30d — "if you won" on a "Whenever you clash" trigger. The clash is over by the
             // time the ability resolves, so the outcome travels as trigger context; a null (this
