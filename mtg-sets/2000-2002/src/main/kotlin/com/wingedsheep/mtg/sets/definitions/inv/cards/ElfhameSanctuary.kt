@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.inv.cards
 
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.core.TurnPart
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Patterns
@@ -18,7 +19,7 @@ import com.wingedsheep.sdk.core.Step
  *
  * The whole ability is optional ("you may"), so the controller chooses yes/no when it resolves.
  * On accepting, the search runs (basic land, reveal, into hand, shuffle) and the controller's draw
- * step for this turn is skipped via [Effects.SkipNextDrawStep] — the marker is consumed by the
+ * step for this turn is skipped via [Effects.SkipNextStepOrPhase] (`DRAW_STEP`) — the marker is consumed by the
  * upcoming draw step.
  */
 val ElfhameSanctuary = card("Elfhame Sanctuary") {
@@ -42,7 +43,7 @@ val ElfhameSanctuary = card("Elfhame Sanctuary") {
                 reveal = true,
                 shuffleAfter = true
             ),
-            then = Effects.SkipNextDrawStep()
+            then = Effects.SkipNextStepOrPhase(TurnPart.DRAW_STEP)
         )
     }
 

@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.drk.cards
 
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.TurnPart
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -23,7 +24,7 @@ import com.wingedsheep.sdk.core.Step
  *
  * **Known simplification.** The printed clause is a replacement on *beginning the draw step*, so
  * the choice is made at that moment. Here it is offered one step earlier, as an optional upkeep
- * trigger that arms `SkipNextDrawStep` and gains the 2 life. Nothing can happen between the two
+ * trigger that arms `SkipNextStepOrPhase(DRAW_STEP)` and gains the 2 life. Nothing can happen between the two
  * points that changes the decision — the only thing separating a player's upkeep from their draw
  * step is priority passes, and the life gain lands in the same turn either way — but the divergence
  * is real and is written down rather than hidden: an effect that cares *when* the 2 life arrived,
@@ -55,7 +56,7 @@ val Fasting = card("Fasting") {
     triggeredAbility {
         trigger = Triggers.you.beginningOf(Step.UPKEEP)
         optional = true
-        effect = Effects.SkipNextDrawStep(EffectTarget.Controller) then Effects.GainLife(2)
+        effect = Effects.SkipNextStepOrPhase(TurnPart.DRAW_STEP, EffectTarget.Controller) then Effects.GainLife(2)
         description = "If you would begin your draw step, you may skip that step instead. If you " +
             "do, you gain 2 life."
     }

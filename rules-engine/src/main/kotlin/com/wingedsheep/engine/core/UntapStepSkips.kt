@@ -14,7 +14,8 @@ import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
-import com.wingedsheep.sdk.scripting.SkipUntapStep
+import com.wingedsheep.sdk.core.TurnPart
+import com.wingedsheep.sdk.scripting.SkipStepOrPhase
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /** Standing skip restrictions are read before phasing or any other untap-step action. */
@@ -23,6 +24,20 @@ internal fun skipsUntapStep(
     registry: CardRegistry,
     predicates: PredicateEvaluator,
     player: EntityId,
+): Boolean = hasStandingSkip(state, registry, predicates, player, TurnPart.UNTAP_STEP)
+
+/**
+ * Whether a standing [SkipStepOrPhase] for [part] applies to [player]: any face-up battlefield
+ * permanent that hasn't lost its abilities (Room faces only while unlocked), or any live granted
+ * static, whose `player` scope — resolved from that source's controller — includes [player].
+ * [ConditionalStaticAbility] and [CompositeStaticAbility] wrappers are unwrapped.
+ */
+internal fun hasStandingSkip(
+    state: GameState,
+    registry: CardRegistry,
+    predicates: PredicateEvaluator,
+    player: EntityId,
+    part: TurnPart,
 ): Boolean {
     val projected = state.projectedState
     fun matches(ability: StaticAbility, source: EntityId, controller: EntityId): Boolean = when (ability) {
@@ -31,7 +46,7 @@ internal fun skipsUntapStep(
             predicates.conditions.evaluate(state, ability.condition,
                 EffectContext(sourceId = source, controllerId = controller))
         is CompositeStaticAbility -> ability.abilities.any { matches(it, source, controller) }
-        is SkipUntapStep -> player in TargetResolutionUtils.resolvePlayerTargets(
+        is SkipStepOrPhase -> ability.part == part && player in TargetResolutionUtils.resolvePlayerTargets(
             EffectTarget.PlayerRef(ability.player), state, EffectContext(sourceId = source, controllerId = controller))
         else -> false
     }

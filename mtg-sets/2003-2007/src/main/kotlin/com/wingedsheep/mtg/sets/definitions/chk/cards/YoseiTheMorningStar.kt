@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.chk.cards
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.TurnPart
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
@@ -40,7 +41,7 @@ val YoseiTheMorningStar = card("Yosei, the Morning Star") {
             count = 5,
             optional = true,
         )
-        effect = permanents.fold(Effects.SkipNextUntapStep(player)) { effect, permanent ->
+        effect = permanents.fold(Effects.SkipNextStepOrPhase(TurnPart.UNTAP_STEP, player)) { effect, permanent ->
             effect then Effects.Tap(permanent)
         }
     }

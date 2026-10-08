@@ -11282,7 +11282,11 @@
             }
         ],
         "staticAbilities": [
-            "SkipUntapStep"
+            {
+                "type": "SkipStepOrPhase",
+                "part": "UNTAP_STEP",
+                "player": "Each"
+            }
         ]
     },
     "metadata": {

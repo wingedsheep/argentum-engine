@@ -14482,7 +14482,8 @@
                     }
                 },
                 "effect": {
-                    "type": "SkipNextUntapStep",
+                    "type": "SkipNextStepOrPhase",
+                    "part": "UNTAP_STEP",
                     "target": {
                         "type": "PlayerRef",
                         "player": "TriggeringPlayer"
@@ -18030,7 +18031,8 @@
                     "type": "Composite",
                     "effects": [
                         {
-                            "type": "SkipNextUntapStep",
+                            "type": "SkipNextStepOrPhase",
+                            "part": "UNTAP_STEP",
                             "target": {
                                 "type": "BoundVariable",
                                 "name": "t0"

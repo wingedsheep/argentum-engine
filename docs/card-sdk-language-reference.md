@@ -1325,7 +1325,7 @@ serialized shape; the facade for each is:
 | `ShuffleLibraryEffect` | `Effects.ShuffleLibrary` |
 | `SkipCombatPhasesEffect` | `Effects.SkipCombatPhases` |
 | `SkipUntapEffect` | `Effects.SkipUntap` |
-| `SkipNextUntapStepEffect` | `Effects.SkipNextUntapStep` |
+| `SkipNextStepOrPhaseEffect` | `Effects.SkipNextStepOrPhase(part, target)` |
 | `TakeExtraTurnEffect` | `Effects.TakeExtraTurn` |
 | `TapUntapEffect` | `Effects.Tap(target)` / `Effects.Untap(target)` |
 | `TauntEffect` | `Effects.Taunt` |
@@ -2930,11 +2930,12 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `Effects.SkipNextTurn(target = Controller, count = Fixed(1))` (`SkipNextTurnEffect`) — target skips their next `count` turns. `count` is a `DynamicAmount`, so it can read a pipeline value (e.g. a coin-flip tally via `DynamicAmount.VariableReference`). Skips accumulate on a `SkipNextTurnComponent(turns)`, decremented one turn per the player's turn-start; a resolved count of 0 is a no-op. Used by Lethal Vapors (one turn) and **Ral Zarek, Guest Lecturer** (skip N turns where N = heads).
 - `Effects.FlipCoins(count, storeHeadsAs = "heads")` (`FlipCoinsEffect`) — flip `count` coins and store the number of heads under `storeHeadsAs` in the pipeline (`storedNumbers`) so a later sub-effect in the same composite can scale off it via `DynamicAmount.VariableReference`. The general "flip N coins, count heads" primitive (CR 705); unlike `FlipCoinEffect` (branch on win/lose) and `FlipTwoCoinsEffect` (branch on combined outcome) it only tallies. Each flip emits a `CoinFlipEvent`. **Ral Zarek, Guest Lecturer**'s ultimate composes `FlipCoins(5, "heads")` then `SkipNextTurn(target, count = VariableReference("heads"))`.
 - `Effects.FlipCoinsUntilLoss(storeWinsAs = "wins")` (`FlipCoinsUntilLossEffect`) — `FlipCoins`'s open-ended sibling: flip one coin at a time until the flipper *loses* a flip or answers "stop flipping", then store how many flips they won under `storeWinsAs`. The run length is discovered rather than given, and the order within an iteration is flip → check → ask, so the stop question only ever follows a *won* flip ("after each flip, you choose whether to continue flipping"). Losing the first flip stores 0, and since an unread pipeline number reads as 0, a card gating payoffs on "if you win one or more flips" needs no separate "this has no effect" branch — that sentence *is* the absence of every payoff. Deliberately **not** a `RepeatWhile` over `FlipCoinEffect`: a repeat condition is asked unconditionally after each body (so it can't stop *because* a flip was lost) and the repeat loop restarts each iteration from the pristine pre-loop context (so a running tally couldn't survive the prompt). The tally rides `FlipCoinsUntilLossContinuation` instead and is published once, when the run ends. Unlike `FlipCoins`, where the whole batch is one flip event, each coin here is its own flip — so a "the first time you flip one or more coins each turn" replacement (Edgar, King of Figaro) covers only the first coin. Bounded by `GameLimits.MAX_COIN_FLIPS_PER_EFFECT` as a backstop against a forced-win static plus an always-continue automated answer. **Fiery Gambit** composes `FlipCoinsUntilLoss("fieryGambitWins")` with three cumulative `Gate.WhenCondition(Compare(VariableReference("fieryGambitWins"), GTE, Fixed(n)))` tiers.
-- `Effects.SkipNextDrawStep(target = Controller)` (`SkipNextDrawStepEffect`) — target skips their next draw step. Adds a one-shot `SkipDrawStepComponent` marker consumed by `DrawPhaseManager.performDrawStep` (Elfhame Sanctuary's "you skip your draw step this turn").
-- `Effects.SkipNextUntapStep(target)` (`SkipNextUntapStepEffect`) — the player skips their entire next untap step (CR 500.11): nothing of theirs phases or untaps — every permanent type, not just the creatures/lands `SkipUntap` holds — and their own "next untap step" markers (`SkipUntap`, exert, `Duration.UntilAfterAffectedControllersNextUntap`) wait for the first step that isn't skipped. Stacks: two skips skip the next two untap steps (CR 614.10a). Adds to a counted `SkipNextUntapStepComponent`, consumed in `TurnManager.finishUntapStep`. Shisato, Whispering Hunter: `Effects.SkipNextUntapStep(EffectTarget.PlayerRef(Player.TriggeringPlayer))`.
+- `Effects.SkipNextStepOrPhase(part, target = Controller)` (`SkipNextStepOrPhaseEffect`, `part` = `TurnPart.UNTAP_STEP` | `DRAW_STEP`; other parts are rejected at construction) — a one-shot marker: the target skips their **next** instance of `part`, consumed by the step it skips.
+  - `DRAW_STEP` adds the `SkipDrawStepComponent` marker consumed by `DrawPhaseManager.performDrawStep` (Elfhame Sanctuary's "you skip your draw step this turn", Fasting).
+  - `UNTAP_STEP` skips the player's entire next untap step (CR 500.11): nothing of theirs phases or untaps — every permanent type, not just the creatures/lands `SkipUntap` holds — and their own "next untap step" markers (`SkipUntap`, exert, `Duration.UntilAfterAffectedControllersNextUntap`) wait for the first step that isn't skipped. Stacks: two skips skip the next two untap steps (CR 614.10a). Adds to a counted `SkipNextUntapStepComponent`, consumed in `TurnManager.finishUntapStep`. Shisato, Whispering Hunter: `Effects.SkipNextStepOrPhase(TurnPart.UNTAP_STEP, EffectTarget.PlayerRef(Player.TriggeringPlayer))`; Yosei, the Morning Star.
 - `Effects.SkipStepOrPhaseThisTurn(part, target)` (`SkipStepOrPhaseThisTurnEffect`, `part` = `TurnPart.DRAW_STEP` |
-  `MAIN_PHASE` | `COMBAT_PHASE`) — the target skips **every** instance of that part of the turn for the rest of
-  this turn. The **duration** is what separates it from the one-shot `SkipNextDrawStep` / `SkipCombatPhases`
+  `MAIN_PHASE` | `COMBAT_PHASE`; `UNTAP_STEP` exists for the one-shot and standing forms) — the target skips **every** instance of that part of the turn for the rest of
+  this turn. The **duration** is what separates it from the one-shot `SkipNextStepOrPhase` / `SkipCombatPhases`
   markers above, which are consumed by the first occurrence: this one stands until end-of-turn cleanup drops
   its `SkippedTurnPartsComponent`, so a second main phase or an additional combat phase created later in the
   turn is skipped too. `TurnPart` is the granularity printed cards use — one value covers both main phases
@@ -9721,22 +9722,23 @@ staticAbility {
   `ConditionalStaticAbility(LegendRuleDoesNotApplyTo(Permanent.named(n)),
   Compare(AggregateBattlefield(Player.Each, Permanent.named(n)), EQ, Fixed(2)))`; a third copy fails the
   count, so the rule sees all three and the controller keeps one.
-- `SkipUntapStep(player = Player.Each)` — standing player-scoped skip (Stasis). Reads projected
-  controller and active printed/conditional/composite statics, plus duration-gated grants, before
-  any untap-step actions. Supports `Player.You`, `EachOpponent`, `Each` and other resolvable player
-  references. Face-down, phased-out and ability-less printed sources do not apply. Skips phasing,
-  day/night checks, other-player untaps and next-untap expiry; upkeep still occurs. Standing skips
-  overlap with pending one-shot skips through a `ChooseOptionDecision`: the affected player/team
-  chooses the standing effect (preserving pending skips) or spends exactly one pending skip.
-  Captures skip status before phasing/untapping, including across serialized untap continuations;
-  a source phasing in during a real untap cannot retroactively skip it or preserve its durations.
-  Uses the existing option UI for replacement ordering; otherwise turn events advance directly to upkeep.
-- `SkipDrawStep` — "Skip your draw step." Controller-scoped and standing: `DrawPhaseManager` scans the
-  projected battlefield (via `RoomFaceStatics`) as the draw step begins and takes no draw for a player
-  who controls one, every turn, without consuming anything. The one-shot counterparts are the
-  `SkipDrawStepComponent` marker and `Effects.SkipStepOrPhaseThisTurn`, both of which are spent by the
-  step they skip. Not unwrapped from a `ConditionalStaticAbility` — add that to
-  `DrawPhaseManager.skipsDrawStep` if an "as long as …" wording ever needs it. (Colfenor's Plans)
+- `SkipStepOrPhase(part, player = Player.You)` — standing, never-consumed skip of every `part` for `player`
+  (`TurnPart.UNTAP_STEP` | `DRAW_STEP`; other parts are rejected at construction). One reader,
+  `hasStandingSkip` (`UntapStepSkips.kt`), serves both steps: it resolves `player` from each source's
+  projected controller over active printed/conditional/composite statics plus duration-gated grants;
+  face-down, phased-out and ability-less sources do not apply, and Room faces count only while unlocked.
+  - `SkipStepOrPhase(TurnPart.DRAW_STEP)` — "Skip your draw step." `DrawPhaseManager` takes no draw for the
+    player, every turn, without consuming anything. (Colfenor's Plans, Necrodominance)
+  - `SkipStepOrPhase(TurnPart.UNTAP_STEP, Player.Each)` — "Players skip their untap steps." (Stasis). Read
+    before any untap-step actions; supports `Player.You`, `EachOpponent`, `Each` and other resolvable
+    player references. Skips phasing, day/night checks, other-player untaps and next-untap expiry;
+    upkeep still occurs. Standing skips overlap with pending one-shot skips through a
+    `ChooseOptionDecision`: the affected player/team chooses the standing effect (preserving pending
+    skips) or spends exactly one pending skip. Captures skip status before phasing/untapping, including
+    across serialized untap continuations; a source phasing in during a real untap cannot retroactively
+    skip it or preserve its durations.
+  The one-shot counterparts are `Effects.SkipNextStepOrPhase` and `Effects.SkipStepOrPhaseThisTurn`, both
+  spent by the step they skip.
 - `NoMaximumHandSize` — controller has no hand-size limit *while this permanent is on the
   battlefield*. (Thought Vessel, Reliquary Tower) For a one-shot resolution effect that confers a
   *permanent, player-scoped* "no maximum hand size for the rest of the game" (survives the source

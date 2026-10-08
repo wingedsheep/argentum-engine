@@ -12580,7 +12580,10 @@
             }
         ],
         "staticAbilities": [
-            "SkipDrawStep",
+            {
+                "type": "SkipStepOrPhase",
+                "part": "DRAW_STEP"
+            },
             {
                 "type": "SetMaximumHandSize",
                 "amount": {

@@ -3410,7 +3410,10 @@
                 "type": "GrantMayCastFromLinkedExile",
                 "filter": {}
             },
-            "SkipDrawStep",
+            {
+                "type": "SkipStepOrPhase",
+                "part": "DRAW_STEP"
+            },
             "RestrictSpellsCastPerTurn"
         ]
     },

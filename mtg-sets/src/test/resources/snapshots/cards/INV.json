@@ -4627,7 +4627,10 @@
                             ]
                         }
                     },
-                    "then": "SkipNextDrawStep"
+                    "then": {
+                        "type": "SkipNextStepOrPhase",
+                        "part": "DRAW_STEP"
+                    }
                 }
             }
         ]

@@ -22,7 +22,7 @@ import io.kotest.assertions.withClue
  *  Skip your draw step.
  *  You can't cast more than one spell each turn."
  *
- * The new vocabulary here is the standing `SkipDrawStep` static, and the thing worth pinning about
+ * The new vocabulary here is the standing `SkipStepOrPhase(DRAW_STEP)` static, and the thing worth pinning about
  * it is its **scope**: it is the controller's draw step, not everyone's. So the first test watches
  * both players' draw steps in one game — the opponent's draw is the half that a player-agnostic
  * read of the static would break, and it is invisible if you only assert on the controller.

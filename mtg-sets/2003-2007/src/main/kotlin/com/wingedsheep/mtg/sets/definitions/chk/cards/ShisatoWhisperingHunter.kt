@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.chk.cards
 
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.TurnPart
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -37,7 +38,7 @@ val ShisatoWhisperingHunter = card("Shisato, Whispering Hunter") {
 
     triggeredAbility {
         trigger = Triggers.self.dealsCombatDamage(Recipient.AnyPlayer)
-        effect = Effects.SkipNextUntapStep(EffectTarget.PlayerRef(Player.TriggeringPlayer))
+        effect = Effects.SkipNextStepOrPhase(TurnPart.UNTAP_STEP, EffectTarget.PlayerRef(Player.TriggeringPlayer))
         description = "Whenever Shisato deals combat damage to a player, that player skips their next untap step."
     }
 

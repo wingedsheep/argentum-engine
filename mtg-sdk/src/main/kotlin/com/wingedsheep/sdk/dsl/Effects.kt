@@ -220,8 +220,7 @@ import com.wingedsheep.sdk.scripting.effects.PreventionDirection
 import com.wingedsheep.sdk.scripting.effects.PreventionScope
 import com.wingedsheep.sdk.scripting.effects.PreventionSourceFilter
 import com.wingedsheep.sdk.scripting.effects.HijackNextTurnEffect
-import com.wingedsheep.sdk.scripting.effects.SkipNextDrawStepEffect
-import com.wingedsheep.sdk.scripting.effects.SkipNextUntapStepEffect
+import com.wingedsheep.sdk.scripting.effects.SkipNextStepOrPhaseEffect
 import com.wingedsheep.sdk.scripting.effects.SkipNextTurnEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.EffectChoice
@@ -5776,23 +5775,20 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.FlipCoinsUntilLossEffect(storeWinsAs)
 
     /**
-     * Target player skips their next draw step.
-     * Used for cards like Elfhame Sanctuary ("you skip your draw step this turn").
+     * [target] skips their next [part] — `TurnPart.DRAW_STEP` ("you skip your next draw step":
+     * Elfhame Sanctuary, Fasting) or `TurnPart.UNTAP_STEP` ("that player skips their next untap
+     * step": Shisato, Whispering Hunter — CR 500.11, 614.10a; nothing untaps or phases, and
+     * repeated skips stack). The untap form is wider than [SkipUntap], which only holds creatures
+     * and/or lands tapped during an untap step that still happens.
      */
-    fun SkipNextDrawStep(target: EffectTarget = EffectTarget.Controller): Effect =
-        SkipNextDrawStepEffect(target)
-
-    /**
-     * [target] skips their entire next untap step (CR 500.11, 614.10a) — nothing untaps or phases,
-     * and repeated skips stack. Wider than [SkipUntap], which only holds creatures and/or lands
-     * tapped during an untap step that still happens. Used by Shisato, Whispering Hunter.
-     */
-    fun SkipNextUntapStep(target: EffectTarget): Effect =
-        SkipNextUntapStepEffect(target)
+    fun SkipNextStepOrPhase(
+        part: com.wingedsheep.sdk.core.TurnPart,
+        target: EffectTarget = EffectTarget.Controller
+    ): Effect = SkipNextStepOrPhaseEffect(part, target)
 
     /**
      * The target player skips **every** instance of [part] for the rest of this turn — the
-     * until-end-of-turn sibling of the one-shot [SkipNextDrawStep] / `SkipCombatPhases` markers.
+     * until-end-of-turn sibling of the one-shot [SkipNextStepOrPhase] / `SkipCombatPhases` markers.
      * A skipped step or phase is proceeded past as though it didn't exist (CR 500.11 / 614.10): no
      * priority in it, and no "at the beginning of ..." trigger for it. Used by Fatespinner.
      */

@@ -11,6 +11,9 @@ package com.wingedsheep.sdk.core
  * covers all five combat steps *and* any additional combat phase created that turn.
  */
 enum class TurnPart(val displayName: String) {
+    /** The untap step (CR 502). */
+    UNTAP_STEP("untap step"),
+
     /** The draw step (CR 504). */
     DRAW_STEP("draw step"),
 
@@ -22,6 +25,7 @@ enum class TurnPart(val displayName: String) {
 
     /** True when [step] belongs to this part of the turn. */
     fun covers(step: Step): Boolean = when (this) {
+        UNTAP_STEP -> step == Step.UNTAP
         DRAW_STEP -> step == Step.DRAW
         MAIN_PHASE -> step.isMainPhase
         COMBAT_PHASE -> step.phase == Phase.COMBAT

@@ -1140,8 +1140,7 @@ class StaticAbilityHandler(
             // Turn-based actions (BeginningPhaseManager / CleanupPhaseManager):
             is DamagePersistsThroughCleanup,
             is NoMaximumHandSize,
-            is com.wingedsheep.sdk.scripting.SkipDrawStep,
-            is com.wingedsheep.sdk.scripting.SkipUntapStep,
+            is com.wingedsheep.sdk.scripting.SkipStepOrPhase,
             is SetMaximumHandSize,
             is PreventManaPoolEmptying,
             is ConvertEmptyingMana,

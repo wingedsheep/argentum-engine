@@ -24,7 +24,7 @@ import com.wingedsheep.sdk.core.Step
  *   step trigger stores the active player in the context's *entity* slot, which
  *   `TargetResolutionUtils` already falls back to.
  * - **"Each instance ... this turn" is a duration, not a count**, which is why this uses
- *   [Effects.SkipStepOrPhaseThisTurn] rather than the one-shot `SkipNextDrawStep` /
+ *   [Effects.SkipStepOrPhaseThisTurn] rather than the one-shot `SkipNextStepOrPhase` /
  *   `SkipCombatPhases` markers. Choosing "main phase" skips *both* main phases (CR 505.1 — the
  *   precombat and postcombat main phases are individually and collectively the main phase), and
  *   choosing "combat phase" also swallows an additional combat phase created later that turn.

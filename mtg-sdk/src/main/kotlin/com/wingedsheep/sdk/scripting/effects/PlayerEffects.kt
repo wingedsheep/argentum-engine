@@ -84,35 +84,40 @@ data class PayAnyAmountOfLifeAsEntersEffect(
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
-@SerialName("SkipNextDrawStep")
+/**
+ * [target] skips their **next** instance of [part] — a one-shot marker consumed by the step it
+ * skips. "You skip your next draw step" (Elfhame Sanctuary, Fasting), "that player skips their next
+ * untap step" (Shisato, Whispering Hunter; Yosei, the Morning Star).
+ *
+ * A skipped step is proceeded past as though it didn't exist (CR 500.11): nothing phases in or out
+ * in a skipped untap step and no permanent of any type untaps — wider than [SkipUntapEffect], which
+ * only keeps creatures and/or lands tapped during an untap step that still happens — and "until
+ * your next untap step" effects wait for the first untap step that isn't skipped (CR 614.10a).
+ * Two untap-step skips on the same player skip the next two untap steps.
+ *
+ * Only [TurnPart.UNTAP_STEP] and [TurnPart.DRAW_STEP] have a "next one" marker; the
+ * until-end-of-turn sibling is [SkipStepOrPhaseThisTurnEffect], the standing one
+ * [com.wingedsheep.sdk.scripting.SkipStepOrPhase], and "skip the combat phases of your next turn"
+ * is [SkipCombatPhasesEffect].
+ */
+@SerialName("SkipNextStepOrPhase")
 @Serializable
-data class SkipNextDrawStepEffect(
+data class SkipNextStepOrPhaseEffect(
+    val part: TurnPart,
     val target: EffectTarget = EffectTarget.Controller
 ) : Effect {
-    override val description: String = when (target) {
-        EffectTarget.Controller -> "You skip your next draw step"
-        else -> "${target.description.replaceFirstChar { it.uppercase() }} skips their next draw step"
+    init {
+        require(part in SUPPORTED) { "SkipNextStepOrPhase supports only $SUPPORTED, not $part" }
     }
-}
 
-/**
- * The player skips their entire next untap step — Shisato, Whispering Hunter's "that player skips
- * their next untap step".
- *
- * Wider than [SkipUntapEffect], which only keeps creatures and/or lands tapped *during* an untap
- * step that still happens: a skipped step is proceeded past as though it didn't exist (CR 500.11),
- * so nothing phases in or out, no permanent of any type untaps, and "until your next untap step"
- * effects wait for the first untap step that isn't skipped (CR 614.10a). Two of these on the same
- * player skip the next two untap steps.
- */
-@SerialName("SkipNextUntapStep")
-@Serializable
-data class SkipNextUntapStepEffect(
-    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
-) : Effect {
     override val description: String = when (target) {
-        EffectTarget.Controller -> "You skip your next untap step"
-        else -> "${target.description.replaceFirstChar { it.uppercase() }} skips their next untap step"
+        EffectTarget.Controller -> "You skip your next ${part.displayName}"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} skips their next ${part.displayName}"
+    }
+
+    companion object {
+        /** The parts that have a one-shot "skip your next …" marker in the engine. */
+        val SUPPORTED: Set<TurnPart> = setOf(TurnPart.UNTAP_STEP, TurnPart.DRAW_STEP)
     }
 }
 
@@ -121,7 +126,7 @@ data class SkipNextUntapStepEffect(
  * "the player skips each instance of the chosen step or phase this turn".
  *
  * The duration is what separates this from the "skip your *next* X" family
- * ([SkipNextDrawStepEffect], [SkipCombatPhasesEffect]): those are one-shot markers consumed by the
+ * ([SkipNextStepOrPhaseEffect], [SkipCombatPhasesEffect]): those are one-shot markers consumed by the
  * first occurrence, this one stands until end of turn, so a second main phase or an additional
  * combat phase created later in the turn is skipped too. [TurnPart] is the granularity printed
  * cards use, so "main phase" is one value covering both main phases (CR 505.1) and "combat phase"
