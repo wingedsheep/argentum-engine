@@ -21,6 +21,7 @@ import { HelpTip } from '../help/HelpTip'
 import { isLoneTargetRequirement } from '@/utils/targeting.ts'
 import { defendingPlayerOf } from '@/utils/combatTargets'
 import { AttackRelationBadge, useAttackRelation } from './AttackRelationTag'
+import { EmoteBubble } from '../tableTalk/EmoteBubble'
 
 /**
  * Total viewport width claimed by the fixed rail column (chip width + left offset + a
@@ -1014,6 +1015,9 @@ function RailChip({
         {/* Attack relation (attack left/right) — a badge on the chip's left edge, outside the
             content row: inline words squeezed the name out. The chip's tooltip spells it out. */}
         {attackRelation && !tomb && <AttackRelationBadge relation={attackRelation} />}
+        {/* While this chip carries the seat's anchors (its board is off screen) it is also where
+            their emotes speak from — out to the right, toward the table. */}
+        {!isBoardVisible && <EmoteBubble playerId={playerId} placement="right" />}
         {/* Attention pulse overlay — keyed so each event restarts the animation
             without remounting the chip (which would drop hover state). */}
         {pulse && (

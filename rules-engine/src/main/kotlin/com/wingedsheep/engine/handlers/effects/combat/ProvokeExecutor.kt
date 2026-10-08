@@ -35,9 +35,10 @@ class ProvokeExecutor : EffectExecutor<ProvokeEffect> {
 
         val targetContainer = state.getEntity(targetId)
             ?: return EffectResult.error(state, "Target creature no longer exists")
-        val cardComponent = targetContainer.get<CardComponent>()
+        targetContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Target is not a card")
-        if (!cardComponent.typeLine.isCreature) {
+        // Projected, not printed: an animated land is a creature, a de-animated creature is not.
+        if (!state.projectedState.isCreature(targetId)) {
             return EffectResult.error(state, "Target is not a creature")
         }
 

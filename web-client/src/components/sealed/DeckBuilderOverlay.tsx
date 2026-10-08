@@ -400,6 +400,19 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
     return summaries
   }, [state.cardPool])
 
+  // Whether the search box is narrowing anything, and the one predicate the pool filter and the
+  // deck-list highlight share.
+  const searchActive = searchMode === 'simple' ? searchText.trim() !== '' : searchQuery.ast != null
+  const matchesSearch = useCallback((card: SealedCardInfo): boolean => {
+    if (searchMode === 'simple') {
+      const q = searchText.trim()
+      return !q || matchesSimpleSearch(card, q)
+    }
+    if (!searchQuery.ast) return true
+    const summary = poolSummaries.get(card.name)
+    return summary != null && searchQuery.predicate(summary)
+  }, [searchMode, searchText, searchQuery, poolSummaries])
+
   // Group and sort pool cards
   const poolCardGroups = useMemo(() => {
     const deckCardCounts = state.deck.reduce<Record<string, number>>((acc, name) => {
@@ -465,12 +478,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         if (creatureTypeFilter) {
           if (!matchesCreatureTypeFilter(card, creatureTypeFilter)) continue
         }
-        if (searchMode === 'simple') {
-          if (searchText.trim() && !matchesSimpleSearch(card, searchText.trim())) continue
-        } else if (searchQuery.ast) {
-          const summary = poolSummaries.get(name)
-          if (!summary || !searchQuery.predicate(summary)) continue
-        }
+        if (!matchesSearch(card)) continue
         groups.push({ card, availableCount, inDeckCount })
       }
     }
@@ -484,7 +492,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         return getRarityOrder(a.card) - getRarityOrder(b.card) || getCmc(a.card) - getCmc(b.card)
       }
     })
-  }, [state.cardPool, state.deck, state.poolPlay, sortBy, colorFilter, colorMode, typeFilter, creatureTypeFilter, searchMode, searchText, searchQuery, poolSummaries, archetypeFilter, commanderIdentity, restrictToCommanderIdentity])
+  }, [state.cardPool, state.deck, state.poolPlay, sortBy, colorFilter, colorMode, typeFilter, creatureTypeFilter, matchesSearch, archetypeFilter, commanderIdentity, restrictToCommanderIdentity])
 
   // "Cards left to add" is only a meaningful total when the pool is finite. In Pool Play every card
   // is always available, so count distinct cards on offer instead of copies.
@@ -551,6 +559,20 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
     }
     return Object.values(groups).sort((a, b) => getCmc(a.card) - getCmc(b.card) || a.card.name.localeCompare(b.card.name))
   }, [state.deck, state.cardPool])
+
+  // The pool is filtered by the search; the deck isn't, so its matching rows are highlighted instead.
+  const deckSearchMatches = useMemo(() => {
+    if (!searchActive) return null
+    const names = new Set<string>()
+    let copies = 0
+    for (const { card, count } of deckCardGroups) {
+      if (matchesSearch(card)) {
+        names.add(card.name)
+        copies += count
+      }
+    }
+    return { names, copies }
+  }, [searchActive, deckCardGroups, matchesSearch])
 
   const isSubmitted = state.phase === 'submitted'
 
@@ -1396,6 +1418,14 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
             <span style={{ color: '#888', fontSize: 11 }}>
               ({spellCount} spells + {landCount} lands)
             </span>
+            {deckSearchMatches && (
+              <span
+                title="Cards in your deck matching the pool search"
+                style={{ color: '#4fc3f7', fontSize: 11 }}
+              >
+                {deckSearchMatches.copies} match search
+              </span>
+            )}
             {!isSubmitted && totalCount > 0 && (
               <button
                 onClick={clearDeck}
@@ -1440,6 +1470,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 isCommander={state.commander === card.name}
                 canBeCommander={eligibleCommanderNames.has(card.name)}
                 offIdentity={offIdentityNames.has(card.name)}
+                searchMatch={deckSearchMatches == null ? undefined : deckSearchMatches.names.has(card.name)}
                 onToggleCommander={() => {
                   setCommander(state.commander === card.name ? null : card.name)
                 }}
@@ -2118,6 +2149,7 @@ function DeckListRow({
   isCommander,
   canBeCommander,
   offIdentity,
+  searchMatch,
   onToggleCommander,
 }: {
   card: SealedCardInfo
@@ -2129,9 +2161,14 @@ function DeckListRow({
   isCommander?: boolean
   canBeCommander?: boolean
   offIdentity?: boolean
+  /** Set only while a pool search is active: true highlights the row, false dims it. */
+  searchMatch?: boolean | undefined
   onToggleCommander?: () => void
 }) {
   const cmc = getCmc(card)
+  const restingBackground = offIdentity
+    ? 'rgba(239, 83, 80, 0.06)'
+    : searchMatch ? 'rgba(79, 195, 247, 0.08)' : 'transparent'
 
   return (
     <div
@@ -2145,20 +2182,20 @@ function DeckListRow({
         height: 36,
         padding: '0 8px 0 0',
         cursor: disabled ? 'default' : 'pointer',
-        opacity: disabled ? 0.8 : 1,
+        opacity: searchMatch === false ? 0.4 : disabled ? 0.8 : 1,
         position: 'relative',
         overflow: 'hidden',
         borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
         // Off-identity rows get a red left strip + faint red tint, matching the standalone
-        // /deckbuilder's deckRowViolation visual treatment.
-        borderLeft: offIdentity ? '3px solid #ef5350' : '3px solid transparent',
-        backgroundColor: offIdentity ? 'rgba(239, 83, 80, 0.06)' : undefined,
+        // /deckbuilder's deckRowViolation visual treatment. Search matches get a blue one.
+        borderLeft: offIdentity ? '3px solid #ef5350' : searchMatch ? '3px solid #4fc3f7' : '3px solid transparent',
+        backgroundColor: restingBackground,
       }}
       onMouseOver={(e) => {
         if (!disabled) e.currentTarget.style.backgroundColor = 'rgba(79, 195, 247, 0.1)'
       }}
       onMouseOut={(e) => {
-        e.currentTarget.style.backgroundColor = offIdentity ? 'rgba(239, 83, 80, 0.06)' : 'transparent'
+        e.currentTarget.style.backgroundColor = restingBackground
       }}
       title={offIdentity ? `${card.name} is outside the commander's colour identity` : undefined}
     >

@@ -33,6 +33,7 @@ import { PooledBattlefieldLayoutContext } from './board/shared'
 import { useBoardGroups } from './board/useBoardGroups'
 import { usePooledBattlefieldLayout } from './board/usePooledBattlefieldLayout'
 import { CardPreview } from './card'
+import { EmotePicker } from '../tableTalk/EmotePicker'
 import { TargetingOverlay, ManaColorSelectionOverlay, LifeDisplay, ActiveEffectsBadges, SpeedGauge, DayNightBadge, ConcedeButton, FullscreenButton, SpectatorCountBadge, TeamLifeBanner, EliminationNotice } from './overlay'
 import { HelpDrawer, HelpDrawerButton } from '../help/HelpDrawer'
 import { markLearnSignal } from '@/learn/signals'
@@ -1370,6 +1371,9 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
                   spectator-shaped: no "You" role tag, no player-click handling. */}
               {/* Stands down wherever your own board cell carries a plate (team banners, or the
                   two-row table) — the plate is then your life total and player anchor. */}
+              {/* The emote button normally sits beside that orb; with the orb stood down it stays
+                  here on its own, so you can still talk at a multiplayer table. */}
+              {(teamBannersActive || (bottomStripActive && !viewerIsObserver)) && !spectatorMode && eliminatedBottomSeat == null && <EmotePicker />}
               {!teamBannersActive && !(bottomStripActive && !viewerIsObserver) && <LifeDisplay life={bottomHudPlayer.life} isPlayer playerId={bottomHudPlayer.playerId} playerName={bottomHudPlayer.name} spectatorMode={spectatorMode || eliminatedBottomSeat != null} poisonCounters={bottomHudPlayer.poisonCounters} energyCounters={bottomHudPlayer.energyCounters ?? 0} experienceCounters={bottomHudPlayer.experienceCounters ?? 0} commanderDamage={bottomHudPlayer.commanderDamage ?? []} handSize={bottomHudPlayer.handSize} maxHandSize={bottomHudPlayer.maxHandSize} {...(isMulti ? { seatColor: bottomHudSeatColor.base } : {})} {...(teamCenterOrbs ? { teamName: bottomTeamLabel, teamMembers: bottomTeamMembers } : {})} />}
               <SpeedGauge speed={bottomHudPlayer.speed ?? 0} />
               {!responsive.isMobile && <ActiveEffectsBadges effects={bottomHudPlayer.activeEffects} />}

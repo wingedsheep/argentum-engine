@@ -935,15 +935,15 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     section: 'playing',
     title: 'Emotes',
     summary:
-      'The speech-bubble button beside your life total sends your opponent a quick message — a greeting, a reaction, or a bit of table talk.',
+      'The speech-bubble button beside your life total (beside the turn tracker at a multiplayer table) sends the table a quick message — a greeting, a reaction, or a bit of table talk.',
     body: [
       { kind: 'table', head: ['Group', 'Says'], rows: [
         ['Hello & goodbye', 'Hello! · Good luck, have fun! · Thanks! · Good game!'],
         ['Reactions', 'Well played. · Love this deck! · Ooh, nice combo! · Of course you drew that. · Didn’t see that coming! · Ouch.'],
         ['Table talk', 'Doing the math… · Oops. You saw nothing. · Land. Please. Any land. · Is that all you’ve got?'],
       ] },
-      { kind: 'p', text: 'Messages appear as a bubble over the sender’s life total for a few seconds. There is no free typing, and a short cooldown keeps it friendly. The AI answers a greeting, and says thanks for a compliment.' },
-      { kind: 'tip', text: 'Not in the mood? Switch off “Show their emotes” at the bottom of the emote menu to mute an opponent for the rest of the game.' },
+      { kind: 'p', text: 'Messages appear as a bubble over the sender’s life total for a few seconds — at a multiplayer table, on their board’s name plate, or beside their chip in the player list while their board is off screen. There is no free typing, and a short cooldown keeps it friendly. The AI answers a greeting, and says thanks for a compliment.' },
+      { kind: 'tip', text: 'Not in the mood? Switch off “Show their emotes” at the bottom of the emote menu to mute an opponent for the rest of the game. At a multiplayer table each switch carries that seat’s colour.' },
     ],
     related: ['game-table', 'after-the-game'],
   },

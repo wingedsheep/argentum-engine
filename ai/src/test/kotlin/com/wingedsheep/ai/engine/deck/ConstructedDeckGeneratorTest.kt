@@ -18,6 +18,7 @@ import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.core.spec.style.FunSpec
+import kotlin.random.Random
 
 /**
  * The constructed build behind a quick lobby's Random / Auto seats.
@@ -71,6 +72,12 @@ class ConstructedDeckGeneratorTest : FunSpec({
         CardDefinition.basicLand("Forest", Subtype.FOREST, ScryfallMetadata(collectorNumber = "300")),
     )
 
+    /**
+     * Seeded so a run is reproducible: the generator's default [Random.Default] made the shortlist
+     * draw — and so the build — differ every run. Over the flat-rated 24-card [pool] about one draw
+     * in twenty stacks no card to four copies, which failed the four-ofs test at random. Successive
+     * builds from one generator still differ, as the seeded stream advances.
+     */
     fun generatorOver(vararg sets: Pair<String, List<CardDefinition>>): ConstructedDeckGenerator {
         val configs = sets.associate { (code, cards) ->
             code to BoosterGenerator.SetConfig(
@@ -83,7 +90,7 @@ class ConstructedDeckGeneratorTest : FunSpec({
         val registry = CardRegistry()
         sets.forEach { (_, cards) -> registry.register(cards) }
         registry.register(basics())
-        return ConstructedDeckGenerator(BoosterGenerator(configs), registry)
+        return ConstructedDeckGenerator(BoosterGenerator(configs), registry, Random(SEED))
     }
 
     test("builds a 60-card deck from the chosen sets") {
@@ -247,3 +254,6 @@ class ConstructedDeckGeneratorTest : FunSpec({
         decks.distinct().size shouldNotBe 1
     }
 })
+
+/** Fixed seed for [ConstructedDeckGeneratorTest]'s generators. */
+private const val SEED = 2927L

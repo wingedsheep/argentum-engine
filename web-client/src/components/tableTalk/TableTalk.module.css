@@ -35,6 +35,10 @@
 
 .bubble[data-placement='above'] { transform-origin: 50% 100%; }
 .bubble[data-placement='below'] { transform-origin: 50% 0%; }
+.bubble[data-placement='right'] { transform: translateY(-50%); transform-origin: 0% 50%; }
+/* Beside a rail chip, compact enough that bubbles on neighbouring chips don't run into each other. */
+.bubble[data-placement='right'] { padding: 4px 10px 4px 7px; font-size: 12px; gap: 5px; border-radius: 11px; }
+.bubble[data-placement='right'] .bubbleIcon { font-size: 15px; }
 
 /* The tail points at the orb. */
 .bubble::after {
@@ -49,6 +53,13 @@
 }
 .bubble[data-placement='above']::after { bottom: -5px; }
 .bubble[data-placement='below']::after { top: -5px; }
+.bubble[data-placement='right']::after {
+  /* Pointing left, the tail grows out of the mood stripe, so it wears the stripe's colour. */
+  left: -10px;
+  top: 50%;
+  background: var(--bubble-accent, var(--bubble-bg));
+  transform: translateY(-50%) rotate(45deg);
+}
 
 .bubbleIcon { display: inline-block; font-size: 18px; line-height: 1; animation: icon-pop 0.5s 0.12s ease-out both; }
 
@@ -273,6 +284,7 @@
   cursor: pointer;
 }
 .muteRow:hover { background: rgba(255, 255, 255, 0.04); }
+.seatDot { flex: none; width: 8px; height: 8px; border-radius: 50%; }
 .muteName { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .switch {

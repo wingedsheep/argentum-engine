@@ -75,7 +75,8 @@ class SecretBidExecutor(
             chosenNumbers = chosenNumbers,
             highestBidderEffect = effect.highestBidderEffect,
             lowestBidderEffect = effect.lowestBidderEffect,
-            tiedBidderEffect = effect.tiedBidderEffect
+            tiedBidderEffect = effect.tiedBidderEffect,
+            effectContext = context
         )
 
         val decisionResult = decisionHandler.createNumberDecision(

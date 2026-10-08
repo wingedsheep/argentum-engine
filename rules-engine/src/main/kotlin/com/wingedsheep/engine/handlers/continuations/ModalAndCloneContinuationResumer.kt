@@ -103,8 +103,16 @@ class ModalAndCloneContinuationResumer(
         val (slot, value) = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
             .decodeEntersChoice(continuation.question, response)
             ?: return ExecutionResult.error(state, "Unexpected response for ${continuation.question.choiceType} choice")
-        val context = com.wingedsheep.engine.handlers.effects.EffectEntryChoices.answered(
-            continuation.context, continuation.entityId, continuation.question.choiceType, slot, value)
+        val context = if (continuation.question.syntheticRiot) {
+            // A granted-Riot answer (counter or haste) — recorded apart from the printed MODE slot.
+            val modeId = (value as? com.wingedsheep.engine.state.components.battlefield.ChoiceValue.TextChoice)?.text
+                ?: return ExecutionResult.error(state, "Unexpected response for a riot choice")
+            com.wingedsheep.engine.handlers.effects.EffectEntryChoices.answeredRiot(
+                continuation.context, continuation.entityId, modeId)
+        } else {
+            com.wingedsheep.engine.handlers.effects.EffectEntryChoices.answered(
+                continuation.context, continuation.entityId, continuation.question.choiceType, slot, value)
+        }
         val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
         if (result.outcome !is Outcome.Done) return result.toExecutionResult()
         return checkForMore(exposeCollectionsToNextFrame(result.state, result.updatedCollections), result.events)

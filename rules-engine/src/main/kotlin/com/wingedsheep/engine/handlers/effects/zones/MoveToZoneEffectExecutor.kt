@@ -142,14 +142,15 @@ class MoveToZoneEffectExecutor(
         // the entrant enters as a copy; the transition stamps the answers on arrival.
         if (effect.destination == Zone.BATTLEFIELD && effect.faceDown == null) {
             com.wingedsheep.engine.handlers.effects.EffectEntryChoices.prepare(
-                state, effect, context, mapOf(targetId to controllerId), cardRegistry
+                state, effect, context, mapOf(targetId to controllerId), cardRegistry, zones.predicateEvaluator
             )?.let { return it }
         }
 
         // Build ZoneEntryOptions based on placement and effect properties
         val entryOptions = buildEntryOptions(effect, cardComponent, controllerId, context.controllerId)
             .copy(lookBackGrants = context.lookBackGrants[targetId], entryCopy = context.entryCopies[targetId], auraHostId = context.entryAuraHosts[targetId],
-                entryChoices = context.entryChoices[targetId]?.values.orEmpty())
+                entryChoices = context.entryChoices[targetId]?.values.orEmpty(),
+                grantedRiotModes = context.entryChoices[targetId]?.riotModes.orEmpty())
 
         val transitionResult = zones.moveToZone(
             state, targetId, effect.destination, entryOptions, currentZone

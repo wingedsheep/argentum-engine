@@ -129,7 +129,7 @@ class MoveCollectionExecutor(
                 context = prepared.context
             }
             com.wingedsheep.engine.handlers.effects.EffectEntryChoices.prepare(
-                state, effect, context, entrants, cardRegistry
+                state, effect, context, entrants, cardRegistry, predicateEvaluator
             )?.let { return it }
         }
 
@@ -967,6 +967,7 @@ class MoveCollectionExecutor(
                 controllerId = actualDestPlayerId,
                 entryCopy = context.entryCopies[cardId],
                 entryChoices = context.entryChoices[cardId]?.values.orEmpty(),
+                grantedRiotModes = context.entryChoices[cardId]?.riotModes.orEmpty(),
                 auraHostId = context.entryAuraHosts[cardId],
                 libraryPlacement = chosenPlacement,
                 tapped = destination.placement == ZonePlacement.Tapped || destination.placement == ZonePlacement.TappedAndAttacking,

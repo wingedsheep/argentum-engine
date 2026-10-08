@@ -39,6 +39,9 @@ data class PutFromHandContinuation(
  * @property highestBidderEffect Effect executed per highest bidder
  * @property lowestBidderEffect Effect executed per lowest non-zero bidder
  * @property tiedBidderEffect Effect executed per bidder when all non-zero bids are equal
+ * @property effectContext The resolving effect's full context (targets, pipeline values, cost
+ *   facts). Each bidder's branch runs under a copy of it with `controllerId` = bidder and
+ *   `xValue` = bid, so a branch can still read the original targets and stored values.
  */
 @Serializable
 data class SecretBidContinuation(
@@ -53,6 +56,7 @@ data class SecretBidContinuation(
     val tiedBidderEffect: Effect?,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
+    val effectContext: com.wingedsheep.engine.handlers.EffectContext? = null,
 ) : AnswerContinuation
 
 /**

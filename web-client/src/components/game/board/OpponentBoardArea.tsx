@@ -14,6 +14,7 @@ import { styles } from './styles'
 import { isLoneTargetRequirement } from '@/utils/targeting.ts'
 import { defendingPlayerOf } from '@/utils/combatTargets'
 import { AttackRelationTag, useAttackRelation } from '../AttackRelationTag'
+import { EmoteBubble } from '../../tableTalk/EmoteBubble'
 
 /** Height of a shared-strip cell's name-plate band (the pill plus its top margin). */
 export const CELL_PLATE_BAND = 34
@@ -889,6 +890,8 @@ export function BoardNamePlate({
           {player.life}
         </span>
       )}
+      {/* The anchor-carrying plate is this seat's face on the table, so their emotes speak from it. */}
+      {carriesAnchors && <EmoteBubble playerId={playerId} placement="auto" />}
     </div>
   )
 }

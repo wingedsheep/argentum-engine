@@ -78,7 +78,13 @@ object EntersWithReplacements {
                     state, entityId, counterType, 1, placerId = controllerId,
                     predicateEvaluator = predicateEvaluator
                 )
-                if (count <= 0) return state to events
+                // "If a creature entering the battlefield has riot but can't have a +1/+1 counter put
+                // onto it, it gains haste" (Rhythm of the Wild ruling, 2019-01-25).
+                if (count <= 0) {
+                    return applyGrantedRiotBranch(
+                        state, entityId, controllerId, com.wingedsheep.sdk.dsl.RIOT_MODE_HASTE, entityName, predicateEvaluator
+                    )
+                }
                 val current = state.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
                 var newState = state.updateEntity(entityId) { c -> c.with(current.withAdded(counterType, count)) }
                 val (afterMark, firstThisTurn, firstOfTypeThisTurn) = DamageUtils.recordCounterPlacement(

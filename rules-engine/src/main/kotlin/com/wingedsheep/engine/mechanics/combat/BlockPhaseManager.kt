@@ -30,8 +30,9 @@ import com.wingedsheep.sdk.scripting.BlockerCountLimit
 import com.wingedsheep.sdk.scripting.CanBlockAnyNumber
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.MustBeBlocked
+import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
 import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
-import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CantBlockUnless
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -397,13 +398,15 @@ internal class BlockPhaseManager(
      */
     fun canCreatureBlockAnyAttacker(state: GameState, blockerId: EntityId, blockingPlayer: EntityId): Boolean {
         val blockerContainer = state.getEntity(blockerId) ?: return false
-        val blockerCard = blockerContainer.get<CardComponent>() ?: return false
+        blockerContainer.get<CardComponent>() ?: return false
 
         val isFaceDown = blockerContainer.has<FaceDownComponent>()
-        if (!isFaceDown && hasCantBlockAbility(blockerCard)) return false
 
         val projected = state.projectedState
 
+        // A creature's own "can't block" reaches the projection as SetCantBlock, which drops out
+        // once the creature loses all abilities (CR 604.2) — so read the projection, never the
+        // card definition.
         if (projected.cantBlock(blockerId)) return false
 
         if (!isFaceDown && hasCantBlockUnlessRestriction(state, blockerId, blockingPlayer, projected)) return false
@@ -646,12 +649,6 @@ internal class BlockPhaseManager(
         }
 
         val isFaceDown = container.has<FaceDownComponent>()
-        if (!isFaceDown) {
-            val cantBlockValidation = validateCantBlock(cardComponent)
-            if (cantBlockValidation != null) {
-                return cantBlockValidation
-            }
-        }
 
         if (projected.cantBlock(blockerId)) {
             return "${cardComponent.name} can't block"
@@ -722,33 +719,6 @@ internal class BlockPhaseManager(
     }
 
     /**
-     * Check if a creature has "can't block" ability (e.g., Craven Giant, Jungle Lion).
-     */
-    private fun validateCantBlock(blockerCard: CardComponent): String? {
-        val cardDef = cardRegistry.getCard(blockerCard.cardDefinitionId) ?: return null
-        val cantBlockAbility = cardDef.staticAbilities.filterIsInstance<CantBlock>().firstOrNull()
-            ?: return null
-
-        if (cantBlockAbility.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self) {
-            return "${blockerCard.name} can't block"
-        }
-
-        return null
-    }
-
-    /**
-     * Check if a creature has "can't block" ability.
-     * Returns true if the creature cannot block.
-     */
-    private fun hasCantBlockAbility(blockerCard: CardComponent): Boolean {
-        val cardDef = cardRegistry.getCard(blockerCard.cardDefinitionId) ?: return false
-        val cantBlockAbility = cardDef.staticAbilities.filterIsInstance<CantBlock>().firstOrNull()
-            ?: return false
-
-        return cantBlockAbility.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self
-    }
-
-    /**
      * Check if a creature can legally block an attacker.
      * Delegates to registered [BlockEvasionRule] instances for evasion checks,
      * plus blocker-level restrictions (can't block, face-down abilities).
@@ -763,12 +733,7 @@ internal class BlockPhaseManager(
         val blockerContainer = state.getEntity(blockerId) ?: return false
         state.getEntity(attackerId) ?: return false
 
-        val blockerCard = blockerContainer.get<CardComponent>() ?: return false
-
-        val isFaceDown = blockerContainer.has<FaceDownComponent>()
-        if (!isFaceDown && hasCantBlockAbility(blockerCard)) {
-            return false
-        }
+        blockerContainer.get<CardComponent>() ?: return false
 
         if (projected.cantBlock(blockerId)) {
             return false
@@ -878,7 +843,8 @@ internal class BlockPhaseManager(
             val attackerCard = attackerContainer.get<CardComponent>() ?: continue
             // A face-down attacker has no printed abilities (CR 708.2a), but a face-up host's
             // group clause still covers it.
-            val cardDef = if (attackerContainer.has<FaceDownComponent>()) null
+            val cardDef = if (attackerContainer.has<FaceDownComponent>() ||
+                state.projectedState.hasLostAllAbilities(attackerId)) null
                 else cardRegistry.getCard(attackerCard.cardDefinitionId)
 
             // Printed "can't be blocked by more than N", including the conditional form
@@ -949,7 +915,7 @@ internal class BlockPhaseManager(
         val limits = mutableMapOf<EntityId, Int>()
         for (hostId in state.getBattlefield()) {
             val container = state.getEntity(hostId) ?: continue
-            if (container.has<FaceDownComponent>()) continue
+            if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(hostId)) continue
             val cardId = container.get<CardComponent>()?.cardDefinitionId ?: continue
             for (ability in cardRegistry.getCard(cardId)?.staticAbilities.orEmpty()) {
                 val unwrapped = if (ability is ConditionalStaticAbility) ability.ability else ability
@@ -1249,60 +1215,51 @@ internal class BlockPhaseManager(
     /**
      * Attackers that carry a [MustBeBlocked] static ability (matching [allCreatures]), including the
      * conditional form (e.g. Frodo Baggins: gated on `SourceIsRingBearer`). The gating condition is
-     * evaluated with the attacker as the source.
+     * evaluated with the static's holder as the source.
+     *
+     * A holder's *printed* statics count only while it has its abilities: a face-down permanent has
+     * none (CR 708.2a) and one that has lost all abilities (projected `lostAllAbilities`) no longer
+     * imposes the requirement. Runtime grants ([GameState.grantedStaticAbilities]) are read alongside
+     * the printed ones, as the granted "can't be blocked by more than N" form is.
      */
     private fun attackersWithMustBeBlockedStatic(state: GameState, allCreatures: Boolean): List<EntityId> {
         val attackers = state.findEntitiesWith<AttackingComponent>().map { it.first }
         if (attackers.isEmpty()) return emptyList()
         val projected = state.projectedState
         val attackerSet = attackers.toSet()
+        val battlefield = state.getBattlefield()
         val result = mutableSetOf<EntityId>()
 
-        // (a) An attacker's own source-scoped MustBeBlocked static (filter == null), including the
-        // conditional form (Frodo Baggins, gated on SourceIsRingBearer).
-        for (attackerId in attackers) {
-            val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.cardDefinitionId ?: continue
-            val statics = cardRegistry.getCard(cardName)?.staticAbilities.orEmpty()
-            val active = statics.any { ability ->
-                val unwrapped = if (ability is ConditionalStaticAbility) ability.ability else ability
-                if (unwrapped !is MustBeBlocked || unwrapped.filter != null || unwrapped.allCreatures != allCreatures) {
-                    return@any false
-                }
-                if (ability is ConditionalStaticAbility) {
-                    val controller = projected.getController(attackerId) ?: return@any false
-                    conditionEvaluator.evaluate(
-                        state,
-                        ability.condition,
-                        EffectContext(sourceId = attackerId, controllerId = controller)
-                    )
-                } else true
+        fun apply(holder: EntityId, ability: StaticAbility) {
+            val unwrapped = if (ability is ConditionalStaticAbility) ability.ability else ability
+            if (unwrapped !is MustBeBlocked || unwrapped.allCreatures != allCreatures) return
+            val controller = projected.getController(holder) ?: return
+            if (ability is ConditionalStaticAbility &&
+                !conditionEvaluator.evaluate(
+                    state, ability.condition, EffectContext(sourceId = holder, controllerId = controller)
+                )
+            ) return
+            val filter = unwrapped.filter
+            if (filter == null) {
+                // Source-scoped: the holder itself must be blocked (Goblin Fire Fiend, Frodo Baggins).
+                if (holder in attackerSet) result.add(holder)
+            } else {
+                // Projected onto other creatures via a filter, resolved relative to the holder - e.g.
+                // The Masamune's "equipped creature ... must be blocked if able".
+                result.addAll(resolveFilteredAttackers(state, projected, holder, controller, filter, attackerSet))
             }
-            if (active) result.add(attackerId)
         }
 
-        // (b) A battlefield permanent projecting MustBeBlocked onto a *different* creature via a
-        // filter - e.g. an Equipment granting "equipped creature ... must be blocked if able"
-        // (The Masamune, filter = GroupFilter.attachedCreature()). The filter is resolved relative
-        // to the permanent carrying the static.
-        for (sourceId in state.getBattlefield()) {
-            val container = state.getEntity(sourceId) ?: continue
-            if (container.has<FaceDownComponent>()) continue
+        for (holder in battlefield) {
+            val container = state.getEntity(holder) ?: continue
+            if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(holder)) continue
             val cardName = container.get<CardComponent>()?.cardDefinitionId ?: continue
-            val statics = cardRegistry.getCard(cardName)?.staticAbilities.orEmpty()
-            for (ability in statics) {
-                val unwrapped = if (ability is ConditionalStaticAbility) ability.ability else ability
-                if (unwrapped !is MustBeBlocked || unwrapped.allCreatures != allCreatures) continue
-                val filter = unwrapped.filter ?: continue
-                val controller = projected.getController(sourceId) ?: continue
-                if (ability is ConditionalStaticAbility &&
-                    !conditionEvaluator.evaluate(
-                        state, ability.condition, EffectContext(sourceId = sourceId, controllerId = controller)
-                    )
-                ) continue
-                result.addAll(
-                    resolveFilteredAttackers(state, projected, sourceId, controller, filter, attackerSet)
-                )
-            }
+            cardRegistry.getCard(cardName)?.staticAbilities.orEmpty().forEach { apply(holder, it) }
+        }
+        for (grant in state.grantedStaticAbilities) {
+            if (grant.entityId !in battlefield) continue
+            if (!GrantDurationGate.holds(state, grant.entityId, grant.sourceId, grant.duration)) continue
+            apply(grant.entityId, grant.ability)
         }
 
         return result.toList()
@@ -1390,7 +1347,9 @@ internal class BlockPhaseManager(
         projected: ProjectedState
     ): String? {
         val container = state.getEntity(blockerId) ?: return null
-        if (container.has<FaceDownComponent>()) return null
+        // A face-down creature has no printed abilities (CR 708.2a); one that lost all abilities
+        // no longer has this one either (CR 604.2).
+        if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(blockerId)) return null
         val cardComponent = container.get<CardComponent>() ?: return null
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return null
 
@@ -1425,7 +1384,7 @@ internal class BlockPhaseManager(
         projected: ProjectedState
     ): Boolean {
         val container = state.getEntity(blockerId) ?: return false
-        if (container.has<FaceDownComponent>()) return false
+        if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(blockerId)) return false
         val cardComponent = container.get<CardComponent>() ?: return false
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return false
 

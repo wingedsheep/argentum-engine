@@ -167,8 +167,14 @@ class CardSpecificContinuationResumer(
 
     /**
      * Resolve the secret bid: determine outcome groups and execute effects per matching bidder.
-     * Each bidder's context sets controllerId = that bidder and xValue = bid amount,
-     * so effects can use EffectTarget.Controller and DynamicAmount.XValue respectively.
+     * Each bidder's context is the resolving effect's own context (targets, pipeline values)
+     * with controllerId = that bidder and xValue = bid amount, so effects can use
+     * EffectTarget.Controller and DynamicAmount.XValue respectively.
+     *
+     * Every branch is queued as an [EffectContinuation] frame up front (first branch on top) and
+     * popped just before it runs, so the branches still to run always sit beneath whatever the
+     * running branch leaves on the stack. A branch that pauses for a decision returns that pause;
+     * once the decision is answered, the continuation stack drains the remaining branches.
      */
     private fun resolveSecretBid(
         state: GameState,
@@ -176,66 +182,69 @@ class CardSpecificContinuationResumer(
         chosenNumbers: Map<EntityId, Int>,
         checkForMore: CheckForMore
     ): ExecutionResult {
-        var currentState = state
+        val branches = secretBidBranches(continuation, chosenNumbers)
+
+        var currentState = branches.asReversed().fold(state) { s, branch -> s.pushContinuation(branch) }
         val allEvents = mutableListOf<GameEvent>()
 
-        val nonZeroBids = chosenNumbers.filter { it.value > 0 }
-
-        if (nonZeroBids.isNotEmpty()) {
-            val highestBid = nonZeroBids.values.max()
-            val lowestBid = nonZeroBids.values.min()
-
-            // Execute highestBidderEffect per player with the highest bid
-            if (continuation.highestBidderEffect != null) {
-                val highest = nonZeroBids.filter { it.value == highestBid }
-                for ((playerId, amount) in highest) {
-                    val result = executeForBidder(currentState, continuation, continuation.highestBidderEffect, playerId, amount)
-                    if (result.error != null) return result
-                    currentState = result.state
-                    allEvents.addAll(result.events)
-                }
+        for (branch in branches) {
+            val (popped, stateWithoutBranch) = currentState.popContinuation()
+            check(popped == branch) { "Secret bid branch frame is not on top of the continuation stack" }
+            val result = services.effectExecutorRegistry
+                .execute(stateWithoutBranch, branch.remainingEffects.single(), branch.effectContext)
+                .toExecutionResult()
+            if (result.error != null) return result
+            if (result.pendingDecision != null) {
+                return ExecutionResult.propagatePause(result.state, allEvents + result.events)
             }
-
-            // Execute lowestBidderEffect per player with the lowest non-zero bid
-            if (continuation.lowestBidderEffect != null) {
-                val lowest = nonZeroBids.filter { it.value == lowestBid }
-                for ((playerId, amount) in lowest) {
-                    val result = executeForBidder(currentState, continuation, continuation.lowestBidderEffect, playerId, amount)
-                    if (result.error != null) return result
-                    currentState = result.state
-                    allEvents.addAll(result.events)
-                }
-            }
-
-            // Execute tiedBidderEffect per player when all non-zero bids are equal
-            if (continuation.tiedBidderEffect != null && highestBid == lowestBid) {
-                for ((playerId, amount) in nonZeroBids) {
-                    val result = executeForBidder(currentState, continuation, continuation.tiedBidderEffect, playerId, amount)
-                    if (result.error != null) return result
-                    currentState = result.state
-                    allEvents.addAll(result.events)
-                }
-            }
+            currentState = result.state
+            allEvents.addAll(result.events)
         }
 
         return checkForMore(currentState, allEvents)
     }
 
-    private fun executeForBidder(
-        state: GameState,
+    /** The per-bidder branches in execution order: highest, then lowest, then tied bidders. */
+    private fun secretBidBranches(
         continuation: SecretBidContinuation,
-        effect: Effect,
+        chosenNumbers: Map<EntityId, Int>
+    ): List<EffectContinuation> {
+        val nonZeroBids = chosenNumbers.filter { it.value > 0 }
+        if (nonZeroBids.isEmpty()) return emptyList()
+        val highestBid = nonZeroBids.values.max()
+        val lowestBid = nonZeroBids.values.min()
+
+        val groups = listOfNotNull(
+            continuation.highestBidderEffect?.let { it to nonZeroBids.filter { bid -> bid.value == highestBid } },
+            continuation.lowestBidderEffect?.let { it to nonZeroBids.filter { bid -> bid.value == lowestBid } },
+            continuation.tiedBidderEffect?.takeIf { highestBid == lowestBid }?.let { it to nonZeroBids }
+        )
+        return groups.flatMap { (effect, bidders) ->
+            bidders.map { (playerId, amount) ->
+                EffectContinuation(
+                    remainingEffects = listOf(effect),
+                    effectContext = bidderContext(continuation, playerId, amount)
+                )
+            }
+        }
+    }
+
+    private fun bidderContext(
+        continuation: SecretBidContinuation,
         playerId: EntityId,
         bidAmount: Int
-    ): ExecutionResult {
-        val context = com.wingedsheep.engine.handlers.EffectContext(
+    ): EffectContext {
+        val base = continuation.effectContext ?: EffectContext(
             resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
+            controllerId = continuation.controllerId
+        )
+        return base.copy(
             objectReferences = continuation.objectReferences,
+            effectControllerId = base.effectControllerId ?: base.controllerId,
             controllerId = playerId,
             xValue = bidAmount
         )
-        return services.effectExecutorRegistry.execute(state, effect, context).toExecutionResult()
     }
 
 }

@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useGameStore } from '@/store/gameStore'
-import type { Emote } from '@/types'
+import { useIdentityColor } from '@/store/selectors'
+import type { EntityId, Emote } from '@/types'
 import { EMOTE_COOLDOWN_MS, useTableTalkStore } from '@/store/tableTalkStore'
 import { EMOTE_GROUPS } from './emotes'
 import { placePicker, type Placement } from './pickerPlacement'
@@ -130,6 +131,7 @@ export function EmotePicker() {
             <div className={styles.muteList}>
               {opponents.map((p) => (
                 <label key={p.playerId} className={styles.muteRow}>
+                  {opponents.length > 1 && <SeatDot playerId={p.playerId} />}
                   <span className={styles.muteName}>Show {opponents.length > 1 ? `${p.name}’s` : 'their'} emotes</span>
                   <input
                     type="checkbox"
@@ -148,6 +150,15 @@ export function EmotePicker() {
       )}
     </div>
   )
+}
+
+/**
+ * The seat's colour, matching its rail chip and name plate — at a multiplayer table two AIs can share
+ * a name, and the dot is what tells their mute switches apart.
+ */
+function SeatDot({ playerId }: { playerId: EntityId }) {
+  const color = useIdentityColor(playerId)
+  return <span className={styles.seatDot} style={{ background: color.base, boxShadow: `0 0 5px ${color.base}` }} aria-hidden />
 }
 
 /** True while the last send is inside the cooldown; re-renders once when it lapses. */

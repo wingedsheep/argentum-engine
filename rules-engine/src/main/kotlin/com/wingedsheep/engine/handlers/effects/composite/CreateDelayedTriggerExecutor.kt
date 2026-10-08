@@ -532,18 +532,40 @@ class CreateDelayedTriggerExecutor(
                 wonEffect = effect.wonEffect?.let { resolveContextTargets(it, context, state) },
                 lostEffect = effect.lostEffect?.let { resolveContextTargets(it, context, state) },
             )
+            // Every gate kind — "you may", "if [condition]", "you may pay … if you do", "[action].
+            // If you do", … — is resolved when the delayed trigger fires, but the objects its
+            // branches name were chosen now. Bake both branches and any effect the gate itself
+            // carries (a MayPay cost, a DoAction action), whatever the gate kind.
             is GatedEffect -> {
-                // Former Effects.May shape: resolve ContextTargets inside the optional `then` payoff,
-                // exactly as Effects.May did. Other gate shapes (MayPay / WhenCondition) were never
-                // resolved here, so leave them untouched.
-                if (effect.gate is Gate.MayDecide && effect.otherwise == null) {
-                    val inner = resolveContextTargets(effect.then, context, state)
-                    if (inner !== effect.then) effect.copy(then = inner) else effect
-                } else {
-                    effect
-                }
+                val gate = resolveGateContextTargets(effect.gate, context, state)
+                val then = resolveContextTargets(effect.then, context, state)
+                val otherwise = effect.otherwise?.let { resolveContextTargets(it, context, state) }
+                if (gate !== effect.gate || then !== effect.then || otherwise !== effect.otherwise) {
+                    effect.copy(gate = gate, then = then, otherwise = otherwise)
+                } else effect
             }
             else -> effect
         }
     }
+
+    /**
+     * Bake the effects a [Gate] carries. Exhaustive on purpose: a new gate kind that carries an
+     * effect must be baked here, and the compiler points at this `when` when one is added.
+     */
+    private fun resolveGateContextTargets(gate: Gate, context: EffectContext, state: GameState): Gate =
+        when (gate) {
+            is Gate.MayPay -> {
+                val cost = resolveContextTargets(gate.cost, context, state)
+                if (cost !== gate.cost) gate.copy(cost = cost) else gate
+            }
+            is Gate.DoAction -> {
+                val action = resolveContextTargets(gate.action, context, state)
+                if (action !== gate.action) gate.copy(action = action) else gate
+            }
+            is Gate.MayDecide,
+            is Gate.WhenCondition,
+            Gate.MayPayX,
+            Gate.MayPayAnyAmountOfLife,
+            is Gate.OnceEachTurn -> gate
+        }
 }

@@ -279,16 +279,16 @@ Clash's "if you win" stores into a collection and gates on it with `Gate.DoActio
 
 These are separate from the proposals. Each deserves its own fix PR with a scenario test.
 
-| Bug | Confidence |
-|---|---|
-| **Decorated Griffin's combat-only shield also stops noncombat damage.** `Effects.PreventDamage(amount = 1, combatOnly = true)` falls through to the `amount != null` branch (`PreventDamageExecutor.kt:363`), which builds `PreventNextDamage(1)`. That modification has no combat-only field, and the shield consumption at `DamageUtils.kt:1578` never checks combat. A Shock would use up the shield. | Confirmed by reading; no test exists |
-| **`ProvokeExecutor.kt:40` checks the printed `typeLine.isCreature`** instead of projected state, against the projected-state rule. | Confirmed by reading |
-| **`CreateDelayedTriggerExecutor` drops `fireOnce` and `expiry` for step triggers** (around `:144`, `:168`). Stone Giant sets both and works by accident. | Reported, not re-checked |
-| **A granted `CantBlock`-style static does nothing.** Granting a projected static through `GrantStaticAbilityEffect` is ignored by projection (`StateProjector.kt:499–505`). | Reported, not re-checked |
-| **`MustBeBlocked` statics ignore lost abilities.** `BlockPhaseManager.kt:1261–1281` scans printed statics directly. | Unsure |
-| **`RemoveAllAbilities` treats two evasion flags differently.** It clears "can't be blocked" (a keyword) but not "can't block". | Unsure whether intended |
-| **Delayed-trigger target baking only handles one gate.** It covers `GatedEffect` only for a bare `MayDecide` (`CreateDelayedTriggerExecutor.kt:535–543`), so a delayed `If(…)` over a context target may lose it. Latent today; blocks P4. | Reported, not re-checked |
-| **`SecretBidEffect` branch failures.** Its per-bidder branch ignores a paused result and drops targets and pipeline state (`CardSpecificContinuationResumer.kt:192–238`). | Reported, not re-checked |
+| Bug | Confidence | Status |
+|---|---|---|
+| **Decorated Griffin's combat-only shield also stops noncombat damage.** `Effects.PreventDamage(amount = 1, combatOnly = true)` falls through to the `amount != null` branch (`PreventDamageExecutor.kt:363`), which builds `PreventNextDamage(1)`. That modification has no combat-only field, and the shield consumption at `DamageUtils.kt:1578` never checks combat. A Shock would use up the shield. | Confirmed by reading; no test exists | [x] Fixed — #2937 |
+| **`ProvokeExecutor.kt:40` checks the printed `typeLine.isCreature`** instead of projected state, against the projected-state rule. | Confirmed by reading | [x] Fixed — #2934 |
+| **`CreateDelayedTriggerExecutor` drops `fireOnce` and `expiry` for step triggers** (around `:144`, `:168`). Stone Giant sets both and works by accident. | Reported, not re-checked | [x] Not a bug — step triggers are always consumed on fire (`fireOnce` is documented as ignored for them), and honouring the default `EndOfTurn` expiry on one-shot step triggers would delete "next upkeep" triggers before they fire. Stone Giant works by design. |
+| **A granted `CantBlock`-style static does nothing.** Granting a projected static through `GrantStaticAbilityEffect` is ignored by projection (`StateProjector.kt:499–505`). | Reported, not re-checked | [x] Fixed — #2940 (every granted projected static kind was dropped, not just `CantBlock`) |
+| **`MustBeBlocked` statics ignore lost abilities.** `BlockPhaseManager.kt:1261–1281` scans printed statics directly. | Unsure | [x] Fixed — #2941 (also face-down and granted cases, plus "can't be blocked by more than N") |
+| **`RemoveAllAbilities` treats two evasion flags differently.** It clears "can't be blocked" (a keyword) but not "can't block". | Unsure whether intended | [x] Fixed — #2942 (a creature's own "can't block" is now lost with its abilities; one from another source stays) |
+| **Delayed-trigger target baking only handles one gate.** It covers `GatedEffect` only for a bare `MayDecide` (`CreateDelayedTriggerExecutor.kt:535–543`), so a delayed `If(…)` over a context target may lose it. Latent today; blocks P4. | Reported, not re-checked | [x] Fixed — #2938 (bakes through every gate kind) |
+| **`SecretBidEffect` branch failures.** Its per-bidder branch ignores a paused result and drops targets and pipeline state (`CardSpecificContinuationResumer.kt:192–238`). | Reported, not re-checked | [x] Fixed — #2935 (hardening: latent, Menacing Ogre can't reach it) |
 
 ## Proposals
 

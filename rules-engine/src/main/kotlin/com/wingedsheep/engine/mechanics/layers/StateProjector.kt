@@ -329,7 +329,22 @@ class StateProjector {
                 effect.copy(affectedEntities = lockAffected(effect, resolved))
             }
 
+        // Collect sources that generate RemoveAllAbilities effects. These sources (e.g., Humility)
+        // should not have their own effects suppressed even when they themselves lose abilities,
+        // because their continuous effects are self-sustaining (removing the ability that removes
+        // abilities would create a paradox).
+        val removeAllAbilitiesSources = sortedEffects
+            .filter { it.modification is Modification.RemoveAllAbilities }
+            .map { it.sourceId }
+            .toSet()
+        // The Layer-6 checks below exempt only *static* removers (Humility): a creature that
+        // stripped its own abilities with a resolved ability is no paradox and loses them all.
+        val staticRemoveAllAbilitiesSources = sortedEffects
+            .filter { it.modification is Modification.RemoveAllAbilities && it.fromStaticAbility }
+            .mapTo(HashSet()) { it.sourceId }
+
         // === Layers 5-6 (Color + Ability) ===
+        val deferredCantBlock = mutableListOf<Pair<ContinuousEffect, Boolean>>()
         for (effect in postTypeEffects) {
             if (effect.modification is Modification.CanAttackAsThoughHasty) continue
             // CR 613.6: a prohibition belonging to an effect begun in an earlier layer
@@ -337,8 +352,33 @@ class StateProjector {
             val startedBeforeAbility = effect.groupId?.let { groupId ->
                 (groupFirstLayer[effect.sourceId to groupId]?.ordinal ?: Int.MAX_VALUE) < Layer.ABILITY.ordinal
             } ?: false
+            // A static keyword grant whose source has already lost all abilities this pass no
+            // longer exists (CR 604.2) — e.g. a creature's own "can't be blocked" under a Humility
+            // that predates it. EffectSorter orders such a grant after the removal that strips its
+            // source (CR 613.8a), so the source's lostAllAbilities is settled by the time we get here.
+            if (effect.modification is Modification.GrantKeyword && effect.fromStaticAbility &&
+                !startedBeforeAbility && effect.sourceId !in staticRemoveAllAbilitiesSources &&
+                projectedValues[effect.sourceId]?.lostAllAbilities == true) continue
+            // "Can't block" is a rules effect, not a characteristic: it applies once Layer 6 has
+            // settled who still has which ability (CR 613.11), so a lose-all-abilities effect
+            // strips a static's restriction whatever the two timestamps are.
+            if (effect.modification is Modification.SetCantBlock) {
+                deferredCantBlock += effect to startedBeforeAbility
+                continue
+            }
             effectApplicator.applyEffect(effect, state, projectedValues,
                 restrictionSurvivesSourceAbilityRemoval = startedBeforeAbility)
+        }
+        // A static ability's effect exists only while its source has the ability (CR 604.2): a
+        // Craven Giant that lost all abilities can block, and so can a creature whose "can't
+        // block" came from an enchantment that lost its abilities. A restriction created by a
+        // resolved spell or ability is independent of anyone's abilities (CR 611.2a), as is one
+        // belonging to an effect that started applying before Layer 6 (CR 613.6).
+        for ((effect, startedBeforeAbility) in deferredCantBlock) {
+            if (effect.fromStaticAbility && !startedBeforeAbility &&
+                effect.sourceId !in staticRemoveAllAbilitiesSources &&
+                projectedValues[effect.sourceId]?.lostAllAbilities == true) continue
+            effectApplicator.applyEffect(effect, state, projectedValues)
         }
 
         // Rule 122.1b: re-apply keyword counters after Layer 6.
@@ -365,15 +405,6 @@ class StateProjector {
 
         // Resolve CDAs (Layer 7a) - evaluate dynamic power/toughness
         resolveCDAs(state, projectedValues, dynamicStatEntities)
-
-        // Collect sources that generate RemoveAllAbilities effects. These sources (e.g., Humility)
-        // should not have their own effects suppressed even when they themselves lose abilities,
-        // because their continuous effects are self-sustaining (removing the ability that removes
-        // abilities would create a paradox).
-        val removeAllAbilitiesSources = sortedEffects
-            .filter { it.modification is Modification.RemoveAllAbilities }
-            .map { it.sourceId }
-            .toSet()
 
         // Re-resolve affected entities for Layer 7 effects that depend on subtypes, controller, or creature type.
         // Also suppress effects from sources that lost all abilities in Layer 6 (Rule 613: Humility
@@ -983,6 +1014,41 @@ class StateProjector {
                         // is independent of its source's abilities — stripping those abilities in
                         // Layer 6 must not retract it.
                         fromStaticAbility = false
+                    )
+                )
+            }
+        }
+
+        // 3. Static abilities a permanent gained from a resolved effect ("target creature gains
+        // 'This creature can't block' until end of turn"). Once gained, the ability is the
+        // holder's own, so it lowers exactly as a printed one does — sourced from the holder,
+        // filters resolved relative to it, and suppressed by the same lose-all-abilities rules
+        // (fromStaticAbility). CR 613.7a: its timestamp is the later of the holder's and the grant's.
+        for ((index, grant) in state.grantedStaticAbilities.withIndex()) {
+            val grantTimestamp = grant.layerTimestamp ?: continue
+            val holderId = grant.entityId
+            if (!state.getBattlefield().contains(holderId)) continue
+            if (!com.wingedsheep.engine.mechanics.durations.GrantDurationGate.holds(
+                    state, holderId, grant.sourceId, grant.duration)) continue
+            val holderTimestamp = state.getEntity(holderId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.TimestampComponent>()?.timestamp
+                ?: grantTimestamp
+            for (data in StaticAbilityHandler.lower(listOf(grant.ability))) {
+                // Attack-as-though-hasty grants keep their dedicated post-layer pass in [project]:
+                // that pass is the one that knows a face-down holder keeps an externally granted
+                // permission, which the printed-static path deliberately drops.
+                if (data.modification is Modification.CanAttackAsThoughHasty) continue
+                effects.add(
+                    ContinuousEffect(
+                        sourceId = holderId,
+                        timestamp = maxOf(holderTimestamp, grantTimestamp),
+                        modification = data.modification,
+                        affectedEntities = filterResolver.resolveAffectedEntities(state, holderId, data.affectsFilter, projectedValues),
+                        sourceCondition = data.sourceCondition,
+                        affectsFilter = data.affectsFilter,
+                        // Namespaced so a multi-layer grant can't share a CR 613.6 lock with one of
+                        // the holder's printed groups (both are keyed by the holder's id).
+                        groupId = data.groupId?.let { "grant$index-$it" }
                     )
                 )
             }

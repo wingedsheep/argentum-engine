@@ -76,7 +76,11 @@ class GrantStaticAbilityExecutor : EffectExecutor<GrantStaticAbilityEffect> {
             ability = effect.ability,
             duration = effect.duration,
             sourceId = context.sourceId,
-            controllerId = context.controllerId
+            controllerId = context.controllerId,
+            // A permanent that gains a static ability has it like a printed one: its layer-system
+            // half is projected (see GrantedStaticAbility.layerTimestamp). Point-of-use readers
+            // keep consulting the record for the halves that never lower to a continuous effect.
+            layerTimestamp = if (onBattlefield) state.timestamp else null
         )
 
         val newState = state.copy(

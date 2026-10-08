@@ -208,6 +208,18 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 class StaticAbilityHandler(
     private val cardRegistry: CardRegistry
 ) {
+    companion object {
+        // Lowering never reads the registry (only the definition lookups above it do), so a
+        // registry-free instance serves callers that have none — the projector.
+        private val lowering by lazy { StaticAbilityHandler(CardRegistry()) }
+
+        /**
+         * Registry-free [lowerToContinuousEffectData], for [StateProjector] lowering statics a
+         * permanent gained at runtime ([com.wingedsheep.engine.event.GrantedStaticAbility]).
+         */
+        fun lower(staticAbilities: List<StaticAbility>): List<ContinuousEffectData> =
+            lowering.lowerToContinuousEffectData(staticAbilities)
+    }
 
     /**
      * Creates a ContinuousEffectSourceComponent for a permanent if it has any
