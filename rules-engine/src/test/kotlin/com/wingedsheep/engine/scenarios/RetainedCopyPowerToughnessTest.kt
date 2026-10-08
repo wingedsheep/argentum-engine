@@ -102,4 +102,11 @@ class RetainedCopyPowerToughnessTest : FunSpec({
     test("can't combine with a stated power/toughness override") {
         shouldThrow<IllegalArgumentException> { CopyExceptions(retainPowerToughness = true, powerOverride = 4) }
     }
+
+    test("layering over a stated size resolves to whichever side said it last, never both") {
+        val retain = CopyExceptions(retainPowerToughness = true)
+        val sized = CopyExceptions(powerOverride = 4, toughnessOverride = 4)
+        retain.over(sized) shouldBe retain
+        sized.over(retain) shouldBe sized
+    }
 })

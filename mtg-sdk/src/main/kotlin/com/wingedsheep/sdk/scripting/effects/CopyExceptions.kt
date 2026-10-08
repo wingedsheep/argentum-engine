@@ -157,9 +157,10 @@ data class CopyExceptions(
             addedColors = if (retainColors) emptySet() else base.addedColors + addedColors,
             overrideColors = if (retainColors) null else overrideColors ?: base.overrideColors,
             retainColors = retainColors || (base.retainColors && overrideColors == null && addedColors.isEmpty()),
-            powerOverride = powerOverride ?: base.powerOverride,
-            toughnessOverride = toughnessOverride ?: base.toughnessOverride,
-            retainPowerToughness = retainPowerToughness || base.retainPowerToughness,
+            powerOverride = if (retainPowerToughness) null else powerOverride ?: base.powerOverride,
+            toughnessOverride = if (retainPowerToughness) null else toughnessOverride ?: base.toughnessOverride,
+            retainPowerToughness = retainPowerToughness ||
+                (base.retainPowerToughness && powerOverride == null && toughnessOverride == null),
             noManaCost = noManaCost || base.noManaCost,
             addedNumericKeywords = base.addedNumericKeywords + addedNumericKeywords,
             retainResolvingTriggeredAbility = base.retainResolvingTriggeredAbility || retainResolvingTriggeredAbility,
