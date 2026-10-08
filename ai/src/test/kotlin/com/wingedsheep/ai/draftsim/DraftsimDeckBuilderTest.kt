@@ -212,4 +212,28 @@ class DraftsimDeckBuilderTest : FunSpec({
         val nonland = best.deckInstanceIds.mapNotNull { byId[it]?.card }.filter { !it.typeLine.contains("Land") }
         nonland.count { it.typeLine.contains("Creature") } shouldBeGreaterThanOrEqual 13
     }
+    // Three colours used to come only from the single good-stuff build, which takes the shell with the
+    // best top-16 ratings whether or not the pool can fix it. Here that is an unfixable Esper pile,
+    // while the gain lands all point at Abzan — the fixed shell is now built and recommended.
+    test("sealed builds the three-colour shell its lands can fix") {
+        val ratings = HashMap<String, Double>()
+        val cards = mutableListOf<DraftsimPoolCard>()
+        var n = 0
+        fun add(card: ScorerCard, rating: Double) {
+            ratings[DraftsimData.nameKey(card.name)] = rating
+            cards += DraftsimPoolCard(card, "id-${n++}")
+        }
+        for (i in 1..6) add(BCard("EsperCharm$i", "{W}{U}{B}", "Instant", listOf("W", "U", "B")), 4.2)
+        for (i in 1..6) add(BCard("AbzanKhan$i", "{1}{W}{B}{G}", "Creature — Human Warrior", listOf("W", "B", "G")), 4.0)
+        for (c in listOf("W", "U", "B", "G")) {
+            for (i in 1..6) add(BCard("Mono$c$i", if (i % 2 == 0) "{1}{$c}" else "{2}{$c}", "Creature — Soldier", listOf(c)), 2.6)
+        }
+        for (i in 1..4) add(BCard("ScouredBarrens$i", "", "Land", colorIdentity = listOf("W", "B")), 2.0)
+        for (i in 1..4) add(BCard("JungleHollow$i", "", "Land", colorIdentity = listOf("B", "G")), 2.0)
+        for (i in 1..4) add(BCard("BlossomingSands$i", "", "Land", colorIdentity = listOf("W", "G")), 2.0)
+
+        val best = DraftsimDeckBuilder(DraftsimSetTables(ratings, HashSet(), emptyMap())).buildDecks(cards, mode = "sealed").first()
+
+        best.colors.toSet() shouldBe setOf("W", "B", "G")
+    }
 })

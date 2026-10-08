@@ -154,10 +154,7 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
     /** `kf(pool, archColors)` → archetype descriptors sorted by score desc. */
     fun rankArchetypes(pool: List<ScorerCard>, archColors: Map<String, List<String>>): List<DraftsimArchetypeRank> {
         val nonland = pool.filter { !ops.isLand(it) }
-        val goodStuff = THREE_COLOR
-            .map { (combo, guild) -> scoreHypothesis(pool, combo.map { it.toString() }, null).copy(name = "$guild good stuff") }
-            .sortedByDescending { it.score }
-            .take(2)
+        val goodStuff = rankShells(pool).take(2).map { it.copy(name = "${it.name} good stuff") }
 
         // The plain pairs are always in the running. A set's named archetypes only cover the pairs
         // its pool happens to tag, and an archetype's colours are inferred from those tags — so with
@@ -174,6 +171,14 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
         }
         return (pairs + goodStuff).sortedByDescending { it.score }
     }
+
+    /**
+     * Every three-colour shell scored as a hypothesis, best first and named for its guild. The score
+     * carries the 3+ colour mana penalty, so a shell the pool can't fix reads [DraftsimArchetypeRank.manaScore] < 0.
+     */
+    fun rankShells(pool: List<ScorerCard>): List<DraftsimArchetypeRank> = THREE_COLOR
+        .map { (combo, guild) -> scoreHypothesis(pool, combo.map { it.toString() }, null).copy(name = guild) }
+        .sortedByDescending { it.score }
 
     /** `C2`: colors appearing on ≥2 of an archetype's tagged cards. */
     private fun colorsOnAtLeastTwo(nonland: List<ScorerCard>, archName: String): List<String> {

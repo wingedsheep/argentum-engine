@@ -94,6 +94,9 @@ class DraftsimDeckBuilder(
         // best-ranked hypothesis is often not the best deck (see [playableScore]).
         const val CANDIDATES_DRAFT = 3
         const val CANDIDATES_SEALED = 6
+        // Fixed three-colour shells built on top of those, in sealed only: a constructed (draft-mode)
+        // deck off a pool of basics has no business in three colours.
+        const val SHELL_CANDIDATES = 2
         // Final-score points (0–10 scale) per creature below the floor / per spell below the target.
         const val CREATURE_SHORTFALL_PENALTY = 0.2
         const val SPELL_SHORTFALL_PENALTY = 0.3
@@ -148,9 +151,20 @@ class DraftsimDeckBuilder(
         val n = if (mode == "draft") CANDIDATES_DRAFT else CANDIDATES_SEALED
         val builds = ranked.take(n).map { a -> refine(greedyBuild(pool, a.name, a.colors), pool) }
             .toMutableList()
-        if (mode == "sealed") goodStuffBuild(pool)?.let { builds += refine(it, pool) }
+        if (mode == "sealed") {
+            goodStuffBuild(pool)?.let { builds += refine(it, pool) }
+            // Three-colour shells the pool's lands can actually support, built like any pair. The
+            // good-stuff build above is a single top-16-ratings shell and rarely the one a wedge set's
+            // fixing points at; without these a Khans pool full of gain lands and tri-lands still
+            // came out two-colour almost every time.
+            builds += deckScorer.rankShells(pool.map { it.card })
+                .filter { it.manaScore == 0.0 }
+                .take(SHELL_CANDIDATES)
+                .map { shell -> refine(greedyBuild(pool, shell.name, shell.colors), pool) }
+        }
         val byId = pool.associateBy { it.instanceId }
-        return builds.sortedByDescending { playableScore(it, byId) }
+        // The good-stuff build and a fixed shell can land on the same colours; offer the better one.
+        return builds.sortedByDescending { playableScore(it, byId) }.distinctBy { it.colors.toSet() }
     }
 
     /**
