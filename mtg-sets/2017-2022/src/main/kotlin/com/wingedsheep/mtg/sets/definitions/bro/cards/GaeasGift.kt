@@ -24,10 +24,10 @@ val GaeasGift = card("Gaea's Gift") {
     spell {
         val creature = target(TargetFilter.CreatureYouControl)
         effect = Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, creature) then
-            Effects.Composite(
-                listOf(Keyword.REACH, Keyword.TRAMPLE, Keyword.HEXPROOF, Keyword.INDESTRUCTIBLE)
-                    .map { Effects.GrantKeyword(it, creature) }
-            )
+            Effects.GrantKeyword(Keyword.REACH, creature) then
+            Effects.GrantKeyword(Keyword.TRAMPLE, creature) then
+            Effects.GrantKeyword(Keyword.HEXPROOF, creature) then
+            Effects.GrantKeyword(Keyword.INDESTRUCTIBLE, creature)
     }
 
     metadata {

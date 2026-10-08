@@ -1694,41 +1694,36 @@
                     }
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GrantKeyword",
-                            "keyword": "REACH",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "t0"
-                            }
-                        },
-                        {
-                            "type": "GrantKeyword",
-                            "keyword": "TRAMPLE",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "t0"
-                            }
-                        },
-                        {
-                            "type": "GrantKeyword",
-                            "keyword": "HEXPROOF",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "t0"
-                            }
-                        },
-                        {
-                            "type": "GrantKeyword",
-                            "keyword": "INDESTRUCTIBLE",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "t0"
-                            }
-                        }
-                    ]
+                    "type": "GrantKeyword",
+                    "keyword": "REACH",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
                 }
             ]
         },
