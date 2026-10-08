@@ -234,6 +234,78 @@
     ]
 }
 
+// Battlewing Mystic
+{
+    "name": "Battlewing Mystic",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Bird Wizard",
+    "oracleText": "Kicker {R} (You may pay an additional {R} as you cast this spell.)\nFlying\nWhen this creature enters, if it was kicked, discard your hand, then draw two cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Battlewing Mystic:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "discardedHand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discardedHand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": "WasKicked"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "UNCOMMON",
+        "artist": "Borja Pindado",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/000376ef-8b6c-490d-98cb-d6de15b2e585.jpg?1783921354"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "BLUE"
+    ]
+}
+
 // Bite Down
 {
     "name": "Bite Down",
@@ -284,6 +356,59 @@
         "imageUri": "https://cards.scryfall.io/normal/front/0/e/0eacd3de-b803-4322-8d88-d533761aa748.jpg"
     },
     "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Bog Badger
+{
+    "name": "Bog Badger",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Badger",
+    "oracleText": "Kicker {B} (You may pay an additional {B} as you cast this spell.)\nWhen this creature enters, if it was kicked, creatures you control gain menace until end of turn. (A creature with menace can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bog Badger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "MENACE",
+                        "target": "IterationEntity"
+                    }
+                },
+                "interveningIf": "WasKicked"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "artist": "Sam Burley",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d31d878-9114-4205-b7a9-bb13ce6aedd2.jpg?1783921303"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
         "GREEN"
     ]
 }
@@ -1803,6 +1928,62 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Juniper Order Rootweaver
+{
+    "name": "Juniper Order Rootweaver",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "Kicker {G} (You may pay an additional {G} as you cast this spell.)\nWhen this creature enters, if it was kicked, put a +1/+1 counter on target creature you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Juniper Order Rootweaver:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": "WasKicked"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Matt Stewart",
+        "flavorText": "\"What Phyrexia takes, the grace of Freyalise shall replenish.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c56cf82f-8bbb-49ae-ad93-291cbec9126e.jpg?1783921364"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
