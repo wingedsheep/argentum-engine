@@ -316,7 +316,8 @@ by an alpha-equivalent golden re-bless, as #2348 was.
        catalog split.
   7. Retired:
      - the X predicates;
-     - the two life conditions;
+     - the life conditions: `AnOpponentLifeAtMost`, `EachPlayerLifeAtMost`, and their unlisted
+       sibling `APlayerLifeAtMost`;
      - the skip trio, now `SkipNextStepOrPhaseEffect` / `SkipStepOrPhase` over `TurnPart`;
      - the hexproof-from pair, now `GrantHexproofFromToGroup(ProtectionScope)`;
      - `TriggeringEntityHad*`, now an LKI-reading `TriggeringEntityWas(filter)`;
@@ -324,8 +325,6 @@ by an alpha-equivalent golden re-bless, as #2348 was.
 
      **Left on purpose:** `NameNotSharedWithControlledRoom`. It compares against the unlocked door
      names of Rooms, which isn't the same as "shares a name with a permanent matching a filter".
-
-     **Not in the list, left for later:** `APlayerLifeAtMost`.
 
 
 The long tail is mostly missing axes and unmigrated fossils, and the guidance steers toward both.
