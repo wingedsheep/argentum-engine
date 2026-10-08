@@ -124,6 +124,12 @@ sealed interface KeywordAbility {
     @SerialName("Protection")
     @Serializable
     data class Protection(val scope: ProtectionScope) : KeywordAbility {
+        init {
+            // Monocolored exists for hexproof (CR 105.2a); protection from monocolored has no
+            // engine reading, so it fails here rather than printing text nothing enforces.
+            require(scope != ProtectionScope.Monocolored) { "Protection from monocolored is not supported" }
+        }
+
         override val keyword: Keyword? = when (scope) {
             is ProtectionScope.EachOpponent -> Keyword.PROTECTION_FROM_EACH_OPPONENT
             else -> null
@@ -134,6 +140,7 @@ sealed interface KeywordAbility {
                 scope.colors.joinToString(" and from ") { it.displayName.lowercase() }
             is ProtectionScope.NonColor -> "Protection from non${scope.color.displayName.lowercase()}"
             is ProtectionScope.Multicolored -> "Protection from multicolored"
+            is ProtectionScope.Monocolored -> "Protection from monocolored"
             is ProtectionScope.CardType -> "Protection from ${scope.cardType.lowercase()}"
             is ProtectionScope.Subtype -> "Protection from ${scope.subtype}s"
             is ProtectionScope.Supertype -> "Protection from ${scope.supertype.lowercase()}"
@@ -170,6 +177,7 @@ sealed interface KeywordAbility {
                 scope.colors.joinToString(" and from ") { it.displayName.lowercase() }
             is ProtectionScope.NonColor -> "Hexproof from non${scope.color.displayName.lowercase()}"
             is ProtectionScope.Multicolored -> "Hexproof from multicolored"
+            is ProtectionScope.Monocolored -> "Hexproof from monocolored"
             is ProtectionScope.CardType -> "Hexproof from ${scope.cardType.lowercase()}"
             is ProtectionScope.Subtype -> "Hexproof from ${scope.subtype}s"
             is ProtectionScope.Supertype -> "Hexproof from ${scope.supertype.lowercase()}"

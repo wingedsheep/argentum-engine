@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -22,7 +23,7 @@ import io.kotest.matchers.shouldNotBe
  * legendary. If the token is an Aura, untap Yenna, then scry 2. Activate only as a sorcery."
  *
  * Covers the two capabilities this card introduced:
- *  - `CardPredicate.NameNotSharedWithAnotherControlledPermanent` — the target restriction, which is
+ *  - `Not(CardPredicate.SharesNameWithPermanentYouControl(Permanent, excludeSelf = true))` — the target restriction, which is
  *    self-limiting: copying an enchantment makes it an illegal target from then on.
  *  - The Aura branch of `CreateTokenCopyOfTargetExecutor` — a token copy of an Aura is created, not
  *    cast, so its controller chooses what it enchants as it enters (CR 303.4h).
@@ -132,6 +133,33 @@ class YennaRedtoothRegentScenarioTest : ScenarioTestBase() {
                         targets = listOf(ChosenTarget.Permanent(tales.first())),
                     )
                 ).error shouldNotBe null
+            }
+        }
+
+        test("a face-down permanent has no name, so it doesn't share one with the target") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Yenna, Redtooth Regent")
+                .withCardOnBattlefield(1, "A Tale for the Ages")
+                .withCardOnBattlefield(1, "A Tale for the Ages")
+                .withLandsOnBattlefield(1, "Forest", 2)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val yenna = game.findPermanent("Yenna, Redtooth Regent")!!
+            val (faceUp, faceDown) = game.findAllPermanents("A Tale for the Ages")
+            game.state = game.state.updateEntity(faceDown) { it.with(FaceDownComponent) }
+
+            withClue("CR 708.2a + 201.2a: the face-down twin is nameless, so the face-up one is a legal target") {
+                game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = yenna,
+                        abilityId = copyAbilityId,
+                        targets = listOf(ChosenTarget.Permanent(faceUp)),
+                    )
+                ).error shouldBe null
             }
         }
 

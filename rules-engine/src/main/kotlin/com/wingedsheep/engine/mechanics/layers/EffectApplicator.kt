@@ -318,11 +318,8 @@ internal class EffectApplicator(
                         values.keywords.add("HEXPROOF_FROM_$colorName")
                     }
                 }
-                is Modification.GrantHexproofFromMonocolored -> {
-                    values.keywords.add("HEXPROOF_FROM_MONOCOLORED")
-                }
-                is Modification.GrantHexproofFromMulticolored -> {
-                    values.keywords.add("HEXPROOF_FROM_MULTICOLORED")
+                is Modification.GrantHexproofFrom -> {
+                    values.keywords.addAll(mod.keywords)
                 }
                 is Modification.GrantProtectionFromControlledColors -> {
                     // Protection from the colors of permanents the source's controller controls

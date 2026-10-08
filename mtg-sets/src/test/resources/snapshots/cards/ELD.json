@@ -2204,7 +2204,12 @@
                     "baseFilter": {
                         "cardPredicates": [
                             "IsCreature",
-                            "ManaValueEqualsX"
+                            {
+                                "type": "CompareNumericProperty",
+                                "property": "MANA_VALUE",
+                                "operator": "EQ",
+                                "amount": "XValue"
+                            }
                         ]
                     }
                 },

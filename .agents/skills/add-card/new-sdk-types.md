@@ -1,8 +1,11 @@
 # Wiring a new SDK type
 
 Read this only when a card genuinely needs vocabulary the SDK doesn't have. First satisfy the bar in
-[`docs/sdk-design-principles.md`](../../../docs/sdk-design-principles.md) — composition first, and if a
-new type survives that, it must be parameterized for the *next* card, not this one.
+[`docs/sdk-design-principles.md`](../../../docs/sdk-design-principles.md) — compose first, then add an
+axis to the closest existing type, and only then a new type, parameterized for the *next* card, not this
+one. A new sealed type also needs its line in `mtg-sdk/src/test/resources/sdk-surface-baseline.txt`
+naming its two closest existing types and why neither could take the axis (`SdkSurfaceBaselineTest`
+prints the neighbours).
 
 If the addition is more than a small primitive a single card needs — a mechanic, a decision flow, a
 turn-structure change — stop and use the **`add-feature`** skill instead. It traces every layer.

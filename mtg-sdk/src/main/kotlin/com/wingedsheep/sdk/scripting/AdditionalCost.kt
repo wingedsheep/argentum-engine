@@ -196,7 +196,7 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     /**
      * Pay X life (variable): the caster declares X at cast time and pays X life as an additional
      * cost. X is exposed to the spell's effects via the resolution context's X value (the same slot
-     * read by `DynamicAmount.XValue` and `CardPredicate.ManaValueAtMostX` / `ManaValueEqualsX`), so a
+     * read by `DynamicAmount.XValue` and `manaValueAtMostX()` / `manaValueEqualsX()`), so a
      * card like Vicious Rivalry ("pay X life; destroy all artifacts and creatures with mana value X
      * or less") sources its single X from this one cost.
      *

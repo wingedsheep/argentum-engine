@@ -5,7 +5,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.conditions.APlayerLifeAtMost
+import com.wingedsheep.sdk.dsl.Conditions
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -13,7 +13,7 @@ import io.kotest.matchers.shouldBe
  * Tests for the existential life-threshold condition used by Razortrap Gorge
  * ("This land enters tapped unless a player has 13 or less life").
  *
- * The condition is true whenever ANY player in `state.turnOrder` has life ≤ N —
+ * The condition is true whenever ANY player still in the game has life ≤ N —
  * distinct from `LifeAtMost` (which is `Player.You` only).
  */
 class APlayerLifeAtMostConditionTest : FunSpec({
@@ -36,7 +36,7 @@ class APlayerLifeAtMostConditionTest : FunSpec({
             targets = emptyList(),
             xValue = 0
         )
-        return PredicateEvaluator(cardRegistry = null).conditions.evaluate(state, APlayerLifeAtMost(threshold), context)
+        return PredicateEvaluator(cardRegistry = null).conditions.evaluate(state, Conditions.APlayerLifeAtMost(threshold), context)
     }
 
     test("false when both players are at full life") {

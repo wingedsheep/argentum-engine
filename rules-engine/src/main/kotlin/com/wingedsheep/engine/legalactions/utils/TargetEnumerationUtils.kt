@@ -29,6 +29,8 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.targets.*
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.CardNumericProperty
+import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 
 /**
  * Extracted target-finding helpers from LegalActionsCalculator.
@@ -380,9 +382,9 @@ class TargetEnumerationUtils(
                 validTargets = validTargets,
                 targetZone = getTargetZone(req),
                 mustDifferFromEarlier = req is TargetOther,
-                xConstrainsManaValue = requirementUsesManaValueAtMostX(req),
-                xConstrainsManaValueExactly = requirementUsesManaValueEqualsX(req),
-                xConstrainsPower = requirementUsesPowerEqualsX(req),
+                xConstrainsManaValue = requirementComparesToX(req, CardNumericProperty.MANA_VALUE, ComparisonOperator.LTE),
+                xConstrainsManaValueExactly = requirementComparesToX(req, CardNumericProperty.MANA_VALUE, ComparisonOperator.EQ),
+                xConstrainsPower = requirementComparesToX(req, CardNumericProperty.POWER, ComparisonOperator.EQ),
                 xConstrainsCount = requirementXConstrainsCount(req),
                 xConstrainsCountExactly = requirementXConstrainsCountExactly(req),
                 differentControllers = (req as? TargetObject)?.differentControllers == true,
@@ -405,15 +407,6 @@ class TargetEnumerationUtils(
     }
 
     /**
-     * True when [requirement] is a [TargetObject] whose filter contains
-     * [CardPredicate.ManaValueAtMostX] (anywhere in the predicate tree).
-     *
-     * Surfaced to the client so it can re-filter [TargetInfo.validTargets] by the
-     * chosen X after X selection — the enumerator's list is permissive (X is unbound
-     * at enumeration time) and would otherwise let the player click an over-MV
-     * target that the server then rejects on cast.
-     */
-    /**
      * True when [requirement] is a [TargetObject] whose `dynamicMaxCount` is the
      * [DynamicAmount.XValue] sentinel. Surfaced to the client so the targeting UI
      * caps selectable targets at the X chosen for the spell's cost.
@@ -432,51 +425,23 @@ class TargetEnumerationUtils(
         return target.dynamicMaxCount == DynamicAmount.XValue && target.dynamicMinCount == DynamicAmount.XValue
     }
 
-    fun requirementUsesManaValueAtMostX(requirement: TargetRequirement): Boolean {
-        val filter = (requirement as? TargetObject)?.filter ?: return false
-        return filter.baseFilter.cardPredicates.any { containsManaValueAtMostX(it) }
-    }
-
-    private fun containsManaValueAtMostX(predicate: CardPredicate): Boolean = when (predicate) {
-        CardPredicate.ManaValueAtMostX -> true
-        is CardPredicate.And -> predicate.predicates.any { containsManaValueAtMostX(it) }
-        is CardPredicate.Or -> predicate.predicates.any { containsManaValueAtMostX(it) }
-        is CardPredicate.Not -> containsManaValueAtMostX(predicate.predicate)
-        else -> false
-    }
-
     /**
-     * True when [requirement] is a [TargetObject] whose filter contains
-     * [CardPredicate.ManaValueEqualsX] (anywhere in the predicate tree). The *equality* sibling of
-     * [requirementUsesManaValueAtMostX] — "target creature card in your graveyard with mana value
-     * X" (Likeness Looter, Rydia, Summoner of Mist) rather than "mana value X or less". Surfaced to
-     * the client so it narrows the permissive enumeration to cards whose mana value equals the
-     * chosen X once X is picked.
+     * True when [requirement] is a [TargetObject] whose filter compares [property] with X by
+     * [operator] — [CardPredicate.CompareNumericProperty] over [DynamicAmount.XValue], anywhere in
+     * the predicate tree: "mana value X or less" (`MANA_VALUE LTE`), "mana value X" (Likeness
+     * Looter, `MANA_VALUE EQ`), "power X" (Ent-Draught Basin, `POWER EQ`).
+     *
+     * Surfaced to the client so it can re-filter [TargetInfo.validTargets] by the chosen X after X
+     * selection — the enumerator's list is permissive (X is unbound at enumeration time) and would
+     * otherwise let the player click a target the server then rejects.
      */
-    fun requirementUsesManaValueEqualsX(requirement: TargetRequirement): Boolean {
+    fun requirementComparesToX(
+        requirement: TargetRequirement,
+        property: CardNumericProperty,
+        operator: ComparisonOperator
+    ): Boolean {
         val filter = (requirement as? TargetObject)?.filter ?: return false
-        return filter.baseFilter.cardPredicates.any { containsManaValueEqualsX(it) }
-    }
-
-    private fun containsManaValueEqualsX(predicate: CardPredicate): Boolean = Companion.containsManaValueEqualsX(predicate)
-
-    /**
-     * True when [requirement] is a [TargetObject] whose filter contains
-     * [CardPredicate.PowerEqualsX] (anywhere in the predicate tree). Surfaced to the client
-     * so it re-filters the permissive enumeration down to creatures whose power equals the
-     * chosen X after X selection (Ent-Draught Basin).
-     */
-    fun requirementUsesPowerEqualsX(requirement: TargetRequirement): Boolean {
-        val filter = (requirement as? TargetObject)?.filter ?: return false
-        return filter.baseFilter.cardPredicates.any { containsPowerEqualsX(it) }
-    }
-
-    private fun containsPowerEqualsX(predicate: CardPredicate): Boolean = when (predicate) {
-        CardPredicate.PowerEqualsX -> true
-        is CardPredicate.And -> predicate.predicates.any { containsPowerEqualsX(it) }
-        is CardPredicate.Or -> predicate.predicates.any { containsPowerEqualsX(it) }
-        is CardPredicate.Not -> containsPowerEqualsX(predicate.predicate)
-        else -> false
+        return filter.baseFilter.cardPredicates.any { comparesToX(it, property, operator) }
     }
 
     fun allRequirementsSatisfied(targetInfos: List<TargetInfo>): Boolean {
@@ -507,18 +472,25 @@ class TargetEnumerationUtils(
 
     companion object {
         /**
-         * True when [filter] pins a mana value to X ([CardPredicate.ManaValueEqualsX] anywhere in
-         * its predicate tree) — the shape of a cost that *defines* X, "sacrifice an artifact or
+         * True when [filter] pins a mana value to X (`MANA_VALUE EQ XValue` anywhere in its
+         * predicate tree) — the shape of a cost that *defines* X, "sacrifice an artifact or
          * creature with mana value X" (Nahiri's Sacrifice).
          */
         fun filterUsesManaValueEqualsX(filter: GameObjectFilter): Boolean =
-            filter.cardPredicates.any { containsManaValueEqualsX(it) }
+            filter.cardPredicates.any { comparesToX(it, CardNumericProperty.MANA_VALUE, ComparisonOperator.EQ) }
 
-        private fun containsManaValueEqualsX(predicate: CardPredicate): Boolean = when (predicate) {
-            CardPredicate.ManaValueEqualsX -> true
-            is CardPredicate.And -> predicate.predicates.any { containsManaValueEqualsX(it) }
-            is CardPredicate.Or -> predicate.predicates.any { containsManaValueEqualsX(it) }
-            is CardPredicate.Not -> containsManaValueEqualsX(predicate.predicate)
+        private fun comparesToX(
+            predicate: CardPredicate,
+            property: CardNumericProperty,
+            operator: ComparisonOperator
+        ): Boolean = when (predicate) {
+            is CardPredicate.CompareNumericProperty ->
+                predicate.property == property &&
+                    predicate.operator == operator &&
+                    predicate.amount == DynamicAmount.XValue
+            is CardPredicate.And -> predicate.predicates.any { comparesToX(it, property, operator) }
+            is CardPredicate.Or -> predicate.predicates.any { comparesToX(it, property, operator) }
+            is CardPredicate.Not -> comparesToX(predicate.predicate, property, operator)
             else -> false
         }
 

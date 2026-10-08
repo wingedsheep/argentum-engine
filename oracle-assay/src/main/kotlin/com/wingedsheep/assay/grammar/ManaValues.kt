@@ -44,10 +44,8 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
  *
  * Both absences are the SDK's, and both are visible in the corpus:
  *
- * - **`X or greater`** — one card prints it, and there is no `ManaValueAtLeastX` for it to be. The
- *   `X` predicates are a closed pair ([CardPredicate.ManaValueEqualsX],
- *   [CardPredicate.ManaValueAtMostX]) and inventing the third here would be a model no engine path
- *   reads.
+ * - **`X or greater`** — one card prints it. `CompareNumericProperty(MANA_VALUE, GTE, XValue)` can
+ *   now say it, but no card authors it yet, so no hand-written card would confirm the reading.
  * - **a clause with `or greater`** — no card prints it at all, so there is nothing to read and
  *   nothing to name.
  *
@@ -121,7 +119,7 @@ object ManaValues {
      * The letter `X` in the same position — "mana value X or less".
      *
      * A row rather than a value inside [fixed]'s slot, because the SDK types the two differently:
-     * `ManaValueAtMost(3)` carries a number and [CardPredicate.ManaValueAtMostX] carries none, being
+     * `ManaValueAtMost(3)` carries a number and `manaValueAtMostX()` carries [DynamicAmount.XValue],
      * the X announced for the spell or ability this filter belongs to. That is
      * [Amounts.WHERE_X]'s lesson in a fourth position — a word cannot be a slot when the model
      * changes shape underneath it.

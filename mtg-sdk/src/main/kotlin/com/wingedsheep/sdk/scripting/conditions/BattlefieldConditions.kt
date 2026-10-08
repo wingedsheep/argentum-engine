@@ -1,6 +1,8 @@
 package com.wingedsheep.sdk.scripting.conditions
 
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
@@ -169,39 +171,66 @@ data object TriggeringEntityHadCounters : Condition {
 }
 
 /**
- * Condition: "if it was a <subtype>" (intervening-if for dies/leaves triggers).
- * Reads the last-known **projected** subtypes captured on the triggering entity at the moment it
- * left the battlefield (Rule 603.10 last-known information), so subtypes granted by continuous
- * effects — not just printed ones — count.
+ * Condition: "if it was [filter]" — an intervening-if for dies/leaves triggers that matches the
+ * triggering permanent's **last-known** type line (CR 603.10, 608.2h): the projected card types and
+ * subtypes captured at the moment it left the battlefield, so types set or granted by continuous
+ * effects count, not just the printed ones.
  *
- * Wrap in [com.wingedsheep.sdk.dsl.Conditions.Not] for the "if it wasn't a <subtype>" wording used
- * by self-recursion loop guards such as Infernal Vessel ("When this creature dies, if it wasn't a
- * Demon, return it … It's a Demon in addition to its other types"), where the returned permanent's
- * granted subtype is what stops the second death from triggering again.
- */
-@SerialName("TriggeringEntityHadSubtype")
-@Serializable
-data class TriggeringEntityHadSubtype(val subtype: String) : Condition {
-    override val description: String = "if it was a $subtype"
-}
-
-/**
- * Condition: "if it was a <card type>" (intervening-if for dies/leaves triggers).
- * Reads the last-known **projected** card types captured on the triggering entity at the moment it
- * left the battlefield (Rule 603.10 last-known information), so a type set by a continuous effect —
- * not just the printed type line — counts.
+ * Used by self-recursion loop guards whose returning permanent is a different kind of object:
+ * - Infernal Vessel — `Not(TriggeringEntityWas(Any.withSubtype(DEMON)))`: "if it wasn't a Demon,
+ *   return it … It's a Demon in addition to its other types".
+ * - Tom, Bert, and William — `TriggeringEntityWas(Creature)`: "if they were a creature, return
+ *   them … They're an artifact", so the second death is of an artifact and the loop stops.
  *
- * The card-type sibling of [TriggeringEntityHadSubtype]. Used by self-recursion loop guards that
- * turn the returning permanent into something that is no longer a creature: Tom, Bert, and William
- * ("When this creature dies, if they were a creature, return them to the battlefield. They're an
- * artifact"), where the second death is of an *artifact*, so the guard fails and the loop stops.
  * A card in a graveyard has its printed type line back, so asking the live entity would answer
- * "creature" forever — only the leave-time snapshot can tell the two deaths apart.
+ * the same thing on both deaths — only the leave-time snapshot tells them apart. That snapshot
+ * holds card types and subtypes only, so [filter] may use just those card predicates (and
+ * `And`/`Or`/`Not` over them); anything else is rejected at construction. A trigger whose source
+ * never left the battlefield has no last-known type line, and the condition is false.
  */
-@SerialName("TriggeringEntityHadCardType")
+@SerialName("TriggeringEntityWas")
 @Serializable
-data class TriggeringEntityHadCardType(val cardType: String) : Condition {
-    override val description: String = "if it was a ${cardType.lowercase()}"
+data class TriggeringEntityWas(val filter: GameObjectFilter) : Condition {
+    init {
+        requireTypeLineOnly(filter)
+    }
+
+    override val description: String = "if it was ${filter.indefiniteArticle} ${filter.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Condition {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+
+    private companion object {
+        /**
+         * Rejects anything the last-known type line can't answer, in [filter] and in every `anyOf`
+         * alternative at any depth — the snapshot matcher reports such a predicate unknown, and an
+         * unknown under `Not` must not be read as "wasn't".
+         */
+        fun requireTypeLineOnly(filter: GameObjectFilter) {
+            require(filter.statePredicates.isEmpty() && filter.controllerPredicate == null) {
+                "TriggeringEntityWas reads only the last-known type line; state and controller predicates aren't captured"
+            }
+            val unsupported = filter.cardPredicates.flatMap { unsupportedPredicates(it) }
+            require(unsupported.isEmpty()) {
+                "TriggeringEntityWas reads only card types and subtypes, not $unsupported"
+            }
+            filter.anyOf.forEach { requireTypeLineOnly(it) }
+        }
+
+        /** The card predicates a last-known type line (card types + subtypes) can answer. */
+        fun unsupportedPredicates(predicate: CardPredicate): List<CardPredicate> = when (predicate) {
+            CardPredicate.IsCreature, CardPredicate.IsLand, CardPredicate.IsArtifact,
+            CardPredicate.IsEnchantment, CardPredicate.IsInstant, CardPredicate.IsSorcery,
+            CardPredicate.IsPlaneswalker, CardPredicate.IsBattle, CardPredicate.IsPermanent,
+            is CardPredicate.HasSubtype -> emptyList()
+            is CardPredicate.Not -> unsupportedPredicates(predicate.predicate)
+            is CardPredicate.And -> predicate.predicates.flatMap { unsupportedPredicates(it) }
+            is CardPredicate.Or -> predicate.predicates.flatMap { unsupportedPredicates(it) }
+            else -> listOf(predicate)
+        }
+    }
 }
 
 /**

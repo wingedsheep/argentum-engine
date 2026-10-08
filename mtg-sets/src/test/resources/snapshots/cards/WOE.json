@@ -5179,7 +5179,12 @@
                             "filter": {
                                 "cardPredicates": [
                                     "IsCreature",
-                                    "PowerAtLeastX"
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "POWER",
+                                        "operator": "GTE",
+                                        "amount": "XValue"
+                                    }
                                 ]
                             }
                         },
@@ -10095,7 +10100,12 @@
                             "baseFilter": {
                                 "cardPredicates": [
                                     "IsCreature",
-                                    "ManaValueEqualsX"
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "EQ",
+                                        "amount": "XValue"
+                                    }
                                 ],
                                 "controllerPredicate": "OwnedByYou"
                             },
@@ -17702,7 +17712,13 @@
                             "cardPredicates": [
                                 "IsCreature",
                                 "IsNontoken",
-                                "NameNotSharedWithControlledToken"
+                                {
+                                    "type": "Not",
+                                    "predicate": {
+                                        "type": "SharesNameWithPermanentYouControl",
+                                        "filter": "token"
+                                    }
+                                }
                             ],
                             "controllerPredicate": "ControlledByYou"
                         }
@@ -17735,7 +17751,13 @@
                             "cardPredicates": [
                                 "IsCreature",
                                 "IsNontoken",
-                                "NameNotSharedWithControlledToken"
+                                {
+                                    "type": "Not",
+                                    "predicate": {
+                                        "type": "SharesNameWithPermanentYouControl",
+                                        "filter": "token"
+                                    }
+                                }
                             ],
                             "controllerPredicate": "ControlledByYou"
                         }
@@ -21553,7 +21575,14 @@
                             "baseFilter": {
                                 "cardPredicates": [
                                     "IsEnchantment",
-                                    "NameNotSharedWithAnotherControlledPermanent"
+                                    {
+                                        "type": "Not",
+                                        "predicate": {
+                                            "type": "SharesNameWithPermanentYouControl",
+                                            "filter": "permanent",
+                                            "excludeSelf": true
+                                        }
+                                    }
                                 ],
                                 "controllerPredicate": "ControlledByYou"
                             }

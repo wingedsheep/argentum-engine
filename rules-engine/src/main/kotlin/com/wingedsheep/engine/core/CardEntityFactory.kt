@@ -164,8 +164,9 @@ object CardEntityFactory {
 
         // "Hexproof from [quality]" (CR 702.11d). Only the scopes the rules engine enforces are
         // carried: colors (`HEXPROOF_FROM_<COLOR>`), non-colors (`HEXPROOF_FROM_NON_<COLOR>`),
-        // card types (`HEXPROOF_FROM_CARDTYPE_<TYPE>`) and source kinds
-        // (`HEXPROOF_FROM_SOURCEKIND_<KIND>`, see [SourceKindProtection]).
+        // mono-/multicolored (`HEXPROOF_FROM_MONOCOLORED` / `_MULTICOLORED`), card types
+        // (`HEXPROOF_FROM_CARDTYPE_<TYPE>`) and source kinds (`HEXPROOF_FROM_SOURCEKIND_<KIND>`, see
+        // [SourceKindProtection]).
         // Other [ProtectionScope]s format oracle text but have no targeting wiring yet, so they are
         // dropped rather than projected as a keyword nothing consults.
         val hexproofScopes = cardDef.keywordAbilities
@@ -185,11 +186,18 @@ object CardEntityFactory {
             .map { it.color }
             .toSet()
         val hexproofSourceKinds = hexproofScopes.mapNotNull { SourceKind.of(it) }.toSet()
+        val hexproofMonocolored = ProtectionScope.Monocolored in hexproofScopes
+        val hexproofMulticolored = ProtectionScope.Multicolored in hexproofScopes
         if (hexproofColors.isNotEmpty() || hexproofCardTypes.isNotEmpty() ||
-            hexproofNonColors.isNotEmpty() || hexproofSourceKinds.isNotEmpty()
+            hexproofNonColors.isNotEmpty() || hexproofSourceKinds.isNotEmpty() ||
+            hexproofMonocolored || hexproofMulticolored
         ) {
             result = result.with(
-                HexproofFromComponent(hexproofColors, hexproofCardTypes, hexproofNonColors, hexproofSourceKinds)
+                HexproofFromComponent(
+                    hexproofColors, hexproofCardTypes, hexproofNonColors, hexproofSourceKinds,
+                    monocolored = hexproofMonocolored,
+                    multicolored = hexproofMulticolored,
+                )
             )
         }
 

@@ -86,7 +86,7 @@ class TurnManager(
 ) {
 
     val cleanupPhaseManager = CleanupPhaseManager(cardRegistry, decisionHandler, conditionEvaluator = zones.predicateEvaluator.conditions)
-    val drawPhaseManager = DrawPhaseManager(cardRegistry, decisionHandler, effectExecutor, replacementProcessor, amountEvaluator = zones.predicateEvaluator.amounts)
+    val drawPhaseManager = DrawPhaseManager(cardRegistry, decisionHandler, effectExecutor, replacementProcessor, predicateEvaluator = zones.predicateEvaluator)
     val beginningPhaseManager = BeginningPhaseManager(cardRegistry, decisionHandler, cleanupPhaseManager, zones.predicateEvaluator)
 
     // ── Delegate methods for external callers ──
@@ -431,7 +431,7 @@ class TurnManager(
 
     /**
      * True when [step] belongs to a part of the turn [playerId] is skipping every instance of this
-     * turn (`SkippedTurnPartsComponent`, written by `SkipStepOrPhaseThisTurnEffect`).
+     * turn (`SkippedTurnPartsComponent`, written by a this-turn `SkipStepOrPhaseEffect`).
      *
      * One [com.wingedsheep.sdk.core.TurnPart] can cover several steps, which is the point: naming
      * `COMBAT_PHASE` skips all five combat steps one after another as this is consulted per step,

@@ -7,8 +7,8 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GrantHexproofFromMulticoloredToGroup
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.events.Recipient
 
 /**
@@ -37,10 +37,7 @@ val NivMizzetGuildpact = card("Niv-Mizzet, Guildpact") {
     toughness = 6
 
     keywords(Keyword.FLYING)
-
-    staticAbility {
-        ability = GrantHexproofFromMulticoloredToGroup(GroupFilter.source())
-    }
+    keywordAbility(KeywordAbility.Hexproof(ProtectionScope.Multicolored))
 
     triggeredAbility {
         trigger = Triggers.self.dealsCombatDamage(Recipient.AnyPlayer)

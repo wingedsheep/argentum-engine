@@ -838,7 +838,7 @@ object Costs {
         /**
          * Pay X life — the caster declares X at cast time and pays X life (X declared at cast time,
          * min [minCount]). X is surfaced to the spell's effects via the resolution context's X value
-         * (read by `DynamicAmount.XValue` / `CardPredicate.ManaValueAtMostX`). The card must not also
+         * (read by `DynamicAmount.XValue` / `manaValueAtMostX()`). The card must not also
          * carry an `{X}` mana cost (they share the same X slot).
          */
         fun PayXLife(minCount: Int = 0): AdditionalCost = AdditionalCost.PayXLife(minCount)

@@ -3,16 +3,19 @@ package com.wingedsheep.mtg.sets.definitions.inv.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
+import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.CardNumericProperty
 
 /**
  * Metathran Aerostat
@@ -24,7 +27,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * If you do, return this creature to its owner's hand.
  *
  * The {X}{U} activation stamps X onto the ability's context, so the candidate filter uses
- * [CardPredicate.ManaValueEqualsX] (cf. [Void]). Gather creatures of that mana value from hand →
+ * `manaValueEqualsX()` (cf. [Void]). Gather creatures of that mana value from hand →
  * optionally select one (the "may") → put it onto the battlefield. If a creature was actually put,
  * [ConditionalOnCollectionEffect] returns the Aerostat itself to its owner's hand.
  */
@@ -49,7 +52,7 @@ val MetathranAerostat = card("Metathran Aerostat") {
                     player = Player.You,
                     filter = GameObjectFilter.Creature.copy(
                         cardPredicates = GameObjectFilter.Creature.cardPredicates +
-                            CardPredicate.ManaValueEqualsX,
+                            CardPredicate.CompareNumericProperty(CardNumericProperty.MANA_VALUE, ComparisonOperator.EQ, DynamicAmounts.xValue()),
                     ),
                 )
             )

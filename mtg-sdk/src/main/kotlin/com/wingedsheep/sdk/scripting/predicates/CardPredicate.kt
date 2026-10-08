@@ -398,38 +398,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
-     * Matches a permanent whose name isn't shared with a token the evaluating player controls.
-     * The candidate itself need not be a token; callers compose the appropriate card/type predicates.
-     * Models The Apprentice's Folly's target restriction.
-     */
-    @SerialName("NameNotSharedWithControlledToken")
-    @Serializable
-    data object NameNotSharedWithControlledToken : CardPredicate {
-        override val description: String = "that doesn't have the same name as a token you control"
-    }
-
-    /**
-     * Matches a permanent whose name isn't shared with **any other** permanent the evaluating
-     * player controls — "that doesn't have the same name as another permanent you control"
-     * (Yenna, Redtooth Regent).
-     *
-     * Broader than [NameNotSharedWithControlledToken] in two ways: the compared set is every
-     * permanent the controller has on the battlefield (tokens *and* cards), and the candidate
-     * itself is excluded so a permanent never disqualifies itself ("**another** permanent").
-     * Two permanents sharing a name therefore disqualify each other, not just one of them.
-     *
-     * Names are read through the projection ([ProjectedState.getName]) so a name-changing
-     * Layer 3 effect (Witness Protection, Honest Work) is respected on both sides of the
-     * comparison. Fails open (matches) when no controller is in scope.
-     */
-    @SerialName("NameNotSharedWithAnotherControlledPermanent")
-    @Serializable
-    data object NameNotSharedWithAnotherControlledPermanent : CardPredicate {
-        override val description: String =
-            "that doesn't have the same name as another permanent you control"
-    }
-
-    /**
      * Matches cards *originally printed* in the given set — i.e. whose canonical
      * [com.wingedsheep.sdk.model.CardDefinition.setCode] equals [setCode] (case-insensitive),
      * regardless of which printing is actually in play. This is the card's first/canonical set, so
@@ -477,28 +445,7 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "with mana value $max or less"
     }
 
-    /**
-     * Mana value exactly equal to the number chosen for the source spell/ability.
-     * Resolves against [PredicateContext.xValue] at evaluation time. Used by effects
-     * that "choose a number" and then act on objects with that mana value (Void). When
-     * the chosen number is unbound, nothing matches.
-     */
-    @SerialName("ManaValueEqualsX")
-    @Serializable
-    data object ManaValueEqualsX : CardPredicate {
-        override val description: String = "with mana value equal to the chosen number"
-    }
 
-    /**
-     * Mana value at most the X chosen for the source spell/ability.
-     * Resolves against [PredicateContext.xValue] at evaluation time, so it works
-     * both at cast-time target validation and at resolution-time legality re-check.
-     */
-    @SerialName("ManaValueAtMostX")
-    @Serializable
-    data object ManaValueAtMostX : CardPredicate {
-        override val description: String = "with mana value X or less"
-    }
 
     @SerialName("ManaValueAtLeast")
     @Serializable
@@ -580,7 +527,7 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
      * the predicate is checked, comparing against the card's mana value.
      *
      * The sibling fixed/entity-derived caps cover their narrow cases ([ManaValueAtMost] = a constant,
-     * [ManaValueAtMostX] = the cast {X}, [ManaValueAtMostEntity] / [ManaValueAtMostEntityManaSpent] /
+     * `manaValueAtMostX()` = the cast {X}, [ManaValueAtMostEntity] / [ManaValueAtMostEntityManaSpent] /
      * [ManaValueAtMostColorsSpent] = values read off a referenced entity). This variant is the
      * open-ended one for any other dynamic source — e.g. Moseo, Vein's New Dean: "return … a creature
      * card with mana value X or less …, where X is the amount of life you gained this turn"
@@ -600,7 +547,7 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     /**
      * Mana value *exactly* equal to a [DynamicAmount] resolved when the predicate is checked — the
      * equality sibling of [ManaValueAtMostDynamic], and the open-ended counterpart of the fixed
-     * [ManaValueEquals] / cast-{X} [ManaValueEqualsX].
+     * [ManaValueEquals] / cast-{X} `manaValueEqualsX()`.
      *
      * Used by **Talion, the Kindly Lord** with `DynamicAmount.CastChoice(ChoiceSlot.CHOSEN_NUMBER)`
      * to read the number chosen as it entered ("a spell with mana value … equal to the chosen
@@ -620,7 +567,7 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
 
     /**
      * Power *exactly* equal to a [DynamicAmount] resolved when the predicate is checked — the
-     * dynamic counterpart of [PowerEquals] / [PowerEqualsX]. An object with no power (a noncreature
+     * dynamic counterpart of [PowerEquals]. An object with no power (a noncreature
      * spell) never matches, whatever the amount resolves to.
      */
     @SerialName("PowerEqualsDynamic")
@@ -768,20 +715,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "with base toughness $value"
     }
 
-    /**
-     * Power exactly equal to the X chosen for the source spell/ability. Resolves against
-     * `PredicateContext.xValue` at evaluation time — the power analogue of [ManaValueEqualsX].
-     * Used by an X-cost activated ability that targets "a creature with power X"
-     * (Ent-Draught Basin). When X is unbound (legal-action enumeration runs before the player
-     * chooses X) it matches permissively so the ability is still offered; the chosen X is then
-     * enforced at activation-time validation and resolution-time re-check.
-     */
-    @SerialName("PowerEqualsX")
-    @Serializable
-    data object PowerEqualsX : CardPredicate {
-        override val description: String = "with power X"
-    }
-
     @SerialName("PowerAtMost")
     @Serializable
     data class PowerAtMost(val max: Int) : CardPredicate {
@@ -794,21 +727,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "with power $min or greater"
     }
 
-    /**
-     * Power at least the X chosen for the source spell/ability — the "greater than or equal to"
-     * mirror of [ToughnessAtMostX], and the power analogue of [ManaValueAtMostX].
-     * Resolves against [PredicateContext.xValue] at evaluation time, so it works at a spell's
-     * resolution-time filter pass: Expel the Interlopers ("Choose a number between 0 and 10.
-     * Destroy all creatures with power greater than or equal to the chosen number") binds the
-     * chosen number as X and then wipes with this predicate.
-     */
-    @SerialName("PowerAtLeastX")
-    @Serializable
-    data object PowerAtLeastX : CardPredicate {
-        override val description: String = "with power X or greater"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
-    }
-
     @SerialName("ToughnessEquals")
     @Serializable
     data class ToughnessEquals(val value: Int) : CardPredicate {
@@ -819,18 +737,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class ToughnessAtMost(val max: Int) : CardPredicate {
         override val description: String = "with toughness $max or less"
-    }
-
-    /**
-     * Toughness at most the X chosen for the source spell/ability.
-     * Resolves against [PredicateContext.xValue] at evaluation time, so it works at the
-     * spell's resolution-time filter pass (e.g., Zero Point Ballad's mass destruction).
-     */
-    @SerialName("ToughnessAtMostX")
-    @Serializable
-    data object ToughnessAtMostX : CardPredicate {
-        override val description: String = "with toughness X or less"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("ToughnessAtLeast")
@@ -917,7 +823,19 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
-    /** Compares this object's numeric property with a late-bound amount (including another entity's property). */
+    /**
+     * Compares this object's numeric property with a late-bound amount (including another entity's
+     * property). The general form of every "power / toughness / mana value compared with N" filter.
+     *
+     * With [amount] = [DynamicAmount.XValue] it reads the X chosen for the source spell/ability —
+     * "creature with power X" (Ent-Draught Basin, `EQ`), "mana value X or less" (`manaValueAtMostX()`,
+     * `LTE`), "power greater than or equal to the chosen number" (Expel the Interlopers, `GTE` after
+     * `ChooseNumberThen` stamps X). While X is still unbound during legal-action enumeration (before
+     * the player picks it) such a comparison matches permissively, so the action is offered; the
+     * chosen X is enforced at activation/cast-time validation and at the CR 608.2b resolution
+     * re-check. An X still unbound *during a resolution* matches nothing, so a lost X can't turn
+     * "destroy each creature with power X or greater" into a board wipe.
+     */
     @SerialName("CompareNumericProperty")
     @Serializable
     data class CompareNumericProperty(
@@ -1224,20 +1142,32 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
 
     /**
      * Matches objects whose name equals that of at least one permanent the evaluating player
-     * controls matching [filter]. Used by Key to the Side-Door ("Discard a legendary card with the
-     * same name as a legendary permanent you control") with
-     * `filter = GameObjectFilter.Permanent.legendary()`. The name-sharing sibling of
-     * [SharesColorWithPermanentYouControl].
+     * controls matching [filter]. The name-sharing sibling of [SharesColorWithPermanentYouControl].
      *
-     * Names are compared exactly, and read from the permanent's card definition rather than
-     * projected state — copy effects already rewrite the card component's name, and nothing in the
-     * layer system renames a permanent without doing so. A nameless object (a token with no name)
-     * never matches.
+     * - Key to the Side-Door — "a legendary card with the same name as a legendary permanent you
+     *   control": `filter = GameObjectFilter.Permanent.legendary()`.
+     * - Under [Not], the "doesn't have the same name as …" restrictions: The Apprentice's Folly's
+     *   "… as a token you control" (`filter = GameObjectFilter.Token`) and Yenna, Redtooth Regent's
+     *   "… as **another** permanent you control" (`filter = GameObjectFilter.Permanent`,
+     *   [excludeSelf] = true). [excludeSelf] leaves the candidate out of the compared set so a
+     *   permanent never disqualifies itself; two permanents sharing a name still disqualify each
+     *   other.
+     *
+     * Names are compared exactly and read through the projection on both sides (falling back to
+     * the card's own name), so a Layer 3 name-changing effect (Witness Protection, Honest Work) is
+     * respected. A nameless object — a face-down permanent (CR 708.2a) — never shares a name
+     * (CR 201.2a). Outside a controller's scope it never matches — so the [Not] form matches. Only
+     * the live evaluator can answer it; matchers without a battlefield in scope (layer projection,
+     * cast permissions, cast records) fail closed on both it and its [Not] form.
      */
     @SerialName("SharesNameWithPermanentYouControl")
     @Serializable
-    data class SharesNameWithPermanentYouControl(val filter: GameObjectFilter) : CardPredicate {
-        override val description: String = "with the same name as ${filter.description} you control"
+    data class SharesNameWithPermanentYouControl(
+        val filter: GameObjectFilter,
+        val excludeSelf: Boolean = false,
+    ) : CardPredicate {
+        override val description: String =
+            "with the same name as ${if (excludeSelf) "another " else ""}${filter.description} you control"
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
             val newFilter = filter.applyTextReplacement(replacer)
             return if (newFilter !== filter) copy(filter = newFilter) else this

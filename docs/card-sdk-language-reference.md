@@ -12,6 +12,14 @@ shape, replacement effect, etc. — must update the matching section here in the
 change.** If the entry doesn't fit cleanly in an existing section, add or rename a
 section; do not let SDK additions land without a corresponding doc update.
 
+**Looking for whether a type exists?** Grep [`sdk-index.md`](sdk-index.md) first. It is generated from
+the code (`just sdk-index`, kept current by `SdkIndexTest`): one line per sealed SDK type with its fields
+and KDoc summary, grouped by family, so it can't miss a type the way this hand-kept catalog can.
+
+**Entry style:** one line per entry — the facade or type, then what it does in one sentence. Rules
+detail, edge cases and history go in the type's KDoc, which the index surfaces. Cut an older
+multi-paragraph entry down the same way when you touch it.
+
 ---
 
 ## 0. Game formats
@@ -956,7 +964,7 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
 - `Costs.additional.PayXLife(minCount = 0)` — "as an additional cost to cast this spell, pay X life."
   The caster declares X at cast time (capped at their current life total) and X is fed to the spell's
   effects through the resolution **X value** — i.e. read it with `DynamicAmount.XValue` and filter with
-  `CardPredicate.ManaValueAtMostX` / `manaValueAtMostX()` (Vicious Rivalry: "pay X life; destroy all
+  `manaValueAtMostX()` (Vicious Rivalry: "pay X life; destroy all
   artifacts and creatures with mana value X or less"). A card using this cost must **not** also have an
   `{X}` in its mana cost — both write the same X slot. The client shows a numeric X picker (no target
   step); the AI declares X = 0 by default.
@@ -1318,7 +1326,7 @@ serialized shape; the facade for each is:
 | `ShuffleLibraryEffect` | `Effects.ShuffleLibrary` |
 | `SkipCombatPhasesEffect` | `Effects.SkipCombatPhases` |
 | `SkipUntapEffect` | `Effects.SkipUntap` |
-| `SkipNextUntapStepEffect` | `Effects.SkipNextUntapStep` |
+| `SkipStepOrPhaseEffect` | `Effects.SkipNextStepOrPhase(part, target)` / `Effects.SkipStepOrPhaseThisTurn(part, target)` |
 | `TakeExtraTurnEffect` | `Effects.TakeExtraTurn` |
 | `TapUntapEffect` | `Effects.Tap(target)` / `Effects.Untap(target)` |
 | `TauntEffect` | `Effects.Taunt` |
@@ -2943,11 +2951,12 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `Effects.SkipNextTurn(target = Controller, count = Fixed(1))` (`SkipNextTurnEffect`) — target skips their next `count` turns. `count` is a `DynamicAmount`, so it can read a pipeline value (e.g. a coin-flip tally via `DynamicAmount.VariableReference`). Skips accumulate on a `SkipNextTurnComponent(turns)`, decremented one turn per the player's turn-start; a resolved count of 0 is a no-op. Used by Lethal Vapors (one turn) and **Ral Zarek, Guest Lecturer** (skip N turns where N = heads).
 - `Effects.FlipCoins(count, storeHeadsAs = "heads")` (`FlipCoinsEffect`) — flip `count` coins and store the number of heads under `storeHeadsAs` in the pipeline (`storedNumbers`) so a later sub-effect in the same composite can scale off it via `DynamicAmount.VariableReference`. The general "flip N coins, count heads" primitive (CR 705); unlike `FlipCoinEffect` (branch on win/lose) and `FlipTwoCoinsEffect` (branch on combined outcome) it only tallies. Each flip emits a `CoinFlipEvent`. **Ral Zarek, Guest Lecturer**'s ultimate composes `FlipCoins(5, "heads")` then `SkipNextTurn(target, count = VariableReference("heads"))`.
 - `Effects.FlipCoinsUntilLoss(storeWinsAs = "wins")` (`FlipCoinsUntilLossEffect`) — `FlipCoins`'s open-ended sibling: flip one coin at a time until the flipper *loses* a flip or answers "stop flipping", then store how many flips they won under `storeWinsAs`. The run length is discovered rather than given, and the order within an iteration is flip → check → ask, so the stop question only ever follows a *won* flip ("after each flip, you choose whether to continue flipping"). Losing the first flip stores 0, and since an unread pipeline number reads as 0, a card gating payoffs on "if you win one or more flips" needs no separate "this has no effect" branch — that sentence *is* the absence of every payoff. Deliberately **not** a `RepeatWhile` over `FlipCoinEffect`: a repeat condition is asked unconditionally after each body (so it can't stop *because* a flip was lost) and the repeat loop restarts each iteration from the pristine pre-loop context (so a running tally couldn't survive the prompt). The tally rides `FlipCoinsUntilLossContinuation` instead and is published once, when the run ends. Unlike `FlipCoins`, where the whole batch is one flip event, each coin here is its own flip — so a "the first time you flip one or more coins each turn" replacement (Edgar, King of Figaro) covers only the first coin. Bounded by `GameLimits.MAX_COIN_FLIPS_PER_EFFECT` as a backstop against a forced-win static plus an always-continue automated answer. **Fiery Gambit** composes `FlipCoinsUntilLoss("fieryGambitWins")` with three cumulative `Gate.WhenCondition(Compare(VariableReference("fieryGambitWins"), GTE, Fixed(n)))` tiers.
-- `Effects.SkipNextDrawStep(target = Controller)` (`SkipNextDrawStepEffect`) — target skips their next draw step. Adds a one-shot `SkipDrawStepComponent` marker consumed by `DrawPhaseManager.performDrawStep` (Elfhame Sanctuary's "you skip your draw step this turn").
-- `Effects.SkipNextUntapStep(target)` (`SkipNextUntapStepEffect`) — the player skips their entire next untap step (CR 500.11): nothing of theirs phases or untaps — every permanent type, not just the creatures/lands `SkipUntap` holds — and their own "next untap step" markers (`SkipUntap`, exert, `Duration.UntilAfterAffectedControllersNextUntap`) wait for the first step that isn't skipped. Stacks: two skips skip the next two untap steps (CR 614.10a). Adds to a counted `SkipNextUntapStepComponent`, consumed in `TurnManager.finishUntapStep`. Shisato, Whispering Hunter: `Effects.SkipNextUntapStep(EffectTarget.PlayerRef(Player.TriggeringPlayer))`.
-- `Effects.SkipStepOrPhaseThisTurn(part, target)` (`SkipStepOrPhaseThisTurnEffect`, `part` = `TurnPart.DRAW_STEP` |
-  `MAIN_PHASE` | `COMBAT_PHASE`) — the target skips **every** instance of that part of the turn for the rest of
-  this turn. The **duration** is what separates it from the one-shot `SkipNextDrawStep` / `SkipCombatPhases`
+- `Effects.SkipNextStepOrPhase(part, target = Controller)` (`SkipStepOrPhaseEffect(part, SkipDuration.NEXT, target)`, `part` = `TurnPart.UNTAP_STEP` | `DRAW_STEP`; other parts are rejected at construction) — a one-shot marker: the target skips their **next** instance of `part`, consumed by the step it skips.
+  - `DRAW_STEP` adds the `SkipDrawStepComponent` marker consumed by `DrawPhaseManager.performDrawStep` (Elfhame Sanctuary's "you skip your draw step this turn", Fasting).
+  - `UNTAP_STEP` skips the player's entire next untap step (CR 500.11): nothing of theirs phases or untaps — every permanent type, not just the creatures/lands `SkipUntap` holds — and their own "next untap step" markers (`SkipUntap`, exert, `Duration.UntilAfterAffectedControllersNextUntap`) wait for the first step that isn't skipped. Stacks: two skips skip the next two untap steps (CR 614.10a). Adds to a counted `SkipNextUntapStepComponent`, consumed in `TurnManager.finishUntapStep`. Shisato, Whispering Hunter: `Effects.SkipNextStepOrPhase(TurnPart.UNTAP_STEP, EffectTarget.PlayerRef(Player.TriggeringPlayer))`; Yosei, the Morning Star.
+- `Effects.SkipStepOrPhaseThisTurn(part, target)` (`SkipStepOrPhaseEffect(part, SkipDuration.THIS_TURN, target)`, `part` = `TurnPart.DRAW_STEP` |
+  `MAIN_PHASE` | `COMBAT_PHASE`; `UNTAP_STEP` exists for the one-shot and standing forms) — the target skips **every** instance of that part of the turn for the rest of
+  this turn. The **duration** is what separates it from the one-shot `SkipNextStepOrPhase` / `SkipCombatPhases`
   markers above, which are consumed by the first occurrence: this one stands until end-of-turn cleanup drops
   its `SkippedTurnPartsComponent`, so a second main phase or an additional combat phase created later in the
   turn is skipped too. `TurnPart` is the granularity printed cards use — one value covers both main phases
@@ -3923,7 +3932,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `ChooseColorsThen(ChangeColorToChosen(creature)) then DrawCards(1)`.
 - `Effects.ChooseNumberThen(then, minValue=0, maxValue=16, prompt)` — pick a number in `[minValue, maxValue]`,
   then run `then` once with the chosen number exposed via the effect context as **X**. Atomic effects and filters
-  under `then` read it through `ManaValueEqualsX` (`.manaValueEqualsX()`). Compose with `CompositeEffect` for
+  under `then` read it through `.manaValueEqualsX()`. Compose with `CompositeEffect` for
   multi-step cards (Void: destroy all artifacts/creatures with that mana value, then a target player reveals their
   hand and discards all nonland cards with that mana value).
   The `maxValue` overload accepts a `DynamicAmount`, evaluated once before the chosen
@@ -5659,10 +5668,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   creature you control") with `filter = GameObjectFilter.Creature.legendary()`. Colorless candidates
   never match. Evaluated for real in targeting/search/count contexts; inert (false) in
   static-projection / trigger-gating, permissive (true) in cost-calculation.
-- `.sharingNameWithPermanentYouControl(filter)` — `CardPredicate.SharesNameWithPermanentYouControl`:
-  has the **same name** as at least one permanent the evaluating player controls matching `filter`. The
-  name sibling of `.sharingColorWithPermanentYouControl`; names compare exactly, read off the permanent's
-  card component (copy effects already rewrite it), and a nameless object never matches. Used by Key to
+- `.sharingNameWithPermanentYouControl(filter)` — `CardPredicate.SharesNameWithPermanentYouControl(filter,
+  excludeSelf = false)`: has the **same name** as at least one permanent the evaluating player controls
+  matching `filter`. The name sibling of `.sharingColorWithPermanentYouControl`; names compare exactly and are
+  read through the projection on both sides (Layer 3 renames such as Witness Protection count), and a
+  nameless object never matches. `excludeSelf` leaves the candidate out of the compared set ("**another**
+  permanent"); see `.nameNotSharedWithPermanentYouControl` for the negated form. Used by Key to
   the Side-Door ("Discard a legendary card with the same name as a legendary permanent you control") as a
   `Costs.Discard(...)` filter — the cost enumerators supply a `PredicateContext` whose `controllerId` is
   the activating player, so the battlefield side is scoped to "you control". Evaluated for real in
@@ -5717,25 +5728,21 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   every Room card when the controller has no unlocked doors. Pair with `.withSubtype(Subtype.ROOM)` at a search
   site. Used by Central Elevator ("search your library for a Room card that doesn't have the same name as a
   Room you control").
-- `.nameNotSharedWithControlledToken()` — `CardPredicate.NameNotSharedWithControlledToken`: matches a
-  permanent whose name isn't shared with any token the evaluating player controls. This is a
-  state-dependent battlefield target filter; compose it with the printed type/control/token restrictions.
-  Used by The Apprentice's Folly
-  (`Creature.youControl().nontoken().nameNotSharedWithControlledToken()`).
-- `.nameNotSharedWithAnotherControlledPermanent()` —
-  `CardPredicate.NameNotSharedWithAnotherControlledPermanent`: matches a permanent whose name isn't shared
-  with **any other** permanent the evaluating player controls. Broader than
-  `.nameNotSharedWithControlledToken()` on both sides: the compared set is every permanent the controller
-  has out (tokens *and* cards), and the candidate itself is excluded, so two same-named permanents
-  disqualify **each other**. Names are read through the projection, honoring Layer 3 name-changing effects
-  (Witness Protection). Keyed off the predicate context's `controllerId`; fails **open** with no controller
-  in scope. Used by Yenna, Redtooth Regent
-  (`Enchantment.youControl().nameNotSharedWithAnotherControlledPermanent()`) — the restriction is
-  self-limiting, since copying an enchantment makes it an illegal target from then on.
+- `.nameNotSharedWithPermanentYouControl(filter, another = false)` —
+  `Not(SharesNameWithPermanentYouControl(filter, excludeSelf = another))`: a permanent whose name isn't
+  shared with any permanent the evaluating player controls matching `filter`; matches with no controller
+  in scope. The Apprentice's Folly ("… that doesn't have the same name as a token you control"):
+  `Creature.youControl().nontoken().nameNotSharedWithPermanentYouControl(GameObjectFilter.Token)`. Yenna,
+  Redtooth Regent ("… as **another** permanent you control"):
+  `Enchantment.youControl().nameNotSharedWithPermanentYouControl(GameObjectFilter.Permanent, another = true)` —
+  the compared set is every *other* permanent the controller has out (tokens and cards), so two same-named
+  permanents disqualify **each other**, and the restriction is self-limiting since copying an enchantment
+  makes it an illegal target from then on.
 - `.power(n)` / `.minPower(n)` / `.maxPower(n)` — P/T comparator.
 - `.manaValue(n)` / `.manaValueAtMost(n)` / `.manaValueAtLeast(n)` — mana-value comparator.
-- `.manaValueAtMostX()` — mana value ≤ the X chosen for the source spell/ability.
-- `.manaValueEqualsX()` — mana value **exactly equal** to the X chosen for the source spell/ability (the chosen
+- `.manaValueAtMostX()` — `compareNumericProperty(MANA_VALUE, LTE, XValue)`: mana value ≤ the X chosen for the
+  source spell/ability.
+- `.manaValueEqualsX()` — `compareNumericProperty(MANA_VALUE, EQ, XValue)`: mana value **exactly equal** to the X chosen for the source spell/ability (the chosen
   number, or the X paid in an `{X}…` mana cost).
   Available on both the object-filter builders and on `TargetFilter` (mirrors `.manaValueAtMostX()`). Used by Void
   (`Effects.ChooseNumberThen`), Repeal (`{X}{U}` — return target nonland permanent with mana value X), and by
@@ -5755,13 +5762,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   enchant SBA (`EnchantRestriction.couldAttach`), never
   targeting legality; "you" in the restriction is the evaluating controller. Non-Auras never match.
   Known gap: a host that has left the battlefield is judged by its current card, not last-known info.
-- `.powerEqualsX()` — **projected power exactly equal** to the X chosen for the source spell/ability — the power
-  analogue of `.manaValueEqualsX()`. Available on both the object-filter builders and on `TargetFilter`. Used by an
-  X-cost activated ability that targets "a creature with power X" (Ent-Draught Basin: `{X}, {T}: Put a +1/+1
-  counter on target creature with power X`). Legal-action enumeration runs before X is bound, so it matches
-  permissively then (the client re-filters by the chosen X via the `xConstrainsTargetPower` /
-  `LegalActionTargetInfo.xConstrainsPower` flags); activation-time validation re-checks with X bound and rejects
-  any creature whose power isn't exactly X.
+- `.powerEqualsX()` — `compareNumericProperty(POWER, EQ, XValue)`: projected power **exactly equal** to the X
+  chosen for the source spell/ability — the power analogue of `.manaValueEqualsX()`. Available on both the
+  object-filter builders and on `TargetFilter`. Used by an X-cost activated ability that targets "a creature
+  with power X" (Ent-Draught Basin: `{X}, {T}: Put a +1/+1 counter on target creature with power X`). Matches
+  permissively while X is unbound (see `.compareNumericProperty`); the client re-filters by the chosen X via
+  the `xConstrainsTargetPower` / `LegalActionTargetInfo.xConstrainsPower` flags (set for a `POWER EQ XValue`
+  comparison), and activation-time validation re-checks with X bound.
 - `.powerGreaterThanEntity(ref)` — power strictly greater than a referenced entity's projected power. Used by
   Éowyn, Fearless Knight ("exile target creature an opponent controls with greater power") — combine
   with `EffectTarget.Self` to express "greater power than the ability's source".
@@ -5772,8 +5779,14 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   evaluates to zero, including its departure snapshot; a noncreature card outside the battlefield
   retains printed P/T (for example, a Vehicle). For Stone Giant use `TOUGHNESS`, `LT`, and
   `EntityProperty(Self, Power)`. Checks at target selection and again at resolution; a departed
-  activated-ability source uses its frozen departure snapshot, including after a blink. An
-  unbound dynamic reference follows normal amount semantics (zero). These context-dependent predicates
+  activated-ability source uses its frozen departure snapshot, including after a blink. With
+  `amount = XValue` it compares against the X chosen for the source spell/ability (`.powerEqualsX()`,
+  `.powerAtLeastX()`, `.toughnessAtMostX()`, `.manaValueAtMostX()`, `.manaValueEqualsX()` are the spelled-out
+  forms); while that X is still unbound — legal-action enumeration runs before the player picks it — such a
+  comparison matches **permissively**, and the chosen X is enforced at validation and at the CR 608.2b
+  re-check. An X still unbound **during a resolution** matches **nothing**, so a lost X can't turn an
+  X-filtered `DestroyAll` into a board wipe.
+  Any other unbound dynamic reference follows normal amount semantics (zero). These context-dependent predicates
   do not match historical cast records or standalone trigger/snapshot filters without a value context.
 - `.powerAtMostEntity(ref)` / `.powerLessThanEntity(ref)` — power ≤ (resp. **strictly** <) a referenced
   entity's projected power; inverses of `.powerGreaterThanEntity`. `powerAtMostEntity` backs Old Man of
@@ -5864,7 +5877,7 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `CardPredicate.ManaValueEqualsDynamic(amount)` / `PowerEqualsDynamic(amount)` /
   `ToughnessEqualsDynamic(amount)` — *exact* equality against a resolved `DynamicAmount`, the
   open-ended siblings of the fixed `ManaValueEquals`/`PowerEquals`/`ToughnessEquals` and the cast-`{X}`
-  `ManaValueEqualsX`/`PowerEqualsX`. They resolve the amount the same way `.manaValueAtMostDynamic`
+  `.manaValueEqualsX()` / `.powerEqualsX()`. They resolve the amount the same way `.manaValueAtMostDynamic`
   resolves its cap (controller/source from the predicate context, fails closed with no controller, and
   `false` in the layer-projection / cost-calculation / cast-record paths). An object with **no** power
   or toughness — a noncreature spell — never matches the two P/T forms rather than reading the missing
@@ -5907,19 +5920,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   dies"). Honored in all four evaluation sites (resolution predicate, trigger matcher with
   last-known stats, layer projection, cost calculation). Underlying predicates:
   `CardPredicate.PowerOrToughnessAtLeast` / `CardPredicate.PowerOrToughnessAtMost`.
-- `.toughnessAtMostX()` — toughness ≤ the X chosen for the source spell/ability. Resolves
-  against `PredicateContext.xValue` at evaluation time, so it works at the spell's resolution
-  filter pass (e.g. Zero Point Ballad's mass destruction). Layer projection / trigger matching
-  / cost calculation report `false` (no X context).
-- `.powerAtLeastX()` — projected power ≥ the X chosen for the source spell/ability; the
-  greater-than-or-equal mirror of `.toughnessAtMostX()`, resolving against the same
-  `PredicateContext.xValue`. Used by Expel the Interlopers ("Choose a number between 0 and 10.
-  Destroy all creatures with power greater than or equal to the chosen number" —
-  `Effects.ChooseNumberThen(then = Effects.DestroyAll(GameObjectFilter.Creature.powerAtLeastX()), minValue = 0, maxValue = 10)`).
-  Unlike `.powerEqualsX()` it does **not** match permissively when X is unbound: an unbound X
-  reports `false`, so a chosen-number board wipe can never fire without its number. Layer
-  projection / trigger matching / cost calculation report `false` (no X context). Underlying
-  predicate: `CardPredicate.PowerAtLeastX`.
+- `.toughnessAtMostX()` / `.powerAtLeastX()` — `compareNumericProperty(TOUGHNESS, LTE, XValue)` /
+  `compareNumericProperty(POWER, GTE, XValue)`: toughness ≤ / projected power ≥ the X chosen for the source
+  spell/ability. Zero Point Ballad's wipe (`Creature.toughnessAtMostX()`); Expel the Interlopers ("Choose a
+  number between 0 and 10. Destroy all creatures with power greater than or equal to the chosen number" —
+  `Effects.ChooseNumberThen(then = Effects.DestroyAll(GameObjectFilter.Creature.powerAtLeastX()), minValue = 0, maxValue = 10)`,
+  the chosen number stamped as X). Layer projection / trigger matching / cost calculation report `false`; an
+  X still unbound at resolution matches nothing (see `.compareNumericProperty`).
 - `.tapped()` / `.untapped()` — tap state.
 - `.activatedThisTurn()` — `StatePredicate.ActivatedThisTurn`: one of the permanent's activated abilities
   (loyalty, mana, crew/saddle or any other) was activated this turn. Stamped at activation on
@@ -8623,16 +8630,17 @@ staticAbility {
   creature** card grants protection from artifacts *and* from creatures. An empty pile grants nothing,
   which is the right reading of a declined "may" imprint — which is also why this can't be modelled as
   printed `Keyword.Protection` scopes. (Mirror Golem)
-- `GrantHexproofFromMonocoloredToGroup(filter = attachedCreature())` — "[filter] have hexproof from
-  monocolored" — adds the projected keyword `HEXPROOF_FROM_MONOCOLORED`, which blocks targeting by
-  monocolored (exactly one color, CR 105.2) spells and abilities opponents control. Colorless and
-  multicolored sources are unaffected; the controller can still target their own creatures. (Dragonfire
-  Blade)
-- `GrantHexproofFromMulticoloredToGroup(filter = attachedCreature())` — the mirror: "[filter] have
-  hexproof from multicolored" — adds the projected keyword `HEXPROOF_FROM_MULTICOLORED`, which blocks
-  targeting by multicolored (two or more colors, CR 105.2b) spells and abilities opponents control.
-  Monocolored and colorless sources are unaffected; the controller can still target their own
-  permanents. Pass `GroupFilter.source()` for the printed-on-itself shape. (Niv-Mizzet, Guildpact)
+- `GrantHexproofFromToGroup(scope, filter = attachedCreature())` — "[filter] have hexproof from [scope]"
+  (CR 702.11d): adds the same projected `HEXPROOF_FROM_*` keyword a printed `KeywordAbility.Hexproof(scope)`
+  uses (`HexproofFromRules.keywordsFor`), so it blocks targeting by matching spells and abilities
+  opponents control; the controller can still target their own permanents. Accepts the scopes with a
+  hexproof keyword — `Color`, `Colors`, `NonColor`, `Monocolored`, `Multicolored`, `CardType`, `Spells`,
+  `PermanentsCastThisTurn`, `ActivatedAbilities`, `TriggeredAbilities`; the rest are rejected at
+  construction. `ProtectionScope.Monocolored` = exactly one color (CR 105.2a): Dragonfire Blade
+  (`GrantHexproofFromToGroup(ProtectionScope.Monocolored)`). `ProtectionScope.Multicolored` = two or more
+  colors (CR 105.2b): Niv-Mizzet, Guildpact, printed on itself
+  (`GrantHexproofFromToGroup(ProtectionScope.Multicolored, GroupFilter.source())`). "Hexproof from each of
+  its colors" varies per creature and is `GrantHexproofFromOwnColorsToGroup`.
 - `CantBeTargetedBySourceTypeAbilities(sourceType, filter = attachedCreature())` — "[filter] can't be the
   target of abilities from [sourceType] sources" — hexproof keyed to a source *card type* (e.g.
   `CardType.ARTIFACT`) rather than a controller or color. Projects the keyword
@@ -9738,22 +9746,23 @@ staticAbility {
   `ConditionalStaticAbility(LegendRuleDoesNotApplyTo(Permanent.named(n)),
   Compare(AggregateBattlefield(Player.Each, Permanent.named(n)), EQ, Fixed(2)))`; a third copy fails the
   count, so the rule sees all three and the controller keeps one.
-- `SkipUntapStep(player = Player.Each)` — standing player-scoped skip (Stasis). Reads projected
-  controller and active printed/conditional/composite statics, plus duration-gated grants, before
-  any untap-step actions. Supports `Player.You`, `EachOpponent`, `Each` and other resolvable player
-  references. Face-down, phased-out and ability-less printed sources do not apply. Skips phasing,
-  day/night checks, other-player untaps and next-untap expiry; upkeep still occurs. Standing skips
-  overlap with pending one-shot skips through a `ChooseOptionDecision`: the affected player/team
-  chooses the standing effect (preserving pending skips) or spends exactly one pending skip.
-  Captures skip status before phasing/untapping, including across serialized untap continuations;
-  a source phasing in during a real untap cannot retroactively skip it or preserve its durations.
-  Uses the existing option UI for replacement ordering; otherwise turn events advance directly to upkeep.
-- `SkipDrawStep` — "Skip your draw step." Controller-scoped and standing: `DrawPhaseManager` scans the
-  projected battlefield (via `RoomFaceStatics`) as the draw step begins and takes no draw for a player
-  who controls one, every turn, without consuming anything. The one-shot counterparts are the
-  `SkipDrawStepComponent` marker and `Effects.SkipStepOrPhaseThisTurn`, both of which are spent by the
-  step they skip. Not unwrapped from a `ConditionalStaticAbility` — add that to
-  `DrawPhaseManager.skipsDrawStep` if an "as long as …" wording ever needs it. (Colfenor's Plans)
+- `SkipStepOrPhase(part, player = Player.You)` — standing, never-consumed skip of every `part` for `player`
+  (`TurnPart.UNTAP_STEP` | `DRAW_STEP`; other parts are rejected at construction). One reader,
+  `hasStandingSkip` (`UntapStepSkips.kt`), serves both steps: it resolves `player` from each source's
+  projected controller over active printed/conditional/composite statics plus duration-gated grants;
+  face-down, phased-out and ability-less sources do not apply, and Room faces count only while unlocked.
+  - `SkipStepOrPhase(TurnPart.DRAW_STEP)` — "Skip your draw step." `DrawPhaseManager` takes no draw for the
+    player, every turn, without consuming anything. (Colfenor's Plans, Necrodominance)
+  - `SkipStepOrPhase(TurnPart.UNTAP_STEP, Player.Each)` — "Players skip their untap steps." (Stasis). Read
+    before any untap-step actions; supports `Player.You`, `EachOpponent`, `Each` and other resolvable
+    player references. Skips phasing, day/night checks, other-player untaps and next-untap expiry;
+    upkeep still occurs. Standing skips overlap with pending one-shot skips through a
+    `ChooseOptionDecision`: the affected player/team chooses the standing effect (preserving pending
+    skips) or spends exactly one pending skip. Captures skip status before phasing/untapping, including
+    across serialized untap continuations; a source phasing in during a real untap cannot retroactively
+    skip it or preserve its durations.
+  The resolving counterparts are `Effects.SkipNextStepOrPhase` (spent by the step it skips) and
+  `Effects.SkipStepOrPhaseThisTurn` (dropped at end of turn) — one `SkipStepOrPhaseEffect` over a `SkipDuration`.
 - `NoMaximumHandSize` — controller has no hand-size limit *while this permanent is on the
   battlefield*. (Thought Vessel, Reliquary Tower) For a one-shot resolution effect that confers a
   *permanent, player-scoped* "no maximum hand size for the rest of the game" (survives the source
@@ -11301,6 +11310,9 @@ composite abilities).
   the shared colour-axis helper `ColorProtection`, so targeting (validator *and* legal-action target
   enumeration), damage prevention, blocking and enchanting/equipping all honour it. Also valid in
   `GrantPlayerProtection` / `GrantProtectionToController` scopes.
+- `ProtectionScope.Monocolored` — the exactly-one-color twin (CR 105.2a). Engine-wired for granted hexproof
+  (`GrantHexproofFromToGroup` — Dragonfire Blade) and player protection; creature *protection* from
+  monocolored is not projected.
 - `Protection(ProtectionScope.Supertype("Legendary"))` / `KeywordAbility.protectionFromSupertype("Legendary")` — protection from a supertype, e.g. "protection from legendary creatures" (Tsabo Tavoc). Enforced across targeting, blocking, and combat damage via projected `PROTECTION_FROM_SUPERTYPE_<X>` keywords.
 - `Protection(ProtectionScope.CardType("Instant"))` — protection from a card type, e.g. "protection from
   instants" (Emrakul, the Promised End). Projected as `PROTECTION_FROM_CARDTYPE_<TYPE>` — the same keyword
@@ -12547,24 +12559,17 @@ answer it and would silently return `false`.
   `Effects.MoveAllLastKnownCounters` for "whenever this or another creature you control dies, if it
   had counters on it, move its counters" (Host of the Hereafter). Companion to the existing
   `TriggeringEntityHadMinusOneMinusOneCounter` (which checks only -1/-1 counters, e.g. Retched Wretch).
-- `TriggeringEntityHadSubtype(subtype)` — intervening-if for dies/leaves triggers: true when the
-  triggering entity had `subtype` among its **projected** subtypes the moment it left the battlefield
-  (CR 603.10), so continuous-effect-granted types count and not just printed ones. Resolution-only.
-  Wrap in `Conditions.Not(...)` for the "if it wasn't a X" wording — Infernal Vessel's
-  `interveningIf = Conditions.Not(Conditions.TriggeringEntityHadSubtype(Subtype.DEMON.value))`,
-  where the Demon type the card grants itself on return (`Effects.AddCreatureType(..., Duration.Permanent)`)
-  is what stops the second death from returning it again. Reads `TriggerContext.lastKnownSubtypes`,
-  populated from the `ZoneChangeEvent`'s `EntitySnapshot.subtypes`.
-- `TriggeringEntityHadCardType(cardType)` — the card-type sibling of `TriggeringEntityHadSubtype`:
-  intervening-if for dies/leaves triggers, true when the triggering entity had `cardType` among its
-  **projected** card types the moment it left the battlefield (CR 603.10), so a type set by a
-  continuous effect counts and not just the printed line. Resolution-only; pass `CardType.X.name`
-  (matched case-insensitively). Tom, Bert, and William's `interveningIf =
-  Conditions.TriggeringEntityHadCardType(CardType.CREATURE.name)` is the self-recursion guard for
-  "if they were a creature, return them … They're an artifact" — the second death is of the artifact
-  they came back as, so the guard fails and the loop stops. Reads
-  `TriggerContext.lastKnownCardTypes`, populated from the `ZoneChangeEvent`'s
-  `EntitySnapshot.typeLine`.
+- `TriggeringEntityWas(filter)` — "if it was [filter]": intervening-if for dies/leaves triggers, true when
+  the triggering permanent's **last-known projected type line** — card types and subtypes as it left the
+  battlefield (CR 603.10 / 608.2h) — matches `filter`, so types set or granted by continuous effects count,
+  not just the printed line. `filter` may use only card-type and subtype predicates (and `And`/`Or`/`Not`
+  over them); anything else is rejected at construction. Resolution-only; false when the trigger's source
+  never left the battlefield. Self-recursion loop guards: Infernal Vessel's `interveningIf =
+  Conditions.Not(Conditions.TriggeringEntityWas(GameObjectFilter.Any.withSubtype(Subtype.DEMON)))` (the Demon
+  type it grants itself on return stops the second return) and Tom, Bert, and William's
+  `Conditions.TriggeringEntityWas(GameObjectFilter.Creature)` ("if they were a creature … They're an
+  artifact"). Reads `TriggerContext.lastKnownCardTypes` / `lastKnownSubtypes` (populated from the
+  `ZoneChangeEvent`'s `EntitySnapshot`) through `PredicateEvaluator.matchesSnapshot`.
 - `YouWonTheClash` — the "if you won" rider inside a `Triggers.you.clashes()` effect (CR 701.30d).
   True when the clash that fired this trigger was won by the ability's controller; false on a tie,
   on revealing nothing from an empty library, and on any trigger a clash did not fire.
@@ -12665,11 +12670,14 @@ answer it and would silently return `false`.
   reading the seat's real starting total (20 / 30 / 40 / 2HG) rather than a hardcoded 20. `n = 1` is the
   plain "greater than your starting life total" reading. Elenda, Saint of Dusk gates her two stat tiers on
   `LifeAboveStartingBy(1)` and `LifeAboveStartingBy(10)`.
-- `APlayerLifeAtMost(n)` — *some* player in the game has ≤N life (existential over `state.turnOrder`; distinct from `LifeAtMost`, which is `Player.You`). Used by enters-tapped-unless lands like Razortrap Gorge.
-- `EachPlayerLifeAtMost(n)` — every player in the game has ≤N life (universal over `state.turnOrder`). Used by Cryptolith Fragment's intervening-if upkeep trigger.
-- `AnOpponentLifeAtMost(n)` — at least one opponent of the ability's controller has ≤N life. Unlike
+- `APlayerLifeAtMost(n)` — *some* player in the game has ≤N life: `Compare(LeastAmongPlayers(Each, LifeTotal(You)), LTE, n)` (distinct from `LifeAtMost`, which is `Player.You`). Used by enters-tapped-unless lands like Razortrap Gorge.
+- `Conditions.EachPlayerLifeAtMost(n)` — every player still in the game has ≤N life: a facade for
+  `Compare(GreatestAmongPlayers(Player.Each, LifeTotal(Player.You)), LTE, Fixed(n))`. Used by Cryptolith
+  Fragment's intervening-if upkeep trigger.
+- `Conditions.AnOpponentLifeAtMost(n)` — at least one opponent of the ability's controller has ≤N life: a
+  facade for `Compare(LeastAmongPlayers(Player.EachOpponent, LifeTotal(Player.You)), LTE, Fixed(n))`. Unlike
   `APlayerLifeAtMost`, the controller's own life total never satisfies it; this is the conditional
-  static-ability gate for Bloodghast's haste.
+  static-ability gate for Bloodghast's haste. Team games read the shared team total (CR 810.9a).
 - `PoisonCountersAtLeast(n, player = Player.You)` — a single player has ≥N poison counters. Under a
   `ForEachPlayer` / `countPlayersWith` rebind `Player.You` is the player being tested ("each opponent who has
   three or more poison counters loses 3 life" — Feed the Infection); `Player.ControllerOf("target")` is "if its

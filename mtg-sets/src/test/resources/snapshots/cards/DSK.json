@@ -31,8 +31,19 @@
             {
                 "type": "EntersTapped",
                 "unlessCondition": {
-                    "type": "APlayerLifeAtMost",
-                    "threshold": 13
+                    "type": "Compare",
+                    "left": {
+                        "type": "LeastAmongPlayers",
+                        "inner": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 13
+                    }
                 }
             }
         ]
@@ -1254,8 +1265,19 @@
             {
                 "type": "EntersTapped",
                 "unlessCondition": {
-                    "type": "APlayerLifeAtMost",
-                    "threshold": 13
+                    "type": "Compare",
+                    "left": {
+                        "type": "LeastAmongPlayers",
+                        "inner": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 13
+                    }
                 }
             }
         ]
@@ -4986,8 +5008,19 @@
             {
                 "type": "EntersTapped",
                 "unlessCondition": {
-                    "type": "APlayerLifeAtMost",
-                    "threshold": 13
+                    "type": "Compare",
+                    "left": {
+                        "type": "LeastAmongPlayers",
+                        "inner": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 13
+                    }
                 }
             }
         ]
@@ -10081,8 +10114,19 @@
             {
                 "type": "EntersTapped",
                 "unlessCondition": {
-                    "type": "APlayerLifeAtMost",
-                    "threshold": 13
+                    "type": "Compare",
+                    "left": {
+                        "type": "LeastAmongPlayers",
+                        "inner": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 13
+                    }
                 }
             }
         ]
@@ -11865,8 +11909,19 @@
             {
                 "type": "EntersTapped",
                 "unlessCondition": {
-                    "type": "APlayerLifeAtMost",
-                    "threshold": 13
+                    "type": "Compare",
+                    "left": {
+                        "type": "LeastAmongPlayers",
+                        "inner": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 13
+                    }
                 }
             }
         ]
@@ -12028,8 +12083,19 @@
             {
                 "type": "EntersTapped",
                 "unlessCondition": {
-                    "type": "APlayerLifeAtMost",
-                    "threshold": 13
+                    "type": "Compare",
+                    "left": {
+                        "type": "LeastAmongPlayers",
+                        "inner": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 13
+                    }
                 }
             }
         ]
@@ -14151,8 +14217,19 @@
             {
                 "type": "EntersTapped",
                 "unlessCondition": {
-                    "type": "APlayerLifeAtMost",
-                    "threshold": 13
+                    "type": "Compare",
+                    "left": {
+                        "type": "LeastAmongPlayers",
+                        "inner": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 13
+                    }
                 }
             }
         ]
@@ -14597,8 +14674,19 @@
             {
                 "type": "EntersTapped",
                 "unlessCondition": {
-                    "type": "APlayerLifeAtMost",
-                    "threshold": 13
+                    "type": "Compare",
+                    "left": {
+                        "type": "LeastAmongPlayers",
+                        "inner": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 13
+                    }
                 }
             }
         ]
@@ -14755,8 +14843,19 @@
             {
                 "type": "EntersTapped",
                 "unlessCondition": {
-                    "type": "APlayerLifeAtMost",
-                    "threshold": 13
+                    "type": "Compare",
+                    "left": {
+                        "type": "LeastAmongPlayers",
+                        "inner": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 13
+                    }
                 }
             }
         ]
@@ -17260,8 +17359,19 @@
             {
                 "type": "EntersTapped",
                 "unlessCondition": {
-                    "type": "APlayerLifeAtMost",
-                    "threshold": 13
+                    "type": "Compare",
+                    "left": {
+                        "type": "LeastAmongPlayers",
+                        "inner": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 13
+                    }
                 }
             }
         ]

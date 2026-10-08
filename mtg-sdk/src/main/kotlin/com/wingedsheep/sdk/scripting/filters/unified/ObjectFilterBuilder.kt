@@ -149,17 +149,6 @@ interface ObjectFilterBuilder<out Self> {
      */
     fun nameNotSharedWithControlledRoom() = withCardPredicate(CardPredicate.NameNotSharedWithControlledRoom)
 
-    /** Match permanents whose name isn't shared with a token the evaluating player controls. */
-    fun nameNotSharedWithControlledToken() = withCardPredicate(CardPredicate.NameNotSharedWithControlledToken)
-
-    /**
-     * Match permanents whose name isn't shared with *another* permanent the evaluating player
-     * controls — "that doesn't have the same name as another permanent you control" (Yenna,
-     * Redtooth Regent). The candidate itself is excluded from the comparison; see
-     * [CardPredicate.NameNotSharedWithAnotherControlledPermanent].
-     */
-    fun nameNotSharedWithAnotherControlledPermanent() =
-        withCardPredicate(CardPredicate.NameNotSharedWithAnotherControlledPermanent)
 
     /**
      * Match cards whose name equals the name durably chosen by the *source permanent* as it
@@ -186,10 +175,12 @@ interface ObjectFilterBuilder<out Self> {
     fun manaValueAtMost(max: Int) = withCardPredicate(CardPredicate.ManaValueAtMost(max))
 
     /** Mana value at most the X chosen for the source spell/ability */
-    fun manaValueAtMostX() = withCardPredicate(CardPredicate.ManaValueAtMostX)
+    fun manaValueAtMostX() =
+        compareNumericProperty(CardNumericProperty.MANA_VALUE, ComparisonOperator.LTE, DynamicAmount.XValue)
 
     /** Mana value exactly equal to the number chosen for the source spell/ability (Void) */
-    fun manaValueEqualsX() = withCardPredicate(CardPredicate.ManaValueEqualsX)
+    fun manaValueEqualsX() =
+        compareNumericProperty(CardNumericProperty.MANA_VALUE, ComparisonOperator.EQ, DynamicAmount.XValue)
 
     /** Mana value at least */
     fun manaValueAtLeast(min: Int) = withCardPredicate(CardPredicate.ManaValueAtLeast(min))
@@ -266,8 +257,8 @@ interface ObjectFilterBuilder<out Self> {
     /** Power equals */
     fun power(value: Int) = withCardPredicate(CardPredicate.PowerEquals(value))
 
-    /** Power exactly equal to the X chosen for the source spell/ability (Ent-Draught Basin) */
-    fun powerEqualsX() = withCardPredicate(CardPredicate.PowerEqualsX)
+    /** Power exactly equal to the X chosen for the source spell/ability (Ent-Draught Basin). */
+    fun powerEqualsX() = compareNumericProperty(CardNumericProperty.POWER, ComparisonOperator.EQ, DynamicAmount.XValue)
 
     /** "with base power [value]" — see [CardPredicate.BasePowerEquals]. */
     fun basePower(value: Int) = withCardPredicate(CardPredicate.BasePowerEquals(value))
@@ -294,7 +285,7 @@ interface ObjectFilterBuilder<out Self> {
     fun powerAtLeast(min: Int) = withCardPredicate(CardPredicate.PowerAtLeast(min))
 
     /** Power at least the X chosen for the source spell/ability (Expel the Interlopers). */
-    fun powerAtLeastX() = withCardPredicate(CardPredicate.PowerAtLeastX)
+    fun powerAtLeastX() = compareNumericProperty(CardNumericProperty.POWER, ComparisonOperator.GTE, DynamicAmount.XValue)
 
     /** Power strictly greater than the projected power of a referenced entity (source, triggering, etc.) */
     fun powerGreaterThanEntity(reference: EffectTarget.SingleEntity) =
@@ -317,8 +308,8 @@ interface ObjectFilterBuilder<out Self> {
     /** Toughness at most */
     fun toughnessAtMost(max: Int) = withCardPredicate(CardPredicate.ToughnessAtMost(max))
 
-    /** Toughness at most the X chosen for the source spell/ability. */
-    fun toughnessAtMostX() = withCardPredicate(CardPredicate.ToughnessAtMostX)
+    /** Toughness at most the X chosen for the source spell/ability (Zero Point Ballad). */
+    fun toughnessAtMostX() = compareNumericProperty(CardNumericProperty.TOUGHNESS, ComparisonOperator.LTE, DynamicAmount.XValue)
 
     /** Toughness at least */
     fun toughnessAtLeast(min: Int) = withCardPredicate(CardPredicate.ToughnessAtLeast(min))
@@ -475,6 +466,16 @@ interface ObjectFilterBuilder<out Self> {
      */
     fun sharingNameWithPermanentYouControl(filter: GameObjectFilter) =
         withCardPredicate(CardPredicate.SharesNameWithPermanentYouControl(filter))
+
+    /**
+     * Must **not** have the same name as any permanent the evaluating player controls matching
+     * [filter] — "that doesn't have the same name as a token you control" (The Apprentice's Folly,
+     * `filter = GameObjectFilter.Token`). With [another] the candidate is left out of the compared
+     * set, for "… as **another** permanent you control" (Yenna, Redtooth Regent,
+     * `filter = GameObjectFilter.Permanent`). `Not` over [CardPredicate.SharesNameWithPermanentYouControl].
+     */
+    fun nameNotSharedWithPermanentYouControl(filter: GameObjectFilter, another: Boolean = false) =
+        withCardPredicate(CardPredicate.Not(CardPredicate.SharesNameWithPermanentYouControl(filter, excludeSelf = another)))
 
     /**
      * Must share **no** creature type with any permanent the evaluating player controls matching

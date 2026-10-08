@@ -1362,9 +1362,6 @@ class TriggerMatcher(
                 val cmc = if (isFaceDown) 0 else cardComponent.manaValue
                 cmc <= predicate.max
             }
-            com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtMostX -> false
-            // Resolution-time chosen-number predicate; TriggerMatcher has no chosen-number context.
-            com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueEqualsX -> false
             // Entity-relative — TriggerMatcher has no entity context; predicate doesn't apply here.
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtMostEntity -> false
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtMostEntityManaSpent -> false
@@ -1419,11 +1416,6 @@ class TriggerMatcher(
                     else lastKnownToughness ?: projected.getToughness(entityId) ?: unprojectedStat(isPower = false) ?: 0
                 toughness <= predicate.max
             }
-            // Resolution-time only — TriggerMatcher has no X context, so the predicate never matches here.
-            com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessAtMostX -> false
-            // Resolution-time chosen-number predicates; TriggerMatcher has no chosen-number context.
-            com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerEqualsX -> false
-            com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerAtLeastX -> false
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessEquals -> {
                 val toughness = if (isFaceDown) 2
                     else lastKnownToughness ?: projected.getToughness(entityId) ?: unprojectedStat(isPower = false) ?: 0

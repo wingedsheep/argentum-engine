@@ -13,7 +13,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Draw a card.
  *
  * X is chosen as the spell is cast (paid as part of its {X}{U} mana cost). The targeted
- * nonland permanent must have mana value exactly X (CardPredicate.ManaValueEqualsX, the
+ * nonland permanent must have mana value exactly X (`manaValueEqualsX()`, the
  * same chosen-number target restriction as Spell Blast / Blue Sun's Twilight).
  */
 val Repeal = card("Repeal") {

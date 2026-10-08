@@ -4358,7 +4358,10 @@
                 "powerBonus": 2,
                 "toughnessBonus": 2
             },
-            "GrantHexproofFromMonocoloredToGroup"
+            {
+                "type": "GrantHexproofFromToGroup",
+                "scope": "ProtectionScope.Monocolored"
+            }
         ]
     },
     "equipCost": "{4}",
@@ -10670,7 +10673,12 @@
                         "filter": {
                             "cardPredicates": [
                                 "IsCreature",
-                                "ManaValueAtMostX"
+                                {
+                                    "type": "CompareNumericProperty",
+                                    "property": "MANA_VALUE",
+                                    "operator": "LTE",
+                                    "amount": "XValue"
+                                }
                             ]
                         }
                     },

@@ -721,22 +721,41 @@ object Conditions {
         Compare(DynamicAmount.LifeTotal(Player.You), ComparisonOperator.LTE, DynamicAmount.Fixed(threshold))
 
     /**
-     * If *some* player in the game has [threshold] or less life. Existential — true
-     * as soon as any player (you or any opponent, including in multiplayer) matches.
-     *
-     * Used by cards like Razortrap Gorge ("enters tapped unless a player has 13 or
-     * less life"). Distinct from [LifeAtMost], which is `Player.You` only.
+     * If *some* player in the game has [threshold] or less life (Razortrap Gorge: "enters tapped
+     * unless a player has 13 or less life") — the least life total among the players still in the
+     * game is at most [threshold]. Existential over you and every opponent; distinct from
+     * [LifeAtMost], which is `Player.You` only. Team games read the shared team total (CR 810.9a).
      */
     fun APlayerLifeAtMost(threshold: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.APlayerLifeAtMost(threshold)
+        Compare(
+            DynamicAmount.LeastAmongPlayers(Player.Each, DynamicAmount.LifeTotal(Player.You)),
+            ComparisonOperator.LTE,
+            DynamicAmount.Fixed(threshold)
+        )
 
-    /** If every player in the game has [threshold] or less life. */
+    /**
+     * If every player in the game has [threshold] or less life (Cryptolith Fragment) — the
+     * greatest life total among the players still in the game is at most [threshold]. Team games
+     * read the shared team total (CR 810.9a).
+     */
     fun EachPlayerLifeAtMost(threshold: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.EachPlayerLifeAtMost(threshold)
+        Compare(
+            DynamicAmount.GreatestAmongPlayers(Player.Each, DynamicAmount.LifeTotal(Player.You)),
+            ComparisonOperator.LTE,
+            DynamicAmount.Fixed(threshold)
+        )
 
-    /** If at least one opponent has [threshold] or less life. */
+    /**
+     * If at least one opponent has [threshold] or less life (Bloodghast) — existential over the
+     * controller's opponents only, so the controller's own low life never satisfies it: the least
+     * life total among your opponents is at most [threshold].
+     */
     fun AnOpponentLifeAtMost(threshold: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.AnOpponentLifeAtMost(threshold)
+        Compare(
+            DynamicAmount.LeastAmongPlayers(Player.EachOpponent, DynamicAmount.LifeTotal(Player.You)),
+            ComparisonOperator.LTE,
+            DynamicAmount.Fixed(threshold)
+        )
 
     /**
      * If your life total is N or more.
@@ -2426,23 +2445,14 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadCounters
 
     /**
-     * If the triggering entity had [subtype] among its **projected** subtypes when it left the
-     * battlefield (CR 603.10 last-known information). Wrap in [Not] for the "if it wasn't a X"
-     * wording — e.g. Infernal Vessel's `Not(TriggeringEntityHadSubtype(Subtype.DEMON.value))`,
-     * where the Demon type the card grants itself on return is what stops it looping.
+     * "If it was [filter]" — the triggering permanent's **last-known** projected type line when it
+     * left the battlefield matches [filter] (CR 603.10 / 608.2h). [filter] may use card types and
+     * subtypes only. Wrap in [Not] for "if it wasn't …": Infernal Vessel's
+     * `Not(TriggeringEntityWas(GameObjectFilter.Any.withSubtype(Subtype.DEMON)))`; Tom, Bert, and
+     * William's `TriggeringEntityWas(GameObjectFilter.Creature)`.
      */
-    fun TriggeringEntityHadSubtype(subtype: String): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadSubtype(subtype)
-
-    /**
-     * If the triggering entity had [cardType] among its **projected** card types when it left the
-     * battlefield (CR 603.10 last-known information). The card-type sibling of
-     * [TriggeringEntityHadSubtype] — e.g. Tom, Bert, and William's
-     * `TriggeringEntityHadCardType(CardType.CREATURE.name)`, where returning as an artifact is what
-     * stops the death trigger looping.
-     */
-    fun TriggeringEntityHadCardType(cardType: String): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadCardType(cardType)
+    fun TriggeringEntityWas(filter: GameObjectFilter): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWas(filter)
 
     /**
      * "**If you won**" — the partial rider on a "Whenever you clash" trigger (CR 701.30d). True when

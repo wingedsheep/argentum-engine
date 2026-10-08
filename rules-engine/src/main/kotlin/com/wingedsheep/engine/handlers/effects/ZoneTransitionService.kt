@@ -486,7 +486,7 @@ class ZoneTransitionService(
                 toughness = lastKnownToughness,
                 // Mirror the projected type line's subtypes into the snapshot's own `subtypes`
                 // field so it carries the same meaning here as on the `fromProjection` path.
-                // Read by `TriggeringEntityHadSubtype` ("if it wasn't a Demon" — Infernal Vessel),
+                // Read by `TriggeringEntityWas` ("if it wasn't a Demon" — Infernal Vessel),
                 // which must see continuous-effect-granted types, not just printed ones.
                 subtypes = lastKnownTypeLine?.subtypes?.mapTo(mutableSetOf()) { it.value } ?: emptySet(),
                 controllerId = controllerId,

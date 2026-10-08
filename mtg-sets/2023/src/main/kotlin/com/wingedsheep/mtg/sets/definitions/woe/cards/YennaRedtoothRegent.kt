@@ -25,7 +25,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Implementation notes:
  *  - **The name restriction** is the target filter, not a resolution check: "doesn't have the same
  *    name as another permanent you control" is
- *    [com.wingedsheep.sdk.scripting.predicates.CardPredicate.NameNotSharedWithAnotherControlledPermanent].
+ *    `Not(`[com.wingedsheep.sdk.scripting.predicates.CardPredicate.SharesNameWithPermanentYouControl]`(Permanent, excludeSelf = true))`.
  *    It compares against every *other* permanent the controller has out — the token Yenna just
  *    made included — so activating twice on the same enchantment is illegal the second time, which
  *    is the card's whole design constraint.
@@ -58,7 +58,7 @@ val YennaRedtoothRegent = card("Yenna, Redtooth Regent") {
             TargetFilter(
                 GameObjectFilter.Enchantment
                     .youControl()
-                    .nameNotSharedWithAnotherControlledPermanent()
+                    .nameNotSharedWithPermanentYouControl(GameObjectFilter.Permanent, another = true)
             ),
         )
         effect = Effects.CreateTokenCopyOfTarget(

@@ -11234,7 +11234,12 @@
                 "filter": {
                     "baseFilter": {
                         "cardPredicates": [
-                            "ManaValueEqualsX"
+                            {
+                                "type": "CompareNumericProperty",
+                                "property": "MANA_VALUE",
+                                "operator": "EQ",
+                                "amount": "XValue"
+                            }
                         ]
                     },
                     "zone": "Stack"
@@ -11282,7 +11287,11 @@
             }
         ],
         "staticAbilities": [
-            "SkipUntapStep"
+            {
+                "type": "SkipStepOrPhase",
+                "part": "UNTAP_STEP",
+                "player": "Each"
+            }
         ]
     },
     "metadata": {

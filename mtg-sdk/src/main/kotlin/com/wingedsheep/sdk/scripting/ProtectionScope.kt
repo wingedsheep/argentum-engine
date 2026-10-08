@@ -43,6 +43,16 @@ sealed interface ProtectionScope {
     @Serializable
     data object Multicolored : ProtectionScope
 
+    /**
+     * From monocolored — matches a source with exactly one color (CR 105.2a), the twin of
+     * [Multicolored]. Engine-wired for *hexproof*, printed ([KeywordAbility.Hexproof]) or granted
+     * (Dragonfire Blade, via [GrantHexproofFromToGroup]), and for player protection; creature
+     * *protection* from monocolored is not projected, and [KeywordAbility.Protection] rejects it.
+     */
+    @SerialName("ProtectionScope.Monocolored")
+    @Serializable
+    data object Monocolored : ProtectionScope
+
     /** Protection from a card type — "from creatures". */
     @SerialName("ProtectionScope.CardType")
     @Serializable

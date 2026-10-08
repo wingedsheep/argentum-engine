@@ -1896,7 +1896,11 @@
                     "then": {
                         "type": "Composite",
                         "effects": [
-                            "SkipNextDrawStep",
+                            {
+                                "type": "SkipStepOrPhaseEffect",
+                                "part": "DRAW_STEP",
+                                "duration": "NEXT"
+                            },
                             {
                                 "type": "GainLife",
                                 "amount": {

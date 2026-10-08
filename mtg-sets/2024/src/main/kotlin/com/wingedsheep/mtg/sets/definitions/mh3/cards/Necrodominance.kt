@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.mh3.cards
 
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.TurnPart
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
@@ -11,7 +12,7 @@ import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.SetMaximumHandSize
-import com.wingedsheep.sdk.scripting.SkipDrawStep
+import com.wingedsheep.sdk.scripting.SkipStepOrPhase
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 
 /**
@@ -37,7 +38,7 @@ val Necrodominance = card("Necrodominance") {
         "If a card or token would be put into your graveyard from anywhere, exile it instead."
 
     staticAbility {
-        ability = SkipDrawStep
+        ability = SkipStepOrPhase(TurnPart.DRAW_STEP)
     }
 
     triggeredAbility {

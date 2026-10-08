@@ -1783,7 +1783,12 @@
                                     "filter": {
                                         "cardPredicates": [
                                             "IsCreature",
-                                            "ManaValueAtMostX"
+                                            {
+                                                "type": "CompareNumericProperty",
+                                                "property": "MANA_VALUE",
+                                                "operator": "LTE",
+                                                "amount": "XValue"
+                                            }
                                         ]
                                     }
                                 },
@@ -2396,7 +2401,12 @@
                     "baseFilter": {
                         "cardPredicates": [
                             "IsCreature",
-                            "ManaValueAtMostX"
+                            {
+                                "type": "CompareNumericProperty",
+                                "property": "MANA_VALUE",
+                                "operator": "LTE",
+                                "amount": "XValue"
+                            }
                         ]
                     }
                 },
@@ -11499,7 +11509,12 @@
                                     "IsCreature"
                                 ]
                             },
-                            "ManaValueEqualsX"
+                            {
+                                "type": "CompareNumericProperty",
+                                "property": "MANA_VALUE",
+                                "operator": "EQ",
+                                "amount": "XValue"
+                            }
                         ]
                     }
                 }
@@ -17142,7 +17157,12 @@
                                 "cardPredicates": [
                                     "IsArtifact",
                                     "IsNontoken",
-                                    "ManaValueEqualsX"
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "EQ",
+                                        "amount": "XValue"
+                                    }
                                 ],
                                 "controllerPredicate": "ControlledByYou"
                             }

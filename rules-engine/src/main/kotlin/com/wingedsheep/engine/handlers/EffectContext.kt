@@ -109,7 +109,7 @@ data class EffectContext(
     val alignedTargets: List<ChosenTarget?> = emptyList(),
     /**
      * The X chosen for an X-cost spell/ability. Also reused by `ChooseNumberThenEffect` to
-     * carry a "choose a number" value into the inner effect (read via `CardPredicate.ManaValueEqualsX`,
+     * carry a "choose a number" value into the inner effect (read via `manaValueEqualsX()`,
      * Void). These two uses share one slot, so a future card that both pays `{X}` *and* chooses a
      * number would collide here — split the slot before authoring such a card.
      */

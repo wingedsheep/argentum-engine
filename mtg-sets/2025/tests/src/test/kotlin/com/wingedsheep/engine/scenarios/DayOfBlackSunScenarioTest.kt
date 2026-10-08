@@ -20,10 +20,8 @@ import io.kotest.matchers.shouldBe
  *
  * The interesting case is the *undeclared* X. A caster that announces nothing — the AI's
  * `CastSpell` carries no `xValue`, and a synthesized free cast never picks one — pays nothing for
- * X, so X is 0 (CR 601.2b). Left null all the way to resolution it hit
- * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtMostX], which fails *open* on
- * an unbound X — deliberately, so an X spell is still enumerated as a legal action before X is
- * chosen — and "mana value X or less" then matched every creature on the board.
+ * X, so X is 0 (CR 601.2b). Left null all the way to resolution, "mana value X or less" once matched
+ * every creature on the board; it now matches none, which is still wrong for an X of 0.
  */
 class DayOfBlackSunScenarioTest : FunSpec({
 

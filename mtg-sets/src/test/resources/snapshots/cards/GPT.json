@@ -938,7 +938,12 @@
                         "cardPredicates": [
                             "IsNonland",
                             "IsPermanent",
-                            "ManaValueEqualsX"
+                            {
+                                "type": "CompareNumericProperty",
+                                "property": "MANA_VALUE",
+                                "operator": "EQ",
+                                "amount": "XValue"
+                            }
                         ]
                     }
                 },

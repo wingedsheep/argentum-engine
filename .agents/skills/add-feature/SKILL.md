@@ -61,10 +61,24 @@ existing static ability fed a `DynamicAmount`.
 If a composition expresses it: **stop.** Add the recipe, go to tests, and document it in the SDK
 reference if it's reusable.
 
-## Step 3: If a new type is genuinely needed
+## Step 3: Extend the closest type; add a new one only if you must
 
-Apply the four reusability rules (target generality, duration/removal generality, parameterized
-filters/amounts, name-the-mechanic), then put it in the right place —
+Composition didn't reach. Work the order in
+[extend before you add](../../../docs/sdk-design-principles.md#extend-before-you-add): **add an axis to
+the closest existing type** (renaming or migrating it if the name no longer fits), and only then a new
+type. `SdkSurfaceBaselineTest` and `just sdk-tail` both show the neighbours to check.
+
+- **Adding an axis** — make it a value with a meaning (enum, filter, `DynamicAmount`, sealed option),
+  default it to the type's old behaviour so existing cards don't move, and prove that with an unchanged
+  card-golden re-bless (`just rebless-cards`, empty diff outside your cards).
+- **Adding a type** — its KDoc names the two closest existing types and why neither takes the axis, and
+  the same answer goes on its `[added]` line in `mtg-sdk/src/test/resources/sdk-surface-baseline.txt`.
+- **Either way, delete what you subsume.** If the new axis or type makes an older narrow type
+  expressible, migrate that type's cards and delete it in this PR — don't leave a fossil.
+
+**When a new type is genuinely needed**, apply the four reusability rules (target generality,
+duration/removal generality, parameterized filters/amounts, name-the-mechanic), then put it in the right
+place —
 [`add-card/new-sdk-types.md`](../add-card/new-sdk-types.md) has the SDK-home / engine-wiring table for
 every kind of vocabulary, plus the five layers a counter type spans.
 
@@ -203,12 +217,18 @@ details (`ScenarioTestBase` vs `GameTestDriver`, inline test cards) and which co
 text into the very SDK types you just touched, so it is a compile-time consumer of `mtg-sdk` and the
 closest thing the SDK has to an outside reader.
 
-- **You changed or renamed an existing type** (new required parameter, moved constant, reshaped effect):
-  fix the grammar rules that construct it **in this change**, and run `just assay-gate --limit 2000` so
-  the touchstone still round-trips. Skipping this breaks the `:oracle-assay` build for everyone.
-- **You added a new type**: nothing is owed here. An Assay rule is bidirectional and ships as a measured
+Adding a type and extending one owe the same here. The Assay cost of widening an existing type is
+**expected work, not a reason to add a sibling type instead** — a sibling dodges this step today and
+costs every later reader (and Assay's own grammar) a second spelling.
+
+- **You changed, widened or renamed an existing type** (new axis, new required parameter, moved
+  constant, reshaped effect, a narrow type migrated and deleted): fix the grammar rules that construct
+  it **in this change**, and run `just assay-gate --limit 2000` so the touchstone still round-trips.
+  Skipping this breaks the `:oracle-assay` build for everyone. A new axis value Assay can't read yet
+  needs no new rule — the old readings must keep compiling and round-tripping, that's all.
+- **You added a new type or a new axis value**: teaching Assay to *read* it is a separate measured
   *band* — its own probe, ranking and PR (see [`docs/oracle-assay.md`](../../../docs/oracle-assay.md)) —
-  so don't grow this PR into one. Name the new vocabulary in the PR body instead:
+  so don't grow this PR into one. In both cases name the new vocabulary in the PR body:
   `just assay-report --rank tail` is the ranked backlog of what the grammar still can't read, and new
   vocabulary is how a row on it becomes reachable.
 - **Your feature changed how existing cards behave**: run `just assay-differential` over the affected
@@ -228,7 +248,10 @@ closest thing the SDK has to an outside reader.
 
 - A new `Effect`/`StaticAbility` whose executor converts it 1:1 into an existing `Modification` or effect
   with a literal formula → use the existing type fed a `DynamicAmount`.
-- A new optional parameter bolted onto an existing effect to cover a variation → compose instead.
+- A card-shaped Boolean bolted onto an existing type (it means something for one card, or only when
+  another field is set) → name the real axis (an enum, filter, amount or sealed option), or compose.
+- A new type beside an existing one that could have taken the axis → extend the existing one.
+- A new general primitive that leaves the narrow type it subsumes in place → migrate and delete it here.
 - Constants baked into a type (`bonusPerType = 1`, a hardcoded subtype, `count = 20` for "any number") →
   parameterize.
 - A type named for the card that motivated it.

@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.scripting.effects.SearchDestination
  *
  * The search is the stock `Patterns.Library.searchLibrary` recipe pointed at the battlefield;
  * `count = 1` is how many cards are found, while the {X} paid lives in the *filter*
- * (`manaValueAtMostX()` → `CardPredicate.ManaValueAtMostX`, read off this spell's own cast at
+ * (`manaValueAtMostX()`, read off this spell's own cast at
  * resolution). Searching never compels a find (CR 701.23b), so X = 0 legitimately finds nothing —
  * except for Dryad Arbor, the one green creature card with mana value 0.
  *

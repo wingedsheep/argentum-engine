@@ -2336,7 +2336,12 @@
                         "filter": {
                             "cardPredicates": [
                                 "IsCreature",
-                                "ManaValueAtMostX"
+                                {
+                                    "type": "CompareNumericProperty",
+                                    "property": "MANA_VALUE",
+                                    "operator": "LTE",
+                                    "amount": "XValue"
+                                }
                             ]
                         }
                     },
@@ -2653,7 +2658,12 @@
                                 "filter": {
                                     "cardPredicates": [
                                         "IsArtifact",
-                                        "ManaValueAtMostX"
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "MANA_VALUE",
+                                            "operator": "LTE",
+                                            "amount": "XValue"
+                                        }
                                     ]
                                 }
                             },

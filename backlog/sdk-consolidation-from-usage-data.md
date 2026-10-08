@@ -2,7 +2,7 @@
 
 **Snapshot:** 2026-10-08, `main` @ `fa3672e42a`. Point-in-time report: counts go stale as cards and
 SDK types land. Re-run the method rather than editing the numbers.
-**Status:** Proposed. Nothing here is started. **Owner:** TBD.
+**Status:** P1 done (2026-10-08); P2–P6 proposed, not started. **Owner:** TBD.
 **Related:** [`engine-sdk-architecture-review.md`](engine-sdk-architecture-review.md). Its §5
 ("one spelling per concept", largely shipped in #2348) removed *parallel spellings of one concept*.
 This doc targets *groups of types that should be one concept*, and the process that keeps creating
@@ -295,7 +295,48 @@ These are separate from the proposals. Each deserves its own fix PR with a scena
 Reordered by the research. P1 addresses the cause; P2–P6 pay down the debt. Prove each migration
 by an alpha-equivalent golden re-bless, as #2348 was.
 
-### P1. Make extending cheaper than adding *(new)*
+### P1. Make extending cheaper than adding *(new)* — ✅ done
+
+- [x] **Done 2026-10-08.** What shipped, item by item:
+  1. `docs/sdk-design-principles.md` § "Extend before you add" and `add-feature` Step 3. Both mirrored in
+     `add-card/new-sdk-types.md` and the `review-changes` SDK lens.
+  2. Delete-what-you-subsume is now a rule in both docs and an `add-feature` anti-pattern.
+  3. `add-feature` Step 9 now treats widening and adding the same way. Assay work triggered by a new
+     axis is stated as expected.
+  4. `SdkSurfaceBaselineTest` (`:mtg-sdk`) works against
+     `mtg-sdk/src/test/resources/sdk-surface-baseline.txt`. The 1,630 existing leaves are listed as
+     `[grandfathered]`; new ones go under `[added]` as `name — family — first card — closest — why not`.
+  5. `just sdk-tail` (`SdkTailReport`) writes per-family tail shares plus fossil candidates, by shape and
+     by 1:1 lowering. It is wired into the set-loop finishing PR.
+  6. The catalog is searchable through a generated `docs/sdk-index.md`: one line per sealed type with its
+     fields and KDoc summary, kept current by `SdkIndexTest` and `just sdk-index`. The catalog now
+     states a one-line entry style.
+     - **Still open:** cutting the existing long entries in `card-sdk-language-reference.md` down to one
+       line, with detail moved into KDoc. Do that as entries are touched, or as part of the review's §6
+       catalog split.
+  7. Retired:
+     - the X predicates, mana value included (`ManaValueEqualsX` / `ManaValueAtMostX`), all now
+       `CompareNumericProperty(…, XValue)` — permissive while X is unbound during enumeration, matching
+       nothing when X is unbound inside a resolution;
+     - the life conditions: `AnOpponentLifeAtMost`, `EachPlayerLifeAtMost`, and their unlisted
+       sibling `APlayerLifeAtMost`;
+     - the skip effects, now one `SkipStepOrPhaseEffect(part, duration)` over `TurnPart` and
+       `SkipDuration` (next instance / rest of this turn), and the standing `SkipStepOrPhase` static;
+     - the hexproof-from pair, now `GrantHexproofFromToGroup(ProtectionScope)`;
+     - `TriggeringEntityHad*`, now an LKI-reading `TriggeringEntityWas(filter)`;
+     - two of the three name predicates, now `SharesNameWithPermanentYouControl(filter, excludeSelf)`.
+
+     Games persisted before this read through `RetiredSdkTypeLift`, which rewrites each retired
+     discriminator to its current shape.
+
+     **Next fossils, not yet folded:** `ManaValueEqualsDynamic` / `ManaValueAtMostDynamic` /
+     `PowerEqualsDynamic` / `PowerAtMostDynamic` / `ToughnessEqualsDynamic` are `CompareNumericProperty`
+     over a `DynamicAmount` too. Fold them after checking their no-controller, no-power and
+     layer-projection answers match `CompareNumericProperty`'s.
+
+     **Left on purpose:** `NameNotSharedWithControlledRoom`. It compares against the unlocked door
+     names of Rooms, which isn't the same as "shares a name with a permanent matching a filter".
+
 
 The long tail is mostly missing axes and unmigrated fossils, and the guidance steers toward both.
 Fix the guidance first, or every later consolidation regrows.

@@ -13764,8 +13764,8 @@
                     ]
                 },
                 "interveningIf": {
-                    "type": "TriggeringEntityHadCardType",
-                    "cardType": "CREATURE"
+                    "type": "TriggeringEntityWas",
+                    "filter": "creature"
                 },
                 "descriptionOverride": "When Tom, Bert, and William die, if they were a creature, return them to the battlefield. They're an artifact."
             }

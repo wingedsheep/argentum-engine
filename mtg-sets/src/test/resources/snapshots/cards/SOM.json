@@ -1736,7 +1736,12 @@
                     "filter": {
                         "cardPredicates": [
                             "IsPermanent",
-                            "ManaValueAtMostX"
+                            {
+                                "type": "CompareNumericProperty",
+                                "property": "MANA_VALUE",
+                                "operator": "LTE",
+                                "amount": "XValue"
+                            }
                         ]
                     },
                     "storeSelected": "selected1",
@@ -3657,7 +3662,12 @@
                                     "cardPredicates": [
                                         "IsNonland",
                                         "IsPermanent",
-                                        "ManaValueEqualsX"
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "MANA_VALUE",
+                                            "operator": "EQ",
+                                            "amount": "XValue"
+                                        }
                                     ],
                                     "statePredicates": [
                                         "ControllerDealtCombatDamageBySourceThisTurn"

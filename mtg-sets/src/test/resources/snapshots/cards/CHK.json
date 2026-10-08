@@ -5227,7 +5227,12 @@
                             "baseFilter": {
                                 "cardPredicates": [
                                     "IsArtifact",
-                                    "ManaValueEqualsX"
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "EQ",
+                                        "amount": "XValue"
+                                    }
                                 ]
                             }
                         },
@@ -11165,7 +11170,12 @@
                                 "filter": {
                                     "cardPredicates": [
                                         "IsNonland",
-                                        "ManaValueEqualsX"
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "MANA_VALUE",
+                                            "operator": "EQ",
+                                            "amount": "XValue"
+                                        }
                                     ]
                                 }
                             },
@@ -14482,7 +14492,9 @@
                     }
                 },
                 "effect": {
-                    "type": "SkipNextUntapStep",
+                    "type": "SkipStepOrPhaseEffect",
+                    "part": "UNTAP_STEP",
+                    "duration": "NEXT",
                     "target": {
                         "type": "PlayerRef",
                         "player": "TriggeringPlayer"
@@ -18030,7 +18042,9 @@
                     "type": "Composite",
                     "effects": [
                         {
-                            "type": "SkipNextUntapStep",
+                            "type": "SkipStepOrPhaseEffect",
+                            "part": "UNTAP_STEP",
+                            "duration": "NEXT",
                             "target": {
                                 "type": "BoundVariable",
                                 "name": "t0"

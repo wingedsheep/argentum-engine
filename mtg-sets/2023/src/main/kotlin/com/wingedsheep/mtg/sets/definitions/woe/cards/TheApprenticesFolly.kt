@@ -32,7 +32,7 @@ val TheApprenticesFolly = card("The Apprentice's Folly") {
     fun copyChapter(chapter: Int) = sagaChapter(chapter) {
         val creature = target(
             TargetFilter(
-                GameObjectFilter.Creature.youControl().nontoken().nameNotSharedWithControlledToken()
+                GameObjectFilter.Creature.youControl().nontoken().nameNotSharedWithPermanentYouControl(GameObjectFilter.Token)
             ),
         )
         effect = Effects.CreateTokenCopyOfTarget(

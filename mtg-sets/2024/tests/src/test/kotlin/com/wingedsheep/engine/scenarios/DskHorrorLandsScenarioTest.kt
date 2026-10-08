@@ -18,7 +18,7 @@ import com.wingedsheep.engine.core.Outcome
  * Abandoned Campground (W/U) and Strangled Cemetery (B/G).
  *
  * Each: "This land enters tapped unless a player has 13 or less life. {T}: Add {C1} or {C2}."
- * The enters-tapped condition is the existential [APlayerLifeAtMost(13)] — true when ANY
+ * The enters-tapped condition is the existential `Conditions.APlayerLifeAtMost(13)` — true when ANY
  * player is at 13 life or below, distinct from a controller-only threshold.
  */
 class DskHorrorLandsScenarioTest : FunSpec({

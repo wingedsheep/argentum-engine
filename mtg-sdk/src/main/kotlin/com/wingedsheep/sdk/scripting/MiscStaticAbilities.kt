@@ -1174,30 +1174,39 @@ data class LegendRuleDoesNotApplyTo(
 }
 
 /**
- * The controller skips their draw step — "Skip your draw step." (Colfenor's Plans, Necropotence).
+ * [player] skips every [part] for as long as this static applies — "Skip your draw step."
+ * (Colfenor's Plans, Necrodominance; [player] = [Player.You]) and "Players skip their untap
+ * steps." (Stasis; [Player.Each]).
  *
- * Like [NoMaximumHandSize] this is a turn-based read rather than a continuous-projection effect:
- * [com.wingedsheep.engine.core.DrawPhaseManager] scans the battlefield for it as the draw step
- * begins and, when the drawing player controls a permanent that has it, takes no draw. It is the
- * standing counterpart of
- * [com.wingedsheep.sdk.scripting.effects.SkipStepOrPhaseThisTurnEffect] / the one-shot
- * "skip your next draw step" marker, which are consumed by the step they skip.
+ * A turn-based read rather than a continuous-projection effect: the engine scans the battlefield
+ * (and granted statics) as the step begins, resolving [player] from each source's controller, and
+ * proceeds past the step as though it didn't exist (CR 500.11). [ConditionalStaticAbility] and
+ * [CompositeStaticAbility] wrappers are unwrapped. Unlike the one-shot and this-turn
+ * [com.wingedsheep.sdk.scripting.effects.SkipStepOrPhaseEffect], it is never consumed.
  *
- * The draw-step read matches the ability by type and does **not** unwrap a
- * [ConditionalStaticAbility], so an "as long as …" wording needs that unwrapping added to
- * `DrawPhaseManager.skipsDrawStep` first — every printed use of this line so far is unconditional.
+ * Only [com.wingedsheep.sdk.core.TurnPart.UNTAP_STEP] and
+ * [com.wingedsheep.sdk.core.TurnPart.DRAW_STEP] have a standing reader.
  */
-@SerialName("SkipDrawStep")
+@SerialName("SkipStepOrPhase")
 @Serializable
-data object SkipDrawStep : StaticAbility {
-    override val description: String = "Skip your draw step"
-}
+data class SkipStepOrPhase(
+    val part: com.wingedsheep.sdk.core.TurnPart,
+    val player: Player = Player.You,
+) : StaticAbility {
+    init {
+        require(part in SUPPORTED) { "SkipStepOrPhase supports only $SUPPORTED, not $part" }
+    }
 
-/** Standing player-scoped restriction; unlike a next-step marker it is never consumed. */
-@SerialName("SkipUntapStep")
-@Serializable
-data class SkipUntapStep(val player: Player = Player.Each) : StaticAbility {
-    override val description: String = "${player.description} skips their untap steps"
+    override val description: String = when (player) {
+        Player.You -> "Skip your ${part.displayName}"
+        else -> "${player.description} skips their ${part.displayName}s"
+    }
+
+    companion object {
+        /** The parts the engine reads a standing skip for. */
+        val SUPPORTED: Set<com.wingedsheep.sdk.core.TurnPart> =
+            setOf(com.wingedsheep.sdk.core.TurnPart.UNTAP_STEP, com.wingedsheep.sdk.core.TurnPart.DRAW_STEP)
+    }
 }
 
 /**

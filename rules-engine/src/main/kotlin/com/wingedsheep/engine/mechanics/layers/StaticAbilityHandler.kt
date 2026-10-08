@@ -62,8 +62,7 @@ import com.wingedsheep.sdk.scripting.GrantProtectionFromCardType
 import com.wingedsheep.sdk.scripting.GrantProtectionFromControlledColors
 import com.wingedsheep.sdk.scripting.GrantProtectionFromLinkedExiledCardTypes
 import com.wingedsheep.sdk.scripting.GrantHexproofFromOwnColorsToGroup
-import com.wingedsheep.sdk.scripting.GrantHexproofFromMonocoloredToGroup
-import com.wingedsheep.sdk.scripting.GrantHexproofFromMulticoloredToGroup
+import com.wingedsheep.sdk.scripting.GrantHexproofFromToGroup
 import com.wingedsheep.sdk.scripting.AnimateLandGroup
 import com.wingedsheep.sdk.scripting.GrantAdditionalTypesToGroup
 import com.wingedsheep.sdk.scripting.SetLandTypesForGroup
@@ -689,15 +688,11 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
-            is GrantHexproofFromMonocoloredToGroup -> {
+            is GrantHexproofFromToGroup -> {
                 ContinuousEffectData(
-                    modification = Modification.GrantHexproofFromMonocolored,
-                    affectsFilter = convertGroupFilter(ability.filter)
-                )
-            }
-            is GrantHexproofFromMulticoloredToGroup -> {
-                ContinuousEffectData(
-                    modification = Modification.GrantHexproofFromMulticolored,
+                    modification = Modification.GrantHexproofFrom(
+                        com.wingedsheep.engine.mechanics.targeting.HexproofFromRules.keywordsFor(ability.scope)
+                    ),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
@@ -1152,8 +1147,7 @@ class StaticAbilityHandler(
             // Turn-based actions (BeginningPhaseManager / CleanupPhaseManager):
             is DamagePersistsThroughCleanup,
             is NoMaximumHandSize,
-            is com.wingedsheep.sdk.scripting.SkipDrawStep,
-            is com.wingedsheep.sdk.scripting.SkipUntapStep,
+            is com.wingedsheep.sdk.scripting.SkipStepOrPhase,
             is SetMaximumHandSize,
             is PreventManaPoolEmptying,
             is ConvertEmptyingMana,

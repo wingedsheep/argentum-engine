@@ -5,7 +5,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GrantHexproofFromMonocoloredToGroup
+import com.wingedsheep.sdk.scripting.GrantHexproofFromToGroup
+import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.ModifyStats
 
 /**
@@ -33,7 +34,7 @@ val DragonfireBlade = card("Dragonfire Blade") {
     }
 
     staticAbility {
-        ability = GrantHexproofFromMonocoloredToGroup()
+        ability = GrantHexproofFromToGroup(ProtectionScope.Monocolored)
     }
 
     equipAbility("{4}", genericCostReduction = DynamicAmounts.targetColorCount())

@@ -1299,8 +1299,19 @@
                 "binding": "ANY",
                 "effect": "Transform",
                 "interveningIf": {
-                    "type": "EachPlayerLifeAtMost",
-                    "threshold": 10
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "inner": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 10
+                    }
                 }
             }
         ],

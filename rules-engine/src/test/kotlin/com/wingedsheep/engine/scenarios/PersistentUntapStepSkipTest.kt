@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.sdk.core.TurnPart
 import com.wingedsheep.engine.event.GrantedStaticAbility
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.*
@@ -20,12 +21,12 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class PersistentUntapStepSkipTest : FunSpec({
-    val all = card("Standing Untap Skip") { typeLine = "Artifact"; staticAbility { ability = SkipUntapStep() } }
-    val own = card("Own Untap Skip") { typeLine = "Artifact"; staticAbility { ability = SkipUntapStep(Player.You) } }
-    val enemy = card("Enemy Untap Skip") { typeLine = "Artifact"; staticAbility { ability = SkipUntapStep(Player.EachOpponent) } }
+    val all = card("Standing Untap Skip") { typeLine = "Artifact"; staticAbility { ability = SkipStepOrPhase(TurnPart.UNTAP_STEP, Player.Each) } }
+    val own = card("Own Untap Skip") { typeLine = "Artifact"; staticAbility { ability = SkipStepOrPhase(TurnPart.UNTAP_STEP, Player.You) } }
+    val enemy = card("Enemy Untap Skip") { typeLine = "Artifact"; staticAbility { ability = SkipStepOrPhase(TurnPart.UNTAP_STEP, Player.EachOpponent) } }
     val conditional = card("Conditional Untap Skip") { typeLine = "Artifact"
         staticAbility { condition = Conditions.SourceIsUntapped
-            ability = CompositeStaticAbility(listOf(SkipUntapStep())) } }
+            ability = CompositeStaticAbility(listOf(SkipStepOrPhase(TurnPart.UNTAP_STEP, Player.Each))) } }
     val mute = card("Mute Skip") { manaCost = "{0}"; typeLine = "Instant"
         spell { val t = target(TargetFilter.Permanent); effect = Effects.RemoveAllAbilities(t) } }
     val steal = card("Steal Skip") { manaCost = "{0}"; typeLine = "Instant"
@@ -99,7 +100,7 @@ class PersistentUntapStepSkipTest : FunSpec({
     test("grants honor duration and survive state serialization on face-down holders") {
         val d = driver(); val me = d.activePlayer!!; val source = d.putPermanentOnBattlefield(me, "Forest")
         d.replaceState(d.state.updateEntity(source) { it.with(FaceDownComponent) }.copy(
-            grantedStaticAbilities = listOf(GrantedStaticAbility(source, SkipUntapStep(), Duration.WhileSourceTapped(), source))))
+            grantedStaticAbilities = listOf(GrantedStaticAbility(source, SkipStepOrPhase(TurnPart.UNTAP_STEP, Player.Each), Duration.WhileSourceTapped(), source))))
         skips(d, me) shouldBe false; d.tapPermanent(source); skips(d, me) shouldBe true
         val json = Json { serializersModule = engineSerializersModule; allowStructuredMapKeys = true }
         d.replaceState(json.decodeFromString<GameState>(json.encodeToString(d.state)))
@@ -108,7 +109,7 @@ class PersistentUntapStepSkipTest : FunSpec({
     test("player-held grants skip only that player's step") {
         val d = driver(); val me = d.activePlayer!!
         d.replaceState(d.state.copy(grantedStaticAbilities = listOf(
-            GrantedStaticAbility(me, SkipUntapStep(Player.You), Duration.EndOfTurn))))
+            GrantedStaticAbility(me, SkipStepOrPhase(TurnPart.UNTAP_STEP, Player.You), Duration.EndOfTurn))))
         skips(d, me) shouldBe true; skips(d, d.getOpponent(me)) shouldBe false
     }
     test("a skip affecting one shared-turn teammate skips both teammates' untap") {
@@ -164,7 +165,7 @@ class PersistentUntapStepSkipTest : FunSpec({
         val d = driver(); val me = d.activePlayer!!
         val source = d.putPermanentOnBattlefield(me, "Forest")
         d.replaceState(d.state.copy(grantedStaticAbilities = listOf(
-            GrantedStaticAbility(source, SkipUntapStep(), Duration.EndOfTurn))))
+            GrantedStaticAbility(source, SkipStepOrPhase(TurnPart.UNTAP_STEP, Player.Each), Duration.EndOfTurn))))
         val land = d.putPermanentOnBattlefield(d.getOpponent(me), "Forest").also(d::tapPermanent)
         skips(d, me) shouldBe true
         d.passPriorityUntil(Step.UPKEEP)

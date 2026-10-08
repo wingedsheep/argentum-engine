@@ -11,8 +11,9 @@ import kotlinx.serialization.json.JsonTransformingSerializer
 class UnsupportedGameStateFormatException(message: String) : SerializationException(message)
 
 /**
- * Reject obsolete execution fields before permissive JSON decoding can discard them, and lift the
- * pre-record flat trigger facts into their `triggerContext` record ([LegacyTriggerContextLift]).
+ * Reject obsolete execution fields before permissive JSON decoding can discard them, lift the
+ * pre-record flat trigger facts into their `triggerContext` record ([LegacyTriggerContextLift]), and
+ * rewrite retired SDK types to their current shape ([RetiredSdkTypeLift]).
  */
 @OptIn(ExperimentalSerializationApi::class)
 object GameStateSerializer : JsonTransformingSerializer<GameState>(GameState.generatedSerializer()) {
@@ -27,6 +28,6 @@ object GameStateSerializer : JsonTransformingSerializer<GameState>(GameState.gen
         }
         // Trigger facts used to be flat fields on each carrier; move them into the nested record
         // before permissive decoding (ignoreUnknownKeys) can discard them.
-        return LegacyTriggerContextLift.lift(state)
+        return RetiredSdkTypeLift.lift(LegacyTriggerContextLift.lift(state))
     }
 }

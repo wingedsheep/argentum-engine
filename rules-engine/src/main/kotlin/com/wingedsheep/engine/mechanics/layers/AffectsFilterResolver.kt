@@ -1011,13 +1011,7 @@ internal class AffectsFilterResolver(
         // falls back to the printed value, which is what a base P/T is before 7a/7b apply.
         is CardPredicate.BasePowerEquals -> (projected?.basePower ?: card.baseStats?.basePower) == predicate.value
         is CardPredicate.BaseToughnessEquals -> (projected?.baseToughness ?: card.baseStats?.baseToughness) == predicate.value
-        // PowerEqualsX / PowerAtLeastX are resolution-time only; layer-projection has no
-        // chosen-number context.
-        CardPredicate.PowerEqualsX -> false
-        CardPredicate.PowerAtLeastX -> false
         is CardPredicate.ToughnessAtMost -> (projected?.toughness ?: card.baseStats?.baseToughness ?: 0) <= predicate.max
-        // ToughnessAtMostX is resolution-time only; layer-projection has no X context, so it never matches here.
-        CardPredicate.ToughnessAtMostX -> false
         is CardPredicate.ToughnessAtLeast -> (projected?.toughness ?: card.baseStats?.baseToughness ?: 0) >= predicate.min
         is CardPredicate.ToughnessEquals -> (projected?.toughness ?: card.baseStats?.baseToughness) == predicate.value
         is CardPredicate.PowerOrToughnessAtLeast -> {
@@ -1037,9 +1031,6 @@ internal class AffectsFilterResolver(
         }
         is CardPredicate.ManaValueEquals -> card.manaValue == predicate.value
         is CardPredicate.ManaValueAtMost -> card.manaValue <= predicate.max
-        // ManaValueAtMostX / ManaValueEqualsX are resolution-time only; layer-projection has no chosen-number context.
-        CardPredicate.ManaValueAtMostX -> false
-        CardPredicate.ManaValueEqualsX -> false
         is CardPredicate.ManaValueAtLeast -> card.manaValue >= predicate.min
         // Entity-relative — layer-projection has no trigger/source context for filter purposes here.
         is CardPredicate.ManaValueAtMostEntity -> false
@@ -1074,16 +1065,14 @@ internal class AffectsFilterResolver(
         // Room-name distinctness is a resolution-time search filter, not a continuous/static
         // affects-filter concern.
         CardPredicate.NameNotSharedWithControlledRoom -> false
-        CardPredicate.NameNotSharedWithControlledToken -> false
-        // Likewise "no other permanent you control shares this name" — a targeting restriction
-        // evaluated against live battlefield state, not a static affects-filter.
-        CardPredicate.NameNotSharedWithAnotherControlledPermanent -> false
         is CardPredicate.OriginallyPrintedInSet ->
             card.originalSetCode?.equals(predicate.setCode, ignoreCase = true) == true
         is CardPredicate.HasBasicLandType -> if (isFaceDown) false else subtypes.any { it.equals(predicate.landType, ignoreCase = true) }
         is CardPredicate.And -> predicate.predicates.all { matchesCardPredicateForProjection(it, card, container, projected, types, subtypes, colors, keywords, isFaceDown) }
         is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicateForProjection(it, card, container, projected, types, subtypes, colors, keywords, isFaceDown) }
-        is CardPredicate.Not -> !matchesCardPredicateForProjection(predicate.predicate, card, container, projected, types, subtypes, colors, keywords, isFaceDown)
+        is CardPredicate.Not ->
+            !com.wingedsheep.engine.handlers.predicates.LiveBattlefieldPredicates.answerableOnlyLive(predicate.predicate) &&
+                !matchesCardPredicateForProjection(predicate.predicate, card, container, projected, types, subtypes, colors, keywords, isFaceDown)
         CardPredicate.ToughnessGreaterThanPower -> {
             val power = projected?.power ?: card.baseStats?.basePower ?: 0
             val toughness = projected?.toughness ?: card.baseStats?.baseToughness ?: 0

@@ -11,7 +11,7 @@ import io.kotest.matchers.shouldBe
  * "Choose a number between 0 and 10. Destroy all creatures with power greater than or equal to
  * the chosen number."
  *
- * Covers the new [com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerAtLeastX] predicate:
+ * Covers the new `powerAtLeastX()` ([com.wingedsheep.sdk.scripting.predicates.CardPredicate.CompareNumericProperty] `POWER GTE XValue`) predicate:
  * the chosen number is stamped onto the resolution context as X and the non-targeted wipe filters
  * against it. Both endpoints of the printed range are exercised (0 sweeps the board, 10 spares it)
  * along with the ordinary partial sweep, and the wipe is checked to be symmetrical.

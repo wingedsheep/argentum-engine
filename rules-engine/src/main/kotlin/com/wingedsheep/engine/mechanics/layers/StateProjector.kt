@@ -147,6 +147,8 @@ class StateProjector {
                             hexproof.cardTypes.forEach { add("HEXPROOF_FROM_CARDTYPE_$it") }
                             hexproof.nonColors.forEach { add(HexproofFromRules.nonColorKeyword(it)) }
                             hexproof.sourceKinds.forEach { add(SourceKindProtection.hexproofKeyword(it)) }
+                            if (hexproof.monocolored) add(HexproofFromRules.MONOCOLORED)
+                            if (hexproof.multicolored) add(HexproofFromRules.MULTICOLORED)
                         }
                         container.get<ToxicComponent>()?.let { add("TOXIC_${it.amount}") }
                         // Dash supplies haste from the live marker on every projection.

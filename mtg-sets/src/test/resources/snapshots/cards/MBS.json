@@ -107,7 +107,12 @@
                                     "type": "HasColor",
                                     "color": "GREEN"
                                 },
-                                "ManaValueAtMostX"
+                                {
+                                    "type": "CompareNumericProperty",
+                                    "property": "MANA_VALUE",
+                                    "operator": "LTE",
+                                    "amount": "XValue"
+                                }
                             ]
                         }
                     },

@@ -182,10 +182,15 @@ ask:
    acting), or bundle a pipeline that should be composed from atoms
    (`docs/architecture-principles.md` §1.5)? Would the *next* card of this family need a
    new field, or does it slot in?
-5. **Name matches semantics?** `CreatureTypeCount` that counts all subtypes is a name
+5. **Could an existing type have taken the axis?** The order is compose → add an axis to
+   the closest existing type → new type (`sdk-design-principles.md`, "Extend before you
+   add"). Check the new type's `sdk-surface-baseline.txt` line: its two named neighbours
+   and the reason are the claim to test. And if the change adds a general primitive, did
+   it migrate and delete the narrow type it subsumes? A left-behind fossil is a finding.
+6. **Name matches semantics?** `CreatureTypeCount` that counts all subtypes is a name
    lie — rename and document the gap. One spelling per concept: flag a second way to
    say something the SDK already says.
-6. **Surface hygiene.** Cards reach it through facades (`Effects.*`, `Patterns.*`), not
+7. **Surface hygiene.** Cards reach it through facades (`Effects.*`, `Patterns.*`), not
    raw constructors (`FacadeBoundaryTest`); `docs/card-sdk-language-reference.md` is
    updated in the same change; the SDK holds data only — no execution logic.
 

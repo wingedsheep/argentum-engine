@@ -32,8 +32,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * The dies trigger is a self-recursion loop guarded by an intervening "if". The guard has to read
  * *last-known* information: once the trigger is considered, Tom is a card in the graveyard wearing
  * its printed `Legendary Creature — Troll` type line again, so asking the live entity would answer
- * "creature" on both deaths and the pair would recur forever. [Conditions.TriggeringEntityHadCardType]
- * reads the projected card types captured when the permanent left the battlefield (CR 603.10), which
+ * "creature" on both deaths and the pair would recur forever. [Conditions.TriggeringEntityWas]
+ * reads the projected type line captured when the permanent left the battlefield (CR 603.10), which
  * is where [BecomeArtifactEffect]'s type change shows up — so the second death sees `ARTIFACT`, the
  * guard fails, and the loop stops after exactly one return.
  *
@@ -71,7 +71,7 @@ val TomBertAndWilliam = card("Tom, Bert, and William") {
 
     triggeredAbility {
         trigger = Triggers.self.dies()
-        interveningIf = Conditions.TriggeringEntityHadCardType(CardType.CREATURE.name)
+        interveningIf = Conditions.TriggeringEntityWas(GameObjectFilter.Creature)
         effect = Effects.Move(
             target = EffectTarget.Self,
             destination = Zone.BATTLEFIELD,

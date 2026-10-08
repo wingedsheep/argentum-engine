@@ -3410,7 +3410,10 @@
                 "type": "GrantMayCastFromLinkedExile",
                 "filter": {}
             },
-            "SkipDrawStep",
+            {
+                "type": "SkipStepOrPhase",
+                "part": "DRAW_STEP"
+            },
             "RestrictSpellsCastPerTurn"
         ]
     },
@@ -13513,7 +13516,12 @@
                                 "baseFilter": {
                                     "cardPredicates": [
                                         "IsCreature",
-                                        "ManaValueAtMostX"
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "MANA_VALUE",
+                                            "operator": "LTE",
+                                            "amount": "XValue"
+                                        }
                                     ],
                                     "controllerPredicate": "OwnedByYou"
                                 },

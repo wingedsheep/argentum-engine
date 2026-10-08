@@ -32,7 +32,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  *
  * Covers both primitives the card introduced: [com.wingedsheep.sdk.scripting.values.Aggregation.DISTINCT_COLOR_PAIRS]
  * (which permanents count, and that duplicates collapse) and
- * [com.wingedsheep.sdk.scripting.GrantHexproofFromMulticoloredToGroup].
+ * [com.wingedsheep.sdk.scripting.GrantHexproofFromToGroup] (`ProtectionScope.Multicolored`).
  */
 class NivMizzetGuildpactScenarioTest : FunSpec({
 

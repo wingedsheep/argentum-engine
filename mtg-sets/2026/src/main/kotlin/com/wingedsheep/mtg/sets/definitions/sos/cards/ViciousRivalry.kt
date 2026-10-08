@@ -1,11 +1,14 @@
 package com.wingedsheep.mtg.sets.definitions.sos.cards
 
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.values.CardNumericProperty
 
 /**
  * Vicious Rivalry
@@ -16,7 +19,7 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
  *
  * X is declared at cast time via the [Costs.additional.PayXLife] additional cost (capped at the
  * caster's life total). That single X is surfaced to the spell's resolution as the X value, so the
- * board wipe filters on [CardPredicate.ManaValueAtMostX] ("mana value X or less"). The card has no
+ * board wipe filters on `manaValueAtMostX()` ("mana value X or less"). The card has no
  * `{X}` in its mana cost, so there's no collision over the shared X slot.
  */
 val ViciousRivalry = card("Vicious Rivalry") {
@@ -33,7 +36,7 @@ val ViciousRivalry = card("Vicious Rivalry") {
             filter = GameObjectFilter(
                 cardPredicates = listOf(
                     CardPredicate.Or(listOf(CardPredicate.IsArtifact, CardPredicate.IsCreature)),
-                    CardPredicate.ManaValueAtMostX,
+                    CardPredicate.CompareNumericProperty(CardNumericProperty.MANA_VALUE, ComparisonOperator.LTE, DynamicAmounts.xValue()),
                 ),
             ),
         )

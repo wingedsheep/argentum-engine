@@ -18,7 +18,11 @@ import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.core.PhasedInEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.engine.state.components.stack.EntitySnapshot
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
@@ -85,16 +89,17 @@ data class TriggerContext(
     val diedBatchTotalPower: Int? = null,
     /**
      * Last-known **projected** subtypes when the triggering entity left the battlefield (CR 603.10),
-     * so continuous-effect-granted types count and not just printed ones. Read by
-     * [com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadSubtype] as an intervening-if on
-     * dies/leaves triggers (Infernal Vessel's "if it wasn't a Demon" self-recursion guard). Null
-     * when the trigger's source never left the battlefield.
+     * so continuous-effect-granted types count and not just printed ones. Read, with
+     * [lastKnownCardTypes], by [com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWas] as an
+     * intervening-if on dies/leaves triggers (Infernal Vessel's "if it wasn't a Demon"
+     * self-recursion guard) — see [lastKnownTypeLineSnapshot]. Null when the trigger's source never
+     * left the battlefield.
      */
     val lastKnownSubtypes: Set<String>? = null,
     /**
      * Last-known **projected** card types when the triggering entity left the battlefield
      * (CR 603.10), so a type set by a continuous effect counts and not just the printed one. Read by
-     * [com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadCardType] as an intervening-if on
+     * [com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWas] as an intervening-if on
      * dies/leaves triggers (Tom, Bert, and William's "if they were a creature" self-recursion
      * guard — the second death is of the artifact they came back as). The card-type sibling of
      * [lastKnownSubtypes]. Null when the trigger's source never left the battlefield.
@@ -247,6 +252,28 @@ data class TriggerContext(
      */
     val unattachedFromEntityId: EntityId? = null
 ) {
+    /**
+     * The triggering permanent's last-known type line ([lastKnownCardTypes] + [lastKnownSubtypes],
+     * both projected at departure — CR 603.10) as an [EntitySnapshot] the snapshot filter matcher
+     * can read. It carries nothing else, so a predicate on any other characteristic is unknown
+     * there. Null when the trigger's source never left the battlefield.
+     */
+    fun lastKnownTypeLineSnapshot(): EntitySnapshot? {
+        val entityId = triggeringEntityId ?: return null
+        val cardTypes = lastKnownCardTypes ?: return null
+        val subtypes = lastKnownSubtypes.orEmpty()
+        return EntitySnapshot(
+            entityId = entityId,
+            subtypes = subtypes,
+            typeLine = TypeLine(
+                cardTypes = cardTypes.mapNotNullTo(mutableSetOf()) { name ->
+                    CardType.entries.firstOrNull { it.name.equals(name, ignoreCase = true) }
+                },
+                subtypes = subtypes.mapTo(mutableSetOf()) { Subtype(it) },
+            ),
+        )
+    }
+
     companion object {
         fun fromEvent(event: com.wingedsheep.engine.core.GameEvent): TriggerContext {
             return when (event) {

@@ -20,11 +20,34 @@ The strongest version of a feature is usually **not a new type at all**. Before 
 | "Does X match a filter?" | `Conditions.EntityMatches(entity, filter)` and its `SourceMatches` / `EnchantedPermanentMatches` / `TargetMatchesFilter` / `TriggeringSpellMatches` facades — name the entity role via `EffectTarget` |
 | "You did/gained/cast N this turn" | `Compare` over a tracked `DynamicAmount` (e.g. `TurnTracking`). Missing tracker → add the *enum value* (data), not a condition class |
 
-Add a new type only when no composition reads the state, produces the player interaction, or expresses
-the timing you need. Reach for a `Patterns.*` recipe only when a second caller appears or it's a named
-MTG mechanic — inline with explicit flags otherwise.
+Reach for a `Patterns.*` recipe only when a second caller appears or it's a named MTG mechanic —
+inline the composition at the card otherwise.
 
-**Don't extend an existing effect with a new optional parameter to cover a variation.** Compose instead.
+## Extend before you add
+
+When composition doesn't reach, work this order and stop at the first step that fits:
+
+1. **Compose** existing primitives (the table above).
+2. **Add an axis to the closest existing type.** "Skip your next draw step" and "skip your next untap
+   step" are one type over a turn-part axis, not two types. If the old name no longer fits the widened
+   type, rename it and migrate its cards in the same change — refactoring is cheap here (below). An
+   axis is a value with a meaning — an enum, a filter, a `DynamicAmount`, a sealed option — not a
+   card-shaped Boolean. A field that only makes sense for the card that motivated it, or only means
+   something when another field is set, is a flag: name the real axis instead.
+3. **Add a new type** — only when neither of the above can say it: no composition reads the state,
+   produces the player interaction or expresses the timing, and no existing type takes the axis without
+   becoming two concepts under one name.
+
+**A new type names its two closest existing types and why neither can take the axis.** Say it in the
+type's KDoc and in the line `SdkSurfaceBaselineTest` asks for in
+`mtg-sdk/src/test/resources/sdk-surface-baseline.txt` — the test prints the new type's nearest
+neighbours, so "I didn't find one" isn't an answer.
+
+**A new general primitive deletes what it subsumes.** When the type or axis you add makes an older,
+narrower type expressible — `CompareNumericProperty` over the X-specific power predicates, a
+filter-taking predicate over two name-specific ones — migrate the old type's cards and delete it **in
+the same PR**. A subsumed type left behind is a fossil: the next author finds it first, copies it, and
+the long tail grows back. `just sdk-tail` lists fossil candidates.
 
 ## Four reusability rules
 

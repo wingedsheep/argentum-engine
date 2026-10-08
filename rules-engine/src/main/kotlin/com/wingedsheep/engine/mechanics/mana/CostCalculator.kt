@@ -1323,10 +1323,8 @@ class CostCalculator(
             is CardPredicate.NameEquals -> cardDef.name == predicate.name
             // Room-name distinctness is a resolution-time search filter, not a cost concern.
             CardPredicate.NameNotSharedWithControlledRoom -> false
-            CardPredicate.NameNotSharedWithControlledToken -> false
             // Same for "no other permanent you control shares this name" — a targeting
             // restriction, never a cost-reduction condition.
-            CardPredicate.NameNotSharedWithAnotherControlledPermanent -> false
 
             is CardPredicate.OriginallyPrintedInSet ->
                 cardDef.setCode?.equals(predicate.setCode, ignoreCase = true) == true
@@ -1337,8 +1335,6 @@ class CostCalculator(
             is CardPredicate.ManaValueEquals -> cardDef.manaCost.cmc == predicate.value
             is CardPredicate.ManaValueAtMost -> cardDef.manaCost.cmc <= predicate.max
             // CostCalculator has no chosen-number context; predicate has no static answer here.
-            CardPredicate.ManaValueAtMostX -> false
-            CardPredicate.ManaValueEqualsX -> false
             is CardPredicate.ManaValueAtLeast -> cardDef.manaCost.cmc >= predicate.min
             // CostCalculator has no entity context; predicate has no static answer here.
             is CardPredicate.ManaValueAtMostEntity -> false
@@ -1376,16 +1372,10 @@ class CostCalculator(
             is CardPredicate.PowerEquals -> cardDef.creatureStats?.basePower == predicate.value
             is CardPredicate.BasePowerEquals -> cardDef.creatureStats?.basePower == predicate.value
             is CardPredicate.BaseToughnessEquals -> cardDef.creatureStats?.baseToughness == predicate.value
-            // CostCalculator has no X context; predicate has no static answer here.
-            CardPredicate.PowerEqualsX -> false
             is CardPredicate.PowerAtMost -> (cardDef.creatureStats?.basePower ?: 0) <= predicate.max
             is CardPredicate.PowerAtLeast -> (cardDef.creatureStats?.basePower ?: 0) >= predicate.min
-            // CostCalculator has no X context; predicate has no static answer here.
-            CardPredicate.PowerAtLeastX -> false
             is CardPredicate.ToughnessEquals -> cardDef.creatureStats?.baseToughness == predicate.value
             is CardPredicate.ToughnessAtMost -> (cardDef.creatureStats?.baseToughness ?: 0) <= predicate.max
-            // CostCalculator has no X context; predicate has no static answer here.
-            CardPredicate.ToughnessAtMostX -> false
             is CardPredicate.ToughnessAtLeast -> (cardDef.creatureStats?.baseToughness ?: 0) >= predicate.min
             is CardPredicate.PowerOrToughnessAtLeast -> {
                 val power = cardDef.creatureStats?.basePower ?: 0
