@@ -16,7 +16,8 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  * "Choose a number" is [Effects.ChooseNumberThen] (bounded 0–10, per the Scryfall ruling that
  * both endpoints are legal choices), which stamps the chosen number onto the effect context as
  * X — the same machinery Void uses. The wipe then filters by
- * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerAtLeastX] (`powerAtLeastX()`),
+ * `powerAtLeastX()` ([com.wingedsheep.sdk.scripting.predicates.CardPredicate.CompareNumericProperty]
+ * `POWER GTE XValue`),
  * the "greater than or equal to" mirror of Zero Point Ballad's `toughnessAtMostX()`.
  *
  * Symmetrical and non-targeted, so it hits your own creatures too and ignores "can't be the

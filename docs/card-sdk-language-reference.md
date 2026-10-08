@@ -5741,13 +5741,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   enchant SBA (`EnchantRestriction.couldAttach`), never
   targeting legality; "you" in the restriction is the evaluating controller. Non-Auras never match.
   Known gap: a host that has left the battlefield is judged by its current card, not last-known info.
-- `.powerEqualsX()` — **projected power exactly equal** to the X chosen for the source spell/ability — the power
-  analogue of `.manaValueEqualsX()`. Available on both the object-filter builders and on `TargetFilter`. Used by an
-  X-cost activated ability that targets "a creature with power X" (Ent-Draught Basin: `{X}, {T}: Put a +1/+1
-  counter on target creature with power X`). Legal-action enumeration runs before X is bound, so it matches
-  permissively then (the client re-filters by the chosen X via the `xConstrainsTargetPower` /
-  `LegalActionTargetInfo.xConstrainsPower` flags); activation-time validation re-checks with X bound and rejects
-  any creature whose power isn't exactly X.
+- `.powerEqualsX()` — `compareNumericProperty(POWER, EQ, XValue)`: projected power **exactly equal** to the X
+  chosen for the source spell/ability — the power analogue of `.manaValueEqualsX()`. Available on both the
+  object-filter builders and on `TargetFilter`. Used by an X-cost activated ability that targets "a creature
+  with power X" (Ent-Draught Basin: `{X}, {T}: Put a +1/+1 counter on target creature with power X`). Matches
+  permissively while X is unbound (see `.compareNumericProperty`); the client re-filters by the chosen X via
+  the `xConstrainsTargetPower` / `LegalActionTargetInfo.xConstrainsPower` flags (set for a `POWER EQ XValue`
+  comparison), and activation-time validation re-checks with X bound.
 - `.powerGreaterThanEntity(ref)` — power strictly greater than a referenced entity's projected power. Used by
   Éowyn, Fearless Knight ("exile target creature an opponent controls with greater power") — combine
   with `EffectTarget.Self` to express "greater power than the ability's source".
@@ -5758,8 +5758,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   evaluates to zero, including its departure snapshot; a noncreature card outside the battlefield
   retains printed P/T (for example, a Vehicle). For Stone Giant use `TOUGHNESS`, `LT`, and
   `EntityProperty(Self, Power)`. Checks at target selection and again at resolution; a departed
-  activated-ability source uses its frozen departure snapshot, including after a blink. An
-  unbound dynamic reference follows normal amount semantics (zero). These context-dependent predicates
+  activated-ability source uses its frozen departure snapshot, including after a blink. With
+  `amount = XValue` it compares against the X chosen for the source spell/ability (`.powerEqualsX()`,
+  `.powerAtLeastX()`, `.toughnessAtMostX()` are the spelled-out forms); while that X is still unbound —
+  legal-action enumeration runs before the player picks it — such a comparison matches **permissively**,
+  like `.manaValueEqualsX()`, and the chosen X is enforced at validation and at the CR 608.2b re-check.
+  Any other unbound dynamic reference follows normal amount semantics (zero). These context-dependent predicates
   do not match historical cast records or standalone trigger/snapshot filters without a value context.
 - `.powerAtMostEntity(ref)` / `.powerLessThanEntity(ref)` — power ≤ (resp. **strictly** <) a referenced
   entity's projected power; inverses of `.powerGreaterThanEntity`. `powerAtMostEntity` backs Old Man of
@@ -5850,7 +5854,7 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `CardPredicate.ManaValueEqualsDynamic(amount)` / `PowerEqualsDynamic(amount)` /
   `ToughnessEqualsDynamic(amount)` — *exact* equality against a resolved `DynamicAmount`, the
   open-ended siblings of the fixed `ManaValueEquals`/`PowerEquals`/`ToughnessEquals` and the cast-`{X}`
-  `ManaValueEqualsX`/`PowerEqualsX`. They resolve the amount the same way `.manaValueAtMostDynamic`
+  `ManaValueEqualsX` / `.powerEqualsX()`. They resolve the amount the same way `.manaValueAtMostDynamic`
   resolves its cap (controller/source from the predicate context, fails closed with no controller, and
   `false` in the layer-projection / cost-calculation / cast-record paths). An object with **no** power
   or toughness — a noncreature spell — never matches the two P/T forms rather than reading the missing
@@ -5893,19 +5897,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   dies"). Honored in all four evaluation sites (resolution predicate, trigger matcher with
   last-known stats, layer projection, cost calculation). Underlying predicates:
   `CardPredicate.PowerOrToughnessAtLeast` / `CardPredicate.PowerOrToughnessAtMost`.
-- `.toughnessAtMostX()` — toughness ≤ the X chosen for the source spell/ability. Resolves
-  against `PredicateContext.xValue` at evaluation time, so it works at the spell's resolution
-  filter pass (e.g. Zero Point Ballad's mass destruction). Layer projection / trigger matching
-  / cost calculation report `false` (no X context).
-- `.powerAtLeastX()` — projected power ≥ the X chosen for the source spell/ability; the
-  greater-than-or-equal mirror of `.toughnessAtMostX()`, resolving against the same
-  `PredicateContext.xValue`. Used by Expel the Interlopers ("Choose a number between 0 and 10.
-  Destroy all creatures with power greater than or equal to the chosen number" —
-  `Effects.ChooseNumberThen(then = Effects.DestroyAll(GameObjectFilter.Creature.powerAtLeastX()), minValue = 0, maxValue = 10)`).
-  Unlike `.powerEqualsX()` it does **not** match permissively when X is unbound: an unbound X
-  reports `false`, so a chosen-number board wipe can never fire without its number. Layer
-  projection / trigger matching / cost calculation report `false` (no X context). Underlying
-  predicate: `CardPredicate.PowerAtLeastX`.
+- `.toughnessAtMostX()` / `.powerAtLeastX()` — `compareNumericProperty(TOUGHNESS, LTE, XValue)` /
+  `compareNumericProperty(POWER, GTE, XValue)`: toughness ≤ / projected power ≥ the X chosen for the source
+  spell/ability. Zero Point Ballad's wipe (`Creature.toughnessAtMostX()`); Expel the Interlopers ("Choose a
+  number between 0 and 10. Destroy all creatures with power greater than or equal to the chosen number" —
+  `Effects.ChooseNumberThen(then = Effects.DestroyAll(GameObjectFilter.Creature.powerAtLeastX()), minValue = 0, maxValue = 10)`,
+  the chosen number stamped as X). Layer projection / trigger matching / cost calculation report `false`.
 - `.tapped()` / `.untapped()` — tap state.
 - `.activatedThisTurn()` — `StatePredicate.ActivatedThisTurn`: one of the permanent's activated abilities
   (loyalty, mana, crew/saddle or any other) was activated this turn. Stamped at activation on

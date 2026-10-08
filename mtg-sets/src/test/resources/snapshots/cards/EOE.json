@@ -19415,7 +19415,12 @@
                                 "filter": {
                                     "cardPredicates": [
                                         "IsCreature",
-                                        "ToughnessAtMostX"
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "TOUGHNESS",
+                                            "operator": "LTE",
+                                            "amount": "XValue"
+                                        }
                                     ]
                                 }
                             },

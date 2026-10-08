@@ -193,8 +193,10 @@ object FilterQueryLanguage {
             // Toughness comparisons
             "ToughnessAtLeast" -> "tou>=${element["min"]?.jsonPrimitive?.int}"
             "ToughnessAtMost" -> "tou<=${element["max"]?.jsonPrimitive?.int}"
-            "ToughnessAtMostX" -> "tou<=X"
             "ToughnessEquals" -> "tou=${element["value"]?.jsonPrimitive?.int}"
+
+            // Property compared with the chosen X ("power X", "toughness X or less")
+            "CompareNumericProperty" -> formatCompareWithX(element)
 
             // Or — format as pipe-separated terms
             "Or" -> {
@@ -209,6 +211,29 @@ object FilterQueryLanguage {
 
             else -> null // Can't express this predicate
         }
+    }
+
+    /** `pow=X` / `tou<=X` / `mv>=X` for a `CompareNumericProperty` over the chosen X; null otherwise. */
+    private fun formatCompareWithX(element: JsonObject): String? {
+        val amount = element["amount"] ?: return null
+        val amountType = (amount as? JsonPrimitive)?.content
+            ?: (amount as? JsonObject)?.get("type")?.jsonPrimitive?.content
+        if (amountType != "XValue") return null
+        val property = when (element["property"]?.jsonPrimitive?.content) {
+            "POWER" -> "pow"
+            "TOUGHNESS" -> "tou"
+            "MANA_VALUE" -> "mv"
+            else -> return null
+        }
+        val operator = when (element["operator"]?.jsonPrimitive?.content) {
+            "LT" -> "<"
+            "LTE" -> "<="
+            "EQ" -> "="
+            "GT" -> ">"
+            "GTE" -> ">="
+            else -> return null
+        }
+        return "$property${operator}X"
     }
 
     private fun formatStatePredicate(element: JsonElement): String? {

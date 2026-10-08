@@ -29,6 +29,8 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.targets.*
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.CardNumericProperty
+import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 
 /**
  * Extracted target-finding helpers from LegalActionsCalculator.
@@ -462,7 +464,8 @@ class TargetEnumerationUtils(
 
     /**
      * True when [requirement] is a [TargetObject] whose filter contains
-     * [CardPredicate.PowerEqualsX] (anywhere in the predicate tree). Surfaced to the client
+     * "power X" — [CardPredicate.CompareNumericProperty] of `POWER EQ XValue` (anywhere in the
+     * predicate tree). Surfaced to the client
      * so it re-filters the permissive enumeration down to creatures whose power equals the
      * chosen X after X selection (Ent-Draught Basin).
      */
@@ -472,7 +475,10 @@ class TargetEnumerationUtils(
     }
 
     private fun containsPowerEqualsX(predicate: CardPredicate): Boolean = when (predicate) {
-        CardPredicate.PowerEqualsX -> true
+        is CardPredicate.CompareNumericProperty ->
+            predicate.property == CardNumericProperty.POWER &&
+                predicate.operator == ComparisonOperator.EQ &&
+                predicate.amount == DynamicAmount.XValue
         is CardPredicate.And -> predicate.predicates.any { containsPowerEqualsX(it) }
         is CardPredicate.Or -> predicate.predicates.any { containsPowerEqualsX(it) }
         is CardPredicate.Not -> containsPowerEqualsX(predicate.predicate)

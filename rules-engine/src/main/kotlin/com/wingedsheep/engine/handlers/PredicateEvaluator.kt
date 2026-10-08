@@ -419,14 +419,12 @@ class PredicateEvaluator(
             is CardPredicate.NotSubtype,
             is CardPredicate.OriginallyPrintedInSet,
             is CardPredicate.PowerAtLeast,
-            CardPredicate.PowerAtLeastX,
             is CardPredicate.PowerAtMost,
             is CardPredicate.CouldEnchant,
             is CardPredicate.PowerAtMostEntity,
             is CardPredicate.PowerEquals,
             is CardPredicate.PowerEqualsDynamic,
             is CardPredicate.PowerAtMostDynamic,
-            CardPredicate.PowerEqualsX,
             CardPredicate.PowerGreaterThanBase,
             is CardPredicate.BasePowerEquals,
             is CardPredicate.BaseToughnessEquals,
@@ -454,7 +452,6 @@ class PredicateEvaluator(
             is CardPredicate.TotalPowerAndToughnessAtMost,
             is CardPredicate.ToughnessAtLeast,
             is CardPredicate.ToughnessAtMost,
-            CardPredicate.ToughnessAtMostX,
             is CardPredicate.ToughnessEquals,
             is CardPredicate.ToughnessEqualsDynamic,
             CardPredicate.ToughnessGreaterThanPower -> null
@@ -915,7 +912,7 @@ class PredicateEvaluator(
                 // chooses X). Match permissively so the ability is offered at all — failing closed
                 // here means an "{X}: … target card with mana value X" ability is never enumerated,
                 // because at X-unbound no card in the graveyard qualifies. Mirrors ManaValueAtMostX
-                // and PowerEqualsX; the chosen X is enforced at activation-time validation and the
+                // and CompareNumericProperty over XValue; the chosen X is enforced at activation-time validation and the
                 // CR 608.2b resolution-time re-check. Likeness Looter, Rydia, Summoner of Mist.
                 val xValue = context?.xValue
                 if (xValue == null) true
@@ -1025,18 +1022,6 @@ class PredicateEvaluator(
                 val power = projectedValues?.power ?: amounts.offBattlefieldStat(state, entityId, isPower = true, projected)
                 power == predicate.value
             }
-            is CardPredicate.PowerEqualsX -> {
-                // Null xValue means X is unbound (legal-action enumeration runs before the
-                // player chooses X). Match permissively so the ability is offered; the chosen
-                // X is enforced at activation-time validation and resolution-time re-check —
-                // mirrors ManaValueAtMostX. Once X is bound, require power to equal it exactly.
-                val xValue = context?.xValue
-                if (xValue == null) true
-                else {
-                    val power = projectedValues?.power ?: amounts.offBattlefieldStat(state, entityId, isPower = true, projected)
-                    power == xValue
-                }
-            }
             is CardPredicate.PowerAtMost -> {
                 val power = projectedValues?.power ?: amounts.offBattlefieldStat(state, entityId, isPower = true, projected) ?: 0
                 power <= predicate.max
@@ -1045,18 +1030,6 @@ class PredicateEvaluator(
                 val power = projectedValues?.power ?: amounts.offBattlefieldStat(state, entityId, isPower = true, projected) ?: 0
                 power >= predicate.min
             }
-            is CardPredicate.PowerAtLeastX -> {
-                // Only meaningful at resolution, where X is bound (e.g. Expel the Interlopers'
-                // non-targeted DestroyAll after the chosen number is stamped as X). A null xValue
-                // is unexpected here; match nothing rather than everything so an unbound X can't
-                // silently wipe the board — mirrors ToughnessAtMostX.
-                val xValue = context?.xValue
-                if (xValue == null) false
-                else {
-                    val power = projectedValues?.power ?: amounts.offBattlefieldStat(state, entityId, isPower = true, projected) ?: 0
-                    power >= xValue
-                }
-            }
             is CardPredicate.ToughnessEquals -> {
                 val toughness = projectedValues?.toughness ?: amounts.offBattlefieldStat(state, entityId, isPower = false, projected)
                 toughness == predicate.value
@@ -1064,17 +1037,6 @@ class PredicateEvaluator(
             is CardPredicate.ToughnessAtMost -> {
                 val toughness = projectedValues?.toughness ?: amounts.offBattlefieldStat(state, entityId, isPower = false, projected) ?: 0
                 toughness <= predicate.max
-            }
-            is CardPredicate.ToughnessAtMostX -> {
-                // Only meaningful at resolution, where X is bound (e.g. Zero Point Ballad's
-                // non-targeted DestroyAll). A null xValue is unexpected here; match nothing
-                // rather than everything so an unbound X can't silently wipe the board.
-                val xValue = context?.xValue
-                if (xValue == null) false
-                else {
-                    val toughness = projectedValues?.toughness ?: amounts.offBattlefieldStat(state, entityId, isPower = false, projected) ?: 0
-                    toughness <= xValue
-                }
             }
             is CardPredicate.ToughnessAtLeast -> {
                 val toughness = projectedValues?.toughness ?: amounts.offBattlefieldStat(state, entityId, isPower = false, projected) ?: 0
@@ -1116,6 +1078,11 @@ class PredicateEvaluator(
                     CardNumericProperty.COUNTERS ->
                         container.get<CountersComponent>()?.counters?.values?.sum() ?: 0
                 }
+                // An X comparison with X still unbound (legal-action enumeration runs before the
+                // player picks X — Ent-Draught Basin's "target creature with power X") matches
+                // permissively, like ManaValueEqualsX / ManaValueAtMostX: the chosen X is enforced at
+                // activation/cast-time validation and at the CR 608.2b resolution re-check.
+                if (predicate.amount == DynamicAmount.XValue && context != null && context.xValue == null) return true
                 val effectContext = context?.toEffectContext() ?: return false
                 val amount = amounts.evaluate(state, predicate.amount, effectContext, projected)
                 compareAmounts(value, predicate.operator, amount)
@@ -2602,9 +2569,7 @@ class PredicateEvaluator(
 
             // Power/toughness — not meaningful for cast records
             is CardPredicate.PowerEquals, is CardPredicate.PowerAtMost, is CardPredicate.PowerAtLeast,
-            CardPredicate.PowerEqualsX, CardPredicate.PowerAtLeastX,
             is CardPredicate.ToughnessEquals, is CardPredicate.ToughnessAtMost, is CardPredicate.ToughnessAtLeast,
-            CardPredicate.ToughnessAtMostX,
             is CardPredicate.PowerOrToughnessAtLeast,
             is CardPredicate.PowerOrToughnessAtMost,
             is CardPredicate.TotalPowerAndToughnessAtMost,

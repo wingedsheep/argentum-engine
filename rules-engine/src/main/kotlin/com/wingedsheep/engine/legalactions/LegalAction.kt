@@ -58,7 +58,7 @@ data class LegalAction(
     val xConstrainsTargetManaValueExactly: Boolean = false,
     /**
      * True when the (single) target requirement filters by "power X" (i.e. the requirement's
-     * filter contains [CardPredicate.PowerEqualsX] — Ent-Draught Basin). The enumerator builds
+     * filter contains a `POWER EQ XValue` [CardPredicate.CompareNumericProperty] — Ent-Draught Basin). The enumerator builds
      * [validTargets] permissively because X is unbound at enumeration time; the client must
      * re-filter [validTargets] to creatures whose power equals the chosen X once the player
      * picks it. For multi-requirement abilities, see [TargetInfo.xConstrainsPower].
@@ -318,7 +318,8 @@ data class TargetInfo(
      */
     val xConstrainsManaValueExactly: Boolean = false,
     /**
-     * True when this requirement's filter contains [CardPredicate.PowerEqualsX].
+     * True when this requirement's filter contains a `POWER EQ XValue`
+     * [CardPredicate.CompareNumericProperty].
      * The client re-filters [validTargets] to creatures whose power equals the chosen X
      * after X selection (Ent-Draught Basin).
      */

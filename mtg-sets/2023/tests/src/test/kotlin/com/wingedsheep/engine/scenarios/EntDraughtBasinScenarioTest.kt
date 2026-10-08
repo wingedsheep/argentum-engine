@@ -18,7 +18,7 @@ import io.kotest.matchers.shouldBe
  * {2} Artifact
  * {X}, {T}: Put a +1/+1 counter on target creature with power X. Activate only as a sorcery.
  *
- * Proves the new [com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerEqualsX] target
+ * Proves the new `powerEqualsX()` ([com.wingedsheep.sdk.scripting.predicates.CardPredicate.CompareNumericProperty] `POWER EQ XValue`) target
  * filter for an X-cost activated ability: with X=3 only a power-3 creature is a legal target
  * (a power-2 and a power-4 creature are rejected by activation-time validation, since X is bound
  * on the action). Also covers the +1/+1 counter payload and the sorcery-speed activation gate.

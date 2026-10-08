@@ -619,7 +619,7 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
 
     /**
      * Power *exactly* equal to a [DynamicAmount] resolved when the predicate is checked — the
-     * dynamic counterpart of [PowerEquals] / [PowerEqualsX]. An object with no power (a noncreature
+     * dynamic counterpart of [PowerEquals]. An object with no power (a noncreature
      * spell) never matches, whatever the amount resolves to.
      */
     @SerialName("PowerEqualsDynamic")
@@ -767,20 +767,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "with base toughness $value"
     }
 
-    /**
-     * Power exactly equal to the X chosen for the source spell/ability. Resolves against
-     * `PredicateContext.xValue` at evaluation time — the power analogue of [ManaValueEqualsX].
-     * Used by an X-cost activated ability that targets "a creature with power X"
-     * (Ent-Draught Basin). When X is unbound (legal-action enumeration runs before the player
-     * chooses X) it matches permissively so the ability is still offered; the chosen X is then
-     * enforced at activation-time validation and resolution-time re-check.
-     */
-    @SerialName("PowerEqualsX")
-    @Serializable
-    data object PowerEqualsX : CardPredicate {
-        override val description: String = "with power X"
-    }
-
     @SerialName("PowerAtMost")
     @Serializable
     data class PowerAtMost(val max: Int) : CardPredicate {
@@ -793,21 +779,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "with power $min or greater"
     }
 
-    /**
-     * Power at least the X chosen for the source spell/ability — the "greater than or equal to"
-     * mirror of [ToughnessAtMostX], and the power analogue of [ManaValueAtMostX].
-     * Resolves against [PredicateContext.xValue] at evaluation time, so it works at a spell's
-     * resolution-time filter pass: Expel the Interlopers ("Choose a number between 0 and 10.
-     * Destroy all creatures with power greater than or equal to the chosen number") binds the
-     * chosen number as X and then wipes with this predicate.
-     */
-    @SerialName("PowerAtLeastX")
-    @Serializable
-    data object PowerAtLeastX : CardPredicate {
-        override val description: String = "with power X or greater"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
-    }
-
     @SerialName("ToughnessEquals")
     @Serializable
     data class ToughnessEquals(val value: Int) : CardPredicate {
@@ -818,18 +789,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class ToughnessAtMost(val max: Int) : CardPredicate {
         override val description: String = "with toughness $max or less"
-    }
-
-    /**
-     * Toughness at most the X chosen for the source spell/ability.
-     * Resolves against [PredicateContext.xValue] at evaluation time, so it works at the
-     * spell's resolution-time filter pass (e.g., Zero Point Ballad's mass destruction).
-     */
-    @SerialName("ToughnessAtMostX")
-    @Serializable
-    data object ToughnessAtMostX : CardPredicate {
-        override val description: String = "with toughness X or less"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("ToughnessAtLeast")
@@ -916,7 +875,18 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
-    /** Compares this object's numeric property with a late-bound amount (including another entity's property). */
+    /**
+     * Compares this object's numeric property with a late-bound amount (including another entity's
+     * property). The general form of every "power / toughness / mana value compared with N" filter.
+     *
+     * With [amount] = [DynamicAmount.XValue] it reads the X chosen for the source spell/ability —
+     * "creature with power X" (Ent-Draught Basin, `EQ`), "power greater than or equal to the chosen
+     * number" (Expel the Interlopers, `GTE` after `ChooseNumberThen` stamps X), "toughness X or
+     * less" (Zero Point Ballad, `LTE`). While X is still unbound (legal-action enumeration runs
+     * before the player picks it) such a comparison matches permissively, like
+     * [ManaValueEqualsX] / [ManaValueAtMostX]; the chosen X is enforced at activation/cast-time
+     * validation and at the CR 608.2b resolution re-check.
+     */
     @SerialName("CompareNumericProperty")
     @Serializable
     data class CompareNumericProperty(

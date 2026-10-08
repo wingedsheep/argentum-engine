@@ -8,7 +8,7 @@ import io.kotest.matchers.shouldBe
 
 /**
  * Scenario tests for Zero Point Ballad — exercises the new
- * `CardPredicate.ToughnessAtMostX` primitive (resolves X at filter time).
+ * `toughnessAtMostX()` filter — `CardPredicate.CompareNumericProperty(TOUGHNESS, LTE, XValue)` (resolves X at filter time).
  *
  * Card reference:
  * - Zero Point Ballad ({X}{B}): Sorcery

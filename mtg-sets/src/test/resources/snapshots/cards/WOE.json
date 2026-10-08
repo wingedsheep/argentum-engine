@@ -5179,7 +5179,12 @@
                             "filter": {
                                 "cardPredicates": [
                                     "IsCreature",
-                                    "PowerAtLeastX"
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "POWER",
+                                        "operator": "GTE",
+                                        "amount": "XValue"
+                                    }
                                 ]
                             }
                         },

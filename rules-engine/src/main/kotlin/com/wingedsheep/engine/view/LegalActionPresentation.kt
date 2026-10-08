@@ -38,7 +38,7 @@ data class LegalActionTargetInfo(
      */
     val xConstrainsManaValueExactly: Boolean = false,
     /**
-     * True when this target requirement filters by "power X" (CardPredicate.PowerEqualsX).
+     * True when this target requirement filters by "power X" (`CompareNumericProperty(POWER, EQ, XValue)`).
      * The client must re-filter [validTargets] to creatures whose power equals the chosen X
      * after X selection (Ent-Draught Basin) — the engine builds [validTargets] permissively
      * because X is unbound at legal-action enumeration time.
@@ -90,7 +90,7 @@ data class LegalActionInfo(
      */
     val xConstrainsTargetManaValueExactly: Boolean = false,
     /**
-     * True when the (single) target requirement filters by "power X" (CardPredicate.PowerEqualsX).
+     * True when the (single) target requirement filters by "power X" (`CompareNumericProperty(POWER, EQ, XValue)`).
      * The client must re-filter [validTargets] to creatures whose power equals the chosen X
      * after X selection (Ent-Draught Basin). For multi-requirement abilities the per-requirement
      * flag on [LegalActionTargetInfo.xConstrainsPower] is used instead.
