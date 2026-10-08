@@ -904,6 +904,25 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * The amount of mana of [color] spent to cast the current spell — across the *whole* cost,
+     * generic and `{X}` included (the mana solver folds those into the same per-color buckets).
+     * The Brothers' War "for each {U}{U} spent to cast it" is this divided by two, rounded down:
+     * `manaOfColorSpent(Color.BLUE) / 2` (Bladecoil Serpent, Clay Champion).
+     *
+     * Neither neighbour takes the axis: [ManaSpentOnX] reads only the `{X}` portion (and from the
+     * resolution context, so it also covers activated abilities), and [SnowManaSpent] /
+     * [ManaSpentFromSubtype] count mana by its *source*, not its color. Like them it reads the
+     * source entity's recorded payment (a cast trigger's own snapshot first), so it resolves while
+     * the spell is on the stack, as the permanent enters, and in its enters trigger; a permanent put
+     * onto the battlefield without being cast spent no mana, so this is 0 for it.
+     */
+    @SerialName("ManaOfColorSpent")
+    @Serializable
+    data class ManaOfColorSpent(val color: Color) : DynamicAmount {
+        override val description: String = "the amount of {${color.symbol}} spent to cast this"
+    }
+
+    /**
      * The amount of mana from snow sources spent to cast the current spell — the "{S} spent" of
      * CR 107.4h, which counts snow mana spent on *any* part of the cost, not only on `{S}` pips.
      * Berg Strider's "if {S} was spent to cast this spell" is `Compare(SnowManaSpent, GTE, 1)`;

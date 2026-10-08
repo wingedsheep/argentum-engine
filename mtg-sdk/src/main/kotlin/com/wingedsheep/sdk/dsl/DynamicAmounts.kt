@@ -144,6 +144,12 @@ object DynamicAmounts {
     /** The amount of [color] mana spent on X. */
     fun manaSpentOnX(color: Color): DynamicAmount = DynamicAmount.ManaSpentOnX(color)
 
+    /**
+     * The amount of [color] mana spent to cast this, across the whole cost. "For each {U}{U} spent
+     * to cast it" is `manaOfColorSpent(Color.BLUE) / 2`.
+     */
+    fun manaOfColorSpent(color: Color): DynamicAmount = DynamicAmount.ManaOfColorSpent(color)
+
     /** The amount of mana produced by a [subtype] source (a Cave) spent to cast this. */
     fun manaSpentFromSubtype(subtype: Subtype): DynamicAmount = DynamicAmount.ManaSpentFromSubtype(subtype)
 

@@ -96,6 +96,14 @@ object HandPatterns {
             ))
         }
 
+        return eachOpponentDiscards(DynamicAmount.Fixed(count))
+    }
+
+    /**
+     * Each opponent discards [count] cards, a number read at resolution — "for each {B}{B} spent
+     * to cast it, each opponent discards a card" (Bladecoil Serpent).
+     */
+    fun eachOpponentDiscards(count: DynamicAmount): Effect {
         return ForEachPlayerEffect(
             players = Player.EachOpponent,
             effects = listOf(
@@ -105,7 +113,7 @@ object HandPatterns {
                 ),
                 SelectFromCollectionEffect(
                     from = "hand",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(count)),
+                    selection = SelectionMode.ChooseExactly(count),
                     storeSelected = "discarded"
                 ),
                 MoveCollectionEffect(

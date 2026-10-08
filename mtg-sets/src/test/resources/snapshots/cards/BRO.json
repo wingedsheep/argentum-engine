@@ -626,6 +626,182 @@
     ]
 }
 
+// Bladecoil Serpent
+{
+    "name": "Bladecoil Serpent",
+    "manaCost": "{X}{6}",
+    "typeLine": "Artifact Creature — Serpent",
+    "oracleText": "When this creature enters, for each {U}{U} spent to cast it, draw a card.\nWhen this creature enters, for each {B}{B} spent to cast it, each opponent discards a card.\nWhen this creature enters, for each {R}{R} spent to cast it, it gets +1/+0 and gains trample and haste until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bladecoil Serpent:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Divide",
+                        "numerator": {
+                            "type": "ManaOfColorSpent",
+                            "color": "BLUE"
+                        },
+                        "denominator": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "roundUp": false
+                    }
+                },
+                "descriptionOverride": "When this creature enters, for each {U}{U} spent to cast it, draw a card."
+            },
+            {
+                "id": "Bladecoil Serpent:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Divide",
+                                        "numerator": {
+                                            "type": "ManaOfColorSpent",
+                                            "color": "BLACK"
+                                        },
+                                        "denominator": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "roundUp": false
+                                    }
+                                },
+                                "storeSelected": "discarded"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When this creature enters, for each {B}{B} spent to cast it, each opponent discards a card."
+            },
+            {
+                "id": "Bladecoil Serpent:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Divide",
+                                "numerator": {
+                                    "type": "ManaOfColorSpent",
+                                    "color": "RED"
+                                },
+                                "denominator": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "roundUp": false
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Divide",
+                                    "numerator": {
+                                        "type": "ManaOfColorSpent",
+                                        "color": "RED"
+                                    },
+                                    "denominator": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "roundUp": false
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "Self"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When this creature enters, for each {R}{R} spent to cast it, it gets +1/+0 and gains trample and haste until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "MYTHIC",
+        "artist": "Joshua Cairos",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08c5a528-d16d-4cb9-b532-b85648c8395a.jpg?1783920022"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Burrowing Razormaw
 {
     "name": "Burrowing Razormaw",
@@ -829,6 +1005,95 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Clay Champion
+{
+    "name": "Clay Champion",
+    "manaCost": "{X}{4}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "This creature enters with three +1/+1 counters on it for each {G}{G} spent to cast it.\nWhen this creature enters, choose up to two other target creatures you control. For each {W}{W} spent to cast this creature, put a +1/+1 counter on each of them.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Clay Champion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddDynamicCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "amount": {
+                            "type": "Divide",
+                            "numerator": {
+                                "type": "ManaOfColorSpent",
+                                "color": "WHITE"
+                            },
+                            "denominator": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "roundUp": false
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, choose up to two other target creatures you control. For each {W}{W} spent to cast this creature, put a +1/+1 counter on each of them."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Divide",
+                        "numerator": {
+                            "type": "ManaOfColorSpent",
+                            "color": "GREEN"
+                        },
+                        "denominator": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "roundUp": false
+                    },
+                    "multiplier": 3
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "MYTHIC",
+        "artist": "Leon Tukker",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/625f3b20-4b9a-4f61-8afe-31a761711b43.jpg?1783920020"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 

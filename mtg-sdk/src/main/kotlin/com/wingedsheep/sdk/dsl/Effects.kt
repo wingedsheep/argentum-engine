@@ -780,6 +780,9 @@ object Effects {
      */
     fun EachOpponentDiscards(count: Int = 1): Effect = HandPatterns.eachOpponentDiscards(count)
 
+    /** Each opponent discards a [DynamicAmount] of cards, read at resolution (Bladecoil Serpent). */
+    fun EachOpponentDiscards(count: DynamicAmount): Effect = HandPatterns.eachOpponentDiscards(count)
+
     /**
      * Each player (including you) discards N cards, each choosing their own — Rankle's Prank.
      * The symmetric twin of [EachOpponentDiscards]: same ForEachPlayer → Gather → Select → Move

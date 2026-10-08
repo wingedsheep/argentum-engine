@@ -631,6 +631,7 @@ Families:
 - `DynamicAmount.LastKnownSourceCounters(counterType: CounterType?)` — The number of counters matching counterType the *source* of the current ability had as it last existed on the battlefield (CR 113.7a / 608.2h last-known information).
 - `DynamicAmount.LeastAmongPlayers(players: Player, inner: DynamicAmount)` — The smallest value inner takes when measured **once per player** in players — Oracle's "the number of lands controlled by the player who controls the fewest" (Balance).
 - `DynamicAmount.LifeTotal(player: Player)` — Life total of a specific player.
+- `DynamicAmount.ManaOfColorSpent(color: Color)` — The amount of mana of color spent to cast the current spell — across the *whole* cost, generic and `{X}` included (the mana solver folds those into the same per-color buckets).
 - `DynamicAmount.ManaSpentFromSubtype(subtype: Subtype)` — The number of mana units produced by a source with subtype that were spent to cast the current spell — e.g. Bat Colony's "create a 1/1 black Bat with flying for each mana from a Cave spent to cast…
 - `DynamicAmount.ManaSpentOnX(color: Color)` — The amount of mana of a specific color that was spent on the `{X}` portion of the current spell or activated ability.
 - `DynamicAmount.ManaValueSumOfCollection(collectionName: String)` — Sum of the mana values of *every* card in a named pipeline collection.
