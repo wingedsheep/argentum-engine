@@ -455,8 +455,20 @@
                     }
                 },
                 "condition": {
-                    "type": "AnOpponentLifeAtMost",
-                    "threshold": 10
+                    "type": "Compare",
+                    "left": {
+                        "type": "LeastAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 10
+                    }
                 }
             }
         ]

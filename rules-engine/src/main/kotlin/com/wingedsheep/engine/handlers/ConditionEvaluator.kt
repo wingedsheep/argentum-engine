@@ -53,7 +53,6 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.conditions.APlayerControlsMostOfSubtype
-import com.wingedsheep.sdk.scripting.conditions.AnOpponentLifeAtMost
 import com.wingedsheep.sdk.scripting.conditions.IsDay
 import com.wingedsheep.sdk.scripting.conditions.IsNight
 import com.wingedsheep.sdk.scripting.conditions.PermanentEnteredFaceDownThisTurn
@@ -75,7 +74,6 @@ import com.wingedsheep.sdk.scripting.conditions.AnyCondition
 import com.wingedsheep.sdk.scripting.conditions.ExiledAsCostHadSubtype
 import com.wingedsheep.sdk.scripting.conditions.ThisAbilityActivatedThisTurnAtLeast
 import com.wingedsheep.sdk.scripting.conditions.APlayerLifeAtMost
-import com.wingedsheep.sdk.scripting.conditions.EachPlayerLifeAtMost
 import com.wingedsheep.sdk.scripting.conditions.AnyPlayerDealtCombatDamageThisTurnAtLeast
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.NumberMatches
@@ -291,7 +289,6 @@ class ConditionEvaluator(
             is APlayerControlsMostOfSubtype,
             is APlayerLifeAtMost,
             is AllConditions,
-            is AnOpponentLifeAtMost,
             is AnotherPermanentWithSameNameAsTarget,
             is AnyCondition,
             AnyEnteredOrWasCastFromExile,
@@ -307,7 +304,6 @@ class ConditionEvaluator(
             is ControllerTurnsTakenAtMost,
             CreatureDiedThisTurnCondition,
             is CreatureWithSubtypeDiedThisTurn,
-            is EachPlayerLifeAtMost,
             is EnchantedCreatureHasSubtype,
             EnchantedCreatureIsLegendary,
             is EntityMatches,
@@ -769,19 +765,6 @@ class ConditionEvaluator(
                 // CR 810.9a — read the team's shared total; existential so teams don't double-count.
                 state.lifeTotal(playerId) <= condition.threshold
             }
-
-            is EachPlayerLifeAtMost -> state.turnOrder.all { playerId ->
-                state.lifeTotal(playerId) <= condition.threshold
-            }
-
-            // Existential over the controller's opponents. The controller's own low life total must
-            // not satisfy cards such as Bloodghast; team games use the shared team life total.
-            is com.wingedsheep.sdk.scripting.conditions.AnOpponentLifeAtMost ->
-                ctx.controllerId?.let { controllerId ->
-                    state.getOpponents(controllerId).any { opponentId ->
-                        state.lifeTotal(opponentId) <= condition.threshold
-                    }
-                } ?: false
 
             // Board-derived only — no targets/triggering/kicker — so it works identically in
             // resolution and projection (required for the djinn `ConditionalStaticAbility` gate).

@@ -5,7 +5,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.conditions.EachPlayerLifeAtMost
+import com.wingedsheep.sdk.dsl.Conditions
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -19,7 +19,7 @@ class CryptolithFragmentScenarioTest : FunSpec({
 
     fun GameTestDriver.conditionIsMet(): Boolean = PredicateEvaluator(cardRegistry = null).conditions.evaluate(
         state,
-        EachPlayerLifeAtMost(10),
+        Conditions.EachPlayerLifeAtMost(10),
         EffectContext(
             sourceId = null,
             controllerId = activePlayer!!,

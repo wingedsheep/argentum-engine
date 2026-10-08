@@ -730,13 +730,29 @@ object Conditions {
     fun APlayerLifeAtMost(threshold: Int): ConditionInterface =
         com.wingedsheep.sdk.scripting.conditions.APlayerLifeAtMost(threshold)
 
-    /** If every player in the game has [threshold] or less life. */
+    /**
+     * If every player in the game has [threshold] or less life (Cryptolith Fragment) — the
+     * greatest life total among the players still in the game is at most [threshold]. Team games
+     * read the shared team total (CR 810.9a).
+     */
     fun EachPlayerLifeAtMost(threshold: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.EachPlayerLifeAtMost(threshold)
+        Compare(
+            DynamicAmount.GreatestAmongPlayers(Player.Each, DynamicAmount.LifeTotal(Player.You)),
+            ComparisonOperator.LTE,
+            DynamicAmount.Fixed(threshold)
+        )
 
-    /** If at least one opponent has [threshold] or less life. */
+    /**
+     * If at least one opponent has [threshold] or less life (Bloodghast) — existential over the
+     * controller's opponents only, so the controller's own low life never satisfies it: the least
+     * life total among your opponents is at most [threshold].
+     */
     fun AnOpponentLifeAtMost(threshold: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.AnOpponentLifeAtMost(threshold)
+        Compare(
+            DynamicAmount.LeastAmongPlayers(Player.EachOpponent, DynamicAmount.LifeTotal(Player.You)),
+            ComparisonOperator.LTE,
+            DynamicAmount.Fixed(threshold)
+        )
 
     /**
      * If your life total is N or more.

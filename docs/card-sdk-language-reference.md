@@ -12645,10 +12645,13 @@ answer it and would silently return `false`.
   plain "greater than your starting life total" reading. Elenda, Saint of Dusk gates her two stat tiers on
   `LifeAboveStartingBy(1)` and `LifeAboveStartingBy(10)`.
 - `APlayerLifeAtMost(n)` — *some* player in the game has ≤N life (existential over `state.turnOrder`; distinct from `LifeAtMost`, which is `Player.You`). Used by enters-tapped-unless lands like Razortrap Gorge.
-- `EachPlayerLifeAtMost(n)` — every player in the game has ≤N life (universal over `state.turnOrder`). Used by Cryptolith Fragment's intervening-if upkeep trigger.
-- `AnOpponentLifeAtMost(n)` — at least one opponent of the ability's controller has ≤N life. Unlike
+- `Conditions.EachPlayerLifeAtMost(n)` — every player still in the game has ≤N life: a facade for
+  `Compare(GreatestAmongPlayers(Player.Each, LifeTotal(Player.You)), LTE, Fixed(n))`. Used by Cryptolith
+  Fragment's intervening-if upkeep trigger.
+- `Conditions.AnOpponentLifeAtMost(n)` — at least one opponent of the ability's controller has ≤N life: a
+  facade for `Compare(LeastAmongPlayers(Player.EachOpponent, LifeTotal(Player.You)), LTE, Fixed(n))`. Unlike
   `APlayerLifeAtMost`, the controller's own life total never satisfies it; this is the conditional
-  static-ability gate for Bloodghast's haste.
+  static-ability gate for Bloodghast's haste. Team games read the shared team total (CR 810.9a).
 - `PoisonCountersAtLeast(n, player = Player.You)` — a single player has ≥N poison counters. Under a
   `ForEachPlayer` / `countPlayersWith` rebind `Player.You` is the player being tested ("each opponent who has
   three or more poison counters loses 3 life" — Feed the Infection); `Player.ControllerOf("target")` is "if its

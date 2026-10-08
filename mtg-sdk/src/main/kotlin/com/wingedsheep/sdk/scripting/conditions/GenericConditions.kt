@@ -339,20 +339,6 @@ data class APlayerLifeAtMost(val threshold: Int) : Condition {
     override val description: String = "a player has $threshold or less life"
 }
 
-/** Condition: every player in the game has [threshold] or less life. */
-@SerialName("EachPlayerLifeAtMost")
-@Serializable
-data class EachPlayerLifeAtMost(val threshold: Int) : Condition {
-    override val description: String = "each player has $threshold or less life"
-}
-
-/** Condition: at least one opponent of the ability's controller has [threshold] or less life. */
-@SerialName("AnOpponentLifeAtMost")
-@Serializable
-data class AnOpponentLifeAtMost(val threshold: Int) : Condition {
-    override val description: String = "an opponent has $threshold or less life"
-}
-
 @SerialName("Exists")
 @Serializable
 data class Exists(
