@@ -3069,6 +3069,74 @@
     ]
 }
 
+// Hulking Metamorph
+{
+    "name": "Hulking Metamorph",
+    "manaCost": "{9}",
+    "typeLine": "Artifact Creature — Shapeshifter",
+    "oracleText": "Prototype {2}{U}{U} — 3/3 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nYou may have this creature enter as a copy of an artifact or creature you control, except it's an artifact creature in addition to its other types, and its power and toughness are equal to this creature's power and toughness.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "PROTOTYPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{2}{U}{U}",
+            "power": 3,
+            "toughness": 3
+        }
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "copyFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsCreature",
+                                "IsArtifact"
+                            ]
+                        }
+                    ],
+                    "controllerPredicate": "ControlledByYou"
+                },
+                "exceptions": {
+                    "addedCardTypes": [
+                        "ARTIFACT",
+                        "CREATURE"
+                    ],
+                    "retainPowerToughness": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "Diego Gisbert",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/420f0b81-8b87-4854-9dc4-6da84cc38623.jpg?1783920097",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "Use the appropriate printed power and toughness (either 7/7 or 3/3) to determine the result of Hulking Metamorph's copy effect."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "You can choose not to copy anything. In that case, Hulking Metamorph simply enters the battlefield as a 7/7 (or 3/3) artifact creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Lat-Nam Adept
 {
     "name": "Lat-Nam Adept",
