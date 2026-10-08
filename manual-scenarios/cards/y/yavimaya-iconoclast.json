@@ -1,0 +1,57 @@
+{
+  "player1Name": "Iconoclast",
+  "player2Name": "Blocker",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Yavimaya Iconoclast"
+    ],
+    "battlefield": [
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Mountain"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "BEGIN_COMBAT",
+    "DECLARE_ATTACKERS",
+    "UPKEEP"
+  ],
+  "player2StopAtSteps": [
+    "DECLARE_BLOCKERS"
+  ],
+  "player1OpponentStopAtSteps": [
+    "UPKEEP"
+  ],
+  "player2OpponentStopAtSteps": []
+}
