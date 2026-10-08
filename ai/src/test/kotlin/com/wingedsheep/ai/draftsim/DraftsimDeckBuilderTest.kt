@@ -187,4 +187,29 @@ class DraftsimDeckBuilderTest : FunSpec({
         (build.deckInstanceIds.size + build.basicsNeeded.values.sum()) shouldBe 40
         build.basicsNeeded.keys shouldBe setOf("W", "U")
     }
+    // The archetype ranking rates a colour pair on the quality of what it could cast and never looks
+    // at its shape, so a pair that is all removal and no bodies used to win. The builds are now
+    // ordered by what they actually hold, so the creature-rich pair is recommended instead.
+    test("prefers the colours that can meet the creature floor over a creature-starved removal pile") {
+        val ratings = HashMap<String, Double>()
+        val removal = HashSet<String>()
+        val cards = mutableListOf<DraftsimPoolCard>()
+        var n = 0
+        fun add(card: ScorerCard, rating: Double, isRemoval: Boolean = false) {
+            ratings[DraftsimData.nameKey(card.name)] = rating
+            if (isRemoval) removal += card.name.lowercase()
+            cards += DraftsimPoolCard(card, "id-${n++}")
+        }
+        val rbCosts = listOf("{1}{R}", "{2}{R}", "{1}{B}", "{2}{B}")
+        for (i in 1..16) add(BCard("Bolt$i", rbCosts[i % 4], "Instant", listOf(if (i % 4 < 2) "R" else "B")), 3.2, isRemoval = true)
+        for (i in 1..8) add(BCard("RedOgre$i", "{2}{R}", "Creature — Ogre", listOf("R")), 2.4)
+        val wgCosts = listOf("{1}{W}", "{2}{W}", "{1}{G}", "{2}{G}", "{3}{G}")
+        for (i in 1..26) add(BCard("Bear$i", wgCosts[i % 5], "Creature — Bear", listOf(if (i % 5 < 2) "W" else "G")), 2.6)
+        val byId = cards.associateBy { it.instanceId }
+
+        val best = DraftsimDeckBuilder(DraftsimSetTables(ratings, removal, emptyMap())).buildDecks(cards, mode = "sealed").first()
+
+        val nonland = best.deckInstanceIds.mapNotNull { byId[it]?.card }.filter { !it.typeLine.contains("Land") }
+        nonland.count { it.typeLine.contains("Creature") } shouldBeGreaterThanOrEqual 13
+    }
 })

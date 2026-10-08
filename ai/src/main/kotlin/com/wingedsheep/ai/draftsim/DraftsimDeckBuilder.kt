@@ -90,6 +90,13 @@ class DraftsimDeckBuilder(
 
     private companion object {
         const val BOMB = 3.9
+        // How many colour hypotheses get a full build. Building is cheap next to a bad pick, and the
+        // best-ranked hypothesis is often not the best deck (see [playableScore]).
+        const val CANDIDATES_DRAFT = 3
+        const val CANDIDATES_SEALED = 6
+        // Final-score points (0–10 scale) per creature below the floor / per spell below the target.
+        const val CREATURE_SHORTFALL_PENALTY = 0.2
+        const val SPELL_SHORTFALL_PENALTY = 0.3
         val COLOR_TO_BASIC = mapOf("W" to "Plains", "U" to "Island", "B" to "Swamp", "R" to "Mountain", "G" to "Forest")
         // Ten three-color guild shells for the sealed good-stuff build.
         val THREE_COLOR = DraftsimDeckScorerGuilds.THREE_COLOR
@@ -133,13 +140,33 @@ class DraftsimDeckBuilder(
         if (forced.isNotEmpty()) return listOf(completeBuild(pool, forced))
         val nonlandCards = pool.filter { !ops.isLand(it.card) }.map { it.card }
         val archColors = scorer.archColorMap(nonlandCards)
+        // One build per colour set: a named archetype and the plain pair in the same colours would
+        // otherwise spend two of the slots on the same deck.
         val ranked = deckScorer.rankArchetypes(pool.map { it.card }, archColors)
             .filterNot { it.name.lowercase().contains("good stuff") }
-        val n = if (mode == "draft") 2 else 3
+            .distinctBy { it.colors.toSet() }
+        val n = if (mode == "draft") CANDIDATES_DRAFT else CANDIDATES_SEALED
         val builds = ranked.take(n).map { a -> refine(greedyBuild(pool, a.name, a.colors), pool) }
             .toMutableList()
         if (mode == "sealed") goodStuffBuild(pool)?.let { builds += refine(it, pool) }
-        return builds.sortedByDescending { it.score }
+        val byId = pool.associateBy { it.instanceId }
+        return builds.sortedByDescending { playableScore(it, byId) }
+    }
+
+    /**
+     * The order builds are offered in: the final deck score, less a penalty for each creature short
+     * of [DraftsimDeckShape.creatureFloor] and each spell short of the nonland target.
+     *
+     * The archetype ranking scores a colour pair on the quality of what it *could* cast and never
+     * looks at its shape, so a pair rich in removal and rares but thin on creatures used to win —
+     * then hit the creature floor, which had nothing on-colour left to swap in. Picking among
+     * finished builds by what they actually hold steers toward the colours that make a real deck.
+     */
+    private fun playableScore(build: DraftsimBuild, byId: Map<String, DraftsimPoolCard>): Double {
+        val nonland = build.deckInstanceIds.mapNotNull { byId[it]?.card }.filter { !ops.isLand(it) }
+        val creatureShortfall = max(0, shape.creatureFloor - nonland.count { ops.isCreature(it) })
+        val spellShortfall = max(0, nonlandTarget - nonland.size)
+        return build.score - CREATURE_SHORTFALL_PENALTY * creatureShortfall - SPELL_SHORTFALL_PENALTY * spellShortfall
     }
 
     // =========================================================================

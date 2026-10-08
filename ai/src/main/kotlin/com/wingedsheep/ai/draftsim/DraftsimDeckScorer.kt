@@ -159,15 +159,19 @@ class DraftsimDeckScorer(private val tables: DraftsimSetTables) {
             .sortedByDescending { it.score }
             .take(2)
 
+        // The plain pairs are always in the running. A set's named archetypes only cover the pairs
+        // its pool happens to tag, and an archetype's colours are inferred from those tags — so with
+        // only named hypotheses a pool can be left with no good two-colour option to build at all.
+        val pairs = TWO_COLOR_PAIRS.map { scoreHypothesis(pool, it.map { c -> c.toString() }, null).copy(name = it) }
+
         if (tables.archetypes.isNotEmpty()) {
             val archNames = nonland.flatMap { ops.archRecord(it.name)?.archetypes.orEmpty().map { t -> t.archetype } }.toSet()
             val named = archNames.map { name ->
                 val cols = archColors[name] ?: colorsOnAtLeastTwo(nonland, name)
                 scoreHypothesis(pool, cols, name).copy(name = name, colors = cols)
             }
-            return (named + goodStuff).sortedByDescending { it.score }
+            return (named + pairs + goodStuff).sortedByDescending { it.score }
         }
-        val pairs = TWO_COLOR_PAIRS.map { scoreHypothesis(pool, it.map { c -> c.toString() }, null).copy(name = it) }
         return (pairs + goodStuff).sortedByDescending { it.score }
     }
 
