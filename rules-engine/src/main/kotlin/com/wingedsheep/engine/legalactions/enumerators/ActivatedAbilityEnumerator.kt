@@ -1122,6 +1122,8 @@ class ActivatedAbilityEnumerator(
                             xConstrainsTargetManaValue = targetReqInfos.size == 1 && firstReqInfo.xConstrainsManaValue,
                             xConstrainsTargetManaValueExactly = targetReqInfos.size == 1 && firstReqInfo.xConstrainsManaValueExactly,
                             xConstrainsTargetPower = targetReqInfos.size == 1 && firstReqInfo.xConstrainsPower,
+                            xConstrainsTargetCount = targetReqInfos.size == 1 && firstReqInfo.xConstrainsCount,
+                            xConstrainsTargetCountExactly = targetReqInfos.size == 1 && firstReqInfo.xConstrainsCountExactly,
                             additionalCostInfo = costInfo,
                             hasXCost = abilityHasXCost,
                             maxAffordableX = abilityMaxAffordableX,

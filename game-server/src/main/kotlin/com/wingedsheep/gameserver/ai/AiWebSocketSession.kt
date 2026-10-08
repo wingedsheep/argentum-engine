@@ -568,6 +568,7 @@ class AiWebSocketSession(
             activePlayerId = delta.activePlayerId ?: previous.activePlayerId,
             priorityPlayerId = delta.priorityPlayerId ?: previous.priorityPlayerId,
             turnNumber = delta.turnNumber ?: previous.turnNumber,
+            roundNumber = delta.roundNumber ?: previous.roundNumber,
             isGameOver = delta.isGameOver ?: previous.isGameOver,
             winnerId = if (delta.winnerId != null) delta.winnerId else previous.winnerId,
             dayNight = delta.dayNight ?: previous.dayNight,

@@ -12,7 +12,6 @@ import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetObject
 
 /**
  * Icy Blast
@@ -29,9 +28,8 @@ val IcyBlast = card("Icy Blast") {
     oracleText = "Tap X target creatures.\nFerocious — If you control a creature with power 4 or greater, those creatures don't untap during their controllers' next untap steps."
 
     spell {
-        // "Tap X target creatures" — the chosen X clamps the number of targets via
-        // dynamicMaxCount (Builder's Bane / Distorting Wake pattern), so no magic count.
-        target = TargetObject(filter = TargetFilter.Creature, optional = true, dynamicMaxCount = DynamicAmounts.xValue())
+        // "Tap X target creatures" — exactly X: the chosen X is the number of targets.
+        targets(TargetFilter.Creature, exactly = DynamicAmounts.xValue())
         effect = Effects.TapEachTarget() then
             Effects.If(
                 condition = Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature.powerAtLeast(4)),

@@ -23,9 +23,8 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Trample and Decayed are keyword abilities — the printed Decayed half is composed by the
  * [com.wingedsheep.sdk.dsl.CardBuilder.decayed] helper (a "can't block" static + an
  * attack-triggered end-of-combat sacrifice). The Renew ability is a graveyard-activated,
- * sorcery-speed ability ([com.wingedsheep.sdk.dsl.CardBuilder.renew]) whose {X} clamps the
- * number of targets ([TargetCreature.dynamicMaxCount] = [DynamicAmount.XValue], the
- * Builder's Bane / Icy Blast pattern). [ForEachTargetEffect] puts one decayed counter
+ * sorcery-speed ability ([com.wingedsheep.sdk.dsl.CardBuilder.renew]) whose {X} is the exact
+ * number of targets (`targets(…, exactly = X)`, the Builder's Bane / Icy Blast pattern). [ForEachTargetEffect] puts one decayed counter
  * ([CounterType.DECAYED]) on each chosen creature — the counter grants Decayed to *any* creature
  * (CR 702.147a), realized by the engine off the counter.
  */
@@ -44,7 +43,7 @@ val RotCurseRakshasa = card("Rot-Curse Rakshasa") {
     decayed()
 
     renew("{X}{B}{B}") {
-        targets(TargetFilter.Creature, dynamicMaxCount = DynamicAmounts.xValue())
+        targets(TargetFilter.Creature, exactly = DynamicAmounts.xValue())
         effect = Effects.ForEachTarget(
             Effects.AddCounters(CounterType.DECAYED, 1, EffectTarget.ContextTarget(0))
         )

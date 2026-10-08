@@ -73,7 +73,7 @@ class WaterbendersRestorationScenarioTest : ScenarioTestBase() {
             }
         }
 
-        test("X caps the number of targets") {
+        test("X is the exact number of targets") {
             val game = scenario()
                 .withPlayers("P1", "P2")
                 .withCardInHand(1, "Waterbender's Restoration")
@@ -98,6 +98,9 @@ class WaterbendersRestorationScenarioTest : ScenarioTestBase() {
             )
             withClue("two targets with X = 1 is rejected") {
                 game.execute(cast).error shouldNotBe null
+            }
+            withClue("'X target creatures' is exactly X — one target with X = 2 is rejected too") {
+                game.execute(cast.copy(xValue = 2, targets = listOf(ChosenTarget.Permanent(bears)))).error shouldNotBe null
             }
         }
     }

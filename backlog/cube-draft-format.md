@@ -27,7 +27,7 @@ player, so there's real demand behind it.
   strongest candidate for the pick after this one.
 - *Live MCTS AI difficulty tier* (promote `gym-trainer` into the lobby) — biggest experiential upgrade
   for solo play, but doesn't help the friend-group play that Cube serves directly.
-- *More format variants* ([`emperor-format.md`](emperor-format.md), [`momir-basic-format.md`](momir-basic-format.md),
+- *More format variants* ([`emperor-format.md`](emperor-format.md), [`momir-basic-format.md`](archived/momir-basic-format.md),
   [`brawl-draft-format.md`](brawl-draft-format.md)) — explicitly lower priority. Emperor in particular
   is large engine risk (CR 801 range of influence touches targeting, attacking, and every "each
   player" effect) for a format needing six simultaneous players.

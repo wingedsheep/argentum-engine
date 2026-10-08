@@ -19,7 +19,7 @@ import io.kotest.matchers.shouldBe
  * spell's TargetCreature and was abused as a magic `20` to mean "any number". These tests
  * pin both wirings:
  *   - fixed-count targeting (Tidal Surge: "up to three"),
- *   - X-clamped targeting (Icy Blast: "tap X target creatures" via dynamicMaxCount = XValue),
+ *   - X-driven targeting (Icy Blast: "tap X target creatures", exactly X via `targets(…, exactly = X)`),
  *     which is the regression guard for dropping the magic `count = 20`.
  */
 class TapEachTargetScenarioTest : ScenarioTestBase() {
@@ -92,7 +92,7 @@ class TapEachTargetScenarioTest : ScenarioTestBase() {
                 val targeted = bears.take(2)
                 val untargeted = bears.drop(2)
 
-                // X = 2: dynamicMaxCount = XValue must permit exactly two targets.
+                // X = 2: "X target creatures" requires exactly two targets.
                 val cast = game.execute(
                     CastSpell(
                         game.player1Id,

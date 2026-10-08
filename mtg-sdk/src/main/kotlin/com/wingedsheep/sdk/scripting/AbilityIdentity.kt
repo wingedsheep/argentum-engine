@@ -23,7 +23,7 @@ import kotlinx.serialization.Serializable
  *
  * It is deliberately NOT keyed by entity id (which differs per instance) nor by rendered text
  * (which can collide between genuinely different abilities). See
- * `backlog/stack-collapse-and-batch-decisions.md` §C.2.
+ * `backlog/archived/stack-collapse-and-batch-decisions.md` §C.2.
  */
 @Serializable
 data class AbilityIdentity(

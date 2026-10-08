@@ -73,6 +73,13 @@ interface TargetDeclarations {
      * an ability that treats the targets uniformly ignores them and uses `Effects.ForEachTarget`.
      *
      * The cross-target constraints are [TargetObject]'s: see its fields for what each enforces.
+     *
+     * A count only known at cast or trigger time takes one of two spellings, and the Oracle text
+     * says which: "**up to** X target creatures" is `optional = true, dynamicMaxCount = X`, and
+     * "X target creatures" — exactly X, no fewer — is `exactly = X`
+     * (`targets(TargetFilter.Creature, exactly = DynamicAmounts.xValue())`, Icy Blast). `exactly`
+     * stands alone: it is the whole count, so it can't be combined with `dynamicMaxCount`,
+     * `optional` or `unlimited`.
      */
     fun targets(
         filter: TargetFilter,
@@ -81,6 +88,7 @@ interface TargetDeclarations {
         optional: Boolean = false,
         unlimited: Boolean = false,
         dynamicMaxCount: DynamicAmount? = null,
+        exactly: DynamicAmount? = null,
         sameController: Boolean = false,
         sameOwner: Boolean = false,
         sameCreatureType: Boolean = false,
@@ -90,25 +98,31 @@ interface TargetDeclarations {
         differentControllers: Boolean = false,
         onePerCardType: Boolean = false,
         chooser: TargetChooser = TargetChooser.Controller,
-    ): List<EffectTarget.BoundVariable> = targets(
-        TargetObject(
-            count = count,
-            minCount = minCount,
-            optional = optional,
-            unlimited = unlimited,
-            filter = filter,
-            dynamicMaxCount = dynamicMaxCount,
-            sameController = sameController,
-            sameOwner = sameOwner,
-            sameCreatureType = sameCreatureType,
-            sameCardType = sameCardType,
-            totalManaValueAtMost = totalManaValueAtMost,
-            differentNames = differentNames,
-            differentControllers = differentControllers,
-            onePerCardType = onePerCardType,
-            chooser = chooser,
+    ): List<EffectTarget.BoundVariable> {
+        require(exactly == null || (dynamicMaxCount == null && !optional && !unlimited)) {
+            "targets(exactly = …) is the whole count; don't combine it with dynamicMaxCount, optional or unlimited"
+        }
+        return targets(
+            TargetObject(
+                count = count,
+                minCount = minCount,
+                optional = optional,
+                unlimited = unlimited,
+                filter = filter,
+                dynamicMaxCount = exactly ?: dynamicMaxCount,
+                dynamicMinCount = exactly,
+                sameController = sameController,
+                sameOwner = sameOwner,
+                sameCreatureType = sameCreatureType,
+                sameCardType = sameCardType,
+                totalManaValueAtMost = totalManaValueAtMost,
+                differentNames = differentNames,
+                differentControllers = differentControllers,
+                onePerCardType = onePerCardType,
+                chooser = chooser,
+            )
         )
-    )
+    }
 }
 
 /**

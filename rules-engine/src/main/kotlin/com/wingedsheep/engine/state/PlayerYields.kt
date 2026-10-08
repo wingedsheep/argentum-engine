@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 /**
  * A single player's remembered "yield" preferences, keyed by [AbilityIdentity] (so a preference set
  * once applies to every current and future copy/instance of that card ability — exactly like MTGO's
- * right-click yields). See `backlog/stack-collapse-and-batch-decisions.md` §C.
+ * right-click yields). See `backlog/archived/stack-collapse-and-batch-decisions.md` §C.
  *
  * Three independent dimensions:
  *  - [untilEndOfTurn] — auto-pass priority on this ability's stack objects for the rest of the turn

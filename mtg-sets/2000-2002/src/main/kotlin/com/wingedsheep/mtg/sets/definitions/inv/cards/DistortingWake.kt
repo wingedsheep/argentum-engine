@@ -13,10 +13,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Sorcery
  * Return X target nonland permanents to their owners' hands.
  *
- * X-clamped targeting (Builder's Bane pattern): [TargetPermanent.dynamicMaxCount] =
- * [DynamicAmount.XValue] makes the targeting overlay's max selection track the X chosen
- * at cast time. `optional = true` so X = 0 (legal but does nothing) resolves cleanly and
- * a cast with fewer legal nonland permanents than X doesn't fizzle. The chosen targets
+ * "X target nonland permanents" is exactly X (`targets(…, exactly = X)`, the Builder's Bane
+ * pattern): the targeting overlay requires the X chosen at cast time, X = 0 is a legal cast with no
+ * targets, and an X larger than the number of nonland permanents isn't offered. The chosen targets
  * are gathered and bounced via the standard gather → move-to-hand pipeline.
  */
 val DistortingWake = card("Distorting Wake") {
@@ -26,7 +25,7 @@ val DistortingWake = card("Distorting Wake") {
     oracleText = "Return X target nonland permanents to their owners' hands."
 
     spell {
-        targets(TargetFilter.NonlandPermanent, optional = true, dynamicMaxCount = DynamicAmounts.xValue())
+        targets(TargetFilter.NonlandPermanent, exactly = DynamicAmounts.xValue())
         effect = Effects.Pipeline {
             val distortingWakeTargets = gather(CardSource.ChosenTargets)
             toHand(distortingWakeTargets)

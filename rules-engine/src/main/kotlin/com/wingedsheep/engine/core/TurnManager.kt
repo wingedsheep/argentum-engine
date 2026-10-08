@@ -119,6 +119,7 @@ class TurnManager(
         var newState = state.copy(
             activePlayerId = playerId,
             turnNumber = newTurnNumber,
+            roundNumber = nextRoundNumber(state, playerId),
             phase = Phase.BEGINNING,
             step = Step.UNTAP,
             priorityPlayerId = null, // No priority during untap
@@ -247,6 +248,21 @@ class TurnManager(
         }
 
         return ExecutionResult.success(ControlHistory.beginTurn(newState), events)
+    }
+
+    /**
+     * The display-only [GameState.roundNumber] for a turn [next] is about to begin. A new round
+     * starts when the turn wraps back around [GameState.turnOrder] — the incoming seat sits at or
+     * before the outgoing one. Comparing seats rather than watching for `turnOrder.first()` keeps
+     * it advancing after the opening seat is eliminated, and an extra turn for the same player
+     * (CR 500.7) stays in the round it was taken in.
+     */
+    private fun nextRoundNumber(state: GameState, next: EntityId): Int {
+        val previous = state.activePlayerId ?: return state.roundNumber + 1
+        if (previous == next) return state.roundNumber
+        val prevSeat = state.turnOrder.indexOf(previous)
+        val nextSeat = state.turnOrder.indexOf(next)
+        return if (prevSeat < 0 || nextSeat <= prevSeat) state.roundNumber + 1 else state.roundNumber
     }
 
     /**

@@ -1207,6 +1207,10 @@ export function enterPhase(
         if (chosenX == null) return staticMax
         return chosenX
       }
+      // "X target creatures" (as opposed to "up to X") is exact: the server flags it, and the
+      // chosen X becomes the minimum as well as the maximum.
+      const resolveMinByX = (staticMin: number, max: number, exact: boolean | undefined): number =>
+        exact && chosenX != null ? chosenX : Math.min(staticMin, max)
 
       if (actionInfo.targetRequirements && actionInfo.targetRequirements.length > 1) {
         const firstReq = actionInfo.targetRequirements[0]!
@@ -1215,7 +1219,7 @@ export function enterPhase(
           action,
           validTargets: applyXFilters(firstReq.validTargets, firstReq.xConstrainsManaValue, firstReq.xConstrainsPower, firstReq.xConstrainsManaValueExactly),
           selectedTargets: [],
-          minTargets: Math.min(firstReq.minTargets, maxTargets),
+          minTargets: resolveMinByX(firstReq.minTargets, maxTargets, firstReq.xConstrainsCountExactly),
           maxTargets,
           currentRequirementIndex: 0,
           allSelectedTargets: [],
@@ -1233,7 +1237,7 @@ export function enterPhase(
           action,
           validTargets: applyXFilters(actionInfo.validTargets ?? [], actionInfo.xConstrainsTargetManaValue, actionInfo.xConstrainsTargetPower, actionInfo.xConstrainsTargetManaValueExactly),
           selectedTargets: [],
-          minTargets: Math.min(rawMin, maxTargets),
+          minTargets: resolveMinByX(rawMin, maxTargets, actionInfo.xConstrainsTargetCountExactly),
           maxTargets,
           // "Select target creature (0/1)" rather than a bare "Select targets" — the server
           // already derives the requirement's wording, the single-target path just dropped it.

@@ -57,6 +57,7 @@ Tracks the temporal state of the game.
 ```kotlin
 data class TurnInfo(
     val turnNumber: Int,            // Counts player turns: seat A's turn 1, seat B's turn 2, …
+    val roundNumber: Int,           // Display-only: one number per pass around the table (the UI's turn counter)
     val activePlayerId: EntityId,   // Whose turn is it?
     val priorityPlayerId: EntityId, // Who can act *right now*?
     val phase: Phase,               // e.g., COMBAT

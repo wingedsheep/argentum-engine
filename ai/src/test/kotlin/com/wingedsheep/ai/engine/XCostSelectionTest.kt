@@ -59,6 +59,7 @@ class XCostSelectionTest : ScenarioTestBase() {
         xConstrainsTargetManaValueExactly: Boolean = false,
         xConstrainsTargetPower: Boolean = false,
         xConstrainsTargetCount: Boolean = false,
+        xConstrainsTargetCountExactly: Boolean = false,
         targetRequirements: List<TargetInfo>? = null,
     ) = LegalAction(
         action = CastSpell(playerId = EntityId.generate(), cardId = EntityId.generate()),
@@ -75,6 +76,7 @@ class XCostSelectionTest : ScenarioTestBase() {
         xConstrainsTargetManaValueExactly = xConstrainsTargetManaValueExactly,
         xConstrainsTargetPower = xConstrainsTargetPower,
         xConstrainsTargetCount = xConstrainsTargetCount,
+        xConstrainsTargetCountExactly = xConstrainsTargetCountExactly,
         targetRequirements = targetRequirements,
     )
 
@@ -175,6 +177,27 @@ class XCostSelectionTest : ScenarioTestBase() {
                 )
                 XCostSelection.expandToX(b.state, action).map { it.chosenX() } shouldBe
                     listOf(6, 5, 4, 3)
+            }
+
+            test("an exact X target count ('X target creatures') fixes the floor at X and drops an X above the targets") {
+                val b = board()
+                // Icy Blast over three creatures: X = 4 can't find four targets (CR 601.2c, 115.3),
+                // and each surviving X must choose exactly X — not merely at most X.
+                val action = castAction(
+                    maxAffordableX = 4,
+                    validTargets = listOf(b.thopter, b.bears, b.giant),
+                    requiresTargets = true,
+                    targetCount = 1,
+                    minTargets = 0,
+                    xConstrainsTargetCount = true,
+                    xConstrainsTargetCountExactly = true,
+                )
+                val expanded = XCostSelection.expandToX(b.state, action)
+                expanded.map { it.chosenX() } shouldBe listOf(3, 2, 1)
+                expanded.forEach { candidate ->
+                    candidate.minTargets shouldBe candidate.chosenX()
+                    candidate.targetCount shouldBe candidate.chosenX()
+                }
             }
 
             test("an uncastable spell expands to nothing at all") {

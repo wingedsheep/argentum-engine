@@ -314,7 +314,8 @@ class GameInitializer(
             turnOrder = shuffledOrder,
             activePlayerId = shuffledOrder.first(),
             priorityPlayerId = shuffledOrder.first(),
-            turnNumber = 1  // First turn is turn 1, not turn 0
+            turnNumber = 1,  // First turn is turn 1, not turn 0
+            roundNumber = 1
         )
         // The very first turn of the game doesn't go through TurnManager.startTurn
         // (it's set up directly here), so seed the active player's

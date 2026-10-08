@@ -8,6 +8,9 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.dsl.DynamicAmounts
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.effects.PreventionScope
 
 
 /**
@@ -22,8 +25,12 @@ val SereneSunset = card("Serene Sunset") {
     typeLine = "Instant"
     oracleText = "Prevent all combat damage X target creatures would deal this turn."
     spell {
-        val t = target(TargetFilter.Creature)
-        effect = Effects.PreventAllCombatDamage()
+        // Exactly X creatures; each one's combat damage this turn is prevented — not all combat
+        // damage, which is what Fog says.
+        targets(TargetFilter.Creature, exactly = DynamicAmounts.xValue())
+        effect = Effects.ForEachTarget(
+            Effects.PreventAllDamageDealtBy(EffectTarget.ContextTarget(0), scope = PreventionScope.CombatOnly)
+        )
     }
     metadata {
         rarity = Rarity.UNCOMMON

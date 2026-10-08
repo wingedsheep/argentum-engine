@@ -80,7 +80,7 @@ phase ordering, but two of them re-rank effort.
 ### 1. The Phase 5 throughput target is already met — perf is not a rollout blocker
 
 Phase 5 sets a target of **1,500–2,000 `process()`/sec/thread**, derived from the stale
-`~404 actions/sec/thread` figure in [`engine-performance.md`](../../backlog/engine-performance.md).
+`~404 actions/sec/thread` figure in [`engine-performance.md`](../../backlog/archived/engine-performance-hotspots.md).
 
 Measured today: **~3,400/sec** at the as-played mix, **~2,400/sec** at the candidate mix. Steps 1–3
 of the performance plan (component keying, `getBattlefield()` memoization) landed since that
@@ -569,7 +569,7 @@ windows at NORMAL.
 # Phase 5a — the O(n²) battlefield scans
 
 **Measured:** 2026-07-28. Same hardware. Ships
-[`engine-performance.md`](../../backlog/engine-performance.md) Step 4; the code is
+[`engine-performance.md`](../../backlog/archived/engine-performance-hotspots.md) Step 4; the code is
 `mechanics/mana/ManaStaticsIndex.kt` and `event/BattlefieldStaticsIndex.kt`.
 
 ## Three points, not two

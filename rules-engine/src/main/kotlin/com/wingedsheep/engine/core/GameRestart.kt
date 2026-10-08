@@ -111,6 +111,7 @@ class GameRestarter(
             activePlayerId = starting,
             priorityPlayerId = starting,
             turnNumber = 1,
+            roundNumber = 1,
             phase = Phase.BEGINNING,
             step = Step.UNTAP,
         )

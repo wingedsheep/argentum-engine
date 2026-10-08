@@ -255,6 +255,7 @@ export interface StateDelta {
   readonly activePlayerId?: EntityId | null
   readonly priorityPlayerId?: EntityId | null
   readonly turnNumber?: number | null
+  readonly roundNumber?: number | null
   readonly isGameOver?: boolean | null
   readonly winnerId?: EntityId | null
   /** Day/night designation (CR 731). Null means unchanged — the game never returns to neither. */
@@ -797,7 +798,7 @@ export interface BudgetModalDecision extends PendingDecisionBase {
  * One yes/no raised for a run of N identical optional ("you may …") triggers, answered once
  * instead of N times. The response carries both the yes/no `choice` and `applyToAll`:
  * apply-to-all resolves the whole run; otherwise it peels one instance and the batch re-raises for
- * the rest. See `backlog/stack-collapse-and-batch-decisions.md` §B.
+ * the rest. See `backlog/archived/stack-collapse-and-batch-decisions.md` §B.
  */
 export interface BatchYesNoDecision extends PendingDecisionBase {
   readonly type: 'BatchYesNoDecision'
@@ -872,6 +873,12 @@ export interface LegalActionTargetInfo {
    */
   readonly xConstrainsCount?: boolean
   /**
+   * True when that X-driven count is exact — "X target creatures" rather than "up to X target
+   * creatures" (TargetObject.dynamicMinCount == XValue server-side). The client must require
+   * exactly the chosen X selections.
+   */
+  readonly xConstrainsCountExactly?: boolean
+  /**
    * True for "another target" wording: a pick here must differ from every target chosen for an
    * earlier requirement. Absent/false lets separate "target" instances choose the same object
    * (Seeds of Strength), so earlier picks stay in this requirement's pool.
@@ -928,6 +935,12 @@ export interface LegalActionInfo {
    * requirement spells, see the per-requirement [LegalActionTargetInfo.xConstrainsCount].
    */
   readonly xConstrainsTargetCount?: boolean
+  /**
+   * True when that X-driven count is exact — "Destroy X target artifacts" (Builder's Bane) means
+   * exactly X, so the targeting overlay requires X selections, not merely at most X. The server
+   * already caps `maxAffordableX` at the number of legal targets.
+   */
+  readonly xConstrainsTargetCountExactly?: boolean
   /** Valid attacker IDs for DeclareAttackers action */
   readonly validAttackers?: readonly EntityId[]
   /** Creature IDs that must attack this combat (from MustAttack, Taunt, etc.) */

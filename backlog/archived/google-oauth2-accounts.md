@@ -8,7 +8,7 @@ games and dev scenario E2E tests.
 
 ## Supersedes
 
-This backlog item **replaces Phase 1 of [league-season-system.md](league-season-system.md)** —
+This backlog item **replaces Phase 1 of [league-season-system.md](../league-season-system.md)** —
 the original plan called for Keycloak SSO. We are dropping Keycloak in favour of a direct Google
 OAuth2 integration using `spring-boot-starter-oauth2-client` / `spring-boot-starter-oauth2-resource-server`.
 
@@ -34,11 +34,11 @@ This feature depends on:
 - **Postgres** (Phase 1.1 below) — first relational store in the project; everything user-keyed
   flows from here.
 - **PlayerIdentity state machine formalization**
-  ([architecture #6](archived/game-server-architecture.md#6-formalize-playeridentity-state-machine)) —
+  ([architecture #6](../archived/game-server-architecture.md#6-formalize-playeridentity-state-machine)) —
   the auth flow needs a cleaner identity lifecycle than the current ad-hoc model.
 
 This feature is a prerequisite for:
-- Leagues & seasons ([league-season-system.md](league-season-system.md) Phase 2+)
+- Leagues & seasons ([league-season-system.md](../league-season-system.md) Phase 2+)
 - Player profiles, deck library, match history
 - Any feature that needs durable cross-device identity
 
@@ -442,4 +442,4 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
 ## Phase 2+
 
 Phases 2 (Leagues), 3 (Seasons & Standings), and 4 (Social & Polish) from
-[league-season-system.md](league-season-system.md) remain valid and depend on this phase.
+[league-season-system.md](../league-season-system.md) remain valid and depend on this phase.

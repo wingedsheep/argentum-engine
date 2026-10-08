@@ -116,6 +116,7 @@ object CardLinter {
         lintDefinition(card.name, fullTree, explicitTree, slots, findings)
         checkSlots(card.name, slots, findings)
         checkOpponentChoosers(card.name, explicitTree, withinActivatedAbility = false, findings)
+        checkDynamicTargetCounts(card.name, explicitTree, findings)
         checkAttachedScope(card, findings)
         checkProwessTrigger(card, findings)
         checkManaAbilityClassification(card.name, fullTree, findings)
@@ -587,6 +588,57 @@ object CardLinter {
                     cardName, it, withinActivatedAbility, findings, withinTriggeredAbility
                 )
             }
+            else -> {}
+        }
+    }
+
+    /**
+     * A [com.wingedsheep.sdk.scripting.targets.TargetObject] whose dynamic target count says
+     * something no Oracle text does. "X target creatures" is exactly X (`dynamicMinCount` and
+     * `dynamicMaxCount` both X — the DSL's `targets(filter, exactly = X)`); "up to X target
+     * creatures" is `dynamicMaxCount` with `optional = true`; "any number of …" with a cap is
+     * `dynamicMaxCount` with `unlimited = true`. Three other shapes are rejected:
+     *
+     * - `dynamicMaxCount` alone, neither optional nor unlimited — a floor of the static `minCount`
+     *   (one) under a dynamic cap, "one to X targets", which no card prints. It is what "X target"
+     *   used to be approximated as, and it made X = 0 uncastable.
+     * - `dynamicMinCount` without `dynamicMaxCount` — a floor with no cap.
+     * - `dynamicMinCount` with `optional` or `unlimited` — a floor the flag then waives.
+     */
+    private fun checkDynamicTargetCounts(
+        cardName: String,
+        element: JsonElement,
+        findings: MutableList<CardValidationError>,
+    ) {
+        when (element) {
+            is JsonObject -> {
+                if ((element["type"] as? JsonPrimitive)?.contentOrNull == "TargetObject") {
+                    fun present(field: String) = element[field]?.takeIf { it !is JsonNull } != null
+                    fun flag(field: String) = (element[field] as? JsonPrimitive)?.contentOrNull == "true"
+                    val max = present("dynamicMaxCount")
+                    val min = present("dynamicMinCount")
+                    val waived = flag("optional") || flag("unlimited")
+                    val problem = when {
+                        min && !max -> "a dynamicMinCount without a dynamicMaxCount"
+                        min && waived -> "a dynamicMinCount alongside optional/unlimited, which waive it"
+                        max && !min && !waived ->
+                            "a dynamicMaxCount that is neither exact nor optional (\"one to X targets\")"
+                        else -> null
+                    }
+                    if (problem != null) {
+                        findings.add(
+                            CardValidationError.AmbiguousDynamicTargetCount(
+                                cardName = cardName,
+                                message = "'$cardName' has a target requirement with $problem. Spell " +
+                                    "\"X target …\" as targets(filter, exactly = X) and \"up to X target …\" " +
+                                    "as optional = true with dynamicMaxCount = X."
+                            )
+                        )
+                    }
+                }
+                element.values.forEach { checkDynamicTargetCounts(cardName, it, findings) }
+            }
+            is JsonArray -> element.forEach { checkDynamicTargetCounts(cardName, it, findings) }
             else -> {}
         }
     }

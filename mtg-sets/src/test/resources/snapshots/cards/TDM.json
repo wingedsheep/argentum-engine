@@ -13112,7 +13112,8 @@
                             "baseFilter": "creature"
                         },
                         "id": "t0",
-                        "dynamicMaxCount": "XValue"
+                        "dynamicMaxCount": "XValue",
+                        "dynamicMinCount": "XValue"
                     }
                 ],
                 "timing": "SorcerySpeed",

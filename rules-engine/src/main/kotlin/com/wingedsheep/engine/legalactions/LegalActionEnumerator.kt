@@ -109,7 +109,24 @@ class LegalActionEnumerator(
             offers
         }
         return com.wingedsheep.engine.legalactions.enumerators.AdditionalManaForCountersOffer
-            .annotate(context, permitted, predicateEvaluator = predicateEvaluator)
+            .annotate(context, permitted.map(::capXAtExactTargetCount), predicateEvaluator = predicateEvaluator)
+    }
+
+    /**
+     * "X target creatures" needs X distinct legal targets (CR 601.2c, 115.3), so an X larger than
+     * the legal targets can't be cast: cap [LegalAction.maxAffordableX] at the smallest such
+     * requirement's legal-target count, and the client's X picker never offers an X the cast would
+     * then be rejected for. The enumerated target list is permissive where an X-relative filter
+     * narrows it later, so this is an upper bound — the validator still has the last word.
+     */
+    private fun capXAtExactTargetCount(action: LegalAction): LegalAction {
+        val maxX = action.maxAffordableX ?: return action
+        val requirementCaps = action.targetRequirements.orEmpty()
+            .filter { it.xConstrainsCountExactly }
+            .map { it.validTargets.size }
+        val flatCap = if (action.xConstrainsTargetCountExactly) action.validTargets?.size else null
+        val cap = (requirementCaps + listOfNotNull(flatCap)).minOrNull() ?: return action
+        return if (cap < maxX) action.copy(maxAffordableX = cap) else action
     }
 
     /**

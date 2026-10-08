@@ -88,6 +88,7 @@ export function applyStateDelta(
     activePlayerId: delta.activePlayerId ?? current.activePlayerId,
     priorityPlayerId: delta.priorityPlayerId ?? current.priorityPlayerId,
     turnNumber: delta.turnNumber ?? current.turnNumber,
+    roundNumber: delta.roundNumber ?? current.roundNumber,
     isGameOver: delta.isGameOver ?? current.isGameOver,
     winnerId: delta.winnerId !== undefined ? delta.winnerId : current.winnerId,
     // Carried forward: a null delta value means unchanged (the game never reverts to neither, CR 731.1).

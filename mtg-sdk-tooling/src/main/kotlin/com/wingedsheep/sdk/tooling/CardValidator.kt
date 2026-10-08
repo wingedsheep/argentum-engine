@@ -323,6 +323,16 @@ sealed interface CardValidationError {
     ) : CardValidationError
 
     /**
+     * A `TargetObject` whose dynamic target count matches no printed wording: "X target …" is exact
+     * (`dynamicMinCount` = `dynamicMaxCount`), "up to X target …" is `dynamicMaxCount` + `optional`.
+     * See `CardLinter.checkDynamicTargetCounts` for the rejected shapes.
+     */
+    data class AmbiguousDynamicTargetCount(
+        override val cardName: String,
+        override val message: String
+    ) : CardValidationError
+
+    /**
      * An `EntityMatches` condition naming an entity role the `ConditionEvaluator` doesn't
      * dispatch (anything outside Self / EnchantedPermanent / EnchantedCreature / EquippedCreature /
      * ContextTarget / TriggeringEntity). The evaluator answers `false` for such a role, so the

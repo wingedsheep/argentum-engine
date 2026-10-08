@@ -57,6 +57,7 @@ object StateDiffCalculator {
         val activePlayerDelta = if (current.activePlayerId != previous.activePlayerId) current.activePlayerId else null
         val priorityPlayerDelta = if (current.priorityPlayerId != previous.priorityPlayerId) current.priorityPlayerId else null
         val turnNumberDelta = if (current.turnNumber != previous.turnNumber) current.turnNumber else null
+        val roundNumberDelta = if (current.roundNumber != previous.roundNumber) current.roundNumber else null
         val isGameOverDelta = if (current.isGameOver != previous.isGameOver) current.isGameOver else null
         val winnerIdDelta = if (current.winnerId != previous.winnerId) current.winnerId else null
         val dayNightDelta = if (current.dayNight != previous.dayNight) current.dayNight else null
@@ -91,6 +92,7 @@ object StateDiffCalculator {
             activePlayerId = activePlayerDelta,
             priorityPlayerId = priorityPlayerDelta,
             turnNumber = turnNumberDelta,
+            roundNumber = roundNumberDelta,
             isGameOver = isGameOverDelta,
             winnerId = winnerIdDelta,
             dayNight = dayNightDelta,

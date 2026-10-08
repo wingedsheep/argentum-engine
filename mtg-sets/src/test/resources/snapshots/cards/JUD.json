@@ -1478,8 +1478,17 @@
     "oracleText": "Prevent all combat damage X target creatures would deal this turn.",
     "script": {
         "spellEffect": {
-            "type": "PreventDamageShield",
-            "scope": "CombatOnly"
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "PreventDamageShield",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "scope": "CombatOnly",
+                "direction": "FromTarget"
+            }
         },
         "targetRequirements": [
             {
@@ -1487,7 +1496,9 @@
                 "filter": {
                     "baseFilter": "creature"
                 },
-                "id": "t0"
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
             }
         ]
     },

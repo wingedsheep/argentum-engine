@@ -16,7 +16,7 @@ the Phase 7 strength point estimate against `v0` (55%, CI [48%, 62%]); the merge
 remains intentionally separate because rollout arenas are expensive. Next in Phase 9 is
 **raw-feature collection for Texel-style evaluation tuning**.
 
-**Related:** [`engine-performance.md`](engine-performance.md) — the CPU profile this plan's
+**Related:** [`engine-performance.md`](archived/engine-performance-hotspots.md) — the CPU profile this plan's
 performance phase built on. **Every step in that document is now closed**; Phase 5a was its Step 4
 and Phase 5c retired its Step 5. See "Cross-reference" below.
 

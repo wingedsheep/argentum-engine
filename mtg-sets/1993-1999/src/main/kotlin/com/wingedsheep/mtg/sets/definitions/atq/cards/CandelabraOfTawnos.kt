@@ -20,10 +20,9 @@ val CandelabraOfTawnos = card("Candelabra of Tawnos") {
     oracleText = "{X}, {T}: Untap X target lands."
 
     activatedAbility {
-        targets(TargetFilter.Land, dynamicMaxCount = DynamicAmounts.xValue())
+        targets(TargetFilter.Land, exactly = DynamicAmounts.xValue())
         cost = Costs.Composite(Costs.Mana("{X}"), Costs.Tap)
-        // "Untap X target lands" — the chosen X clamps the number of land targets via
-        // dynamicMaxCount (Icy Blast pattern), so no magic count.
+        // "Untap X target lands" — exactly X land targets (Icy Blast pattern); X = 0 targets none.
         effect = Effects.UntapEachTarget()
         description = "{X}, {T}: Untap X target lands."
     }

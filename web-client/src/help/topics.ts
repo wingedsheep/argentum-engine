@@ -906,12 +906,13 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     section: 'playing',
     title: 'Reading the table',
     summary:
-      'Your board is at the bottom, opponents at the top, the stack in the middle. Each player has a life orb, their zone piles, and badges for anything that changes the usual rules — poison, energy, hand size, commander damage, day or night.',
+      'Your board is at the bottom, opponents at the top, the stack in the middle. Each player has a life orb, their zone piles, and badges for anything that changes the usual rules — poison, energy, experience, hand size, commander damage, day or night.',
     body: [
       { kind: 'h', text: 'Around each life total' },
       { kind: 'ul', items: [
         'POISON n/10 — appears once a player has poison counters. A Two-Headed Giant team loses at 15.',
         '⚡ n — energy counters.',
+        'XP n — experience counters, which some commanders give you and then count.',
         'HAND — the maximum hand size, only when it is not 7.',
         '⚔ commander damage — taken from each commander, against the 21 (or preset) threshold; it turns red within 5 of lethal.',
         'Chips for active effects on that player — hover one to see what it does. The City’s Blessing, the Ring’s temptation and Speed have their own badges.',

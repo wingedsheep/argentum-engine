@@ -352,6 +352,37 @@ class CardLinterTest : DescribeSpec({
         }
     }
 
+    describe("dynamic target counts") {
+        fun tapEach(requirement: TargetObject) = instant(
+            "Dynamic Count Probe",
+            CardScript(
+                spellEffect = Effects.TapEachTarget(),
+                targetRequirements = listOf(requirement),
+            ),
+        )
+
+        it("accepts \"X target\" (exact) and \"up to X target\" (optional cap)") {
+            val x = DynamicAmount.XValue
+            CardLinter.lint(tapEach(TargetObject(filter = TargetFilter.Creature, dynamicMaxCount = x, dynamicMinCount = x)))
+                .filterIsInstance<CardValidationError.AmbiguousDynamicTargetCount>().shouldBeEmpty()
+            CardLinter.lint(tapEach(TargetObject(filter = TargetFilter.Creature, optional = true, dynamicMaxCount = x)))
+                .filterIsInstance<CardValidationError.AmbiguousDynamicTargetCount>().shouldBeEmpty()
+        }
+
+        it("flags a dynamic cap that is neither exact nor optional — \"one to X targets\" is printed nowhere") {
+            val findings = CardLinter.lint(tapEach(TargetObject(filter = TargetFilter.Creature, dynamicMaxCount = DynamicAmount.XValue)))
+                .filterIsInstance<CardValidationError.AmbiguousDynamicTargetCount>()
+            findings.shouldHaveSize(1)
+            findings[0].message shouldContain "exactly = X"
+        }
+
+        it("flags a dynamic floor that optional waives") {
+            val x = DynamicAmount.XValue
+            CardLinter.lint(tapEach(TargetObject(filter = TargetFilter.Creature, optional = true, dynamicMaxCount = x, dynamicMinCount = x)))
+                .filterIsInstance<CardValidationError.AmbiguousDynamicTargetCount>().shouldHaveSize(1)
+        }
+    }
+
     describe("opponent-chosen targets") {
 
         it("flags a TargetChooser.Opponent target on a spell — the controller would pick it") {

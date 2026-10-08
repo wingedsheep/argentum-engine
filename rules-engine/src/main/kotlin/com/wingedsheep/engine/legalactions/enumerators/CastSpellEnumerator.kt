@@ -904,6 +904,7 @@ class CastSpellEnumerator(
                                     xConstrainsTargetManaValueExactly = firstInfo.xConstrainsManaValueExactly,
                                     xConstrainsTargetPower = firstInfo.xConstrainsPower,
                                     xConstrainsTargetCount = firstInfo.xConstrainsCount,
+                                    xConstrainsTargetCountExactly = firstInfo.xConstrainsCountExactly,
                                     hasXCost = hasXCost,
                                     maxAffordableX = maxAffordableX,
                                     additionalCostInfo = modeEnum.additionalCostInfo,
@@ -1137,6 +1138,7 @@ class CastSpellEnumerator(
                                 xConstrainsTargetManaValueExactly = firstReqInfo.xConstrainsManaValueExactly,
                                 xConstrainsTargetPower = firstReqInfo.xConstrainsPower,
                                 xConstrainsTargetCount = firstReqInfo.xConstrainsCount,
+                                xConstrainsTargetCountExactly = firstReqInfo.xConstrainsCountExactly,
                                 hasXCost = hasXCost,
                                 maxAffordableX = maxAffordableX,
                                 additionalCostInfo = costInfo,
@@ -1168,6 +1170,7 @@ class CastSpellEnumerator(
                                 xConstrainsTargetManaValueExactly = firstReqInfo.xConstrainsManaValueExactly,
                                 xConstrainsTargetPower = firstReqInfo.xConstrainsPower,
                                 xConstrainsTargetCount = firstReqInfo.xConstrainsCount,
+                                xConstrainsTargetCountExactly = firstReqInfo.xConstrainsCountExactly,
                                 manaCostString = altCostInfo.manaCostString,
                                 additionalCostInfo = altCostInfo.additionalCostInfo,
                                 requiresDamageDistribution = requiresDamageDistribution,
@@ -1191,6 +1194,7 @@ class CastSpellEnumerator(
                                 xConstrainsTargetManaValueExactly = firstReqInfo.xConstrainsManaValueExactly,
                                 xConstrainsTargetPower = firstReqInfo.xConstrainsPower,
                                 xConstrainsTargetCount = firstReqInfo.xConstrainsCount,
+                                xConstrainsTargetCountExactly = firstReqInfo.xConstrainsCountExactly,
                                 manaCostString = selfAltCostResult.manaCostString,
                                 additionalCostInfo = selfAltCostResult.additionalCostInfo,
                                 requiresDamageDistribution = requiresDamageDistribution,
@@ -1214,6 +1218,7 @@ class CastSpellEnumerator(
                                 xConstrainsTargetManaValueExactly = firstReqInfo.xConstrainsManaValueExactly,
                                 xConstrainsTargetPower = firstReqInfo.xConstrainsPower,
                                 xConstrainsTargetCount = firstReqInfo.xConstrainsCount,
+                                xConstrainsTargetCountExactly = firstReqInfo.xConstrainsCountExactly,
                                 manaCostString = evokeCostResult.manaCostString,
                                 autoTapPreview = evokeCostResult.autoTapPreview
                             ))
@@ -1233,6 +1238,7 @@ class CastSpellEnumerator(
                                 xConstrainsTargetManaValueExactly = firstReqInfo.xConstrainsManaValueExactly,
                                 xConstrainsTargetPower = firstReqInfo.xConstrainsPower,
                                 xConstrainsTargetCount = firstReqInfo.xConstrainsCount,
+                                xConstrainsTargetCountExactly = firstReqInfo.xConstrainsCountExactly,
                                 manaCostString = impendingCostResult.manaCostString,
                                 autoTapPreview = impendingCostResult.autoTapPreview
                             ))
@@ -1252,6 +1258,7 @@ class CastSpellEnumerator(
                                 xConstrainsTargetManaValueExactly = firstReqInfo.xConstrainsManaValueExactly,
                                 xConstrainsTargetPower = firstReqInfo.xConstrainsPower,
                                 xConstrainsTargetCount = firstReqInfo.xConstrainsCount,
+                                xConstrainsTargetCountExactly = firstReqInfo.xConstrainsCountExactly,
                                 manaCostString = miracleCostResult.manaCostString,
                                 autoTapPreview = miracleCostResult.autoTapPreview
                             ))
@@ -1271,6 +1278,7 @@ class CastSpellEnumerator(
                                 xConstrainsTargetManaValueExactly = firstReqInfo.xConstrainsManaValueExactly,
                                 xConstrainsTargetPower = firstReqInfo.xConstrainsPower,
                                 xConstrainsTargetCount = firstReqInfo.xConstrainsCount,
+                                xConstrainsTargetCountExactly = firstReqInfo.xConstrainsCountExactly,
                                 manaCostString = freeCastResult.manaCostString,
                                 requiresDamageDistribution = requiresDamageDistribution,
                                 totalDamageToDistribute = totalDamageToDistribute,
@@ -1293,6 +1301,7 @@ class CastSpellEnumerator(
                                 xConstrainsTargetManaValueExactly = firstReqInfo.xConstrainsManaValueExactly,
                                 xConstrainsTargetPower = firstReqInfo.xConstrainsPower,
                                 xConstrainsTargetCount = firstReqInfo.xConstrainsCount,
+                                xConstrainsTargetCountExactly = firstReqInfo.xConstrainsCountExactly,
                                 additionalCostInfo = path.costInfo,
                                 manaCostString = path.manaCostString,
                                 requiresDamageDistribution = requiresDamageDistribution,
@@ -1572,11 +1581,18 @@ class CastSpellEnumerator(
                     } ?: effect.totalDamage
                 }
                 val requirements = la.targetRequirements?.map { info ->
-                    if (info.xConstrainsCount) info.copy(maxTargets = minOf(info.validTargets.size, x), xConstrainsCount = false)
+                    if (info.xConstrainsCount) info.copy(
+                        maxTargets = minOf(info.validTargets.size, x),
+                        minTargets = if (info.xConstrainsCountExactly) x else info.minTargets,
+                        xConstrainsCount = false,
+                        xConstrainsCountExactly = false,
+                    )
                     else info
                 }
                 val capped = la.xConstrainsTargetCount
                 val validTargetCount = la.validTargets?.size ?: la.targetCount
+                // "X target …" needs X distinct legal targets (CR 601.2c); this X can't be cast.
+                if (la.xConstrainsTargetCountExactly && validTargetCount < x) continue
                 out.add(la.copy(
                     description = "${la.description} (X=$x)",
                     action = cs.copy(xValue = x),
@@ -1584,8 +1600,13 @@ class CastSpellEnumerator(
                     totalDamageToDistribute = total ?: la.totalDamageToDistribute,
                     targetRequirements = requirements,
                     targetCount = if (capped) minOf(validTargetCount, x) else la.targetCount,
-                    minTargets = if (capped) minOf(la.minTargets, x) else la.minTargets,
+                    minTargets = when {
+                        la.xConstrainsTargetCountExactly -> x
+                        capped -> minOf(la.minTargets, x)
+                        else -> la.minTargets
+                    },
                     xConstrainsTargetCount = false,
+                    xConstrainsTargetCountExactly = false,
                 ))
             }
         }
@@ -3202,6 +3223,7 @@ class CastSpellEnumerator(
                 xConstrainsTargetManaValueExactly = firstInfo.xConstrainsManaValueExactly,
                 xConstrainsTargetPower = firstInfo.xConstrainsPower,
                 xConstrainsTargetCount = firstInfo.xConstrainsCount,
+                xConstrainsTargetCountExactly = firstInfo.xConstrainsCountExactly,
                 hasXCost = hasXCost,
                 maxAffordableX = maxAffordableX,
                 manaCostString = manaCostString,

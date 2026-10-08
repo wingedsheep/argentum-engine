@@ -12,8 +12,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Sorcery
  * Tap X target creatures.
  *
- * The chosen X clamps how many creatures may be targeted (`dynamicMaxCount = XValue`), the same
- * shape Khans of Tarkir's Icy Blast uses for the identical line.
+ * "X target creatures" is exactly X (`targets(…, exactly = X)`): the chosen X is both the floor
+ * and the cap on how many creatures are targeted — the same shape Khans of Tarkir's Icy Blast uses
+ * for the identical line.
  */
 val WordOfBinding = card("Word of Binding") {
     manaCost = "{X}{B}{B}"
@@ -22,7 +23,7 @@ val WordOfBinding = card("Word of Binding") {
     oracleText = "Tap X target creatures."
 
     spell {
-        targets(TargetFilter.Creature, optional = true, dynamicMaxCount = DynamicAmounts.xValue())
+        targets(TargetFilter.Creature, exactly = DynamicAmounts.xValue())
         effect = Effects.TapEachTarget()
     }
 

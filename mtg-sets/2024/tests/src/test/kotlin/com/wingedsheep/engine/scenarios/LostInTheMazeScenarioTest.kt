@@ -27,8 +27,8 @@ import io.kotest.matchers.shouldNotBe
  *  1. every chosen target gets tapped, but only the ones you *don't* control get a stun counter —
  *     an implementation that stunned all targets, or none, passes a single-target test either way,
  *     so the discriminating case targets one creature on each side at once;
- *  2. X clamps the number of targets, so an X=2 cast must offer at most two target slots and reject
- *     a third;
+ *  2. "tap X target creatures" is exactly X, so an X=2 cast must require two targets — no fewer,
+ *     no more;
  *  3. the hexproof static is continuous over `tapped().youControl()`, not a snapshot — a creature
  *     that untaps loses it again.
  *
@@ -126,7 +126,7 @@ class LostInTheMazeScenarioTest : FunSpec({
         }
     }
 
-    test("X clamps the target count — an X=2 cast offers two slots and rejects a third") {
+    test("X fixes the target count — an X=2 cast requires exactly two targets") {
         val driver = newDriver()
         val a = driver.putCreatureOnBattlefield(driver.player2, "Grizzly Bears")
         val b = driver.putCreatureOnBattlefield(driver.player2, "Grizzly Bears")
@@ -134,11 +134,12 @@ class LostInTheMazeScenarioTest : FunSpec({
 
         val decision = driver.castMaze(xValue = 2)
 
-        withClue("dynamicMaxCount = CastX caps the requirement at the X actually paid") {
+        withClue("exactly = CastX fixes the requirement at the X actually paid") {
             decision.targetRequirements.single().maxTargets shouldBe 2
+            decision.targetRequirements.single().minTargets shouldBe 2
         }
-        withClue("'up to X' means a zero-target choice is legal too") {
-            decision.targetRequirements.single().minTargets shouldBe 0
+        withClue("one target is fewer than X and must be rejected") {
+            driver.submitTargetSelection(driver.player1, listOf(a)).error shouldNotBe null
         }
         withClue("submitting a third target beyond the X paid must be rejected") {
             driver.submitTargetSelection(driver.player1, listOf(a, b, c)).error shouldNotBe null

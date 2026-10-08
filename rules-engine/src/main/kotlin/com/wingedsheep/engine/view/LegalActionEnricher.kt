@@ -105,6 +105,7 @@ class LegalActionEnricher(
             xConstrainsTargetManaValueExactly = action.xConstrainsTargetManaValueExactly,
             xConstrainsTargetPower = action.xConstrainsTargetPower,
             xConstrainsTargetCount = action.xConstrainsTargetCount,
+            xConstrainsTargetCountExactly = action.xConstrainsTargetCountExactly,
             validAttackers = action.validAttackers,
             mandatoryAttackers = action.mandatoryAttackers,
             validAttackTargets = action.validAttackTargets,
@@ -261,6 +262,7 @@ class LegalActionEnricher(
         xConstrainsManaValueExactly = xConstrainsManaValueExactly,
         xConstrainsPower = xConstrainsPower,
         xConstrainsCount = xConstrainsCount,
+        xConstrainsCountExactly = xConstrainsCountExactly,
         mustDifferFromEarlier = mustDifferFromEarlier
     )
 

@@ -34,7 +34,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * The `pipeline { }` builder must compile to the *exact* `CompositeEffect` tree the
  * raw step constructors produce by hand — same types, same keys, same JSON — so the
  * engine, the linter, and the snapshot goldens can't tell the difference between a
- * hand-built pipeline and a builder-built one (`backlog/inline-pipeline-dsl.md` §2).
+ * hand-built pipeline and a builder-built one (`backlog/archived/inline-pipeline-dsl.md` §2).
  */
 class PipelineBuilderTest : DescribeSpec({
 

@@ -34,6 +34,7 @@ data class StateDelta(
     val activePlayerId: EntityId? = null,
     val priorityPlayerId: EntityId? = null,
     val turnNumber: Int? = null,
+    val roundNumber: Int? = null,
     val isGameOver: Boolean? = null,
     val winnerId: EntityId? = null,
 

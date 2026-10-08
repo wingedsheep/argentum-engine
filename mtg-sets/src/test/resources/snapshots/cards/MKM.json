@@ -7536,11 +7536,12 @@
         "targetRequirements": [
             {
                 "type": "TargetObject",
-                "optional": true,
                 "filter": {
                     "baseFilter": "permanent"
                 },
-                "dynamicMaxCount": "XValue"
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
             }
         ]
     },
@@ -14492,11 +14493,12 @@
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
-                    "optional": true,
                     "filter": {
                         "baseFilter": "creature"
                     },
-                    "dynamicMaxCount": "CastX"
+                    "id": "t0",
+                    "dynamicMaxCount": "CastX",
+                    "dynamicMinCount": "CastX"
                 },
                 "descriptionOverride": "When this enchantment enters, tap X target creatures. Put a stun counter on each of those creatures you don't control."
             }

@@ -418,6 +418,16 @@ data class TargetSpellOrPermanent(
  *   of targets. Used for "up to X target ..." where X is determined by board state,
  *   like Prismabasher's Vivid trigger ("up to X target creatures you control",
  *   X = colors among permanents you control).
+ * @param dynamicMinCount The dynamic sibling of [minCount]: when non-null, the resolved value is
+ *   the *minimum* number of targets. "X target creatures" (Icy Blast, Distorting Wake) is exactly
+ *   X — `dynamicMinCount` and [dynamicMaxCount] both set to X — where "up to X target creatures" is
+ *   [dynamicMaxCount] alone with `optional = true`. Author it through the DSL's
+ *   `targets(filter, exactly = X)` rather than by hand. X is announced before targets are chosen
+ *   (CR 601.2b, 601.2c), so the engine resolves the bound with the announced X at every
+ *   authoritative site: cast validation, the trigger snapshot (CR 603.3d), legal-action
+ *   enumeration. Until it is resolved the requirement's static [effectiveMinCount] is 0 — X may be
+ *   0, and X = 0 means zero targets. Meaningless without [dynamicMaxCount], and contradicts
+ *   `optional`/`unlimited`; `CardLinter` rejects both shapes.
  */
 @SerialName("TargetObject")
 @Serializable
@@ -429,6 +439,7 @@ data class TargetObject(
     val filter: TargetFilter,
     override val id: String? = null,
     val dynamicMaxCount: DynamicAmount? = null,
+    val dynamicMinCount: DynamicAmount? = null,
     /**
      * When true and more than one target is chosen for this requirement, every chosen
      * target must be controlled by the same player ("two target creatures controlled by
@@ -522,6 +533,16 @@ data class TargetObject(
     override val chooser: TargetChooser = TargetChooser.Controller
 ) : TargetRequirement {
     /**
+     * A [dynamicMinCount] is unknown until X (or the board) is read, and may resolve to 0, so the
+     * static floor is 0 — the authoritative sites resolve the real one (see [dynamicMinCount]).
+     */
+    override val effectiveMinCount: Int
+        get() = if (optional || unlimited || dynamicMinCount != null) 0 else minCount
+
+    /** True for the exact dynamic shape — "X target creatures": [dynamicMinCount] equals [dynamicMaxCount]. */
+    val exactDynamicCount: Boolean get() = dynamicMaxCount != null && dynamicMinCount == dynamicMaxCount
+
+    /**
      * Derived from the requirement's shape and [filter] alone — never from [id], which is only the
      * binding key effects read the chosen target through. This string is the targeting prompt the
      * client shows, so it has to say what is actually legal ("target artifact or tapped creature"),
@@ -540,6 +561,9 @@ data class TargetObject(
             unlimited -> "any number of $target $plural"
             // "for each opponent, up to one target creature that player controls"
             perOpponent -> "up to one $target ${noun.removeSuffix(" an opponent controls")} per opponent"
+            // "X target creatures" — exactly X; "up to X target creatures" — at most X.
+            dynamicMaxCount != null && dynamicMinCount == dynamicMaxCount ->
+                "${dynamicMaxCount.description} $target $plural"
             dynamicMaxCount != null -> "up to ${dynamicMaxCount.description} $target $plural"
             optional && count == 1 -> "up to one $target $noun"
             optional || minCount == 0 -> "up to ${numberToWord(count)} $target $plural"
@@ -637,7 +661,7 @@ data class TargetOther(
  * walks aligned.
  */
 fun TargetRequirement.withCount(newCount: Int): TargetRequirement {
-    if (newCount == count) return this
+    if (newCount == count && !(this is TargetObject && dynamicMinCount != null)) return this
     val clampedMin = minOf(minCount, newCount)
     return when (this) {
         is TargetPlayer -> copy(count = newCount)
@@ -649,7 +673,12 @@ fun TargetRequirement.withCount(newCount: Int): TargetRequirement {
         is TargetPlayerOrPlaneswalker -> copy(count = newCount)
         is TargetCreatureOrPlaneswalker -> copy(count = newCount)
         is TargetSpellOrPermanent -> copy(count = newCount)
-        is TargetObject -> copy(count = newCount, minCount = clampedMin)
+        // A dynamic minimum is settled once the number of targets is (CR 601.2c: "Once the number
+        // of targets the spell has is determined, that number doesn't change"): the bound
+        // requirement takes exactly the targets chosen, and becomes the static shape.
+        is TargetObject -> if (dynamicMinCount != null) {
+            copy(count = newCount, minCount = newCount, dynamicMinCount = null, dynamicMaxCount = null)
+        } else copy(count = newCount, minCount = clampedMin)
         is TargetOther -> copy(baseRequirement = baseRequirement.withCount(newCount))
     }
 }

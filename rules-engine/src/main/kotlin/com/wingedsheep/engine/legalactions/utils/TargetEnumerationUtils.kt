@@ -10,6 +10,7 @@ import com.wingedsheep.engine.legalactions.TargetInfo
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.mechanics.targeting.ControllerHexproof
 import com.wingedsheep.engine.mechanics.targeting.ControllerShroud
+import com.wingedsheep.engine.mechanics.targeting.DynamicTargetCount
 import com.wingedsheep.engine.mechanics.targeting.HexproofSuppression
 import com.wingedsheep.engine.mechanics.targeting.PlayerTargetRestriction
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
@@ -346,13 +347,21 @@ class TargetEnumerationUtils(
         targetingSourceType: TargetingSourceType = TargetingSourceType.ANY
     ): List<TargetInfo> {
         return targetReqs.mapIndexed { index, req ->
+            // A board-state count ("X target creatures, where X is …") is knowable now; an X from
+            // the cost is not, and stays at the static bounds until the player announces it.
+            val bounds = DynamicTargetCount.bounds(req, xValue = null) { amount ->
+                predicateEvaluator.amounts.evaluate(state, amount, EffectContext(sourceId = sourceId, controllerId = playerId))
+            }
             val validTargets = findValidTargets(state, playerId, req, sourceId, targetingSourceType)
                 .takeIf { satisfiesControllerSpread(state, req, it) }
+                // Too few distinct legal objects for the required count leaves no legal choice
+                // (CR 601.2c, 115.3), so the requirement reports none and the action isn't offered.
+                ?.takeIf { it.size >= bounds.min }
                 ?: emptyList()
             TargetInfo(
                 index = index,
                 description = req.description,
-                minTargets = req.effectiveMinCount,
+                minTargets = bounds.min,
                 // "Any number of target ..." has no fixed cap; the real maximum is the
                 // number of legal targets on the board, so the client offers all of them.
                 // A board-state `dynamicMaxCount` (anything but XValue, which is unbound
@@ -365,12 +374,8 @@ class TargetEnumerationUtils(
                 // the cap the player could pick a ninth target and then be unable to produce a
                 // legal division.
                 maxTargets = when {
-                    req.unlimited ->
-                        minOf(
-                            validTargets.size,
-                            resolveStaticDynamicMax(state, req, playerId, sourceId) ?: validTargets.size
-                        )
-                    else -> resolveStaticDynamicMax(state, req, playerId, sourceId) ?: req.count
+                    req.unlimited -> minOf(validTargets.size, bounds.max ?: validTargets.size)
+                    else -> bounds.max ?: req.count
                 },
                 validTargets = validTargets,
                 targetZone = getTargetZone(req),
@@ -379,6 +384,7 @@ class TargetEnumerationUtils(
                 xConstrainsManaValueExactly = requirementUsesManaValueEqualsX(req),
                 xConstrainsPower = requirementUsesPowerEqualsX(req),
                 xConstrainsCount = requirementXConstrainsCount(req),
+                xConstrainsCountExactly = requirementXConstrainsCountExactly(req),
                 differentControllers = (req as? TargetObject)?.differentControllers == true,
             )
         }
@@ -399,31 +405,6 @@ class TargetEnumerationUtils(
     }
 
     /**
-     * Resolve a [TargetObject.dynamicMaxCount] that is knowable at enumeration time —
-     * i.e. any [DynamicAmount] except [DynamicAmount.XValue] (which depends on the X the
-     * player hasn't chosen yet and is instead clamped client-side via [requirementXConstrainsCount]).
-     * Returns null when there is no dynamic cap, so callers fall back to the static `count`.
-     */
-    private fun resolveStaticDynamicMax(
-        state: GameState,
-        req: TargetRequirement,
-        playerId: EntityId,
-        sourceId: EntityId?
-    ): Int? {
-        val dyn = (req as? TargetObject)?.dynamicMaxCount ?: return null
-        if (dyn == DynamicAmount.XValue) return null
-        return try {
-            val context = EffectContext(
-                sourceId = sourceId,
-                controllerId = playerId,
-            )
-            predicateEvaluator.amounts.evaluate(state, dyn, context).coerceAtLeast(0)
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    /**
      * True when [requirement] is a [TargetObject] whose filter contains
      * [CardPredicate.ManaValueAtMostX] (anywhere in the predicate tree).
      *
@@ -438,8 +419,17 @@ class TargetEnumerationUtils(
      * caps selectable targets at the X chosen for the spell's cost.
      */
     fun requirementXConstrainsCount(requirement: TargetRequirement): Boolean {
-        val target = requirement as? TargetObject ?: return false
+        val target = DynamicTargetCount.objectOf(requirement) ?: return false
         return target.dynamicMaxCount == DynamicAmount.XValue
+    }
+
+    /**
+     * True when [requirement]'s X-driven count is also its minimum — "X target creatures", exactly
+     * X — so the client must require the chosen X selections rather than cap at them.
+     */
+    fun requirementXConstrainsCountExactly(requirement: TargetRequirement): Boolean {
+        val target = DynamicTargetCount.objectOf(requirement) ?: return false
+        return target.dynamicMaxCount == DynamicAmount.XValue && target.dynamicMinCount == DynamicAmount.XValue
     }
 
     fun requirementUsesManaValueAtMostX(requirement: TargetRequirement): Boolean {

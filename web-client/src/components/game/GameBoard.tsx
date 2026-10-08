@@ -1213,6 +1213,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
                 spectatorMode={viewerIsObserver}
                 poisonCounters={centerOrbOpponent.poisonCounters}
                 energyCounters={centerOrbOpponent.energyCounters ?? 0}
+                experienceCounters={centerOrbOpponent.experienceCounters ?? 0}
                 commanderDamage={centerOrbOpponent.commanderDamage ?? []}
                 handSize={centerOrbOpponent.handSize}
                 maxHandSize={centerOrbOpponent.maxHandSize}
@@ -1333,7 +1334,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         <StepStrip
           phase={gameState.currentPhase}
           step={gameState.currentStep}
-          turnNumber={gameState.turnNumber}
+          // One number per pass around the table, not per seat — older replays predate roundNumber.
+          roundNumber={gameState.roundNumber ?? gameState.turnNumber}
           isActivePlayer={isMyTurn}
           hasPriority={hasPriority}
           priorityMode={priorityMode}
@@ -1368,7 +1370,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
                   spectator-shaped: no "You" role tag, no player-click handling. */}
               {/* Stands down wherever your own board cell carries a plate (team banners, or the
                   two-row table) — the plate is then your life total and player anchor. */}
-              {!teamBannersActive && !(bottomStripActive && !viewerIsObserver) && <LifeDisplay life={bottomHudPlayer.life} isPlayer playerId={bottomHudPlayer.playerId} playerName={bottomHudPlayer.name} spectatorMode={spectatorMode || eliminatedBottomSeat != null} poisonCounters={bottomHudPlayer.poisonCounters} energyCounters={bottomHudPlayer.energyCounters ?? 0} commanderDamage={bottomHudPlayer.commanderDamage ?? []} handSize={bottomHudPlayer.handSize} maxHandSize={bottomHudPlayer.maxHandSize} {...(isMulti ? { seatColor: bottomHudSeatColor.base } : {})} {...(teamCenterOrbs ? { teamName: bottomTeamLabel, teamMembers: bottomTeamMembers } : {})} />}
+              {!teamBannersActive && !(bottomStripActive && !viewerIsObserver) && <LifeDisplay life={bottomHudPlayer.life} isPlayer playerId={bottomHudPlayer.playerId} playerName={bottomHudPlayer.name} spectatorMode={spectatorMode || eliminatedBottomSeat != null} poisonCounters={bottomHudPlayer.poisonCounters} energyCounters={bottomHudPlayer.energyCounters ?? 0} experienceCounters={bottomHudPlayer.experienceCounters ?? 0} commanderDamage={bottomHudPlayer.commanderDamage ?? []} handSize={bottomHudPlayer.handSize} maxHandSize={bottomHudPlayer.maxHandSize} {...(isMulti ? { seatColor: bottomHudSeatColor.base } : {})} {...(teamCenterOrbs ? { teamName: bottomTeamLabel, teamMembers: bottomTeamMembers } : {})} />}
               <SpeedGauge speed={bottomHudPlayer.speed ?? 0} />
               {!responsive.isMobile && <ActiveEffectsBadges effects={bottomHudPlayer.activeEffects} />}
               {!responsive.isMobile && bottomHudPlayer.manaPool && <ManaPool manaPool={bottomHudPlayer.manaPool} />}

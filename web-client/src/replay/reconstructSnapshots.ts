@@ -53,6 +53,7 @@ interface StateDelta {
   activePlayerId?: string | null
   priorityPlayerId?: string | null
   turnNumber?: number | null
+  roundNumber?: number | null
   isGameOver?: boolean | null
   winnerId?: string | null
   combat?: unknown | null
@@ -155,6 +156,7 @@ interface GameStateObj {
   activePlayerId: string
   priorityPlayerId: string
   turnNumber: number
+  roundNumber?: number | undefined
   isGameOver: boolean
   winnerId: string | null
   combat: unknown | null
@@ -232,6 +234,7 @@ function applyGameStateDelta(
     activePlayerId: delta.activePlayerId ?? prev.activePlayerId,
     priorityPlayerId: delta.priorityPlayerId ?? prev.priorityPlayerId,
     turnNumber: delta.turnNumber ?? prev.turnNumber,
+    roundNumber: delta.roundNumber ?? prev.roundNumber,
     isGameOver: delta.isGameOver ?? prev.isGameOver,
     winnerId: delta.winnerId !== undefined ? delta.winnerId : prev.winnerId,
     dayNight: delta.dayNight ?? prev.dayNight,

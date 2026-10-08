@@ -12,7 +12,7 @@ import io.kotest.matchers.string.shouldContain
 import kotlinx.serialization.json.Json
 
 /**
- * Step 2 of `backlog/engine-performance.md`: [ComponentContainer] now keys its map by
+ * Step 2 of `backlog/archived/engine-performance-hotspots.md`: [ComponentContainer] now keys its map by
  * [Class] for identity-hash lookups, with a custom [com.wingedsheep.engine.state.ComponentContainerSerializer].
  * These tests pin the serializer's behaviour — that a live container survives a JSON
  * round-trip (the components, and their type-keyed accessibility, are preserved) and

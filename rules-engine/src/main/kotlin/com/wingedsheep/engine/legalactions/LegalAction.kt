@@ -75,6 +75,15 @@ data class LegalAction(
      * on each requirement.
      */
     val xConstrainsTargetCount: Boolean = false,
+    /**
+     * True when that X-driven count is also the *minimum* — "X target creatures", exactly X
+     * (`TargetObject.dynamicMinCount == DynamicAmount.XValue`), as opposed to "up to X target
+     * creatures". Set only alongside [xConstrainsTargetCount]. Once the player picks X the client
+     * requires exactly X selections, not merely at most X; and [maxAffordableX] is already capped
+     * at the number of legal targets, so no X the client offers leaves the spell short of targets
+     * (CR 601.2c). For multi-requirement spells, see [TargetInfo.xConstrainsCountExactly].
+     */
+    val xConstrainsTargetCountExactly: Boolean = false,
 
     // Combat
     override val validAttackers: List<EntityId>? = null,
@@ -320,6 +329,12 @@ data class TargetInfo(
      * clamp selectable targets to the chosen X after X selection.
      */
     val xConstrainsCount: Boolean = false,
+    /**
+     * True when the X-driven count is exact — "X target creatures" (`TargetObject.dynamicMinCount`
+     * is also [DynamicAmount.XValue]). Set only alongside [xConstrainsCount]: the client requires
+     * exactly the chosen X selections for this requirement.
+     */
+    val xConstrainsCountExactly: Boolean = false,
     /**
      * True when the targets chosen for this requirement must each have a different controller
      * (`TargetObject.differentControllers` — Run Away Together's "two target creatures controlled

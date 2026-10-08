@@ -81,6 +81,14 @@ data class GameState(
      */
     val turnNumber: Int = 0,
 
+    /**
+     * Display-only round counter: advances once the turn passes back around the table, so both
+     * players' turns in a duel — or every seat's in a pod — share one number. Extra turns (CR 500.7)
+     * stay in the current round. Nothing in the rules reads this; use [turnNumber] for that.
+     * Starts at 0 and becomes 1 with the first turn, like [turnNumber].
+     */
+    val roundNumber: Int = 0,
+
     /** ID of the player whose turn it is */
     val activePlayerId: EntityId? = null,
 
@@ -447,7 +455,7 @@ data class GameState(
 
     /**
      * Per-player persistent "yield" preferences keyed by [com.wingedsheep.sdk.scripting.AbilityIdentity]
-     * (MTGO right-click yields — see `backlog/stack-collapse-and-batch-decisions.md` §C). Lives on
+     * (MTGO right-click yields — see `backlog/archived/stack-collapse-and-batch-decisions.md` §C). Lives on
      * [GameState] (not the server session) so it survives serialization, replays deterministically,
      * and is naturally per-player-maskable. The `untilEndOfTurn` slice is cleared at every cleanup
      * step (CR 514); `wholeGame` / `autoAnswer` persist for the whole game. Read by

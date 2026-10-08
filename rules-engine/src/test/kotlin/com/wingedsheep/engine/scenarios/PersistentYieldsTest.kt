@@ -26,7 +26,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
- * Tests for persistent per-ability yields (backlog/stack-collapse-and-batch-decisions.md §C).
+ * Tests for persistent per-ability yields (backlog/archived/stack-collapse-and-batch-decisions.md §C).
  *
  * The yields live on [com.wingedsheep.engine.state.GameState] keyed by [AbilityIdentity]. These pin
  * the engine-side rules:

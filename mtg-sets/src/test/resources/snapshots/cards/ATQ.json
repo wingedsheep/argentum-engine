@@ -828,7 +828,8 @@
                             "baseFilter": "land"
                         },
                         "id": "t0",
-                        "dynamicMaxCount": "XValue"
+                        "dynamicMaxCount": "XValue",
+                        "dynamicMinCount": "XValue"
                     }
                 ],
                 "descriptionOverride": "{X}, {T}: Untap X target lands."

@@ -2,7 +2,7 @@
 
 **Status:** Option C in progress — PR 1 (`CostPaymentService` + continuation) and **PR 2 (migrate
 Morph)** landed. **Owner:** TBD. **Related:**
-[`gated-effect-migration-handoff-remaining.md`](gated-effect-migration-handoff-remaining.md)
+[`gated-effect-migration-handoff-remaining.md`](archived/gated-effect-migration-handoff-remaining.md)
 (this doc closes out the open question its §5 #4 left — "should `PayOrSufferEffect` fold onto the
 gated frame via a `PayCost → Effect` adapter?").
 

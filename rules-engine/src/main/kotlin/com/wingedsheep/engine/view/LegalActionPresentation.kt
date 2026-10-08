@@ -51,6 +51,11 @@ data class LegalActionTargetInfo(
      */
     val xConstrainsCount: Boolean = false,
     /**
+     * True when that X-driven count is exact — "X target creatures" (`TargetObject.dynamicMinCount`
+     * is XValue too). The client must require exactly the chosen X selections, not merely cap them.
+     */
+    val xConstrainsCountExactly: Boolean = false,
+    /**
      * True when a target for this requirement must differ from every target chosen for an
      * earlier requirement ("another target"). False lets separate "target" instances pick the
      * same object (Seeds of Strength) — the client only strips earlier picks when this is set.
@@ -98,6 +103,12 @@ data class LegalActionInfo(
      * [LegalActionTargetInfo.xConstrainsCount] is used instead.
      */
     val xConstrainsTargetCount: Boolean = false,
+    /**
+     * True when that X-driven count is exact — "X target creatures". The client requires exactly
+     * the chosen X selections; [maxAffordableX] is already capped at the legal-target count. For
+     * multi-requirement spells see [LegalActionTargetInfo.xConstrainsCountExactly].
+     */
+    val xConstrainsTargetCountExactly: Boolean = false,
     val validAttackers: List<EntityId>? = null,
     val mandatoryAttackers: List<EntityId>? = null,
     val validAttackTargets: List<EntityId>? = null,

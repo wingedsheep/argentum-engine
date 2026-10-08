@@ -68,6 +68,7 @@ internal class JevActions(
                 xConstrainsManaValue = info.xConstrainsTargetManaValue,
                 xConstrainsManaValueExactly = info.xConstrainsTargetManaValueExactly,
                 xConstrainsPower = info.xConstrainsTargetPower, xConstrainsCount = info.xConstrainsTargetCount,
+                xConstrainsCountExactly = info.xConstrainsTargetCountExactly,
             )) else emptyList(), x)
         val costs = listOfNotNull(info.additionalCostInfo) + info.additionalCostInfo?.alsoRequired.orEmpty() + modes.mapNotNull { it.additionalCostInfo } +
             List((modes.size - 1).coerceAtLeast(0)) { modal?.additionalCostPerExtraMode }.filterNotNull()
@@ -104,8 +105,9 @@ internal class JevActions(
                     (x == null || !r.xConstrainsManaValueExactly || card?.manaValue == x) &&
                     (x == null || !r.xConstrainsPower || card?.power == x)
             }
-            cards(r.description, options, r.minTargets,
-                if (r.xConstrainsCount && x != null) minOf(x, r.maxTargets) else r.maxTargets).map(::target)
+            val max = if (r.xConstrainsCount && x != null) x else r.maxTargets
+            val min = if (r.xConstrainsCountExactly && x != null) x else minOf(r.minTargets, max)
+            cards(r.description, options, min, max).map(::target)
         }
 
     private fun target(id: EntityId): ChosenTarget {

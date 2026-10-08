@@ -47,8 +47,11 @@ data class ClientGameState(
     /** Who currently has priority */
     val priorityPlayerId: EntityId,
 
-    /** Turn number */
+    /** Turn number — counts player turns, see [com.wingedsheep.engine.state.GameState.turnNumber] */
     val turnNumber: Int,
+
+    /** Round number for display — one number per pass around the table */
+    val roundNumber: Int = turnNumber,
 
     /** Whether the game is over */
     val isGameOver: Boolean,
@@ -886,6 +889,13 @@ data class ClientPlayer(
      * serializes it away and the field costs nothing.
      */
     val energyCounters: Int = 0,
+
+    /**
+     * This player's current experience counter total (CR 122.1 — a counter on a player; Aang,
+     * Airbending Master and Toph, Earthbending Master give and read them). Public information like
+     * poison and energy, so it is not masked. Defaulted so every game without them serializes it away.
+     */
+    val experienceCounters: Int = 0,
 
     /**
      * Team membership in a team variant (Two-Headed Giant — CR 810; Team vs. Team — CR 808):

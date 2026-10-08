@@ -245,6 +245,7 @@ class ClientStateTransformer(
             activePlayerId = activePlayerId,
             priorityPlayerId = priorityPlayerId,
             turnNumber = state.turnNumber,
+            roundNumber = maxOf(state.roundNumber, minOf(state.turnNumber, 1)),
             isGameOver = state.gameOver,
             winnerId = state.winnerId,
             combat = combat,

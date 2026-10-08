@@ -232,14 +232,15 @@ object Targets {
      * "…, where X is the number of verse counters on ~" defines X from the board rather than from the
      * cost, which is a different `DynamicAmount` behind a trailing clause [Amounts] owns.
      *
-     * "Tap **X** target creatures" — no "up to" — is the other one, and it declines for a stronger
-     * reason than a missing template: it means *exactly* X where this row means at most X. The corpus
-     * has 40 such lines (Gridlock, Malicious Advice, Rats' Feast, Aether Tide) and models them with
-     * this very requirement, because [TargetObject.minCount] is a plain `Int` that cannot take a
-     * [DynamicAmount] — Icy Blast's KDoc records the approximation. Reading that wording here would
-     * be a lossy normalization rather than a variant, and adding a rule for it would make two printed
-     * forms denote one model, which is the redundant-reading class the gate holds at zero. It stays
-     * declined until the SDK can tell the two requirements apart.
+     * "Tap **X** target creatures" — no "up to" — is the other one: it means *exactly* X where this
+     * row means at most X, and it must never be read into this row, which would make two printed
+     * forms denote one model. It declined for years because [TargetObject.minCount] is a plain `Int`
+     * and the corpus approximated the exact form with this very requirement. That write-off has
+     * expired: the SDK now spells it [TargetObject.dynamicMinCount] = [TargetObject.dynamicMaxCount]
+     * = X (`targets(filter, exactly = X)`), and the hand-written cards that print it (Icy Blast,
+     * Builder's Bane, Doppelgang, Foggy Swamp Visions, …) carry that exact shape. The row that reads
+     * it — prefix "X ", plural, over that requirement — is a band of its own, measured like any
+     * other; until it lands the wording declines, which is honest.
      */
     fun upToX(filter: GameObjectFilter): TargetRequirement = TargetObject(
         optional = true,

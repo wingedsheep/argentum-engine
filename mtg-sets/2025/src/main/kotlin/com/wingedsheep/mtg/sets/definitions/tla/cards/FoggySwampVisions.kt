@@ -19,8 +19,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Exile X target creature cards from graveyards. For each creature card exiled this way, create a
  * token that's a copy of it. At the beginning of your next end step, sacrifice those tokens.
  *
- * X comes from the waterbend {X} cost (`waterbendCost(isX = true)`): the chosen X both bounds the
- * targeting (`dynamicMaxCount = DynamicAmount.XValue`) and is the waterbend amount paid by tapping
+ * X comes from the waterbend {X} cost (`waterbendCost(isX = true)`): the chosen X is both the exact
+ * number of targets (`targets(…, exactly = X)`) and the waterbend amount paid by tapping
  * artifacts/creatures. Resolution pipeline: gather the chosen targets, move them to exile (storing
  * the moved ids as "exiled"), then for each exiled card create a token copy of it that sacrifices
  * itself at the next end step (CR — the per-token delayed sacrifice via `sacrificeAtStep`).
@@ -39,7 +39,7 @@ val FoggySwampVisions = card("Foggy Swamp Visions") {
     waterbendCost(isX = true)
 
     spell {
-        targets(TargetFilter.CreatureInGraveyard, optional = true, dynamicMaxCount = DynamicAmounts.xValue())
+        targets(TargetFilter.CreatureInGraveyard, exactly = DynamicAmounts.xValue())
         effect = Effects.Pipeline {
             val exiled = gather(CardSource.ChosenTargets)
             val exiledCards = moveTracked(exiled, CardDestination.ToZone(Zone.EXILE))

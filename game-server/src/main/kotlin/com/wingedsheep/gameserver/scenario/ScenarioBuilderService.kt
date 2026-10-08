@@ -235,7 +235,8 @@ class ScenarioBuilderService(
                 priorityPlayerId = playerIds[0],
                 phase = Phase.PRECOMBAT_MAIN,
                 step = Step.PRECOMBAT_MAIN,
-                turnNumber = 1
+                turnNumber = 1,
+                roundNumber = 1
             )
 
             // Initialize empty zones for every player

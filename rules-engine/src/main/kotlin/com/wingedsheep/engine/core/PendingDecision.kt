@@ -311,7 +311,7 @@ data class YesNoDecision(
  * A single yes/no decision raised once on behalf of N simultaneous, structurally identical
  * optional triggers (same controller + same [DecisionContext.abilityIdentity]) so the controller
  * answers the repeated "you may …" once instead of N times — Magic Online's "auto-stack identical
- * triggers" affordance (see `backlog/stack-collapse-and-batch-decisions.md` §B).
+ * triggers" affordance (see `backlog/archived/stack-collapse-and-batch-decisions.md` §B).
  *
  * The answer is a [BatchYesNoResponse] carrying both `choice` (yes/no) and `applyToAll`:
  *  - `applyToAll = true` resolves the whole run of [count] instances with `choice`.

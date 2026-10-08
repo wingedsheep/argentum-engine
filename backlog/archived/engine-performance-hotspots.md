@@ -15,12 +15,12 @@ Items below are ordered by impact ÷ risk; each carries its own status marker.
 >
 > **The random-action baseline has now been re-run** (2026-07-28, Step 4's own before/after) — see
 > ["Baseline"](#baseline) below and
-> [`docs/ai/baseline-metrics.md`](../docs/ai/baseline-metrics.md#phase-5a--the-on-battlefield-scans).
+> [`docs/ai/baseline-metrics.md`](../../docs/ai/baseline-metrics.md#phase-5a--the-on-battlefield-scans).
 > Read the 404 figure as *not comparable* rather than as a target: the BLB card pool has roughly
 > doubled since May, and `GameState.turnNumber` now counts player turns rather than rounds, so the
 > same game reports ~2× the turns. Only the same-session before/after pair says anything.
 >
-> Phase 0 of [`engine-ai-improvement.md`](engine-ai-improvement.md) measured
+> Phase 0 of [`engine-ai-improvement.md`](../engine-ai-improvement.md) measured
 > `ActionProcessor.process` at **~3,400 calls/sec/thread** on the AI-driven workload. Different
 > action mix, not directly comparable either — but it is why **Step 4 was never blocking the AI's
 > rollout evaluator**, and why it shipped on its own merits rather than as a prerequisite.
@@ -195,7 +195,7 @@ phased-out filter once rather than a reflective `has<PhasedOutComponent>()` per 
 
 ### Step 4 — Hoist battlefield scans in ward / trigger / mana detection ✅ **DONE 2026-07-28** *(medium)*
 
-> Shipped as Phase 5a of [`engine-ai-improvement.md`](engine-ai-improvement.md). Two new index
+> Shipped as Phase 5a of [`engine-ai-improvement.md`](../engine-ai-improvement.md). Two new index
 > types own the walk, and the nine per-entity scans that used to hunt for these statics are gone:
 >
 > - `rules-engine/.../mechanics/mana/ManaStaticsIndex.kt` — built once per
@@ -216,7 +216,7 @@ phased-out filter once rather than a reflective `has<PhasedOutComponent>()` per 
 > this is a hoist, not a rules change.
 >
 > **Measured:** the fresh random-action baseline and the post-change numbers are in
-> [`docs/ai/baseline-metrics.md`](../docs/ai/baseline-metrics.md#phase-5a--the-on-battlefield-scans).
+> [`docs/ai/baseline-metrics.md`](../../docs/ai/baseline-metrics.md#phase-5a--the-on-battlefield-scans).
 > Gates: `just test-rules`, `:game-server:test`, `:ai:test` green; six new unit tests pin what each
 > index bucket collects (`ManaStaticsIndexTest`, `BattlefieldStaticsIndexTest`).
 
@@ -234,7 +234,7 @@ in place, so all of them moved.
 
 > The gate is "only if `Arena::grow` is still prominent after 1–4". It is not: in the post-Step-4
 > profile `Arena::grow` is **1.37%** self and `posix_madvise` ~0.7% — about **2%** of the engine,
-> against the 4–6 days plus serializer work [`engine-ai-improvement.md`](engine-ai-improvement.md)
+> against the 4–6 days plus serializer work [`engine-ai-improvement.md`](../engine-ai-improvement.md)
 > Phase 5c scopes. The mechanism below is still correctly described, and the
 > `kotlinx.collections.immutable` migration would still work; there is just no longer a number
 > behind it. Revisit only if a fresh profile puts allocation back near the top.
@@ -269,7 +269,7 @@ same machine** — see the warning below.
 **Immediately before Step 4 (2026-07-28, same session):** engine CPU 1,051 s — Enumerate 764 s
 (73%) / Process 287 s (27%); wall ~133 s. So Step 4 is **−21% engine CPU**, with `process` nearly
 halving. Full three-point series, including the intermediate version that regressed 10%:
-[`docs/ai/baseline-metrics.md`](../docs/ai/baseline-metrics.md#phase-5a--the-on-battlefield-scans).
+[`docs/ai/baseline-metrics.md`](../../docs/ai/baseline-metrics.md#phase-5a--the-on-battlefield-scans).
 
 **Historical (May 2026, pre-Steps-1–3):**
 
@@ -287,7 +287,7 @@ halving. Full three-point series, including the intermediate version that regres
 
 ### Related: AI-workload baseline (July 2026)
 
-[`docs/ai/baseline-metrics.md`](../docs/ai/baseline-metrics.md) measures the same engine under real
+[`docs/ai/baseline-metrics.md`](../../docs/ai/baseline-metrics.md) measures the same engine under real
 AI games rather than random actions: `ActionProcessor.process` ~3,400/sec/thread, `StateProjector.project`
 ~47 µs cold (11% of one `process()`), and 6.36 legal actions per priority window. That confirms the
 "leave projection alone" call above from a second angle — a perfect cross-state projection cache

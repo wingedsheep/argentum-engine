@@ -139,7 +139,7 @@ class MultiplayerSmokeTest : FunSpec({
         state.activePlayerId shouldBe players[1]
     }
 
-    test("turnNumber counts player turns and keeps advancing after a seat is eliminated") {
+    test("turnNumber counts player turns, roundNumber passes round the table, both survive an eliminated seat") {
         val (initial, players) = initFourPlayerGame()
         val registry = CardRegistry().also { it.register(vanilla) }
         val processor = ActionProcessor(registry)
@@ -185,9 +185,11 @@ class MultiplayerSmokeTest : FunSpec({
         // count, not a round count.
         var state = initial
         state.turnNumber shouldBe 1
+        state.roundNumber shouldBe 1
         state = advanceOneTurn(state, players[0])
         state.activePlayerId shouldBe players[1]
         state.turnNumber shouldBe 2
+        state.roundNumber shouldBe 1
 
         // Knock out seat 0 — the seat a round counter keyed its boundary on. `turnOrder` keeps
         // eliminated players, so it would never come round again and the counter would freeze here
@@ -203,11 +205,14 @@ class MultiplayerSmokeTest : FunSpec({
         state = advanceOneTurn(state, players[2])
         state.activePlayerId shouldBe players[3]
         state.turnNumber shouldBe 4
+        state.roundNumber shouldBe 1
 
-        // Wrapping past the eliminated seat is just another turn.
+        // Wrapping past the eliminated seat is just another turn — and the display-only round
+        // counter still turns over, even though seat 0 never takes the turn again.
         state = advanceOneTurn(state, players[3])
         state.activePlayerId shouldBe players[1]
         state.turnNumber shouldBe 5
+        state.roundNumber shouldBe 2
     }
 
     test("an EachOpponent life-loss effect hits all three opponents and not the controller") {

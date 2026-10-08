@@ -198,13 +198,17 @@ object XCostSelection {
         // enumeration time the count could not be resolved, so the static value carries no
         // information (see LegalAction.targetCount).
         val maxTargets = if (requirement.xConstrainsCount) x else requirement.maxTargets
+        // "X target creatures" is exactly X (CR 601.2c): the floor is X too, and an X with fewer
+        // legal targets than that can't be cast at all.
+        val minTargets = if (requirement.xConstrainsCountExactly) x else minOf(requirement.minTargets, maxTargets)
+        if (requirement.xConstrainsCountExactly && valid.size < x) return null
         if (requirement.minTargets > 0 && (valid.isEmpty() || maxTargets < requirement.minTargets)) {
             return null
         }
         return requirement.copy(
             validTargets = valid,
             maxTargets = maxTargets,
-            minTargets = minOf(requirement.minTargets, maxTargets),
+            minTargets = minTargets,
         )
     }
 
@@ -228,6 +232,7 @@ object XCostSelection {
         xConstrainsManaValueExactly = action.xConstrainsTargetManaValueExactly,
         xConstrainsPower = action.xConstrainsTargetPower,
         xConstrainsCount = action.xConstrainsTargetCount,
+        xConstrainsCountExactly = action.xConstrainsTargetCountExactly,
     )
 
     /**

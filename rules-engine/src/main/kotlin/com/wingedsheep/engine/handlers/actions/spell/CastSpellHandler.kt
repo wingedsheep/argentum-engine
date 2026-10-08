@@ -62,6 +62,7 @@ import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
+import com.wingedsheep.engine.mechanics.targeting.DynamicTargetCount
 import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -1160,36 +1161,30 @@ class CastSpellHandler(
     }
 
     /**
-     * How many targets a mode's requirement may take, for the cast-time per-mode decision.
+     * How many targets a mode's requirement must and may take, for the cast-time per-mode decision.
      *
      * A [TargetObject.dynamicMaxCount] is authoritative when present — the static `count` is only
-     * the placeholder the author writes when the real cap isn't knowable until cast time. Mirrors
-     * [TargetValidator]'s `effectiveMaxCount`, so the count the player is *offered* and the count
-     * the cast is *validated* against are the same number; otherwise "up to X target creatures"
-     * offers one target at X = 3, or offers unbounded picks the validator then rejects.
+     * the placeholder the author writes when the real cap isn't knowable until cast time — and a
+     * [TargetObject.dynamicMinCount] ("X target creatures": exactly X) is the floor. Both are read
+     * through [DynamicTargetCount], exactly as [TargetValidator] reads them, so the count the player
+     * is *offered* and the count the cast is *validated* against are the same numbers; otherwise
+     * "up to X target creatures" offers one target at X = 3, or offers unbounded picks the validator
+     * then rejects.
      */
-    private fun resolveModeTargetMaxCount(
+    private fun resolveModeTargetCounts(
         state: GameState,
         requirement: TargetRequirement,
         casterId: EntityId,
         cardId: EntityId,
         xValue: Int?
-    ): Int {
+    ): DynamicTargetCount.Bounds {
         val unboundedFallback = if (requirement.unlimited) Int.MAX_VALUE else requirement.count
-        if (requirement !is com.wingedsheep.sdk.scripting.targets.TargetObject) return unboundedFallback
-        val dyn = requirement.dynamicMaxCount ?: return unboundedFallback
-        if (dyn == com.wingedsheep.sdk.scripting.values.DynamicAmount.XValue) {
-            return xValue ?: unboundedFallback
-        }
-        return try {
+        val bounds = DynamicTargetCount.bounds(requirement, xValue) { amount ->
             conditionEvaluator.amounts.evaluate(
-                state,
-                dyn,
-                EffectContext(sourceId = cardId, controllerId = casterId, xValue = xValue)
-            ).coerceAtLeast(0)
-        } catch (_: Exception) {
-            unboundedFallback
+                state, amount, EffectContext(sourceId = cardId, controllerId = casterId, xValue = xValue)
+            )
         }
+        return bounds.copy(max = bounds.max ?: unboundedFallback)
     }
 
     internal fun presentCastModalTargetDecision(
@@ -1238,8 +1233,15 @@ class CastSpellHandler(
                     targetingSourceType = TargetingSourceType.SPELL, pipelineContext = xContext
                 )
             }
-            val allSatisfied = modeTargetReqs.withIndex().all { (index, req) ->
-                legalTargetsMap[index]?.isNotEmpty() == true || req.effectiveMinCount == 0
+            val modeCounts = modeTargetReqs.map { req ->
+                resolveModeTargetCounts(state, req, casterId, cardId, baseCastAction.xValue)
+            }
+            // A requirement needing more distinct objects than are legal can't be satisfied (CR
+            // 601.2c, 115.3) — "X target creatures" at X = 3 with two creatures on the battlefield.
+            val allSatisfied = modeTargetReqs.indices.all { index ->
+                val legal = legalTargetsMap[index]?.size ?: 0
+                val min = modeCounts[index].min
+                min == 0 || (legal > 0 && legal >= min)
             }
             if (!allSatisfied) {
                 return ExecutionResult.error(state, "No legal targets for mode: ${mode.description}")
@@ -1251,13 +1253,13 @@ class CastSpellHandler(
                 // own minimum: a mandatory "two target creatures" with one legal creature is an
                 // unsatisfiable mode, and shrinking its cap would quietly let it through with one.
                 val legalCount = legalTargetsMap[index]?.size ?: 0
-                val maxTargets = resolveModeTargetMaxCount(state, req, casterId, cardId, baseCastAction.xValue)
-                    .coerceAtMost(maxOf(legalCount, req.effectiveMinCount))
+                val counts = modeCounts[index]
+                val maxTargets = counts.max!!.coerceAtMost(maxOf(legalCount, counts.min))
                 com.wingedsheep.engine.core.TargetRequirementInfo(
                     index = index,
                     description = req.description,
                     mustDifferFromEarlier = req is com.wingedsheep.sdk.scripting.targets.TargetOther,
-                    minTargets = req.effectiveMinCount,
+                    minTargets = counts.min,
                     maxTargets = maxTargets
                 )
             }

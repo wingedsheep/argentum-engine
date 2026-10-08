@@ -12,19 +12,26 @@ import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
+import com.wingedsheep.engine.state.components.battlefield.withCastChoice
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.RIOT_MODE_COUNTER
+import com.wingedsheep.sdk.dsl.RIOT_MODE_HASTE
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
 import com.wingedsheep.sdk.scripting.EntersWithKeywords
 import com.wingedsheep.sdk.scripting.Vanishing
+import com.wingedsheep.sdk.scripting.conditions.SourceChosenModeIs
 
 /**
  * Applies "enters with …" replacement effects (CR 614.1c) — counters
@@ -71,7 +78,13 @@ object EntersWithReplacements {
                     state, entityId, counterType, 1, placerId = controllerId,
                     predicateEvaluator = predicateEvaluator
                 )
-                if (count <= 0) return state to events
+                // "If a creature entering the battlefield has riot but can't have a +1/+1 counter put
+                // onto it, it gains haste" (Rhythm of the Wild ruling, 2019-01-25).
+                if (count <= 0) {
+                    return applyGrantedRiotBranch(
+                        state, entityId, controllerId, com.wingedsheep.sdk.dsl.RIOT_MODE_HASTE, entityName, predicateEvaluator
+                    )
+                }
                 val current = state.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
                 var newState = state.updateEntity(entityId) { c -> c.with(current.withAdded(counterType, count)) }
                 val (afterMark, firstThisTurn, firstOfTypeThisTurn) = DamageUtils.recordCounterPlacement(
@@ -199,6 +212,9 @@ object EntersWithReplacements {
                     )
                     newState = afterCounters
                     events.addAll(counterEvents)
+                    if (counterEvents.isEmpty() && isPrintedRiotCounter(cardDef, effect)) {
+                        newState = fallBackToRiotHaste(newState, entityId)
+                    }
                 }
                 is EntersWithDynamicCounters -> {
                     // Skip "other only" effects when applying to self (e.g., Gev)
@@ -238,6 +254,26 @@ object EntersWithReplacements {
     }
 
     /**
+     * Whether [effect] is the counter half of the printed `riot()` composition on [cardDef] — the
+     * self-only +1/+1 [EntersWithCounters] gated on the riot `counter` mode.
+     */
+    private fun isPrintedRiotCounter(cardDef: CardDefinition, effect: EntersWithCounters): Boolean =
+        Keyword.RIOT in cardDef.keywords &&
+            effect.condition == SourceChosenModeIs(RIOT_MODE_COUNTER)
+
+    /**
+     * Riot (CR 702.136a): "You may have this permanent enter with an additional +1/+1 counter on it.
+     * If you don't, it gains haste." When the counter was chosen but couldn't be placed, the
+     * permanent didn't enter with it, so it gains haste (Rhythm of the Wild's ruling). Re-recording
+     * the chosen mode as `haste` lets the printed mode-gated haste static grant it — the same
+     * outcome as choosing haste.
+     */
+    private fun fallBackToRiotHaste(state: GameState, entityId: EntityId): GameState =
+        state.updateEntity(entityId) { c ->
+            c.withCastChoice(ChoiceSlot.MODE, ChoiceValue.TextChoice(RIOT_MODE_HASTE))
+        }
+
+    /**
      * Place [count] counters of [counterType] on [entityId] as it enters (CR 614.1c), honouring
      * counter-placement modifiers (Hardened Scales, Solemnity) and recording the placement for
      * "put a counter on a permanent this turn" trackers.
@@ -262,6 +298,8 @@ object EntersWithReplacements {
             state, entityId, counterType, count, placerId = controllerId,
             predicateEvaluator = predicateEvaluator
         )
+        // A modifier can cut the placement to nothing; then no counter was put on it (no event).
+        if (modifiedCount <= 0) return state to emptyList()
         val current = state.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
         var newState = state.updateEntity(entityId) { c ->
             c.with(current.withAdded(counterType, modifiedCount))

@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 /**
  * Tests for All-Out Assault (Tarkir: Dragonstorm) and, through it, the one-shot
  * event-based "when you next attack this turn" delayed trigger (item 15 of
- * backlog/tdm-engine-gaps.md).
+ * backlog/archived/tdm-engine-gaps.md).
  *
  * "Creatures you control get +1/+1 and have deathtouch. When this enchantment enters, if it's
  * your main phase, there is an additional combat phase after this phase followed by an

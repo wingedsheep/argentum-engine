@@ -23,9 +23,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * equal to the number of Mountains put into a graveyard this way.
  *
  * Modeling notes:
- *  - "X target Mountains" is Builder's Bane's targeting shape: `dynamicMaxCount = xValue`, with
- *    `optional = true` so X = 0 is castable (2004-10-04 ruling) and a partially-illegal target
- *    set still resolves for the rest.
+ *  - "X target Mountains" is exactly X (`targets(…, exactly = X)`, Builder's Bane's shape). X = 0
+ *    is castable with no targets (2004-10-04 ruling), and a partially-illegal target set still
+ *    resolves for the rest (CR 608.2b).
  *  - The damage counts Mountains *actually put into a graveyard*, not the announced X: the
  *    targets are destroyed with `moveTracked` (an indestructible or regenerated Mountain never
  *    moves), and the moved set is then re-read with `currentlyIn(GRAVEYARD)` so a Mountain whose
@@ -43,8 +43,7 @@ val VolcanicEruption = card("Volcanic Eruption") {
     spell {
         targets(
             TargetFilter(GameObjectFilter.Land.withSubtype(Subtype.MOUNTAIN)),
-            optional = true,
-            dynamicMaxCount = DynamicAmounts.xValue()
+            exactly = DynamicAmounts.xValue()
         )
         effect = Effects.Pipeline {
             val mountains = gather(CardSource.ChosenTargets)

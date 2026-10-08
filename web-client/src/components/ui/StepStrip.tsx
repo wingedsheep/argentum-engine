@@ -6,7 +6,8 @@ import type { PriorityMode } from '@/store/selectors.ts'
 interface StepStripProps {
   phase: Phase
   step: Step
-  turnNumber: number
+  /** Round number — every seat's turn in one pass around the table shares it */
+  roundNumber: number
   isActivePlayer: boolean
   hasPriority: boolean
   priorityMode: PriorityMode
@@ -104,7 +105,7 @@ const waitingMyTurn: ColorSet = {
 
 export function StepStrip({
   step,
-  turnNumber,
+  roundNumber,
   isActivePlayer,
   hasPriority,
   priorityMode,
@@ -243,11 +244,11 @@ export function StepStrip({
             · {turnQueueHint}
           </span>
         )}
-        <span style={{
+        <span title={`Round ${roundNumber}`} style={{
           color: '#555',
           fontSize: isMobile ? 7 : 9,
         }}>
-          T{turnNumber}
+          T{roundNumber}
         </span>
       </div>
 

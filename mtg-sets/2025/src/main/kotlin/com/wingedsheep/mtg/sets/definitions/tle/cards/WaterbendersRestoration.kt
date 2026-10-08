@@ -20,8 +20,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * control at the beginning of the next end step.
  *
  * The cost is the spell-level `waterbendCost(isX = true)` (CR 701.67a/b — taps pay only the X),
- * and X sizes the targeting through `dynamicMaxCount = X`, the same pairing Foggy Swamp Visions
- * and Crashing Wave use. The body is Eerie Interlude's per-target blink: each target is exiled
+ * and X is the exact number of targets (`targets(…, exactly = X)` — "X target creatures", not "up
+ * to X"), the same pairing Foggy Swamp Visions uses. The body is Eerie Interlude's per-target blink: each target is exiled
  * and gets its own delayed "return it at the beginning of the next end step" trigger, so a target
  * that became illegal (and was therefore never exiled) is not returned.
  */
@@ -37,7 +37,7 @@ val WaterbendersRestoration = card("Waterbender's Restoration") {
     waterbendCost(isX = true)
 
     spell {
-        targets(TargetFilter.Creature.youControl(), optional = true, dynamicMaxCount = DynamicAmounts.xValue())
+        targets(TargetFilter.Creature.youControl(), exactly = DynamicAmounts.xValue())
         effect = Effects.ForEachTarget(
             Effects.Move(EffectTarget.ContextTarget(0), Zone.EXILE),
             Effects.CreateDelayedTrigger(

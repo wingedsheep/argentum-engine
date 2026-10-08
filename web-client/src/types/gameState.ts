@@ -30,8 +30,14 @@ export interface ClientGameState {
   /** Who currently has priority */
   readonly priorityPlayerId: EntityId
 
-  /** Turn number */
+  /** Turn number — counts every player turn, so it advances on each seat's turn */
   readonly turnNumber: number
+
+  /**
+   * Round number — advances once the turn passes back around the table, so every seat's turn in
+   * one pass shares a number. Absent on states recorded before it existed; fall back to turnNumber.
+   */
+  readonly roundNumber?: number | undefined
 
   /** Whether the game is over */
   readonly isGameOver: boolean
@@ -708,6 +714,11 @@ export interface ClientPlayer {
    * badge is rendered.
    */
   readonly energyCounters?: number
+  /**
+   * This player's experience counter total (CR 122.1 — a counter on a player). `0` means no badge
+   * is rendered.
+   */
+  readonly experienceCounters?: number
   /**
    * Team membership in a team variant (Two-Headed Giant — CR 810; Team vs. Team — CR 808):
    * players sharing a `teamIndex` are teammates. Absent in every non-team game. Carried on the

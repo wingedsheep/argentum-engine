@@ -21,7 +21,6 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.*
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * The card-type names (CR 205.2a). `ProjectedState.getTypes` folds supertypes (LEGENDARY, BASIC,
@@ -107,9 +106,11 @@ class TargetValidator(
         explicitCounts: List<Int>? = null
     ): TargetGroupBinding {
         if (requirements.isEmpty()) return TargetGroupBinding(emptyList(), null)
-        val maxCounts = requirements.map { effectiveMaxCount(state, it, casterId, sourceId, xValue, retainedTargetIndices) }
+        val bounds = requirements.map { countBounds(state, it, casterId, sourceId, xValue, retainedTargetIndices) }
+        val maxCounts = bounds.map { it.max }
+        val minCounts = bounds.map { it.min }
         fun check(counts: List<Int>) = validateGroups(
-            state, targets, requirements, counts, casterId, sourceColors, sourceSubtypes, sourceId, xValue,
+            state, targets, requirements, counts, minCounts, casterId, sourceColors, sourceSubtypes, sourceId, xValue,
             targetingSourceType, retainedTargetIndices
         )
         // Counts for a different requirement list (a client that saw the targets grouped another
@@ -122,7 +123,7 @@ class TargetValidator(
                 else -> requirements.indices.firstNotNullOfOrNull { i ->
                     when {
                         explicitCounts[i] < 0 || explicitCounts[i] > maxCounts[i] -> "Too many targets for ${requirements[i].description}"
-                        explicitCounts[i] < requirements[i].effectiveMinCount -> "Not enough targets for ${requirements[i].description}"
+                        explicitCounts[i] < minCounts[i] -> "Not enough targets for ${requirements[i].description}"
                         else -> null
                     }
                 }
@@ -133,7 +134,7 @@ class TargetValidator(
         val greedy = maxCounts.map { max -> minOf(max, left).also { left -= it } }
         if (left > 0) return TargetGroupBinding(greedy, "Too many targets for ${requirements.first().description}")
         val greedyError = check(greedy) ?: return TargetGroupBinding(greedy, null)
-        val alternative = splits(requirements.map { it.effectiveMinCount }, maxCounts, targets.size)
+        val alternative = splits(minCounts, maxCounts, targets.size)
             .take(MAX_TARGET_GROUP_SPLITS)
             .firstOrNull { it != greedy && check(it) == null }
         return alternative?.let { TargetGroupBinding(it, null) } ?: TargetGroupBinding(greedy, greedyError)
@@ -151,47 +152,38 @@ class TargetValidator(
         }
     }
 
+    /** One requirement's resolved minimum and maximum target count. */
+    private data class CountBounds(val min: Int, val max: Int)
+
     // For TargetObject with a dynamicMaxCount, the resolved dynamic value clamps the
     // per-req max count (the static `count` field is just a placeholder). XValue is
     // threaded via the chosen [xValue]; every other DynamicAmount is evaluated against
     // board state here, mirroring TriggerProcessor.snapshotDynamicCount — so a cast-time
     // spell with e.g. `dynamicMaxCount = Count(...)` caps correctly instead of falling
-    // back to the static placeholder.
+    // back to the static placeholder. A dynamicMinCount is resolved the same way: "X target
+    // creatures" requires exactly the announced X (CR 601.2c), so fewer is "Not enough targets".
     // An explicit `dynamicMaxCount` outranks the `unlimited` flag. `unlimited` means "no
     // *static* upper bound" — it is the count the author didn't write down — whereas a
     // dynamic cap is a bound the author did write down and is simply not knowable until
     // cast time. Grove's Bounty needs both: "any number of target creatures you control"
     // with X counters to hand out, where CR 601.2d still forbids declaring more targets
     // than there are counters. Checking `unlimited` first would drop that cap on the floor.
-    private fun effectiveMaxCount(
+    // A re-check of already-chosen targets (copy, change of targets) keeps the bound counts:
+    // once determined, the number of targets doesn't change (CR 601.2c).
+    private fun countBounds(
         state: GameState,
         req: TargetRequirement,
         casterId: EntityId,
         sourceId: EntityId?,
         xValue: Int?,
         retainedTargetIndices: Set<Int>?
-    ): Int {
-        if (retainedTargetIndices != null) return req.count
+    ): CountBounds {
+        if (retainedTargetIndices != null) return CountBounds(req.effectiveMinCount, req.count)
         val unboundedFallback = if (req.unlimited) Int.MAX_VALUE else req.count
-        if (req is TargetObject) {
-            val dyn = req.dynamicMaxCount
-            if (dyn == DynamicAmount.XValue) {
-                return xValue ?: unboundedFallback
-            }
-            if (dyn != null) {
-                return try {
-                    val context = EffectContext(
-                        sourceId = sourceId,
-                        controllerId = casterId,
-                        xValue = xValue
-                    )
-                    amountEvaluator.evaluate(state, dyn, context).coerceAtLeast(0)
-                } catch (_: Exception) {
-                    unboundedFallback
-                }
-            }
+        val bounds = DynamicTargetCount.bounds(req, xValue) { amount ->
+            amountEvaluator.evaluate(state, amount, EffectContext(sourceId = sourceId, controllerId = casterId, xValue = xValue))
         }
-        return unboundedFallback
+        return CountBounds(bounds.min, bounds.max ?: unboundedFallback)
     }
 
     /** Validate one binding of [targets] to [requirements], [counts] targets per requirement. */
@@ -200,6 +192,7 @@ class TargetValidator(
         targets: List<ChosenTarget>,
         requirements: List<TargetRequirement>,
         counts: List<Int>,
+        minCounts: List<Int>,
         casterId: EntityId,
         sourceColors: Set<Color>,
         sourceSubtypes: Set<String>,
@@ -215,7 +208,7 @@ class TargetValidator(
             val targetsForReq = targets.subList(startIdx, endIdx)
 
             // Check minimum targets
-            if (targetsForReq.size < requirement.effectiveMinCount) {
+            if (targetsForReq.size < minCounts[index]) {
                 return "Not enough targets for ${requirement.description}"
             }
 
@@ -402,7 +395,7 @@ class TargetValidator(
          * [bindTargetGroups] would hand back the printed counts unchanged.
          */
         fun hasFixedGroups(requirements: List<TargetRequirement>): Boolean = requirements.all {
-            !it.unlimited && it.effectiveMinCount == it.count && (it as? TargetObject)?.dynamicMaxCount == null
+            !it.unlimited && it.effectiveMinCount == it.count && DynamicTargetCount.objectOf(it)?.dynamicMaxCount == null
         }
     }
 

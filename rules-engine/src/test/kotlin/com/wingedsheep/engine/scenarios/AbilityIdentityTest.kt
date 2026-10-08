@@ -51,7 +51,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import com.wingedsheep.engine.core.Outcome
 
 /**
- * Tests for the shared [AbilityIdentity] key (backlog/stack-collapse-and-batch-decisions.md §C.2).
+ * Tests for the shared [AbilityIdentity] key (backlog/archived/stack-collapse-and-batch-decisions.md §C.2).
  *
  * The key is the definition-scoped pair `(cardDefinitionId, abilityId)`. Its load-bearing property
  * — the one batch decisions and persistent yields both rely on — is that two permanents printed

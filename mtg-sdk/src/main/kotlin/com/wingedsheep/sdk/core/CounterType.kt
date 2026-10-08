@@ -444,6 +444,19 @@ value class CounterType(val name: String) {
         val ENERGY = CounterType("ENERGY")
 
         /**
+         * Experience counter (Commander 2015 onward; Avatar: The Last Airbender Eternal). Like
+         * [ENERGY] and [POISON] it is placed on a **player**, not a permanent (CR 122.1 — "a marker
+         * placed on an object or player"), and has no inherent rule: the cards that give them read
+         * the total back. "You get an experience counter" is
+         * `Effects.AddCounters(CounterType.EXPERIENCE, 1, EffectTarget.Controller)`; "for each
+         * experience counter you have" is `DynamicAmounts.playerCounterCount(CounterType.EXPERIENCE)`.
+         * All experience counters are interchangeable, whatever gave them (Aang, Airbending Master;
+         * Toph, Earthbending Master). Projected to the client as `ClientPlayer.experienceCounters`.
+         * NOT a keyword counter, so it is intentionally absent from `StateProjector.KEYWORD_COUNTER_MAP`.
+         */
+        val EXPERIENCE = CounterType("EXPERIENCE")
+
+        /**
          * Ice counter (SOI — Thing in the Ice). Passive "thaw countdown" counter with no inherent rule
          * of its own — Thing in the Ice enters with four (`EntersWithCounters(
          * CounterType.ICE, count = 4, selfOnly = true)`) and its instant/sorcery cast trigger removes one,
@@ -777,6 +790,7 @@ value class CounterType(val name: String) {
             FILM,
             SKEWER,
             ENERGY,
+            EXPERIENCE,
             ICE,
             OMEN,
             SUSPECT,

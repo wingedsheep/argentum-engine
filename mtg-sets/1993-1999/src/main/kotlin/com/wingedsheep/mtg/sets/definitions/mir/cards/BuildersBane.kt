@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.targets.TargetObject
 
 
 /**
@@ -32,12 +31,10 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  *      kill count in `storedNumbers["killCount"]`. The sub-effect is plain
  *      `DealDamage(VariableReference("killCount"), Controller)`.
  *
- * Target count is X. `TargetObject.dynamicMaxCount = XValue` surfaces as
- * `xConstrainsTargetCount = true` on the LegalAction; the client clamps the targeting
- * overlay's max selection to the X the player chose at cast time, and `TargetValidator`
- * rejects casts whose `targets.size` exceeds that X. `optional = true` so X=0 (legal
- * but degenerate) resolves cleanly and casts with fewer legal artifacts than X don't
- * fizzle outright.
+ * Target count is exactly X (`targets(…, exactly = X)`), surfaced as `xConstrainsTargetCount` +
+ * `xConstrainsTargetCountExactly` on the LegalAction: the client requires exactly the X the player
+ * chose at cast time, `TargetValidator` rejects a cast with any other number, and an X above the
+ * number of artifacts isn't offered (CR 601.2c). X = 0 is a legal cast with no targets.
  */
 val BuildersBane = card("Builder's Bane") {
     manaCost = "{X}{X}{R}"
@@ -47,7 +44,7 @@ val BuildersBane = card("Builder's Bane") {
         "equal to the number of artifacts they controlled that were put into a graveyard this way."
 
     spell {
-        targets(TargetFilter.Artifact, optional = true, dynamicMaxCount = DynamicAmounts.xValue())
+        targets(TargetFilter.Artifact, exactly = DynamicAmounts.xValue())
         effect = Effects.Pipeline {
             val targets = gather(CardSource.ChosenTargets)
             val preControllers = captureControllers(targets)

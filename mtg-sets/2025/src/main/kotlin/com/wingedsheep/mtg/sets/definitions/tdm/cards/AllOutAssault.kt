@@ -25,7 +25,7 @@ import com.wingedsheep.sdk.dsl.Patterns
  * ability (`CreateDelayedTriggerEffect(trigger = Triggers.you.attacks(), fireOnce = true)`): it
  * fires the first time you declare attackers this turn — refreshing your team for the bonus
  * combat — then removes itself, so a second attack the same turn (e.g. in yet another combat)
- * won't untap again. See item 15 of `backlog/tdm-engine-gaps.md`.
+ * won't untap again. See item 15 of `backlog/archived/tdm-engine-gaps.md`.
  */
 val AllOutAssault = card("All-Out Assault") {
     manaCost = "{2}{R}{W}{B}"

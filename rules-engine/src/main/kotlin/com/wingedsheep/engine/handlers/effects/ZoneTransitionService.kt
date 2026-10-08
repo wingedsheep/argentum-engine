@@ -84,6 +84,12 @@ data class ZoneEntryOptions(
     val entryCopy: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice? = null,
     /** "As this enters, choose …" answers made before the move ([EffectEntryChoices]). */
     val entryChoices: Map<com.wingedsheep.sdk.scripting.ChoiceSlot, com.wingedsheep.engine.state.components.battlefield.ChoiceValue> = emptyMap(),
+    /**
+     * The counter-or-haste answers for each instance of Riot a battlefield lord *grants* the entrant
+     * ([EffectEntryChoices], CR 702.136b), applied as it arrives — a granted permanent has none of
+     * the printed riot replacement/static abilities that would read a recorded `MODE` choice.
+     */
+    val grantedRiotModes: List<String> = emptyList(),
     val controllerId: EntityId? = null,
     val libraryPlacement: LibraryPlacement = LibraryPlacement.Top,
     val tapped: Boolean = false,
@@ -820,6 +826,16 @@ class ZoneTransitionService(
                         if (modeId == null) recorded
                         else com.wingedsheep.engine.state.components.identity.EntryCharacteristicsBaking
                             .bake(recorded, modeId, cardRegistry)
+                    }
+                }
+                if (!options.faceDown) {
+                    for (riotMode in options.grantedRiotModes) {
+                        val (riotState, riotEvents) = EntersWithReplacements.applyGrantedRiotBranch(
+                            newState, entityId, destControllerId, riotMode, cardComponent.name,
+                            predicateEvaluator = predicateEvaluator
+                        )
+                        newState = riotState
+                        events.addAll(riotEvents)
                     }
                 }
                 options.auraHostId?.let { host ->

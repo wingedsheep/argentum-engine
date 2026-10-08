@@ -21,6 +21,7 @@ export function LifeDisplay({
   spectatorMode = false,
   poisonCounters = 0,
   energyCounters = 0,
+  experienceCounters = 0,
   commanderDamage,
   seatColor,
   isAlly = false,
@@ -37,6 +38,8 @@ export function LifeDisplay({
   poisonCounters?: number
   /** Current energy counter total (Kaladesh block onward, CR 107.14). No badge when 0. */
   energyCounters?: number
+  /** Current experience counter total (CR 122.1 — a counter on a player). No badge when 0. */
+  experienceCounters?: number
   commanderDamage?: readonly ClientCommanderDamage[]
   /** Current hand size — paired with [maxHandSize] to show the hand-limit badge when it changed. */
   handSize?: number | undefined
@@ -483,6 +486,27 @@ export function LifeDisplay({
           }}
         >
           ⚡ {energyCounters}
+        </div>
+      )}
+      {experienceCounters > 0 && (
+        <div
+          title={`${experienceCounters} experience counter${experienceCounters === 1 ? '' : 's'}`}
+          style={{
+            marginTop: 4,
+            minHeight: 18,
+            padding: '2px 7px',
+            borderRadius: 4,
+            border: '1px solid rgba(147, 197, 253, 0.55)',
+            backgroundColor: 'rgba(10, 25, 48, 0.92)',
+            color: '#bfdbfe',
+            fontSize: 11,
+            fontWeight: 800,
+            lineHeight: '14px',
+            fontVariantNumeric: 'tabular-nums',
+            boxShadow: '0 0 10px rgba(147, 197, 253, 0.25)',
+          }}
+        >
+          XP {experienceCounters}
         </div>
       )}
       <MaxHandSizeBadge handSize={handSize} maxHandSize={effectiveMaxHandSize} />

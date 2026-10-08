@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetOther
+import com.wingedsheep.sdk.scripting.targets.withCount
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -72,6 +73,49 @@ class TargetDeclarationsTest : DescribeSpec({
             }
             handles shouldBe listOf(EffectTarget.BoundVariable("t0[0]"), EffectTarget.BoundVariable("t0[1]"))
         }
+
+        it("targets(exactly = X) is the exact dynamic count: floor and cap both X, no static floor") {
+            val definition = card("Exact Tap") {
+                manaCost = "{X}{U}"
+                typeLine = "Sorcery"
+                spell {
+                    targets(TargetFilter.Creature, exactly = DynamicAmount.XValue)
+                    effect = Effects.TapEachTarget()
+                }
+            }
+            val requirement = definition.script.targetRequirements.single() as TargetObject
+            requirement.dynamicMaxCount shouldBe DynamicAmount.XValue
+            requirement.dynamicMinCount shouldBe DynamicAmount.XValue
+            requirement.exactDynamicCount shouldBe true
+            requirement.optional shouldBe false
+            // X may be 0 (zero targets), so until X is read the static floor is 0.
+            requirement.effectiveMinCount shouldBe 0
+            requirement.requiresExactlyOneTarget shouldBe false
+        }
+
+        it("targets(exactly = …) refuses to be combined with an up-to spelling") {
+            io.kotest.assertions.throwables.shouldThrow<IllegalArgumentException> {
+                card("Confused Tap") {
+                    manaCost = "{X}{U}"
+                    typeLine = "Sorcery"
+                    spell {
+                        targets(TargetFilter.Creature, optional = true, exactly = DynamicAmount.XValue)
+                        effect = Effects.TapEachTarget()
+                    }
+                }
+            }
+        }
+
+        it("withCount settles an exact dynamic count into the static exact shape (CR 601.2c)") {
+            val x = DynamicAmount.XValue
+            val bound = TargetObject(filter = TargetFilter.Creature, dynamicMaxCount = x, dynamicMinCount = x)
+                .withCount(3) as TargetObject
+            bound.count shouldBe 3
+            bound.minCount shouldBe 3
+            bound.effectiveMinCount shouldBe 3
+            bound.dynamicMinCount shouldBe null
+            bound.dynamicMaxCount shouldBe null
+        }
     }
 
     describe("the targeting prompt is derived from the requirement") {
@@ -129,6 +173,8 @@ class TargetDeclarationsTest : DescribeSpec({
                 "up to two target creature cards in your graveyard"
             TargetObject(filter = TargetFilter.Creature, optional = true, dynamicMaxCount = DynamicAmount.XValue)
                 .description shouldBe "up to X target creatures"
+            TargetObject(filter = TargetFilter.Creature, dynamicMaxCount = DynamicAmount.XValue, dynamicMinCount = DynamicAmount.XValue)
+                .description shouldBe "X target creatures"
             TargetObject(filter = TargetFilter(GameObjectFilter.Any, zone = Zone.GRAVEYARD), count = 2, optional = true, sameOwner = true)
                 .description shouldBe "up to two target cards from a single graveyard"
             TargetObject(

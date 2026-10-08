@@ -421,7 +421,7 @@ Each bullet is one enforcement seam, with the rule it implements:
   `GameEvent` field coverage before estimating; the "blocked" vs. "blocked by a creature" distinction
   in the CR's example is exactly the sort of thing our events may collapse.
 - **`StateProjector` performance.** 801.11 puts a per-controller range filter inside the projection
-  path, which already dominates engine cost (see [`engine-performance.md`](engine-performance.md)).
+  path, which already dominates engine cost (see [`engine-performance.md`](archived/engine-performance-hotspots.md)).
   Measure before and after; per-controller projection caching may become mandatory rather than
   optional.
 - **Non-contiguous teams in `turnOrder`.** Rotating the seat ring so an emperor goes first splits a

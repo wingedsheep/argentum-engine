@@ -3378,11 +3378,12 @@
         "targetRequirements": [
             {
                 "type": "TargetObject",
-                "count": 20,
-                "optional": true,
                 "filter": {
                     "baseFilter": "creature|artifact"
-                }
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
             }
         ]
     },

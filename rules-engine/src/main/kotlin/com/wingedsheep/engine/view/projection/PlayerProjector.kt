@@ -81,6 +81,8 @@ internal class PlayerProjector(
             speed = state.speed(playerId),
             // CR 107.14 — public information like poison counters, and 0 outside energy decks.
             energyCounters = container?.get<CountersComponent>()?.getCount(CounterType.ENERGY) ?: 0,
+            // CR 122.1 — experience counters live on the player too; public, and 0 in nearly every game.
+            experienceCounters = container?.get<CountersComponent>()?.getCount(CounterType.EXPERIENCE) ?: 0,
             // Team variants (CR 810 / CR 808). Public information, and absent from every
             // non-team game, so both fields serialize away by default.
             teamIndex = container?.get<TeamComponent>()?.teamIndex,
