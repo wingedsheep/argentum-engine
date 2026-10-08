@@ -32,6 +32,7 @@ internal object SdkSurface {
         val fields: List<Field>,
         /** The class discriminator a card's JSON carries for this leaf. */
         val serialName: String,
+        val packageName: String,
     ) {
         val simpleName: String get() = name.substringAfterLast('.')
         val key: String get() = "$name — $family"
@@ -78,6 +79,7 @@ internal object SdkSurface {
                     fields = leafClass.primaryConstructor?.parameters.orEmpty()
                         .map { Field(it.name ?: "_", simpleType(it.type.toString())) },
                     serialName = leafClass.findAnnotation<SerialName>()?.value ?: leafClass.qualifiedName!!,
+                    packageName = leafClass.java.`package`.name,
                 )
             }
         }.distinctBy { it.key }.sortedWith(compareBy({ it.family }, { it.name }))

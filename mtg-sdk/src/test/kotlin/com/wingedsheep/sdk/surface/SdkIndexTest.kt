@@ -67,7 +67,8 @@ private class KDocIndex(root: File) {
     init {
         val decl = Regex("""(/\*\*(?:(?!\*/).)*?\*/)?\s*(?:@[\w.]+(?:\([^)]*\))?\s*)*(?:(?:public|internal|private|sealed|data|abstract|open|value)\s+)*(?:class|object|interface)\s+(\w+)""", RegexOption.DOT_MATCHES_ALL)
         val all = mutableMapOf<String, MutableList<Decl>>()
-        root.walkTopDown().filter { it.isFile && it.extension == "kt" }.forEach { file ->
+        // Sorted, so an ambiguous simple name resolves the same way on every filesystem.
+        root.walkTopDown().filter { it.isFile && it.extension == "kt" }.sortedBy { it.invariantSeparatorsPath }.forEach { file ->
             val text = file.readText()
             decl.findAll(text).forEach { m ->
                 all.getOrPut(m.groupValues[2]) { mutableListOf() } += Decl(file, text, firstSentence(m.groupValues[1]))
@@ -77,7 +78,9 @@ private class KDocIndex(root: File) {
     }
 
     fun summary(leaf: SdkSurface.Leaf): String? {
+        val packageDir = "/" + leaf.packageName.replace('.', '/') + "/"
         val candidates = byName[leaf.simpleName].orEmpty()
+            .let { all -> all.filter { packageDir in it.file.invariantSeparatorsPath }.ifEmpty { all } }
         if (candidates.size <= 1) return candidates.singleOrNull()?.summary
         // A nested leaf (`CardPredicate.PowerAtLeast`) lives in a file that declares its parent.
         val parent = leaf.name.substringBeforeLast('.', "").substringAfterLast('.')

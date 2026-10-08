@@ -799,7 +799,7 @@ Families: [Effect](#effect) (378) · [StaticAbility](#staticability) (188) · [C
 - `VoidCondition` — Condition: "if a nonland permanent left the battlefield this turn or a spell was warped this turn".
 - `WasCast` — Condition: "If you cast this spell" (from any zone).
 - `WasCastFromHand` — Condition: "If you cast this spell from your hand" Used for Phage the Untouchable's ETB trigger condition.
-- `WasCastFromZone(zone: Zone)` — A spell on the stack whose cast-origin zone is zone — reads the `SpellOnStackComponent.castFromZone` the engine stamps when the spell is put on the stack (HAND for a normal cast; GRAVEYARD/EXILE/CO…
+- `WasCastFromZone(zone: Zone)` — Condition: "If this spell was cast from zone" Used for flashback spells and other zone-dependent effects.
 - `WasKicked` — Condition: "If this spell was kicked" Used for kicker spells like Shivan Fire where the effect changes based on whether the kicker cost was paid.
 - `WaterbendWasPaid` — Condition: "If this spell's additional cost was paid" — for the optional spell-level **waterbend** additional cost (Avatar: The Last Airbender).
 - `WebSlungCostWasPaid` — Condition: "If this spell was cast using web-slinging" (CR 702.188).
@@ -1394,7 +1394,7 @@ Families: [Effect](#effect) (378) · [StaticAbility](#staticability) (188) · [C
 
 ## SpellCastPredicate
 
-- `SpellCastPredicate.AnyOf(options: List<SpellCastPredicate>)` — Matches when any constituent event pattern matches.
+- `SpellCastPredicate.AnyOf(options: List<SpellCastPredicate>)` — Any of options — the heterogeneous "player or object" unions.
 - `SpellCastPredicate.CastAsAdventure` — The spell was cast **as an Adventure** (CR 715.3) — "Whenever you cast an Adventure spell" (Chancellor of Tales).
 - `SpellCastPredicate.CastAsPrepareSpell` — The spell was cast **as a prepare spell** (CR 722.3c) — "Whenever you cast a prepared spell" (Codie, Ravenous Codex).
 - `SpellCastPredicate.CastFromZone(zone: Zone)` — The spell was cast from this zone (e.g. HAND for "from your hand").
@@ -1682,7 +1682,7 @@ Families: [Effect](#effect) (378) · [StaticAbility](#staticability) (188) · [C
 
 ## AmountFilter
 
-- `AmountFilter.Any` — Any player (for matching/filtering)
+- `AmountFilter.Any`
 - `AmountFilter.AtLeast(value: Int)`
 - `AmountFilter.AtMost(value: Int)`
 - `AmountFilter.Exactly(value: Int)`
@@ -1732,7 +1732,7 @@ Families: [Effect](#effect) (378) · [StaticAbility](#staticability) (188) · [C
 ## Recipient
 
 - `Recipient.AnotherPlayer` — "Another player" — any player other than the observing ability's controller.
-- `Recipient.AnyOf(options: List<Recipient>)` — Matches when any constituent event pattern matches.
+- `Recipient.AnyOf(options: List<Recipient>)` — Any of options — the heterogeneous "player or object" unions.
 - `Recipient.Object(filter: GameObjectFilter)` — An object (a permanent, or a spell for an ability's target) matching filter.
 - `Recipient.Player(player: Player)` — A player named by a com.wingedsheep.sdk.scripting.references.Player reference.
 
@@ -1768,7 +1768,7 @@ Families: [Effect](#effect) (378) · [StaticAbility](#staticability) (188) · [C
 
 ## DamageType
 
-- `DamageType.Any` — Any player (for matching/filtering)
+- `DamageType.Any`
 - `DamageType.Combat`
 - `DamageType.NonCombat`
 
