@@ -15664,7 +15664,8 @@
         ],
         "staticAbilities": [
             {
-                "type": "GrantHexproofFromMulticoloredToGroup",
+                "type": "GrantHexproofFromToGroup",
+                "scope": "ProtectionScope.Multicolored",
                 "filter": {
                     "baseFilter": "permanent",
                     "scope": "Self"

@@ -8607,16 +8607,17 @@ staticAbility {
   creature** card grants protection from artifacts *and* from creatures. An empty pile grants nothing,
   which is the right reading of a declined "may" imprint — which is also why this can't be modelled as
   printed `Keyword.Protection` scopes. (Mirror Golem)
-- `GrantHexproofFromMonocoloredToGroup(filter = attachedCreature())` — "[filter] have hexproof from
-  monocolored" — adds the projected keyword `HEXPROOF_FROM_MONOCOLORED`, which blocks targeting by
-  monocolored (exactly one color, CR 105.2) spells and abilities opponents control. Colorless and
-  multicolored sources are unaffected; the controller can still target their own creatures. (Dragonfire
-  Blade)
-- `GrantHexproofFromMulticoloredToGroup(filter = attachedCreature())` — the mirror: "[filter] have
-  hexproof from multicolored" — adds the projected keyword `HEXPROOF_FROM_MULTICOLORED`, which blocks
-  targeting by multicolored (two or more colors, CR 105.2b) spells and abilities opponents control.
-  Monocolored and colorless sources are unaffected; the controller can still target their own
-  permanents. Pass `GroupFilter.source()` for the printed-on-itself shape. (Niv-Mizzet, Guildpact)
+- `GrantHexproofFromToGroup(scope, filter = attachedCreature())` — "[filter] have hexproof from [scope]"
+  (CR 702.11d): adds the same projected `HEXPROOF_FROM_*` keyword a printed `KeywordAbility.Hexproof(scope)`
+  uses (`HexproofFromRules.keywordsFor`), so it blocks targeting by matching spells and abilities
+  opponents control; the controller can still target their own permanents. Accepts the scopes with a
+  hexproof keyword — `Color`, `Colors`, `NonColor`, `Monocolored`, `Multicolored`, `CardType`, `Spells`,
+  `PermanentsCastThisTurn`, `ActivatedAbilities`, `TriggeredAbilities`; the rest are rejected at
+  construction. `ProtectionScope.Monocolored` = exactly one color (CR 105.2a): Dragonfire Blade
+  (`GrantHexproofFromToGroup(ProtectionScope.Monocolored)`). `ProtectionScope.Multicolored` = two or more
+  colors (CR 105.2b): Niv-Mizzet, Guildpact, printed on itself
+  (`GrantHexproofFromToGroup(ProtectionScope.Multicolored, GroupFilter.source())`). "Hexproof from each of
+  its colors" varies per creature and is `GrantHexproofFromOwnColorsToGroup`.
 - `CantBeTargetedBySourceTypeAbilities(sourceType, filter = attachedCreature())` — "[filter] can't be the
   target of abilities from [sourceType] sources" — hexproof keyed to a source *card type* (e.g.
   `CardType.ARTIFACT`) rather than a controller or color. Projects the keyword
@@ -11286,6 +11287,9 @@ composite abilities).
   the shared colour-axis helper `ColorProtection`, so targeting (validator *and* legal-action target
   enumeration), damage prevention, blocking and enchanting/equipping all honour it. Also valid in
   `GrantPlayerProtection` / `GrantProtectionToController` scopes.
+- `ProtectionScope.Monocolored` — the exactly-one-color twin (CR 105.2a). Engine-wired for granted hexproof
+  (`GrantHexproofFromToGroup` — Dragonfire Blade) and player protection; creature *protection* from
+  monocolored is not projected.
 - `Protection(ProtectionScope.Supertype("Legendary"))` / `KeywordAbility.protectionFromSupertype("Legendary")` — protection from a supertype, e.g. "protection from legendary creatures" (Tsabo Tavoc). Enforced across targeting, blocking, and combat damage via projected `PROTECTION_FROM_SUPERTYPE_<X>` keywords.
 - `Protection(ProtectionScope.CardType("Instant"))` — protection from a card type, e.g. "protection from
   instants" (Emrakul, the Promised End). Projected as `PROTECTION_FROM_CARDTYPE_<TYPE>` — the same keyword

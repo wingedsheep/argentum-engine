@@ -3,6 +3,7 @@ package com.wingedsheep.engine.mechanics.targeting
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.ProtectionScope
 
 /**
  * The single "does this source match one of the target's hexproof-from qualities" check
@@ -21,6 +22,29 @@ object HexproofFromRules {
 
     /** Projected keyword for "hexproof from non<color>" (Thrun, Breaker of Silence). */
     fun nonColorKeyword(color: Color): String = "HEXPROOF_FROM_NON_${color.name}"
+
+    /** Projected keyword for "hexproof from monocolored" (CR 105.2a — exactly one color). */
+    const val MONOCOLORED: String = "HEXPROOF_FROM_MONOCOLORED"
+
+    /** Projected keyword for "hexproof from multicolored" (CR 105.2b — two or more colors). */
+    const val MULTICOLORED: String = "HEXPROOF_FROM_MULTICOLORED"
+
+    /**
+     * The projected `HEXPROOF_FROM_*` keywords that grant "hexproof from [scope]" — the same
+     * spellings a printed hexproof-from projects (see `StateProjector`), so [blockingQuality] reads
+     * a granted quality exactly as it reads a printed one. Empty for a scope with no hexproof
+     * keyword (subtype, supertype, everything, each opponent); `GrantHexproofFromToGroup` rejects
+     * those at construction.
+     */
+    fun keywordsFor(scope: ProtectionScope): Set<String> = when (scope) {
+        is ProtectionScope.Color -> setOf("HEXPROOF_FROM_${scope.color.name}")
+        is ProtectionScope.Colors -> scope.colors.mapTo(linkedSetOf()) { "HEXPROOF_FROM_${it.name}" }
+        is ProtectionScope.NonColor -> setOf(nonColorKeyword(scope.color))
+        ProtectionScope.Monocolored -> setOf(MONOCOLORED)
+        ProtectionScope.Multicolored -> setOf(MULTICOLORED)
+        is ProtectionScope.CardType -> setOf("HEXPROOF_FROM_CARDTYPE_${scope.cardType.uppercase()}")
+        else -> SourceKind.of(scope)?.let { setOf(SourceKindProtection.hexproofKeyword(it)) } ?: emptySet()
+    }
 
     /**
      * The quality of [targetId]'s hexproof the source matches — "white", "monocolored",
@@ -42,10 +66,10 @@ object HexproofFromRules {
             if (projected.hasKeyword(targetId, "HEXPROOF_FROM_$colorName")) return colorName.lowercase()
         }
         // Hexproof from monocolored / multicolored: exactly one / two or more colors (CR 105.2a/b).
-        if (sourceColors.size == 1 && projected.hasKeyword(targetId, "HEXPROOF_FROM_MONOCOLORED")) {
+        if (sourceColors.size == 1 && projected.hasKeyword(targetId, MONOCOLORED)) {
             return "monocolored"
         }
-        if (sourceColors.size >= 2 && projected.hasKeyword(targetId, "HEXPROOF_FROM_MULTICOLORED")) {
+        if (sourceColors.size >= 2 && projected.hasKeyword(targetId, MULTICOLORED)) {
             return "multicolored"
         }
         // Hexproof from non<color>: every source that isn't that color, colorless included

@@ -545,22 +545,13 @@ sealed interface Modification {
     }
 
     /**
-     * Grants "hexproof from monocolored" to each affected entity — adds the keyword
-     * `HEXPROOF_FROM_MONOCOLORED`, which blocks targeting by monocolored (exactly one color)
-     * spells and abilities opponents control. Used for Dragonfire Blade.
+     * Grants "hexproof from <quality>" to each affected entity — adds the projected
+     * `HEXPROOF_FROM_*` [keywords] that [com.wingedsheep.engine.mechanics.targeting.HexproofFromRules]
+     * reads at targeting (`HexproofFromRules.keywordsFor`). Used for Dragonfire Blade (monocolored)
+     * and Niv-Mizzet, Guildpact (multicolored).
      */
     @Serializable
-    data object GrantHexproofFromMonocolored : Modification {
-        override val layer get() = Layer.ABILITY
-    }
-
-    /**
-     * Grants "hexproof from multicolored" to each affected entity — adds the keyword
-     * `HEXPROOF_FROM_MULTICOLORED`, which blocks targeting by multicolored (two or more colors)
-     * spells and abilities opponents control. Used for Niv-Mizzet, Guildpact.
-     */
-    @Serializable
-    data object GrantHexproofFromMulticolored : Modification {
+    data class GrantHexproofFrom(val keywords: Set<String>) : Modification {
         override val layer get() = Layer.ABILITY
     }
 

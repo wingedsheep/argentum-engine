@@ -4358,7 +4358,10 @@
                 "powerBonus": 2,
                 "toughnessBonus": 2
             },
-            "GrantHexproofFromMonocoloredToGroup"
+            {
+                "type": "GrantHexproofFromToGroup",
+                "scope": "ProtectionScope.Monocolored"
+            }
         ]
     },
     "equipCost": "{4}",
