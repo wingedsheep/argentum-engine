@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -488,6 +489,7 @@ class ZoneTransitionService(
                 lostAllAbilities = lastKnownLostAllAbilities,
                 typeLine = lastKnownTypeLine,
                 cardDefinitionId = cardComponent.cardDefinitionId,
+                copiableCard = container.copiableCardComponent(),
                 textChanges = TextChanges.of(state, entityId),
                 attachedTo = lastKnownAttachedTo,
                 wasEquipped = lastKnownWasEquipped,

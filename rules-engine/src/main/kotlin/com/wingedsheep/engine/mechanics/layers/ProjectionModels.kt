@@ -813,5 +813,11 @@ internal data class MutableProjectedValues(
     var manaAbilityLifeTax: Int = 0,
     var lostAllAbilities: Boolean = false,
     /** See [com.wingedsheep.engine.mechanics.layers.ProjectedValues.basicLandTypesSetByEffect]. */
-    var basicLandTypesSetByEffect: Boolean = false
+    var basicLandTypesSetByEffect: Boolean = false,
+    /**
+     * Card types a Layer 4 effect removed this pass ([Modification.RemoveType]). Projection-only
+     * bookkeeping for CR 205.1a: once Layer 4 is done, a removed creature type takes its creature
+     * subtypes with it unless the object still has a card type those subtypes belong to.
+     */
+    val removedCardTypes: MutableSet<String> = mutableSetOf()
 )

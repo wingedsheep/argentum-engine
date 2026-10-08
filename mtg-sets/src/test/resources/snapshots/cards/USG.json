@@ -2462,25 +2462,35 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ForEach",
-                    "space": "IterationSpace.Targets",
-                    "body": {
-                        "type": "TapUntap",
-                        "target": {
-                            "type": "ContextTarget",
-                            "index": 0
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "land"
+                            },
+                            "storeAs": "gathered0"
                         },
-                        "tap": false
-                    }
-                },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "count": 7,
-                    "optional": true,
-                    "filter": {
-                        "baseFilter": "land"
-                    },
-                    "id": "t0"
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 7
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose up to seven lands to untap"
+                        },
+                        {
+                            "type": "TapUntapCollection",
+                            "collectionName": "selected1",
+                            "tap": false
+                        }
+                    ]
                 }
             }
         ]
@@ -3421,25 +3431,35 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ForEach",
-                    "space": "IterationSpace.Targets",
-                    "body": {
-                        "type": "TapUntap",
-                        "target": {
-                            "type": "ContextTarget",
-                            "index": 0
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "land"
+                            },
+                            "storeAs": "gathered0"
                         },
-                        "tap": false
-                    }
-                },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "count": 5,
-                    "optional": true,
-                    "filter": {
-                        "baseFilter": "land"
-                    },
-                    "id": "t0"
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose up to five lands to untap"
+                        },
+                        {
+                            "type": "TapUntapCollection",
+                            "collectionName": "selected1",
+                            "tap": false
+                        }
+                    ]
                 }
             }
         ]

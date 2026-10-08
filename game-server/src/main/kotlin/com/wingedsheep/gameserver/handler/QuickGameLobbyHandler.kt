@@ -744,16 +744,13 @@ class QuickGameLobbyHandler(
             gameSession.engineFormat = com.wingedsheep.sdk.core.Format.TwoHeadedGiant()
             gameSession.teams = lobby.teamAssignment()
         }
-        // Each player can pick their own set for a Random pool. For a vs-AI lobby the AI mirrors
-        // the (single) human's set so both sides play the same set. Resolve that set ONCE here —
-        // rolling a single random set when the human left the pool on "Random" — and reuse it for
-        // the human's deck and the AI's deck. Previously the human's deck and the AI's deck each
-        // rolled their own random set, so a "Random Set" pool handed them two different sets.
+        // Each player can pick their own set for a Random pool. Every seat that left it on "Any
+        // set" — and the AI on its default — shares one set, resolved ONCE here: a set a human
+        // pinned if there is one, else a single random roll. Rolling per seat handed two players on
+        // "Random deck > Any set" decks from two different sets.
         val humanPlayers = lobby.players.filter { !it.isAi }
-        val aiSetCode = lobby.setCode
-            ?: humanPlayers.firstOrNull()?.setCode
-            ?: deckGenerator.randomSetCode()
-        gameSession.quickGameSetCode = aiSetCode
+        val sharedRandomSet = lobby.pinnedRandomSetCode() ?: deckGenerator.randomSetCode()
+        gameSession.quickGameSetCode = sharedRandomSet
         // Momir Basic: both seats play the fixed 60-basic deck and the avatar flips creatures from
         // the whole card base (every set). The engine reads `eligibleCreatureNames` from this format
         // at game init and when the avatar's "{X}, Discard a card" ability resolves.
@@ -776,11 +773,8 @@ class QuickGameLobbyHandler(
         val humanDecks = humanPlayers.associate { lobbyPlayer ->
             // Momir Basic has no deckbuilding: the fixed 60 basics are substituted at seating time.
             if (lobby.momirBasic) return@associate lobbyPlayer.playerId to GeneratedDeck(emptyMap())
-            // In a vs-AI lobby, share the resolved set with the single human so a random pool draws
-            // from the same set the AI got; multi-human lobbies keep each player's own set, rolling
-            // an independent random when they didn't pick one.
-            val randomFallbackSet = if (lobby.vsAi) aiSetCode else deckGenerator.randomSetCode()
-            val resolved = resolveDeck(lobbyPlayer, randomFallbackSet, lobby.format, lobby.usesCommanderRules)
+            // A seat that pinned its own sets keeps them; one on "Any set" draws from the shared set.
+            val resolved = resolveDeck(lobbyPlayer, sharedRandomSet, lobby.format, lobby.usesCommanderRules)
             lobbyPlayer.playerId to resolved.copy(
                 deckList = EasterEggDeckInjector.maybeInjectEasterEggs(
                     lobbyPlayer.playerName,
@@ -795,7 +789,7 @@ class QuickGameLobbyHandler(
         val aiDeck = when {
             !lobby.vsAi -> null
             lobby.momirBasic -> GeneratedDeck(MomirBasicSetup.fixedBasicDeck)
-            else -> randomDeckResolver.resolve(lobby.aiDeckSpec, lobby.format, aiSetCode, lobby.usesCommanderRules)
+            else -> randomDeckResolver.resolve(lobby.aiDeckSpec, lobby.format, sharedRandomSet, lobby.usesCommanderRules)
         }
 
         if (lobby.usesCommanderRules && !lobby.momirBasic) {
@@ -870,7 +864,7 @@ class QuickGameLobbyHandler(
             // lives next to the lobby state that configures it, not inside AiGameManager.
             aiGameManager.createAiOpponent(
                 gameSession = gameSession,
-                setCode = aiSetCode,
+                setCode = sharedRandomSet,
                 onActionReady = { id, action, interactionEpoch ->
                     gamePlayHandler.handleAiAction(gameSession, id, action, interactionEpoch)
                 },
@@ -940,7 +934,7 @@ class QuickGameLobbyHandler(
             // commander shape it means a generated deck *and* its commander, so "Random" is a legal
             // Commander seat rather than one the engine refuses at init. Without a format it stays a
             // sealed pool from their own set choice, falling back to the caller's pre-resolved set
-            // (shared with the AI in a vs-AI lobby so both play the same set).
+            // (shared by every "Any set" seat and the AI, so the whole table plays one set).
             return randomDeckResolver.randomDeck(format, player.setCodes, randomFallbackSet, commanderRules)
         }
         return GeneratedDeck(submitted)

@@ -18,6 +18,156 @@
     ]
 }
 
+// Earthshape
+{
+    "name": "Earthshape",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Earthbend 3. Then each creature you control with power less than or equal to that land's power gains hexproof and indestructible until end of turn. You gain hexproof until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AnimateLand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": 0,
+                    "toughness": 0,
+                    "duration": "Permanent"
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "Permanent"
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 3,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "earthbend_return_tapped",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield"
+                        },
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "MoveToZone",
+                                    "target": "Self",
+                                    "destination": "Battlefield",
+                                    "placement": "Tapped",
+                                    "fromZone": "Graveyard"
+                                },
+                                {
+                                    "type": "MoveToZone",
+                                    "target": "Self",
+                                    "destination": "Battlefield",
+                                    "placement": "Tapped",
+                                    "fromZone": "Exile"
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "When this dies or is exiled, return it to the battlefield tapped."
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "Permanent"
+                },
+                {
+                    "type": "EmitBendEvent",
+                    "bendType": "EARTH"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "PowerAtMostEntity",
+                                        "reference": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HEXPROOF",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "GrantEvasionKeyword",
+                    "keyword": "HEXPROOF"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "RARE",
+        "artist": "Fahmi Fauzi",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d873c678-c8f2-40f0-ab03-a2fdf5187aea.jpg?1783904839",
+        "rulings": [
+            {
+                "date": "2025-10-02",
+                "text": "If the targeted land becomes an illegal target before the spell or ability that includes earthbend resolves, earthbend does nothing. If the spell or ability didn't have other targets, it won't resolve."
+            },
+            {
+                "date": "2025-10-02",
+                "text": "You may target a land that is already a creature, perhaps because of a previous earthbend ability. The land will get the +1/+1 counters, gain haste, and have its base power and toughness set to 0/0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Kyoshi Warrior Guard
 {
     "name": "Kyoshi Warrior Guard",
@@ -32,6 +182,185 @@
         "artist": "Yunomachi",
         "flavorText": "Kyoshi Warrior drills are designed to encourage individual discipline as well as uncompromising trust in their fellow warriors.",
         "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a2acb28-c0e2-492b-a227-ef49e905e0fb.jpg?1783904787"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Mai and Zuko
+{
+    "name": "Mai and Zuko",
+    "manaCost": "{1}{U}{B}{R}",
+    "typeLine": "Legendary Creature — Human Noble Ally",
+    "oracleText": "Firebending 3\nYou may cast Ally spells and artifact spells as though they had flash.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "FIREBENDING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "FIREBENDING",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mai and Zuko:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "RED",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "expiry": "END_OF_COMBAT"
+                        },
+                        {
+                            "type": "EmitBendEvent",
+                            "bendType": "FIRE"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature attacks, add {R}{R}{R}. Until end of combat, you don't lose this mana as steps and phases end."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantFlashToSpellType",
+                "filter": "Ally|artifact",
+                "controllerOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "RARE",
+        "artist": "Brian Yuen",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b50fe92-e596-4949-929b-54ae25a7992c.jpg?1783904839",
+        "rulings": [
+            {
+                "date": "2025-10-02",
+                "text": "Multiple instances of firebending on the same creature trigger separately, each granting you the appropriate amount of mana."
+            },
+            {
+                "date": "2025-10-02",
+                "text": "Firebending abilities aren't mana abilities. They use the stack and can be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Monk Gyatso
+{
+    "name": "Monk Gyatso",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Human Monk",
+    "oracleText": "Whenever another creature you control becomes the target of a spell or ability, you may airbend that creature. (Exile it. While it's exiled, its owner may cast it for {2} rather than its mana cost.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Monk Gyatso:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "creature ctrl:you"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "TriggeringEntity",
+                                "storeAs": "airbendTriggering"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "airbendTriggering",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "statePredicates": [
+                                        "IsOnBattlefield"
+                                    ]
+                                },
+                                "storeMatching": "airbendChosen"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "airbendChosen",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "storeMovedAs": "airbendExiled"
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "airbendExiled",
+                                "expiry": "Permanent",
+                                "ownerControls": true,
+                                "fixedAlternativeManaCost": "{2}"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "CollectionContainsMatch",
+                                        "collection": "airbendExiled"
+                                    }
+                                },
+                                "then": {
+                                    "type": "EmitBendEvent",
+                                    "bendType": "AIR"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever another creature you control becomes the target of a spell or ability, you may airbend that creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "RARE",
+        "artist": "Masateru Ikeda",
+        "flavorText": "\"My ancient cake-making technique isn't the only thing on your mind, is it, Aang?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e27ed185-eb2b-42dd-b48e-3c8d4456268b.jpg?1783904834",
+        "rulings": [
+            {
+                "date": "2025-10-02",
+                "text": "Tokens exiled this way will cease to exist and cannot be cast."
+            },
+            {
+                "date": "2025-10-02",
+                "text": "Lands exiled this way cannot be played from exile. (Lands that were animated by earthbend will be returned to the battlefield tapped when they're exiled.)"
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -55,5 +384,77 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Waterbender's Restoration
+{
+    "name": "Waterbender's Restoration",
+    "manaCost": "{U}{U}",
+    "typeLine": "Instant — Lesson",
+    "oracleText": "As an additional cost to cast this spell, waterbend {X}. (While paying a waterbend cost, you can tap your artifacts and creatures to help. Each one pays for {1}.)\nExile X target creatures you control. Return those cards to the battlefield under their owner's control at the beginning of the next end step.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Exile"
+                    },
+                    {
+                        "type": "CreateDelayedTrigger",
+                        "step": "END",
+                        "effect": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "destination": "Battlefield"
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue"
+            }
+        ],
+        "spellWaterbend": {
+            "isX": true
+        }
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "Phima",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe68e08e-8d84-4f87-b2e9-b552788d78e7.jpg?1783904827",
+        "rulings": [
+            {
+                "date": "2025-10-02",
+                "text": "If a waterbend cost is part of the total cost to cast a spell or activate an ability, you may tap an untapped artifact or creature you control rather than pay one generic mana in that total cost any number of times up to a maximum of the amount of generic mana in the waterbend component of that total cost."
+            },
+            {
+                "date": "2025-10-02",
+                "text": "You can tap any untapped creature or artifact you control to pay a waterbend cost, even one you haven't controlled continuously since the beginning of your most recent turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }

@@ -53,3 +53,10 @@ Edited on 2026-09-28 when mana provenance gained a producing-source card-type ax
 `RestrictedManaEntry.source`). The new keys were inserted with their defaults in the
 `encodeDefaults = true` captures; the one tagged pool — Birds of Paradise's floating mana in
 `suspended-mana-window/after-1.json` — carries `{"CREATURE": 1}`, as the engine now records.
+
+Edited on 2026-10-08 when the battlefield-exit `EntitySnapshot` gained `copiableCard` (the
+departed permanent's copiable values, read by a token copy of a triggering creature that has
+left — CR 608.2h). The one snapshot in these traces — Naturalize's Sol Ring in
+`free-cast-target/after-3.json` — now carries Sol Ring's `CardComponent` there, exactly the
+component the card keeps in the graveyard (it was no copy). No action or event payload changed,
+and no gameplay was rerun.

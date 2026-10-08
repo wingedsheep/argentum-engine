@@ -9,7 +9,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.CardSource
 
 
 /**
@@ -19,6 +20,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * 2/3
  * Flying
  * When this creature enters, untap up to five lands.
+ *
+ * No "target" in the Oracle text: the lands are chosen on resolution and may be any lands,
+ * including hexproof/shroud ones — so this gathers and chooses rather than targeting.
  */
 val PeregrineDrake = card("Peregrine Drake") {
     manaCost = "{4}{U}"
@@ -30,8 +34,11 @@ val PeregrineDrake = card("Peregrine Drake") {
     keywords(Keyword.FLYING)
     triggeredAbility {
         trigger = Triggers.self.enters()
-        targets(TargetFilter.Land, count = 5, optional = true)
-        effect = Effects.UntapEachTarget()
+        effect = Effects.Pipeline {
+            val lands = gather(CardSource.BattlefieldMatching(filter = GameObjectFilter.Land))
+            val toUntap = chooseUpTo(5, from = lands, prompt = "Choose up to five lands to untap")
+            run(Effects.TapCollection(collection = toUntap, tap = false))
+        }
     }
     metadata {
         rarity = Rarity.UNCOMMON

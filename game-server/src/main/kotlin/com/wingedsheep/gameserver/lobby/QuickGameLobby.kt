@@ -125,6 +125,15 @@ class QuickGameLobby(
     fun allReady(): Boolean = players.size == maxPlayers && players.all { it.ready }
 
     /**
+     * The set a seat on "Random" with no set of its own builds from, when one is already decided:
+     * the lobby's legacy [setCode], else the first human seat that pinned exactly one set. Null means
+     * nothing is pinned and the caller rolls a set — *once*, for the whole table — so every "Any set"
+     * seat (and the AI's, on its default) plays the same set rather than each rolling its own.
+     */
+    fun pinnedRandomSetCode(): String? =
+        setCode ?: players.firstOrNull { !it.isAi && it.setCode != null }?.setCode
+
+    /**
      * The team partition for [Format.TwoHeadedGiant], as seat indices into join order: seats 0+1
      * are team 0, seats 2+3 team 1. Null in a non-2HG lobby (each player plays alone). Forwarded
      * to [com.wingedsheep.gameserver.session.GameSession.teams] → `GameConfig.teams`.

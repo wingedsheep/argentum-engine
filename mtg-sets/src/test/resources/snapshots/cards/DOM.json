@@ -11626,7 +11626,7 @@
                                     {
                                         "type": "GatherCards",
                                         "source": {
-                                            "type": "ControlledPermanents",
+                                            "type": "BattlefieldMatching",
                                             "filter": "land"
                                         },
                                         "storeAs": "gathered0"

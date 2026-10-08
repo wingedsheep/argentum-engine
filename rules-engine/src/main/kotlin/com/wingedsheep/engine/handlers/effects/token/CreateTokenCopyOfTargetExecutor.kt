@@ -21,6 +21,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
@@ -78,10 +79,7 @@ class CreateTokenCopyOfTargetExecutor(
         effect: CreateTokenCopyOfTargetEffect,
         context: EffectContext
     ): EffectResult {
-        val targetId = context.resolveTarget(effect.target, state)
-            ?: return EffectResult.success(state)
-
-        val targetContainer = state.getEntity(targetId)
+        val targetContainer = copySource(state, effect, context)
             ?: return EffectResult.success(state)
 
         val targetCard = targetContainer.copiableCardComponent()
@@ -159,6 +157,30 @@ class CreateTokenCopyOfTargetExecutor(
      * [prescribedHostId] is that host as resolved (null if it no longer exists); each token is
      * attached to it only if it could legally be, and an Aura token that couldn't is not created.
      */
+    /**
+     * The object whose copiable values the tokens copy. Normally the live object the effect's
+     * target names. When that is the **triggering** object and it has left the battlefield since
+     * the ability triggered ("Whenever a creature … enters, create a token that's a copy of that
+     * creature" with the creature killed in response — Molten Echoes, Necroduality), the token
+     * copies it as it last existed on the battlefield (CR 608.2h, CR 707.2): the copiable
+     * [CardComponent] frozen into its [LastKnownPermanentComponent] snapshot at departure, so a
+     * creature that was itself a copy is copied as what it was copying. The snapshot is stripped
+     * on the card's next zone change, so it only ever describes the departed battlefield object.
+     * A token that left has ceased to exist (CR 704.5d) and leaves nothing to copy.
+     */
+    private fun copySource(
+        state: GameState,
+        effect: CreateTokenCopyOfTargetEffect,
+        context: EffectContext,
+    ): ComponentContainer? {
+        context.resolveTarget(effect.target, state)?.let { return state.getEntity(it) }
+        if (effect.target != EffectTarget.TriggeringEntity) return null
+        val departed = context.triggeringEntityId?.let { state.getEntity(it) } ?: return null
+        val lastKnownCard = departed.get<LastKnownPermanentComponent>()?.snapshot?.copiableCard
+            ?: return null
+        return departed.with(lastKnownCard)
+    }
+
     internal fun createTokens(
         state: GameState,
         effect: CreateTokenCopyOfTargetEffect,
@@ -168,9 +190,7 @@ class CreateTokenCopyOfTargetExecutor(
         auraHostId: EntityId?,
         prescribedHostId: EntityId? = null,
     ): EffectResult {
-        val targetId = context.resolveTarget(effect.target, state)
-            ?: return EffectResult.success(state)
-        val targetContainer = state.getEntity(targetId)
+        val targetContainer = copySource(state, effect, context)
             ?: return EffectResult.success(state)
         val targetCard = targetContainer.copiableCardComponent()
             ?: return EffectResult.success(state)

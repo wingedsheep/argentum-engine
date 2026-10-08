@@ -55,6 +55,15 @@ class FreeForAllLobbyTest : FunSpec() {
         serializersModule = engineSerializersModule
     }
 
+    /**
+     * How long to wait for anything that generates an AI seat's deck. A premade lobby builds the
+     * deck synchronously as the seat sits down — eight boosters through the Draftsim autobuilder per
+     * AI — so a wait that covers several seats is several builds long, and on a loaded CI runner
+     * that outran 15s. `eventually` returns on the first pass, so the headroom costs a green run
+     * nothing.
+     */
+    private val aiDeckTimeout = 60.seconds
+
     private val activeClients = mutableListOf<FfaTestClient>()
     private val activeContainers = mutableListOf<org.apache.tomcat.websocket.WsWebSocketContainer>()
 
@@ -308,7 +317,7 @@ class FreeForAllLobbyTest : FunSpec() {
             }
 
             repeat(3) { host.send(ClientMessage.AddAiToLobby) }
-            eventually(15.seconds) {
+            eventually(aiDeckTimeout) {
                 val players = host.latestLobbyUpdate()?.players
                 players?.size shouldBe 4
                 // Dealt at the moment they sit down: the premade start gate wants every seat to have
@@ -339,7 +348,7 @@ class FreeForAllLobbyTest : FunSpec() {
                 host.messages.any { it is ServerMessage.LobbyCreated } shouldBe true
             }
             repeat(2) { host.send(ClientMessage.AddAiToLobby) }
-            eventually(15.seconds) {
+            eventually(aiDeckTimeout) {
                 host.latestLobbyUpdate()?.players?.size shouldBe 3
             }
             // Both seats start on Auto — the rolled deck, which is what they were dealt on arrival.
@@ -374,7 +383,7 @@ class FreeForAllLobbyTest : FunSpec() {
                 playerId = untouched,
                 spec = com.wingedsheep.gameserver.lobby.AiDeckSpec.Sets(listOf("POR")),
             ))
-            eventually(15.seconds) {
+            eventually(aiDeckTimeout) {
                 val seat = host.latestLobbyUpdate()?.players?.first { it.playerId == untouched }
                 seat?.aiDeck?.kind shouldBe "sets"
                 seat?.aiDeck?.setCodes shouldBe listOf("POR")
@@ -430,11 +439,11 @@ class FreeForAllLobbyTest : FunSpec() {
             }
 
             host.send(ClientMessage.AddAiToLobby)
-            eventually(10.seconds) {
+            eventually(aiDeckTimeout) {
                 host.latestLobbyUpdate()?.players?.size shouldBe 2
             }
             val ai = host.latestLobbyUpdate()!!.players.first { it.isAi }
-            eventually(20.seconds) {
+            eventually(aiDeckTimeout) {
                 host.latestLobbyUpdate()?.players?.first { it.isAi }?.deckSubmitted shouldBe true
             }
 
@@ -471,12 +480,12 @@ class FreeForAllLobbyTest : FunSpec() {
                 host.messages.any { it is ServerMessage.LobbyCreated } shouldBe true
             }
             host.send(ClientMessage.AddAiToLobby)
-            eventually(10.seconds) {
+            eventually(aiDeckTimeout) {
                 host.latestLobbyUpdate()?.players?.size shouldBe 2
             }
 
             host.send(ClientMessage.UpdateLobbySettings(rules = "COMMANDER"))
-            eventually(20.seconds) {
+            eventually(aiDeckTimeout) {
                 host.latestLobbyUpdate()?.settings?.rules shouldBe "COMMANDER"
                 host.latestLobbyUpdate()?.players?.first { it.isAi }?.deckSubmitted shouldBe true
             }

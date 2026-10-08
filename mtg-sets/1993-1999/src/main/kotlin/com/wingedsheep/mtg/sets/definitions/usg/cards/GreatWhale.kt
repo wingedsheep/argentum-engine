@@ -8,7 +8,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.CardSource
 
 
 /**
@@ -17,6 +18,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Creature — Whale
  * 5/5
  * When this creature enters, untap up to seven lands.
+ *
+ * No "target" in the Oracle text: the lands are chosen on resolution and may be any lands,
+ * including hexproof/shroud ones — so this gathers and chooses rather than targeting.
  */
 val GreatWhale = card("Great Whale") {
     manaCost = "{5}{U}{U}"
@@ -27,8 +31,11 @@ val GreatWhale = card("Great Whale") {
     toughness = 5
     triggeredAbility {
         trigger = Triggers.self.enters()
-        targets(TargetFilter.Land, count = 7, optional = true)
-        effect = Effects.UntapEachTarget()
+        effect = Effects.Pipeline {
+            val lands = gather(CardSource.BattlefieldMatching(filter = GameObjectFilter.Land))
+            val toUntap = chooseUpTo(7, from = lands, prompt = "Choose up to seven lands to untap")
+            run(Effects.TapCollection(collection = toUntap, tap = false))
+        }
     }
     metadata {
         rarity = Rarity.RARE

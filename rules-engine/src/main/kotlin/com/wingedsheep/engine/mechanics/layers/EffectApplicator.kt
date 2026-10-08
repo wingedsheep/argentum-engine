@@ -213,6 +213,7 @@ internal class EffectApplicator(
                 }
                 is Modification.RemoveType -> {
                     values.types.remove(mod.type)
+                    values.removedCardTypes.add(mod.type)
                 }
                 is Modification.SetCreatureSubtypes -> {
                     val creatureTypes = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES.toSet()

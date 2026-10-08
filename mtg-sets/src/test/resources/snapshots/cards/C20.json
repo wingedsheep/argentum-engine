@@ -198,6 +198,72 @@
     ]
 }
 
+// Molten Echoes
+{
+    "name": "Molten Echoes",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "As this enchantment enters, choose a creature type.\nWhenever a nontoken creature you control of the chosen type enters, create a token that's a copy of that creature. That token gains haste. Exile it at the beginning of the next end step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Molten Echoes:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsNontoken",
+                            "HasChosenSubtype"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "TriggeringEntity",
+                    "addedKeywords": [
+                        "HASTE"
+                    ],
+                    "exileAtStep": "END"
+                },
+                "descriptionOverride": "Whenever a nontoken creature you control of the chosen type enters, create a token that's a copy of that creature. That token gains haste. Exile it at the beginning of the next end step."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8ca1dbc4-2177-477e-88e2-d07cefb542e4.jpg?1783931213",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "You must choose an existing creature type, such as Human or Warrior. Card types such as artifact and supertypes such as legendary can't be chosen."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the nontoken creature leaves the battlefield before Molten Echoes's triggered ability resolves, the token that's created uses the creature's last known information from before it left."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Any enters-the-battlefield abilities of the copied creature will trigger when the token enters the battlefield. Any \"As [this creature] enters the battlefield\" or \"[This creature] enters the battlefield with\" abilities of the copied creature will also work."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Nesting Grounds
 {
     "name": "Nesting Grounds",

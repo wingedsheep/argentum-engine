@@ -4696,6 +4696,77 @@
     ]
 }
 
+// Moonmist
+{
+    "name": "Moonmist",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Transform all Humans. Prevent all combat damage that would be dealt this turn by creatures other than Werewolves and Wolves. (Only double-faced cards can be transformed.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Human"
+                        }
+                    },
+                    "body": {
+                        "type": "Transform",
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "PreventDamageShield",
+                    "scope": "CombatOnly",
+                    "direction": "FromTarget",
+                    "sourceFilter": {
+                        "type": "PreventFromMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Werewolf"
+                                },
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Wolf"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "artist": "Ryan Yee",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/57153c3f-9e55-418c-b67b-36901f29f9c1.jpg?1783940913",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "Moonmist causes any double-faced Human to transform, not just Werewolves."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "Whether or not a creature is a Werewolf or a Wolf is checked only as combat damage is dealt. If the creature isn't a Werewolf or a Wolf at that time, its combat damage will be prevented."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "Moonmist will prevent combat damage dealt by a creature that isn't a Werewolf or a Wolf even if that creature wasn't on the battlefield (or was a Werewolf or a Wolf) when Moonmist resolved."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Morkrut Banshee
 {
     "name": "Morkrut Banshee",

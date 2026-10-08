@@ -288,6 +288,20 @@ class StateProjector {
             )
         }
 
+        // CR 205.1a: "If an object's card type is removed, the subtypes correlated with that card
+        // type will remain if they are also the subtypes of a card type the object currently has;
+        // otherwise, they are also removed for the entire time the object's card type is removed."
+        // Run once Layer 4 is complete, so a creature type granted later in the layer by timestamp
+        // is stripped too ("for the entire time"), while a later effect that makes the object a
+        // creature again keeps them. Creature types are shared with kindred (CR 205.3m). A Theros
+        // god below its devotion threshold is a legendary enchantment without the creature type God.
+        for (values in projectedValues.values) {
+            if ("CREATURE" !in values.removedCardTypes) continue
+            if ("CREATURE" in values.types || "KINDRED" in values.types) continue
+            values.subtypes.removeAll(creatureTypeSet)
+            values.types.removeAll(creatureTypeSet)
+        }
+
         // CR 701.54c: a player's Ring-bearer is legendary (the Ring emblem's first ability).
         // Applied here as a type-changing (Layer 4) effect, after Layer 2 control is established, so
         // it reads the *projected* controller: "is your Ring-bearer" requires the creature to still
@@ -1102,3 +1116,5 @@ class StateProjector {
 
 /** The zones "cards you own that aren't on the battlefield" reach (the stack is the spells half). */
 private val OWNED_ZONES_OUTSIDE_BATTLEFIELD = listOf(Zone.HAND, Zone.LIBRARY, Zone.GRAVEYARD, Zone.EXILE, Zone.COMMAND)
+
+private val creatureTypeSet: Set<String> = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES.toSet()

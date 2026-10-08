@@ -136,6 +136,55 @@
     ]
 }
 
+// Eidolon of Blossoms
+{
+    "name": "Eidolon of Blossoms",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Enchantment Creature — Spirit",
+    "oracleText": "Constellation — Whenever this creature or another enchantment you control enters, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eidolon of Blossoms:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Min Yum",
+        "flavorText": "The emotional echoes of dryad gatherings attract lost souls.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8dbb2112-85b9-49cf-9ed5-9273829c34f1.jpg?1783939415",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "A constellation ability triggers whenever an enchantment enters the battlefield under your control for any reason. Enchantments with other card types, such as enchantment creatures, will also cause constellation abilities to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Eidolon of Rhetoric
 {
     "name": "Eidolon of Rhetoric",

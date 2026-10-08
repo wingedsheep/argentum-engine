@@ -1355,6 +1355,49 @@
     ]
 }
 
+// Goblin Anarchomancer
+{
+    "name": "Goblin Anarchomancer",
+    "manaCost": "{R}{G}",
+    "typeLine": "Creature — Goblin Shaman",
+    "oracleText": "Each spell you cast that's red or green costs {1} less to cast.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "red|green"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "artist": "Joe Slucher",
+        "flavorText": "A good Gruul shaman can work a whole clan into a frenzy. A great one will wait until the enemy's nearby.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/633a3423-501d-4b22-95a6-743233be521e.jpg?1783926814",
+        "rulings": [
+            {
+                "date": "2021-06-18",
+                "text": "A spell that's both red and green costs {1} less to cast."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Goldmire Bridge
 {
     "name": "Goldmire Bridge",

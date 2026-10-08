@@ -2531,6 +2531,13 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   once per token. Because the choice is a mid-resolution pause, `CREATED_TOKENS` is **not** populated on the
   Aura path — branch a following step on the copied target instead (Yenna, Redtooth Regent's "if the token
   is an Aura, untap Yenna, then scry 2").
+  **A departed triggering object (CR 608.2h).** `CreateTokenCopyOfTarget(EffectTarget.TriggeringEntity)` —
+  "whenever a creature … enters, create a token that's a copy of that creature" (Molten Echoes, Necroduality) —
+  still makes its token when the creature left the battlefield before the ability resolved: it copies the
+  copiable values frozen into the creature's departure snapshot (`EntitySnapshot.copiableCard`, carried by its
+  `LastKnownPermanentComponent`), so a creature that was itself a copy is copied as what it was copying. A token
+  that left has ceased to exist and leaves nothing to copy; once the departed card changes zones again its
+  snapshot is gone and so is the copy.
   Like `CreateToken`, both `CreateTokenCopyOfTarget` and `CreateTokenCopyOfSource` publish their created token
   entity IDs to the `CREATED_TOKENS` pipeline collection, so a sibling effect in a `CompositeEffect` can address
   the new copy — e.g. Applied Geometry's "Create a token that's a copy … Put six +1/+1 counters on it" composes
@@ -8573,7 +8580,13 @@ staticAbility {
   `CardType.ARTIFACT`)
 - `GrantCardType(cardType, filter)` / `RemoveCardType(cardType, filter)` — Layer 4 type-changing statics that add or
   remove a card type (e.g. `"CREATURE"`). `RemoveCardType` backs Impending's "isn't a creature while it has a time
-  counter" (wrapped in a `ConditionalStaticAbility`); reuse it for any "it's no longer a [type]" effect.
+  counter" (wrapped in a `ConditionalStaticAbility`); reuse it for any "it's no longer a [type]" effect — the Theros
+  gods' "As long as your devotion to green is less than five, Nylea isn't a creature" is `staticAbility { condition =
+  Conditions.CompareAmounts(DynamicAmounts.devotionTo(Color.GREEN), ComparisonOperator.LT, 5); ability =
+  RemoveCardType("CREATURE", GroupFilter.source()) }` (Nylea, God of the Hunt). Removing `"CREATURE"` also strips the
+  object's creature subtypes for as long as the removal lasts unless it is still a creature or kindred (CR 205.1a — a
+  god below its threshold loses the creature type God), and an attacking or blocking creature that stops being a
+  creature is removed from combat by a state-based check (CR 506.4) and doesn't rejoin it.
   `GrantCardType` also takes `includeControlledSpells` / `includeOwnedCardsOutsideBattlefield` (default `false`), the
   card-type twin of `GrantChosenSubtype`'s flags, for "the same is true for permanent spells you control and nonland
   permanent cards you own that aren't on the battlefield" (Encroaching Mycosynth:
@@ -16290,6 +16303,11 @@ Card authors rarely reference these directly; they are created/updated by the ma
   enumerator (`CastFromZoneEnumerator`) and the cast handler (`CastSpellHandler`) read to *replace* the printed mana cost
   entirely (a 6-drop and a 2-drop both become {2}) — unlike `GrantPlayWithCostIncrease`, which adds on top. The component
   is stripped when the card leaves exile (`StackResolver`), so a recast Airbended permanent doesn't carry a stale cost.
+- **Airbend "that creature"** (untargeted — Monk Gyatso: "Whenever another creature you control becomes the target of a
+  spell or ability, you may airbend that creature.") — `Effects.AirbendTriggeringPermanent(cost = {2})`. The same exile +
+  owner-recast + "whenever you airbend" tail as `Airbend`, gathered from `CardSource.TriggeringEntity` and filtered to
+  `GameObjectFilter.Permanent.onBattlefield()` first: `TriggeringEntity` follows the card into any zone, so a creature
+  bounced or killed in response is a new object (CR 400.7) and nothing is airbent (no bend event either).
 - **Airbend a spell** (the stack branch — Aang, Swift Savior: "airbend up to one other target creature **or spell**").
   The single target is a cross-zone union — `TargetFilter.anyOf(TargetFilter.Creature, TargetFilter.SpellOnStack)` (the
   same union machinery as Sorceress's Schemes). Branch on whether the chosen target is a spell with

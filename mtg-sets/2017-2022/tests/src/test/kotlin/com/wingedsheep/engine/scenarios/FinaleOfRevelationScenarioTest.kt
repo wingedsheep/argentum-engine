@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.player.PlayerNoMaximumHandSizeCom
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 
 class FinaleOfRevelationScenarioTest : ScenarioTestBase() {
@@ -18,6 +19,7 @@ class FinaleOfRevelationScenarioTest : ScenarioTestBase() {
                 .withCardInHand(1, "Finale of Revelation")
                 .withCardInGraveyard(1, "Grizzly Bears")
                 .withLandsOnBattlefield(1, "Island", 12)
+                .withCardOnBattlefield(2, "Forest", tapped = true)
                 .withCardInLibrary(1, "Centaur Courser")
                 .withCardInLibrary(1, "Centaur Courser")
                 .withCardInLibrary(1, "Centaur Courser")
@@ -44,6 +46,9 @@ class FinaleOfRevelationScenarioTest : ScenarioTestBase() {
             game.resolveStack()
 
             val untapDecision = game.state.pendingDecision as SelectCardsDecision
+            // "Untap up to five lands" — any lands, not just yours.
+            val opponentsForest = game.findPermanent("Forest")!!
+            untapDecision.options shouldContain opponentsForest
             game.selectCards(untapDecision.options.take(5))
             game.resolveStack()
 

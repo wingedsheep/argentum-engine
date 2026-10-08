@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.grantedTriggeredAbility
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
@@ -34,7 +33,7 @@ val TeferiHeroOfDominaria = card("Teferi, Hero of Dominaria") {
             Effects.CreateDelayedTrigger(
                 step = Step.END,
                 effect = Effects.Pipeline {
-                    val lands = gather(CardSource.ControlledPermanents(Player.You, GameObjectFilter.Land))
+                    val lands = gather(CardSource.BattlefieldMatching(filter = GameObjectFilter.Land))
                     val toUntap = chooseUpTo(2, from = lands)
                     run(Effects.TapCollection(
                         collection = toUntap,

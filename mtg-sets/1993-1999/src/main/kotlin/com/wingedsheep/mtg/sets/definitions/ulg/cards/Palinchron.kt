@@ -11,7 +11,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 
@@ -23,6 +24,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Flying
  * When this creature enters, untap up to seven lands.
  * {2}{U}{U}: Return this creature to its owner's hand.
+ *
+ * No "target" in the Oracle text: the lands are chosen on resolution and may be any lands,
+ * including hexproof/shroud ones — so this gathers and chooses rather than targeting.
  */
 val Palinchron = card("Palinchron") {
     manaCost = "{5}{U}{U}"
@@ -34,8 +38,11 @@ val Palinchron = card("Palinchron") {
     keywords(Keyword.FLYING)
     triggeredAbility {
         trigger = Triggers.self.enters()
-        targets(TargetFilter.Land, count = 7, optional = true)
-        effect = Effects.UntapEachTarget()
+        effect = Effects.Pipeline {
+            val lands = gather(CardSource.BattlefieldMatching(filter = GameObjectFilter.Land))
+            val toUntap = chooseUpTo(7, from = lands, prompt = "Choose up to seven lands to untap")
+            run(Effects.TapCollection(collection = toUntap, tap = false))
+        }
     }
     activatedAbility {
         cost = Costs.Mana("{2}{U}{U}")

@@ -47,15 +47,18 @@ class GrantEvasionKeywordExecutor : EffectExecutor<GrantEvasionKeywordEffect> {
                 is Duration.Permanent -> PlayerEffectRemoval.Permanent
                 else -> PlayerEffectRemoval.EndOfTurn
             }
-            val component = when (effect.keyword) {
-                Keyword.SHROUD -> PlayerShroudComponent(removeOn = removeOn)
-                Keyword.HEXPROOF -> PlayerHexproofComponent(removeOn = removeOn)
+            // Each branch calls `with` on its concrete type: `with` is keyed by its reified type
+            // parameter, so a `when` that widened both components to `Component` stored them under
+            // the `Component` key, where neither `ControllerHexproof` nor `ControllerShroud` (nor
+            // end-of-turn cleanup) could find them — a "you gain hexproof" that did nothing.
+            val newState = when (effect.keyword) {
+                Keyword.SHROUD -> state.updateEntity(targetId) { it.with(PlayerShroudComponent(removeOn = removeOn)) }
+                Keyword.HEXPROOF -> state.updateEntity(targetId) { it.with(PlayerHexproofComponent(removeOn = removeOn)) }
                 else -> return EffectResult.error(
                     state,
                     "Keyword ${effect.keyword.displayName} cannot be granted to a player"
                 )
             }
-            val newState = state.updateEntity(targetId) { container -> container.with(component) }
             return EffectResult.success(newState)
         }
 

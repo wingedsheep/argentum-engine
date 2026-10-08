@@ -76,6 +76,44 @@
     ]
 }
 
+// Gruul War Chant
+{
+    "name": "Gruul War Chant",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Attacking creatures you control get +1/+0 and have menace.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature attacking ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE",
+                "filter": {
+                    "baseFilter": "creature attacking ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "UNCOMMON",
+        "artist": "Dave Kendall",
+        "flavorText": "\"We are the heart of the wild, the fire in its eyes, and the howl in its throat. Come, join the battle to which you were born.\"\n—Kroshkar, Gruul shaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df383a6a-5eb1-48e8-a5f3-f4731ddb871b.jpg?1783940029"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Kraul Warrior
 {
     "name": "Kraul Warrior",

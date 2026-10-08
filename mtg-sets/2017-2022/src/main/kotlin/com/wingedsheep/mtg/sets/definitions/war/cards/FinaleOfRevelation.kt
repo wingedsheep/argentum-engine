@@ -1,16 +1,14 @@
 package com.wingedsheep.mtg.sets.definitions.war.cards
 
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -41,7 +39,7 @@ val FinaleOfRevelation = card("Finale of Revelation") {
             then = Effects.Pipeline {
                 run(Patterns.Library.shuffleGraveyardIntoLibrary(EffectTarget.Controller))
                 run(Effects.DrawCards(DynamicAmounts.xValue()))
-                val lands = gather(CardSource.FromZone(Zone.BATTLEFIELD, Player.You, Filters.Land))
+                val lands = gather(CardSource.BattlefieldMatching(filter = GameObjectFilter.Land))
                 val landsToUntap = chooseUpTo(
                     5,
                     from = lands,

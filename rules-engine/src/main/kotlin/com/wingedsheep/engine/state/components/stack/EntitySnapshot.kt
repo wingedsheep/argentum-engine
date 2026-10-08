@@ -106,6 +106,13 @@ data class EntitySnapshot(
     val typeLine: TypeLine? = null,
     /** Card definition id, so dies/leaves triggers resolve for tokens after 704.5d cleanup. */
     val cardDefinitionId: String? = null,
+    /**
+     * Copiable values (CR 707.2) as the permanent last existed on the battlefield — its copy
+     * effects and face-down status applied — so an effect that copies a creature which has since
+     * left ("create a token that's a copy of that creature") copies it from last-known
+     * information (CR 608.2h). Null outside a battlefield exit.
+     */
+    val copiableCard: com.wingedsheep.engine.state.components.identity.CardComponent? = null,
     /** Effective text at departure, before zone movement ends the object's text changes. */
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)

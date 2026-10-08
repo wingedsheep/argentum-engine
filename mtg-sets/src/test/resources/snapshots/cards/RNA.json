@@ -2071,6 +2071,103 @@
     ]
 }
 
+// Guardian Project
+{
+    "name": "Guardian Project",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a nontoken creature you control enters, if it doesn't have the same name as another creature you control or a creature card in your graveyard, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Guardian Project:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "Any",
+                        "conditions": [
+                            {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "SharesNameWith",
+                                                "entity": "TriggeringEntity"
+                                            }
+                                        ]
+                                    },
+                                    "excludeTriggeringEntity": true
+                                },
+                                "operator": "GTE",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "SharesNameWith",
+                                            "entity": "TriggeringEntity"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever a nontoken creature you control enters, if it doesn't have the same name as another creature you control or a creature card in your graveyard, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "flavorText": "Simic's strength comes from its diversity.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/ccad6ce0-ddf0-458d-bdae-3d7805fdc775.jpg?1783933671",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Whether the entering creature shares a name with a creature you control or a creature card in your graveyard is checked both as that creature enters and as Guardian Project's ability resolves. If the entering creature isn't the first of its name as it enters, the ability doesn't trigger at all; if its name is shared as the ability resolves, you don't draw a card."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If the entering creature is put into your graveyard while Guardian Project's ability is on the stack, that same card will be a creature card in your graveyard that shares a name with the creature that was on the battlefield, so you won't draw a card."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "A face-down creature has no name, so it can't share a name with anything. This includes other creatures with no name."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Haazda Officer
 {
     "name": "Haazda Officer",

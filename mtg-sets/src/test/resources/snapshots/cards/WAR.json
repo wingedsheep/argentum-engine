@@ -1946,8 +1946,7 @@
                     {
                         "type": "GatherCards",
                         "source": {
-                            "type": "FromZone",
-                            "zone": "Battlefield",
+                            "type": "BattlefieldMatching",
                             "filter": "land"
                         },
                         "storeAs": "gathered2"

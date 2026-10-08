@@ -10,7 +10,8 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.CardSource
 
 
 /**
@@ -21,6 +22,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Flying
  * When this creature enters, untap up to two lands.
  * Cycling {2} ({2}, Discard this card: Draw a card.)
+ *
+ * No "target" in the Oracle text: the lands are chosen on resolution and may be any lands,
+ * including hexproof/shroud ones — so this gathers and chooses rather than targeting.
  */
 val CloudOfFaeries = card("Cloud of Faeries") {
     manaCost = "{1}{U}"
@@ -32,8 +36,11 @@ val CloudOfFaeries = card("Cloud of Faeries") {
     keywords(Keyword.FLYING)
     triggeredAbility {
         trigger = Triggers.self.enters()
-        targets(TargetFilter.Land, count = 2, optional = true)
-        effect = Effects.UntapEachTarget()
+        effect = Effects.Pipeline {
+            val lands = gather(CardSource.BattlefieldMatching(filter = GameObjectFilter.Land))
+            val toUntap = chooseUpTo(2, from = lands, prompt = "Choose up to two lands to untap")
+            run(Effects.TapCollection(collection = toUntap, tap = false))
+        }
     }
     keywordAbility(KeywordAbility.cycling("{2}"))
     metadata {

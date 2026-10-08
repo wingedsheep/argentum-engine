@@ -16,6 +16,7 @@ object SbaOrder {
     const val DURATION_EXPIRY = 240         // 611.2b ("for as long as" durations end one-way)
     const val ATTACHED_COPY_EXPIRY = 245    // 611.2b ("becomes a copy for as long as attached")
     const val CONTROL_CHANGED_COMBAT = 250  // 506.4 (controller change removes from combat)
+    const val STOPPED_BEING_CREATURE_COMBAT = 252 // 506.4 (an attacker/blocker stops being a creature)
     const val ATTACKED_PERMANENT_COMBAT = 255 // 506.4 (attacked planeswalker/battle leaves combat)
     const val ZERO_TOUGHNESS = 300          // 704.5f
     const val LETHAL_DAMAGE = 400           // 704.5g/h

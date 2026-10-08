@@ -7,6 +7,7 @@ import com.wingedsheep.engine.mechanics.sba.StateBasedActionModule
 class CreatureSbaModule(private val zones: ZoneTransitionService) : StateBasedActionModule {
     override fun checks(): List<StateBasedActionCheck> = listOf(
         ControlChangedRemovesFromCombatCheck(),
+        StoppedBeingCreatureRemovesFromCombatCheck(),
         ZeroToughnessCheck(zones),
         LethalDamageCheck(zones)
     )

@@ -116,6 +116,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithAdditionalCostEffect
 import com.wingedsheep.sdk.scripting.effects.GrantFreeCastTargetFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.FightEffect
+import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ExchangeControlEffect
@@ -1016,6 +1017,42 @@ object Effects {
         ),
         // CR 701.65b: airbending fires "whenever you airbend" only if one or more objects were
         // actually exiled (an "up to one" airbend that chose nothing exiles nothing → no bend).
+        Effects.If(
+            condition = CollectionContainsMatch("airbendExiled"),
+            then = EmitBendEventEffect(BendType.AIR)
+        )
+    ))
+
+    /**
+     * Airbend the permanent that fired the trigger — "you may airbend **that creature**" (Monk
+     * Gyatso: "Whenever another creature you control becomes the target of a spell or ability, you
+     * may airbend that creature"). The untargeted sibling of [Airbend]: the object comes from
+     * [CardSource.TriggeringEntity] instead of the chosen targets, and the same exile +
+     * fixed-[cost]-recast-to-owner + "whenever you airbend" tail follows (CR 701.65a/b).
+     *
+     * The gathered entity is kept only while it is **still a permanent on the battlefield**:
+     * `TriggeringEntity` follows the card into any zone, so a creature bounced to hand or killed in
+     * response is a new object (CR 400.7) the instruction no longer refers to — it airbends nothing,
+     * and "whenever you airbend" does not fire.
+     */
+    fun AirbendTriggeringPermanent(cost: ManaCost = AIRBEND_COST): Effect = CompositeEffect(listOf(
+        GatherCardsEffect(source = CardSource.TriggeringEntity, storeAs = "airbendTriggering"),
+        FilterCollectionEffect(
+            from = "airbendTriggering",
+            filter = GameObjectFilter.Permanent.onBattlefield(),
+            storeMatching = "airbendChosen"
+        ),
+        MoveCollectionEffect(
+            from = "airbendChosen",
+            destination = CardDestination.ToZone(Zone.EXILE),
+            storeMovedAs = "airbendExiled"
+        ),
+        GrantMayPlayFromExileEffect(
+            from = "airbendExiled",
+            expiry = MayPlayExpiry.Permanent,
+            ownerControls = true,
+            fixedAlternativeManaCost = cost
+        ),
         Effects.If(
             condition = CollectionContainsMatch("airbendExiled"),
             then = EmitBendEventEffect(BendType.AIR)
