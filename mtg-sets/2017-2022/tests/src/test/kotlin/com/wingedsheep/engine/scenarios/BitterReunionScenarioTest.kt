@@ -43,6 +43,28 @@ class BitterReunionScenarioTest : ScenarioTestBase() {
             game.handSize(1) shouldBe 2
         }
 
+        test("declining the discard draws nothing") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardInHand(1, "Bitter Reunion")
+                .withCardInHand(1, "Grizzly Bears")
+                .withLandsOnBattlefield(1, "Mountain", 2)
+                .withCardInLibrary(1, "Mountain")
+                .withCardInLibrary(1, "Mountain")
+                .withCardInLibrary(2, "Mountain")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(1, "Bitter Reunion").error shouldBe null
+            game.resolveStack()
+            game.answerYesNo(false)
+            game.resolveStack()
+
+            game.isInHand(1, "Grizzly Bears") shouldBe true
+            game.handSize(1) shouldBe 1
+        }
+
         test("sacrificing it gives creatures you control haste") {
             val game = scenario()
                 .withPlayers("Player1", "Player2")

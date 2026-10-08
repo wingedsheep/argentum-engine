@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -46,6 +47,7 @@ class GnawingVerminScenarioTest : ScenarioTestBase() {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardOnBattlefield(1, "Gnawing Vermin")
+                    .withCardOnBattlefield(1, "Glory Seeker")
                     .withCardOnBattlefield(2, "Grizzly Bears")
                     .withCardInHand(1, "Lightning Bolt")
                     .withLandsOnBattlefield(1, "Mountain", 1)
@@ -58,9 +60,9 @@ class GnawingVerminScenarioTest : ScenarioTestBase() {
 
                 game.castSpell(1, "Lightning Bolt", vermin).error shouldBe null
                 game.resolveStack()
-                if (game.hasPendingDecision()) {
-                    game.selectTargets(listOf(bears))
-                }
+                val decision = game.state.pendingDecision as ChooseTargetsDecision
+                decision.legalTargets.values.flatten().toSet() shouldBe setOf(bears)
+                game.selectTargets(listOf(bears)).error shouldBe null
                 game.resolveStack()
 
                 withClue("Gnawing Vermin died") {

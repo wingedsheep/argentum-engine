@@ -31,5 +31,24 @@ class EmergencyWeldScenarioTest : ScenarioTestBase() {
             game.isInHand(1, "Ornithopter") shouldBe true
             game.findPermanents("Soldier Token").size shouldBe 1
         }
+
+        test("returns a non-artifact creature card too") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardInHand(1, "Emergency Weld")
+                .withCardInGraveyard(1, "Grizzly Bears")
+                .withLandsOnBattlefield(1, "Swamp", 2)
+                .withCardInLibrary(1, "Swamp")
+                .withCardInLibrary(2, "Swamp")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val target = game.findCardsInGraveyard(1, "Grizzly Bears")
+            game.castSpellTargetingGraveyardCard(1, "Emergency Weld", target).error shouldBe null
+            game.resolveStack()
+
+            game.isInHand(1, "Grizzly Bears") shouldBe true
+        }
     }
 }

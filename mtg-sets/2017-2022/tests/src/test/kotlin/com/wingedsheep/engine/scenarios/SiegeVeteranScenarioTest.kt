@@ -20,7 +20,7 @@ class SiegeVeteranScenarioTest : ScenarioTestBase() {
             .withCardOnBattlefield(1, "Siege Veteran")
             .withCardOnBattlefield(1, "Air Marshal")
             .withCardOnBattlefield(1, "Grizzly Bears")
-            .withLandsOnBattlefield(1, "Mountain", 1)
+            .withLandsOnBattlefield(1, "Mountain", 2)
         hand.forEach { builder.withCardInHand(1, it) }
         return builder
             .withCardInLibrary(1, "Plains")
@@ -54,6 +54,19 @@ class SiegeVeteranScenarioTest : ScenarioTestBase() {
             val tokens = game.findAllPermanents("Soldier Token")
             tokens shouldHaveSize 1
             game.state.projectedState.hasType(tokens.single(), "ARTIFACT") shouldBe true
+        }
+
+        test("a Soldier token dying creates no token") {
+            val game = game("Lightning Bolt", "Lightning Bolt")
+            val marshal = game.findPermanent("Air Marshal")!!
+            game.castSpell(1, "Lightning Bolt", marshal).error shouldBe null
+            game.resolveStack()
+            val token = game.findAllPermanents("Soldier Token").single()
+
+            game.castSpell(1, "Lightning Bolt", token).error shouldBe null
+            game.resolveStack()
+
+            game.findAllPermanents("Soldier Token") shouldHaveSize 0
         }
 
         test("a non-Soldier dying creates no token") {

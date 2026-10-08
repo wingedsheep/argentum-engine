@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
@@ -34,9 +35,9 @@ class AeronautCavalryScenarioTest : ScenarioTestBase() {
             val marshal = game.findPermanent("Air Marshal")!!
             game.castSpell(1, "Aeronaut Cavalry").error shouldBe null
             game.resolveStack()
-            if (game.hasPendingDecision()) {
-                game.selectTargets(listOf(marshal)).error shouldBe null
-            }
+            val decision = game.state.pendingDecision as ChooseTargetsDecision
+            decision.legalTargets.values.flatten().toSet() shouldBe setOf(marshal)
+            game.selectTargets(listOf(marshal)).error shouldBe null
             game.resolveStack()
 
             game.plusOnes(marshal) shouldBe 1

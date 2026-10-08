@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -46,6 +47,7 @@ class ThraxodemonScenarioTest : ScenarioTestBase() {
 
             game.isInGraveyard(1, "Ornithopter") shouldBe true
             game.state.getBattlefield().contains(demon) shouldBe true
+            game.state.getEntity(demon)!!.has<TappedComponent>() shouldBe true
             game.handSize(1) shouldBe handBefore + 1
         }
 

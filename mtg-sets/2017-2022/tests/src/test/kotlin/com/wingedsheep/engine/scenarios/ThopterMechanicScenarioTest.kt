@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.matchers.shouldBe
@@ -55,7 +56,12 @@ class ThopterMechanicScenarioTest : ScenarioTestBase() {
             game.resolveStack()
 
             game.isInGraveyard(1, "Thopter Mechanic") shouldBe true
-            game.findPermanent("Thopter Token") shouldNotBe null
+            val thopter = game.findPermanent("Thopter Token")
+            thopter shouldNotBe null
+            game.state.projectedState.hasKeyword(thopter!!, Keyword.FLYING) shouldBe true
+            game.state.projectedState.hasType(thopter, "ARTIFACT") shouldBe true
+            game.state.projectedState.getPower(thopter) shouldBe 1
+            game.state.projectedState.getToughness(thopter) shouldBe 1
         }
     }
 }
