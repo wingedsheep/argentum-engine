@@ -40,7 +40,7 @@ class GiselaTheBrokenBladeScenarioTest : ScenarioTestBase() {
             game.state.projectedState.getToughness(brisela) shouldBe 10
         }
 
-        test("without Bruna, nothing happens at your end step") {
+        test("with Bruna under an opponent's control, the end-step trigger doesn't fire") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")
                 .withCardOnBattlefield(1, "Gisela, the Broken Blade")
@@ -50,6 +50,9 @@ class GiselaTheBrokenBladeScenarioTest : ScenarioTestBase() {
                 .build()
 
             game.passUntilPhase(Phase.ENDING, Step.END)
+            withClue("the intervening-if fails, so the trigger never goes on the stack") {
+                game.state.stack shouldBe emptyList()
+            }
             game.resolveStack()
 
             game.findPermanent("Gisela, the Broken Blade").shouldNotBeNull()

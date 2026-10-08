@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.MeldedComponent
 import com.wingedsheep.sdk.scripting.effects.TurnFaceDownEffect
 import kotlin.reflect.KClass
 
@@ -33,8 +34,8 @@ class TurnFaceDownExecutor : EffectExecutor<TurnFaceDownEffect> {
         val container = state.getEntity(targetId)
             ?: return EffectResult.error(state, "Target entity not found")
 
-        // Already face-down — nothing to do
-        if (container.has<FaceDownComponent>()) {
+        // Already face-down — nothing to do. A melded permanent can't be turned face down (CR 712.16).
+        if (container.has<FaceDownComponent>() || container.has<MeldedComponent>()) {
             return EffectResult.success(state)
         }
 

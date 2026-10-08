@@ -686,16 +686,11 @@ class ZoneTransitionService(
         }
 
         // CR 712.21: a melded permanent that leaves the battlefield is one permanent leaving and two
-        // cards arriving. Turn the host back into its own front face here, before the copy revert
-        // and the strip below; the partner card follows it into the destination zone once the host
-        // has landed (step 7b'').
+        // cards arriving. The host turns back into its own front face after the copy revert below;
+        // the partner card follows it into the destination zone once the host has landed (step 7b'').
         val melded = if (leavingBattlefield) {
             newState.getEntity(entityId)?.get<com.wingedsheep.engine.state.components.identity.MeldedComponent>()
         } else null
-        if (melded != null) {
-            newState = com.wingedsheep.engine.handlers.effects.permanent.types
-                .separateMeldedHost(newState, cardRegistry, entityId, melded)
-        }
 
         // Strip battlefield components and remove floating effects AFTER removal
         if (leavingBattlefield) {
@@ -752,6 +747,12 @@ class ZoneTransitionService(
             val originalCardComponent = copyOf?.originalCardComponent
             if (originalCardComponent != null) {
                 newState = newState.updateEntity(entityId) { c -> c.without<FlippedComponent>().withCopyIdentity(originalCardComponent, cardRegistry) }
+            }
+            // After the copy revert: a copy effect on the melded permanent snapshotted the meld
+            // result as its "original", so only the host's own front face is its printed identity.
+            if (melded != null) {
+                newState = com.wingedsheep.engine.handlers.effects.permanent.types
+                    .separateMeldedHost(newState, cardRegistry, entityId, melded)
             }
 
             newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }

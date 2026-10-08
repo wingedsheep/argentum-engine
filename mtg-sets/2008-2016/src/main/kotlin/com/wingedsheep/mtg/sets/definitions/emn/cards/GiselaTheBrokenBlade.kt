@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Gisela, the Broken Blade
@@ -19,8 +20,8 @@ import com.wingedsheep.sdk.model.Rarity
  * At the beginning of your end step, if you both own and control Gisela and a creature named
  * Bruna, the Fading Light, exile them, then meld them into Brisela, Voice of Nightmares.
  *
- * The "you control a creature named Bruna" half of the intervening "if" is the trigger condition;
- * the ownership half is checked by [Effects.Meld] as it resolves (CR 701.42).
+ * The whole intervening "if" — own and control both — is the trigger condition, so a stolen
+ * Gisela or Bruna doesn't trigger at all; [Effects.Meld] checks it again as it resolves.
  */
 val GiselaTheBrokenBlade = card("Gisela, the Broken Blade") {
     manaCost = "{2}{W}{W}"
@@ -36,7 +37,10 @@ val GiselaTheBrokenBlade = card("Gisela, the Broken Blade") {
 
     triggeredAbility {
         trigger = Triggers.you.beginningOf(Step.END)
-        interveningIf = Conditions.YouControl(Filters.Creature.named("Bruna, the Fading Light"))
+        interveningIf = Conditions.All(
+            Conditions.SourceMatches(GameObjectFilter.Any.ownedByYou().youControl()),
+            Conditions.YouControl(Filters.Creature.named("Bruna, the Fading Light").ownedByYou())
+        )
         effect = Effects.Meld(Filters.Creature.named("Bruna, the Fading Light"), into = "Brisela, Voice of Nightmares")
     }
 

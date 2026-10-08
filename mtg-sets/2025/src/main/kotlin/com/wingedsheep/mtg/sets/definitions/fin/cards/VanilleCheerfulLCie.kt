@@ -24,9 +24,8 @@ import com.wingedsheep.sdk.scripting.references.Player
  * Fang, Fearless l'Cie, you may pay {3}{B}{G}. If you do, exile them, then meld them into Ragnarok,
  * Divine Deliverance.
  *
- * The meld trigger: "your first main phase" is the precombat main step. The "you control a creature
- * named Fang" half of the intervening "if" is the trigger condition; the ownership half is checked
- * by [Effects.Meld] as it resolves (CR 701.42). "You may pay {3}{B}{G}. If you do" is [Effects.MayPay]
+ * The meld trigger: "your first main phase" is the precombat main step. The whole intervening "if" — own
+ * and control both — is the trigger condition, so a stolen Vanille or Fang never offers the payment. "You may pay {3}{B}{G}. If you do" is [Effects.MayPay]
  * gating the meld into [RagnarokDivineDeliverance] (paired with [FangFearlessLCie]).
  *
  * The ETB is a mandatory two-step: mill two ([Patterns.Library.mill]) so freshly-milled permanents
@@ -65,7 +64,10 @@ val VanilleCheerfulLCie = card("Vanille, Cheerful l'Cie") {
 
     triggeredAbility {
         trigger = Triggers.you.beginningOf(Step.PRECOMBAT_MAIN)
-        interveningIf = Conditions.YouControl(Filters.Creature.named("Fang, Fearless l'Cie"))
+        interveningIf = Conditions.All(
+            Conditions.SourceMatches(GameObjectFilter.Any.ownedByYou().youControl()),
+            Conditions.YouControl(Filters.Creature.named("Fang, Fearless l'Cie").ownedByYou())
+        )
         effect = Effects.MayPay(
             ManaCost.parse("{3}{B}{G}"),
             then = Effects.Meld(Filters.Creature.named("Fang, Fearless l'Cie"), into = "Ragnarok, Divine Deliverance")

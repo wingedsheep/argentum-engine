@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Graf Rats
@@ -16,8 +17,8 @@ import com.wingedsheep.sdk.model.Rarity
  * At the beginning of combat on your turn, if you both own and control this creature and a
  * creature named Midnight Scavengers, exile them, then meld them into Chittering Host.
  *
- * The "you control a creature named Midnight Scavengers" half of the intervening "if" is the
- * trigger condition; the ownership half is checked by [Effects.Meld] as it resolves (CR 701.42).
+ * The whole intervening "if" — own and control both — is the trigger condition, so a stolen
+ * piece doesn't trigger at all; [Effects.Meld] checks it again as it resolves.
  */
 val GrafRats = card("Graf Rats") {
     manaCost = "{1}{B}"
@@ -31,7 +32,10 @@ val GrafRats = card("Graf Rats") {
 
     triggeredAbility {
         trigger = Triggers.you.beginningOf(Step.BEGIN_COMBAT)
-        interveningIf = Conditions.YouControl(Filters.Creature.named("Midnight Scavengers"))
+        interveningIf = Conditions.All(
+            Conditions.SourceMatches(GameObjectFilter.Any.ownedByYou().youControl()),
+            Conditions.YouControl(Filters.Creature.named("Midnight Scavengers").ownedByYou())
+        )
         effect = Effects.Meld(Filters.Creature.named("Midnight Scavengers"), into = "Chittering Host")
     }
 

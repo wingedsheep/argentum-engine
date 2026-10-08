@@ -2531,18 +2531,29 @@
                     "into": "Brisela, Voice of Nightmares"
                 },
                 "interveningIf": {
-                    "type": "Exists",
-                    "player": "You",
-                    "zone": "Battlefield",
-                    "filter": {
-                        "cardPredicates": [
-                            "IsCreature",
-                            {
-                                "type": "NameEquals",
-                                "name": "Bruna, the Fading Light"
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "ctrl:you"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NameEquals",
+                                        "name": "Bruna, the Fading Light"
+                                    }
+                                ],
+                                "controllerPredicate": "OwnedByYou"
                             }
-                        ]
-                    }
+                        }
+                    ]
                 }
             }
         ]
@@ -2657,10 +2668,20 @@
                     "into": "Chittering Host"
                 },
                 "interveningIf": {
-                    "type": "Exists",
-                    "player": "You",
-                    "zone": "Battlefield",
-                    "filter": "creature name:Midnight Scavengers"
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "ctrl:you"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature name:Midnight Scavengers own:you"
+                        }
+                    ]
                 }
             }
         ]

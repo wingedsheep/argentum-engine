@@ -14547,6 +14547,10 @@
         "BLACK",
         "GREEN"
     ],
+    "colorIndicator": [
+        "BLACK",
+        "GREEN"
+    ],
     "hasNoManaCost": true,
     "meldResult": true,
     "meldParts": [
@@ -24766,18 +24770,29 @@
                     }
                 },
                 "interveningIf": {
-                    "type": "Exists",
-                    "player": "You",
-                    "zone": "Battlefield",
-                    "filter": {
-                        "cardPredicates": [
-                            "IsCreature",
-                            {
-                                "type": "NameEquals",
-                                "name": "Fang, Fearless l'Cie"
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "ctrl:you"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NameEquals",
+                                        "name": "Fang, Fearless l'Cie"
+                                    }
+                                ],
+                                "controllerPredicate": "OwnedByYou"
                             }
-                        ]
-                    }
+                        }
+                    ]
                 }
             }
         ]

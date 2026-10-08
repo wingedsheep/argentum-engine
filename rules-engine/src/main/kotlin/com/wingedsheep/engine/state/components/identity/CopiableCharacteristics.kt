@@ -28,6 +28,8 @@ fun ComponentContainer.copiableCardComponent(): CardComponent? {
             imageUri = mode?.helperCardImageUri,
         )
     }
+    // CR 712.8g: a copy of a melded permanent has mana value 0, not the summed front faces'.
+    if (has<MeldedComponent>()) return card.copy(manaValueOverride = null)
     return get<FlippedComponent>()?.unflippedCard ?: card
 }
 

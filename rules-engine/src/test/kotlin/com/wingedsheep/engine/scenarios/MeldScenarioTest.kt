@@ -6,7 +6,9 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.MeldedComponent
+import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -153,6 +155,44 @@ class MeldScenarioTest : ScenarioTestBase() {
             game.meld()
             val melded = game.findPermanent("Test Meld Result")!!
             game.state.getEntity(melded)!!.get<CardComponent>()!!.manaValue shouldBe 5
+        }
+
+        test("CR 712.8g: a copy of a melded permanent has mana value 0") {
+            val game = board().withCardOnBattlefield(1, "Test Meld Partner").build()
+            game.meld()
+            val melded = game.findPermanent("Test Meld Result")!!
+            game.state.getEntity(melded)!!.copiableCardComponent()!!.manaValue shouldBe 0
+        }
+
+        test("CR 701.42b: with a token copy and the real partner, the real card is the one melded") {
+            val game = board()
+                .withCardOnBattlefield(1, "Test Meld Partner", isToken = true)
+                .withCardOnBattlefield(1, "Test Meld Partner")
+                .build()
+            game.meld()
+            game.findPermanent("Test Meld Result").shouldNotBeNull()
+            withClue("the token is untouched") { game.findPermanent("Test Meld Partner").shouldNotBeNull() }
+        }
+
+        test("CR 712.21: a melded permanent that became a copy still leaves as its two front faces") {
+            val game = board()
+                .withCardOnBattlefield(1, "Test Meld Partner")
+                .withCardInHand(1, "Test Meld Destroy")
+                .build()
+            game.meld()
+            val melded = game.findPermanent("Test Meld Result")!!
+            // A "becomes a copy" effect snapshots the meld result as the permanent's original identity.
+            val resultCard = game.state.getEntity(melded)!!.get<CardComponent>()!!
+            game.state = game.state.updateEntity(melded) {
+                it.with(CopyOfComponent(resultCard.cardDefinitionId, "Test Meld Partner", resultCard))
+            }
+
+            game.castSpell(1, "Test Meld Destroy", targetId = melded).error shouldBe null
+            game.resolveStack()
+
+            game.isInGraveyard(1, "Test Meld Host") shouldBe true
+            game.isInGraveyard(1, "Test Meld Partner") shouldBe true
+            game.isInGraveyard(1, "Test Meld Result") shouldBe false
         }
 
         test("nothing happens without a partner") {

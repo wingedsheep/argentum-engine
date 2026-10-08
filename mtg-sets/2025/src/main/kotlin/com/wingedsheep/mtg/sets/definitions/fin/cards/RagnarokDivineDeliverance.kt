@@ -32,6 +32,7 @@ val RagnarokDivineDeliverance = card("Ragnarok, Divine Deliverance") {
     manaCost = ""
     meldOf("Fang, Fearless l'Cie", "Vanille, Cheerful l'Cie")
     colorIdentity = "BG"
+    colorIndicator = "BG"
     typeLine = "Legendary Creature — Beast Avatar"
     power = 7
     toughness = 6

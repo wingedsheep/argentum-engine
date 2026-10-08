@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.MeldedComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -118,6 +119,30 @@ class VanilleCheerfulLCieScenarioTest : ScenarioTestBase() {
             game.state.getEntity(ragnarok)!!.has<MeldedComponent>() shouldBe true
             game.state.projectedState.getPower(ragnarok) shouldBe 7
             game.state.projectedState.getToughness(ragnarok) shouldBe 6
+        }
+
+        test("a Fang you control but don't own: the trigger never offers the payment") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Vanille, Cheerful l'Cie")
+                .withCardOnBattlefield(2, "Fang, Fearless l'Cie")
+                .withLandsOnBattlefield(1, "Swamp", 3)
+                .withLandsOnBattlefield(1, "Forest", 2)
+                .withCardInLibrary(1, "Forest")
+                .withCardInLibrary(1, "Forest")
+                .withActivePlayer(1)
+                .inPhase(Phase.BEGINNING, Step.UPKEEP)
+                .build()
+            val fang = game.findPermanent("Fang, Fearless l'Cie")!!
+            game.state = game.state.updateEntity(fang) { it.with(ControllerComponent(game.player1Id)) }
+
+            game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+
+            withClue("the intervening-if fails, so nothing goes on the stack and no payment is offered") {
+                game.state.stack shouldBe emptyList()
+                game.getPendingDecision() shouldBe null
+            }
+            game.findPermanent("Ragnarok, Divine Deliverance") shouldBe null
         }
 
         test("declining the payment leaves Vanille and Fang on the battlefield") {

@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.MeldEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
 /**
@@ -41,6 +42,8 @@ class MeldEffectExecutor(
     override fun execute(state: GameState, effect: MeldEffect, context: EffectContext): EffectResult {
         val you = context.controllerId
         val sourceId = context.sourceId ?: return EffectResult.success(state)
+        // CR 400.7: a meld card that left and came back is a new object the ability can't find.
+        if (context.isUnavailableBattlefieldSource(EffectTarget.Self, state)) return EffectResult.success(state)
         val projected = state.projectedState
         val battlefield = state.getBattlefield()
 
@@ -50,10 +53,13 @@ class MeldEffectExecutor(
 
         if (!ownedAndControlledByYou(sourceId)) return EffectResult.success(state)
         val predicateContext = PredicateContext.fromEffectContext(context)
-        val partnerId = battlefield.firstOrNull { id ->
+        // Of several matching partners, prefer a non-token card — the one that can actually meld
+        // (CR 701.42b); a token copy is only chosen when it's the sole candidate.
+        val partnerId = battlefield.filter { id ->
             id != sourceId && ownedAndControlledByYou(id) &&
                 zones.predicateEvaluator.matches(state, projected, id, effect.partner, predicateContext)
-        } ?: return EffectResult.success(state)
+        }.minByOrNull { id -> if (state.getEntity(id)?.has<TokenComponent>() == true) 1 else 0 }
+            ?: return EffectResult.success(state)
 
         // "…exile them" — together, as one event.
         val exiled = zones.moveToZoneBatch(state, listOf(sourceId, partnerId), Zone.EXILE)
