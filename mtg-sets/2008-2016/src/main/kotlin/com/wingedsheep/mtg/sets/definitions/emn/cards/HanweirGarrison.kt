@@ -14,8 +14,8 @@ import com.wingedsheep.sdk.model.Rarity
  * Whenever this creature attacks, create two 1/1 red Human creature tokens that are tapped and
  * attacking.
  *
- * Melds with Hanweir Battlements. Meld is out of scope, so only the printed attack trigger is
- * implemented. The tapped-and-attacking tokens use [CreateTokenEffect] with `tapped`/`attacking`
+ * Melds with Hanweir Battlements — the meld ability lives on the Battlements (CR 712.4a). The
+ * tapped-and-attacking tokens use [CreateTokenEffect] with `tapped`/`attacking`
  * (Warren Warleader family).
  */
 val HanweirGarrison = card("Hanweir Garrison") {

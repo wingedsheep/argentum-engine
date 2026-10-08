@@ -96,6 +96,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.types.SetCreatureSubtyp
 import com.wingedsheep.engine.handlers.effects.permanent.types.SetGroupCreatureSubtypesExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.SetLandTypeExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.ExileAndReturnTransformedExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.types.MeldEffectExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.ReturnSelfFromExileTransformedExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.ReturnSelfFromZoneTransformedExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.TransformEffectExecutor
@@ -203,6 +204,7 @@ class PermanentExecutors(
         ReturnSelfFromExileTransformedExecutor(zones, cardRegistry),
         ReturnSelfFromZoneTransformedExecutor(zones, cardRegistry),
         ExileAndReturnTransformedExecutor(zones, cardRegistry),
+        MeldEffectExecutor(zones, cardRegistry),
         TurnFaceDownExecutor(),
         TurnFaceUpExecutor(cardRegistry),
         RevealFaceDownPermanentExecutor(),

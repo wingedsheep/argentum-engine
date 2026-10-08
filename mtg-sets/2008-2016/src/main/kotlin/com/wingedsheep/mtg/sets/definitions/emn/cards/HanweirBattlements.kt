@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.emn.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.TimingRule
@@ -13,9 +14,11 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Land
  * {T}: Add {C}.
  * {R}, {T}: Target creature gains haste until end of turn.
+ * {3}{R}{R}, {T}: If you both own and control this land and a creature named Hanweir Garrison,
+ * exile them, then meld them into Hanweir, the Writhing Township.
  *
- * Meld is not yet supported by the engine. As with Hanweir Garrison and the other
- * Eldritch Moon meld cards, the printed meld ability remains in [oracleText] but is not wired.
+ * The meld ability has no timing restriction; with no Garrison (or one you don't own) it
+ * resolves and does nothing (CR 701.42).
  */
 val HanweirBattlements = card("Hanweir Battlements") {
     manaCost = ""
@@ -38,6 +41,13 @@ val HanweirBattlements = card("Hanweir Battlements") {
         val creature = target(TargetFilter.Creature)
         effect = Effects.GrantKeyword(Keyword.HASTE, creature)
         description = "{R}, {T}: Target creature gains haste until end of turn."
+    }
+
+    activatedAbility {
+        cost = Costs.Composite(Costs.Mana("{3}{R}{R}"), Costs.Tap)
+        effect = Effects.Meld(Filters.Creature.named("Hanweir Garrison"), into = "Hanweir, the Writhing Township")
+        description = "{3}{R}{R}, {T}: If you both own and control this land and a creature named Hanweir " +
+            "Garrison, exile them, then meld them into Hanweir, the Writhing Township."
     }
 
     metadata {

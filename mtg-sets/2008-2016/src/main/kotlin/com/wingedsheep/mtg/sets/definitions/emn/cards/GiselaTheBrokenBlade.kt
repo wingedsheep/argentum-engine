@@ -1,8 +1,14 @@
 package com.wingedsheep.mtg.sets.definitions.emn.cards
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Conditions
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Filters
+import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Gisela, the Broken Blade
@@ -11,9 +17,11 @@ import com.wingedsheep.sdk.model.Rarity
  * 4/3
  *
  * Flying, first strike, lifelink
+ * At the beginning of your end step, if you both own and control Gisela and a creature named
+ * Bruna, the Fading Light, exile them, then meld them into Brisela, Voice of Nightmares.
  *
- * Meld is not yet supported by the engine. As with Bruna, the Fading Light and the other
- * Eldritch Moon meld cards, the printed meld trigger remains in [oracleText] but is not wired.
+ * The whole intervening "if" — own and control both — is the trigger condition, so a stolen
+ * Gisela or Bruna doesn't trigger at all; [Effects.Meld] checks it again as it resolves.
  */
 val GiselaTheBrokenBlade = card("Gisela, the Broken Blade") {
     manaCost = "{2}{W}{W}"
@@ -26,6 +34,15 @@ val GiselaTheBrokenBlade = card("Gisela, the Broken Blade") {
     toughness = 3
 
     keywords(Keyword.FLYING, Keyword.FIRST_STRIKE, Keyword.LIFELINK)
+
+    triggeredAbility {
+        trigger = Triggers.you.beginningOf(Step.END)
+        interveningIf = Conditions.All(
+            Conditions.SourceMatches(GameObjectFilter.Any.ownedByYou().youControl()),
+            Conditions.YouControl(Filters.Creature.named("Bruna, the Fading Light").ownedByYou())
+        )
+        effect = Effects.Meld(Filters.Creature.named("Bruna, the Fading Light"), into = "Brisela, Voice of Nightmares")
+    }
 
     metadata {
         rarity = Rarity.MYTHIC

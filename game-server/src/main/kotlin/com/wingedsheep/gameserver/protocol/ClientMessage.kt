@@ -519,6 +519,16 @@ sealed interface ClientMessage {
     @SerialName("ping")
     data object Ping : ClientMessage
 
+    /**
+     * Which top-level page the client is showing (`home`, `deckbuilder`, `profile`, …), sent on
+     * every client-side route change. Admin-only telemetry for the Live games view: the server
+     * already knows when a player is in a game, lobby, or queue, but not when they're editing decks
+     * or reading the help. Never echoed to other players.
+     */
+    @Serializable
+    @SerialName("reportActivity")
+    data class ReportActivity(val page: String) : ClientMessage
+
     // =========================================================================
     // Quick Game Lobby Messages
     // =========================================================================

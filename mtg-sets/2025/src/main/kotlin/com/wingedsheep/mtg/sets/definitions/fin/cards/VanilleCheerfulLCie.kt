@@ -1,7 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.fin.cards
 
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -20,11 +24,9 @@ import com.wingedsheep.sdk.scripting.references.Player
  * Fang, Fearless l'Cie, you may pay {3}{B}{G}. If you do, exile them, then meld them into Ragnarok,
  * Divine Deliverance.
  *
- * MELD OMITTED: meld is a blocked mechanic in this engine (see Brisela, Voice of Nightmares and the
- * partner card [FangFearlessLCie], which likewise omits its meld linkage). Following that precedent,
- * Vanille is authored with only its enters-the-battlefield ability; the meld trigger is intentionally
- * not wired. The meld result, [RagnarokDivineDeliverance], is still defined as a standalone card so it
- * exists in the corpus for when meld is supported.
+ * The meld trigger: "your first main phase" is the precombat main step. The whole intervening "if" — own
+ * and control both — is the trigger condition, so a stolen Vanille or Fang never offers the payment. "You may pay {3}{B}{G}. If you do" is [Effects.MayPay]
+ * gating the meld into [RagnarokDivineDeliverance] (paired with [FangFearlessLCie]).
  *
  * The ETB is a mandatory two-step: mill two ([Patterns.Library.mill]) so freshly-milled permanents
  * become eligible, then a resolution-time choice of one permanent card in your graveyard to move to
@@ -58,6 +60,18 @@ val VanilleCheerfulLCie = card("Vanille, Cheerful l'Cie") {
         }
         description = "When Vanille enters, mill two cards, then return a permanent card from your " +
             "graveyard to your hand."
+    }
+
+    triggeredAbility {
+        trigger = Triggers.you.beginningOf(Step.PRECOMBAT_MAIN)
+        interveningIf = Conditions.All(
+            Conditions.SourceMatches(GameObjectFilter.Any.ownedByYou().youControl()),
+            Conditions.YouControl(Filters.Creature.named("Fang, Fearless l'Cie").ownedByYou())
+        )
+        effect = Effects.MayPay(
+            ManaCost.parse("{3}{B}{G}"),
+            then = Effects.Meld(Filters.Creature.named("Fang, Fearless l'Cie"), into = "Ragnarok, Divine Deliverance")
+        )
     }
 
     metadata {

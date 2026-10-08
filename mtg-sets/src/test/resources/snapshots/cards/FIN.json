@@ -14547,8 +14547,16 @@
         "BLACK",
         "GREEN"
     ],
+    "colorIndicator": [
+        "BLACK",
+        "GREEN"
+    ],
     "hasNoManaCost": true,
-    "meldResult": true
+    "meldResult": true,
+    "meldParts": [
+        "Fang, Fearless l'Cie",
+        "Vanille, Cheerful l'Cie"
+    ]
 }
 
 // Random Encounter
@@ -24730,6 +24738,62 @@
                     ]
                 },
                 "descriptionOverride": "When Vanille enters, mill two cards, then return a permanent card from your graveyard to your hand."
+            },
+            {
+                "id": "Vanille, Cheerful l'Cie:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "PRECOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{3}{B}{G}"
+                        }
+                    },
+                    "then": {
+                        "type": "Meld",
+                        "partner": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NameEquals",
+                                    "name": "Fang, Fearless l'Cie"
+                                }
+                            ]
+                        },
+                        "into": "Ragnarok, Divine Deliverance"
+                    }
+                },
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "ctrl:you"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NameEquals",
+                                        "name": "Fang, Fearless l'Cie"
+                                    }
+                                ],
+                                "controllerPredicate": "OwnedByYou"
+                            }
+                        }
+                    ]
+                }
             }
         ]
     },

@@ -94,8 +94,9 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
      * The card is a **double-faced card** (CR 712.1) — it has a card face on each side rather than a
      * Magic card back. True for both kinds the engine models: nonmodal ("transforming") DFCs, whose
      * back face is reached by transforming, and modal DFCs, either face of which can be cast. CR
-     * 712.1 names a third kind, meld cards; meld is unmodelled by design, so nothing answers `true`
-     * here on that account.
+     * 712.1 names a third kind, meld cards; their parts are authored as single-faced cards (the
+     * combined back face is the meld result's own definition, see `MeldEffect`), so nothing
+     * answers `true` here on that account.
      *
      * Like [HasAdventure] this is a printed layout characteristic of the **whole card**, not of the
      * face that happens to be up, so it reads the same in every zone and stays true after the card

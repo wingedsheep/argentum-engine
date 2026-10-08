@@ -14,15 +14,14 @@ import com.wingedsheep.sdk.model.Rarity
  * Whenever Hanweir attacks, create two 3/2 colorless Eldrazi Horror creature tokens that are
  * tapped and attacking.
  *
- * This is a meld result (Hanweir Garrison + Hanweir Battlements). Meld is out of scope, so Hanweir
- * is authored as a normal colorless legendary creature with its printed abilities. The
- * tapped-and-attacking tokens use [CreateTokenEffect] with `tapped`/`attacking`.
- * `meldResult = true` keeps it out of booster, draft and deckbuilding pools — it's only ever
- * created by melding the pair.
+ * This is a meld result (Hanweir Garrison + Hanweir Battlements); Hanweir Battlements' activated
+ * ability melds the pair into it (CR 701.42). The tapped-and-attacking tokens use
+ * [CreateTokenEffect] with `tapped`/`attacking`. `meldOf` declares the pair the meld effect checks
+ * and keeps Hanweir out of booster, draft and deckbuilding pools — it's only ever created by melding.
  */
 val HanweirTheWrithingTownship = card("Hanweir, the Writhing Township") {
     manaCost = ""
-    meldResult = true
+    meldOf("Hanweir Garrison", "Hanweir Battlements")
     colorIdentity = ""
     typeLine = "Legendary Creature — Eldrazi Ooze"
     power = 7

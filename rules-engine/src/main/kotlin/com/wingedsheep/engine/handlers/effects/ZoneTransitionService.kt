@@ -685,6 +685,13 @@ class ZoneTransitionService(
             )
         }
 
+        // CR 712.21: a melded permanent that leaves the battlefield is one permanent leaving and two
+        // cards arriving. The host turns back into its own front face after the copy revert below;
+        // the partner card follows it into the destination zone once the host has landed (step 7b'').
+        val melded = if (leavingBattlefield) {
+            newState.getEntity(entityId)?.get<com.wingedsheep.engine.state.components.identity.MeldedComponent>()
+        } else null
+
         // Strip battlefield components and remove floating effects AFTER removal
         if (leavingBattlefield) {
             // Capture LinkedExileComponent BEFORE stripping so LTB triggers (e.g. Seam Rip's
@@ -740,6 +747,12 @@ class ZoneTransitionService(
             val originalCardComponent = copyOf?.originalCardComponent
             if (originalCardComponent != null) {
                 newState = newState.updateEntity(entityId) { c -> c.without<FlippedComponent>().withCopyIdentity(originalCardComponent, cardRegistry) }
+            }
+            // After the copy revert: a copy effect on the melded permanent snapshotted the meld
+            // result as its "original", so only the host's own front face is its printed identity.
+            if (melded != null) {
+                newState = com.wingedsheep.engine.handlers.effects.permanent.types
+                    .separateMeldedHost(newState, cardRegistry, entityId, melded)
             }
 
             newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
@@ -964,6 +977,22 @@ class ZoneTransitionService(
                 newState = newState.updateEntity(entityId) { c ->
                     c.without<FlippedComponent>().withCopyIdentity(flipped.unflippedCard, cardRegistry)
                 }
+            }
+        }
+
+        // 7b''. CR 712.21: the melded permanent's other card goes to the same zone, front face up.
+        // It was never an object on the battlefield of its own, so it gets no ZoneChangeEvent —
+        // the host's event is the one permanent leaving. Shuffles after the host's own placement,
+        // so a shuffle-into-library melded permanent mixes both cards in.
+        if (melded != null) {
+            val partnerOwner = newState.getEntity(melded.partnerId)?.get<CardComponent>()?.ownerId ?: ownerId
+            val partnerZone = ZoneKey(partnerOwner, actualDestZone)
+            newState = when (actualDestZone) {
+                Zone.LIBRARY -> placeInLibrary(newState, melded.partnerId, partnerZone, effectiveLibraryPlacement)
+                Zone.EXILE -> newState.addToZone(partnerZone, melded.partnerId).updateEntity(melded.partnerId) { c ->
+                    c.with(com.wingedsheep.engine.state.components.identity.ExiledFromZoneComponent(fromZone))
+                }
+                else -> newState.addToZone(partnerZone, melded.partnerId)
             }
         }
 

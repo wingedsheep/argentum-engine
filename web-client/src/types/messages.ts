@@ -2170,6 +2170,7 @@ export type ClientMessage =
   | RequestResyncMessage
   // Liveness
   | PingMessage
+  | ReportActivityMessage
   // Quick Game Lobby Messages
   | CreateQuickGameLobbyMessage
   | JoinQuickGameLobbyMessage
@@ -2774,6 +2775,16 @@ export interface RequestResyncMessage {
  */
 export interface PingMessage {
   readonly type: 'ping'
+}
+
+/** The top-level page this client shows (`home`, `deckbuilder`, …) — admin-only telemetry. */
+export interface ReportActivityMessage {
+  readonly type: 'reportActivity'
+  readonly page: string
+}
+
+export function createReportActivityMessage(page: string): ReportActivityMessage {
+  return { type: 'reportActivity', page }
 }
 
 // Lobby Message Factories
