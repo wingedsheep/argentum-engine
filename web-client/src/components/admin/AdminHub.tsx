@@ -17,7 +17,7 @@ interface HubItem {
 
 const ITEMS: HubItem[] = [
   { area: 'stats', icon: '📊', title: 'Stats', description: 'Global activity, decks, cards, win rates and geography.' },
-  { area: 'live', icon: '🟢', title: 'Live games', description: 'Games and tournaments running right now — check before maintenance, or watch any game.' },
+  { area: 'live', icon: '🟢', title: 'Live games', description: 'Who is online and what they are doing, plus every game and tournament running — check before maintenance, or watch any game.' },
   { area: 'activity', icon: '🏆', title: 'Activity', description: 'Recent games and tournaments across every player — click through to replays and standings.' },
   { area: 'players', icon: '👥', title: 'Players', description: 'Registered accounts, their games, and admin access.' },
 ]

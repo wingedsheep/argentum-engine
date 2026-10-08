@@ -26,7 +26,9 @@ class GameWebSocketHandler(
     private val postGameService: com.wingedsheep.gameserver.social.PostGameService,
     private val emoteService: com.wingedsheep.gameserver.social.EmoteService,
     private val sender: MessageSender,
-    private val llmTournamentService: com.wingedsheep.gameserver.tournament.llm.LlmTournamentService
+    private val llmTournamentService: com.wingedsheep.gameserver.tournament.llm.LlmTournamentService,
+    private val sessionRegistry: com.wingedsheep.gameserver.session.SessionRegistry,
+    private val activityTracker: com.wingedsheep.gameserver.activity.PlayerActivityTracker,
 ) : TextWebSocketHandler() {
 
     private val logger = LoggerFactory.getLogger(GameWebSocketHandler::class.java)
@@ -160,6 +162,14 @@ class GameWebSocketHandler(
                 is ClientMessage.PostGameAddFriend,
                 is ClientMessage.PostGameBlock,
                 is ClientMessage.PostGameLeave -> postGameService.handle(session, clientMessage)
+
+                // Admin telemetry only — recorded below with every other message.
+                is ClientMessage.ReportActivity -> {}
+            }
+            // After dispatch, so a Connect has registered the identity it names. A liveness ping
+            // is the client's own heartbeat, not something the player did.
+            if (clientMessage !is ClientMessage.Ping) {
+                sessionRegistry.getIdentityByWsId(session.id)?.let { activityTracker.onMessage(it, clientMessage) }
             }
         } catch (e: Exception) {
             logger.error("Error handling message from ${session.id}", e)

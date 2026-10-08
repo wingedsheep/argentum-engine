@@ -1,5 +1,7 @@
 package com.wingedsheep.gameserver.controller
 
+import com.wingedsheep.gameserver.activity.PlayerActivityResolver
+import com.wingedsheep.gameserver.activity.PlayerActivityTracker
 import com.wingedsheep.gameserver.auth.AdminAuthService
 import com.wingedsheep.gameserver.lobby.LobbyState
 import com.wingedsheep.gameserver.repository.GameRepository
@@ -17,7 +19,9 @@ import java.time.Instant
  * Admin view of what the server is doing *right now*: every game session in memory (public or not,
  * AI or human) and every tournament lobby past its waiting room. Answers "is this a good moment for
  * maintenance?" and gives each game a session id the dashboard can spectate through the ordinary
- * `/?spectate=` deep link. Read-only; auth through [AdminAuthService]. Unlike the stats endpoints it
+ * `/?spectate=` deep link. Also lists every online player with what they're doing — playing,
+ * drafting, waiting in a lobby, searching, editing decks — via [PlayerActivityResolver], and a short
+ * feed of recent moves from [PlayerActivityTracker]. Read-only; auth through [AdminAuthService]. Unlike the stats endpoints it
  * needs no database, so it's mounted whether or not accounts are enabled.
  */
 @RestController
@@ -27,6 +31,8 @@ class AdminLiveGamesController(
     private val gameRepository: GameRepository,
     private val lobbyRepository: LobbyRepository,
     private val sessionRegistry: SessionRegistry,
+    private val activityResolver: PlayerActivityResolver,
+    private val activityTracker: PlayerActivityTracker,
 ) {
 
     data class SeatDto(val name: String, val isAi: Boolean, val connected: Boolean, val life: Int?)
@@ -67,11 +73,33 @@ class AdminLiveGamesController(
         val totalRounds: Int?,
     )
 
+    data class OnlinePlayerDto(
+        val name: String,
+        val signedIn: Boolean,
+        /** A [PlayerActivityResolver.Kind] name. */
+        val activity: String,
+        val detail: String,
+        val gameSessionId: String?,
+        /** Matchmaking queue being searched beside the main activity, if any. */
+        val searching: String?,
+        val searchingSince: String?,
+        /** Last page the client reported (`home`, `deckbuilder`, …). */
+        val page: String?,
+        val pageSince: String?,
+        /** Last message other than a page report or heartbeat — a click, a pick, a game action. */
+        val lastInputAt: String?,
+    )
+
+    data class FeedEntryDto(val at: String, val playerName: String, val signedIn: Boolean, val kind: String, val text: String)
+
     data class LiveOverviewDto(
         val generatedAt: String,
         val onlinePlayers: Int,
         val games: List<LiveGameDto>,
         val lobbies: List<LiveLobbyDto>,
+        val players: List<OnlinePlayerDto>,
+        /** Recent player moves, newest first. In memory only — empty after a restart. */
+        val feed: List<FeedEntryDto>,
     )
 
     @GetMapping
@@ -128,15 +156,34 @@ class AdminLiveGamesController(
             }
             .sortedByDescending { it.connectedHumans }
 
-        val onlinePlayers = sessionRegistry.getAllIdentities()
-            .count { !it.isAi && it.webSocketSession?.isOpen == true }
+        val identities = sessionRegistry.getAllIdentities()
+        activityTracker.retainOnly(identities.mapTo(HashSet()) { it.token })
+        val online = identities.filter { !it.isAi && it.webSocketSession?.isOpen == true }
+        val players = online.map { identity ->
+            val p = activityResolver.resolve(identity)
+            OnlinePlayerDto(
+                name = p.name,
+                signedIn = p.signedIn,
+                activity = p.activity.kind.name,
+                detail = p.activity.detail,
+                gameSessionId = p.activity.gameSessionId,
+                searching = p.searching,
+                searchingSince = p.searchingSince?.toString(),
+                page = p.page,
+                pageSince = p.pageSince?.toString(),
+                lastInputAt = p.lastInputAt?.toString(),
+            )
+        }.sortedWith(compareBy<OnlinePlayerDto> { PlayerActivityResolver.Kind.valueOf(it.activity).ordinal }.thenBy { it.name.lowercase() })
+        val feed = activityTracker.recentFeed().map { FeedEntryDto(it.at.toString(), it.playerName, it.signedIn, it.kind, it.text) }
 
         ResponseEntity.ok(
             LiveOverviewDto(
                 generatedAt = Instant.now().toString(),
-                onlinePlayers = onlinePlayers,
+                onlinePlayers = online.size,
                 games = games,
                 lobbies = lobbies,
+                players = players,
+                feed = feed,
             )
         )
     }

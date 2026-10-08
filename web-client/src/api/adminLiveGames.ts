@@ -48,11 +48,53 @@ export interface LiveLobby {
   readonly totalRounds: number | null
 }
 
+/** What an online player is doing — the server's `PlayerActivityResolver.Kind`, in precedence order. */
+export type ActivityKind =
+  | 'PLAYING'
+  | 'SPECTATING'
+  | 'DRAFTING'
+  | 'BUILDING_LIMITED'
+  | 'TOURNAMENT'
+  | 'LOBBY'
+  | 'SEARCHING'
+  | 'DECKBUILDER'
+  | 'BROWSING'
+  | 'HOME'
+
+export interface OnlinePlayer {
+  readonly name: string
+  readonly signedIn: boolean
+  readonly activity: ActivityKind
+  /** Server-written sentence: "Drafting · Bloomburrow · pack 2, 17 picked". */
+  readonly detail: string
+  /** The game to watch, when seated in or spectating one. */
+  readonly gameSessionId: string | null
+  /** Matchmaking queue searched beside the main activity, e.g. while in a practice game. */
+  readonly searching: string | null
+  readonly searchingSince: string | null
+  readonly page: string | null
+  readonly pageSince: string | null
+  /** Last real input (click, pick, game action) — not a page report or heartbeat. */
+  readonly lastInputAt: string | null
+}
+
+export interface ActivityFeedEntry {
+  readonly at: string
+  readonly playerName: string
+  readonly signedIn: boolean
+  /** connect, lobby, deck, queue, watch, game, page. */
+  readonly kind: string
+  readonly text: string
+}
+
 export interface LiveOverview {
   readonly generatedAt: string
   readonly onlinePlayers: number
   readonly games: LiveGame[]
   readonly lobbies: LiveLobby[]
+  readonly players: OnlinePlayer[]
+  /** Newest first; in memory only, so empty right after a server restart. */
+  readonly feed: ActivityFeedEntry[]
 }
 
 export async function fetchLiveOverview(auth: AdminAuth): Promise<LiveOverview> {

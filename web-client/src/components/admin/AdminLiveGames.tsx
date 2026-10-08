@@ -4,7 +4,9 @@
  * good moment for maintenance?": the headline counts the games and lobbies a restart would interrupt,
  * and each game shows how long ago someone last acted in it. Any started game can be watched in a new
  * tab through the ordinary `/?spectate=` deep link (as an ephemeral spectator the seated players see in
- * their watcher list).
+ * their watcher list). Above the games, every online player with what they're doing — playing,
+ * drafting, in a lobby, searching, in the deckbuilder — and a feed of recent moves
+ * ({@link OnlinePlayersPanel}, {@link ActivityFeedPanel}).
  *
  * Polls every {@link REFRESH_MS}; read-only and gated behind the dashboard's shared {@link AdminAuth}.
  */
@@ -12,7 +14,8 @@ import { useCallback, useEffect, useState } from 'react'
 import type React from 'react'
 import { type LiveGame, type LiveLobby, type LiveOverview, fetchLiveOverview } from '@/api/adminLiveGames'
 import type { AdminAuth } from '@/api/adminAuth'
-import { gameModeLabel } from './statFormat'
+import { formatAgo, formatClock, gameModeLabel } from './statFormat'
+import { ActivityFeedPanel, OnlinePlayersPanel } from './AdminOnlinePlayers'
 import { AdminScreen, Panel, StatCard, Table, adminTheme, cellStyle } from './adminUi'
 
 const REFRESH_MS = 10_000
@@ -70,6 +73,15 @@ export function AdminLiveGames({ auth, onBack }: { auth: AdminAuth; onBack: () =
             <StatCard label="…active in last 5 min" value={activeWithHumans.length} />
             <StatCard label="No connected human" value={aiOnly.length} />
             <StatCard label="Running tournaments" value={busyLobbies.length} />
+          </div>
+
+          <div style={styles.activityRow}>
+            <div style={styles.playersCol}>
+              <OnlinePlayersPanel players={overview.players} now={now} />
+            </div>
+            <div style={styles.feedCol}>
+              <ActivityFeedPanel feed={overview.feed} now={now} />
+            </div>
           </div>
 
           <Panel
@@ -208,22 +220,12 @@ function prettyStep(step: string | null): string {
   return step ? prettyToken(step) : '—'
 }
 
-/** A duration as its largest unit or two: 45s, 12m, 1h 05m. */
-function formatAgo(ms: number): string {
-  const s = Math.max(0, Math.round(ms / 1000))
-  if (s < 60) return `${s}s`
-  const m = Math.floor(s / 60)
-  if (m < 60) return `${m}m`
-  const h = Math.floor(m / 60)
-  return `${h}h ${String(m % 60).padStart(2, '0')}m`
-}
-
-function formatClock(iso: string): string {
-  return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-}
-
 const styles: Record<string, React.CSSProperties> = {
   error: { color: adminTheme.bad, fontSize: 13, margin: '0 0 12px' },
+  // Players take the width; the feed sits beside them on a wide screen and drops below on a narrow one.
+  activityRow: { display: 'flex', flexWrap: 'wrap', gap: 18, marginBottom: 18, alignItems: 'flex-start' },
+  playersCol: { flex: '2 1 480px', minWidth: 0 },
+  feedCol: { flex: '1 1 280px', minWidth: 0 },
   metrics: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 18 },
   verdict: {
     display: 'flex',
