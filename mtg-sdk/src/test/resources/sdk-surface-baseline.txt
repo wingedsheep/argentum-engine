@@ -1625,6 +1625,7 @@ WardCost.PlayerCounters — WardCost
 WardCost.Sacrifice — WardCost
 
 [added]
+DynamicAmount.ManaOfColorSpent — DynamicAmount — Bladecoil Serpent — ManaSpentOnX, SnowManaSpent — ManaSpentOnX reads only the {X} portion, from the resolution context (it also serves activated abilities); SnowManaSpent/ManaSpentFromSubtype count mana by its source, not its color
 GrantHexproofFromToGroup — StaticAbility — Dragonfire Blade — GrantHexproofFromOwnColorsToGroup, GrantProtectionFromChosenColorToGroup — replaces the Monocolored/Multicolored pair with a ProtectionScope axis; OwnColors' quality varies per creature (a scope can't say "its own colors") and ChosenColor reads a chosen-color component and grants protection, not hexproof
 MeldEffect — Effect — Titania, Voice of Gaea — ExileAndReturnTransformedEffect, ReturnSelfFromZoneTransformedEffect — both move one double-faced object and return it on a face of its own card; meld exiles two separate cards and returns them as one object whose characteristics come from a third definition (the meld result), with a pair check (CR 701.42b/c) neither has an axis for
 ProtectionScope.Monocolored — ProtectionScope — Dragonfire Blade — ProtectionScope.Multicolored, ProtectionScope.Colors — the quality GrantHexproofFromToGroup needed; Multicolored is its complement and Colors(all five) would also match multicolored objects, so neither says "exactly one color"

@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CastRecordComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -32,6 +33,22 @@ object ManaSpentReader {
             return intArrayOf(it.whiteSpent, it.blueSpent, it.blackSpent, it.redSpent, it.greenSpent)
         }
         return IntArray(5)
+    }
+
+    /**
+     * How much mana of [color] was spent to cast [entityId], across the whole cost (generic and
+     * `{X}` included). Backs `DynamicAmount.ManaOfColorSpent`.
+     */
+    fun colorSpent(state: GameState, entityId: EntityId, color: Color): Int =
+        coloredBuckets(state, entityId)[color.ordinal]
+
+    /** [colorSpent] read off a frozen [snapshot] (a cast trigger's own payment record). */
+    fun colorSpent(snapshot: CastRecordComponent, color: Color): Int = when (color) {
+        Color.WHITE -> snapshot.whiteSpent
+        Color.BLUE -> snapshot.blueSpent
+        Color.BLACK -> snapshot.blackSpent
+        Color.RED -> snapshot.redSpent
+        Color.GREEN -> snapshot.greenSpent
     }
 
     /** Colorless mana actually spent, including payment of generic costs. */

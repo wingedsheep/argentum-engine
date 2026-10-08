@@ -189,6 +189,7 @@ class DynamicAmountEvaluator(
         DynamicAmount.LastKnownDamageDealtToSource,
         is DynamicAmount.LastKnownSourceCounters,
         is DynamicAmount.LifeTotal,
+        is DynamicAmount.ManaOfColorSpent,
         is DynamicAmount.ManaSpentFromSubtype,
         DynamicAmount.SnowManaSpent,
         is DynamicAmount.ManaSpentOnX,
@@ -310,6 +311,13 @@ class DynamicAmountEvaluator(
 
             is DynamicAmount.ManaSpentFromSubtype ->
                 context.sourceId?.let { ManaSpentReader.subtypeSpent(state, it, amount.subtype) } ?: 0
+
+            // Same snapshot-then-entity read as SnowManaSpent: a cast trigger outlives the spell.
+            is DynamicAmount.ManaOfColorSpent -> context.sourceId?.let { sourceId ->
+                context.triggerContext?.takeIf { it.triggeringEntityId == sourceId }?.selfCastManaSpent
+                    ?.let { ManaSpentReader.colorSpent(it, amount.color) }
+                    ?: ManaSpentReader.colorSpent(state, sourceId, amount.color)
+            } ?: 0
 
             // A cast trigger carries its own payment snapshot (it outlives the spell object);
             // otherwise the source's stack component or cast record holds it.

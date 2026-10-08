@@ -1617,7 +1617,7 @@ this path, with blocker filters evaluated against projected state.
 - `Discard(count, target)` — controller-of-target chooses; mandatory. `count` is an `Int` or a
   `DynamicAmount` ("discard X cards, where X is …" — e.g. Converge's Arcane Omens with
   `DynamicAmounts.colorsOfManaSpent()`).
-- `EachOpponentDiscards(count)` — each opponent discards N.
+- `EachOpponentDiscards(count)` — each opponent discards N; `count` may be an `Int` or a `DynamicAmount` read at resolution (Bladecoil Serpent: `manaOfColorSpent(Color.BLACK) / 2`).
 - `EachPlayerDiscards(count)` — each player, *including you*, discards N, each choosing from their own hand — Rankle's Prank. Symmetric twin of `EachOpponentDiscards`: same `ForEachPlayer` → Gather → Select → Move pipeline, but iterated over `Player.ActivePlayerFirst` so the choices happen in APNAP order (CR 101.4). Known deviation: iterations run one after another, so a later player chooses after an earlier player's cards have already hit the graveyard, where the rules would have every player choose face down (CR 101.4a) and discard simultaneously.
 - `EachPlayerPutsCardsOnTopOfLibrary(count = 1)` — each player, *including you*, puts N cards from their own hand on top of their own library, each choosing their own — Sadistic Augermage. `EachPlayerDiscards` with the destination swapped for `ZonePlacement.Top` of the iterated player's library, so it is a tuck rather than a discard (`MoveType.Default`, feeding no discard trigger). Same APNAP iteration and same sequential-iteration deviation.
 - `EachOpponentExilesFromHand(count)` — each opponent exiles N cards from their own hand (each chooses their own). Same `ForEachPlayer(EachOpponent)` → Gather → Select → Move pipeline as `EachOpponentDiscards`, but the destination is exile — Mindleech Ghoul.
@@ -13471,6 +13471,13 @@ forbids `DynamicAmount.X` in card definitions.
   `CastRecordComponent` afterward), so it reads correctly both at resolution and as the permanent enters
   (the common use: feeding `EntersWithDynamicCounters`). Facade: `DynamicAmounts.colorsOfManaSpent()`.
   A permanent put onto the battlefield without being cast spent no mana, so this is 0 for it.
+- `ManaOfColorSpent(color)` — how much mana of one `color` was spent to cast the current spell, across
+  the whole cost (generic and `{X}` included, unlike `ManaSpentOnX`). "**For each {U}{U} spent to cast
+  it**" (The Brothers' War — Bladecoil Serpent, Clay Champion) is this halved, rounded down:
+  `DynamicAmounts.manaOfColorSpent(Color.BLUE) / 2`. Same source-entity read as `SnowManaSpent` (a cast
+  trigger's own payment snapshot first), so it resolves on the stack, as the permanent enters
+  (`EntersWithDynamicCounters`) and in its enters trigger; 0 for a permanent that wasn't cast. For a
+  yes/no "if {W}{W} was spent" use the `ManaSpentToCastIncludes` condition instead.
 - `ManaSpentFromSubtype(subtype)` — how many mana units produced by a source with `subtype` were spent
   to cast the current spell. Bat Colony's "create a 1/1 black Bat with flying **for each mana from a
   Cave spent to cast it**" is `ManaSpentFromSubtype(Subtype.CAVE)`. Like `DistinctColorsManaSpent`, it

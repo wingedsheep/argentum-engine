@@ -325,6 +325,7 @@ class CreateDelayedTriggerExecutor(
         DynamicAmount.LastKnownDamageDealtToSource,
         is DynamicAmount.LastKnownSourceCounters,
         is DynamicAmount.LifeTotal,
+        is DynamicAmount.ManaOfColorSpent,
         is DynamicAmount.ManaSpentFromSubtype,
         DynamicAmount.SnowManaSpent,
         is DynamicAmount.ManaSpentOnX,
