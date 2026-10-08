@@ -12640,7 +12640,7 @@ answer it and would silently return `false`.
   reading the seat's real starting total (20 / 30 / 40 / 2HG) rather than a hardcoded 20. `n = 1` is the
   plain "greater than your starting life total" reading. Elenda, Saint of Dusk gates her two stat tiers on
   `LifeAboveStartingBy(1)` and `LifeAboveStartingBy(10)`.
-- `APlayerLifeAtMost(n)` — *some* player in the game has ≤N life (existential over `state.turnOrder`; distinct from `LifeAtMost`, which is `Player.You`). Used by enters-tapped-unless lands like Razortrap Gorge.
+- `APlayerLifeAtMost(n)` — *some* player in the game has ≤N life: `Compare(LeastAmongPlayers(Each, LifeTotal(You)), LTE, n)` (distinct from `LifeAtMost`, which is `Player.You`). Used by enters-tapped-unless lands like Razortrap Gorge.
 - `Conditions.EachPlayerLifeAtMost(n)` — every player still in the game has ≤N life: a facade for
   `Compare(GreatestAmongPlayers(Player.Each, LifeTotal(Player.You)), LTE, Fixed(n))`. Used by Cryptolith
   Fragment's intervening-if upkeep trigger.

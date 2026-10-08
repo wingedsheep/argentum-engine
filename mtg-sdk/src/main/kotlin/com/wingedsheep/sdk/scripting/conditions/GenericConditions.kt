@@ -319,26 +319,6 @@ data class NumberMatches(
  * Exists(Player.You, Zone.HAND, negate = true)
  * ```
  */
-/**
- * Condition: some player in the game has [threshold] or less life.
- *
- * Existential quantifier over all players in turn order — distinct from
- * [Compare] of `DynamicAmount.LifeTotal(player)`, which resolves to a single
- * player's life and can't express "any player" / "some player" cleanly. The
- * engine iterates `state.turnOrder` and returns true as soon as one player's
- * life total is at most [threshold].
- *
- * Used by cards like Razortrap Gorge ("this land enters tapped unless a
- * player has 13 or less life").
- *
- * @property threshold The maximum life total at which the condition is true.
- */
-@SerialName("APlayerLifeAtMost")
-@Serializable
-data class APlayerLifeAtMost(val threshold: Int) : Condition {
-    override val description: String = "a player has $threshold or less life"
-}
-
 @SerialName("Exists")
 @Serializable
 data class Exists(

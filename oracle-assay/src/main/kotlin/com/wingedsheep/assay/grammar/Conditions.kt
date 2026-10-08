@@ -7,7 +7,6 @@ import com.wingedsheep.assay.syntax.oneOf
 import com.wingedsheep.assay.syntax.phrase
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.conditions.APlayerLifeAtMost
 import com.wingedsheep.sdk.scripting.conditions.AnyCondition
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.Compare
@@ -401,7 +400,7 @@ object Conditions {
     /**
      * "A player has 13 or less life" — the Duskmourn lands' shared condition.
      *
-     * `APlayerLifeAtMost` is the whole clause, so the only slot is the threshold, and it reads
+     * `Conditions.APlayerLifeAtMost` is the whole clause, so the only slot is the threshold, and it reads
      * digits: Oracle spells a life total as a numeral where it spells a count of permanents as a
      * word. The two leaves are not interchangeable in either direction, which is the distinction
      * [Cardinals] exists to keep.
@@ -461,7 +460,8 @@ object Conditions {
             slot("n", Primitives.cardinal)
             build { SdkConditions.APlayerLifeAtMost(it.int("n")) }
             match { value ->
-                val threshold = (value as? APlayerLifeAtMost)?.threshold ?: return@match null
+                val compare = value as? Compare ?: return@match null
+                val threshold = (compare.right as? DynamicAmount.Fixed)?.amount ?: return@match null
                 if (value != SdkConditions.APlayerLifeAtMost(threshold)) return@match null
                 bind("n" to threshold)
             }

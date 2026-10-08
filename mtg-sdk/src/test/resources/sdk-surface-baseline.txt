@@ -153,9 +153,7 @@ CardPredicate.ManaValueIsOdd — CardPredicate
 CardPredicate.NameEquals — CardPredicate
 CardPredicate.NameEqualsChosen — CardPredicate
 CardPredicate.NameEqualsChosenComponent — CardPredicate
-CardPredicate.NameNotSharedWithAnotherControlledPermanent — CardPredicate
 CardPredicate.NameNotSharedWithControlledRoom — CardPredicate
-CardPredicate.NameNotSharedWithControlledToken — CardPredicate
 CardPredicate.Not — CardPredicate
 CardPredicate.NotColor — CardPredicate
 CardPredicate.NotKeyword — CardPredicate
@@ -164,13 +162,11 @@ CardPredicate.NotSubtype — CardPredicate
 CardPredicate.Or — CardPredicate
 CardPredicate.OriginallyPrintedInSet — CardPredicate
 CardPredicate.PowerAtLeast — CardPredicate
-CardPredicate.PowerAtLeastX — CardPredicate
 CardPredicate.PowerAtMost — CardPredicate
 CardPredicate.PowerAtMostDynamic — CardPredicate
 CardPredicate.PowerAtMostEntity — CardPredicate
 CardPredicate.PowerEquals — CardPredicate
 CardPredicate.PowerEqualsDynamic — CardPredicate
-CardPredicate.PowerEqualsX — CardPredicate
 CardPredicate.PowerGreaterThanBase — CardPredicate
 CardPredicate.PowerGreaterThanEntity — CardPredicate
 CardPredicate.PowerLessThanEntity — CardPredicate
@@ -194,7 +190,6 @@ CardPredicate.TargetsPlayer — CardPredicate
 CardPredicate.TotalPowerAndToughnessAtMost — CardPredicate
 CardPredicate.ToughnessAtLeast — CardPredicate
 CardPredicate.ToughnessAtMost — CardPredicate
-CardPredicate.ToughnessAtMostX — CardPredicate
 CardPredicate.ToughnessEquals — CardPredicate
 CardPredicate.ToughnessEqualsDynamic — CardPredicate
 CardPredicate.ToughnessGreaterThanPower — CardPredicate
@@ -233,9 +228,7 @@ CollectionFilter.GreatestPower — CollectionFilter
 CollectionFilter.LeastToughness — CollectionFilter
 CollectionFilter.SharesSubtypeWithSacrificed — CollectionFilter
 APlayerControlsMostOfSubtype — Condition
-APlayerLifeAtMost — Condition
 AllConditions — Condition
-AnOpponentLifeAtMost — Condition
 AnotherPermanentWithSameNameAsTarget — Condition
 AnyCondition — Condition
 AnyEnteredOrWasCastFromExile — Condition
@@ -255,7 +248,6 @@ CounterPutOnPermanentYouControlledThisTurn — Condition
 CounterRemovedFromPermanentYouControlledThisTurn — Condition
 CreatureDiedThisTurnCondition — Condition
 CreatureWithSubtypeDiedThisTurn — Condition
-EachPlayerLifeAtMost — Condition
 EnchantedCreatureHasSubtype — Condition
 EnchantedCreatureIsLegendary — Condition
 EntityMatches — Condition
@@ -322,10 +314,8 @@ TargetMarkedDamageExceedsToughness — Condition
 TargetSharesMostCommonColor — Condition
 ThisAbilityActivatedThisTurnAtLeast — Condition
 TriggeringEntityEnteredOrWasCastFromGraveyard — Condition
-TriggeringEntityHadCardType — Condition
 TriggeringEntityHadCounters — Condition
 TriggeringEntityHadMinusOneMinusOneCounter — Condition
-TriggeringEntityHadSubtype — Condition
 TriggeringEntityWasCast — Condition
 TriggeringEntityWasHistoric — Condition
 TriggeringEntityWasNotPutByThisSource — Condition
@@ -875,9 +865,7 @@ SetLandTypeEffect — Effect
 SetLifeTotalEffect — Effect
 ShuffleLibraryEffect — Effect
 SkipCombatPhasesEffect — Effect
-SkipNextDrawStepEffect — Effect
 SkipNextTurnEffect — Effect
-SkipNextUntapStepEffect — Effect
 SkipStepOrPhaseThisTurnEffect — Effect
 SkipUntapEffect — Effect
 StoreCardNameEffect — Effect
@@ -1504,8 +1492,6 @@ GrantColor — StaticAbility
 GrantDynamicStats — StaticAbility
 GrantEmergeToOwnSpells — StaticAbility
 GrantFlashToSpellType — StaticAbility
-GrantHexproofFromMonocoloredToGroup — StaticAbility
-GrantHexproofFromMulticoloredToGroup — StaticAbility
 GrantHexproofFromOwnColorsToGroup — StaticAbility
 GrantHexproofToController — StaticAbility
 GrantKeyword — StaticAbility
@@ -1594,8 +1580,6 @@ SetEnchantedLandTypeFromChosen — StaticAbility
 SetLandTypesForGroup — StaticAbility
 SetMaximumHandSize — StaticAbility
 SetName — StaticAbility
-SkipDrawStep — StaticAbility
-SkipUntapStep — StaticAbility
 SpendAnyManaTypeForActivatedAbilities — StaticAbility
 SpendAnyManaTypeForSpells — StaticAbility
 SpendManaAsColor — StaticAbility
@@ -1644,3 +1628,8 @@ WardCost.PlayerCounters — WardCost
 WardCost.Sacrifice — WardCost
 
 [added]
+GrantHexproofFromToGroup — StaticAbility — Niv-Mizzet, Guildpact — GrantHexproofFromOwnColorsToGroup, GrantProtectionFromChosenColorToGroup — replaces the Monocolored/Multicolored pair with a ProtectionScope axis; OwnColors' quality varies per creature (a scope can't say "its own colors") and ChosenColor reads a chosen-color component and grants protection, not hexproof
+ProtectionScope.Monocolored — ProtectionScope — Dragonfire Blade — ProtectionScope.Multicolored, ProtectionScope.Colors — the quality GrantHexproofFromToGroup needed; Multicolored is its complement and Colors(all five) would also match multicolored objects, so neither says "exactly one color"
+SkipNextStepOrPhaseEffect — Effect — Fasting — SkipStepOrPhaseThisTurnEffect, SkipNextTurnEffect — replaces SkipNextDrawStep/SkipNextUntapStep with a TurnPart axis; ThisTurn is a standing skip of every instance until end of turn rather than a one-shot marker consumed by the next instance (and supports different parts), and SkipNextTurn skips a whole turn
+SkipStepOrPhase — StaticAbility — Stasis — SkipNextStepOrPhaseEffect, UntapLimitPerStep — replaces SkipUntapStep/SkipDrawStep with a TurnPart axis; the effect is a one-shot resolution-time marker while this is a standing static read every turn, and UntapLimitPerStep limits what untaps in a step that still happens
+TriggeringEntityWas — Condition — Infernal Vessel — EntityMatches, SacrificedPermanentHadSubtype — replaces TriggeringEntityHadSubtype/HadCardType with a filter; EntityMatches(TriggeringEntity) reads the card in its new zone, not its last-known types (Infernal Vessel would loop), and SacrificedPermanentHadSubtype reads the sacrifice-cost snapshot, not the trigger's

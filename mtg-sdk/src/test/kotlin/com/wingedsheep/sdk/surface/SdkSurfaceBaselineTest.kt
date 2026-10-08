@@ -37,10 +37,10 @@ class SdkSurfaceBaselineTest : FunSpec({
                 for (key in missing.sorted()) {
                     val leaf = current.getValue(key)
                     appendLine()
-                    appendLine("${leaf.name}(${leaf.fields.joinToString()})  [${leaf.family}]")
+                    appendLine("${signature(leaf)}  [${leaf.family}]")
                     val neighbours = SdkSurface.neighbours(leaf)
                     if (neighbours.isEmpty()) appendLine("    no neighbour shares a field or a name word")
-                    for ((other, _) in neighbours) appendLine("    ~ ${other.name}(${other.fields.joinToString()})")
+                    for ((other, _) in neighbours) appendLine("    ~ ${signature(other)}")
                     val closest = neighbours.take(2).joinToString(", ") { it.first.simpleName }.ifEmpty { "<Closest1>, <Closest2>" }
                     appendLine("  line: ${leaf.name} — ${leaf.family} — <first card> — $closest — <why neither can take the axis>")
                 }
@@ -74,6 +74,9 @@ class SdkSurfaceBaselineTest : FunSpec({
         }
     }
 })
+
+private fun signature(leaf: SdkSurface.Leaf) =
+    if (leaf.fields.isEmpty()) leaf.name else "${leaf.name}(${leaf.fields.joinToString()})"
 
 private class Baseline(val keys: Set<String>, val added: List<String>) {
     companion object {

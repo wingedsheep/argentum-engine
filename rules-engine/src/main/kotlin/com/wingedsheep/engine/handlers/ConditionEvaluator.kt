@@ -72,7 +72,6 @@ import com.wingedsheep.sdk.scripting.conditions.AllConditions
 import com.wingedsheep.sdk.scripting.conditions.AnyCondition
 import com.wingedsheep.sdk.scripting.conditions.ExiledAsCostHadSubtype
 import com.wingedsheep.sdk.scripting.conditions.ThisAbilityActivatedThisTurnAtLeast
-import com.wingedsheep.sdk.scripting.conditions.APlayerLifeAtMost
 import com.wingedsheep.sdk.scripting.conditions.AnyPlayerDealtCombatDamageThisTurnAtLeast
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.NumberMatches
@@ -286,7 +285,6 @@ class ConditionEvaluator(
             // Not a count, so there is nothing to show. A new condition that counts toward a
             // threshold belongs above, reusing the counting code its boolean branch runs.
             is APlayerControlsMostOfSubtype,
-            is APlayerLifeAtMost,
             is AllConditions,
             is AnotherPermanentWithSameNameAsTarget,
             is AnyCondition,
@@ -755,13 +753,6 @@ class ConditionEvaluator(
                     ?.get<CreatureSubtypesDiedThisTurnComponent>()
                     ?.diedSubtypeSets.orEmpty()
                 died.any { subtypes -> (condition.subtype in subtypes) == condition.present }
-            }
-
-            // Existential over all players: some player has at most [threshold] life.
-            // Reads each player's LifeTotalComponent from state.turnOrder.
-            is APlayerLifeAtMost -> state.turnOrder.any { playerId ->
-                // CR 810.9a — read the team's shared total; existential so teams don't double-count.
-                state.lifeTotal(playerId) <= condition.threshold
             }
 
             // Board-derived only — no targets/triggering/kicker — so it works identically in

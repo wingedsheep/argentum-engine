@@ -8,7 +8,7 @@ called before adding one (`docs/sdk-design-principles.md`, "Extend before you ad
 reach these through facades (`Effects.*`, `Conditions.*`, `Filters.*`, …); the long-form
 catalog with authoring notes is [`card-sdk-language-reference.md`](card-sdk-language-reference.md).
 
-Families: [Effect](#effect) (379) · [StaticAbility](#staticability) (190) · [CardPredicate](#cardpredicate) (117) · [Condition](#condition) (115) · [EventPattern](#eventpattern) (101) · [StatePredicate](#statepredicate) (90) · [DynamicAmount](#dynamicamount) (59) · [ReplacementEffect](#replacementeffect) (52) · [KeywordAbility](#keywordability) (41) · [EffectTarget](#effecttarget) (32) · [AbilityCost](#abilitycost) (28) · [Player](#player) (27) · [CostReductionSource](#costreductionsource) (26) · [ManaRestriction](#manarestriction) (23) · [CostAtom](#costatom) (22) · [Duration](#duration) (21) · [CardSource](#cardsource) (20) · [SpellCastPredicate](#spellcastpredicate) (18) · [ControllerPredicate](#controllerpredicate) (16) · [EntityNumericProperty](#entitynumericproperty) (16) · [AdditionalCost](#additionalcost) (15) · [ProtectionScope](#protectionscope) (13) · [CostModification](#costmodification) (12) · [ActivationRestriction](#activationrestriction) (11) · [TargetRequirement](#targetrequirement) (11) · [ManaColorSet](#manacolorset) (10) · [ManaSymbol](#manasymbol) (9) · [SelectionRestriction](#selectionrestriction) (9) · [SpellCostTarget](#spellcosttarget) (9) · [SuccessCriterion](#successcriterion) (9) · [WardCost](#wardcost) (9) · [Gate](#gate) (7) · [AttackPredicate](#attackpredicate) (6) · [CollectionFilter](#collectionfilter) (6) · [MayPlayExpiry](#mayplayexpiry) (6) · [SelectionMode](#selectionmode) (6) · [CastRestriction](#castrestriction) (5) · [Format](#format) (5) · [IterationSpace](#iterationspace) (5) · [Scope](#scope) (5) · [AmountFilter](#amountfilter) (4) · [CounterDestination](#counterdestination) (4) · [DelayedTriggerExpiry](#delayedtriggerexpiry) (4) · [ManaSpellRider](#manaspellrider) (4) · [NumberProperty](#numberproperty) (4) · [PayCost](#paycost) (4) · [PreventionSourceFilter](#preventionsourcefilter) (4) · [Recipient](#recipient) (4) · [CardMeasure](#cardmeasure) (3) · [CharacteristicValue](#characteristicvalue) (3) · [CostGating](#costgating) (3) · [CounterCondition](#countercondition) (3) · [CounterTarget](#countertarget) (3) · [DamageType](#damagetype) (3) · [FeasibilityCheck](#feasibilitycheck) (3) · [TimingRule](#timingrule) (3) · [CardDestination](#carddestination) (2) · [CounterTargetSource](#countertargetsource) (2) · [PlayerRankMetric](#playerrankmetric) (2) · [RepeatCondition](#repeatcondition) (2) · [RetargetChooser](#retargetchooser) (2) · [DamagePredicate](#damagepredicate) (1) · [PlotCostTarget](#plotcosttarget) (1) · [UnlockCostTarget](#unlockcosttarget) (1)
+Families: [Effect](#effect) (378) · [StaticAbility](#staticability) (188) · [CardPredicate](#cardpredicate) (112) · [Condition](#condition) (111) · [EventPattern](#eventpattern) (101) · [StatePredicate](#statepredicate) (90) · [DynamicAmount](#dynamicamount) (59) · [ReplacementEffect](#replacementeffect) (52) · [KeywordAbility](#keywordability) (41) · [EffectTarget](#effecttarget) (32) · [AbilityCost](#abilitycost) (28) · [Player](#player) (27) · [CostReductionSource](#costreductionsource) (26) · [ManaRestriction](#manarestriction) (23) · [CostAtom](#costatom) (22) · [Duration](#duration) (21) · [CardSource](#cardsource) (20) · [SpellCastPredicate](#spellcastpredicate) (18) · [ControllerPredicate](#controllerpredicate) (16) · [EntityNumericProperty](#entitynumericproperty) (16) · [AdditionalCost](#additionalcost) (15) · [ProtectionScope](#protectionscope) (14) · [CostModification](#costmodification) (12) · [ActivationRestriction](#activationrestriction) (11) · [TargetRequirement](#targetrequirement) (11) · [ManaColorSet](#manacolorset) (10) · [ManaSymbol](#manasymbol) (9) · [SelectionRestriction](#selectionrestriction) (9) · [SpellCostTarget](#spellcosttarget) (9) · [SuccessCriterion](#successcriterion) (9) · [WardCost](#wardcost) (9) · [Gate](#gate) (7) · [AttackPredicate](#attackpredicate) (6) · [CollectionFilter](#collectionfilter) (6) · [MayPlayExpiry](#mayplayexpiry) (6) · [SelectionMode](#selectionmode) (6) · [CastRestriction](#castrestriction) (5) · [Format](#format) (5) · [IterationSpace](#iterationspace) (5) · [Scope](#scope) (5) · [AmountFilter](#amountfilter) (4) · [CounterDestination](#counterdestination) (4) · [DelayedTriggerExpiry](#delayedtriggerexpiry) (4) · [ManaSpellRider](#manaspellrider) (4) · [NumberProperty](#numberproperty) (4) · [PayCost](#paycost) (4) · [PreventionSourceFilter](#preventionsourcefilter) (4) · [Recipient](#recipient) (4) · [CardMeasure](#cardmeasure) (3) · [CharacteristicValue](#characteristicvalue) (3) · [CostGating](#costgating) (3) · [CounterCondition](#countercondition) (3) · [CounterTarget](#countertarget) (3) · [DamageType](#damagetype) (3) · [FeasibilityCheck](#feasibilitycheck) (3) · [TimingRule](#timingrule) (3) · [CardDestination](#carddestination) (2) · [CounterTargetSource](#countertargetsource) (2) · [PlayerRankMetric](#playerrankmetric) (2) · [RepeatCondition](#repeatcondition) (2) · [RetargetChooser](#retargetchooser) (2) · [DamagePredicate](#damagepredicate) (1) · [PlotCostTarget](#plotcosttarget) (1) · [UnlockCostTarget](#unlockcosttarget) (1)
 
 ## Effect
 
@@ -361,9 +361,8 @@ Families: [Effect](#effect) (379) · [StaticAbility](#staticability) (190) · [C
 - `SetLifeTotalEffect(amount: DynamicAmount, target: EffectTarget)` — Set a player's life total to a specific amount.
 - `ShuffleLibraryEffect(target: EffectTarget)` — Shuffle a player's library.
 - `SkipCombatPhasesEffect(target: EffectTarget)` — Target player skips their combat phases during their next turn.
-- `SkipNextDrawStepEffect(target: EffectTarget)`
+- `SkipNextStepOrPhaseEffect(part: TurnPart, target: EffectTarget)` — target skips their **next** instance of part — a one-shot marker consumed by the step it skips.
 - `SkipNextTurnEffect(target: EffectTarget, count: DynamicAmount)` — Target player skips their next count turns.
-- `SkipNextUntapStepEffect(target: EffectTarget)` — The player skips their entire next untap step — Shisato, Whispering Hunter's "that player skips their next untap step".
 - `SkipStepOrPhaseThisTurnEffect(part: TurnPart, target: EffectTarget)` — The target player skips **every** instance of part for the rest of this turn — Fatespinner's "the player skips each instance of the chosen step or phase this turn".
 - `SkipUntapEffect(target: EffectTarget, affectsCreatures: Boolean, affectsLands: Boolean)` — Target player's creatures and lands don't untap during their next untap step.
 - `StoreCardNameEffect(from: String, storeAs: String)` — Read the name of the first card in a stored collection and store it under storeAs in pipeline `chosenValues`.
@@ -479,9 +478,8 @@ Families: [Effect](#effect) (379) · [StaticAbility](#staticability) (190) · [C
 - `GrantDynamicStats(filter: GroupFilter, powerBonus: DynamicAmount, toughnessBonus: DynamicAmount)` — Grants dynamic power/toughness bonus based on a variable amount.
 - `GrantEmergeToOwnSpells(spellFilter: GameObjectFilter)` — Grants emerge (CR 702.119) to spells the granter's controller casts that match spellFilter, with an emerge cost equal to **each spell's own mana cost** — Herigast, Erupting Nullkite: "Each creature…
 - `GrantFlashToSpellType(filter: GameObjectFilter, controllerOnly: Boolean, nthOfTypePerTurn: Int?)` — Grants flash to spells matching a filter.
-- `GrantHexproofFromMonocoloredToGroup(filter: GroupFilter)` — Grants each affected creature "hexproof from monocolored" — they can't be the targets of monocolored (exactly one color, CR 105.2) spells or abilities opponents control.
-- `GrantHexproofFromMulticoloredToGroup(filter: GroupFilter)` — Grants each affected permanent "hexproof from multicolored" — it can't be the target of multicolored (two or more colors, CR 105.2b) spells or abilities opponents control.
 - `GrantHexproofFromOwnColorsToGroup(filter: GroupFilter)` — Grants each affected creature "hexproof from each of its colors" — i.e., for every color the creature currently has (after Layer 5), it also has hexproof from that color.
+- `GrantHexproofFromToGroup(scope: ProtectionScope, filter: GroupFilter)` — Grants each affected permanent "hexproof from scope" (CR 702.11d) — it can't be the target of spells or abilities with that quality that its controller's opponents control.
 - `GrantHexproofToController` — You have hexproof.
 - `GrantKeyword(keyword: String, filter: GroupFilter)` — Grants a keyword (or ability flag) to a filtered set of permanents.
 - `GrantKeywordByCounter(keyword: Keyword, counterType: CounterType, controllerOnly: Boolean)` — Grants a keyword to all creatures that have a specific counter type.
@@ -569,8 +567,7 @@ Families: [Effect](#effect) (379) · [StaticAbility](#staticability) (190) · [C
 - `SetLandTypesForGroup(filter: GroupFilter, landTypes: Set<String>)` — Sets the basic land type(s) of a *group* of lands, replacing all of their existing land subtypes and stripping the abilities those subtypes / their rules text granted (CR 305.7).
 - `SetMaximumHandSize(player: Player, amount: DynamicAmount)` — Set the maximum hand size of a scoped set of players to a dynamic value.
 - `SetName(name: String, filter: GroupFilter)` — Sets the affected permanent's name to a fixed string, overriding its printed name.
-- `SkipDrawStep` — The controller skips their draw step — "Skip your draw step." (Colfenor's Plans, Necropotence).
-- `SkipUntapStep(player: Player)` — Standing player-scoped restriction; unlike a next-step marker it is never consumed.
+- `SkipStepOrPhase(part: TurnPart, player: Player)` — player skips every part for as long as this static applies — "Skip your draw step." (Colfenor's Plans, Necrodominance; player = Player.You) and "Players skip their untap steps." (Stasis; Player.Each).
 - `SpendAnyManaTypeForActivatedAbilities(filter: GroupFilter, substituteColor: Color?)` — The mana requirements in the activated-ability costs of permanents matching filter are relaxed (CR 118.14 / 609.4b).
 - `SpendAnyManaTypeForSpells(filter: GameObjectFilter)` — You can spend mana of any type to cast spells matching filter (CR 118.14 / 609.4b — the colored, hybrid, Phyrexian and colorless requirements of the spell's mana cost may each be paid with mana of…
 - `SpendManaAsColor(fromColor: Color, toColor: Color)` — A controller may spend fromColor mana as though it were toColor, for any mana payment.
@@ -659,9 +656,7 @@ Families: [Effect](#effect) (379) · [StaticAbility](#staticability) (190) · [C
 - `CardPredicate.NameEquals(name: String)`
 - `CardPredicate.NameEqualsChosen(variableName: String)` — Matches cards whose name equals the value stored in `chosenValuesvariableName` — a card name chosen earlier in the pipeline (via com.wingedsheep.sdk.scripting.effects.OptionType.CARD_NAME or com.wi…
 - `CardPredicate.NameEqualsChosenComponent(slot: ChoiceSlot)` — Matches cards whose name equals a name **durably chosen by the source permanent** as it entered — read from that permanent's com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent…
-- `CardPredicate.NameNotSharedWithAnotherControlledPermanent` — Matches a permanent whose name isn't shared with **any other** permanent the evaluating player controls — "that doesn't have the same name as another permanent you control" (Yenna, Redtooth Regent).
 - `CardPredicate.NameNotSharedWithControlledRoom` — Matches a card whose name is **not** shared with any Room the evaluating player controls (CR 709).
-- `CardPredicate.NameNotSharedWithControlledToken` — Matches a permanent whose name isn't shared with a token the evaluating player controls.
 - `CardPredicate.Not(predicate: CardPredicate)`
 - `CardPredicate.NotColor(color: Color)`
 - `CardPredicate.NotKeyword(keyword: Keyword)`
@@ -670,13 +665,11 @@ Families: [Effect](#effect) (379) · [StaticAbility](#staticability) (190) · [C
 - `CardPredicate.Or(predicates: List<CardPredicate>)`
 - `CardPredicate.OriginallyPrintedInSet(setCode: String)` — Matches cards *originally printed* in the given set — i.e. whose canonical com.wingedsheep.sdk.model.CardDefinition.setCode equals setCode (case-insensitive), regardless of which printing is actual…
 - `CardPredicate.PowerAtLeast(min: Int)`
-- `CardPredicate.PowerAtLeastX` — Power at least the X chosen for the source spell/ability — the "greater than or equal to" mirror of ToughnessAtMostX, and the power analogue of ManaValueAtMostX.
 - `CardPredicate.PowerAtMost(max: Int)`
 - `CardPredicate.PowerAtMostDynamic(amount: DynamicAmount)` — Power at most a DynamicAmount resolved when the predicate is checked — the power sibling of ManaValueAtMostDynamic and the open-ended counterpart of the fixed PowerAtMost ("power X or less, where X…
 - `CardPredicate.PowerAtMostEntity(reference: EffectTarget.SingleEntity)` — Power less than or equal to the projected power of a referenced entity.
 - `CardPredicate.PowerEquals(value: Int)`
-- `CardPredicate.PowerEqualsDynamic(amount: DynamicAmount)` — Power *exactly* equal to a DynamicAmount resolved when the predicate is checked — the dynamic counterpart of PowerEquals / PowerEqualsX.
-- `CardPredicate.PowerEqualsX` — Power exactly equal to the X chosen for the source spell/ability.
+- `CardPredicate.PowerEqualsDynamic(amount: DynamicAmount)` — Power *exactly* equal to a DynamicAmount resolved when the predicate is checked — the dynamic counterpart of PowerEquals.
 - `CardPredicate.PowerGreaterThanBase` — Projected power strictly greater than the object's own base power — "a creature with power greater than its base power" (Kutzil, Malamet Exemplar; the Malamet cycle).
 - `CardPredicate.PowerGreaterThanEntity(reference: EffectTarget.SingleEntity)` — Power strictly greater than the projected power of a referenced entity.
 - `CardPredicate.PowerLessThanEntity(reference: EffectTarget.SingleEntity)` — Power strictly less than the projected power of reference (e.g. "a creature with lesser power" than the source — Rangers of Ithilien).
@@ -694,13 +687,12 @@ Families: [Effect](#effect) (379) · [StaticAbility](#staticability) (190) · [C
 - `CardPredicate.SharesManaValueWith(entity: EffectTarget.SingleEntity)` — Matches objects whose mana value **equals** the referenced entity's mana value — "that shares a mana value with the exiled card" (Thought Prison).
 - `CardPredicate.SharesNameWith(entity: EffectTarget.SingleEntity)` — Matches objects whose name **equals** the referenced entity's name — "a land with the same name as the exiled card" (Extraplanar Lens).
 - `CardPredicate.SharesNameWithLinkedExile` — Matches objects whose **name** equals that of **any** card exiled with the asking ability's source — "spells with the same name as a card exiled with Circu" (Circu, Dimir Lobotomist).
-- `CardPredicate.SharesNameWithPermanentYouControl(filter: GameObjectFilter)` — Matches objects whose name equals that of at least one permanent the evaluating player controls matching filter.
+- `CardPredicate.SharesNameWithPermanentYouControl(filter: GameObjectFilter, excludeSelf: Boolean)` — Matches objects whose name equals that of at least one permanent the evaluating player controls matching filter.
 - `CardPredicate.TargetsMatching(subfilter: GameObjectFilter)` — Matches a spell or ability on the stack at least one of whose chosen targets matches subfilter.
 - `CardPredicate.TargetsPlayer(player: Player)` — Matches a spell or ability on the stack at least one of whose chosen targets is a player that player names, read relative to the filter's chooser — the player half of TargetsMatching, which skips p…
 - `CardPredicate.TotalPowerAndToughnessAtMost(max: Int)` — Total power and toughness (sum) is at most the given value
 - `CardPredicate.ToughnessAtLeast(min: Int)`
 - `CardPredicate.ToughnessAtMost(max: Int)`
-- `CardPredicate.ToughnessAtMostX` — Toughness at most the X chosen for the source spell/ability.
 - `CardPredicate.ToughnessEquals(value: Int)`
 - `CardPredicate.ToughnessEqualsDynamic(amount: DynamicAmount)` — Toughness *exactly* equal to a DynamicAmount resolved when the predicate is checked — the dynamic counterpart of ToughnessEquals.
 - `CardPredicate.ToughnessGreaterThanPower` — Toughness is strictly greater than power
@@ -708,9 +700,7 @@ Families: [Effect](#effect) (379) · [StaticAbility](#staticability) (190) · [C
 ## Condition
 
 - `APlayerControlsMostOfSubtype(subtype: Subtype)` — Condition: "If a player controls more subtype creatures than each other player" Used by Thoughtbound Primoc and similar Onslaught "tribal war" cards.
-- `APlayerLifeAtMost(threshold: Int)` — Condition: some player in the game has threshold or less life.
 - `AllConditions(conditions: List<Condition>)` — Condition: All of the sub-conditions must be met (AND)
-- `AnOpponentLifeAtMost(threshold: Int)` — Condition: at least one opponent of the ability's controller has threshold or less life.
 - `AnotherPermanentWithSameNameAsTarget(targetIndex: Int)` — Condition: "if another permanent with the same name as target is on the battlefield".
 - `AnyCondition(conditions: List<Condition>)` — Condition: Any of the sub-conditions must be met (OR)
 - `AnyEnteredOrWasCastFromExile` — Condition: "if one or more of them entered from exile or was cast from exile." The batch-enters, any-of counterpart of com.wingedsheep.sdk.scripting.conditions.TriggeringEntityEnteredOrWasCastFromG…
@@ -730,13 +720,12 @@ Families: [Effect](#effect) (379) · [StaticAbility](#staticability) (190) · [C
 - `CounterRemovedFromPermanentYouControlledThisTurn(counterType: CounterType?, player: Player)` — Condition: "if a counterType counter was removed from a permanent player controlled this turn" — the first half of Churning Reservoir's activation gate.
 - `CreatureDiedThisTurnCondition` — Intervening-if condition (Rule 603.4): "if a creature died this turn".
 - `CreatureWithSubtypeDiedThisTurn(subtype: String, present: Boolean)` — Condition: "if a creature with (or without) the subtype subtype died this turn".
-- `EachPlayerLifeAtMost(threshold: Int)` — Condition: every player in the game has threshold or less life.
 - `EnchantedCreatureHasSubtype(subtype: Subtype)` — Condition: "If enchanted creature is a subtype" Used by auras like Lavamancer's Skill that have different effects based on the creature type of the enchanted creature.
 - `EnchantedCreatureIsLegendary` — Condition: "If enchanted creature is legendary" Used by auras whose continuous effects apply only while the enchanted creature has the legendary supertype.
 - `EntityMatches(entity: EffectTarget, filter: GameObjectFilter)` — Condition: "the entity matches filter".
 - `Escaped` — Condition: "if it escaped" (CR 702.138b — a spell or permanent "escaped" if that spell, or the spell that became that permanent as it resolved, was cast from a graveyard with an escape ability).
 - `ExiledAsCostHadSubtype(subtype: String)` — Condition: "if the exiled creature was a subtype" — reads what an **exile additional cost** (`Costs.additional.ExileCards`) just ate, for either a spell (Soul Exchange's "Put a +2/+2 counter on tha…
-- `Exists(player: Player, zone: Zone, filter: GameObjectFilter, negate: Boolean, excludeSelf: Boolean)`
+- `Exists(player: Player, zone: Zone, filter: GameObjectFilter, negate: Boolean, excludeSelf: Boolean)` — Generic zone-presence condition.
 - `IsDay` — Condition: "if it's day" (CR 731).
 - `IsFirstCombatPhaseOfTurn` — Condition: "If it's the first combat phase of the turn." True while the active player is in a combat phase that is *not* an extra combat phase inserted by com.wingedsheep.sdk.scripting.effects.AddC…
 - `IsFirstEndStepOfTurn` — Condition: "If it's the first end step of the turn." True while the active player is in an end step that is *not* an extra end step inserted by com.wingedsheep.sdk.scripting.effects.AddAdditionalEn…
@@ -797,10 +786,9 @@ Families: [Effect](#effect) (379) · [StaticAbility](#staticability) (190) · [C
 - `TargetSharesMostCommonColor(targetIndex: Int)` — Condition: "if target shares a color with the most common color among all permanents or a color tied for most common".
 - `ThisAbilityActivatedThisTurnAtLeast(count: Int)` — True when the activated ability currently resolving has been activated at least count times this turn, counting the activation that is resolving right now.
 - `TriggeringEntityEnteredOrWasCastFromGraveyard` — Condition: "if it entered or was cast from a graveyard".
-- `TriggeringEntityHadCardType(cardType: String)` — Condition: "if it was a <card type>" (intervening-if for dies/leaves triggers).
 - `TriggeringEntityHadCounters` — Condition: "if it had counters on it" (intervening-if for dies/leaves triggers).
 - `TriggeringEntityHadMinusOneMinusOneCounter` — Condition: "if it had a -1/-1 counter on it" (intervening-if for dies/leaves triggers).
-- `TriggeringEntityHadSubtype(subtype: String)` — Condition: "if it was a <subtype>" (intervening-if for dies/leaves triggers).
+- `TriggeringEntityWas(filter: GameObjectFilter)` — Condition: "if it was filter" — an intervening-if for dies/leaves triggers that matches the triggering permanent's **last-known** type line (CR 603.10, 608.2h): the projected card types and subtype…
 - `TriggeringEntityWasCast` — Condition: "if you cast it" referring to the *triggering* entity (not the ability's source).
 - `TriggeringEntityWasHistoric` — Condition: "if it was historic" (legendary, artifact, or Saga).
 - `TriggeringEntityWasNotPutByThisSource` — Condition: "if it wasn't put onto the battlefield with this ability".
@@ -1489,6 +1477,7 @@ Families: [Effect](#effect) (379) · [StaticAbility](#staticability) (190) · [C
 - `ProtectionScope.Colors(colors: Set<Color>)` — Protection from multiple colors — "from white and from blue".
 - `ProtectionScope.EachOpponent` — Protection from each of the controller's opponents (Rule 702.16e).
 - `ProtectionScope.Everything` — Protection from everything (Rule 702.16i).
+- `ProtectionScope.Monocolored` — From monocolored — matches a source with exactly one color (CR 105.2a), the twin of Multicolored.
 - `ProtectionScope.Multicolored` — From multicolored — matches a source with two or more colors (CR 105.2b: a multicolored object has two or more colors).
 - `ProtectionScope.NonColor(color: Color)` — The complement of a single color — "from nongreen".
 - `ProtectionScope.PermanentsCastThisTurn` — From permanents that were cast this turn — a battlefield source that entered this turn by resolving as a cast spell (not a copy, a token, or a permanent put onto the battlefield), and hasn't left s…
