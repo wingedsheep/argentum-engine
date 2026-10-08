@@ -170,6 +170,9 @@ worktree (recreate it with \`git worktree add\` if missing). Never work in the m
    worktree + 'loop-$CODE-finish' branch from origin/main. Make the set draftable and give it Limited archetypes:
    - Drop \`override val incomplete = true\` from the set's \`MtgSet\` object (finishing a set also trips the
      FrozenBaselineTest hash — re-bless it per the verify skill).
+   - Run \`just sdk-tail\` and put its per-family table in the PR body, with the number of \`[added]\` lines this
+     loop wrote to \`mtg-sdk/src/test/resources/sdk-surface-baseline.txt\`. More than about one net new SDK type
+     per loop PR is a review flag; name any fossil candidate the loop's own types created.
    - Unless the set has \`sealedSupported = false\`, add its archetypes if they're missing, in BOTH files, kept in
      lockstep: \`ai/src/main/kotlin/com/wingedsheep/ai/engine/deck/SetArchetypes.kt\` (the \`allSets\` map) and
      \`web-client/src/components/draft/SetSynergiesOverlay.tsx\` (\`SET_SYNERGIES\`). Copy the shape of an existing

@@ -12,6 +12,14 @@ shape, replacement effect, etc. — must update the matching section here in the
 change.** If the entry doesn't fit cleanly in an existing section, add or rename a
 section; do not let SDK additions land without a corresponding doc update.
 
+**Looking for whether a type exists?** Grep [`sdk-index.md`](sdk-index.md) first. It is generated from
+the code (`just sdk-index`, kept current by `SdkIndexTest`): one line per sealed SDK type with its fields
+and KDoc summary, grouped by family, so it can't miss a type the way this hand-kept catalog can.
+
+**Entry style:** one line per entry — the facade or type, then what it does in one sentence. Rules
+detail, edge cases and history go in the type's KDoc, which the index surfaces. Cut an older
+multi-paragraph entry down the same way when you touch it.
+
 ---
 
 ## 0. Game formats

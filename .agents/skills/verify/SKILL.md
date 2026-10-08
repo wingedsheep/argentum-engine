@@ -32,6 +32,7 @@ waiting on.
 | AI advisors / draft heuristics | `just test-ai` |
 | One class (any module) | `just test-class <ClassName>` |
 | Card snapshots after an intentional change | `just rebless-cards` |
+| SDK types added, removed or re-documented | `just sdk-index`, then `just test-class SdkSurfaceBaselineTest` |
 | Web client | `cd web-client && npm run typecheck` |
 | Visual / UX mechanic | `just e2e-test <pattern>` |
 | Registry / executor / evaluator signature changed | the full module suite, not one class |
@@ -51,6 +52,18 @@ just rebless-cards
 Then read `git diff mtg-sets/src/test/resources/snapshots/cards/<SET>.json`. It should show **only**
 your card's tree added. **If an unrelated card also moved, you changed shared SDK behavior** — stop and
 investigate before committing. That signal is the whole point of the snapshot net.
+
+## Expected: the SDK surface tests, after an SDK type change
+
+Two tests in `:mtg-sdk` fail by design when the sealed SDK surface moves:
+
+- **`SdkSurfaceBaselineTest`** — a new sealed leaf isn't listed in
+  `mtg-sdk/src/test/resources/sdk-surface-baseline.txt`, or a listed one is gone. For a new leaf the
+  failure prints its nearest neighbours and a paste-ready line for the `[added]` section; fill in the
+  first card, the two closest types and why neither could take the axis (`docs/sdk-design-principles.md`,
+  "Extend before you add"). For a deleted leaf, delete its line. It's a review prompt — the line is the
+  fix, not a reason to avoid the type.
+- **`SdkIndexTest`** — `docs/sdk-index.md` is stale. `just sdk-index` regenerates it; commit the result.
 
 ## Card lint
 

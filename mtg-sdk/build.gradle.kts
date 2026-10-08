@@ -13,3 +13,11 @@ dependencies {
     // CostAtomSerializationTest enumerates sealed subclasses via kotlin-reflect (sealedSubclasses).
     testImplementation(kotlin("reflect"))
 }
+
+// `just sdk-tail` runs SdkTailReport, which is skipped unless `sdkTail` reaches the test JVM;
+// `just sdk-index` rewrites docs/sdk-index.md through SdkIndexTest with `updateSdkIndex`.
+tasks.withType<Test>().configureEach {
+    for (prop in listOf("sdkTail", "updateSdkIndex")) {
+        System.getProperty(prop)?.let { systemProperty(prop, it) }
+    }
+}

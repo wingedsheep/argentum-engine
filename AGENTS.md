@@ -63,7 +63,11 @@ docs it points at; load those when the work needs them.
   `CONTRIBUTING.md` encourages it. A card needing new engine vocabulary still gets a PR of its own.
 - **Keep [`docs/card-sdk-language-reference.md`](docs/card-sdk-language-reference.md) in sync.** Every SDK
   addition or change — effect, trigger, condition, keyword, dynamic amount, modal shape, replacement
-  effect — updates it in the *same* change. It's the canonical catalog; drift makes it useless.
+  effect — updates it in the *same* change. It's the canonical catalog; drift makes it useless. The
+  generated one-line-per-type [`docs/sdk-index.md`](docs/sdk-index.md) is regenerated with
+  `just sdk-index` (`SdkIndexTest` fails when it's stale), and a new sealed SDK type needs its line in
+  `mtg-sdk/src/test/resources/sdk-surface-baseline.txt` (`SdkSurfaceBaselineTest`) — see
+  [`sdk-design-principles.md`](docs/sdk-design-principles.md), "Extend before you add".
 - **Announce milestones in the "What's new" feed.** The PR that finishes a set (drops
   `override val incomplete = true`, i.e. `scripts/card-status --set X` reads 100%) or ships a new game
   mode or site-level feature adds an entry to the top of
@@ -178,6 +182,7 @@ Set Completion view's Assay-ready badges; for a head start on a card use `just a
 | [`build-performance-plan.md`](docs/build-performance-plan.md) | Why the card corpus and scenario suite are split into per-era modules; daemon heap and cache tuning |
 | [`sdk-design-principles.md`](docs/sdk-design-principles.md) | The bar for a new SDK type: composition, reusability, naming |
 | [`card-sdk-language-reference.md`](docs/card-sdk-language-reference.md) | Full card SDK / DSL catalog — update on any SDK change |
+| [`sdk-index.md`](docs/sdk-index.md) | Generated: every sealed SDK type, one line each, by family — grep it before adding a type |
 | [`api-guide.md`](docs/api-guide.md) | Adding cards/mechanics step-by-step |
 | [`continuous-effect-dependency-system.md`](docs/continuous-effect-dependency-system.md) | Rule 613.8 dependency resolution |
 | [`managing-complex-and-rare-abilities.md`](docs/managing-complex-and-rare-abilities.md) | Patterns for complex abilities |

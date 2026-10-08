@@ -62,6 +62,21 @@ test-class CLASS *ARGS:
 rebless-cards:
     scripts/gradle-locked :mtg-sets:test --tests "*CardDefinitionSnapshotTest" -DupdateSnapshots=true
 
+# Regenerate docs/sdk-index.md — one line per sealed SDK type (name, fields, first KDoc sentence),
+# grouped by family. SdkIndexTest fails when the checked-in index is stale.
+[group: 'build']
+sdk-index:
+    scripts/gradle-locked :mtg-sdk:test --tests "*SdkIndexTest" -DupdateSdkIndex=true --rerun
+
+# Fossil candidates are rarely-used types whose fields fit inside a same-family type, and engine lines
+# that lower one SDK type 1:1 into another — heuristics to read, not verdicts. Read it in a set-loop's
+# finishing PR; more than about one net new type per loop PR is a review flag.
+# THE SDK TAIL — share of each sealed SDK family used by only 1–2 cards, plus fossil candidates
+[group: 'build']
+sdk-tail:
+    scripts/gradle-locked :mtg-sdk:test --tests "*SdkTailReport" -DsdkTail=true --rerun
+    @cat mtg-sdk/build/reports/sdk-tail.md
+
 # List every token our cards create that has no set-scoped art, so it renders with generic
 # stand-in art. Writes backlog/token-art-gaps.md with a suggested image path and a paste-ready
 # TokenPrinting row per gap. Mostly pre-2001 sets, which have no Scryfall token set to sync.
