@@ -326,6 +326,83 @@
     ]
 }
 
+// Battery Bearer
+{
+    "name": "Battery Bearer",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "Creatures you control have \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\"\nWhenever you cast an artifact spell with mana value 6 or greater, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Battery Bearer:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsArtifact",
+                            {
+                                "type": "ManaValueAtLeast",
+                                "min": 6
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Battery Bearer:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddColorlessMana",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "restriction": {
+                            "type": "CannotCastSpellsOtherThan",
+                            "cardTypes": [
+                                "ARTIFACT"
+                            ]
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Edgar Sánchez Hidalgo",
+        "flavorText": "She always leads the charge.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb5306d6-0f08-429a-8590-1b8136f953a9.jpg?1783920032"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Bitter Reunion
 {
     "name": "Bitter Reunion",
@@ -594,6 +671,51 @@
         "rarity": "UNCOMMON",
         "artist": "Artur Nakhodkin",
         "imageUri": "https://cards.scryfall.io/normal/front/7/1/712a0640-d9c8-46fc-b38b-bf20a40fa902.jpg?1674421510"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Citanul Stalwart
+{
+    "name": "Citanul Stalwart",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Elf Druid Soldier",
+    "oracleText": "{T}, Tap an untapped artifact or creature you control: Add one mana of any color.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Citanul Stalwart:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "filter": "artifact|creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}, Tap an untapped artifact or creature you control: Add one mana of any color."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "artist": "Alexandr Leskinen",
+        "flavorText": "The endless grind of the Brothers' War had fouled Terisiare's land and blackened its skies. Argoth's defenders were determined to protect their isle from the same fate.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a842a945-21d9-432c-b970-6da65b16f309.jpg?1783920048"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -2473,6 +2595,67 @@
     ]
 }
 
+// Hero of the Dunes
+{
+    "name": "Hero of the Dunes",
+    "manaCost": "{3}{W}{B}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, return target artifact or creature card with mana value 3 or less from your graveyard to the battlefield.\nCreatures you control with mana value 3 or less get +1/+0.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hero of the Dunes:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|creature mv<=3 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature mv<=3 ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "UNCOMMON",
+        "artist": "Taras Susak",
+        "flavorText": "History forgot her name but not her victories.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c6c72d5-f08e-4e46-a5cb-26d1fc0a71c8.jpg?1783920028"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Lat-Nam Adept
 {
     "name": "Lat-Nam Adept",
@@ -2572,6 +2755,76 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Levitating Statue
+{
+    "name": "Levitating Statue",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Flying\nWhenever you cast a noncreature spell, put a +1/+1 counter on this artifact.\n{2}: This artifact becomes a 1/1 Construct artifact creature until end of turn.",
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Levitating Statue:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Levitating Statue:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "creatureTypes": [
+                        "Construct"
+                    ],
+                    "addTypes": [
+                        "ARTIFACT"
+                    ]
+                },
+                "descriptionOverride": "{2}: This artifact becomes a 1/1 Construct artifact creature until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "UNCOMMON",
+        "artist": "Artur Nakhodkin",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c0a17e2-e019-4686-9795-651da2d2955c.jpg?1783920017"
+    },
+    "colorIdentityOverride": []
 }
 
 // Loran's Escape
@@ -3235,6 +3488,93 @@
     ]
 }
 
+// Recruitment Officer
+{
+    "name": "Recruitment Officer",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "{3}{W}: Look at the top four cards of your library. You may reveal a creature card with mana value 3 or less from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Recruitment Officer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature mv<=3",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a creature card with mana value 3 or less from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Johan Grenier",
+        "flavorText": "\"Every name on this list is already a hero! Will you add your own to it?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c226656b-68d5-4df2-b313-a323a728c520.jpg?1783920125"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Retrieval Agent
 {
     "name": "Retrieval Agent",
@@ -3887,6 +4227,96 @@
     ]
 }
 
+// The Mightstone and Weakstone
+{
+    "name": "The Mightstone and Weakstone",
+    "manaCost": "{5}",
+    "typeLine": "Legendary Artifact — Powerstone",
+    "oracleText": "When The Mightstone and Weakstone enters, choose one —\n• Draw two cards.\n• Target creature gets -5/-5 until end of turn.\n{T}: Add {C}{C}. This mana can't be spent to cast nonartifact spells.\n(Melds with Urza, Lord Protector.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Mightstone and Weakstone:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "description": "Draw two cards."
+                        },
+                        {
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": -5
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": -5
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Target creature gets -5/-5 until end of turn."
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "The Mightstone and Weakstone:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "restriction": {
+                        "type": "CannotCastSpellsOtherThan",
+                        "cardTypes": [
+                            "ARTIFACT"
+                        ]
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}{C}. This mana can't be spent to cast nonartifact spells."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "238",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02aea379-b444-46a3-82f4-3038f698d4f4.jpg?1783920017"
+    },
+    "colorIdentityOverride": []
+}
+
 // Third Path Iconoclast
 {
     "name": "Third Path Iconoclast",
@@ -4227,6 +4657,96 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Transmogrant Altar
+{
+    "name": "Transmogrant Altar",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{B}, {T}, Sacrifice a creature: Add {C}{C}{C}.\n{2}, {T}, Sacrifice a creature: Create a 3/3 colorless Zombie artifact creature token. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Transmogrant Altar:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{B}, {T}, Sacrifice a creature: Add {C}{C}{C}."
+            },
+            {
+                "id": "Transmogrant Altar:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "artifactToken": true
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{2}, {T}, Sacrifice a creature: Create a 3/3 colorless Zombie artifact creature token. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"The human body—like any other machine—can be stripped for parts.\"\n—Ashnod",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca28d210-a35d-491e-beda-76b95d09dc2d.jpg?1783920077"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
