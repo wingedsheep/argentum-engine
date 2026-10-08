@@ -250,8 +250,8 @@ data class CardDefinition(
      * A meld result is physically the *back halves* of its two meld parts, not a card of its own:
      * it is never opened in a booster, never drafted, never picked in limited, and never put in a
      * deck — the only way it exists is by melding the pair on the battlefield. We nonetheless
-     * define it as a standalone [CardDefinition] so the corpus carries its characteristics for when
-     * meld is supported (today the parts' meld triggers are deliberately unwired).
+     * define it as a standalone [CardDefinition] so the corpus carries its characteristics, and
+     * so the meld action (`MeldEffect`, CR 701.42) has a definition to put onto the battlefield.
      *
      * That "in the corpus but not a real deck card" split is exactly what this flag exists for:
      * every pool that answers *"which cards can a player end up owning?"* — booster / draft /
@@ -260,8 +260,18 @@ data class CardDefinition(
      * card they're printed on is in the booster and legal (as the meld *parts*).
      */
     val meldResult: Boolean = false,
+    /**
+     * The two meld cards this meld result is formed from (CR 712.5) — empty on every card that
+     * isn't a [meldResult]. The meld action reads it to enforce CR 701.42b: only the two cards of
+     * the same meld pair can be melded, so a token, a copy, or the wrong card exiled alongside the
+     * meld part stays in exile instead (CR 701.42c).
+     */
+    val meldParts: List<String> = emptyList(),
 ) {
     init {
+        require(meldParts.isEmpty() || (meldResult && meldParts.size == 2)) {
+            "$name: meldParts names the two meld cards of a meld result (CR 712.5) — set meldResult and exactly two parts"
+        }
         if (typeLine.isCreature) {
             requireNotNull(creatureStats) { "Creature cards must have power/toughness: $name" }
         }

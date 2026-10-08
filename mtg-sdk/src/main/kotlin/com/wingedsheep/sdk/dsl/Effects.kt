@@ -160,6 +160,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnCreaturesPutInGraveyardThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnOneFromLinkedExileEffect
 import com.wingedsheep.sdk.scripting.effects.ExileAndReturnTransformedEffect
+import com.wingedsheep.sdk.scripting.effects.MeldEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnFace
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfFromExileTransformedEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfFromZoneTransformedEffect
@@ -1257,6 +1258,18 @@ object Effects {
         target: EffectTarget = EffectTarget.Self,
         returnAs: ReturnFace = ReturnFace.TRANSFORMED
     ): Effect = ExileAndReturnTransformedEffect(target, returnAs)
+
+    /**
+     * Meld (CR 701.42) — "If you both own and control [this] and a [partner], exile them, then
+     * meld them into [into]." [partner] names the other meld card (`Filters.Creature.named(...)`,
+     * plus `.attacking()` when the oracle asks for it); [into]'s definition declares the pair with
+     * `meldOf(...)`. [tappedAndAttacking]: "It enters tapped and attacking." See [MeldEffect].
+     */
+    fun Meld(
+        partner: GameObjectFilter,
+        into: String,
+        tappedAndAttacking: Boolean = false
+    ): Effect = MeldEffect(partner, into, tappedAndAttacking)
 
     /**
      * Return to hand all creature cards in a player's graveyard that were put there this turn.

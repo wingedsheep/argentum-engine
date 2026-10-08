@@ -188,8 +188,9 @@ section; do not let SDK additions land without a corresponding doc update.
   never opened, drafted, or put in a deck: the flag drops it from the booster/sealed pool (`BoosterGenerator`), the
   constructed pool (`FormatCardPool`), and random AI decks. Scryfall can't be the source — it reports meld results as
   `booster: true` and format-legal, because the card they're printed on is. The result is still authored as a normal
-  card so the corpus carries its characteristics (meld itself is not modelled; the parts' meld triggers are unwired),
-  and scenario tests can still put it directly onto the battlefield.
+  card (`manaCost = ""`) so the corpus carries its characteristics, and scenario tests can still put it directly onto
+  the battlefield. Declare it with **`meldOf("<part one>", "<part two>")`**, which sets `meldResult` and records the
+  pair in `meldParts` (CR 712.5) — `Effects.Meld` refuses to combine anything but exactly that pair (CR 701.42b).
 
 **Ability blocks inside `card { ... }`**
 
@@ -1794,6 +1795,20 @@ this path, with blocker filters evaluated against projected state.
   (the opposite face — front→back), `FRONT` ("return it front face up" — the eikon Saga's final chapter flips
   back to the legend), or `BACK`. The front face's activated ability is sorcery-speed
   (`timing = TimingRule.SorcerySpeed`); Jecht uses it from a "may" combat-damage trigger instead.
+- `Meld(partner, into, tappedAndAttacking = false)` — CR 701.42 meld: "If you both own and control [this] and a
+  [partner], exile them, then meld them into [into]." Put it on the one meld card that prints the ability (CR 712.4a);
+  its source is always that card. `partner` names the other card with its type — `Filters.Creature.named("Bruna, the
+  Fading Light")`, `Filters.Land.named(...)` — plus any extra requirement the oracle sets on it (`.attacking()` for
+  Mishra, Claimed by Gix; the source's own "is attacking" goes in an `Effects.If`). Resolution: unless the source and a
+  *different* permanent matching `partner` are both owned and controlled by you, nothing happens; otherwise both are
+  exiled together, and if they are exactly `into`'s `meldOf` pair (non-token cards — CR 701.42b) they return as one
+  permanent with the result's characteristics; anything else stays in exile (CR 701.42c). The result enters as a new
+  object (ETB triggers fire), under its owner's control; `tappedAndAttacking` is "It enters tapped and attacking."
+  Engine model: the source's entity *is* the melded permanent (`MeldedComponent` holds the partner card, which sits in
+  no zone); its mana value is the sum of the front faces' (CR 712.8g); when it leaves the battlefield it dies/leaves
+  once and both cards go to the new zone front face up (CR 712.21). It can't be transformed (CR 712.4c) and never
+  matches `transformed()` (CR 701.27g). The upkeep / end-step / beginning-of-combat meld triggers keep their
+  intervening "if" as the trigger condition; the ownership half is checked by the effect as it resolves.
 - `ReturnSelfFromGraveyardTransformed(tapped = false)` — "Return this card from your graveyard to the
   battlefield transformed" (Garland, Knight of Cornelia). Returns the *source card* from the graveyard
   to the battlefield with its back face up; pair with `activateFromZone = Zone.GRAVEYARD` on the owning
@@ -5416,7 +5431,8 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   you may transform it" gate on Nick Fury, Agent of S.H.I.E.L.D., where it is what keeps the optional
   transform from prompting on a single-faced permanent. Not the same question as CR 701.27g's
   "transformed permanent" (is the *back* face currently up) — this asks only whether the card has two
-  faces at all. Meld cards, CR 712.1's third kind, are unmodelled by design and so never arise.
+  faces at all. Meld cards, CR 712.1's third kind, answer false: their parts are authored as single-faced
+  cards, and the combined back face lives only on the meld result's own definition (`Effects.Meld`).
 - `Filters.InstantSorceryOrAdventure` (= `GameObjectFilter.InstantSorceryOrAdventure`) — instant,
   sorcery, or a card that has an Adventure. Backs Frantic Firebolt's "cards in your graveyard that
   are instant cards, sorcery cards, and/or have an Adventure" tally (a single membership test, so a

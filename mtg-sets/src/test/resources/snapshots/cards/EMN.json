@@ -530,7 +530,11 @@
     },
     "colorIdentityOverride": [],
     "hasNoManaCost": true,
-    "meldResult": true
+    "meldResult": true,
+    "meldParts": [
+        "Bruna, the Fading Light",
+        "Gisela, the Broken Blade"
+    ]
 }
 
 // Bruna, the Fading Light
@@ -786,7 +790,11 @@
         "BLACK"
     ],
     "hasNoManaCost": true,
-    "meldResult": true
+    "meldResult": true,
+    "meldParts": [
+        "Midnight Scavengers",
+        "Graf Rats"
+    ]
 }
 
 // Clear Shot
@@ -2489,6 +2497,45 @@
         "FIRST_STRIKE",
         "LIFELINK"
     ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gisela, the Broken Blade:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Meld",
+                    "partner": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NameEquals",
+                                "name": "Bruna, the Fading Light"
+                            }
+                        ]
+                    },
+                    "into": "Brisela, Voice of Nightmares"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NameEquals",
+                                "name": "Bruna, the Fading Light"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
     "metadata": {
         "collectorNumber": "28",
         "rarity": "MYTHIC",
@@ -2575,6 +2622,37 @@
     "creatureStats": {
         "power": 2,
         "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Graf Rats:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Meld",
+                    "partner": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NameEquals",
+                                "name": "Midnight Scavengers"
+                            }
+                        ]
+                    },
+                    "into": "Chittering Host"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature name:Midnight Scavengers"
+                }
+            }
+        ]
     },
     "metadata": {
         "collectorNumber": "91",
@@ -2921,6 +2999,36 @@
                     }
                 ],
                 "descriptionOverride": "{R}, {T}: Target creature gains haste until end of turn."
+            },
+            {
+                "id": "Hanweir Battlements:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{R}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Meld",
+                    "partner": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NameEquals",
+                                "name": "Hanweir Garrison"
+                            }
+                        ]
+                    },
+                    "into": "Hanweir, the Writhing Township"
+                },
+                "descriptionOverride": "{3}{R}{R}, {T}: If you both own and control this land and a creature named Hanweir Garrison, exile them, then meld them into Hanweir, the Writhing Township."
             }
         ]
     },
@@ -3027,7 +3135,11 @@
     },
     "colorIdentityOverride": [],
     "hasNoManaCost": true,
-    "meldResult": true
+    "meldResult": true,
+    "meldParts": [
+        "Hanweir Garrison",
+        "Hanweir Battlements"
+    ]
 }
 
 // Harmless Offering

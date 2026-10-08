@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.EmblemSourceComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.components.identity.MeldedComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.identity.TeamComponent
@@ -121,9 +122,11 @@ class GameRestarter(
         val cards = linkedMapOf<EntityId, MutableList<Pair<ComponentContainer, Zone>>>()
         val oldIdsByOwner = linkedMapOf<EntityId, MutableList<EntityId>>()
         val avatars = mutableListOf<Pair<EntityId, ComponentContainer>>()
+        // A melded permanent is two cards (CR 712.21); the second one sits in no zone.
+        val meldPartners = state.getBattlefield().mapNotNull { state.getEntity(it)?.get<MeldedComponent>()?.partnerId }
         val candidates = state.zones
             .filterKeys { it.zoneType != Zone.SIDEBOARD }
-            .values.flatten() + state.stack
+            .values.flatten() + state.stack + meldPartners
         for (oldId in candidates.distinct()) {
             val container = state.getEntity(oldId) ?: continue
             if (container.has<VanguardAvatarComponent>()) {
@@ -215,7 +218,8 @@ class GameRestarter(
      * was played with is kept. A card whose definition can't be found keeps its printed component.
      */
     private fun printedCard(container: ComponentContainer, current: CardComponent, owner: EntityId): ComponentContainer {
-        val uncopied = container.get<CopyOfComponent>()?.originalCardComponent ?: current
+        val uncopied = container.get<MeldedComponent>()?.hostFrontCard
+            ?: container.get<CopyOfComponent>()?.originalCardComponent ?: current
         val dfc = container.get<DoubleFacedComponent>()
         val printed = if (dfc != null && dfc.isBack) dfc.frontFaceCard ?: uncopied else uncopied
         val definition = cardRegistry.getCard(printed.cardDefinitionId)
