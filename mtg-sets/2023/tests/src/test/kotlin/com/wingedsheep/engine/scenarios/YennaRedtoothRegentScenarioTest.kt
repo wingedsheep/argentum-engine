@@ -22,7 +22,7 @@ import io.kotest.matchers.shouldNotBe
  * legendary. If the token is an Aura, untap Yenna, then scry 2. Activate only as a sorcery."
  *
  * Covers the two capabilities this card introduced:
- *  - `CardPredicate.NameNotSharedWithAnotherControlledPermanent` — the target restriction, which is
+ *  - `Not(CardPredicate.SharesNameWithPermanentYouControl(Permanent, excludeSelf = true))` — the target restriction, which is
  *    self-limiting: copying an enchantment makes it an illegal target from then on.
  *  - The Aura branch of `CreateTokenCopyOfTargetExecutor` — a token copy of an Aura is created, not
  *    cast, so its controller chooses what it enchants as it enters (CR 303.4h).

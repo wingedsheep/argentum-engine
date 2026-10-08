@@ -397,38 +397,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
-     * Matches a permanent whose name isn't shared with a token the evaluating player controls.
-     * The candidate itself need not be a token; callers compose the appropriate card/type predicates.
-     * Models The Apprentice's Folly's target restriction.
-     */
-    @SerialName("NameNotSharedWithControlledToken")
-    @Serializable
-    data object NameNotSharedWithControlledToken : CardPredicate {
-        override val description: String = "that doesn't have the same name as a token you control"
-    }
-
-    /**
-     * Matches a permanent whose name isn't shared with **any other** permanent the evaluating
-     * player controls — "that doesn't have the same name as another permanent you control"
-     * (Yenna, Redtooth Regent).
-     *
-     * Broader than [NameNotSharedWithControlledToken] in two ways: the compared set is every
-     * permanent the controller has on the battlefield (tokens *and* cards), and the candidate
-     * itself is excluded so a permanent never disqualifies itself ("**another** permanent").
-     * Two permanents sharing a name therefore disqualify each other, not just one of them.
-     *
-     * Names are read through the projection ([ProjectedState.getName]) so a name-changing
-     * Layer 3 effect (Witness Protection, Honest Work) is respected on both sides of the
-     * comparison. Fails open (matches) when no controller is in scope.
-     */
-    @SerialName("NameNotSharedWithAnotherControlledPermanent")
-    @Serializable
-    data object NameNotSharedWithAnotherControlledPermanent : CardPredicate {
-        override val description: String =
-            "that doesn't have the same name as another permanent you control"
-    }
-
-    /**
      * Matches cards *originally printed* in the given set — i.e. whose canonical
      * [com.wingedsheep.sdk.model.CardDefinition.setCode] equals [setCode] (case-insensitive),
      * regardless of which printing is actually in play. This is the card's first/canonical set, so
@@ -1193,20 +1161,30 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
 
     /**
      * Matches objects whose name equals that of at least one permanent the evaluating player
-     * controls matching [filter]. Used by Key to the Side-Door ("Discard a legendary card with the
-     * same name as a legendary permanent you control") with
-     * `filter = GameObjectFilter.Permanent.legendary()`. The name-sharing sibling of
-     * [SharesColorWithPermanentYouControl].
+     * controls matching [filter]. The name-sharing sibling of [SharesColorWithPermanentYouControl].
      *
-     * Names are compared exactly, and read from the permanent's card definition rather than
-     * projected state — copy effects already rewrite the card component's name, and nothing in the
-     * layer system renames a permanent without doing so. A nameless object (a token with no name)
-     * never matches.
+     * - Key to the Side-Door — "a legendary card with the same name as a legendary permanent you
+     *   control": `filter = GameObjectFilter.Permanent.legendary()`.
+     * - Under [Not], the "doesn't have the same name as …" restrictions: The Apprentice's Folly's
+     *   "… as a token you control" (`filter = GameObjectFilter.Token`) and Yenna, Redtooth Regent's
+     *   "… as **another** permanent you control" (`filter = GameObjectFilter.Permanent`,
+     *   [excludeSelf] = true). [excludeSelf] leaves the candidate out of the compared set so a
+     *   permanent never disqualifies itself; two permanents sharing a name still disqualify each
+     *   other.
+     *
+     * Names are compared exactly and read through the projection on both sides (falling back to
+     * the card's own name), so a Layer 3 name-changing effect (Witness Protection, Honest Work) is
+     * respected. A nameless object never shares a name (CR 201.2). Outside a controller's scope it
+     * never matches — so the [Not] form matches.
      */
     @SerialName("SharesNameWithPermanentYouControl")
     @Serializable
-    data class SharesNameWithPermanentYouControl(val filter: GameObjectFilter) : CardPredicate {
-        override val description: String = "with the same name as ${filter.description} you control"
+    data class SharesNameWithPermanentYouControl(
+        val filter: GameObjectFilter,
+        val excludeSelf: Boolean = false,
+    ) : CardPredicate {
+        override val description: String =
+            "with the same name as ${if (excludeSelf) "another " else ""}${filter.description} you control"
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
             val newFilter = filter.applyTextReplacement(replacer)
             return if (newFilter !== filter) copy(filter = newFilter) else this

@@ -5646,10 +5646,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   creature you control") with `filter = GameObjectFilter.Creature.legendary()`. Colorless candidates
   never match. Evaluated for real in targeting/search/count contexts; inert (false) in
   static-projection / trigger-gating, permissive (true) in cost-calculation.
-- `.sharingNameWithPermanentYouControl(filter)` — `CardPredicate.SharesNameWithPermanentYouControl`:
-  has the **same name** as at least one permanent the evaluating player controls matching `filter`. The
-  name sibling of `.sharingColorWithPermanentYouControl`; names compare exactly, read off the permanent's
-  card component (copy effects already rewrite it), and a nameless object never matches. Used by Key to
+- `.sharingNameWithPermanentYouControl(filter)` — `CardPredicate.SharesNameWithPermanentYouControl(filter,
+  excludeSelf = false)`: has the **same name** as at least one permanent the evaluating player controls
+  matching `filter`. The name sibling of `.sharingColorWithPermanentYouControl`; names compare exactly and are
+  read through the projection on both sides (Layer 3 renames such as Witness Protection count), and a
+  nameless object never matches. `excludeSelf` leaves the candidate out of the compared set ("**another**
+  permanent"); see `.nameNotSharedWithPermanentYouControl` for the negated form. Used by Key to
   the Side-Door ("Discard a legendary card with the same name as a legendary permanent you control") as a
   `Costs.Discard(...)` filter — the cost enumerators supply a `PredicateContext` whose `controllerId` is
   the activating player, so the battlefield side is scoped to "you control". Evaluated for real in
@@ -5704,21 +5706,16 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   every Room card when the controller has no unlocked doors. Pair with `.withSubtype(Subtype.ROOM)` at a search
   site. Used by Central Elevator ("search your library for a Room card that doesn't have the same name as a
   Room you control").
-- `.nameNotSharedWithControlledToken()` — `CardPredicate.NameNotSharedWithControlledToken`: matches a
-  permanent whose name isn't shared with any token the evaluating player controls. This is a
-  state-dependent battlefield target filter; compose it with the printed type/control/token restrictions.
-  Used by The Apprentice's Folly
-  (`Creature.youControl().nontoken().nameNotSharedWithControlledToken()`).
-- `.nameNotSharedWithAnotherControlledPermanent()` —
-  `CardPredicate.NameNotSharedWithAnotherControlledPermanent`: matches a permanent whose name isn't shared
-  with **any other** permanent the evaluating player controls. Broader than
-  `.nameNotSharedWithControlledToken()` on both sides: the compared set is every permanent the controller
-  has out (tokens *and* cards), and the candidate itself is excluded, so two same-named permanents
-  disqualify **each other**. Names are read through the projection, honoring Layer 3 name-changing effects
-  (Witness Protection). Keyed off the predicate context's `controllerId`; fails **open** with no controller
-  in scope. Used by Yenna, Redtooth Regent
-  (`Enchantment.youControl().nameNotSharedWithAnotherControlledPermanent()`) — the restriction is
-  self-limiting, since copying an enchantment makes it an illegal target from then on.
+- `.nameNotSharedWithPermanentYouControl(filter, another = false)` —
+  `Not(SharesNameWithPermanentYouControl(filter, excludeSelf = another))`: a permanent whose name isn't
+  shared with any permanent the evaluating player controls matching `filter`; matches with no controller
+  in scope. The Apprentice's Folly ("… that doesn't have the same name as a token you control"):
+  `Creature.youControl().nontoken().nameNotSharedWithPermanentYouControl(GameObjectFilter.Token)`. Yenna,
+  Redtooth Regent ("… as **another** permanent you control"):
+  `Enchantment.youControl().nameNotSharedWithPermanentYouControl(GameObjectFilter.Permanent, another = true)` —
+  the compared set is every *other* permanent the controller has out (tokens and cards), so two same-named
+  permanents disqualify **each other**, and the restriction is self-limiting since copying an enchantment
+  makes it an illegal target from then on.
 - `.power(n)` / `.minPower(n)` / `.maxPower(n)` — P/T comparator.
 - `.manaValue(n)` / `.manaValueAtMost(n)` / `.manaValueAtLeast(n)` — mana-value comparator.
 - `.manaValueAtMostX()` — mana value ≤ the X chosen for the source spell/ability.

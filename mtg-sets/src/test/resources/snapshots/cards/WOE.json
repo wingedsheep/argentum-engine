@@ -17707,7 +17707,13 @@
                             "cardPredicates": [
                                 "IsCreature",
                                 "IsNontoken",
-                                "NameNotSharedWithControlledToken"
+                                {
+                                    "type": "Not",
+                                    "predicate": {
+                                        "type": "SharesNameWithPermanentYouControl",
+                                        "filter": "token"
+                                    }
+                                }
                             ],
                             "controllerPredicate": "ControlledByYou"
                         }
@@ -17740,7 +17746,13 @@
                             "cardPredicates": [
                                 "IsCreature",
                                 "IsNontoken",
-                                "NameNotSharedWithControlledToken"
+                                {
+                                    "type": "Not",
+                                    "predicate": {
+                                        "type": "SharesNameWithPermanentYouControl",
+                                        "filter": "token"
+                                    }
+                                }
                             ],
                             "controllerPredicate": "ControlledByYou"
                         }
@@ -21558,7 +21570,14 @@
                             "baseFilter": {
                                 "cardPredicates": [
                                     "IsEnchantment",
-                                    "NameNotSharedWithAnotherControlledPermanent"
+                                    {
+                                        "type": "Not",
+                                        "predicate": {
+                                            "type": "SharesNameWithPermanentYouControl",
+                                            "filter": "permanent",
+                                            "excludeSelf": true
+                                        }
+                                    }
                                 ],
                                 "controllerPredicate": "ControlledByYou"
                             }

@@ -149,17 +149,6 @@ interface ObjectFilterBuilder<out Self> {
      */
     fun nameNotSharedWithControlledRoom() = withCardPredicate(CardPredicate.NameNotSharedWithControlledRoom)
 
-    /** Match permanents whose name isn't shared with a token the evaluating player controls. */
-    fun nameNotSharedWithControlledToken() = withCardPredicate(CardPredicate.NameNotSharedWithControlledToken)
-
-    /**
-     * Match permanents whose name isn't shared with *another* permanent the evaluating player
-     * controls — "that doesn't have the same name as another permanent you control" (Yenna,
-     * Redtooth Regent). The candidate itself is excluded from the comparison; see
-     * [CardPredicate.NameNotSharedWithAnotherControlledPermanent].
-     */
-    fun nameNotSharedWithAnotherControlledPermanent() =
-        withCardPredicate(CardPredicate.NameNotSharedWithAnotherControlledPermanent)
 
     /**
      * Match cards whose name equals the name durably chosen by the *source permanent* as it
@@ -475,6 +464,16 @@ interface ObjectFilterBuilder<out Self> {
      */
     fun sharingNameWithPermanentYouControl(filter: GameObjectFilter) =
         withCardPredicate(CardPredicate.SharesNameWithPermanentYouControl(filter))
+
+    /**
+     * Must **not** have the same name as any permanent the evaluating player controls matching
+     * [filter] — "that doesn't have the same name as a token you control" (The Apprentice's Folly,
+     * `filter = GameObjectFilter.Token`). With [another] the candidate is left out of the compared
+     * set, for "… as **another** permanent you control" (Yenna, Redtooth Regent,
+     * `filter = GameObjectFilter.Permanent`). `Not` over [CardPredicate.SharesNameWithPermanentYouControl].
+     */
+    fun nameNotSharedWithPermanentYouControl(filter: GameObjectFilter, another: Boolean = false) =
+        withCardPredicate(CardPredicate.Not(CardPredicate.SharesNameWithPermanentYouControl(filter, excludeSelf = another)))
 
     /**
      * Must share **no** creature type with any permanent the evaluating player controls matching

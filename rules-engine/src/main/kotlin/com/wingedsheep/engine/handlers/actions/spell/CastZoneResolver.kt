@@ -1062,8 +1062,6 @@ class CastZoneResolver(
                 is CardPredicate.NameEqualsChosenComponent,
                 is CardPredicate.CardTypeEqualsChosenComponent,
                 is CardPredicate.NameNotSharedWithControlledRoom,
-                is CardPredicate.NameNotSharedWithControlledToken,
-                is CardPredicate.NameNotSharedWithAnotherControlledPermanent,
                 is CardPredicate.ManaValueEqualsX,
                 is CardPredicate.ManaValueAtMostX,
                 is CardPredicate.ManaValueAtMostEntity,
