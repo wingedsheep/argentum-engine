@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.tokens
 
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
@@ -18,6 +19,7 @@ import com.wingedsheep.sdk.model.CardDefinition.Companion.doubleFacedPermanent
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
+import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -1108,6 +1110,33 @@ object PredefinedTokens {
     }
 
     /**
+     * Powerstone token — The Brothers' War's colorless artifact token:
+     * "{T}: Add {C}. This mana can't be spent to cast a nonartifact spell."
+     *
+     * The restriction is negative ([ManaRestriction.CannotCastSpellsOtherThan]), so the mana still
+     * pays for activated abilities, ward and other non-cast costs — only a nonartifact spell is
+     * refused. Most cards create it tapped (`Effects.CreatePowerstone(tapped = true)`).
+     */
+    val Powerstone = card("Powerstone") {
+        typeLine = "Artifact — Powerstone"
+        oracleText = "{T}: Add {C}. This mana can't be spent to cast a nonartifact spell."
+
+        activatedAbility {
+            cost = Costs.Tap
+            effect = Effects.AddColorlessMana(
+                1,
+                restriction = ManaRestriction.CannotCastSpellsOtherThan(setOf(CardType.ARTIFACT)),
+            )
+            manaAbility = true
+            description = "{T}: Add {C}. This mana can't be spent to cast a nonartifact spell."
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/d/4/d45fe4b6-aeaf-4f84-b660-c7b482ed8512.jpg?1783919908"
+        }
+    }
+
+    /**
      * All predefined token definitions.
      * Register these in the CardRegistry so token abilities are resolved.
      */
@@ -1153,6 +1182,7 @@ object PredefinedTokens {
         Jace,
         Heartwood,
         Lotus,
-        ForestTentacle
+        ForestTentacle,
+        Powerstone
     )
 }

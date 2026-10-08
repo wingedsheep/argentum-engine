@@ -3381,6 +3381,19 @@ object Effects {
         CreatePredefinedTokenEffect("Phyrexian Mite", controller = controller, dynamicCount = count)
 
     /**
+     * Create N Powerstone tokens — The Brothers' War's colorless artifact with "{T}: Add {C}. This
+     * mana can't be spent to cast a nonartifact spell." (`PredefinedTokens.Powerstone`). Almost
+     * every printing says "a tapped Powerstone token", hence [tapped]; [controller] redirects them
+     * ("its controller creates a tapped Powerstone token" — Cityscape Leveler).
+     */
+    fun CreatePowerstone(count: Int = 1, tapped: Boolean = false, controller: EffectTarget? = null): Effect =
+        CreatePredefinedTokenEffect("Powerstone", count, controller, tapped = tapped)
+
+    /** [CreatePowerstone] with a count evaluated at resolution. */
+    fun CreatePowerstone(count: DynamicAmount, tapped: Boolean = false, controller: EffectTarget? = null): Effect =
+        CreatePredefinedTokenEffect("Powerstone", controller = controller, tapped = tapped, dynamicCount = count)
+
+    /**
      * Create a dynamic number of 0/1 colorless Eldrazi Spawn creature tokens.
      * The count is evaluated at resolution time.
      */

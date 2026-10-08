@@ -2598,6 +2598,12 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   Mite (Crawling Chorus, Basilica Shepherd, Mirrex, …). `count` accepts an `Int` or a `DynamicAmount`
   (White Sun's Twilight's X). A predefined token gets its definition's printed keyword components the way
   a card does, so the Mite's toxic 1 is real toxic, not a label.
+- `CreatePowerstone(count?, tapped?, controller?)` — colorless Powerstone artifact tokens with "{T}: Add {C}. This
+  mana can't be spent to cast a nonartifact spell." (`PredefinedTokens.Powerstone`) — The Brothers' War's ramp token
+  (Stern Lesson, Fallaji Excavation, Powerstone Engineer, …). Pass `tapped = true` for the usual "create a tapped
+  Powerstone token"; `count` accepts an `Int` or a `DynamicAmount`; `controller` redirects them ("its controller
+  creates a tapped Powerstone token" — Cityscape Leveler). The mana carries
+  `ManaRestriction.CannotCastSpellsOtherThan(ARTIFACT)`, so it still pays for abilities and non-cast costs.
 - `CreateBlood(count?, controller?)` — Blood tokens (artifact with "{1}, {T}, Discard a card, Sacrifice this artifact: Draw a card."). `count` accepts an `Int` or a `DynamicAmount` (the latter evaluated at resolution, e.g. `CreateBlood(DynamicAmount.EntityProperty(EffectTarget.ContextTarget(0), EntityNumericProperty.ExcessMarkedDamage))` for Lacerate Flesh's "create a number of Blood tokens equal to the amount of excess damage dealt").
 - `CreateClue(count?, controller?)` — Clue tokens (artifact with "{2}, Sacrifice this token: Draw a
   card."), for card text that says "create a Clue token" (Azula, On the Hunt).

@@ -1580,6 +1580,44 @@
     ]
 }
 
+// Fallaji Excavation
+{
+    "name": "Fallaji Excavation",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create three tapped Powerstone tokens. You gain 3 life. (The tokens are artifacts with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "count": 3,
+                    "tapped": true
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "UNCOMMON",
+        "artist": "Eilene Cherie",
+        "flavorText": "Few relics excited Fallaji archaeologists more than Thran powerstones, which they called \"eyes of the Old Ones.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac75c41f-82dc-4b06-a233-9b74ea177a3d.jpg?1783920046"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Fallaji Vanguard
 {
     "name": "Fallaji Vanguard",
@@ -3389,6 +3427,44 @@
         "artist": "Izzy",
         "flavorText": "The cool, sleek automatons beside her mirrored her own iron resolve.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/a/2abe2af7-deba-4569-822a-2d9309aeaadd.jpg?1783920125"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Powerstone Engineer
+{
+    "name": "Powerstone Engineer",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "When this creature dies, create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Powerstone Engineer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "artist": "Scott Murphy",
+        "flavorText": "\"Well there's your problem—resonance leak lowering output by thirty percent. I can patch that up.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/2901c5f6-5d83-437d-b434-d9beb115dd82.jpg?1783920128"
     },
     "colorIdentityOverride": [
         "WHITE"
