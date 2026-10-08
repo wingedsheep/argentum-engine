@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * Citanul Stalwart (BRO #175) — {T}, Tap an untapped artifact or creature you control: Add one
@@ -45,6 +46,32 @@ class CitanulStalwartScenarioTest : ScenarioTestBase() {
             game.state.getEntity(game.player1Id)!!.get<ManaPoolComponent>()!!.getAmount(Color.RED) shouldBe 1
             game.state.getEntity(stalwart)!!.has<TappedComponent>() shouldBe true
             game.state.getEntity(thopter)!!.has<TappedComponent>() shouldBe true
+        }
+
+        test("it cannot tap itself to pay its own tap-another cost") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Citanul Stalwart", summoningSickness = false)
+                .withCardInLibrary(1, "Island")
+                .withCardInLibrary(2, "Island")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val stalwart = game.findPermanent("Citanul Stalwart")!!
+            val abilityId = cardRegistry.getCard("Citanul Stalwart")!!.script.activatedAbilities[0].id
+
+            game.execute(
+                ActivateAbility(
+                    playerId = game.player1Id,
+                    sourceId = stalwart,
+                    abilityId = abilityId,
+                    costPayment = AdditionalCostPayment(tappedPermanents = listOf(stalwart)),
+                    manaColorChoice = Color.RED,
+                )
+            ).error shouldNotBe null
+
+            game.state.getEntity(game.player1Id)!!.get<ManaPoolComponent>()!!.getAmount(Color.RED) shouldBe 0
         }
     }
 }
